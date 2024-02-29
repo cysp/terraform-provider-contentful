@@ -1,0 +1,75 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+  pull_request:
+    paths-ignore:
+      - "README.md"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4.1.7
+      - uses: actions/setup-go@v5.0.1
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - run: go mod download
+      - run: go build -v .
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4.1.7
+      - uses: actions/setup-go@v5.0.1
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - run: go mod download
+      - run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        timeout-minutes: 10
+      - uses: codecov/codecov-action@v4.5.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: test
+
+  testacc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform:
+          - "1.8.*"
+          - "1.9.*"
+    steps:
+      - uses: actions/checkout@v4.1.7
+      - uses: actions/setup-go@v5.0.1
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - uses: hashicorp/setup-terraform@v3.1.1
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - run: go mod download
+      - run: go test -v -coverprofile=coverage.txt -covermode=atomic ./internal/provider/
+        env:
+          TF_ACC: "1"
+        timeout-minutes: 10
+      - uses: codecov/codecov-action@v4.5.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: testacc-${{ matrix.terraform }}
