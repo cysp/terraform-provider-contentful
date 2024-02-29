@@ -5,6 +5,14 @@ type DeleteAppInstallationRes interface {
 	deleteAppInstallationRes()
 }
 
+type GetAppDefinitionRes interface {
+	getAppDefinitionRes()
+}
+
+type GetAppDefinitionsRes interface {
+	getAppDefinitionsRes()
+}
+
 type GetAppInstallationRes interface {
 	getAppInstallationRes()
 }
@@ -15,6 +23,10 @@ type GetAuthenticatedUserRes interface {
 
 type GetEditorInterfaceRes interface {
 	getEditorInterfaceRes()
+}
+
+type GetOrganizationsRes interface {
+	getOrganizationsRes()
 }
 
 type PutAppInstallationRes interface {

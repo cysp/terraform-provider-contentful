@@ -271,5 +271,57 @@
             }
         }
     ],
-    "datasources": []
+    "datasources": [
+        {
+            "name": "app_definition",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "organization_id",
+                        "string": {
+                            "computed_optional_required": "required"
+                        }
+                    },
+                    {
+                        "name": "app_definition_id",
+                        "string": {
+                            "computed_optional_required": "required"
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "string": {
+                            "computed_optional_required": "computed"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "string": {
+                            "computed_optional_required": "computed_optional"
+                        }
+                    },
+                    {
+                        "name": "src",
+                        "string": {
+                            "computed_optional_required": "computed_optional"
+                        }
+                    },
+                    {
+                        "name": "bundle",
+                        "single_nested": {
+                            "computed_optional_required": "computed_optional",
+                            "attributes": [
+                                {
+                                    "name": "id",
+                                    "string": {
+                                        "computed_optional_required": "computed"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 }
