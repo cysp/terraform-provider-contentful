@@ -9,11 +9,22 @@ type DeleteAppInstallationParams struct {
 	AppDefinitionID string
 }
 
+// GetAppDefinitionParams is parameters of getAppDefinition operation.
+type GetAppDefinitionParams struct {
+	OrganizationID  string
+	AppDefinitionID string
+}
+
 // GetAppInstallationParams is parameters of getAppInstallation operation.
 type GetAppInstallationParams struct {
 	SpaceID         string
 	EnvironmentID   string
 	AppDefinitionID string
+}
+
+// GetOrganizationParams is parameters of getOrganization operation.
+type GetOrganizationParams struct {
+	OrganizationID string
 }
 
 // PutAppInstallationParams is parameters of putAppInstallation operation.
