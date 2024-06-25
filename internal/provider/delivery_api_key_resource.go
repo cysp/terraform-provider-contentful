@@ -46,6 +46,7 @@ func (r *deliveryApiKeyResource) ImportState(ctx context.Context, req resource.I
 	}, req, resp)
 }
 
+//nolint:dupl
 func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data DeliveryApiKeyModel
 
