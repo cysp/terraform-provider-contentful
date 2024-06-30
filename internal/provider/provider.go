@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/provider_contentful"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -47,7 +48,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	} else if contentfulURLFromEnv, found := os.LookupEnv("CONTENTFUL_URL"); found {
 		contentfulURL = contentfulURLFromEnv
 	} else {
-		contentfulURL = "https://api.contentful.com"
+		contentfulURL = contentfulManagement.DefaultServerURL
 	}
 
 	if contentfulURL == "" {
