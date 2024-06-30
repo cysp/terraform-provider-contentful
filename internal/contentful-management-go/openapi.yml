@@ -1,0 +1,153 @@
+openapi: '3.0.3'
+info:
+  title: Contentful Management API
+  version: '0.1'
+servers:
+  - url: https://api.contentful.com
+components:
+  schemas:
+    ErrorSysId:
+      type: string
+      enum:
+        - NotFound
+    ErrorSys:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Error
+        id:
+          type: string
+      required:
+        - type
+        - id
+    ErrorFields:
+      type: object
+      properties:
+        message:
+          type: string
+        details:
+          type: string
+      required:
+        - message
+    Error:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/ErrorSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/ErrorFields'
+    BaseSys:
+      type: object
+      properties:
+        type:
+          type: string
+      required:
+        - type
+    BaseSysWithId:
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - type
+        - id
+    BaseSysWithIdAndVersion:
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - type
+        - id
+        - version
+    UserSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - User
+    UserFields:
+      type: object
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+      required:
+        - email
+        - firstName
+        - lastName
+    User:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/UserSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/UserFields'
+  securitySchemes:
+    accessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: Contentful Management API Access Token
+  responses:
+    no-content:
+      description: No content
+    unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    error:
+      description: An error
+      content:
+        application/vnd.contentful.management.v1+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+security:
+  - accessToken: []
+paths:
+  /users/me:
+    get:
+      operationId: getAuthenticatedUser
+      summary: Get the authenticated user
+      responses:
+        200:
+          description: The authenticated user
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'

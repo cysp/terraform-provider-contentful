@@ -45,6 +45,27 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: test
 
+  contentful-management-go-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4.1.7
+      - uses: actions/setup-go@v5.0.1
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - run: go mod download
+      - run: go test -v -coverprofile=coverage.txt -covermode=atomic ./internal/contentful-management-go/...
+        env:
+          CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
+        timeout-minutes: 10
+      - uses: codecov/codecov-action@v4.5.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: contentful-management-go
+
   testacc:
     runs-on: ubuntu-latest
     timeout-minutes: 15
