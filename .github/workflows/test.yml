@@ -38,7 +38,7 @@ jobs:
           go-version-file: "go.mod"
           cache: true
       - run: go mod download
-      - run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+      - run: go test -v -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
         timeout-minutes: 10
       - uses: codecov/codecov-action@v4.5.0
         with:
@@ -65,7 +65,7 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - run: go test -v -coverprofile=coverage.txt -covermode=atomic ./internal/provider/
+      - run: go test -v -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./internal/provider/
         env:
           TF_ACC: "1"
         timeout-minutes: 10
