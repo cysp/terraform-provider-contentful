@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-faster/errors"
+	"github.com/go-faster/jx"
 )
 
 type AccessToken struct {
@@ -20,6 +21,99 @@ func (s *AccessToken) GetToken() string {
 // SetToken sets the value of Token.
 func (s *AccessToken) SetToken(val string) {
 	s.Token = val
+}
+
+// Merged schema.
+// Ref: #/components/schemas/AppInstallation
+type AppInstallation struct {
+	Sys        AppInstallationSys           `json:"sys"`
+	Parameters OptAppInstallationParameters `json:"parameters"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppInstallation) GetSys() AppInstallationSys {
+	return s.Sys
+}
+
+// GetParameters returns the value of Parameters.
+func (s *AppInstallation) GetParameters() OptAppInstallationParameters {
+	return s.Parameters
+}
+
+// SetSys sets the value of Sys.
+func (s *AppInstallation) SetSys(val AppInstallationSys) {
+	s.Sys = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *AppInstallation) SetParameters(val OptAppInstallationParameters) {
+	s.Parameters = val
+}
+
+func (*AppInstallation) getAppInstallationRes() {}
+func (*AppInstallation) putAppInstallationRes() {}
+
+type AppInstallationParameters map[string]jx.Raw
+
+func (s *AppInstallationParameters) init() AppInstallationParameters {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+// Merged schema.
+// Ref: #/components/schemas/AppInstallationSys
+type AppInstallationSys struct {
+	// Merged property.
+	Type AppInstallationSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *AppInstallationSys) GetType() AppInstallationSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *AppInstallationSys) SetType(val AppInstallationSysType) {
+	s.Type = val
+}
+
+// Merged schema.
+type AppInstallationSysType string
+
+const (
+	AppInstallationSysTypeAppInstallation AppInstallationSysType = "AppInstallation"
+)
+
+// AllValues returns all AppInstallationSysType values.
+func (AppInstallationSysType) AllValues() []AppInstallationSysType {
+	return []AppInstallationSysType{
+		AppInstallationSysTypeAppInstallation,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppInstallationSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppInstallationSysTypeAppInstallation:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
+	switch AppInstallationSysType(data) {
+	case AppInstallationSysTypeAppInstallation:
+		*s = AppInstallationSysTypeAppInstallation
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // Merged schema.
@@ -60,7 +154,10 @@ func (s *Error) SetDetails(val OptString) {
 	s.Details = val
 }
 
-func (*Error) getAuthenticatedUserRes() {}
+func (*Error) deleteAppInstallationRes() {}
+func (*Error) getAppInstallationRes()    {}
+func (*Error) getAuthenticatedUserRes()  {}
+func (*Error) putAppInstallationRes()    {}
 
 // ErrorStatusCode wraps Error with StatusCode.
 type ErrorStatusCode struct {
@@ -88,7 +185,10 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 	s.Response = val
 }
 
-func (*ErrorStatusCode) getAuthenticatedUserRes() {}
+func (*ErrorStatusCode) deleteAppInstallationRes() {}
+func (*ErrorStatusCode) getAppInstallationRes()    {}
+func (*ErrorStatusCode) getAuthenticatedUserRes()  {}
+func (*ErrorStatusCode) putAppInstallationRes()    {}
 
 // Ref: #/components/schemas/ErrorSys
 type ErrorSys struct {
@@ -150,6 +250,57 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/responses/no-content
+type NoContent struct{}
+
+func (*NoContent) deleteAppInstallationRes() {}
+
+// NewOptAppInstallationParameters returns new OptAppInstallationParameters with value set to v.
+func NewOptAppInstallationParameters(v AppInstallationParameters) OptAppInstallationParameters {
+	return OptAppInstallationParameters{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppInstallationParameters is optional AppInstallationParameters.
+type OptAppInstallationParameters struct {
+	Value AppInstallationParameters
+	Set   bool
+}
+
+// IsSet returns true if OptAppInstallationParameters was set.
+func (o OptAppInstallationParameters) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppInstallationParameters) Reset() {
+	var v AppInstallationParameters
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppInstallationParameters) SetTo(v AppInstallationParameters) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppInstallationParameters) Get() (v AppInstallationParameters, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppInstallationParameters) Or(d AppInstallationParameters) AppInstallationParameters {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptDateTime returns new OptDateTime with value set to v.
 func NewOptDateTime(v time.Time) OptDateTime {
 	return OptDateTime{
@@ -190,6 +341,52 @@ func (o OptDateTime) Get() (v time.Time, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptPutAppInstallationReqParameters returns new OptPutAppInstallationReqParameters with value set to v.
+func NewOptPutAppInstallationReqParameters(v PutAppInstallationReqParameters) OptPutAppInstallationReqParameters {
+	return OptPutAppInstallationReqParameters{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPutAppInstallationReqParameters is optional PutAppInstallationReqParameters.
+type OptPutAppInstallationReqParameters struct {
+	Value PutAppInstallationReqParameters
+	Set   bool
+}
+
+// IsSet returns true if OptPutAppInstallationReqParameters was set.
+func (o OptPutAppInstallationReqParameters) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPutAppInstallationReqParameters) Reset() {
+	var v PutAppInstallationReqParameters
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPutAppInstallationReqParameters) SetTo(v PutAppInstallationReqParameters) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPutAppInstallationReqParameters) Get() (v PutAppInstallationReqParameters, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPutAppInstallationReqParameters) Or(d PutAppInstallationReqParameters) PutAppInstallationReqParameters {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -240,6 +437,31 @@ func (o OptString) Or(d string) string {
 		return v
 	}
 	return d
+}
+
+type PutAppInstallationReq struct {
+	Parameters OptPutAppInstallationReqParameters `json:"parameters"`
+}
+
+// GetParameters returns the value of Parameters.
+func (s *PutAppInstallationReq) GetParameters() OptPutAppInstallationReqParameters {
+	return s.Parameters
+}
+
+// SetParameters sets the value of Parameters.
+func (s *PutAppInstallationReq) SetParameters(val OptPutAppInstallationReqParameters) {
+	s.Parameters = val
+}
+
+type PutAppInstallationReqParameters map[string]jx.Raw
+
+func (s *PutAppInstallationReqParameters) init() PutAppInstallationReqParameters {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
 }
 
 // Merged schema.
