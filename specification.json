@@ -94,6 +94,181 @@
                     }
                 ]
             }
+        },
+        {
+            "name": "editor_interface",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "space_id",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "environment_id",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "content_type_id",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "controls",
+                        "list_nested": {
+                            "computed_optional_required": "computed_optional",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "field_id",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "widget_namespace",
+                                        "string": {
+                                            "computed_optional_required": "optional"
+                                        }
+                                    },
+                                    {
+                                        "name": "widget_id",
+                                        "string": {
+                                            "computed_optional_required": "optional"
+                                        }
+                                    },
+                                    {
+                                        "name": "settings",
+                                        "string": {
+                                            "computed_optional_required": "computed_optional",
+                                            "custom_type": {
+                                                "import": {
+                                                    "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                },
+                                                "type": "jsontypes.NormalizedType{}",
+                                                "value_type": "jsontypes.Normalized"
+                                            },
+                                            "default": {
+                                                "static": "{}"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "default": {
+                                "custom": {
+                                    "imports": [
+                                        {
+                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+                                        },
+                                        {
+                                            "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
+                                        }
+                                    ],
+                                    "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(ControlsValue{}.Type(ctx)))"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "sidebar",
+                        "list_nested": {
+                            "computed_optional_required": "computed_optional",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "widget_namespace",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "widget_id",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "settings",
+                                        "string": {
+                                            "computed_optional_required": "computed_optional",
+                                            "custom_type": {
+                                                "import": {
+                                                    "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                },
+                                                "type": "jsontypes.NormalizedType{}",
+                                                "value_type": "jsontypes.Normalized"
+                                            },
+                                            "default": {
+                                                "static": "{}"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "disabled",
+                                        "bool": {
+                                            "computed_optional_required": "computed_optional"
+                                        }
+                                    }
+                                ]
+                            },
+                            "default": {
+                                "custom": {
+                                    "imports": [
+                                        {
+                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+                                        },
+                                        {
+                                            "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
+                                        }
+                                    ],
+                                    "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(SidebarValue{}.Type(ctx)))"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
         }
     ],
     "datasources": []

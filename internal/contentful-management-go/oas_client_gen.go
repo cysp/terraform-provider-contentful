@@ -35,12 +35,24 @@ type Invoker interface {
 	//
 	// GET /users/me
 	GetAuthenticatedUser(ctx context.Context) (GetAuthenticatedUserRes, error)
+	// GetEditorInterface invokes getEditorInterface operation.
+	//
+	// Get the editor interface for a content type.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
+	GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (GetEditorInterfaceRes, error)
 	// PutAppInstallation invokes putAppInstallation operation.
 	//
 	// Install or update an app.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	PutAppInstallation(ctx context.Context, request *PutAppInstallationReq, params PutAppInstallationParams) (PutAppInstallationRes, error)
+	// PutEditorInterface invokes putEditorInterface operation.
+	//
+	// Update the editor interface for a content type.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
+	PutEditorInterface(ctx context.Context, request *PutEditorInterfaceReq, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error)
 }
 
 // Client implements OAS client.
@@ -408,6 +420,132 @@ func (c *Client) sendGetAuthenticatedUser(ctx context.Context) (res GetAuthentic
 	return result, nil
 }
 
+// GetEditorInterface invokes getEditorInterface operation.
+//
+// Get the editor interface for a content type.
+//
+// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
+func (c *Client) GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (GetEditorInterfaceRes, error) {
+	res, err := c.sendGetEditorInterface(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (res GetEditorInterfaceRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [7]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/content_types/"
+	{
+		// Encode "content_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "content_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ContentTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	pathParts[6] = "/editor_interface"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "GetEditorInterface", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetEditorInterfaceResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // PutAppInstallation invokes putAppInstallation operation.
 //
 // Install or update an app.
@@ -529,6 +667,148 @@ func (c *Client) sendPutAppInstallation(ctx context.Context, request *PutAppInst
 	defer resp.Body.Close()
 
 	result, err := decodePutAppInstallationResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutEditorInterface invokes putEditorInterface operation.
+//
+// Update the editor interface for a content type.
+//
+// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
+func (c *Client) PutEditorInterface(ctx context.Context, request *PutEditorInterfaceReq, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error) {
+	res, err := c.sendPutEditorInterface(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendPutEditorInterface(ctx context.Context, request *PutEditorInterfaceReq, params PutEditorInterfaceParams) (res PutEditorInterfaceRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [7]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/content_types/"
+	{
+		// Encode "content_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "content_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ContentTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	pathParts[6] = "/editor_interface"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutEditorInterfaceRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "PutEditorInterface", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodePutEditorInterfaceResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

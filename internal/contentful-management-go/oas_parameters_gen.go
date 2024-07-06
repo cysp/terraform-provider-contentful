@@ -16,9 +16,24 @@ type GetAppInstallationParams struct {
 	AppDefinitionID string
 }
 
+// GetEditorInterfaceParams is parameters of getEditorInterface operation.
+type GetEditorInterfaceParams struct {
+	SpaceID       string
+	EnvironmentID string
+	ContentTypeID string
+}
+
 // PutAppInstallationParams is parameters of putAppInstallation operation.
 type PutAppInstallationParams struct {
 	SpaceID         string
 	EnvironmentID   string
 	AppDefinitionID string
+}
+
+// PutEditorInterfaceParams is parameters of putEditorInterface operation.
+type PutEditorInterfaceParams struct {
+	SpaceID            string
+	EnvironmentID      string
+	ContentTypeID      string
+	XContentfulVersion int
 }
