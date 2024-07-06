@@ -113,6 +113,30 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/UserFields'
+    AppInstallationSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSys'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - AppInstallation
+    AppInstallationFields:
+      type: object
+      properties:
+        parameters:
+          type: object
+          additionalProperties: true
+    AppInstallation:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/AppInstallationSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/AppInstallationFields'
   securitySchemes:
     accessToken:
       type: http
@@ -147,6 +171,100 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: '#/components/schemas/User'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}:
+    get:
+      operationId: getAppInstallation
+      summary: Get one app installation
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: app_definition_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: An app installation
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/AppInstallation'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    put:
+      operationId: putAppInstallation
+      summary: Install or update an app
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: app_definition_id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/AppInstallationFields'
+      responses:
+        200:
+          description: An app installation
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/AppInstallation'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    delete:
+      operationId: deleteAppInstallation
+      summary: Uninstall an app
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: app_definition_id
+          schema:
+            type: string
+          required: true
+      responses:
+        204:
+          $ref: '#/components/responses/no-content'
         401:
           $ref: '#/components/responses/unauthorized'
         default:
