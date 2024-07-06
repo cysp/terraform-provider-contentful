@@ -96,5 +96,31 @@
             }
         }
     ],
-    "datasources": []
+    "datasources": [
+        {
+            "name": "app_definition",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "organization_id",
+                        "string": {
+                            "computed_optional_required": "required"
+                        }
+                    },
+                    {
+                        "name": "app_definition_id",
+                        "string": {
+                            "computed_optional_required": "required"
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "string": {
+                            "computed_optional_required": "computed"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 }

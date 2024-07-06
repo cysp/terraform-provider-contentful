@@ -82,6 +82,31 @@ components:
         - type
         - id
         - version
+    OrganizationSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - Organization
+    OrganizationFields:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    Organization:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/OrganizationSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/OrganizationFields'
     UserSys:
       allOf:
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
@@ -113,6 +138,31 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/UserFields'
+    AppDefinitionSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithId'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - AppDefinition
+    AppDefinitionFields:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    AppDefinition:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/AppDefinitionSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/AppDefinitionFields'
     AppInstallationSys:
       allOf:
         - $ref: '#/components/schemas/BaseSys'
@@ -171,6 +221,53 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: '#/components/schemas/User'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /organizations/{organization_id}:
+    get:
+      operationId: getOrganization
+      summary: Get an organization an admin or owner has access to
+      parameters:
+        - in: path
+          name: organization_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: An organization
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /organizations/{organization_id}/app_definitions/{app_definition_id}:
+    get:
+      operationId: getAppDefinition
+      summary: Get one app definition
+      parameters:
+        - in: path
+          name: organization_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: app_definition_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: An app definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/AppDefinition'
         401:
           $ref: '#/components/responses/unauthorized'
         default:

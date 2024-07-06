@@ -24,6 +24,120 @@ func (s *AccessToken) SetToken(val string) {
 }
 
 // Merged schema.
+// Ref: #/components/schemas/AppDefinition
+type AppDefinition struct {
+	Sys  AppDefinitionSys `json:"sys"`
+	Name string           `json:"name"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppDefinition) GetSys() AppDefinitionSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *AppDefinition) GetName() string {
+	return s.Name
+}
+
+// SetSys sets the value of Sys.
+func (s *AppDefinition) SetSys(val AppDefinitionSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *AppDefinition) SetName(val string) {
+	s.Name = val
+}
+
+func (*AppDefinition) getAppDefinitionRes() {}
+
+// Merged schema.
+// Ref: #/components/schemas/AppDefinitionSys
+type AppDefinitionSys struct {
+	// Merged property.
+	Type      AppDefinitionSysType `json:"type"`
+	ID        string               `json:"id"`
+	CreatedAt OptDateTime          `json:"createdAt"`
+	UpdatedAt OptDateTime          `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionSys) GetType() AppDefinitionSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *AppDefinitionSys) GetID() string {
+	return s.ID
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *AppDefinitionSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *AppDefinitionSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionSys) SetType(val AppDefinitionSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *AppDefinitionSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *AppDefinitionSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *AppDefinitionSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type AppDefinitionSysType string
+
+const (
+	AppDefinitionSysTypeAppDefinition AppDefinitionSysType = "AppDefinition"
+)
+
+// AllValues returns all AppDefinitionSysType values.
+func (AppDefinitionSysType) AllValues() []AppDefinitionSysType {
+	return []AppDefinitionSysType{
+		AppDefinitionSysTypeAppDefinition,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppDefinitionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppDefinitionSysTypeAppDefinition:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppDefinitionSysType) UnmarshalText(data []byte) error {
+	switch AppDefinitionSysType(data) {
+	case AppDefinitionSysTypeAppDefinition:
+		*s = AppDefinitionSysTypeAppDefinition
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
 // Ref: #/components/schemas/AppInstallation
 type AppInstallation struct {
 	Sys        AppInstallationSys           `json:"sys"`
@@ -155,8 +269,10 @@ func (s *Error) SetDetails(val OptString) {
 }
 
 func (*Error) deleteAppInstallationRes() {}
+func (*Error) getAppDefinitionRes()      {}
 func (*Error) getAppInstallationRes()    {}
 func (*Error) getAuthenticatedUserRes()  {}
+func (*Error) getOrganizationRes()       {}
 func (*Error) putAppInstallationRes()    {}
 
 // ErrorStatusCode wraps Error with StatusCode.
@@ -186,8 +302,10 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 }
 
 func (*ErrorStatusCode) deleteAppInstallationRes() {}
+func (*ErrorStatusCode) getAppDefinitionRes()      {}
 func (*ErrorStatusCode) getAppInstallationRes()    {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()  {}
+func (*ErrorStatusCode) getOrganizationRes()       {}
 func (*ErrorStatusCode) putAppInstallationRes()    {}
 
 // Ref: #/components/schemas/ErrorSys
@@ -437,6 +555,131 @@ func (o OptString) Or(d string) string {
 		return v
 	}
 	return d
+}
+
+// Merged schema.
+// Ref: #/components/schemas/Organization
+type Organization struct {
+	Sys  OrganizationSys `json:"sys"`
+	Name string          `json:"name"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Organization) GetSys() OrganizationSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Organization) GetName() string {
+	return s.Name
+}
+
+// SetSys sets the value of Sys.
+func (s *Organization) SetSys(val OrganizationSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Organization) SetName(val string) {
+	s.Name = val
+}
+
+func (*Organization) getOrganizationRes() {}
+
+// Merged schema.
+// Ref: #/components/schemas/OrganizationSys
+type OrganizationSys struct {
+	// Merged property.
+	Type      OrganizationSysType `json:"type"`
+	ID        string              `json:"id"`
+	Version   int                 `json:"version"`
+	CreatedAt OptDateTime         `json:"createdAt"`
+	UpdatedAt OptDateTime         `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *OrganizationSys) GetType() OrganizationSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *OrganizationSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *OrganizationSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *OrganizationSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *OrganizationSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *OrganizationSys) SetType(val OrganizationSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *OrganizationSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *OrganizationSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *OrganizationSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *OrganizationSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type OrganizationSysType string
+
+const (
+	OrganizationSysTypeOrganization OrganizationSysType = "Organization"
+)
+
+// AllValues returns all OrganizationSysType values.
+func (OrganizationSysType) AllValues() []OrganizationSysType {
+	return []OrganizationSysType{
+		OrganizationSysTypeOrganization,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s OrganizationSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case OrganizationSysTypeOrganization:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *OrganizationSysType) UnmarshalText(data []byte) error {
+	switch OrganizationSysType(data) {
+	case OrganizationSysTypeOrganization:
+		*s = OrganizationSysTypeOrganization
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 type PutAppInstallationReq struct {
