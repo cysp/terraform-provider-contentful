@@ -72,8 +72,17 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	resp.DataSourceData = ContentfulProviderData{}
-	resp.ResourceData = ContentfulProviderData{}
+	contentfulManagementClient, err := contentfulManagement.NewClient(
+		contentfulURL,
+		contentfulManagement.NewAccessTokenSecuritySource(accessToken),
+		contentfulManagement.WithUserAgent("terraform-provider-contentful/"+p.version),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to create Contentful client: %s", err.Error())
+	}
+
+	resp.DataSourceData = ContentfulProviderData{client: contentfulManagementClient}
+	resp.ResourceData = ContentfulProviderData{client: contentfulManagementClient}
 }
 
 func (p *ContentfulProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {

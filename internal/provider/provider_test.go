@@ -83,6 +83,13 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			},
 			expectedSuccess: true,
 		},
+		"config: url(invalid),access_token": {
+			config: map[string]interface{}{
+				"url":          "url://an invalid url %/",
+				"access_token": "CFPAT-12345",
+			},
+			expectedSuccess: false,
+		},
 		"env: url": {
 			env: map[string]string{
 				"CONTENTFUL_URL": "https://api.test.contentful.com",
