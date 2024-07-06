@@ -75,6 +75,8 @@ jobs:
         terraform:
           - "1.8.*"
           - "1.9.*"
+    concurrency:
+      group: testacc
     steps:
       - uses: actions/checkout@v4.1.7
       - uses: actions/setup-go@v5.0.1
@@ -89,6 +91,7 @@ jobs:
       - run: go test -v -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./internal/provider/
         env:
           TF_ACC: "1"
+          CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
         timeout-minutes: 10
       - uses: codecov/codecov-action@v4.5.0
         with:

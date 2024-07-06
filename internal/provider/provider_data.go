@@ -1,3 +1,9 @@
 package provider
 
-type ContentfulProviderData struct{}
+import (
+	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+)
+
+type ContentfulProviderData struct {
+	client *contentfulManagement.Client
+}
