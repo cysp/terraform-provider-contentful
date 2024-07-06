@@ -27,8 +27,8 @@ components:
       properties:
         message:
           type: string
-        details:
-          type: string
+        # details:
+        #   type: string
       required:
         - message
     Error:
@@ -137,6 +137,60 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/AppInstallationFields'
+    EditorInterfaceSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - EditorInterface
+    EditorInterfaceFields:
+      type: object
+      properties:
+        controls:
+          type: array
+          items:
+            type: object
+            properties:
+              fieldId:
+                type: string
+              widgetNamespace:
+                type: string
+              widgetId:
+                type: string
+              settings:
+                type: object
+                additionalProperties: true
+            required:
+              - fieldId
+        sidebar:
+          type: array
+          items:
+            type: object
+            properties:
+              widgetNamespace:
+                type: string
+              widgetId:
+                type: string
+              settings:
+                type: object
+                additionalProperties: true
+              disabled:
+                type: boolean
+            required:
+              - widgetNamespace
+              - widgetId
+    EditorInterface:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/EditorInterfaceSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/EditorInterfaceFields'
   securitySchemes:
     accessToken:
       type: http
@@ -265,6 +319,79 @@ paths:
       responses:
         204:
           $ref: '#/components/responses/no-content'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface:
+    get:
+      operationId: getEditorInterface
+      summary: Get the editor interface for a content type
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: content_type_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: An editor interface
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/EditorInterface'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    put:
+      operationId: putEditorInterface
+      summary: Update the editor interface for a content type
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: content_type_id
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: X-Contentful-Version
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EditorInterfaceFields'
+      responses:
+        200:
+          description: An editor interface
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/EditorInterface'
         401:
           $ref: '#/components/responses/unauthorized'
         default:

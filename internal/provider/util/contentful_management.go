@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 func ErrorDetailFromContentfulManagementResponse(response interface{}, err error) string {
@@ -16,4 +18,21 @@ func ErrorDetailFromContentfulManagementResponse(response interface{}, err error
 	}
 
 	return fmt.Sprintf("%v", response)
+}
+
+func OptStringToStringValue(s contentfulManagement.OptString) basetypes.StringValue {
+	if value, ok := s.Get(); ok {
+		return types.StringValue(value)
+	}
+
+	return types.StringNull()
+}
+
+func StringValueToOptString(s basetypes.StringValue) contentfulManagement.OptString {
+	switch value := s.ValueStringPointer(); {
+	case value == nil:
+		return contentfulManagement.OptString{}
+	default:
+		return contentfulManagement.NewOptString(*value)
+	}
 }

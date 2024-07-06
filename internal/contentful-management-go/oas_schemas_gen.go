@@ -117,11 +117,263 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
+// Ref: #/components/schemas/EditorInterface
+type EditorInterface struct {
+	Sys      EditorInterfaceSys            `json:"sys"`
+	Controls []EditorInterfaceControlsItem `json:"controls"`
+	Sidebar  []EditorInterfaceSidebarItem  `json:"sidebar"`
+}
+
+// GetSys returns the value of Sys.
+func (s *EditorInterface) GetSys() EditorInterfaceSys {
+	return s.Sys
+}
+
+// GetControls returns the value of Controls.
+func (s *EditorInterface) GetControls() []EditorInterfaceControlsItem {
+	return s.Controls
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *EditorInterface) GetSidebar() []EditorInterfaceSidebarItem {
+	return s.Sidebar
+}
+
+// SetSys sets the value of Sys.
+func (s *EditorInterface) SetSys(val EditorInterfaceSys) {
+	s.Sys = val
+}
+
+// SetControls sets the value of Controls.
+func (s *EditorInterface) SetControls(val []EditorInterfaceControlsItem) {
+	s.Controls = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *EditorInterface) SetSidebar(val []EditorInterfaceSidebarItem) {
+	s.Sidebar = val
+}
+
+func (*EditorInterface) getEditorInterfaceRes() {}
+func (*EditorInterface) putEditorInterfaceRes() {}
+
+type EditorInterfaceControlsItem struct {
+	FieldId         string                                 `json:"fieldId"`
+	WidgetNamespace OptString                              `json:"widgetNamespace"`
+	WidgetId        OptString                              `json:"widgetId"`
+	Settings        OptEditorInterfaceControlsItemSettings `json:"settings"`
+}
+
+// GetFieldId returns the value of FieldId.
+func (s *EditorInterfaceControlsItem) GetFieldId() string {
+	return s.FieldId
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *EditorInterfaceControlsItem) GetWidgetNamespace() OptString {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *EditorInterfaceControlsItem) GetWidgetId() OptString {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *EditorInterfaceControlsItem) GetSettings() OptEditorInterfaceControlsItemSettings {
+	return s.Settings
+}
+
+// SetFieldId sets the value of FieldId.
+func (s *EditorInterfaceControlsItem) SetFieldId(val string) {
+	s.FieldId = val
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *EditorInterfaceControlsItem) SetWidgetNamespace(val OptString) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *EditorInterfaceControlsItem) SetWidgetId(val OptString) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *EditorInterfaceControlsItem) SetSettings(val OptEditorInterfaceControlsItemSettings) {
+	s.Settings = val
+}
+
+type EditorInterfaceControlsItemSettings map[string]jx.Raw
+
+func (s *EditorInterfaceControlsItemSettings) init() EditorInterfaceControlsItemSettings {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type EditorInterfaceSidebarItem struct {
+	WidgetNamespace string                                `json:"widgetNamespace"`
+	WidgetId        string                                `json:"widgetId"`
+	Settings        OptEditorInterfaceSidebarItemSettings `json:"settings"`
+	Disabled        OptBool                               `json:"disabled"`
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *EditorInterfaceSidebarItem) GetWidgetNamespace() string {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *EditorInterfaceSidebarItem) GetWidgetId() string {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *EditorInterfaceSidebarItem) GetSettings() OptEditorInterfaceSidebarItemSettings {
+	return s.Settings
+}
+
+// GetDisabled returns the value of Disabled.
+func (s *EditorInterfaceSidebarItem) GetDisabled() OptBool {
+	return s.Disabled
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *EditorInterfaceSidebarItem) SetWidgetNamespace(val string) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *EditorInterfaceSidebarItem) SetWidgetId(val string) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *EditorInterfaceSidebarItem) SetSettings(val OptEditorInterfaceSidebarItemSettings) {
+	s.Settings = val
+}
+
+// SetDisabled sets the value of Disabled.
+func (s *EditorInterfaceSidebarItem) SetDisabled(val OptBool) {
+	s.Disabled = val
+}
+
+type EditorInterfaceSidebarItemSettings map[string]jx.Raw
+
+func (s *EditorInterfaceSidebarItemSettings) init() EditorInterfaceSidebarItemSettings {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+// Merged schema.
+// Ref: #/components/schemas/EditorInterfaceSys
+type EditorInterfaceSys struct {
+	// Merged property.
+	Type      EditorInterfaceSysType `json:"type"`
+	ID        string                 `json:"id"`
+	Version   int                    `json:"version"`
+	CreatedAt OptDateTime            `json:"createdAt"`
+	UpdatedAt OptDateTime            `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *EditorInterfaceSys) GetType() EditorInterfaceSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *EditorInterfaceSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *EditorInterfaceSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *EditorInterfaceSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *EditorInterfaceSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *EditorInterfaceSys) SetType(val EditorInterfaceSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *EditorInterfaceSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *EditorInterfaceSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *EditorInterfaceSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *EditorInterfaceSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type EditorInterfaceSysType string
+
+const (
+	EditorInterfaceSysTypeEditorInterface EditorInterfaceSysType = "EditorInterface"
+)
+
+// AllValues returns all EditorInterfaceSysType values.
+func (EditorInterfaceSysType) AllValues() []EditorInterfaceSysType {
+	return []EditorInterfaceSysType{
+		EditorInterfaceSysTypeEditorInterface,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EditorInterfaceSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case EditorInterfaceSysTypeEditorInterface:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EditorInterfaceSysType) UnmarshalText(data []byte) error {
+	switch EditorInterfaceSysType(data) {
+	case EditorInterfaceSysTypeEditorInterface:
+		*s = EditorInterfaceSysTypeEditorInterface
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
 // Ref: #/components/schemas/Error
 type Error struct {
-	Sys     ErrorSys  `json:"sys"`
-	Message string    `json:"message"`
-	Details OptString `json:"details"`
+	Sys     ErrorSys `json:"sys"`
+	Message string   `json:"message"`
 }
 
 // GetSys returns the value of Sys.
@@ -134,11 +386,6 @@ func (s *Error) GetMessage() string {
 	return s.Message
 }
 
-// GetDetails returns the value of Details.
-func (s *Error) GetDetails() OptString {
-	return s.Details
-}
-
 // SetSys sets the value of Sys.
 func (s *Error) SetSys(val ErrorSys) {
 	s.Sys = val
@@ -149,15 +396,12 @@ func (s *Error) SetMessage(val string) {
 	s.Message = val
 }
 
-// SetDetails sets the value of Details.
-func (s *Error) SetDetails(val OptString) {
-	s.Details = val
-}
-
 func (*Error) deleteAppInstallationRes() {}
 func (*Error) getAppInstallationRes()    {}
 func (*Error) getAuthenticatedUserRes()  {}
+func (*Error) getEditorInterfaceRes()    {}
 func (*Error) putAppInstallationRes()    {}
+func (*Error) putEditorInterfaceRes()    {}
 
 // ErrorStatusCode wraps Error with StatusCode.
 type ErrorStatusCode struct {
@@ -188,7 +432,9 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 func (*ErrorStatusCode) deleteAppInstallationRes() {}
 func (*ErrorStatusCode) getAppInstallationRes()    {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()  {}
+func (*ErrorStatusCode) getEditorInterfaceRes()    {}
 func (*ErrorStatusCode) putAppInstallationRes()    {}
+func (*ErrorStatusCode) putEditorInterfaceRes()    {}
 
 // Ref: #/components/schemas/ErrorSys
 type ErrorSys struct {
@@ -301,6 +547,52 @@ func (o OptAppInstallationParameters) Or(d AppInstallationParameters) AppInstall
 	return d
 }
 
+// NewOptBool returns new OptBool with value set to v.
+func NewOptBool(v bool) OptBool {
+	return OptBool{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptBool is optional bool.
+type OptBool struct {
+	Value bool
+	Set   bool
+}
+
+// IsSet returns true if OptBool was set.
+func (o OptBool) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptBool) Reset() {
+	var v bool
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptBool) SetTo(v bool) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptBool) Get() (v bool, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptDateTime returns new OptDateTime with value set to v.
 func NewOptDateTime(v time.Time) OptDateTime {
 	return OptDateTime{
@@ -347,6 +639,98 @@ func (o OptDateTime) Or(d time.Time) time.Time {
 	return d
 }
 
+// NewOptEditorInterfaceControlsItemSettings returns new OptEditorInterfaceControlsItemSettings with value set to v.
+func NewOptEditorInterfaceControlsItemSettings(v EditorInterfaceControlsItemSettings) OptEditorInterfaceControlsItemSettings {
+	return OptEditorInterfaceControlsItemSettings{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEditorInterfaceControlsItemSettings is optional EditorInterfaceControlsItemSettings.
+type OptEditorInterfaceControlsItemSettings struct {
+	Value EditorInterfaceControlsItemSettings
+	Set   bool
+}
+
+// IsSet returns true if OptEditorInterfaceControlsItemSettings was set.
+func (o OptEditorInterfaceControlsItemSettings) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEditorInterfaceControlsItemSettings) Reset() {
+	var v EditorInterfaceControlsItemSettings
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEditorInterfaceControlsItemSettings) SetTo(v EditorInterfaceControlsItemSettings) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEditorInterfaceControlsItemSettings) Get() (v EditorInterfaceControlsItemSettings, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEditorInterfaceControlsItemSettings) Or(d EditorInterfaceControlsItemSettings) EditorInterfaceControlsItemSettings {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEditorInterfaceSidebarItemSettings returns new OptEditorInterfaceSidebarItemSettings with value set to v.
+func NewOptEditorInterfaceSidebarItemSettings(v EditorInterfaceSidebarItemSettings) OptEditorInterfaceSidebarItemSettings {
+	return OptEditorInterfaceSidebarItemSettings{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEditorInterfaceSidebarItemSettings is optional EditorInterfaceSidebarItemSettings.
+type OptEditorInterfaceSidebarItemSettings struct {
+	Value EditorInterfaceSidebarItemSettings
+	Set   bool
+}
+
+// IsSet returns true if OptEditorInterfaceSidebarItemSettings was set.
+func (o OptEditorInterfaceSidebarItemSettings) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEditorInterfaceSidebarItemSettings) Reset() {
+	var v EditorInterfaceSidebarItemSettings
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEditorInterfaceSidebarItemSettings) SetTo(v EditorInterfaceSidebarItemSettings) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEditorInterfaceSidebarItemSettings) Get() (v EditorInterfaceSidebarItemSettings, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEditorInterfaceSidebarItemSettings) Or(d EditorInterfaceSidebarItemSettings) EditorInterfaceSidebarItemSettings {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptPutAppInstallationReqParameters returns new OptPutAppInstallationReqParameters with value set to v.
 func NewOptPutAppInstallationReqParameters(v PutAppInstallationReqParameters) OptPutAppInstallationReqParameters {
 	return OptPutAppInstallationReqParameters{
@@ -387,6 +771,98 @@ func (o OptPutAppInstallationReqParameters) Get() (v PutAppInstallationReqParame
 
 // Or returns value if set, or given parameter if does not.
 func (o OptPutAppInstallationReqParameters) Or(d PutAppInstallationReqParameters) PutAppInstallationReqParameters {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptPutEditorInterfaceReqControlsItemSettings returns new OptPutEditorInterfaceReqControlsItemSettings with value set to v.
+func NewOptPutEditorInterfaceReqControlsItemSettings(v PutEditorInterfaceReqControlsItemSettings) OptPutEditorInterfaceReqControlsItemSettings {
+	return OptPutEditorInterfaceReqControlsItemSettings{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPutEditorInterfaceReqControlsItemSettings is optional PutEditorInterfaceReqControlsItemSettings.
+type OptPutEditorInterfaceReqControlsItemSettings struct {
+	Value PutEditorInterfaceReqControlsItemSettings
+	Set   bool
+}
+
+// IsSet returns true if OptPutEditorInterfaceReqControlsItemSettings was set.
+func (o OptPutEditorInterfaceReqControlsItemSettings) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPutEditorInterfaceReqControlsItemSettings) Reset() {
+	var v PutEditorInterfaceReqControlsItemSettings
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPutEditorInterfaceReqControlsItemSettings) SetTo(v PutEditorInterfaceReqControlsItemSettings) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPutEditorInterfaceReqControlsItemSettings) Get() (v PutEditorInterfaceReqControlsItemSettings, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPutEditorInterfaceReqControlsItemSettings) Or(d PutEditorInterfaceReqControlsItemSettings) PutEditorInterfaceReqControlsItemSettings {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptPutEditorInterfaceReqSidebarItemSettings returns new OptPutEditorInterfaceReqSidebarItemSettings with value set to v.
+func NewOptPutEditorInterfaceReqSidebarItemSettings(v PutEditorInterfaceReqSidebarItemSettings) OptPutEditorInterfaceReqSidebarItemSettings {
+	return OptPutEditorInterfaceReqSidebarItemSettings{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPutEditorInterfaceReqSidebarItemSettings is optional PutEditorInterfaceReqSidebarItemSettings.
+type OptPutEditorInterfaceReqSidebarItemSettings struct {
+	Value PutEditorInterfaceReqSidebarItemSettings
+	Set   bool
+}
+
+// IsSet returns true if OptPutEditorInterfaceReqSidebarItemSettings was set.
+func (o OptPutEditorInterfaceReqSidebarItemSettings) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPutEditorInterfaceReqSidebarItemSettings) Reset() {
+	var v PutEditorInterfaceReqSidebarItemSettings
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPutEditorInterfaceReqSidebarItemSettings) SetTo(v PutEditorInterfaceReqSidebarItemSettings) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPutEditorInterfaceReqSidebarItemSettings) Get() (v PutEditorInterfaceReqSidebarItemSettings, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPutEditorInterfaceReqSidebarItemSettings) Or(d PutEditorInterfaceReqSidebarItemSettings) PutEditorInterfaceReqSidebarItemSettings {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -456,6 +932,147 @@ func (s *PutAppInstallationReq) SetParameters(val OptPutAppInstallationReqParame
 type PutAppInstallationReqParameters map[string]jx.Raw
 
 func (s *PutAppInstallationReqParameters) init() PutAppInstallationReqParameters {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type PutEditorInterfaceReq struct {
+	Controls []PutEditorInterfaceReqControlsItem `json:"controls"`
+	Sidebar  []PutEditorInterfaceReqSidebarItem  `json:"sidebar"`
+}
+
+// GetControls returns the value of Controls.
+func (s *PutEditorInterfaceReq) GetControls() []PutEditorInterfaceReqControlsItem {
+	return s.Controls
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *PutEditorInterfaceReq) GetSidebar() []PutEditorInterfaceReqSidebarItem {
+	return s.Sidebar
+}
+
+// SetControls sets the value of Controls.
+func (s *PutEditorInterfaceReq) SetControls(val []PutEditorInterfaceReqControlsItem) {
+	s.Controls = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *PutEditorInterfaceReq) SetSidebar(val []PutEditorInterfaceReqSidebarItem) {
+	s.Sidebar = val
+}
+
+type PutEditorInterfaceReqControlsItem struct {
+	FieldId         string                                       `json:"fieldId"`
+	WidgetNamespace OptString                                    `json:"widgetNamespace"`
+	WidgetId        OptString                                    `json:"widgetId"`
+	Settings        OptPutEditorInterfaceReqControlsItemSettings `json:"settings"`
+}
+
+// GetFieldId returns the value of FieldId.
+func (s *PutEditorInterfaceReqControlsItem) GetFieldId() string {
+	return s.FieldId
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *PutEditorInterfaceReqControlsItem) GetWidgetNamespace() OptString {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *PutEditorInterfaceReqControlsItem) GetWidgetId() OptString {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *PutEditorInterfaceReqControlsItem) GetSettings() OptPutEditorInterfaceReqControlsItemSettings {
+	return s.Settings
+}
+
+// SetFieldId sets the value of FieldId.
+func (s *PutEditorInterfaceReqControlsItem) SetFieldId(val string) {
+	s.FieldId = val
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *PutEditorInterfaceReqControlsItem) SetWidgetNamespace(val OptString) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *PutEditorInterfaceReqControlsItem) SetWidgetId(val OptString) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *PutEditorInterfaceReqControlsItem) SetSettings(val OptPutEditorInterfaceReqControlsItemSettings) {
+	s.Settings = val
+}
+
+type PutEditorInterfaceReqControlsItemSettings map[string]jx.Raw
+
+func (s *PutEditorInterfaceReqControlsItemSettings) init() PutEditorInterfaceReqControlsItemSettings {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type PutEditorInterfaceReqSidebarItem struct {
+	WidgetNamespace string                                      `json:"widgetNamespace"`
+	WidgetId        string                                      `json:"widgetId"`
+	Settings        OptPutEditorInterfaceReqSidebarItemSettings `json:"settings"`
+	Disabled        OptBool                                     `json:"disabled"`
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *PutEditorInterfaceReqSidebarItem) GetWidgetNamespace() string {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *PutEditorInterfaceReqSidebarItem) GetWidgetId() string {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *PutEditorInterfaceReqSidebarItem) GetSettings() OptPutEditorInterfaceReqSidebarItemSettings {
+	return s.Settings
+}
+
+// GetDisabled returns the value of Disabled.
+func (s *PutEditorInterfaceReqSidebarItem) GetDisabled() OptBool {
+	return s.Disabled
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *PutEditorInterfaceReqSidebarItem) SetWidgetNamespace(val string) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *PutEditorInterfaceReqSidebarItem) SetWidgetId(val string) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *PutEditorInterfaceReqSidebarItem) SetSettings(val OptPutEditorInterfaceReqSidebarItemSettings) {
+	s.Settings = val
+}
+
+// SetDisabled sets the value of Disabled.
+func (s *PutEditorInterfaceReqSidebarItem) SetDisabled(val OptBool) {
+	s.Disabled = val
+}
+
+type PutEditorInterfaceReqSidebarItemSettings map[string]jx.Raw
+
+func (s *PutEditorInterfaceReqSidebarItemSettings) init() PutEditorInterfaceReqSidebarItemSettings {
 	m := *s
 	if m == nil {
 		m = map[string]jx.Raw{}

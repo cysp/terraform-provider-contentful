@@ -13,6 +13,14 @@ type GetAuthenticatedUserRes interface {
 	getAuthenticatedUserRes()
 }
 
+type GetEditorInterfaceRes interface {
+	getEditorInterfaceRes()
+}
+
 type PutAppInstallationRes interface {
 	putAppInstallationRes()
+}
+
+type PutEditorInterfaceRes interface {
+	putEditorInterfaceRes()
 }
