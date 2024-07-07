@@ -111,5 +111,6 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewAppInstallationResource,
 		NewContentTypeResource,
 		NewEditorInterfaceResource,
+		NewWebhookResource,
 	}
 }
