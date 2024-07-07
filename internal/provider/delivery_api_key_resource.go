@@ -95,6 +95,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+//nolint:dupl
 func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data DeliveryApiKeyModel
 
