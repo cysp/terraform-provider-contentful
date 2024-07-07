@@ -20,6 +20,11 @@ type CreateRoleParams struct {
 	SpaceID string
 }
 
+// CreateWebhookDefinitionParams is parameters of createWebhookDefinition operation.
+type CreateWebhookDefinitionParams struct {
+	SpaceID string
+}
+
 // DeactivateContentTypeParams is parameters of deactivateContentType operation.
 type DeactivateContentTypeParams struct {
 	SpaceID       string
@@ -51,6 +56,12 @@ type DeleteDeliveryApiKeyParams struct {
 type DeleteRoleParams struct {
 	SpaceID string
 	RoleID  string
+}
+
+// DeleteWebhookDefinitionParams is parameters of deleteWebhookDefinition operation.
+type DeleteWebhookDefinitionParams struct {
+	SpaceID             string
+	WebhookDefinitionID string
 }
 
 // GetAppInstallationParams is parameters of getAppInstallation operation.
@@ -97,6 +108,12 @@ type GetRoleParams struct {
 	RoleID  string
 }
 
+// GetWebhookDefinitionParams is parameters of getWebhookDefinition operation.
+type GetWebhookDefinitionParams struct {
+	SpaceID             string
+	WebhookDefinitionID string
+}
+
 // PutAppInstallationParams is parameters of putAppInstallation operation.
 type PutAppInstallationParams struct {
 	SpaceID                string
@@ -138,4 +155,11 @@ type UpdateRoleParams struct {
 	SpaceID            string
 	RoleID             string
 	XContentfulVersion int
+}
+
+// UpdateWebhookDefinitionParams is parameters of updateWebhookDefinition operation.
+type UpdateWebhookDefinitionParams struct {
+	SpaceID             string
+	WebhookDefinitionID string
+	XContentfulVersion  int
 }
