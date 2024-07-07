@@ -247,16 +247,13 @@
                                                             "custom": {
                                                                 "imports": [
                                                                     {
-                                                                        "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
-                                                                    },
-                                                                    {
                                                                         "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
                                                                     },
                                                                     {
                                                                         "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
                                                                     }
                                                                 ],
-                                                                "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{}))"
+                                                                "schema_definition": "listdefault.StaticValue(NewEmptyListMust(jsontypes.NormalizedType{}))"
                                                             }
                                                         }
                                                     }
@@ -313,16 +310,13 @@
                                                 "custom": {
                                                     "imports": [
                                                         {
-                                                            "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
-                                                        },
-                                                        {
                                                             "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
                                                         },
                                                         {
                                                             "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
                                                         }
                                                     ],
-                                                    "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{}))"
+                                                    "schema_definition": "listdefault.StaticValue(NewEmptyListMust(jsontypes.NormalizedType{}))"
                                                 }
                                             }
                                         }
@@ -880,6 +874,184 @@
                                         }
                                     }
                                 ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "webhook",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "space_id",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "webhook_id",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "string": {
+                            "computed_optional_required": "required"
+                        }
+                    },
+                    {
+                        "name": "url",
+                        "string": {
+                            "computed_optional_required": "required"
+                        }
+                    },
+                    {
+                        "name": "topics",
+                        "list": {
+                            "computed_optional_required": "optional",
+                            "element_type": {
+                                "string": {}
+                            }
+                        }
+                    },
+                    {
+                        "name": "filters",
+                        "list": {
+                            "computed_optional_required": "optional",
+                            "element_type": {
+                                "string": {
+                                    "custom_type": {
+                                        "import": {
+                                            "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                        },
+                                        "type": "jsontypes.NormalizedType{}",
+                                        "value_type": "jsontypes.Normalized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "http_basic_username",
+                        "string": {
+                            "computed_optional_required": "optional"
+                        }
+                    },
+                    {
+                        "name": "http_basic_password",
+                        "string": {
+                            "computed_optional_required": "optional"
+                        }
+                    },
+                    {
+                        "name": "headers",
+                        "map_nested": {
+                            "computed_optional_required": "computed_optional",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "value",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "secret",
+                                        "bool": {
+                                            "computed_optional_required": "computed_optional",
+                                            "default": {
+                                                "static": false
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "mapplanmodifier.UseStateForUnknown()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "transformation",
+                        "single_nested": {
+                            "computed_optional_required": "optional",
+                            "attributes": [
+                                {
+                                    "name": "method",
+                                    "string": {
+                                        "computed_optional_required": "optional"
+                                    }
+                                },
+                                {
+                                    "name": "content_type",
+                                    "string": {
+                                        "computed_optional_required": "optional"
+                                    }
+                                },
+                                {
+                                    "name": "include_content_length",
+                                    "bool": {
+                                        "computed_optional_required": "optional"
+                                    }
+                                },
+                                {
+                                    "name": "body",
+                                    "string": {
+                                        "computed_optional_required": "optional",
+                                        "custom_type": {
+                                            "import": {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                            },
+                                            "type": "jsontypes.NormalizedType{}",
+                                            "value_type": "jsontypes.Normalized"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "active",
+                        "bool": {
+                            "computed_optional_required": "computed_optional",
+                            "default": {
+                                "static": true
                             }
                         }
                     }

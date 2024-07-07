@@ -589,6 +589,106 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/RoleFields'
+    WebhookDefinitionSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - WebhookDefinition
+    WebhookDefinitionFields:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        topics:
+          type: array
+          items:
+            type: string
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookDefinitionFilter'
+          nullable: true
+        httpBasicUsername:
+          type: string
+          nullable: true
+        httpBasicPassword:
+          type: string
+          nullable: true
+        headers:
+          $ref: '#/components/schemas/WebhookDefinitionHeaders'
+        transformation:
+          type: object
+          properties:
+            method:
+              type: string
+            contentType:
+              type: string
+            includeContentLength:
+              type: boolean
+            body: {}
+          nullable: true
+        active:
+          type: boolean
+      required:
+        - name
+        - url
+        - topics
+    WebhookDefinitionHeaders:
+      type: array
+      items:
+        $ref: '#/components/schemas/WebhookDefinitionHeader'
+    WebhookDefinitionHeader:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+        secret:
+          type: boolean
+      required:
+        - key
+    WebhookDefinitionFilter:
+      type: object
+      properties:
+        not:
+          $ref: '#/components/schemas/WebhookDefinitionFilterNot'
+        equals:
+          $ref: '#/components/schemas/WebhookDefinitionFilterEquals'
+        in:
+          $ref: '#/components/schemas/WebhookDefinitionFilterIn'
+        regexp:
+          $ref: '#/components/schemas/WebhookDefinitionFilterRegexp'
+    WebhookDefinitionFilterNot:
+      type: object
+      properties:
+        equals:
+          $ref: '#/components/schemas/WebhookDefinitionFilterEquals'
+        in:
+          $ref: '#/components/schemas/WebhookDefinitionFilterIn'
+        regexp:
+          $ref: '#/components/schemas/WebhookDefinitionFilterRegexp'
+    WebhookDefinitionFilterEquals:
+      type: array
+    WebhookDefinitionFilterIn:
+      type: array
+    WebhookDefinitionFilterRegexp:
+      type: array
+    WebhookDefinition:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/WebhookDefinitionSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/WebhookDefinitionFields'
   securitySchemes:
     accessToken:
       type: http
@@ -1052,6 +1152,118 @@ paths:
     delete:
       operationId: deleteRole
       summary: Delete a role
+      responses:
+        204:
+          $ref: '#/components/responses/no-content'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/webhook_definitions:
+    post:
+      operationId: createWebhookDefinition
+      summary: Create a webhook definition
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/WebhookDefinitionFields'
+      responses:
+        201:
+          description: A webhook definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/WebhookDefinition'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/webhook_definitions/{webhook_definition_id}:
+    get:
+      operationId: getWebhookDefinition
+      summary: Get a webhook definition
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: webhook_definition_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: A webhook definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/WebhookDefinition'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    put:
+      operationId: updateWebhookDefinition
+      summary: Update a webhook definition
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: webhook_definition_id
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: X-Contentful-Version
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/WebhookDefinitionFields'
+      responses:
+        200:
+          description: A webhook definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/WebhookDefinition'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    delete:
+      operationId: deleteWebhookDefinition
+      summary: Delete a webhook definition
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: webhook_definition_id
+          schema:
+            type: string
+          required: true
       responses:
         204:
           $ref: '#/components/responses/no-content'

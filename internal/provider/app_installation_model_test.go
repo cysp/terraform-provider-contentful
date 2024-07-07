@@ -6,7 +6,6 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,7 +38,7 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 		},
 		"empty": {
 			model: provider.AppInstallationModel{
-				Marketplace: util.NewEmptySetMust(types.StringType),
+				Marketplace: provider.NewEmptySetMust(types.StringType),
 			},
 			expected: contentfulManagement.OptString{},
 		},

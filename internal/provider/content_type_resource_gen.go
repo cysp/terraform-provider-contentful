@@ -5,7 +5,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -72,7 +71,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 									ElementType: jsontypes.NormalizedType{},
 									Optional:    true,
 									Computed:    true,
-									Default:     listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{})),
+									Default:     listdefault.StaticValue(NewEmptyListMust(jsontypes.NormalizedType{})),
 								},
 							},
 							CustomType: ItemsType{
@@ -106,7 +105,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 							ElementType: jsontypes.NormalizedType{},
 							Optional:    true,
 							Computed:    true,
-							Default:     listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{})),
+							Default:     listdefault.StaticValue(NewEmptyListMust(jsontypes.NormalizedType{})),
 						},
 					},
 					CustomType: FieldsType{

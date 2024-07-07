@@ -6,7 +6,6 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -283,10 +282,10 @@ func TestReadFromResponse(t *testing.T) {
 				Sidebar:       contentfulManagement.NewOptNilEditorInterfaceSidebarItemArray([]contentfulManagement.EditorInterfaceSidebarItem{}),
 			},
 			expectedModel: provider.EditorInterfaceModel{
-				EditorLayout:  util.NewEmptyListMust(provider.EditorLayoutValue{}.Type(context.Background())),
-				Controls:      util.NewEmptyListMust(provider.ControlsValue{}.Type(context.Background())),
-				GroupControls: util.NewEmptyListMust(provider.GroupControlsValue{}.Type(context.Background())),
-				Sidebar:       util.NewEmptyListMust(provider.SidebarValue{}.Type(context.Background())),
+				EditorLayout:  provider.NewEmptyListMust(provider.EditorLayoutValue{}.Type(context.Background())),
+				Controls:      provider.NewEmptyListMust(provider.ControlsValue{}.Type(context.Background())),
+				GroupControls: provider.NewEmptyListMust(provider.GroupControlsValue{}.Type(context.Background())),
+				Sidebar:       provider.NewEmptyListMust(provider.SidebarValue{}.Type(context.Background())),
 			},
 		},
 	}

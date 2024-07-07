@@ -53,6 +53,20 @@ func encodeCreateRoleRequest(
 	return nil
 }
 
+func encodeCreateWebhookDefinitionRequest(
+	req *CreateWebhookDefinitionReq,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodePutAppInstallationRequest(
 	req *PutAppInstallationReq,
 	r *http.Request,
@@ -111,6 +125,20 @@ func encodeUpdateDeliveryApiKeyRequest(
 
 func encodeUpdateRoleRequest(
 	req *UpdateRoleReq,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodeUpdateWebhookDefinitionRequest(
+	req *UpdateWebhookDefinitionReq,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
