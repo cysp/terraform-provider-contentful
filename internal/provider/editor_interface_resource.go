@@ -90,7 +90,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	resp.Diagnostics.Append(util.PrivateDataSetInt(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(util.PrivateDataSetValue(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -141,7 +141,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	resp.Diagnostics.Append(util.PrivateDataSetInt(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(util.PrivateDataSetValue(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -154,7 +154,8 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	currentVersion, currentVersionDiags := util.PrivateDataGetInt(ctx, req.Private, "version")
+	var currentVersion int
+	currentVersionDiags := util.PrivateDataGetValue(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := contentfulManagement.PutEditorInterfaceParams{
@@ -193,7 +194,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	resp.Diagnostics.Append(util.PrivateDataSetInt(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(util.PrivateDataSetValue(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
