@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4.1.7
-      - uses: actions/setup-go@v5.0.1
+      - uses: actions/setup-go@v5.0.2
         with:
           go-version-file: "go.mod"
           cache: true
@@ -33,7 +33,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4.1.7
-      - uses: actions/setup-go@v5.0.1
+      - uses: actions/setup-go@v5.0.2
         with:
           go-version-file: "go.mod"
           cache: true
@@ -52,7 +52,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4.1.7
-      - uses: actions/setup-go@v5.0.1
+      - uses: actions/setup-go@v5.0.2
         with:
           go-version-file: "go.mod"
           cache: true
@@ -79,7 +79,7 @@ jobs:
       group: testacc
     steps:
       - uses: actions/checkout@v4.1.7
-      - uses: actions/setup-go@v5.0.1
+      - uses: actions/setup-go@v5.0.2
         with:
           go-version-file: "go.mod"
           cache: true
