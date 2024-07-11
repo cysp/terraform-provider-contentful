@@ -2,6 +2,7 @@ package util_test
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -47,7 +48,8 @@ func TestPrivateDataGetIntNotSet(t *testing.T) {
 
 	privateData := newProviderPrivateData()
 
-	value, diags := util.PrivateDataGetInt(ctx, privateData, "key")
+	var value int
+	diags := util.PrivateDataGetValue(ctx, privateData, "key", &value)
 
 	assert.EqualValues(t, 0, value)
 	assert.NotEmpty(t, diags)
@@ -60,12 +62,13 @@ func TestPrivateDataGetSetInt(t *testing.T) {
 
 	privateData := newProviderPrivateData()
 
-	diags := util.PrivateDataSetInt(ctx, privateData, "key", 42)
+	diags := util.PrivateDataSetValue(ctx, privateData, "key", 42)
 
 	assert.EqualValues(t, []byte{'4', '2'}, privateData.data["key"])
 	assert.Empty(t, diags)
 
-	value, diags := util.PrivateDataGetInt(ctx, privateData, "key")
+	var value int
+	diags = util.PrivateDataGetValue(ctx, privateData, "key", &value)
 
 	assert.EqualValues(t, 42, value)
 	assert.Empty(t, diags)
@@ -79,8 +82,21 @@ func TestPrivateDataGetIntInvalid(t *testing.T) {
 	privateData := newProviderPrivateData()
 	privateData.data["key"] = []byte("invalid")
 
-	value, diags := util.PrivateDataGetInt(ctx, privateData, "key")
+	var value int
+	diags := util.PrivateDataGetValue(ctx, privateData, "key", &value)
 
 	assert.EqualValues(t, 0, value)
+	assert.NotEmpty(t, diags)
+}
+
+func TestPrivateDataSetInf(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	privateData := newProviderPrivateData()
+
+	diags := util.PrivateDataSetValue(ctx, privateData, "key", math.Inf(1))
+
 	assert.NotEmpty(t, diags)
 }
