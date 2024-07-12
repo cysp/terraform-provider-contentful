@@ -88,6 +88,13 @@ func TestCreatePutAppInstallationRequestBody(t *testing.T) {
 			},
 			expectedRequestBody: "{\"parameters\":{\"foo\":\"bar\"}}",
 		},
+		"invalid": {
+			model: resource_app_installation.AppInstallationModel{
+				Parameters: jsontypes.NewNormalizedValue("invalid"),
+			},
+			expectErrors:        true,
+			expectedRequestBody: "{\"parameters\":{}}",
+		},
 	}
 
 	for name, test := range tests {
