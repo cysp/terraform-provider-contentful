@@ -3,6 +3,7 @@ package provider
 import (
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_app_installation"
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -11,9 +12,9 @@ import (
 
 func ReadAppInstallationModel(model *resource_app_installation.AppInstallationModel, appInstallation contentfulManagement.AppInstallation) {
 	// SpaceId, EnvironmentId and AppDefinitionId are all already known
-	if appInstallation.Parameters.Set {
+	if parameters, ok := appInstallation.Parameters.Get(); ok {
 		encoder := jx.Encoder{}
-		appInstallation.Parameters.Encode(&encoder)
+		util.EncodeJxRawMapOrdered(&encoder, parameters)
 		model.Parameters = jsontypes.NewNormalizedValue(encoder.String())
 	} else {
 		model.Parameters = jsontypes.NewNormalizedNull()
