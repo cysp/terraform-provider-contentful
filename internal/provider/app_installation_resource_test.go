@@ -103,6 +103,32 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 }
 
 //nolint:paralleltest
+func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "contentful_app_installation" "test" {
+					space_id = "0p38pssr0fi3"
+					environment_id = "test"
+					app_definition_id = "nonexistent"
+				}
+				`,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ResourceName:  "contentful_app_installation.test",
+				ImportState:   true,
+				ImportStateId: "0p38pssr0fi3/test/nonexistent",
+				ExpectError:   regexp.MustCompile(`Cannot import non-existent remote object`),
+			},
+		},
+	})
+}
+
+//nolint:paralleltest
 func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
