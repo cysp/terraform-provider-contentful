@@ -82,21 +82,6 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 				ResourceName:  "contentful_app_installation.test",
 				ImportState:   true,
 				ImportStateId: "0p38pssr0fi3/master/1WkQ2J9LERPtbMTdUfSHka",
-				// ImportStateCheck: func(is []*terraform.InstanceState) error {
-				// 	if len(is) != 1 {
-				// 		return fmt.Errorf("expected 1 state, got %d", len(is))
-				// 	}
-
-				// 	if is[0].Attributes["space_id"] != "0p38pssr0fi3" {
-				// 		return fmt.Errorf("expected space_id to be 0p38pssr0fi3, got %s", is[0].Attributes["space_id"])
-				// 	}
-
-				// 	if is[0].Attributes["app_definition_id"] != "1WkQ2J9LERPtbMTdUfSHka" {
-				// 		return fmt.Errorf("expected app_definition_id to be 1WkQ2J9LERPtbMTdUfSHka, got %s", is[0].Attributes["app_definition_id"])
-				// 	}
-
-				// 	return nil
-				// },
 			},
 		},
 	})
