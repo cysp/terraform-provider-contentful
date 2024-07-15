@@ -2,6 +2,21 @@
 
 package client
 
+// ActivateContentTypeParams is parameters of activateContentType operation.
+type ActivateContentTypeParams struct {
+	SpaceID            string
+	EnvironmentID      string
+	ContentTypeID      string
+	XContentfulVersion int
+}
+
+// DeactivateContentTypeParams is parameters of deactivateContentType operation.
+type DeactivateContentTypeParams struct {
+	SpaceID       string
+	EnvironmentID string
+	ContentTypeID string
+}
+
 // DeleteAppInstallationParams is parameters of deleteAppInstallation operation.
 type DeleteAppInstallationParams struct {
 	SpaceID         string
@@ -9,11 +24,25 @@ type DeleteAppInstallationParams struct {
 	AppDefinitionID string
 }
 
+// DeleteContentTypeParams is parameters of deleteContentType operation.
+type DeleteContentTypeParams struct {
+	SpaceID       string
+	EnvironmentID string
+	ContentTypeID string
+}
+
 // GetAppInstallationParams is parameters of getAppInstallation operation.
 type GetAppInstallationParams struct {
 	SpaceID         string
 	EnvironmentID   string
 	AppDefinitionID string
+}
+
+// GetContentTypeParams is parameters of getContentType operation.
+type GetContentTypeParams struct {
+	SpaceID       string
+	EnvironmentID string
+	ContentTypeID string
 }
 
 // GetEditorInterfaceParams is parameters of getEditorInterface operation.
@@ -28,6 +57,14 @@ type PutAppInstallationParams struct {
 	SpaceID         string
 	EnvironmentID   string
 	AppDefinitionID string
+}
+
+// PutContentTypeParams is parameters of putContentType operation.
+type PutContentTypeParams struct {
+	SpaceID            string
+	EnvironmentID      string
+	ContentTypeID      string
+	XContentfulVersion int
 }
 
 // PutEditorInterfaceParams is parameters of putEditorInterface operation.

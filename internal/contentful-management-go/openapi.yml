@@ -70,6 +70,16 @@ components:
               format: date-time
           required:
             - version
+    BaseSysWithIdAndVersionAndPublishedVersion:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - type: object
+          properties:
+            publishedVersion:
+              type: integer
+            publishedAt:
+              type: string
+              format: date-time
     UserSys:
       allOf:
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
@@ -125,6 +135,77 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/AppInstallationFields'
+    ContentTypeSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersionAndPublishedVersion'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - ContentType
+    ContentTypeFields:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        displayField:
+          type: string
+        fields:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              type:
+                type: string
+              linkType:
+                type: string
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  linkType:
+                    type: string
+                  validations: 
+                    type: array
+                    items: {}
+              localized:
+                type: boolean
+              omitted:
+                type: boolean
+              required:
+                type: boolean
+              disabled:
+                type: boolean
+              default_value: {}
+              validations: 
+                type: array
+                items: {}
+            required:
+              - id
+              - name
+              - type
+      required:
+        - name
+        - description
+        - displayField
+        - fields
+    ContentType:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/ContentTypeSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/ContentTypeFields'
     EditorInterfaceSys:
       allOf:
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
@@ -307,6 +388,179 @@ paths:
             type: string
           required: true
       responses:
+        204:
+          $ref: '#/components/responses/no-content'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}:
+    get:
+      operationId: getContentType
+      summary: Get a content type
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: content_type_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: A content type
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/ContentType'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    put:
+      operationId: putContentType
+      summary: Update a content type
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: content_type_id
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: X-Contentful-Version
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ContentTypeFields'
+      responses:
+        200:
+          description: A content type
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/ContentType'
+        201:
+          description: A content type
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/ContentType'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    delete:
+      operationId: deleteContentType
+      summary: Delete a content type
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: content_type_id
+          schema:
+            type: string
+          required: true
+      responses:
+        204:
+          $ref: '#/components/responses/no-content'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published:
+    put:
+      operationId: activateContentType
+      summary: Activate a content type
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: content_type_id
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: X-Contentful-Version
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: A content type
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/ContentType'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    delete:
+      operationId: deactivateContentType
+      summary: Deactivate a content type
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: content_type_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: A content type
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/ContentType'
         204:
           $ref: '#/components/responses/no-content'
         401:

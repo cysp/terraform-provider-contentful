@@ -17,12 +17,30 @@ import (
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
+	// ActivateContentType invokes activateContentType operation.
+	//
+	// Activate a content type.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
+	ActivateContentType(ctx context.Context, params ActivateContentTypeParams) (ActivateContentTypeRes, error)
+	// DeactivateContentType invokes deactivateContentType operation.
+	//
+	// Deactivate a content type.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
+	DeactivateContentType(ctx context.Context, params DeactivateContentTypeParams) (DeactivateContentTypeRes, error)
 	// DeleteAppInstallation invokes deleteAppInstallation operation.
 	//
 	// Uninstall an app.
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	DeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams) (DeleteAppInstallationRes, error)
+	// DeleteContentType invokes deleteContentType operation.
+	//
+	// Delete a content type.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
+	DeleteContentType(ctx context.Context, params DeleteContentTypeParams) (DeleteContentTypeRes, error)
 	// GetAppInstallation invokes getAppInstallation operation.
 	//
 	// Get one app installation.
@@ -35,6 +53,12 @@ type Invoker interface {
 	//
 	// GET /users/me
 	GetAuthenticatedUser(ctx context.Context) (GetAuthenticatedUserRes, error)
+	// GetContentType invokes getContentType operation.
+	//
+	// Get a content type.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
+	GetContentType(ctx context.Context, params GetContentTypeParams) (GetContentTypeRes, error)
 	// GetEditorInterface invokes getEditorInterface operation.
 	//
 	// Get the editor interface for a content type.
@@ -47,6 +71,12 @@ type Invoker interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	PutAppInstallation(ctx context.Context, request *PutAppInstallationReq, params PutAppInstallationParams) (PutAppInstallationRes, error)
+	// PutContentType invokes putContentType operation.
+	//
+	// Update a content type.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
+	PutContentType(ctx context.Context, request *PutContentTypeReq, params PutContentTypeParams) (PutContentTypeRes, error)
 	// PutEditorInterface invokes putEditorInterface operation.
 	//
 	// Update the editor interface for a content type.
@@ -99,6 +129,271 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 		return c.serverURL
 	}
 	return u
+}
+
+// ActivateContentType invokes activateContentType operation.
+//
+// Activate a content type.
+//
+// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
+func (c *Client) ActivateContentType(ctx context.Context, params ActivateContentTypeParams) (ActivateContentTypeRes, error) {
+	res, err := c.sendActivateContentType(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendActivateContentType(ctx context.Context, params ActivateContentTypeParams) (res ActivateContentTypeRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [7]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/content_types/"
+	{
+		// Encode "content_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "content_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ContentTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	pathParts[6] = "/published"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "ActivateContentType", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeActivateContentTypeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// DeactivateContentType invokes deactivateContentType operation.
+//
+// Deactivate a content type.
+//
+// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
+func (c *Client) DeactivateContentType(ctx context.Context, params DeactivateContentTypeParams) (DeactivateContentTypeRes, error) {
+	res, err := c.sendDeactivateContentType(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeactivateContentType(ctx context.Context, params DeactivateContentTypeParams) (res DeactivateContentTypeRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [7]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/content_types/"
+	{
+		// Encode "content_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "content_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ContentTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	pathParts[6] = "/published"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "DeactivateContentType", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeDeactivateContentTypeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
 }
 
 // DeleteAppInstallation invokes deleteAppInstallation operation.
@@ -219,6 +514,131 @@ func (c *Client) sendDeleteAppInstallation(ctx context.Context, params DeleteApp
 	defer resp.Body.Close()
 
 	result, err := decodeDeleteAppInstallationResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// DeleteContentType invokes deleteContentType operation.
+//
+// Delete a content type.
+//
+// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
+func (c *Client) DeleteContentType(ctx context.Context, params DeleteContentTypeParams) (DeleteContentTypeRes, error) {
+	res, err := c.sendDeleteContentType(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeleteContentType(ctx context.Context, params DeleteContentTypeParams) (res DeleteContentTypeRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [6]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/content_types/"
+	{
+		// Encode "content_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "content_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ContentTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "DeleteContentType", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeDeleteContentTypeResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -413,6 +833,131 @@ func (c *Client) sendGetAuthenticatedUser(ctx context.Context) (res GetAuthentic
 	defer resp.Body.Close()
 
 	result, err := decodeGetAuthenticatedUserResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetContentType invokes getContentType operation.
+//
+// Get a content type.
+//
+// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
+func (c *Client) GetContentType(ctx context.Context, params GetContentTypeParams) (GetContentTypeRes, error) {
+	res, err := c.sendGetContentType(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetContentType(ctx context.Context, params GetContentTypeParams) (res GetContentTypeRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [6]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/content_types/"
+	{
+		// Encode "content_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "content_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ContentTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "GetContentType", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetContentTypeResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -667,6 +1212,147 @@ func (c *Client) sendPutAppInstallation(ctx context.Context, request *PutAppInst
 	defer resp.Body.Close()
 
 	result, err := decodePutAppInstallationResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutContentType invokes putContentType operation.
+//
+// Update a content type.
+//
+// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
+func (c *Client) PutContentType(ctx context.Context, request *PutContentTypeReq, params PutContentTypeParams) (PutContentTypeRes, error) {
+	res, err := c.sendPutContentType(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendPutContentType(ctx context.Context, request *PutContentTypeReq, params PutContentTypeParams) (res PutContentTypeRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [6]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/content_types/"
+	{
+		// Encode "content_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "content_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ContentTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutContentTypeRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "PutContentType", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodePutContentTypeResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

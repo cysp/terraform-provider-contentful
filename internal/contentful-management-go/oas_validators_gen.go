@@ -63,6 +63,72 @@ func (s AppInstallationSysType) Validate() error {
 	}
 }
 
+func (s *ContentType) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Sys.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "sys",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if s.Fields == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "fields",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *ContentTypeSys) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ContentTypeSysType) Validate() error {
+	switch s {
+	case "ContentType":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s *EditorInterface) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -230,6 +296,45 @@ func (s ErrorSysType) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
+}
+
+func (s *PutContentTypeCreated) Validate() error {
+	alias := (*ContentType)(s)
+	if err := alias.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *PutContentTypeOK) Validate() error {
+	alias := (*ContentType)(s)
+	if err := alias.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *PutContentTypeReq) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if s.Fields == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "fields",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
 }
 
 func (s *PutEditorInterfaceReq) Validate() error {
