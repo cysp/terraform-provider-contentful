@@ -316,6 +316,807 @@ func (s *AppInstallationSysType) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
+func (s *ContentType) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ContentType) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("sys")
+		s.Sys.Encode(e)
+	}
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		e.FieldStart("description")
+		e.Str(s.Description)
+	}
+	{
+		e.FieldStart("displayField")
+		e.Str(s.DisplayField)
+	}
+	{
+		e.FieldStart("fields")
+		e.ArrStart()
+		for _, elem := range s.Fields {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
+	}
+}
+
+var jsonFieldsNameOfContentType = [5]string{
+	0: "sys",
+	1: "name",
+	2: "description",
+	3: "displayField",
+	4: "fields",
+}
+
+// Decode decodes ContentType from json.
+func (s *ContentType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ContentType to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "sys":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Sys.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sys\"")
+			}
+		case "name":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "description":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.Description = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
+			}
+		case "displayField":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Str()
+				s.DisplayField = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"displayField\"")
+			}
+		case "fields":
+			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				s.Fields = make([]ContentTypeFieldsItem, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem ContentTypeFieldsItem
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Fields = append(s.Fields, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"fields\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ContentType")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00011111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfContentType) {
+					name = jsonFieldsNameOfContentType[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ContentType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ContentType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ContentTypeFieldsItem) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ContentTypeFieldsItem) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("id")
+		e.Str(s.ID)
+	}
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		e.FieldStart("type")
+		e.Str(s.Type)
+	}
+	{
+		if s.LinkType.Set {
+			e.FieldStart("linkType")
+			s.LinkType.Encode(e)
+		}
+	}
+	{
+		if s.Items.Set {
+			e.FieldStart("items")
+			s.Items.Encode(e)
+		}
+	}
+	{
+		if s.Localized.Set {
+			e.FieldStart("localized")
+			s.Localized.Encode(e)
+		}
+	}
+	{
+		if s.Omitted.Set {
+			e.FieldStart("omitted")
+			s.Omitted.Encode(e)
+		}
+	}
+	{
+		if s.Required.Set {
+			e.FieldStart("required")
+			s.Required.Encode(e)
+		}
+	}
+	{
+		if s.Disabled.Set {
+			e.FieldStart("disabled")
+			s.Disabled.Encode(e)
+		}
+	}
+	{
+		if len(s.DefaultValue) != 0 {
+			e.FieldStart("default_value")
+			e.Raw(s.DefaultValue)
+		}
+	}
+	{
+		if s.Validations != nil {
+			e.FieldStart("validations")
+			e.ArrStart()
+			for _, elem := range s.Validations {
+				if len(elem) != 0 {
+					e.Raw(elem)
+				}
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfContentTypeFieldsItem = [11]string{
+	0:  "id",
+	1:  "name",
+	2:  "type",
+	3:  "linkType",
+	4:  "items",
+	5:  "localized",
+	6:  "omitted",
+	7:  "required",
+	8:  "disabled",
+	9:  "default_value",
+	10: "validations",
+}
+
+// Decode decodes ContentTypeFieldsItem from json.
+func (s *ContentTypeFieldsItem) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ContentTypeFieldsItem to nil")
+	}
+	var requiredBitSet [2]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "id":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.ID = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "name":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "type":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.Type = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "linkType":
+			if err := func() error {
+				s.LinkType.Reset()
+				if err := s.LinkType.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"linkType\"")
+			}
+		case "items":
+			if err := func() error {
+				s.Items.Reset()
+				if err := s.Items.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"items\"")
+			}
+		case "localized":
+			if err := func() error {
+				s.Localized.Reset()
+				if err := s.Localized.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"localized\"")
+			}
+		case "omitted":
+			if err := func() error {
+				s.Omitted.Reset()
+				if err := s.Omitted.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"omitted\"")
+			}
+		case "required":
+			if err := func() error {
+				s.Required.Reset()
+				if err := s.Required.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"required\"")
+			}
+		case "disabled":
+			if err := func() error {
+				s.Disabled.Reset()
+				if err := s.Disabled.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"disabled\"")
+			}
+		case "default_value":
+			if err := func() error {
+				v, err := d.RawAppend(nil)
+				s.DefaultValue = jx.Raw(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"default_value\"")
+			}
+		case "validations":
+			if err := func() error {
+				s.Validations = make([]jx.Raw, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem jx.Raw
+					v, err := d.RawAppend(nil)
+					elem = jx.Raw(v)
+					if err != nil {
+						return err
+					}
+					s.Validations = append(s.Validations, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validations\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ContentTypeFieldsItem")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [2]uint8{
+		0b00000111,
+		0b00000000,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfContentTypeFieldsItem) {
+					name = jsonFieldsNameOfContentTypeFieldsItem[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ContentTypeFieldsItem) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ContentTypeFieldsItem) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ContentTypeFieldsItemItems) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ContentTypeFieldsItemItems) encodeFields(e *jx.Encoder) {
+	{
+		if s.Type.Set {
+			e.FieldStart("type")
+			s.Type.Encode(e)
+		}
+	}
+	{
+		if s.LinkType.Set {
+			e.FieldStart("linkType")
+			s.LinkType.Encode(e)
+		}
+	}
+	{
+		if s.Validations != nil {
+			e.FieldStart("validations")
+			e.ArrStart()
+			for _, elem := range s.Validations {
+				if len(elem) != 0 {
+					e.Raw(elem)
+				}
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfContentTypeFieldsItemItems = [3]string{
+	0: "type",
+	1: "linkType",
+	2: "validations",
+}
+
+// Decode decodes ContentTypeFieldsItemItems from json.
+func (s *ContentTypeFieldsItemItems) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ContentTypeFieldsItemItems to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			if err := func() error {
+				s.Type.Reset()
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "linkType":
+			if err := func() error {
+				s.LinkType.Reset()
+				if err := s.LinkType.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"linkType\"")
+			}
+		case "validations":
+			if err := func() error {
+				s.Validations = make([]jx.Raw, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem jx.Raw
+					v, err := d.RawAppend(nil)
+					elem = jx.Raw(v)
+					if err != nil {
+						return err
+					}
+					s.Validations = append(s.Validations, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validations\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ContentTypeFieldsItemItems")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ContentTypeFieldsItemItems) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ContentTypeFieldsItemItems) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ContentTypeSys) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ContentTypeSys) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		e.FieldStart("id")
+		e.Str(s.ID)
+	}
+	{
+		e.FieldStart("version")
+		e.Int(s.Version)
+	}
+	{
+		if s.CreatedAt.Set {
+			e.FieldStart("createdAt")
+			s.CreatedAt.Encode(e, json.EncodeDateTime)
+		}
+	}
+	{
+		if s.UpdatedAt.Set {
+			e.FieldStart("updatedAt")
+			s.UpdatedAt.Encode(e, json.EncodeDateTime)
+		}
+	}
+	{
+		if s.PublishedVersion.Set {
+			e.FieldStart("publishedVersion")
+			s.PublishedVersion.Encode(e)
+		}
+	}
+	{
+		if s.PublishedAt.Set {
+			e.FieldStart("publishedAt")
+			s.PublishedAt.Encode(e, json.EncodeDateTime)
+		}
+	}
+}
+
+var jsonFieldsNameOfContentTypeSys = [7]string{
+	0: "type",
+	1: "id",
+	2: "version",
+	3: "createdAt",
+	4: "updatedAt",
+	5: "publishedVersion",
+	6: "publishedAt",
+}
+
+// Decode decodes ContentTypeSys from json.
+func (s *ContentTypeSys) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ContentTypeSys to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.ID = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "version":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.Version = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"version\"")
+			}
+		case "createdAt":
+			if err := func() error {
+				s.CreatedAt.Reset()
+				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"createdAt\"")
+			}
+		case "updatedAt":
+			if err := func() error {
+				s.UpdatedAt.Reset()
+				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"updatedAt\"")
+			}
+		case "publishedVersion":
+			if err := func() error {
+				s.PublishedVersion.Reset()
+				if err := s.PublishedVersion.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"publishedVersion\"")
+			}
+		case "publishedAt":
+			if err := func() error {
+				s.PublishedAt.Reset()
+				if err := s.PublishedAt.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"publishedAt\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ContentTypeSys")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfContentTypeSys) {
+					name = jsonFieldsNameOfContentTypeSys[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ContentTypeSys) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ContentTypeSys) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ContentTypeSysType as json.
+func (s ContentTypeSysType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ContentTypeSysType from json.
+func (s *ContentTypeSysType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ContentTypeSysType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ContentTypeSysType(v) {
+	case ContentTypeSysTypeContentType:
+		*s = ContentTypeSysTypeContentType
+	default:
+		*s = ContentTypeSysType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ContentTypeSysType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ContentTypeSysType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
 func (s *EditorInterface) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -1382,6 +2183,39 @@ func (s *OptBool) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes ContentTypeFieldsItemItems as json.
+func (o OptContentTypeFieldsItemItems) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes ContentTypeFieldsItemItems from json.
+func (o *OptContentTypeFieldsItemItems) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptContentTypeFieldsItemItems to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptContentTypeFieldsItemItems) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptContentTypeFieldsItemItems) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes time.Time as json.
 func (o OptDateTime) Encode(e *jx.Encoder, format func(*jx.Encoder, time.Time)) {
 	if !o.Set {
@@ -1481,6 +2315,41 @@ func (s OptEditorInterfaceSidebarItemSettings) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptEditorInterfaceSidebarItemSettings) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes int as json.
+func (o OptInt) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Int(int(o.Value))
+}
+
+// Decode decodes int from json.
+func (o *OptInt) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptInt to nil")
+	}
+	o.Set = true
+	v, err := d.Int()
+	if err != nil {
+		return err
+	}
+	o.Value = int(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptInt) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptInt) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1763,6 +2632,39 @@ func (s *OptPutAppInstallationReqParameters) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes PutContentTypeReqFieldsItemItems as json.
+func (o OptPutContentTypeReqFieldsItemItems) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes PutContentTypeReqFieldsItemItems from json.
+func (o *OptPutContentTypeReqFieldsItemItems) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptPutContentTypeReqFieldsItemItems to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptPutContentTypeReqFieldsItemItems) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptPutContentTypeReqFieldsItemItems) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes PutEditorInterfaceReqControlsItemSettings as json.
 func (o OptPutEditorInterfaceReqControlsItemSettings) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -1983,6 +2885,634 @@ func (s PutAppInstallationReqParameters) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *PutAppInstallationReqParameters) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes PutContentTypeCreated as json.
+func (s *PutContentTypeCreated) Encode(e *jx.Encoder) {
+	unwrapped := (*ContentType)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes PutContentTypeCreated from json.
+func (s *PutContentTypeCreated) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PutContentTypeCreated to nil")
+	}
+	var unwrapped ContentType
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = PutContentTypeCreated(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *PutContentTypeCreated) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PutContentTypeCreated) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes PutContentTypeOK as json.
+func (s *PutContentTypeOK) Encode(e *jx.Encoder) {
+	unwrapped := (*ContentType)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes PutContentTypeOK from json.
+func (s *PutContentTypeOK) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PutContentTypeOK to nil")
+	}
+	var unwrapped ContentType
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = PutContentTypeOK(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *PutContentTypeOK) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PutContentTypeOK) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *PutContentTypeReq) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *PutContentTypeReq) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		e.FieldStart("description")
+		e.Str(s.Description)
+	}
+	{
+		e.FieldStart("displayField")
+		e.Str(s.DisplayField)
+	}
+	{
+		e.FieldStart("fields")
+		e.ArrStart()
+		for _, elem := range s.Fields {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
+	}
+}
+
+var jsonFieldsNameOfPutContentTypeReq = [4]string{
+	0: "name",
+	1: "description",
+	2: "displayField",
+	3: "fields",
+}
+
+// Decode decodes PutContentTypeReq from json.
+func (s *PutContentTypeReq) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PutContentTypeReq to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "name":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "description":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Description = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
+			}
+		case "displayField":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.DisplayField = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"displayField\"")
+			}
+		case "fields":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				s.Fields = make([]PutContentTypeReqFieldsItem, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem PutContentTypeReqFieldsItem
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Fields = append(s.Fields, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"fields\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode PutContentTypeReq")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00001111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfPutContentTypeReq) {
+					name = jsonFieldsNameOfPutContentTypeReq[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *PutContentTypeReq) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PutContentTypeReq) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *PutContentTypeReqFieldsItem) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *PutContentTypeReqFieldsItem) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("id")
+		e.Str(s.ID)
+	}
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		e.FieldStart("type")
+		e.Str(s.Type)
+	}
+	{
+		if s.LinkType.Set {
+			e.FieldStart("linkType")
+			s.LinkType.Encode(e)
+		}
+	}
+	{
+		if s.Items.Set {
+			e.FieldStart("items")
+			s.Items.Encode(e)
+		}
+	}
+	{
+		if s.Localized.Set {
+			e.FieldStart("localized")
+			s.Localized.Encode(e)
+		}
+	}
+	{
+		if s.Omitted.Set {
+			e.FieldStart("omitted")
+			s.Omitted.Encode(e)
+		}
+	}
+	{
+		if s.Required.Set {
+			e.FieldStart("required")
+			s.Required.Encode(e)
+		}
+	}
+	{
+		if s.Disabled.Set {
+			e.FieldStart("disabled")
+			s.Disabled.Encode(e)
+		}
+	}
+	{
+		if len(s.DefaultValue) != 0 {
+			e.FieldStart("default_value")
+			e.Raw(s.DefaultValue)
+		}
+	}
+	{
+		if s.Validations != nil {
+			e.FieldStart("validations")
+			e.ArrStart()
+			for _, elem := range s.Validations {
+				if len(elem) != 0 {
+					e.Raw(elem)
+				}
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfPutContentTypeReqFieldsItem = [11]string{
+	0:  "id",
+	1:  "name",
+	2:  "type",
+	3:  "linkType",
+	4:  "items",
+	5:  "localized",
+	6:  "omitted",
+	7:  "required",
+	8:  "disabled",
+	9:  "default_value",
+	10: "validations",
+}
+
+// Decode decodes PutContentTypeReqFieldsItem from json.
+func (s *PutContentTypeReqFieldsItem) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PutContentTypeReqFieldsItem to nil")
+	}
+	var requiredBitSet [2]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "id":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.ID = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "name":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "type":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.Type = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "linkType":
+			if err := func() error {
+				s.LinkType.Reset()
+				if err := s.LinkType.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"linkType\"")
+			}
+		case "items":
+			if err := func() error {
+				s.Items.Reset()
+				if err := s.Items.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"items\"")
+			}
+		case "localized":
+			if err := func() error {
+				s.Localized.Reset()
+				if err := s.Localized.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"localized\"")
+			}
+		case "omitted":
+			if err := func() error {
+				s.Omitted.Reset()
+				if err := s.Omitted.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"omitted\"")
+			}
+		case "required":
+			if err := func() error {
+				s.Required.Reset()
+				if err := s.Required.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"required\"")
+			}
+		case "disabled":
+			if err := func() error {
+				s.Disabled.Reset()
+				if err := s.Disabled.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"disabled\"")
+			}
+		case "default_value":
+			if err := func() error {
+				v, err := d.RawAppend(nil)
+				s.DefaultValue = jx.Raw(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"default_value\"")
+			}
+		case "validations":
+			if err := func() error {
+				s.Validations = make([]jx.Raw, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem jx.Raw
+					v, err := d.RawAppend(nil)
+					elem = jx.Raw(v)
+					if err != nil {
+						return err
+					}
+					s.Validations = append(s.Validations, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validations\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode PutContentTypeReqFieldsItem")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [2]uint8{
+		0b00000111,
+		0b00000000,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfPutContentTypeReqFieldsItem) {
+					name = jsonFieldsNameOfPutContentTypeReqFieldsItem[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *PutContentTypeReqFieldsItem) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PutContentTypeReqFieldsItem) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *PutContentTypeReqFieldsItemItems) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *PutContentTypeReqFieldsItemItems) encodeFields(e *jx.Encoder) {
+	{
+		if s.Type.Set {
+			e.FieldStart("type")
+			s.Type.Encode(e)
+		}
+	}
+	{
+		if s.LinkType.Set {
+			e.FieldStart("linkType")
+			s.LinkType.Encode(e)
+		}
+	}
+	{
+		if s.Validations != nil {
+			e.FieldStart("validations")
+			e.ArrStart()
+			for _, elem := range s.Validations {
+				if len(elem) != 0 {
+					e.Raw(elem)
+				}
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfPutContentTypeReqFieldsItemItems = [3]string{
+	0: "type",
+	1: "linkType",
+	2: "validations",
+}
+
+// Decode decodes PutContentTypeReqFieldsItemItems from json.
+func (s *PutContentTypeReqFieldsItemItems) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PutContentTypeReqFieldsItemItems to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			if err := func() error {
+				s.Type.Reset()
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "linkType":
+			if err := func() error {
+				s.LinkType.Reset()
+				if err := s.LinkType.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"linkType\"")
+			}
+		case "validations":
+			if err := func() error {
+				s.Validations = make([]jx.Raw, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem jx.Raw
+					v, err := d.RawAppend(nil)
+					elem = jx.Raw(v)
+					if err != nil {
+						return err
+					}
+					s.Validations = append(s.Validations, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"validations\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode PutContentTypeReqFieldsItemItems")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *PutContentTypeReqFieldsItemItems) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PutContentTypeReqFieldsItemItems) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

@@ -117,6 +117,348 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
+// Ref: #/components/schemas/ContentType
+type ContentType struct {
+	Sys          ContentTypeSys          `json:"sys"`
+	Name         string                  `json:"name"`
+	Description  string                  `json:"description"`
+	DisplayField string                  `json:"displayField"`
+	Fields       []ContentTypeFieldsItem `json:"fields"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ContentType) GetSys() ContentTypeSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *ContentType) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *ContentType) GetDescription() string {
+	return s.Description
+}
+
+// GetDisplayField returns the value of DisplayField.
+func (s *ContentType) GetDisplayField() string {
+	return s.DisplayField
+}
+
+// GetFields returns the value of Fields.
+func (s *ContentType) GetFields() []ContentTypeFieldsItem {
+	return s.Fields
+}
+
+// SetSys sets the value of Sys.
+func (s *ContentType) SetSys(val ContentTypeSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *ContentType) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *ContentType) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetDisplayField sets the value of DisplayField.
+func (s *ContentType) SetDisplayField(val string) {
+	s.DisplayField = val
+}
+
+// SetFields sets the value of Fields.
+func (s *ContentType) SetFields(val []ContentTypeFieldsItem) {
+	s.Fields = val
+}
+
+func (*ContentType) activateContentTypeRes()   {}
+func (*ContentType) deactivateContentTypeRes() {}
+func (*ContentType) getContentTypeRes()        {}
+
+type ContentTypeFieldsItem struct {
+	ID           string                        `json:"id"`
+	Name         string                        `json:"name"`
+	Type         string                        `json:"type"`
+	LinkType     OptString                     `json:"linkType"`
+	Items        OptContentTypeFieldsItemItems `json:"items"`
+	Localized    OptBool                       `json:"localized"`
+	Omitted      OptBool                       `json:"omitted"`
+	Required     OptBool                       `json:"required"`
+	Disabled     OptBool                       `json:"disabled"`
+	DefaultValue jx.Raw                        `json:"default_value"`
+	Validations  []jx.Raw                      `json:"validations"`
+}
+
+// GetID returns the value of ID.
+func (s *ContentTypeFieldsItem) GetID() string {
+	return s.ID
+}
+
+// GetName returns the value of Name.
+func (s *ContentTypeFieldsItem) GetName() string {
+	return s.Name
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeFieldsItem) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ContentTypeFieldsItem) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetItems returns the value of Items.
+func (s *ContentTypeFieldsItem) GetItems() OptContentTypeFieldsItemItems {
+	return s.Items
+}
+
+// GetLocalized returns the value of Localized.
+func (s *ContentTypeFieldsItem) GetLocalized() OptBool {
+	return s.Localized
+}
+
+// GetOmitted returns the value of Omitted.
+func (s *ContentTypeFieldsItem) GetOmitted() OptBool {
+	return s.Omitted
+}
+
+// GetRequired returns the value of Required.
+func (s *ContentTypeFieldsItem) GetRequired() OptBool {
+	return s.Required
+}
+
+// GetDisabled returns the value of Disabled.
+func (s *ContentTypeFieldsItem) GetDisabled() OptBool {
+	return s.Disabled
+}
+
+// GetDefaultValue returns the value of DefaultValue.
+func (s *ContentTypeFieldsItem) GetDefaultValue() jx.Raw {
+	return s.DefaultValue
+}
+
+// GetValidations returns the value of Validations.
+func (s *ContentTypeFieldsItem) GetValidations() []jx.Raw {
+	return s.Validations
+}
+
+// SetID sets the value of ID.
+func (s *ContentTypeFieldsItem) SetID(val string) {
+	s.ID = val
+}
+
+// SetName sets the value of Name.
+func (s *ContentTypeFieldsItem) SetName(val string) {
+	s.Name = val
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeFieldsItem) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ContentTypeFieldsItem) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetItems sets the value of Items.
+func (s *ContentTypeFieldsItem) SetItems(val OptContentTypeFieldsItemItems) {
+	s.Items = val
+}
+
+// SetLocalized sets the value of Localized.
+func (s *ContentTypeFieldsItem) SetLocalized(val OptBool) {
+	s.Localized = val
+}
+
+// SetOmitted sets the value of Omitted.
+func (s *ContentTypeFieldsItem) SetOmitted(val OptBool) {
+	s.Omitted = val
+}
+
+// SetRequired sets the value of Required.
+func (s *ContentTypeFieldsItem) SetRequired(val OptBool) {
+	s.Required = val
+}
+
+// SetDisabled sets the value of Disabled.
+func (s *ContentTypeFieldsItem) SetDisabled(val OptBool) {
+	s.Disabled = val
+}
+
+// SetDefaultValue sets the value of DefaultValue.
+func (s *ContentTypeFieldsItem) SetDefaultValue(val jx.Raw) {
+	s.DefaultValue = val
+}
+
+// SetValidations sets the value of Validations.
+func (s *ContentTypeFieldsItem) SetValidations(val []jx.Raw) {
+	s.Validations = val
+}
+
+type ContentTypeFieldsItemItems struct {
+	Type        OptString `json:"type"`
+	LinkType    OptString `json:"linkType"`
+	Validations []jx.Raw  `json:"validations"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeFieldsItemItems) GetType() OptString {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ContentTypeFieldsItemItems) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetValidations returns the value of Validations.
+func (s *ContentTypeFieldsItemItems) GetValidations() []jx.Raw {
+	return s.Validations
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeFieldsItemItems) SetType(val OptString) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ContentTypeFieldsItemItems) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetValidations sets the value of Validations.
+func (s *ContentTypeFieldsItemItems) SetValidations(val []jx.Raw) {
+	s.Validations = val
+}
+
+// Merged schema.
+// Ref: #/components/schemas/ContentTypeSys
+type ContentTypeSys struct {
+	// Merged property.
+	Type             ContentTypeSysType `json:"type"`
+	ID               string             `json:"id"`
+	Version          int                `json:"version"`
+	CreatedAt        OptDateTime        `json:"createdAt"`
+	UpdatedAt        OptDateTime        `json:"updatedAt"`
+	PublishedVersion OptInt             `json:"publishedVersion"`
+	PublishedAt      OptDateTime        `json:"publishedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeSys) GetType() ContentTypeSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ContentTypeSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *ContentTypeSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *ContentTypeSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *ContentTypeSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// GetPublishedVersion returns the value of PublishedVersion.
+func (s *ContentTypeSys) GetPublishedVersion() OptInt {
+	return s.PublishedVersion
+}
+
+// GetPublishedAt returns the value of PublishedAt.
+func (s *ContentTypeSys) GetPublishedAt() OptDateTime {
+	return s.PublishedAt
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeSys) SetType(val ContentTypeSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ContentTypeSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *ContentTypeSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *ContentTypeSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *ContentTypeSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// SetPublishedVersion sets the value of PublishedVersion.
+func (s *ContentTypeSys) SetPublishedVersion(val OptInt) {
+	s.PublishedVersion = val
+}
+
+// SetPublishedAt sets the value of PublishedAt.
+func (s *ContentTypeSys) SetPublishedAt(val OptDateTime) {
+	s.PublishedAt = val
+}
+
+// Merged schema.
+type ContentTypeSysType string
+
+const (
+	ContentTypeSysTypeContentType ContentTypeSysType = "ContentType"
+)
+
+// AllValues returns all ContentTypeSysType values.
+func (ContentTypeSysType) AllValues() []ContentTypeSysType {
+	return []ContentTypeSysType{
+		ContentTypeSysTypeContentType,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentTypeSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentTypeSysTypeContentType:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentTypeSysType) UnmarshalText(data []byte) error {
+	switch ContentTypeSysType(data) {
+	case ContentTypeSysTypeContentType:
+		*s = ContentTypeSysTypeContentType
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
 // Ref: #/components/schemas/EditorInterface
 type EditorInterface struct {
 	Sys      EditorInterfaceSys                     `json:"sys"`
@@ -396,11 +738,16 @@ func (s *Error) SetMessage(val OptString) {
 	s.Message = val
 }
 
+func (*Error) activateContentTypeRes()   {}
+func (*Error) deactivateContentTypeRes() {}
 func (*Error) deleteAppInstallationRes() {}
+func (*Error) deleteContentTypeRes()     {}
 func (*Error) getAppInstallationRes()    {}
 func (*Error) getAuthenticatedUserRes()  {}
+func (*Error) getContentTypeRes()        {}
 func (*Error) getEditorInterfaceRes()    {}
 func (*Error) putAppInstallationRes()    {}
+func (*Error) putContentTypeRes()        {}
 func (*Error) putEditorInterfaceRes()    {}
 
 // ErrorStatusCode wraps Error with StatusCode.
@@ -429,11 +776,16 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 	s.Response = val
 }
 
+func (*ErrorStatusCode) activateContentTypeRes()   {}
+func (*ErrorStatusCode) deactivateContentTypeRes() {}
 func (*ErrorStatusCode) deleteAppInstallationRes() {}
+func (*ErrorStatusCode) deleteContentTypeRes()     {}
 func (*ErrorStatusCode) getAppInstallationRes()    {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()  {}
+func (*ErrorStatusCode) getContentTypeRes()        {}
 func (*ErrorStatusCode) getEditorInterfaceRes()    {}
 func (*ErrorStatusCode) putAppInstallationRes()    {}
+func (*ErrorStatusCode) putContentTypeRes()        {}
 func (*ErrorStatusCode) putEditorInterfaceRes()    {}
 
 // Ref: #/components/schemas/ErrorSys
@@ -499,7 +851,9 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 // Ref: #/components/responses/no-content
 type NoContent struct{}
 
+func (*NoContent) deactivateContentTypeRes() {}
 func (*NoContent) deleteAppInstallationRes() {}
+func (*NoContent) deleteContentTypeRes()     {}
 
 // NewOptAppInstallationParameters returns new OptAppInstallationParameters with value set to v.
 func NewOptAppInstallationParameters(v AppInstallationParameters) OptAppInstallationParameters {
@@ -587,6 +941,52 @@ func (o OptBool) Get() (v bool, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptContentTypeFieldsItemItems returns new OptContentTypeFieldsItemItems with value set to v.
+func NewOptContentTypeFieldsItemItems(v ContentTypeFieldsItemItems) OptContentTypeFieldsItemItems {
+	return OptContentTypeFieldsItemItems{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptContentTypeFieldsItemItems is optional ContentTypeFieldsItemItems.
+type OptContentTypeFieldsItemItems struct {
+	Value ContentTypeFieldsItemItems
+	Set   bool
+}
+
+// IsSet returns true if OptContentTypeFieldsItemItems was set.
+func (o OptContentTypeFieldsItemItems) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptContentTypeFieldsItemItems) Reset() {
+	var v ContentTypeFieldsItemItems
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptContentTypeFieldsItemItems) SetTo(v ContentTypeFieldsItemItems) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptContentTypeFieldsItemItems) Get() (v ContentTypeFieldsItemItems, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptContentTypeFieldsItemItems) Or(d ContentTypeFieldsItemItems) ContentTypeFieldsItemItems {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -725,6 +1125,52 @@ func (o OptEditorInterfaceSidebarItemSettings) Get() (v EditorInterfaceSidebarIt
 
 // Or returns value if set, or given parameter if does not.
 func (o OptEditorInterfaceSidebarItemSettings) Or(d EditorInterfaceSidebarItemSettings) EditorInterfaceSidebarItemSettings {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptInt returns new OptInt with value set to v.
+func NewOptInt(v int) OptInt {
+	return OptInt{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptInt is optional int.
+type OptInt struct {
+	Value int
+	Set   bool
+}
+
+// IsSet returns true if OptInt was set.
+func (o OptInt) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptInt) Reset() {
+	var v int
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptInt) SetTo(v int) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptInt) Get() (v int, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptInt) Or(d int) int {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1029,6 +1475,52 @@ func (o OptPutAppInstallationReqParameters) Or(d PutAppInstallationReqParameters
 	return d
 }
 
+// NewOptPutContentTypeReqFieldsItemItems returns new OptPutContentTypeReqFieldsItemItems with value set to v.
+func NewOptPutContentTypeReqFieldsItemItems(v PutContentTypeReqFieldsItemItems) OptPutContentTypeReqFieldsItemItems {
+	return OptPutContentTypeReqFieldsItemItems{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPutContentTypeReqFieldsItemItems is optional PutContentTypeReqFieldsItemItems.
+type OptPutContentTypeReqFieldsItemItems struct {
+	Value PutContentTypeReqFieldsItemItems
+	Set   bool
+}
+
+// IsSet returns true if OptPutContentTypeReqFieldsItemItems was set.
+func (o OptPutContentTypeReqFieldsItemItems) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPutContentTypeReqFieldsItemItems) Reset() {
+	var v PutContentTypeReqFieldsItemItems
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPutContentTypeReqFieldsItemItems) SetTo(v PutContentTypeReqFieldsItemItems) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPutContentTypeReqFieldsItemItems) Get() (v PutContentTypeReqFieldsItemItems, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPutContentTypeReqFieldsItemItems) Or(d PutContentTypeReqFieldsItemItems) PutContentTypeReqFieldsItemItems {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptPutEditorInterfaceReqControlsItemSettings returns new OptPutEditorInterfaceReqControlsItemSettings with value set to v.
 func NewOptPutEditorInterfaceReqControlsItemSettings(v PutEditorInterfaceReqControlsItemSettings) OptPutEditorInterfaceReqControlsItemSettings {
 	return OptPutEditorInterfaceReqControlsItemSettings{
@@ -1190,6 +1682,221 @@ func (s *PutAppInstallationReqParameters) init() PutAppInstallationReqParameters
 		*s = m
 	}
 	return m
+}
+
+type PutContentTypeCreated ContentType
+
+func (*PutContentTypeCreated) putContentTypeRes() {}
+
+type PutContentTypeOK ContentType
+
+func (*PutContentTypeOK) putContentTypeRes() {}
+
+type PutContentTypeReq struct {
+	Name         string                        `json:"name"`
+	Description  string                        `json:"description"`
+	DisplayField string                        `json:"displayField"`
+	Fields       []PutContentTypeReqFieldsItem `json:"fields"`
+}
+
+// GetName returns the value of Name.
+func (s *PutContentTypeReq) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *PutContentTypeReq) GetDescription() string {
+	return s.Description
+}
+
+// GetDisplayField returns the value of DisplayField.
+func (s *PutContentTypeReq) GetDisplayField() string {
+	return s.DisplayField
+}
+
+// GetFields returns the value of Fields.
+func (s *PutContentTypeReq) GetFields() []PutContentTypeReqFieldsItem {
+	return s.Fields
+}
+
+// SetName sets the value of Name.
+func (s *PutContentTypeReq) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *PutContentTypeReq) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetDisplayField sets the value of DisplayField.
+func (s *PutContentTypeReq) SetDisplayField(val string) {
+	s.DisplayField = val
+}
+
+// SetFields sets the value of Fields.
+func (s *PutContentTypeReq) SetFields(val []PutContentTypeReqFieldsItem) {
+	s.Fields = val
+}
+
+type PutContentTypeReqFieldsItem struct {
+	ID           string                              `json:"id"`
+	Name         string                              `json:"name"`
+	Type         string                              `json:"type"`
+	LinkType     OptString                           `json:"linkType"`
+	Items        OptPutContentTypeReqFieldsItemItems `json:"items"`
+	Localized    OptBool                             `json:"localized"`
+	Omitted      OptBool                             `json:"omitted"`
+	Required     OptBool                             `json:"required"`
+	Disabled     OptBool                             `json:"disabled"`
+	DefaultValue jx.Raw                              `json:"default_value"`
+	Validations  []jx.Raw                            `json:"validations"`
+}
+
+// GetID returns the value of ID.
+func (s *PutContentTypeReqFieldsItem) GetID() string {
+	return s.ID
+}
+
+// GetName returns the value of Name.
+func (s *PutContentTypeReqFieldsItem) GetName() string {
+	return s.Name
+}
+
+// GetType returns the value of Type.
+func (s *PutContentTypeReqFieldsItem) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *PutContentTypeReqFieldsItem) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetItems returns the value of Items.
+func (s *PutContentTypeReqFieldsItem) GetItems() OptPutContentTypeReqFieldsItemItems {
+	return s.Items
+}
+
+// GetLocalized returns the value of Localized.
+func (s *PutContentTypeReqFieldsItem) GetLocalized() OptBool {
+	return s.Localized
+}
+
+// GetOmitted returns the value of Omitted.
+func (s *PutContentTypeReqFieldsItem) GetOmitted() OptBool {
+	return s.Omitted
+}
+
+// GetRequired returns the value of Required.
+func (s *PutContentTypeReqFieldsItem) GetRequired() OptBool {
+	return s.Required
+}
+
+// GetDisabled returns the value of Disabled.
+func (s *PutContentTypeReqFieldsItem) GetDisabled() OptBool {
+	return s.Disabled
+}
+
+// GetDefaultValue returns the value of DefaultValue.
+func (s *PutContentTypeReqFieldsItem) GetDefaultValue() jx.Raw {
+	return s.DefaultValue
+}
+
+// GetValidations returns the value of Validations.
+func (s *PutContentTypeReqFieldsItem) GetValidations() []jx.Raw {
+	return s.Validations
+}
+
+// SetID sets the value of ID.
+func (s *PutContentTypeReqFieldsItem) SetID(val string) {
+	s.ID = val
+}
+
+// SetName sets the value of Name.
+func (s *PutContentTypeReqFieldsItem) SetName(val string) {
+	s.Name = val
+}
+
+// SetType sets the value of Type.
+func (s *PutContentTypeReqFieldsItem) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *PutContentTypeReqFieldsItem) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetItems sets the value of Items.
+func (s *PutContentTypeReqFieldsItem) SetItems(val OptPutContentTypeReqFieldsItemItems) {
+	s.Items = val
+}
+
+// SetLocalized sets the value of Localized.
+func (s *PutContentTypeReqFieldsItem) SetLocalized(val OptBool) {
+	s.Localized = val
+}
+
+// SetOmitted sets the value of Omitted.
+func (s *PutContentTypeReqFieldsItem) SetOmitted(val OptBool) {
+	s.Omitted = val
+}
+
+// SetRequired sets the value of Required.
+func (s *PutContentTypeReqFieldsItem) SetRequired(val OptBool) {
+	s.Required = val
+}
+
+// SetDisabled sets the value of Disabled.
+func (s *PutContentTypeReqFieldsItem) SetDisabled(val OptBool) {
+	s.Disabled = val
+}
+
+// SetDefaultValue sets the value of DefaultValue.
+func (s *PutContentTypeReqFieldsItem) SetDefaultValue(val jx.Raw) {
+	s.DefaultValue = val
+}
+
+// SetValidations sets the value of Validations.
+func (s *PutContentTypeReqFieldsItem) SetValidations(val []jx.Raw) {
+	s.Validations = val
+}
+
+type PutContentTypeReqFieldsItemItems struct {
+	Type        OptString `json:"type"`
+	LinkType    OptString `json:"linkType"`
+	Validations []jx.Raw  `json:"validations"`
+}
+
+// GetType returns the value of Type.
+func (s *PutContentTypeReqFieldsItemItems) GetType() OptString {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *PutContentTypeReqFieldsItemItems) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetValidations returns the value of Validations.
+func (s *PutContentTypeReqFieldsItemItems) GetValidations() []jx.Raw {
+	return s.Validations
+}
+
+// SetType sets the value of Type.
+func (s *PutContentTypeReqFieldsItemItems) SetType(val OptString) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *PutContentTypeReqFieldsItemItems) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetValidations sets the value of Validations.
+func (s *PutContentTypeReqFieldsItemItems) SetValidations(val []jx.Raw) {
+	s.Validations = val
 }
 
 type PutEditorInterfaceReq struct {
