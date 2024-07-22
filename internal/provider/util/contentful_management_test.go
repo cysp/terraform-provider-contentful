@@ -22,10 +22,14 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 		"ErrorStatusCode": {
 			response: &contentfulManagement.ErrorStatusCode{
 				Response: contentfulManagement.Error{
-					Message: "message",
+					Sys: contentfulManagement.ErrorSys{
+						Type: contentfulManagement.ErrorSysTypeError,
+						ID:   "UnknownError",
+					},
+					Message: "Error message",
 				},
 			},
-			expected: "message",
+			expected: "Error message",
 		},
 		"string": {
 			response: "string",
