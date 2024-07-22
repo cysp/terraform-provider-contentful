@@ -26,10 +26,21 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 						Type: contentfulManagement.ErrorSysTypeError,
 						ID:   "UnknownError",
 					},
-					Message: "Error message",
 				},
 			},
-			expected: "Error message",
+			expected: "Error: UnknownError",
+		},
+		"ErrorStatusCodeWithMessage": {
+			response: &contentfulManagement.ErrorStatusCode{
+				Response: contentfulManagement.Error{
+					Sys: contentfulManagement.ErrorSys{
+						Type: contentfulManagement.ErrorSysTypeError,
+						ID:   "UnknownError",
+					},
+					Message: contentfulManagement.NewOptString("Error message"),
+				},
+			},
+			expected: "Error: UnknownError: Error message",
 		},
 		"string": {
 			response: "string",

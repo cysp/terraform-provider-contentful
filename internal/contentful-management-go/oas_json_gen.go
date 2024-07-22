@@ -1089,8 +1089,10 @@ func (s *Error) encodeFields(e *jx.Encoder) {
 		s.Sys.Encode(e)
 	}
 	{
-		e.FieldStart("message")
-		e.Str(s.Message)
+		if s.Message.Set {
+			e.FieldStart("message")
+			s.Message.Encode(e)
+		}
 	}
 }
 
@@ -1119,11 +1121,9 @@ func (s *Error) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"sys\"")
 			}
 		case "message":
-			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				v, err := d.Str()
-				s.Message = string(v)
-				if err != nil {
+				s.Message.Reset()
+				if err := s.Message.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -1140,7 +1140,7 @@ func (s *Error) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000011,
+		0b00000001,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
