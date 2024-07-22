@@ -52,34 +52,24 @@ components:
           type: string
         id:
           type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
       required:
         - type
         - id
     BaseSysWithIdAndVersion:
-      type: object
-      properties:
-        type:
-          type: string
-        id:
-          type: string
-        version:
-          type: integer
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-      required:
-        - type
-        - id
-        - version
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithId'
+        - type: object
+          properties:
+            version:
+              type: integer
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+          required:
+            - version
     UserSys:
       allOf:
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
