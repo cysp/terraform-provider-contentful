@@ -9,6 +9,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
@@ -56,6 +57,12 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
+	params := contentfulManagement.PutAppInstallationParams{
+		SpaceID:         data.SpaceId.ValueString(),
+		EnvironmentID:   data.EnvironmentId.ValueString(),
+		AppDefinitionID: data.AppDefinitionId.ValueString(),
+	}
+
 	request := contentfulManagement.PutAppInstallationReq{}
 	resp.Diagnostics.Append(CreatePutAppInstallationRequestBody(&request, data)...)
 
@@ -63,10 +70,13 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	response, err := r.providerData.client.PutAppInstallation(ctx, &request, contentfulManagement.PutAppInstallationParams{
-		SpaceID:         data.SpaceId.ValueString(),
-		EnvironmentID:   data.EnvironmentId.ValueString(),
-		AppDefinitionID: data.AppDefinitionId.ValueString(),
+	response, err := r.providerData.client.PutAppInstallation(ctx, &request, params)
+
+	tflog.Info(ctx, "editor_interface.create", map[string]interface{}{
+		"params":   params,
+		"request":  request,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {
@@ -92,10 +102,18 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	response, err := r.providerData.client.GetAppInstallation(ctx, contentfulManagement.GetAppInstallationParams{
+	params := contentfulManagement.GetAppInstallationParams{
 		SpaceID:         data.SpaceId.ValueString(),
 		EnvironmentID:   data.EnvironmentId.ValueString(),
 		AppDefinitionID: data.AppDefinitionId.ValueString(),
+	}
+
+	response, err := r.providerData.client.GetAppInstallation(ctx, params)
+
+	tflog.Info(ctx, "editor_interface.read", map[string]interface{}{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {
@@ -133,6 +151,12 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
+	params := contentfulManagement.PutAppInstallationParams{
+		SpaceID:         data.SpaceId.ValueString(),
+		EnvironmentID:   data.EnvironmentId.ValueString(),
+		AppDefinitionID: data.AppDefinitionId.ValueString(),
+	}
+
 	request := contentfulManagement.PutAppInstallationReq{}
 	resp.Diagnostics.Append(CreatePutAppInstallationRequestBody(&request, data)...)
 
@@ -140,10 +164,13 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	response, err := r.providerData.client.PutAppInstallation(ctx, &request, contentfulManagement.PutAppInstallationParams{
-		SpaceID:         data.SpaceId.ValueString(),
-		EnvironmentID:   data.EnvironmentId.ValueString(),
-		AppDefinitionID: data.AppDefinitionId.ValueString(),
+	response, err := r.providerData.client.PutAppInstallation(ctx, &request, params)
+
+	tflog.Info(ctx, "editor_interface.update", map[string]interface{}{
+		"params":   params,
+		"request":  request,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {

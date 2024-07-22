@@ -9,6 +9,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
@@ -56,13 +57,22 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	currentVersion := 1
-	request := data.ToPutEditorInterfaceReq(ctx, &resp.Diagnostics)
 
-	response, err := r.providerData.client.PutEditorInterface(ctx, &request, contentfulManagement.PutEditorInterfaceParams{
+	params := contentfulManagement.PutEditorInterfaceParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		EnvironmentID:      data.EnvironmentId.ValueString(),
 		ContentTypeID:      data.ContentTypeId.ValueString(),
 		XContentfulVersion: currentVersion,
+	}
+	request := data.ToPutEditorInterfaceReq(ctx, &resp.Diagnostics)
+
+	response, err := r.providerData.client.PutEditorInterface(ctx, &request, params)
+
+	tflog.Info(ctx, "editor_interface.create", map[string]interface{}{
+		"params":   params,
+		"request":  request,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {
@@ -91,13 +101,21 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	currentVersion := 0
-
-	response, err := r.providerData.client.GetEditorInterface(ctx, contentfulManagement.GetEditorInterfaceParams{
+	params := contentfulManagement.GetEditorInterfaceParams{
 		SpaceID:       data.SpaceId.ValueString(),
 		EnvironmentID: data.EnvironmentId.ValueString(),
 		ContentTypeID: data.ContentTypeId.ValueString(),
+	}
+
+	response, err := r.providerData.client.GetEditorInterface(ctx, params)
+
+	tflog.Info(ctx, "editor_interface.read", map[string]interface{}{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
+
+	currentVersion := 0
 
 	switch response := response.(type) {
 	case *contentfulManagement.EditorInterface:
@@ -138,17 +156,25 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	currentVersion, currentVersionDiags := util.PrivateDataGetInt(ctx, req.Private, "version")
 	resp.Diagnostics.Append(currentVersionDiags...)
 
+	params := contentfulManagement.PutEditorInterfaceParams{
+		SpaceID:            data.SpaceId.ValueString(),
+		EnvironmentID:      data.EnvironmentId.ValueString(),
+		ContentTypeID:      data.ContentTypeId.ValueString(),
+		XContentfulVersion: currentVersion,
+	}
 	request := data.ToPutEditorInterfaceReq(ctx, &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	response, err := r.providerData.client.PutEditorInterface(ctx, &request, contentfulManagement.PutEditorInterfaceParams{
-		SpaceID:            data.SpaceId.ValueString(),
-		EnvironmentID:      data.EnvironmentId.ValueString(),
-		ContentTypeID:      data.ContentTypeId.ValueString(),
-		XContentfulVersion: currentVersion,
+	response, err := r.providerData.client.PutEditorInterface(ctx, &request, params)
+
+	tflog.Info(ctx, "editor_interface.update", map[string]interface{}{
+		"params":   params,
+		"request":  request,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {
