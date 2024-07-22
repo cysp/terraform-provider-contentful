@@ -329,23 +329,15 @@ func (s *EditorInterface) encodeFields(e *jx.Encoder) {
 		s.Sys.Encode(e)
 	}
 	{
-		if s.Controls != nil {
+		if s.Controls.Set {
 			e.FieldStart("controls")
-			e.ArrStart()
-			for _, elem := range s.Controls {
-				elem.Encode(e)
-			}
-			e.ArrEnd()
+			s.Controls.Encode(e)
 		}
 	}
 	{
-		if s.Sidebar != nil {
+		if s.Sidebar.Set {
 			e.FieldStart("sidebar")
-			e.ArrStart()
-			for _, elem := range s.Sidebar {
-				elem.Encode(e)
-			}
-			e.ArrEnd()
+			s.Sidebar.Encode(e)
 		}
 	}
 }
@@ -377,15 +369,8 @@ func (s *EditorInterface) Decode(d *jx.Decoder) error {
 			}
 		case "controls":
 			if err := func() error {
-				s.Controls = make([]EditorInterfaceControlsItem, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem EditorInterfaceControlsItem
-					if err := elem.Decode(d); err != nil {
-						return err
-					}
-					s.Controls = append(s.Controls, elem)
-					return nil
-				}); err != nil {
+				s.Controls.Reset()
+				if err := s.Controls.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -394,15 +379,8 @@ func (s *EditorInterface) Decode(d *jx.Decoder) error {
 			}
 		case "sidebar":
 			if err := func() error {
-				s.Sidebar = make([]EditorInterfaceSidebarItem, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem EditorInterfaceSidebarItem
-					if err := elem.Decode(d); err != nil {
-						return err
-					}
-					s.Sidebar = append(s.Sidebar, elem)
-					return nil
-				}); err != nil {
+				s.Sidebar.Reset()
+				if err := s.Sidebar.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -1507,6 +1485,250 @@ func (s *OptEditorInterfaceSidebarItemSettings) UnmarshalJSON(data []byte) error
 	return s.Decode(d)
 }
 
+// Encode encodes []EditorInterfaceControlsItem as json.
+func (o OptNilEditorInterfaceControlsItemArray) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.ArrStart()
+	for _, elem := range o.Value {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes []EditorInterfaceControlsItem from json.
+func (o *OptNilEditorInterfaceControlsItemArray) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilEditorInterfaceControlsItemArray to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v []EditorInterfaceControlsItem
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	o.Value = make([]EditorInterfaceControlsItem, 0)
+	if err := d.Arr(func(d *jx.Decoder) error {
+		var elem EditorInterfaceControlsItem
+		if err := elem.Decode(d); err != nil {
+			return err
+		}
+		o.Value = append(o.Value, elem)
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilEditorInterfaceControlsItemArray) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilEditorInterfaceControlsItemArray) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes []EditorInterfaceSidebarItem as json.
+func (o OptNilEditorInterfaceSidebarItemArray) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.ArrStart()
+	for _, elem := range o.Value {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes []EditorInterfaceSidebarItem from json.
+func (o *OptNilEditorInterfaceSidebarItemArray) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilEditorInterfaceSidebarItemArray to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v []EditorInterfaceSidebarItem
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	o.Value = make([]EditorInterfaceSidebarItem, 0)
+	if err := d.Arr(func(d *jx.Decoder) error {
+		var elem EditorInterfaceSidebarItem
+		if err := elem.Decode(d); err != nil {
+			return err
+		}
+		o.Value = append(o.Value, elem)
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilEditorInterfaceSidebarItemArray) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilEditorInterfaceSidebarItemArray) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes []PutEditorInterfaceReqControlsItem as json.
+func (o OptNilPutEditorInterfaceReqControlsItemArray) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.ArrStart()
+	for _, elem := range o.Value {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes []PutEditorInterfaceReqControlsItem from json.
+func (o *OptNilPutEditorInterfaceReqControlsItemArray) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilPutEditorInterfaceReqControlsItemArray to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v []PutEditorInterfaceReqControlsItem
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	o.Value = make([]PutEditorInterfaceReqControlsItem, 0)
+	if err := d.Arr(func(d *jx.Decoder) error {
+		var elem PutEditorInterfaceReqControlsItem
+		if err := elem.Decode(d); err != nil {
+			return err
+		}
+		o.Value = append(o.Value, elem)
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilPutEditorInterfaceReqControlsItemArray) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilPutEditorInterfaceReqControlsItemArray) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes []PutEditorInterfaceReqSidebarItem as json.
+func (o OptNilPutEditorInterfaceReqSidebarItemArray) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.ArrStart()
+	for _, elem := range o.Value {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes []PutEditorInterfaceReqSidebarItem from json.
+func (o *OptNilPutEditorInterfaceReqSidebarItemArray) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilPutEditorInterfaceReqSidebarItemArray to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v []PutEditorInterfaceReqSidebarItem
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	o.Value = make([]PutEditorInterfaceReqSidebarItem, 0)
+	if err := d.Arr(func(d *jx.Decoder) error {
+		var elem PutEditorInterfaceReqSidebarItem
+		if err := elem.Decode(d); err != nil {
+			return err
+		}
+		o.Value = append(o.Value, elem)
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilPutEditorInterfaceReqSidebarItemArray) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilPutEditorInterfaceReqSidebarItemArray) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes PutAppInstallationReqParameters as json.
 func (o OptPutAppInstallationReqParameters) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -1775,23 +1997,15 @@ func (s *PutEditorInterfaceReq) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *PutEditorInterfaceReq) encodeFields(e *jx.Encoder) {
 	{
-		if s.Controls != nil {
+		if s.Controls.Set {
 			e.FieldStart("controls")
-			e.ArrStart()
-			for _, elem := range s.Controls {
-				elem.Encode(e)
-			}
-			e.ArrEnd()
+			s.Controls.Encode(e)
 		}
 	}
 	{
-		if s.Sidebar != nil {
+		if s.Sidebar.Set {
 			e.FieldStart("sidebar")
-			e.ArrStart()
-			for _, elem := range s.Sidebar {
-				elem.Encode(e)
-			}
-			e.ArrEnd()
+			s.Sidebar.Encode(e)
 		}
 	}
 }
@@ -1811,15 +2025,8 @@ func (s *PutEditorInterfaceReq) Decode(d *jx.Decoder) error {
 		switch string(k) {
 		case "controls":
 			if err := func() error {
-				s.Controls = make([]PutEditorInterfaceReqControlsItem, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem PutEditorInterfaceReqControlsItem
-					if err := elem.Decode(d); err != nil {
-						return err
-					}
-					s.Controls = append(s.Controls, elem)
-					return nil
-				}); err != nil {
+				s.Controls.Reset()
+				if err := s.Controls.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -1828,15 +2035,8 @@ func (s *PutEditorInterfaceReq) Decode(d *jx.Decoder) error {
 			}
 		case "sidebar":
 			if err := func() error {
-				s.Sidebar = make([]PutEditorInterfaceReqSidebarItem, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem PutEditorInterfaceReqSidebarItem
-					if err := elem.Decode(d); err != nil {
-						return err
-					}
-					s.Sidebar = append(s.Sidebar, elem)
-					return nil
-				}); err != nil {
+				s.Sidebar.Reset()
+				if err := s.Sidebar.Decode(d); err != nil {
 					return err
 				}
 				return nil

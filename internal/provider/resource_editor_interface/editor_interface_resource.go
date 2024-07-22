@@ -28,28 +28,40 @@ func NewSidebarValueKnown() SidebarValue {
 func (model EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context, diags *diag.Diagnostics) contentfulManagement.PutEditorInterfaceReq {
 	request := contentfulManagement.PutEditorInterfaceReq{}
 
-	controlsPath := path.Root("controls")
+	if model.Controls.IsNull() || model.Controls.IsUnknown() {
+		request.Controls.Reset()
+	} else {
+		controlsPath := path.Root("controls")
 
-	controlsElementValues := []ControlsValue{}
-	diags.Append(model.Controls.ElementsAs(ctx, &controlsElementValues, false)...)
+		controlsElementValues := []ControlsValue{}
+		diags.Append(model.Controls.ElementsAs(ctx, &controlsElementValues, false)...)
 
-	request.Controls = make([]contentfulManagement.PutEditorInterfaceReqControlsItem, len(controlsElementValues))
+		requestControlsItems := make([]contentfulManagement.PutEditorInterfaceReqControlsItem, len(controlsElementValues))
 
-	for index, controlsElement := range controlsElementValues {
-		path := controlsPath.AtListIndex(index)
-		request.Controls[index] = controlsElement.ToPutEditorInterfaceReqControlsItem(ctx, path, diags)
+		for index, controlsElement := range controlsElementValues {
+			path := controlsPath.AtListIndex(index)
+			requestControlsItems[index] = controlsElement.ToPutEditorInterfaceReqControlsItem(ctx, path, diags)
+		}
+
+		request.Controls.SetTo(requestControlsItems)
 	}
 
-	sidebarPath := path.Root("sidebar")
+	if model.Sidebar.IsNull() || model.Sidebar.IsUnknown() {
+		request.Sidebar.Reset()
+	} else {
+		sidebarPath := path.Root("sidebar")
 
-	sidebarElementValues := []SidebarValue{}
-	diags.Append(model.Sidebar.ElementsAs(ctx, &sidebarElementValues, false)...)
+		sidebarElementValues := []SidebarValue{}
+		diags.Append(model.Sidebar.ElementsAs(ctx, &sidebarElementValues, false)...)
 
-	request.Sidebar = make([]contentfulManagement.PutEditorInterfaceReqSidebarItem, len(sidebarElementValues))
+		requestSidebarItems := make([]contentfulManagement.PutEditorInterfaceReqSidebarItem, len(sidebarElementValues))
 
-	for index, sidebarElement := range sidebarElementValues {
-		path := sidebarPath.AtListIndex(index)
-		request.Sidebar[index] = sidebarElement.ToPutEditorInterfaceReqSidebarItem(ctx, path, diags)
+		for index, sidebarElement := range sidebarElementValues {
+			path := sidebarPath.AtListIndex(index)
+			requestSidebarItems[index] = sidebarElement.ToPutEditorInterfaceReqSidebarItem(ctx, path, diags)
+		}
+
+		request.Sidebar.SetTo(requestSidebarItems)
 	}
 
 	return request
@@ -121,6 +133,10 @@ func NewControlsValueFromResponse(path path.Path, item contentfulManagement.Edit
 	return value
 }
 
+func NewControlsListValueNull(ctx context.Context) types.List {
+	return types.ListNull(ControlsValue{}.Type(ctx))
+}
+
 func NewControlsListValueFromResponse(ctx context.Context, path path.Path, controlsItems []contentfulManagement.EditorInterfaceControlsItem, diags *diag.Diagnostics) types.List {
 	listElementValues := make([]attr.Value, len(controlsItems))
 
@@ -156,6 +172,10 @@ func NewSidebarValueFromResponse(path path.Path, item contentfulManagement.Edito
 	}
 
 	return value
+}
+
+func NewSidebarListValueNull(ctx context.Context) types.List {
+	return types.ListNull(SidebarValue{}.Type(ctx))
 }
 
 func NewSidebarListValueFromResponse(ctx context.Context, path path.Path, sidebarItems []contentfulManagement.EditorInterfaceSidebarItem, diags *diag.Diagnostics) types.List {

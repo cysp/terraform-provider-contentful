@@ -14,8 +14,17 @@ func ReadEditorInterfaceModel(ctx context.Context, model *resource_editor_interf
 
 	// SpaceId, EnvironmentId and ContentTypeId are all already known
 
-	model.Controls = resource_editor_interface.NewControlsListValueFromResponse(ctx, path.Root("controls"), editorInterface.Controls, &diags)
-	model.Sidebar = resource_editor_interface.NewSidebarListValueFromResponse(ctx, path.Root("sidebar"), editorInterface.Sidebar, &diags)
+	if editorInterfaceControls, ok := editorInterface.Controls.Get(); ok {
+		model.Controls = resource_editor_interface.NewControlsListValueFromResponse(ctx, path.Root("controls"), editorInterfaceControls, &diags)
+	} else {
+		model.Controls = resource_editor_interface.NewControlsListValueNull(ctx)
+	}
+
+	if editorInterfaceSidebar, ok := editorInterface.Sidebar.Get(); ok {
+		model.Sidebar = resource_editor_interface.NewSidebarListValueFromResponse(ctx, path.Root("sidebar"), editorInterfaceSidebar, &diags)
+	} else {
+		model.Sidebar = resource_editor_interface.NewSidebarListValueNull(ctx)
+	}
 
 	return diags
 }

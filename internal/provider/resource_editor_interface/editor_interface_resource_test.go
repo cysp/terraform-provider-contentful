@@ -58,7 +58,7 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 	assert.Empty(t, diags)
 
 	assert.EqualValues(t, contentfulManagement.PutEditorInterfaceReq{
-		Controls: []contentfulManagement.PutEditorInterfaceReqControlsItem{
+		Controls: contentfulManagement.NewOptNilPutEditorInterfaceReqControlsItemArray([]contentfulManagement.PutEditorInterfaceReqControlsItem{
 			{
 				FieldId:         "field_id",
 				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
@@ -70,8 +70,8 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 					},
 				},
 			},
-		},
-		Sidebar: []contentfulManagement.PutEditorInterfaceReqSidebarItem{
+		}),
+		Sidebar: contentfulManagement.NewOptNilPutEditorInterfaceReqSidebarItemArray([]contentfulManagement.PutEditorInterfaceReqSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
@@ -82,7 +82,7 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 					},
 				},
 			},
-		},
+		}),
 	}, req)
 }
 
@@ -153,7 +153,7 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 	req := model.ToPutEditorInterfaceReq(ctx, &diags)
 
 	assert.EqualValues(t, contentfulManagement.PutEditorInterfaceReq{
-		Controls: []contentfulManagement.PutEditorInterfaceReqControlsItem{
+		Controls: contentfulManagement.NewOptNilPutEditorInterfaceReqControlsItemArray([]contentfulManagement.PutEditorInterfaceReqControlsItem{
 			{
 				FieldId:         "field_id",
 				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
@@ -179,8 +179,8 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 					},
 				},
 			},
-		},
-		Sidebar: []contentfulManagement.PutEditorInterfaceReqSidebarItem{
+		}),
+		Sidebar: contentfulManagement.NewOptNilPutEditorInterfaceReqSidebarItemArray([]contentfulManagement.PutEditorInterfaceReqSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
@@ -203,7 +203,7 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 					},
 				},
 			},
-		},
+		}),
 	}, req)
 
 	assert.Len(t, diags, 2)
