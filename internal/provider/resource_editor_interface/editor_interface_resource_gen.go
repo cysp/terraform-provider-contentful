@@ -5,11 +5,9 @@ package resource_editor_interface
 import (
 	"context"
 	"fmt"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -57,7 +55,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Optional: true,
 				Computed: true,
-				Default:  listdefault.StaticValue(util.NewEmptyListMust(ControlsValue{}.Type(ctx))),
 			},
 			"environment_id": schema.StringAttribute{
 				Required: true,
@@ -93,7 +90,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Optional: true,
 				Computed: true,
-				Default:  listdefault.StaticValue(util.NewEmptyListMust(SidebarValue{}.Type(ctx))),
 			},
 			"space_id": schema.StringAttribute{
 				Required: true,

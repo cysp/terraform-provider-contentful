@@ -194,19 +194,6 @@
                                         }
                                     }
                                 ]
-                            },
-                            "default": {
-                                "custom": {
-                                    "imports": [
-                                        {
-                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-                                        },
-                                        {
-                                            "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
-                                        }
-                                    ],
-                                    "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(ControlsValue{}.Type(ctx)))"
-                                }
                             }
                         }
                     },
@@ -251,19 +238,6 @@
                                         }
                                     }
                                 ]
-                            },
-                            "default": {
-                                "custom": {
-                                    "imports": [
-                                        {
-                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-                                        },
-                                        {
-                                            "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
-                                        }
-                                    ],
-                                    "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(SidebarValue{}.Type(ctx)))"
-                                }
                             }
                         }
                     }
