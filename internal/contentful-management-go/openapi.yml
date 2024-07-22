@@ -6,10 +6,6 @@ servers:
   - url: https://api.contentful.com
 components:
   schemas:
-    ErrorSysId:
-      type: string
-      enum:
-        - NotFound
     ErrorSys:
       type: object
       properties:
@@ -111,6 +107,54 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/UserFields'
+    Array:
+      type: object
+      properties:
+        sys:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - Array
+          required:
+            - type
+        total:
+          type: integer 
+        skip:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - sys
+        - total
+        - skip
+        - limit
+    AppDefinitionSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithId'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - AppDefinition
+    AppDefinitionFields:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    AppDefinition:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/AppDefinitionSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/AppDefinitionFields'
     AppInstallationSys:
       allOf:
         - $ref: '#/components/schemas/BaseSys'
@@ -189,6 +233,23 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/EditorInterfaceFields'
+    Organization:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: '#/components/schemas/BaseSys'
+            - type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - Organization
+        name:
+          type: string
+      required:
+        - sys
+        - name
   securitySchemes:
     accessToken:
       type: http
@@ -223,6 +284,82 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: '#/components/schemas/User'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /organizations:
+    get:
+      summary: Get all organizations an account has access to
+      operationId: getOrganizations
+      responses:
+        200:
+          description: A list of organizations
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Array'
+                  - type: object
+                    properties:
+                      items: 
+                        type: array
+                        items: 
+                          $ref: '#/components/schemas/Organization'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /organizations/{organization_id}/app_definitions:
+    get:
+      operationId: getAppDefinitions
+      summary: Get all app definitions
+      parameters:
+        - in: path
+          name: organization_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: A list of app definitions
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Array'
+                  - type: object
+                    properties:
+                      items: 
+                        type: array
+                        items: 
+                          $ref: '#/components/schemas/AppDefinition'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /organizations/{organization_id}/app_definitions/{app_definition_id}:
+    get:
+      operationId: getAppDefinition
+      summary: Get one app definition
+      parameters:
+        - in: path
+          name: organization_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: app_definition_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: An app definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/AppDefinition'
         401:
           $ref: '#/components/responses/unauthorized'
         default:

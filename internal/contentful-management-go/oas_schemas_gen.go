@@ -24,6 +24,120 @@ func (s *AccessToken) SetToken(val string) {
 }
 
 // Merged schema.
+// Ref: #/components/schemas/AppDefinition
+type AppDefinition struct {
+	Sys  AppDefinitionSys `json:"sys"`
+	Name string           `json:"name"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppDefinition) GetSys() AppDefinitionSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *AppDefinition) GetName() string {
+	return s.Name
+}
+
+// SetSys sets the value of Sys.
+func (s *AppDefinition) SetSys(val AppDefinitionSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *AppDefinition) SetName(val string) {
+	s.Name = val
+}
+
+func (*AppDefinition) getAppDefinitionRes() {}
+
+// Merged schema.
+// Ref: #/components/schemas/AppDefinitionSys
+type AppDefinitionSys struct {
+	// Merged property.
+	Type      AppDefinitionSysType `json:"type"`
+	ID        string               `json:"id"`
+	CreatedAt OptDateTime          `json:"createdAt"`
+	UpdatedAt OptDateTime          `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionSys) GetType() AppDefinitionSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *AppDefinitionSys) GetID() string {
+	return s.ID
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *AppDefinitionSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *AppDefinitionSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionSys) SetType(val AppDefinitionSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *AppDefinitionSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *AppDefinitionSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *AppDefinitionSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type AppDefinitionSysType string
+
+const (
+	AppDefinitionSysTypeAppDefinition AppDefinitionSysType = "AppDefinition"
+)
+
+// AllValues returns all AppDefinitionSysType values.
+func (AppDefinitionSysType) AllValues() []AppDefinitionSysType {
+	return []AppDefinitionSysType{
+		AppDefinitionSysTypeAppDefinition,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppDefinitionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppDefinitionSysTypeAppDefinition:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppDefinitionSysType) UnmarshalText(data []byte) error {
+	switch AppDefinitionSysType(data) {
+	case AppDefinitionSysTypeAppDefinition:
+		*s = AppDefinitionSysTypeAppDefinition
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
 // Ref: #/components/schemas/AppInstallation
 type AppInstallation struct {
 	Sys        AppInstallationSys           `json:"sys"`
@@ -397,9 +511,12 @@ func (s *Error) SetMessage(val OptString) {
 }
 
 func (*Error) deleteAppInstallationRes() {}
+func (*Error) getAppDefinitionRes()      {}
+func (*Error) getAppDefinitionsRes()     {}
 func (*Error) getAppInstallationRes()    {}
 func (*Error) getAuthenticatedUserRes()  {}
 func (*Error) getEditorInterfaceRes()    {}
+func (*Error) getOrganizationsRes()      {}
 func (*Error) putAppInstallationRes()    {}
 func (*Error) putEditorInterfaceRes()    {}
 
@@ -430,9 +547,12 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 }
 
 func (*ErrorStatusCode) deleteAppInstallationRes() {}
+func (*ErrorStatusCode) getAppDefinitionRes()      {}
+func (*ErrorStatusCode) getAppDefinitionsRes()     {}
 func (*ErrorStatusCode) getAppInstallationRes()    {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()  {}
 func (*ErrorStatusCode) getEditorInterfaceRes()    {}
+func (*ErrorStatusCode) getOrganizationsRes()      {}
 func (*ErrorStatusCode) putAppInstallationRes()    {}
 func (*ErrorStatusCode) putEditorInterfaceRes()    {}
 
@@ -490,6 +610,224 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 	switch ErrorSysType(data) {
 	case ErrorSysTypeError:
 		*s = ErrorSysTypeError
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type GetAppDefinitionsOK struct {
+	Sys   GetAppDefinitionsOKSys `json:"sys"`
+	Total int                    `json:"total"`
+	Skip  int                    `json:"skip"`
+	Limit int                    `json:"limit"`
+	Items []AppDefinition        `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *GetAppDefinitionsOK) GetSys() GetAppDefinitionsOKSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *GetAppDefinitionsOK) GetTotal() int {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *GetAppDefinitionsOK) GetSkip() int {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *GetAppDefinitionsOK) GetLimit() int {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *GetAppDefinitionsOK) GetItems() []AppDefinition {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *GetAppDefinitionsOK) SetSys(val GetAppDefinitionsOKSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *GetAppDefinitionsOK) SetTotal(val int) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *GetAppDefinitionsOK) SetSkip(val int) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *GetAppDefinitionsOK) SetLimit(val int) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *GetAppDefinitionsOK) SetItems(val []AppDefinition) {
+	s.Items = val
+}
+
+func (*GetAppDefinitionsOK) getAppDefinitionsRes() {}
+
+type GetAppDefinitionsOKSys struct {
+	Type GetAppDefinitionsOKSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *GetAppDefinitionsOKSys) GetType() GetAppDefinitionsOKSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *GetAppDefinitionsOKSys) SetType(val GetAppDefinitionsOKSysType) {
+	s.Type = val
+}
+
+type GetAppDefinitionsOKSysType string
+
+const (
+	GetAppDefinitionsOKSysTypeArray GetAppDefinitionsOKSysType = "Array"
+)
+
+// AllValues returns all GetAppDefinitionsOKSysType values.
+func (GetAppDefinitionsOKSysType) AllValues() []GetAppDefinitionsOKSysType {
+	return []GetAppDefinitionsOKSysType{
+		GetAppDefinitionsOKSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GetAppDefinitionsOKSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case GetAppDefinitionsOKSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GetAppDefinitionsOKSysType) UnmarshalText(data []byte) error {
+	switch GetAppDefinitionsOKSysType(data) {
+	case GetAppDefinitionsOKSysTypeArray:
+		*s = GetAppDefinitionsOKSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type GetOrganizationsOK struct {
+	Sys   GetOrganizationsOKSys `json:"sys"`
+	Total int                   `json:"total"`
+	Skip  int                   `json:"skip"`
+	Limit int                   `json:"limit"`
+	Items []Organization        `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *GetOrganizationsOK) GetSys() GetOrganizationsOKSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *GetOrganizationsOK) GetTotal() int {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *GetOrganizationsOK) GetSkip() int {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *GetOrganizationsOK) GetLimit() int {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *GetOrganizationsOK) GetItems() []Organization {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *GetOrganizationsOK) SetSys(val GetOrganizationsOKSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *GetOrganizationsOK) SetTotal(val int) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *GetOrganizationsOK) SetSkip(val int) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *GetOrganizationsOK) SetLimit(val int) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *GetOrganizationsOK) SetItems(val []Organization) {
+	s.Items = val
+}
+
+func (*GetOrganizationsOK) getOrganizationsRes() {}
+
+type GetOrganizationsOKSys struct {
+	Type GetOrganizationsOKSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *GetOrganizationsOKSys) GetType() GetOrganizationsOKSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *GetOrganizationsOKSys) SetType(val GetOrganizationsOKSysType) {
+	s.Type = val
+}
+
+type GetOrganizationsOKSysType string
+
+const (
+	GetOrganizationsOKSysTypeArray GetOrganizationsOKSysType = "Array"
+)
+
+// AllValues returns all GetOrganizationsOKSysType values.
+func (GetOrganizationsOKSysType) AllValues() []GetOrganizationsOKSysType {
+	return []GetOrganizationsOKSysType{
+		GetOrganizationsOKSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GetOrganizationsOKSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case GetOrganizationsOKSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GetOrganizationsOKSysType) UnmarshalText(data []byte) error {
+	switch GetOrganizationsOKSysType(data) {
+	case GetOrganizationsOKSysTypeArray:
+		*s = GetOrganizationsOKSysTypeArray
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -913,6 +1251,83 @@ func (o OptString) Or(d string) string {
 		return v
 	}
 	return d
+}
+
+// Ref: #/components/schemas/Organization
+type Organization struct {
+	Sys  OrganizationSys `json:"sys"`
+	Name string          `json:"name"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Organization) GetSys() OrganizationSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Organization) GetName() string {
+	return s.Name
+}
+
+// SetSys sets the value of Sys.
+func (s *Organization) SetSys(val OrganizationSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Organization) SetName(val string) {
+	s.Name = val
+}
+
+// Merged schema.
+type OrganizationSys struct {
+	// Merged property.
+	Type OrganizationSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *OrganizationSys) GetType() OrganizationSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *OrganizationSys) SetType(val OrganizationSysType) {
+	s.Type = val
+}
+
+// Merged schema.
+type OrganizationSysType string
+
+const (
+	OrganizationSysTypeOrganization OrganizationSysType = "Organization"
+)
+
+// AllValues returns all OrganizationSysType values.
+func (OrganizationSysType) AllValues() []OrganizationSysType {
+	return []OrganizationSysType{
+		OrganizationSysTypeOrganization,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s OrganizationSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case OrganizationSysTypeOrganization:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *OrganizationSysType) UnmarshalText(data []byte) error {
+	switch OrganizationSysType(data) {
+	case OrganizationSysTypeOrganization:
+		*s = OrganizationSysTypeOrganization
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 type PutAppInstallationReq struct {
