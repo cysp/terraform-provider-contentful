@@ -104,13 +104,13 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 
 	case *contentfulManagement.ErrorStatusCode:
 		if response.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning("Failed to read app installation", response.Response.Message)
+			resp.Diagnostics.AddWarning("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 			resp.State.RemoveResource(ctx)
 
 			return
 		}
 
-		resp.Diagnostics.AddError("Failed to read app installation", response.Response.Message)
+		resp.Diagnostics.AddError("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 	default:
 		resp.Diagnostics.AddError("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -180,9 +180,9 @@ func (r *appInstallationResource) Delete(ctx context.Context, req resource.Delet
 
 	case *contentfulManagement.ErrorStatusCode:
 		if response.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning("App already uninstalled", response.Response.Message)
+			resp.Diagnostics.AddWarning("App already uninstalled", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		} else {
-			resp.Diagnostics.AddError("Failed to uninstall app", response.Response.Message)
+			resp.Diagnostics.AddError("Failed to uninstall app", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
 
 	default:
