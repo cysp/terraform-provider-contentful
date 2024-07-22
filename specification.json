@@ -187,9 +187,6 @@
                                                 },
                                                 "type": "jsontypes.NormalizedType{}",
                                                 "value_type": "jsontypes.Normalized"
-                                            },
-                                            "default": {
-                                                "static": "{}"
                                             }
                                         }
                                     }
@@ -225,9 +222,6 @@
                                                 },
                                                 "type": "jsontypes.NormalizedType{}",
                                                 "value_type": "jsontypes.Normalized"
-                                            },
-                                            "default": {
-                                                "static": "{}"
                                             }
                                         }
                                     },

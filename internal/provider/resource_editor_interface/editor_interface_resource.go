@@ -74,15 +74,19 @@ func (model ControlsValue) ToPutEditorInterfaceReqControlsItem(ctx context.Conte
 		WidgetId:        util.StringValueToOptString(model.WidgetId),
 	}
 
-	modelSettings := model.Settings.ValueStringPointer()
-	if modelSettings != nil {
+	if model.Settings.IsNull() || model.Settings.IsUnknown() {
+	} else {
+		modelSettings := model.Settings.ValueString()
+
 		path := path.AtName("settings")
 
-		decoder := jx.DecodeStr(*modelSettings)
+		if modelSettings != "" {
+			decoder := jx.DecodeStr(modelSettings)
 
-		err := item.Settings.Decode(decoder)
-		if err != nil {
-			diags.AddAttributeError(path, "Failed to decode settings", err.Error())
+			err := item.Settings.Decode(decoder)
+			if err != nil {
+				diags.AddAttributeError(path, "Failed to decode settings", err.Error())
+			}
 		}
 	}
 
@@ -100,15 +104,19 @@ func (model SidebarValue) ToPutEditorInterfaceReqSidebarItem(ctx context.Context
 		item.Disabled.SetTo(*modelDisabled)
 	}
 
-	modelSettings := model.Settings.ValueStringPointer()
-	if modelSettings != nil {
+	if model.Settings.IsNull() || model.Settings.IsUnknown() {
+	} else {
+		modelSettings := model.Settings.ValueString()
+
 		path := path.AtName("settings")
 
-		decoder := jx.DecodeStr(*modelSettings)
+		if modelSettings != "" {
+			decoder := jx.DecodeStr(modelSettings)
 
-		err := item.Settings.Decode(decoder)
-		if err != nil {
-			diags.AddAttributeError(path, "Failed to decode settings", err.Error())
+			err := item.Settings.Decode(decoder)
+			if err != nil {
+				diags.AddAttributeError(path, "Failed to decode settings", err.Error())
+			}
 		}
 	}
 
