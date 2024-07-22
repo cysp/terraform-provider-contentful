@@ -201,12 +201,52 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 					sidebar = [{
 						widget_namespace = "app"
 						widget_id        = "1WkQ2J9LERPtbMTdUfSHka"
+						settings = jsonencode({
+							bar = "baz"
+						})
 					}]
 				}
 				`,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				Config: `
+				resource "contentful_editor_interface" "test" {
+					space_id = "0p38pssr0fi3"
+					environment_id = "test"
+					content_type_id = "author"
+
+					controls = [
+						{
+						field_id         = "name",
+						widget_namespace = "builtin",
+						widget_id        = "singleLine",
+						},
+						{
+						field_id         = "avatar",
+						widget_namespace = "builtin",
+						widget_id        = "assetLinkEditor",
+						},
+						{
+						field_id         = "blurb",
+						widget_namespace = "builtin",
+						widget_id        = "richTextEditor",
+						}
+					]
+
+					sidebar = [{
+						widget_namespace = "app"
+						widget_id        = "1WkQ2J9LERPtbMTdUfSHka"
+					}]
+				}
+				`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionNoop),
 					},
 				},
 			},

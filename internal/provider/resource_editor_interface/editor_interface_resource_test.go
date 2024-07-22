@@ -300,3 +300,81 @@ func TestSidebarValueToPutEditorInterfaceReqSidebarItemInvalidSettings(t *testin
 	assert.NotEmpty(t, diags)
 	assert.Len(t, diags, 1)
 }
+
+func TestNewControlsValueFromResponse(t *testing.T) {
+	t.Parallel()
+
+	path := path.Root("controls").AtListIndex(0)
+
+	item := contentfulManagement.EditorInterfaceControlsItem{
+		FieldId:         "field_id",
+		WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
+		WidgetId:        contentfulManagement.NewOptString("widget_id"),
+		Settings: contentfulManagement.NewOptEditorInterfaceControlsItemSettings(map[string]jx.Raw{
+			"foo": jx.Raw(`"bar"`),
+		}),
+	}
+
+	value := resource_editor_interface.NewControlsValueFromResponse(path, item)
+
+	assert.EqualValues(t, "field_id", value.FieldId.ValueString())
+	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
+	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
+	assert.EqualValues(t, "{\"foo\":\"bar\"}", value.Settings.ValueString())
+}
+
+func TestNewControlsValueFromResponseSettingsNull(t *testing.T) {
+	t.Parallel()
+
+	path := path.Root("controls").AtListIndex(0)
+
+	item := contentfulManagement.EditorInterfaceControlsItem{
+		FieldId:         "field_id",
+		WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
+		WidgetId:        contentfulManagement.NewOptString("widget_id"),
+	}
+
+	value := resource_editor_interface.NewControlsValueFromResponse(path, item)
+
+	assert.EqualValues(t, "field_id", value.FieldId.ValueString())
+	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
+	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
+	assert.True(t, value.Settings.IsNull())
+}
+
+func TestNewSidebarValueFromResponse(t *testing.T) {
+	t.Parallel()
+
+	path := path.Root("sidebar").AtListIndex(0)
+
+	item := contentfulManagement.EditorInterfaceSidebarItem{
+		WidgetNamespace: "widget_namespace",
+		WidgetId:        "widget_id",
+		Settings: contentfulManagement.NewOptEditorInterfaceSidebarItemSettings(map[string]jx.Raw{
+			"foo": jx.Raw(`"bar"`),
+		}),
+	}
+
+	value := resource_editor_interface.NewSidebarValueFromResponse(path, item)
+
+	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
+	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
+	assert.EqualValues(t, "{\"foo\":\"bar\"}", value.Settings.ValueString())
+}
+
+func TestNewSidebarValueFromResponseSettingsNull(t *testing.T) {
+	t.Parallel()
+
+	path := path.Root("sidebar").AtListIndex(0)
+
+	item := contentfulManagement.EditorInterfaceSidebarItem{
+		WidgetNamespace: "widget_namespace",
+		WidgetId:        "widget_id",
+	}
+
+	value := resource_editor_interface.NewSidebarValueFromResponse(path, item)
+
+	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
+	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
+	assert.True(t, value.Settings.IsNull())
+}

@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -38,7 +37,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 							CustomType: jsontypes.NormalizedType{},
 							Optional:   true,
 							Computed:   true,
-							Default:    stringdefault.StaticString("{}"),
 						},
 						"widget_id": schema.StringAttribute{
 							Optional: true,
@@ -73,7 +71,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 							CustomType: jsontypes.NormalizedType{},
 							Optional:   true,
 							Computed:   true,
-							Default:    stringdefault.StaticString("{}"),
 						},
 						"widget_id": schema.StringAttribute{
 							Required: true,
