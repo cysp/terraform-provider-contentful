@@ -149,6 +149,7 @@ components:
       properties:
         controls:
           type: array
+          nullable: true
           items:
             type: object
             properties:
@@ -165,6 +166,7 @@ components:
               - fieldId
         sidebar:
           type: array
+          nullable: true
           items:
             type: object
             properties:

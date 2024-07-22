@@ -119,9 +119,9 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 // Merged schema.
 // Ref: #/components/schemas/EditorInterface
 type EditorInterface struct {
-	Sys      EditorInterfaceSys            `json:"sys"`
-	Controls []EditorInterfaceControlsItem `json:"controls"`
-	Sidebar  []EditorInterfaceSidebarItem  `json:"sidebar"`
+	Sys      EditorInterfaceSys                     `json:"sys"`
+	Controls OptNilEditorInterfaceControlsItemArray `json:"controls"`
+	Sidebar  OptNilEditorInterfaceSidebarItemArray  `json:"sidebar"`
 }
 
 // GetSys returns the value of Sys.
@@ -130,12 +130,12 @@ func (s *EditorInterface) GetSys() EditorInterfaceSys {
 }
 
 // GetControls returns the value of Controls.
-func (s *EditorInterface) GetControls() []EditorInterfaceControlsItem {
+func (s *EditorInterface) GetControls() OptNilEditorInterfaceControlsItemArray {
 	return s.Controls
 }
 
 // GetSidebar returns the value of Sidebar.
-func (s *EditorInterface) GetSidebar() []EditorInterfaceSidebarItem {
+func (s *EditorInterface) GetSidebar() OptNilEditorInterfaceSidebarItemArray {
 	return s.Sidebar
 }
 
@@ -145,12 +145,12 @@ func (s *EditorInterface) SetSys(val EditorInterfaceSys) {
 }
 
 // SetControls sets the value of Controls.
-func (s *EditorInterface) SetControls(val []EditorInterfaceControlsItem) {
+func (s *EditorInterface) SetControls(val OptNilEditorInterfaceControlsItemArray) {
 	s.Controls = val
 }
 
 // SetSidebar sets the value of Sidebar.
-func (s *EditorInterface) SetSidebar(val []EditorInterfaceSidebarItem) {
+func (s *EditorInterface) SetSidebar(val OptNilEditorInterfaceSidebarItemArray) {
 	s.Sidebar = val
 }
 
@@ -731,6 +731,258 @@ func (o OptEditorInterfaceSidebarItemSettings) Or(d EditorInterfaceSidebarItemSe
 	return d
 }
 
+// NewOptNilEditorInterfaceControlsItemArray returns new OptNilEditorInterfaceControlsItemArray with value set to v.
+func NewOptNilEditorInterfaceControlsItemArray(v []EditorInterfaceControlsItem) OptNilEditorInterfaceControlsItemArray {
+	return OptNilEditorInterfaceControlsItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceControlsItemArray is optional nullable []EditorInterfaceControlsItem.
+type OptNilEditorInterfaceControlsItemArray struct {
+	Value []EditorInterfaceControlsItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceControlsItemArray was set.
+func (o OptNilEditorInterfaceControlsItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceControlsItemArray) Reset() {
+	var v []EditorInterfaceControlsItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceControlsItemArray) SetTo(v []EditorInterfaceControlsItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilEditorInterfaceControlsItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilEditorInterfaceControlsItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceControlsItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceControlsItemArray) Get() (v []EditorInterfaceControlsItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceControlsItemArray) Or(d []EditorInterfaceControlsItem) []EditorInterfaceControlsItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilEditorInterfaceSidebarItemArray returns new OptNilEditorInterfaceSidebarItemArray with value set to v.
+func NewOptNilEditorInterfaceSidebarItemArray(v []EditorInterfaceSidebarItem) OptNilEditorInterfaceSidebarItemArray {
+	return OptNilEditorInterfaceSidebarItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceSidebarItemArray is optional nullable []EditorInterfaceSidebarItem.
+type OptNilEditorInterfaceSidebarItemArray struct {
+	Value []EditorInterfaceSidebarItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceSidebarItemArray was set.
+func (o OptNilEditorInterfaceSidebarItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceSidebarItemArray) Reset() {
+	var v []EditorInterfaceSidebarItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceSidebarItemArray) SetTo(v []EditorInterfaceSidebarItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilEditorInterfaceSidebarItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilEditorInterfaceSidebarItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceSidebarItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceSidebarItemArray) Get() (v []EditorInterfaceSidebarItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceSidebarItemArray) Or(d []EditorInterfaceSidebarItem) []EditorInterfaceSidebarItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilPutEditorInterfaceReqControlsItemArray returns new OptNilPutEditorInterfaceReqControlsItemArray with value set to v.
+func NewOptNilPutEditorInterfaceReqControlsItemArray(v []PutEditorInterfaceReqControlsItem) OptNilPutEditorInterfaceReqControlsItemArray {
+	return OptNilPutEditorInterfaceReqControlsItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilPutEditorInterfaceReqControlsItemArray is optional nullable []PutEditorInterfaceReqControlsItem.
+type OptNilPutEditorInterfaceReqControlsItemArray struct {
+	Value []PutEditorInterfaceReqControlsItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilPutEditorInterfaceReqControlsItemArray was set.
+func (o OptNilPutEditorInterfaceReqControlsItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilPutEditorInterfaceReqControlsItemArray) Reset() {
+	var v []PutEditorInterfaceReqControlsItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilPutEditorInterfaceReqControlsItemArray) SetTo(v []PutEditorInterfaceReqControlsItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilPutEditorInterfaceReqControlsItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilPutEditorInterfaceReqControlsItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []PutEditorInterfaceReqControlsItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilPutEditorInterfaceReqControlsItemArray) Get() (v []PutEditorInterfaceReqControlsItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilPutEditorInterfaceReqControlsItemArray) Or(d []PutEditorInterfaceReqControlsItem) []PutEditorInterfaceReqControlsItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilPutEditorInterfaceReqSidebarItemArray returns new OptNilPutEditorInterfaceReqSidebarItemArray with value set to v.
+func NewOptNilPutEditorInterfaceReqSidebarItemArray(v []PutEditorInterfaceReqSidebarItem) OptNilPutEditorInterfaceReqSidebarItemArray {
+	return OptNilPutEditorInterfaceReqSidebarItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilPutEditorInterfaceReqSidebarItemArray is optional nullable []PutEditorInterfaceReqSidebarItem.
+type OptNilPutEditorInterfaceReqSidebarItemArray struct {
+	Value []PutEditorInterfaceReqSidebarItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilPutEditorInterfaceReqSidebarItemArray was set.
+func (o OptNilPutEditorInterfaceReqSidebarItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilPutEditorInterfaceReqSidebarItemArray) Reset() {
+	var v []PutEditorInterfaceReqSidebarItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilPutEditorInterfaceReqSidebarItemArray) SetTo(v []PutEditorInterfaceReqSidebarItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilPutEditorInterfaceReqSidebarItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilPutEditorInterfaceReqSidebarItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []PutEditorInterfaceReqSidebarItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilPutEditorInterfaceReqSidebarItemArray) Get() (v []PutEditorInterfaceReqSidebarItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilPutEditorInterfaceReqSidebarItemArray) Or(d []PutEditorInterfaceReqSidebarItem) []PutEditorInterfaceReqSidebarItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptPutAppInstallationReqParameters returns new OptPutAppInstallationReqParameters with value set to v.
 func NewOptPutAppInstallationReqParameters(v PutAppInstallationReqParameters) OptPutAppInstallationReqParameters {
 	return OptPutAppInstallationReqParameters{
@@ -941,27 +1193,27 @@ func (s *PutAppInstallationReqParameters) init() PutAppInstallationReqParameters
 }
 
 type PutEditorInterfaceReq struct {
-	Controls []PutEditorInterfaceReqControlsItem `json:"controls"`
-	Sidebar  []PutEditorInterfaceReqSidebarItem  `json:"sidebar"`
+	Controls OptNilPutEditorInterfaceReqControlsItemArray `json:"controls"`
+	Sidebar  OptNilPutEditorInterfaceReqSidebarItemArray  `json:"sidebar"`
 }
 
 // GetControls returns the value of Controls.
-func (s *PutEditorInterfaceReq) GetControls() []PutEditorInterfaceReqControlsItem {
+func (s *PutEditorInterfaceReq) GetControls() OptNilPutEditorInterfaceReqControlsItemArray {
 	return s.Controls
 }
 
 // GetSidebar returns the value of Sidebar.
-func (s *PutEditorInterfaceReq) GetSidebar() []PutEditorInterfaceReqSidebarItem {
+func (s *PutEditorInterfaceReq) GetSidebar() OptNilPutEditorInterfaceReqSidebarItemArray {
 	return s.Sidebar
 }
 
 // SetControls sets the value of Controls.
-func (s *PutEditorInterfaceReq) SetControls(val []PutEditorInterfaceReqControlsItem) {
+func (s *PutEditorInterfaceReq) SetControls(val OptNilPutEditorInterfaceReqControlsItemArray) {
 	s.Controls = val
 }
 
 // SetSidebar sets the value of Sidebar.
-func (s *PutEditorInterfaceReq) SetSidebar(val []PutEditorInterfaceReqSidebarItem) {
+func (s *PutEditorInterfaceReq) SetSidebar(val OptNilPutEditorInterfaceReqSidebarItemArray) {
 	s.Sidebar = val
 }
 
