@@ -29,8 +29,6 @@ components:
           type: string
         # details:
         #   type: string
-      required:
-        - message
     Error:
       allOf:
         - type: object

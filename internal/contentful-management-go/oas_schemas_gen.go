@@ -372,8 +372,8 @@ func (s *EditorInterfaceSysType) UnmarshalText(data []byte) error {
 // Merged schema.
 // Ref: #/components/schemas/Error
 type Error struct {
-	Sys     ErrorSys `json:"sys"`
-	Message string   `json:"message"`
+	Sys     ErrorSys  `json:"sys"`
+	Message OptString `json:"message"`
 }
 
 // GetSys returns the value of Sys.
@@ -382,7 +382,7 @@ func (s *Error) GetSys() ErrorSys {
 }
 
 // GetMessage returns the value of Message.
-func (s *Error) GetMessage() string {
+func (s *Error) GetMessage() OptString {
 	return s.Message
 }
 
@@ -392,7 +392,7 @@ func (s *Error) SetSys(val ErrorSys) {
 }
 
 // SetMessage sets the value of Message.
-func (s *Error) SetMessage(val string) {
+func (s *Error) SetMessage(val OptString) {
 	s.Message = val
 }
 

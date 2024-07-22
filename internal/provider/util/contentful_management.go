@@ -10,7 +10,17 @@ import (
 
 func ErrorDetailFromContentfulManagementResponse(response interface{}, err error) string {
 	if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
-		return response.Response.Message
+		responseType, err := response.Response.Sys.Type.MarshalText()
+
+		if err == nil {
+			detail := string(responseType) + ": " + response.Response.Sys.ID
+
+			if responseMessage, ok := response.Response.Message.Get(); ok {
+				detail += ": " + responseMessage
+			}
+
+			return detail
+		}
 	}
 
 	if err != nil {
