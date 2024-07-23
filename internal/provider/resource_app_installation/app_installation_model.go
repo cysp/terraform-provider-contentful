@@ -1,8 +1,8 @@
-package provider
+//nolint:revive,stylecheck
+package resource_app_installation
 
 import (
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_app_installation"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -10,7 +10,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func ReadAppInstallationModel(model *resource_app_installation.AppInstallationModel, appInstallation contentfulManagement.AppInstallation) {
+func (model *AppInstallationModel) ToPutAppInstallationReq() (contentfulManagement.PutAppInstallationReq, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	req := contentfulManagement.PutAppInstallationReq{}
+
+	switch {
+	case model.Parameters.IsUnknown():
+		diags.AddAttributeWarning(path.Root("parameters"), "Failed to update app installation parameters", "Parameters are unknown")
+	case model.Parameters.IsNull():
+	default:
+		appInstallationParametersValue := contentfulManagement.PutAppInstallationReqParameters{}
+		diags.Append(model.Parameters.Unmarshal(&appInstallationParametersValue)...)
+		req.Parameters.SetTo(appInstallationParametersValue)
+	}
+
+	return req, diags
+}
+
+func (model *AppInstallationModel) ReadFromResponse(appInstallation *contentfulManagement.AppInstallation) {
 	// SpaceId, EnvironmentId and AppDefinitionId are all already known
 	if parameters, ok := appInstallation.Parameters.Get(); ok {
 		encoder := jx.Encoder{}
@@ -19,22 +37,4 @@ func ReadAppInstallationModel(model *resource_app_installation.AppInstallationMo
 	} else {
 		model.Parameters = jsontypes.NewNormalizedNull()
 	}
-}
-
-func CreatePutAppInstallationRequestBody(req *contentfulManagement.PutAppInstallationReq, model resource_app_installation.AppInstallationModel) diag.Diagnostics {
-	diags := diag.Diagnostics{}
-
-	switch {
-	case model.Parameters.IsUnknown():
-		diags.AddAttributeWarning(path.Root("parameters"), "Failed to update app installation parameters", "Parameters are unknown")
-		req.Parameters.Reset()
-	case model.Parameters.IsNull():
-		req.Parameters.Reset()
-	default:
-		appInstallationParametersValue := contentfulManagement.PutAppInstallationReqParameters{}
-		diags.Append(model.Parameters.Unmarshal(&appInstallationParametersValue)...)
-		req.Parameters.SetTo(appInstallationParametersValue)
-	}
-
-	return diags
 }
