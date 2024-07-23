@@ -546,7 +546,7 @@ func (s *ContentTypeFieldsItem) encodeFields(e *jx.Encoder) {
 	}
 	{
 		if len(s.DefaultValue) != 0 {
-			e.FieldStart("default_value")
+			e.FieldStart("defaultValue")
 			e.Raw(s.DefaultValue)
 		}
 	}
@@ -574,7 +574,7 @@ var jsonFieldsNameOfContentTypeFieldsItem = [11]string{
 	6:  "omitted",
 	7:  "required",
 	8:  "disabled",
-	9:  "default_value",
+	9:  "defaultValue",
 	10: "validations",
 }
 
@@ -683,7 +683,7 @@ func (s *ContentTypeFieldsItem) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"disabled\"")
 			}
-		case "default_value":
+		case "defaultValue":
 			if err := func() error {
 				v, err := d.RawAppend(nil)
 				s.DefaultValue = jx.Raw(v)
@@ -692,7 +692,7 @@ func (s *ContentTypeFieldsItem) Decode(d *jx.Decoder) error {
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"default_value\"")
+				return errors.Wrap(err, "decode field \"defaultValue\"")
 			}
 		case "validations":
 			if err := func() error {
@@ -3181,7 +3181,7 @@ func (s *PutContentTypeReqFieldsItem) encodeFields(e *jx.Encoder) {
 	}
 	{
 		if len(s.DefaultValue) != 0 {
-			e.FieldStart("default_value")
+			e.FieldStart("defaultValue")
 			e.Raw(s.DefaultValue)
 		}
 	}
@@ -3209,7 +3209,7 @@ var jsonFieldsNameOfPutContentTypeReqFieldsItem = [11]string{
 	6:  "omitted",
 	7:  "required",
 	8:  "disabled",
-	9:  "default_value",
+	9:  "defaultValue",
 	10: "validations",
 }
 
@@ -3318,7 +3318,7 @@ func (s *PutContentTypeReqFieldsItem) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"disabled\"")
 			}
-		case "default_value":
+		case "defaultValue":
 			if err := func() error {
 				v, err := d.RawAppend(nil)
 				s.DefaultValue = jx.Raw(v)
@@ -3327,7 +3327,7 @@ func (s *PutContentTypeReqFieldsItem) Decode(d *jx.Decoder) error {
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"default_value\"")
+				return errors.Wrap(err, "decode field \"defaultValue\"")
 			}
 		case "validations":
 			if err := func() error {

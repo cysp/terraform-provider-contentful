@@ -184,7 +184,7 @@ components:
                 type: boolean
               disabled:
                 type: boolean
-              default_value: {}
+              defaultValue: {}
               validations: 
                 type: array
                 items: {}

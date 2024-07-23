@@ -16,22 +16,6 @@ func (v *OptBool) ValueBoolPointer() *bool {
 	return nil
 }
 
-func NewOptPointerInt(value *int) OptInt {
-	if value == nil {
-		return OptInt{}
-	}
-
-	return NewOptInt(*value)
-}
-
-func (v *OptInt) ValueIntPointer() *int {
-	if value, ok := v.Get(); ok {
-		return &value
-	}
-
-	return nil
-}
-
 func NewOptPointerString(value *string) OptString {
 	if value == nil {
 		return OptString{}

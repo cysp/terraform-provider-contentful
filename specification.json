@@ -96,6 +96,210 @@
             }
         },
         {
+            "name": "content_type",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "space_id",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "environment_id",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "content_type_id",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "string": {
+                            "computed_optional_required": "required"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "string": {
+                            "computed_optional_required": "required"
+                        }
+                    },
+                    {
+                        "name": "display_field",
+                        "string": {
+                            "computed_optional_required": "required"
+                        }
+                    },
+                    {
+                        "name": "fields",
+                        "list_nested": {
+                            "computed_optional_required": "required",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "id",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "name",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "type",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "link_type",
+                                        "string": {
+                                            "computed_optional_required": "optional"
+                                        }
+                                    },
+                                    {
+                                        "name": "items",
+                                        "single_nested": {
+                                            "computed_optional_required": "optional",
+                                            "attributes": [
+                                                {
+                                                    "name": "type",
+                                                    "string": {
+                                                        "computed_optional_required": "required"
+                                                    }
+                                                },
+                                                {
+                                                    "name": "link_type",
+                                                    "string": {
+                                                        "computed_optional_required": "optional"
+                                                    }
+                                                },
+                                                {
+                                                    "name": "validations",
+                                                    "list": {
+                                                        "computed_optional_required": "computed_optional",
+                                                        "element_type": {
+                                                            "string": {
+                                                                "custom_type": {
+                                                                    "import": {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                                    },
+                                                                    "type": "jsontypes.NormalizedType{}",
+                                                                    "value_type": "jsontypes.Normalized"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "required",
+                                        "bool": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "localized",
+                                        "bool": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "disabled",
+                                        "bool": {
+                                            "computed_optional_required": "computed_optional"
+                                        }
+                                    },
+                                    {
+                                        "name": "omitted",
+                                        "bool": {
+                                            "computed_optional_required": "computed_optional"
+                                        }
+                                    },
+                                    {
+                                        "name": "validations",
+                                        "list": {
+                                            "computed_optional_required": "computed_optional",
+                                            "element_type": {
+                                                "string": {
+                                                    "custom_type": {
+                                                        "import": {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                        },
+                                                        "type": "jsontypes.NormalizedType{}",
+                                                        "value_type": "jsontypes.Normalized"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "default_value",
+                                        "string": {
+                                            "computed_optional_required": "computed_optional",
+                                            "custom_type": {
+                                                "import": {
+                                                    "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                },
+                                                "type": "jsontypes.NormalizedType{}",
+                                                "value_type": "jsontypes.Normalized"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
             "name": "editor_interface",
             "schema": {
                 "attributes": [
