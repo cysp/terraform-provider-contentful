@@ -1,60 +1,15 @@
-package provider_test
+package resource_app_installation_test
 
 import (
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_app_installation"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReadModelFromAppInstallation(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		appInstallation contentfulManagement.AppInstallation
-		expectedModel   resource_app_installation.AppInstallationModel
-	}{
-		"null": {
-			appInstallation: contentfulManagement.AppInstallation{},
-			expectedModel:   resource_app_installation.AppInstallationModel{},
-		},
-		"empty": {
-			appInstallation: contentfulManagement.AppInstallation{
-				Parameters: contentfulManagement.NewOptAppInstallationParameters(contentfulManagement.AppInstallationParameters{}),
-			},
-			expectedModel: resource_app_installation.AppInstallationModel{
-				Parameters: jsontypes.NewNormalizedValue("{}"),
-			},
-		},
-		"foo=bar": {
-			appInstallation: contentfulManagement.AppInstallation{
-				Parameters: contentfulManagement.NewOptAppInstallationParameters(contentfulManagement.AppInstallationParameters{
-					"foo": []byte{'"', 'b', 'a', 'r', '"'},
-				}),
-			},
-			expectedModel: resource_app_installation.AppInstallationModel{
-				Parameters: jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
-			},
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			model := resource_app_installation.AppInstallationModel{}
-
-			provider.ReadAppInstallationModel(&model, test.appInstallation)
-
-			assert.EqualValues(t, test.expectedModel, model)
-		})
-	}
-}
-
-func TestCreatePutAppInstallationRequestBody(t *testing.T) {
+func TestToPutAppInstallationReq(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -101,9 +56,7 @@ func TestCreatePutAppInstallationRequestBody(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			req := &contentfulManagement.PutAppInstallationReq{}
-
-			diags := provider.CreatePutAppInstallationRequestBody(req, test.model)
+			req, diags := test.model.ToPutAppInstallationReq()
 
 			requestBody, _ := req.MarshalJSON()
 
@@ -120,6 +73,50 @@ func TestCreatePutAppInstallationRequestBody(t *testing.T) {
 			} else {
 				assert.Empty(t, diags.Warnings())
 			}
+		})
+	}
+}
+
+func TestReadFromResponse(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		appInstallation contentfulManagement.AppInstallation
+		expectedModel   resource_app_installation.AppInstallationModel
+	}{
+		"null": {
+			appInstallation: contentfulManagement.AppInstallation{},
+			expectedModel:   resource_app_installation.AppInstallationModel{},
+		},
+		"empty": {
+			appInstallation: contentfulManagement.AppInstallation{
+				Parameters: contentfulManagement.NewOptAppInstallationParameters(contentfulManagement.AppInstallationParameters{}),
+			},
+			expectedModel: resource_app_installation.AppInstallationModel{
+				Parameters: jsontypes.NewNormalizedValue("{}"),
+			},
+		},
+		"foo=bar": {
+			appInstallation: contentfulManagement.AppInstallation{
+				Parameters: contentfulManagement.NewOptAppInstallationParameters(contentfulManagement.AppInstallationParameters{
+					"foo": []byte{'"', 'b', 'a', 'r', '"'},
+				}),
+			},
+			expectedModel: resource_app_installation.AppInstallationModel{
+				Parameters: jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := resource_app_installation.AppInstallationModel{}
+
+			model.ReadFromResponse(&test.appInstallation)
+
+			assert.EqualValues(t, test.expectedModel, model)
 		})
 	}
 }

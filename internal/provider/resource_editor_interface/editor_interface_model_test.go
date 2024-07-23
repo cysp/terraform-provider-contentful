@@ -6,10 +6,10 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_editor_interface"
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -52,8 +52,7 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 		Sidebar:  sidebar,
 	}
 
-	diags := diag.Diagnostics{}
-	req := model.ToPutEditorInterfaceReq(ctx, &diags)
+	req, diags := model.ToPutEditorInterfaceReq(ctx)
 
 	assert.Empty(t, diags)
 
@@ -149,8 +148,7 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 		Sidebar:  sidebar,
 	}
 
-	diags := diag.Diagnostics{}
-	req := model.ToPutEditorInterfaceReq(ctx, &diags)
+	req, diags := model.ToPutEditorInterfaceReq(ctx)
 
 	assert.EqualValues(t, contentfulManagement.PutEditorInterfaceReq{
 		Controls: contentfulManagement.NewOptNilPutEditorInterfaceReqControlsItemArray([]contentfulManagement.PutEditorInterfaceReqControlsItem{
@@ -217,164 +215,41 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 	assert.EqualValues(t, "Failed to decode settings", diags[1].Summary())
 }
 
-func TestControlsValueToPutEditorInterfaceReqControlsItem(t *testing.T) {
+func TestReadFromResponse(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
-	path := path.Root("controls")
-
-	model := resource_editor_interface.NewControlsValueKnown()
-	model.FieldId = types.StringValue("field_id")
-	model.WidgetNamespace = types.StringValue("widget_namespace")
-	model.WidgetId = types.StringValue("widget_id")
-	model.Settings = types.StringValue(`{"foo":"bar"}`)
-
-	diags := diag.Diagnostics{}
-	item := model.ToPutEditorInterfaceReqControlsItem(ctx, path, &diags)
-
-	assert.EqualValues(t, "field_id", item.FieldId)
-	assert.EqualValues(t, contentfulManagement.NewOptString("widget_namespace"), item.WidgetNamespace)
-	assert.EqualValues(t, contentfulManagement.NewOptString("widget_id"), item.WidgetId)
-	assert.True(t, item.Settings.Set)
-
-	assert.Empty(t, diags)
-}
-
-func TestControlsValueToPutEditorInterfaceReqControlsItemInvalidSettings(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-	path := path.Root("controls")
-
-	model := resource_editor_interface.NewControlsValueKnown()
-	model.FieldId = types.StringValue("field_id")
-	model.WidgetNamespace = types.StringValue("widget_namespace")
-	model.WidgetId = types.StringValue("widget_id")
-	model.Settings = types.StringValue(`invalid json`)
-
-	diags := diag.Diagnostics{}
-	model.ToPutEditorInterfaceReqControlsItem(ctx, path, &diags)
-
-	assert.NotEmpty(t, diags)
-	assert.Len(t, diags, 1)
-}
-
-func TestSidebarValueToPutEditorInterfaceReqSidebarItem(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-	path := path.Root("sidebar")
-
-	model := resource_editor_interface.NewSidebarValueKnown()
-	model.WidgetNamespace = types.StringValue("widget_namespace")
-	model.WidgetId = types.StringValue("widget_id")
-	model.Disabled = types.BoolNull()
-	model.Settings = types.StringValue(`{"foo":"bar"}`)
-
-	diags := diag.Diagnostics{}
-	item := model.ToPutEditorInterfaceReqSidebarItem(ctx, path, &diags)
-
-	assert.EqualValues(t, "widget_namespace", item.WidgetNamespace)
-	assert.EqualValues(t, "widget_id", item.WidgetId)
-	assert.False(t, item.Disabled.Set)
-	assert.True(t, item.Settings.Set)
-
-	assert.Empty(t, diags)
-}
-
-func TestSidebarValueToPutEditorInterfaceReqSidebarItemInvalidSettings(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-	path := path.Root("sidebar")
-
-	model := resource_editor_interface.NewSidebarValueKnown()
-	model.WidgetNamespace = types.StringValue("widget_namespace")
-	model.WidgetId = types.StringValue("widget_id")
-	model.Disabled = types.BoolNull()
-	model.Settings = types.StringValue(`invalid json`)
-
-	diags := diag.Diagnostics{}
-	model.ToPutEditorInterfaceReqSidebarItem(ctx, path, &diags)
-
-	assert.NotEmpty(t, diags)
-	assert.Len(t, diags, 1)
-}
-
-func TestNewControlsValueFromResponse(t *testing.T) {
-	t.Parallel()
-
-	path := path.Root("controls").AtListIndex(0)
-
-	item := contentfulManagement.EditorInterfaceControlsItem{
-		FieldId:         "field_id",
-		WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-		WidgetId:        contentfulManagement.NewOptString("widget_id"),
-		Settings: contentfulManagement.NewOptEditorInterfaceControlsItemSettings(map[string]jx.Raw{
-			"foo": jx.Raw(`"bar"`),
-		}),
+	tests := map[string]struct {
+		editorInterface contentfulManagement.EditorInterface
+		expectedModel   resource_editor_interface.EditorInterfaceModel
+	}{
+		"null": {
+			editorInterface: contentfulManagement.EditorInterface{},
+			expectedModel: resource_editor_interface.EditorInterfaceModel{
+				Controls: types.ListNull(resource_editor_interface.ControlsValue{}.Type(context.Background())),
+				Sidebar:  types.ListNull(resource_editor_interface.SidebarValue{}.Type(context.Background())),
+			},
+		},
+		"empty": {
+			editorInterface: contentfulManagement.EditorInterface{
+				Controls: contentfulManagement.NewOptNilEditorInterfaceControlsItemArray([]contentfulManagement.EditorInterfaceControlsItem{}),
+				Sidebar:  contentfulManagement.NewOptNilEditorInterfaceSidebarItemArray([]contentfulManagement.EditorInterfaceSidebarItem{}),
+			},
+			expectedModel: resource_editor_interface.EditorInterfaceModel{
+				Controls: util.NewEmptyListMust(resource_editor_interface.ControlsValue{}.Type(context.Background())),
+				Sidebar:  util.NewEmptyListMust(resource_editor_interface.SidebarValue{}.Type(context.Background())),
+			},
+		},
 	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	value := resource_editor_interface.NewControlsValueFromResponse(path, item)
+			model := resource_editor_interface.EditorInterfaceModel{}
 
-	assert.EqualValues(t, "field_id", value.FieldId.ValueString())
-	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
-	assert.EqualValues(t, "{\"foo\":\"bar\"}", value.Settings.ValueString())
-}
+			diags := model.ReadFromResponse(context.Background(), &test.editorInterface)
 
-func TestNewControlsValueFromResponseSettingsNull(t *testing.T) {
-	t.Parallel()
-
-	path := path.Root("controls").AtListIndex(0)
-
-	item := contentfulManagement.EditorInterfaceControlsItem{
-		FieldId:         "field_id",
-		WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-		WidgetId:        contentfulManagement.NewOptString("widget_id"),
+			assert.EqualValues(t, test.expectedModel, model)
+			assert.Empty(t, diags)
+		})
 	}
-
-	value := resource_editor_interface.NewControlsValueFromResponse(path, item)
-
-	assert.EqualValues(t, "field_id", value.FieldId.ValueString())
-	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
-	assert.True(t, value.Settings.IsNull())
-}
-
-func TestNewSidebarValueFromResponse(t *testing.T) {
-	t.Parallel()
-
-	path := path.Root("sidebar").AtListIndex(0)
-
-	item := contentfulManagement.EditorInterfaceSidebarItem{
-		WidgetNamespace: "widget_namespace",
-		WidgetId:        "widget_id",
-		Settings: contentfulManagement.NewOptEditorInterfaceSidebarItemSettings(map[string]jx.Raw{
-			"foo": jx.Raw(`"bar"`),
-		}),
-	}
-
-	value := resource_editor_interface.NewSidebarValueFromResponse(path, item)
-
-	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
-	assert.EqualValues(t, "{\"foo\":\"bar\"}", value.Settings.ValueString())
-}
-
-func TestNewSidebarValueFromResponseSettingsNull(t *testing.T) {
-	t.Parallel()
-
-	path := path.Root("sidebar").AtListIndex(0)
-
-	item := contentfulManagement.EditorInterfaceSidebarItem{
-		WidgetNamespace: "widget_namespace",
-		WidgetId:        "widget_id",
-	}
-
-	value := resource_editor_interface.NewSidebarValueFromResponse(path, item)
-
-	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
-	assert.True(t, value.Settings.IsNull())
 }

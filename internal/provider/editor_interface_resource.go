@@ -64,7 +64,9 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		ContentTypeID:      data.ContentTypeId.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
-	request := data.ToPutEditorInterfaceReq(ctx, &resp.Diagnostics)
+
+	request, requestDiags := data.ToPutEditorInterfaceReq(ctx)
+	resp.Diagnostics.Append(requestDiags...)
 
 	response, err := r.providerData.client.PutEditorInterface(ctx, &request, params)
 
@@ -78,7 +80,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 	switch response := response.(type) {
 	case *contentfulManagement.EditorInterface:
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(ReadEditorInterfaceModel(ctx, &data, *response)...)
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -120,7 +122,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 	switch response := response.(type) {
 	case *contentfulManagement.EditorInterface:
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(ReadEditorInterfaceModel(ctx, &data, *response)...)
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	case *contentfulManagement.ErrorStatusCode:
 		if response.StatusCode == http.StatusNotFound {
@@ -162,7 +164,9 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		ContentTypeID:      data.ContentTypeId.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
-	request := data.ToPutEditorInterfaceReq(ctx, &resp.Diagnostics)
+
+	request, requestDiags := data.ToPutEditorInterfaceReq(ctx)
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -180,7 +184,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	switch response := response.(type) {
 	case *contentfulManagement.EditorInterface:
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(ReadEditorInterfaceModel(ctx, &data, *response)...)
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))

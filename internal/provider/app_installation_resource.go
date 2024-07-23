@@ -63,8 +63,8 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		AppDefinitionID: data.AppDefinitionId.ValueString(),
 	}
 
-	request := contentfulManagement.PutAppInstallationReq{}
-	resp.Diagnostics.Append(CreatePutAppInstallationRequestBody(&request, data)...)
+	request, requestDiags := data.ToPutAppInstallationReq()
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -81,7 +81,7 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 
 	switch response := response.(type) {
 	case *contentfulManagement.AppInstallation:
-		ReadAppInstallationModel(&data, *response)
+		data.ReadFromResponse(response)
 	default:
 		resp.Diagnostics.AddError("Failed to create app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
@@ -118,7 +118,7 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 
 	switch response := response.(type) {
 	case *contentfulManagement.AppInstallation:
-		ReadAppInstallationModel(&data, *response)
+		data.ReadFromResponse(response)
 
 	case *contentfulManagement.ErrorStatusCode:
 		if response.StatusCode == http.StatusNotFound {
@@ -157,8 +157,8 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 		AppDefinitionID: data.AppDefinitionId.ValueString(),
 	}
 
-	request := contentfulManagement.PutAppInstallationReq{}
-	resp.Diagnostics.Append(CreatePutAppInstallationRequestBody(&request, data)...)
+	request, requestDiags := data.ToPutAppInstallationReq()
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -175,7 +175,7 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 
 	switch response := response.(type) {
 	case *contentfulManagement.AppInstallation:
-		ReadAppInstallationModel(&data, *response)
+		data.ReadFromResponse(response)
 	default:
 		resp.Diagnostics.AddError("Failed to update app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
