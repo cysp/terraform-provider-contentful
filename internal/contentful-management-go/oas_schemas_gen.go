@@ -190,7 +190,7 @@ type ContentTypeFieldsItem struct {
 	Omitted      OptBool                       `json:"omitted"`
 	Required     OptBool                       `json:"required"`
 	Disabled     OptBool                       `json:"disabled"`
-	DefaultValue jx.Raw                        `json:"default_value"`
+	DefaultValue jx.Raw                        `json:"defaultValue"`
 	Validations  []jx.Raw                      `json:"validations"`
 }
 
@@ -1749,7 +1749,7 @@ type PutContentTypeReqFieldsItem struct {
 	Omitted      OptBool                             `json:"omitted"`
 	Required     OptBool                             `json:"required"`
 	Disabled     OptBool                             `json:"disabled"`
-	DefaultValue jx.Raw                              `json:"default_value"`
+	DefaultValue jx.Raw                              `json:"defaultValue"`
 	Validations  []jx.Raw                            `json:"validations"`
 }
 

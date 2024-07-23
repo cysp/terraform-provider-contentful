@@ -30,19 +30,18 @@ func ErrorDetailFromContentfulManagementResponse(response interface{}, err error
 	return fmt.Sprintf("%v", response)
 }
 
-func OptStringToStringValue(s contentfulManagement.OptString) basetypes.StringValue {
-	if value, ok := s.Get(); ok {
-		return types.StringValue(value)
-	}
+func OptBoolToBoolValue(b contentfulManagement.OptBool) basetypes.BoolValue {
+	return types.BoolPointerValue(b.ValueBoolPointer())
+}
 
-	return types.StringNull()
+func BoolValueToOptBool(b basetypes.BoolValue) contentfulManagement.OptBool {
+	return contentfulManagement.NewOptPointerBool(b.ValueBoolPointer())
+}
+
+func OptStringToStringValue(s contentfulManagement.OptString) basetypes.StringValue {
+	return types.StringPointerValue(s.ValueStringPointer())
 }
 
 func StringValueToOptString(s basetypes.StringValue) contentfulManagement.OptString {
-	switch value := s.ValueStringPointer(); {
-	case value == nil:
-		return contentfulManagement.OptString{}
-	default:
-		return contentfulManagement.NewOptString(*value)
-	}
+	return contentfulManagement.NewOptPointerString(s.ValueStringPointer())
 }
