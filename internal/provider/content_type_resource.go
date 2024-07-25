@@ -249,6 +249,8 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 
 	resp.Diagnostics.Append(util.PrivateDataSetInt(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	r.providerData.editorInterfaceVersionOffset.Increment(data.ContentTypeId.ValueString())
 }
 
 //nolint:cyclop

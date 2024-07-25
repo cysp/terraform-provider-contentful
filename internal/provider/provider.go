@@ -89,8 +89,13 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		resp.Diagnostics.AddError("Failed to create Contentful client: %s", err.Error())
 	}
 
-	resp.DataSourceData = ContentfulProviderData{client: contentfulManagementClient}
-	resp.ResourceData = ContentfulProviderData{client: contentfulManagementClient}
+	providerData := ContentfulProviderData{
+		client:                       contentfulManagementClient,
+		editorInterfaceVersionOffset: &ContentfulContentTypeCounter{},
+	}
+
+	resp.DataSourceData = providerData
+	resp.ResourceData = providerData
 }
 
 func (p *ContentfulProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
