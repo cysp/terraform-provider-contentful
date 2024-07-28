@@ -124,17 +124,16 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
-	case *contentfulManagement.ErrorStatusCode:
-		if response.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning("Failed to read editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
-			resp.State.RemoveResource(ctx)
+	default:
+		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+			if response.StatusCode == http.StatusNotFound {
+				resp.Diagnostics.AddWarning("Failed to read editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
+				resp.State.RemoveResource(ctx)
 
-			return
+				return
+			}
 		}
 
-		resp.Diagnostics.AddError("Failed to read editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
-
-	default:
 		resp.Diagnostics.AddError("Failed to read editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
