@@ -121,7 +121,6 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-//nolint:dupl
 func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data resource_content_type.ContentTypeModel
 
@@ -152,17 +151,16 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
-	case *contentfulManagement.ErrorStatusCode:
-		if response.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
-			resp.State.RemoveResource(ctx)
+	default:
+		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+			if response.StatusCode == http.StatusNotFound {
+				resp.Diagnostics.AddWarning("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+				resp.State.RemoveResource(ctx)
 
-			return
+				return
+			}
 		}
 
-		resp.Diagnostics.AddError("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
-
-	default:
 		resp.Diagnostics.AddError("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
@@ -281,15 +279,20 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	case *contentfulManagement.NoContent:
 	case *contentfulManagement.ContentType:
 
-	case *contentfulManagement.ErrorStatusCode:
-		if response.StatusCode == http.StatusNotFound || (response.Response.Sys.ID == "BadRequest" && response.Response.Message.Value == "Not published") {
-			resp.Diagnostics.AddWarning("Content type already deactivated", "")
-		} else {
-			resp.Diagnostics.AddError("Failed to deactivate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	default:
+		handled := false
+
+		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+			if response.StatusCode == http.StatusNotFound || (response.Response.Sys.ID == "BadRequest" && response.Response.Message.Value == "Not published") {
+				resp.Diagnostics.AddWarning("Content type already deactivated", "")
+
+				handled = true
+			}
 		}
 
-	default:
-		resp.Diagnostics.AddError("Failed to deactivate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if !handled {
+			resp.Diagnostics.AddError("Failed to deactivate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		}
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -312,14 +315,19 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	switch response := deleteContentTypeResponse.(type) {
 	case *contentfulManagement.NoContent:
 
-	case *contentfulManagement.ErrorStatusCode:
-		if response.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning("Content type already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		} else {
-			resp.Diagnostics.AddError("Failed to delete content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	default:
+		handled := false
+
+		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+			if response.StatusCode == http.StatusNotFound {
+				resp.Diagnostics.AddWarning("Content type already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
+				handled = true
+			}
 		}
 
-	default:
-		resp.Diagnostics.AddError("Failed to delete content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if !handled {
+			resp.Diagnostics.AddError("Failed to delete content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		}
 	}
 }
