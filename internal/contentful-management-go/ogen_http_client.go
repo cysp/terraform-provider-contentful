@@ -7,25 +7,25 @@ import (
 )
 
 type clientWithUserAgent struct {
-	baseClient ht.Client
-
-	UserAgent string
+	client    ht.Client
+	userAgent string
 }
 
 var _ ht.Client = (*clientWithUserAgent)(nil)
 
-func wrapClientWithUserAgent(client ht.Client, userAgent string) *clientWithUserAgent {
+//nolint:revive
+func NewClientWithUserAgent(client ht.Client, userAgent string) *clientWithUserAgent {
 	return &clientWithUserAgent{
-		baseClient: client,
-		UserAgent:  userAgent,
+		client:    client,
+		userAgent: userAgent,
 	}
 }
 
 func (c *clientWithUserAgent) Do(req *http.Request) (*http.Response, error) {
-	if req.Header.Get("User-Agent") == "" && c.UserAgent != "" {
-		req.Header.Set("User-Agent", c.UserAgent)
+	if req.Header.Get("User-Agent") == "" && c.userAgent != "" {
+		req.Header.Set("User-Agent", c.userAgent)
 	}
 
 	//nolint:wrapcheck
-	return c.baseClient.Do(req)
+	return c.client.Do(req)
 }

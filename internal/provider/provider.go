@@ -2,10 +2,12 @@ package provider
 
 import (
 	"context"
+	"net/http"
 	"os"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/provider_contentful"
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -75,7 +77,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	contentfulManagementClient, err := contentfulManagement.NewClient(
 		contentfulURL,
 		contentfulManagement.NewAccessTokenSecuritySource(accessToken),
-		contentfulManagement.WithUserAgent("terraform-provider-contentful/"+p.version),
+		contentfulManagement.WithClient(util.NewClientWithUserAgent(http.DefaultClient, "terraform-provider-contentful/"+p.version)),
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create Contentful client: %s", err.Error())
