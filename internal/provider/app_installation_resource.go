@@ -120,17 +120,16 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 	case *contentfulManagement.AppInstallation:
 		data.ReadFromResponse(response)
 
-	case *contentfulManagement.ErrorStatusCode:
-		if response.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
-			resp.State.RemoveResource(ctx)
+	default:
+		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+			if response.StatusCode == http.StatusNotFound {
+				resp.Diagnostics.AddWarning("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
+				resp.State.RemoveResource(ctx)
 
-			return
+				return
+			}
 		}
 
-		resp.Diagnostics.AddError("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
-
-	default:
 		resp.Diagnostics.AddError("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
@@ -205,14 +204,19 @@ func (r *appInstallationResource) Delete(ctx context.Context, req resource.Delet
 	switch response := response.(type) {
 	case *contentfulManagement.NoContent:
 
-	case *contentfulManagement.ErrorStatusCode:
-		if response.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning("App already uninstalled", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		} else {
-			resp.Diagnostics.AddError("Failed to uninstall app", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	default:
+		handled := false
+
+		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+			if response.StatusCode == http.StatusNotFound {
+				resp.Diagnostics.AddWarning("App already uninstalled", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
+				handled = true
+			}
 		}
 
-	default:
-		resp.Diagnostics.AddError("Failed to uninstall app", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if !handled {
+			resp.Diagnostics.AddError("Failed to uninstall app", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		}
 	}
 }
