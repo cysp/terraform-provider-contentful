@@ -2,6 +2,7 @@ package integration_tests_test
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"testing"
 
@@ -16,7 +17,7 @@ func testContentfulManagementClient(t *testing.T) contentfulManagement.Client {
 	client, err := contentfulManagement.NewClient(
 		contentfulManagement.DefaultServerURL,
 		contentfulManagement.NewAccessTokenSecuritySource("CFPAT-12345"),
-		contentfulManagement.WithUserAgent(contentfulManagement.DefaultUserAgent),
+		contentfulManagement.WithClient(contentfulManagement.NewClientWithUserAgent(http.DefaultClient, contentfulManagement.DefaultUserAgent)),
 	)
 	require.NoError(t, err)
 	require.NotNil(t, client)
@@ -35,7 +36,7 @@ func testAuthorizedContentfulManagementClient(t *testing.T) contentfulManagement
 	client, err := contentfulManagement.NewClient(
 		contentfulManagement.DefaultServerURL,
 		contentfulManagement.NewAccessTokenSecuritySource(accessToken),
-		contentfulManagement.WithUserAgent(contentfulManagement.DefaultUserAgent),
+		contentfulManagement.WithClient(contentfulManagement.NewClientWithUserAgent(http.DefaultClient, contentfulManagement.DefaultUserAgent)),
 	)
 	require.NoError(t, err)
 	require.NotNil(t, client)
