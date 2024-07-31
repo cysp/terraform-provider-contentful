@@ -27,8 +27,7 @@ components:
       properties:
         message:
           type: string
-        # details:
-        #   type: string
+        details: {}
     Error:
       allOf:
         - type: object

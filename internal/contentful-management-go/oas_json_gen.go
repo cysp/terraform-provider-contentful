@@ -1873,11 +1873,18 @@ func (s *Error) encodeFields(e *jx.Encoder) {
 			s.Message.Encode(e)
 		}
 	}
+	{
+		if len(s.Details) != 0 {
+			e.FieldStart("details")
+			e.Raw(s.Details)
+		}
+	}
 }
 
-var jsonFieldsNameOfError = [2]string{
+var jsonFieldsNameOfError = [3]string{
 	0: "sys",
 	1: "message",
+	2: "details",
 }
 
 // Decode decodes Error from json.
@@ -1908,6 +1915,17 @@ func (s *Error) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"message\"")
+			}
+		case "details":
+			if err := func() error {
+				v, err := d.RawAppend(nil)
+				s.Details = jx.Raw(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"details\"")
 			}
 		default:
 			return d.Skip()
