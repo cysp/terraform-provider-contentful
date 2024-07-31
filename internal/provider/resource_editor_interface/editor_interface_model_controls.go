@@ -47,7 +47,9 @@ func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(ctx context.Cont
 	return item, diags
 }
 
-func NewControlsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceControlsItem) ControlsValue {
+func NewControlsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceControlsItem) (ControlsValue, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
 	value := ControlsValue{
 		FieldId:         types.StringValue(item.FieldId),
 		WidgetNamespace: util.OptStringToStringValue(item.WidgetNamespace),
@@ -62,7 +64,7 @@ func NewControlsValueFromResponse(path path.Path, item contentfulManagement.Edit
 		value.Settings = types.StringValue(encoder.String())
 	}
 
-	return value
+	return value, diags
 }
 
 func NewControlsListValueNull(ctx context.Context) types.List {
@@ -70,13 +72,21 @@ func NewControlsListValueNull(ctx context.Context) types.List {
 }
 
 func NewControlsListValueFromResponse(ctx context.Context, path path.Path, controlsItems []contentfulManagement.EditorInterfaceControlsItem) (types.List, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
 	listElementValues := make([]attr.Value, len(controlsItems))
 
 	for index, item := range controlsItems {
 		path := path.AtListIndex(index)
 
-		listElementValues[index] = NewControlsValueFromResponse(path, item)
+		controlsValue, controlsValueDiags := NewControlsValueFromResponse(path, item)
+		diags.Append(controlsValueDiags...)
+
+		listElementValues[index] = controlsValue
 	}
 
-	return types.ListValue(ControlsValue{}.Type(ctx), listElementValues)
+	list, listDiags := types.ListValue(ControlsValue{}.Type(ctx), listElementValues)
+	diags.Append(listDiags...)
+
+	return list, diags
 }

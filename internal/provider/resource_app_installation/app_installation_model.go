@@ -28,8 +28,11 @@ func (model *AppInstallationModel) ToPutAppInstallationReq() (contentfulManageme
 	return req, diags
 }
 
-func (model *AppInstallationModel) ReadFromResponse(appInstallation *contentfulManagement.AppInstallation) {
+func (model *AppInstallationModel) ReadFromResponse(appInstallation *contentfulManagement.AppInstallation) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
 	// SpaceId, EnvironmentId and AppDefinitionId are all already known
+
 	if parameters, ok := appInstallation.Parameters.Get(); ok {
 		encoder := jx.Encoder{}
 		util.EncodeJxRawMapOrdered(&encoder, parameters)
@@ -37,4 +40,6 @@ func (model *AppInstallationModel) ReadFromResponse(appInstallation *contentfulM
 	} else {
 		model.Parameters = jsontypes.NewNormalizedNull()
 	}
+
+	return diags
 }

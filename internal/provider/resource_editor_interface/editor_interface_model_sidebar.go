@@ -51,7 +51,9 @@ func (model *SidebarValue) ToPutEditorInterfaceReqSidebarItem(ctx context.Contex
 	return item, diags
 }
 
-func NewSidebarValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceSidebarItem) SidebarValue {
+func NewSidebarValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceSidebarItem) (SidebarValue, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
 	value := SidebarValue{
 		WidgetNamespace: types.StringValue(item.WidgetNamespace),
 		WidgetId:        types.StringValue(item.WidgetId),
@@ -70,7 +72,7 @@ func NewSidebarValueFromResponse(path path.Path, item contentfulManagement.Edito
 		value.Settings = types.StringValue(encoder.String())
 	}
 
-	return value
+	return value, diags
 }
 
 func NewSidebarListValueNull(ctx context.Context) types.List {
@@ -78,12 +80,19 @@ func NewSidebarListValueNull(ctx context.Context) types.List {
 }
 
 func NewSidebarListValueFromResponse(ctx context.Context, path path.Path, sidebarItems []contentfulManagement.EditorInterfaceSidebarItem) (types.List, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
 	listElementValues := make([]attr.Value, len(sidebarItems))
 
 	for index, item := range sidebarItems {
-		path := path.AtListIndex(index)
-		listElementValues[index] = NewSidebarValueFromResponse(path, item)
+		sidebarValue, sidebarValueDiags := NewSidebarValueFromResponse(path.AtListIndex(index), item)
+		diags.Append(sidebarValueDiags...)
+
+		listElementValues[index] = sidebarValue
 	}
 
-	return types.ListValue(SidebarValue{}.Type(ctx), listElementValues)
+	list, listDiags := types.ListValue(SidebarValue{}.Type(ctx), listElementValues)
+	diags.Append(listDiags...)
+
+	return list, diags
 }
