@@ -21,7 +21,10 @@ func EncodeJxRawMapOrdered(encoder *jx.Encoder, object map[string]jx.Raw) {
 
 		elem := object[k]
 
-		if len(elem) != 0 {
+		dec := jx.DecodeBytes(elem)
+		if str, err := dec.Str(); err == nil {
+			encoder.StrEscape(str)
+		} else {
 			encoder.Raw(elem)
 		}
 	}
