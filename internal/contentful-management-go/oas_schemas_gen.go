@@ -716,6 +716,7 @@ func (s *EditorInterfaceSysType) UnmarshalText(data []byte) error {
 type Error struct {
 	Sys     ErrorSys  `json:"sys"`
 	Message OptString `json:"message"`
+	Details jx.Raw    `json:"details"`
 }
 
 // GetSys returns the value of Sys.
@@ -728,6 +729,11 @@ func (s *Error) GetMessage() OptString {
 	return s.Message
 }
 
+// GetDetails returns the value of Details.
+func (s *Error) GetDetails() jx.Raw {
+	return s.Details
+}
+
 // SetSys sets the value of Sys.
 func (s *Error) SetSys(val ErrorSys) {
 	s.Sys = val
@@ -736,6 +742,11 @@ func (s *Error) SetSys(val ErrorSys) {
 // SetMessage sets the value of Message.
 func (s *Error) SetMessage(val OptString) {
 	s.Message = val
+}
+
+// SetDetails sets the value of Details.
+func (s *Error) SetDetails(val jx.Raw) {
+	s.Details = val
 }
 
 func (*Error) activateContentTypeRes()   {}
