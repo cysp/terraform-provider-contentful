@@ -66,11 +66,13 @@ func TestNewSidebarValueFromResponse(t *testing.T) {
 		}),
 	}
 
-	value := resource_editor_interface.NewSidebarValueFromResponse(path, item)
+	value, valueDiags := resource_editor_interface.NewSidebarValueFromResponse(path, item)
 
 	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
 	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
 	assert.EqualValues(t, "{\"foo\":\"bar\"}", value.Settings.ValueString())
+
+	assert.Empty(t, valueDiags)
 }
 
 func TestNewSidebarValueFromResponseSettingsNull(t *testing.T) {
@@ -83,9 +85,11 @@ func TestNewSidebarValueFromResponseSettingsNull(t *testing.T) {
 		WidgetId:        "widget_id",
 	}
 
-	value := resource_editor_interface.NewSidebarValueFromResponse(path, item)
+	value, valueDiags := resource_editor_interface.NewSidebarValueFromResponse(path, item)
 
 	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
 	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
 	assert.True(t, value.Settings.IsNull())
+
+	assert.Empty(t, valueDiags)
 }

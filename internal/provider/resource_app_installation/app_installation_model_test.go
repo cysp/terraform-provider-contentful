@@ -114,9 +114,11 @@ func TestReadFromResponse(t *testing.T) {
 
 			model := resource_app_installation.AppInstallationModel{}
 
-			model.ReadFromResponse(&test.appInstallation)
+			diags := model.ReadFromResponse(&test.appInstallation)
 
 			assert.EqualValues(t, test.expectedModel, model)
+
+			assert.Empty(t, diags)
 		})
 	}
 }

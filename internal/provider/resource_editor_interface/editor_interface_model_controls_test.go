@@ -67,12 +67,14 @@ func TestNewControlsValueFromResponse(t *testing.T) {
 		}),
 	}
 
-	value := resource_editor_interface.NewControlsValueFromResponse(path, item)
+	value, diags := resource_editor_interface.NewControlsValueFromResponse(path, item)
 
 	assert.EqualValues(t, "field_id", value.FieldId.ValueString())
 	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
 	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
 	assert.EqualValues(t, "{\"foo\":\"bar\"}", value.Settings.ValueString())
+
+	assert.Empty(t, diags)
 }
 
 func TestNewControlsValueFromResponseSettingsNull(t *testing.T) {
@@ -86,10 +88,12 @@ func TestNewControlsValueFromResponseSettingsNull(t *testing.T) {
 		WidgetId:        contentfulManagement.NewOptString("widget_id"),
 	}
 
-	value := resource_editor_interface.NewControlsValueFromResponse(path, item)
+	value, diags := resource_editor_interface.NewControlsValueFromResponse(path, item)
 
 	assert.EqualValues(t, "field_id", value.FieldId.ValueString())
 	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
 	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
 	assert.True(t, value.Settings.IsNull())
+
+	assert.Empty(t, diags)
 }
