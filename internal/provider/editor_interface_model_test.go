@@ -226,18 +226,21 @@ func TestReadFromResponse(t *testing.T) {
 			editorInterface: contentfulManagement.EditorInterface{},
 			expectedModel: provider.EditorInterfaceModel{
 				Editors:  types.ListNull(provider.EditorsValue{}.Type(context.Background())),
+				EditorLayout: types.ListNull(provider.EditorLayoutValue{}.Type(context.Background())),
 				Controls: types.ListNull(provider.ControlsValue{}.Type(context.Background())),
 				Sidebar:  types.ListNull(provider.SidebarValue{}.Type(context.Background())),
 			},
 		},
 		"empty": {
 			editorInterface: contentfulManagement.EditorInterface{
-				Editors:  contentfulManagement.NewOptNilEditorInterfaceEditorsItemArray([]contentfulManagement.EditorInterfaceEditorsItem{}),
-				Controls: contentfulManagement.NewOptNilEditorInterfaceControlsItemArray([]contentfulManagement.EditorInterfaceControlsItem{}),
-				Sidebar:  contentfulManagement.NewOptNilEditorInterfaceSidebarItemArray([]contentfulManagement.EditorInterfaceSidebarItem{}),
+				Editors:      contentfulManagement.NewOptNilEditorInterfaceEditorsItemArray([]contentfulManagement.EditorInterfaceEditorsItem{}),
+				EditorLayout: contentfulManagement.NewOptNilEditorInterfaceEditorLayoutItemArray([]contentfulManagement.EditorInterfaceEditorLayoutItem{}),
+				Controls:     contentfulManagement.NewOptNilEditorInterfaceControlsItemArray([]contentfulManagement.EditorInterfaceControlsItem{}),
+				Sidebar:      contentfulManagement.NewOptNilEditorInterfaceSidebarItemArray([]contentfulManagement.EditorInterfaceSidebarItem{}),
 			},
 			expectedModel: provider.EditorInterfaceModel{
 				Editors:  util.NewEmptyListMust(provider.EditorsValue{}.Type(context.Background())),
+				EditorLayout: util.NewEmptyListMust(provider.EditorLayoutValue{}.Type(context.Background())),
 				Controls: util.NewEmptyListMust(provider.ControlsValue{}.Type(context.Background())),
 				Sidebar:  util.NewEmptyListMust(provider.SidebarValue{}.Type(context.Background())),
 			},

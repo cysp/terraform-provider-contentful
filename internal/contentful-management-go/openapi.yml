@@ -301,6 +301,24 @@ components:
             required:
               - widgetNamespace
               - widgetId
+        editorLayout:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              groupId:
+                type: string
+              name:
+                type: string
+              items:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+            required:
+              - groupId
+              - name
         controls:
           type: array
           nullable: true

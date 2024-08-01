@@ -1818,6 +1818,12 @@ func (s *EditorInterface) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.EditorLayout.Set {
+			e.FieldStart("editorLayout")
+			s.EditorLayout.Encode(e)
+		}
+	}
+	{
 		if s.Controls.Set {
 			e.FieldStart("controls")
 			s.Controls.Encode(e)
@@ -1831,11 +1837,12 @@ func (s *EditorInterface) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfEditorInterface = [4]string{
+var jsonFieldsNameOfEditorInterface = [5]string{
 	0: "sys",
 	1: "editors",
-	2: "controls",
-	3: "sidebar",
+	2: "editorLayout",
+	3: "controls",
+	4: "sidebar",
 }
 
 // Decode decodes EditorInterface from json.
@@ -1866,6 +1873,16 @@ func (s *EditorInterface) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"editors\"")
+			}
+		case "editorLayout":
+			if err := func() error {
+				s.EditorLayout.Reset()
+				if err := s.EditorLayout.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"editorLayout\"")
 			}
 		case "controls":
 			if err := func() error {
@@ -2144,6 +2161,205 @@ func (s EditorInterfaceControlsItemSettings) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *EditorInterfaceControlsItemSettings) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *EditorInterfaceEditorLayoutItem) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *EditorInterfaceEditorLayoutItem) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("groupId")
+		e.Str(s.GroupId)
+	}
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		if s.Items != nil {
+			e.FieldStart("items")
+			e.ArrStart()
+			for _, elem := range s.Items {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfEditorInterfaceEditorLayoutItem = [3]string{
+	0: "groupId",
+	1: "name",
+	2: "items",
+}
+
+// Decode decodes EditorInterfaceEditorLayoutItem from json.
+func (s *EditorInterfaceEditorLayoutItem) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode EditorInterfaceEditorLayoutItem to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "groupId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.GroupId = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"groupId\"")
+			}
+		case "name":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "items":
+			if err := func() error {
+				s.Items = make([]EditorInterfaceEditorLayoutItemItemsItem, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem EditorInterfaceEditorLayoutItemItemsItem
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Items = append(s.Items, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"items\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode EditorInterfaceEditorLayoutItem")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000011,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfEditorInterfaceEditorLayoutItem) {
+					name = jsonFieldsNameOfEditorInterfaceEditorLayoutItem[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *EditorInterfaceEditorLayoutItem) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *EditorInterfaceEditorLayoutItem) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s EditorInterfaceEditorLayoutItemItemsItem) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields implements json.Marshaler.
+func (s EditorInterfaceEditorLayoutItemItemsItem) encodeFields(e *jx.Encoder) {
+	for k, elem := range s {
+		e.FieldStart(k)
+
+		if len(elem) != 0 {
+			e.Raw(elem)
+		}
+	}
+}
+
+// Decode decodes EditorInterfaceEditorLayoutItemItemsItem from json.
+func (s *EditorInterfaceEditorLayoutItemItemsItem) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode EditorInterfaceEditorLayoutItemItemsItem to nil")
+	}
+	m := s.init()
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		var elem jx.Raw
+		if err := func() error {
+			v, err := d.RawAppend(nil)
+			elem = jx.Raw(v)
+			if err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrapf(err, "decode field %q", k)
+		}
+		m[string(k)] = elem
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode EditorInterfaceEditorLayoutItemItemsItem")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s EditorInterfaceEditorLayoutItemItemsItem) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *EditorInterfaceEditorLayoutItemItemsItem) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -3746,6 +3962,67 @@ func (s *OptNilEditorInterfaceControlsItemArray) UnmarshalJSON(data []byte) erro
 	return s.Decode(d)
 }
 
+// Encode encodes []EditorInterfaceEditorLayoutItem as json.
+func (o OptNilEditorInterfaceEditorLayoutItemArray) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.ArrStart()
+	for _, elem := range o.Value {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes []EditorInterfaceEditorLayoutItem from json.
+func (o *OptNilEditorInterfaceEditorLayoutItemArray) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilEditorInterfaceEditorLayoutItemArray to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v []EditorInterfaceEditorLayoutItem
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	o.Value = make([]EditorInterfaceEditorLayoutItem, 0)
+	if err := d.Arr(func(d *jx.Decoder) error {
+		var elem EditorInterfaceEditorLayoutItem
+		if err := elem.Decode(d); err != nil {
+			return err
+		}
+		o.Value = append(o.Value, elem)
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilEditorInterfaceEditorLayoutItemArray) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilEditorInterfaceEditorLayoutItemArray) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes []EditorInterfaceEditorsItem as json.
 func (o OptNilEditorInterfaceEditorsItemArray) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -3925,6 +4202,67 @@ func (s OptNilPutEditorInterfaceReqControlsItemArray) MarshalJSON() ([]byte, err
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptNilPutEditorInterfaceReqControlsItemArray) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes []PutEditorInterfaceReqEditorLayoutItem as json.
+func (o OptNilPutEditorInterfaceReqEditorLayoutItemArray) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.ArrStart()
+	for _, elem := range o.Value {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes []PutEditorInterfaceReqEditorLayoutItem from json.
+func (o *OptNilPutEditorInterfaceReqEditorLayoutItemArray) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilPutEditorInterfaceReqEditorLayoutItemArray to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v []PutEditorInterfaceReqEditorLayoutItem
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	o.Value = make([]PutEditorInterfaceReqEditorLayoutItem, 0)
+	if err := d.Arr(func(d *jx.Decoder) error {
+		var elem PutEditorInterfaceReqEditorLayoutItem
+		if err := elem.Decode(d); err != nil {
+			return err
+		}
+		o.Value = append(o.Value, elem)
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilPutEditorInterfaceReqEditorLayoutItemArray) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilPutEditorInterfaceReqEditorLayoutItemArray) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -5726,6 +6064,12 @@ func (s *PutEditorInterfaceReq) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.EditorLayout.Set {
+			e.FieldStart("editorLayout")
+			s.EditorLayout.Encode(e)
+		}
+	}
+	{
 		if s.Controls.Set {
 			e.FieldStart("controls")
 			s.Controls.Encode(e)
@@ -5739,10 +6083,11 @@ func (s *PutEditorInterfaceReq) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfPutEditorInterfaceReq = [3]string{
+var jsonFieldsNameOfPutEditorInterfaceReq = [4]string{
 	0: "editors",
-	1: "controls",
-	2: "sidebar",
+	1: "editorLayout",
+	2: "controls",
+	3: "sidebar",
 }
 
 // Decode decodes PutEditorInterfaceReq from json.
@@ -5762,6 +6107,16 @@ func (s *PutEditorInterfaceReq) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"editors\"")
+			}
+		case "editorLayout":
+			if err := func() error {
+				s.EditorLayout.Reset()
+				if err := s.EditorLayout.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"editorLayout\"")
 			}
 		case "controls":
 			if err := func() error {
@@ -6008,6 +6363,205 @@ func (s PutEditorInterfaceReqControlsItemSettings) MarshalJSON() ([]byte, error)
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *PutEditorInterfaceReqControlsItemSettings) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *PutEditorInterfaceReqEditorLayoutItem) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *PutEditorInterfaceReqEditorLayoutItem) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("groupId")
+		e.Str(s.GroupId)
+	}
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		if s.Items != nil {
+			e.FieldStart("items")
+			e.ArrStart()
+			for _, elem := range s.Items {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfPutEditorInterfaceReqEditorLayoutItem = [3]string{
+	0: "groupId",
+	1: "name",
+	2: "items",
+}
+
+// Decode decodes PutEditorInterfaceReqEditorLayoutItem from json.
+func (s *PutEditorInterfaceReqEditorLayoutItem) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PutEditorInterfaceReqEditorLayoutItem to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "groupId":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.GroupId = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"groupId\"")
+			}
+		case "name":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "items":
+			if err := func() error {
+				s.Items = make([]PutEditorInterfaceReqEditorLayoutItemItemsItem, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem PutEditorInterfaceReqEditorLayoutItemItemsItem
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Items = append(s.Items, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"items\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode PutEditorInterfaceReqEditorLayoutItem")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000011,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfPutEditorInterfaceReqEditorLayoutItem) {
+					name = jsonFieldsNameOfPutEditorInterfaceReqEditorLayoutItem[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *PutEditorInterfaceReqEditorLayoutItem) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PutEditorInterfaceReqEditorLayoutItem) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s PutEditorInterfaceReqEditorLayoutItemItemsItem) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields implements json.Marshaler.
+func (s PutEditorInterfaceReqEditorLayoutItemItemsItem) encodeFields(e *jx.Encoder) {
+	for k, elem := range s {
+		e.FieldStart(k)
+
+		if len(elem) != 0 {
+			e.Raw(elem)
+		}
+	}
+}
+
+// Decode decodes PutEditorInterfaceReqEditorLayoutItemItemsItem from json.
+func (s *PutEditorInterfaceReqEditorLayoutItemItemsItem) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PutEditorInterfaceReqEditorLayoutItemItemsItem to nil")
+	}
+	m := s.init()
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		var elem jx.Raw
+		if err := func() error {
+			v, err := d.RawAppend(nil)
+			elem = jx.Raw(v)
+			if err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrapf(err, "decode field %q", k)
+		}
+		m[string(k)] = elem
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode PutEditorInterfaceReqEditorLayoutItemItemsItem")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s PutEditorInterfaceReqEditorLayoutItemItemsItem) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PutEditorInterfaceReqEditorLayoutItemItemsItem) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

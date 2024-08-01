@@ -757,10 +757,11 @@ func (s *ContentTypeSysType) UnmarshalText(data []byte) error {
 // Merged schema.
 // Ref: #/components/schemas/EditorInterface
 type EditorInterface struct {
-	Sys      EditorInterfaceSys                     `json:"sys"`
-	Editors  OptNilEditorInterfaceEditorsItemArray  `json:"editors"`
-	Controls OptNilEditorInterfaceControlsItemArray `json:"controls"`
-	Sidebar  OptNilEditorInterfaceSidebarItemArray  `json:"sidebar"`
+	Sys          EditorInterfaceSys                         `json:"sys"`
+	Editors      OptNilEditorInterfaceEditorsItemArray      `json:"editors"`
+	EditorLayout OptNilEditorInterfaceEditorLayoutItemArray `json:"editorLayout"`
+	Controls     OptNilEditorInterfaceControlsItemArray     `json:"controls"`
+	Sidebar      OptNilEditorInterfaceSidebarItemArray      `json:"sidebar"`
 }
 
 // GetSys returns the value of Sys.
@@ -771,6 +772,11 @@ func (s *EditorInterface) GetSys() EditorInterfaceSys {
 // GetEditors returns the value of Editors.
 func (s *EditorInterface) GetEditors() OptNilEditorInterfaceEditorsItemArray {
 	return s.Editors
+}
+
+// GetEditorLayout returns the value of EditorLayout.
+func (s *EditorInterface) GetEditorLayout() OptNilEditorInterfaceEditorLayoutItemArray {
+	return s.EditorLayout
 }
 
 // GetControls returns the value of Controls.
@@ -791,6 +797,11 @@ func (s *EditorInterface) SetSys(val EditorInterfaceSys) {
 // SetEditors sets the value of Editors.
 func (s *EditorInterface) SetEditors(val OptNilEditorInterfaceEditorsItemArray) {
 	s.Editors = val
+}
+
+// SetEditorLayout sets the value of EditorLayout.
+func (s *EditorInterface) SetEditorLayout(val OptNilEditorInterfaceEditorLayoutItemArray) {
+	s.EditorLayout = val
 }
 
 // SetControls sets the value of Controls.
@@ -856,6 +867,53 @@ func (s *EditorInterfaceControlsItem) SetSettings(val OptEditorInterfaceControls
 type EditorInterfaceControlsItemSettings map[string]jx.Raw
 
 func (s *EditorInterfaceControlsItemSettings) init() EditorInterfaceControlsItemSettings {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type EditorInterfaceEditorLayoutItem struct {
+	GroupId string                                     `json:"groupId"`
+	Name    string                                     `json:"name"`
+	Items   []EditorInterfaceEditorLayoutItemItemsItem `json:"items"`
+}
+
+// GetGroupId returns the value of GroupId.
+func (s *EditorInterfaceEditorLayoutItem) GetGroupId() string {
+	return s.GroupId
+}
+
+// GetName returns the value of Name.
+func (s *EditorInterfaceEditorLayoutItem) GetName() string {
+	return s.Name
+}
+
+// GetItems returns the value of Items.
+func (s *EditorInterfaceEditorLayoutItem) GetItems() []EditorInterfaceEditorLayoutItemItemsItem {
+	return s.Items
+}
+
+// SetGroupId sets the value of GroupId.
+func (s *EditorInterfaceEditorLayoutItem) SetGroupId(val string) {
+	s.GroupId = val
+}
+
+// SetName sets the value of Name.
+func (s *EditorInterfaceEditorLayoutItem) SetName(val string) {
+	s.Name = val
+}
+
+// SetItems sets the value of Items.
+func (s *EditorInterfaceEditorLayoutItem) SetItems(val []EditorInterfaceEditorLayoutItemItemsItem) {
+	s.Items = val
+}
+
+type EditorInterfaceEditorLayoutItemItemsItem map[string]jx.Raw
+
+func (s *EditorInterfaceEditorLayoutItemItemsItem) init() EditorInterfaceEditorLayoutItemItemsItem {
 	m := *s
 	if m == nil {
 		m = map[string]jx.Raw{}
@@ -1888,6 +1946,69 @@ func (o OptNilEditorInterfaceControlsItemArray) Or(d []EditorInterfaceControlsIt
 	return d
 }
 
+// NewOptNilEditorInterfaceEditorLayoutItemArray returns new OptNilEditorInterfaceEditorLayoutItemArray with value set to v.
+func NewOptNilEditorInterfaceEditorLayoutItemArray(v []EditorInterfaceEditorLayoutItem) OptNilEditorInterfaceEditorLayoutItemArray {
+	return OptNilEditorInterfaceEditorLayoutItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceEditorLayoutItemArray is optional nullable []EditorInterfaceEditorLayoutItem.
+type OptNilEditorInterfaceEditorLayoutItemArray struct {
+	Value []EditorInterfaceEditorLayoutItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceEditorLayoutItemArray was set.
+func (o OptNilEditorInterfaceEditorLayoutItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceEditorLayoutItemArray) Reset() {
+	var v []EditorInterfaceEditorLayoutItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceEditorLayoutItemArray) SetTo(v []EditorInterfaceEditorLayoutItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilEditorInterfaceEditorLayoutItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilEditorInterfaceEditorLayoutItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceEditorLayoutItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceEditorLayoutItemArray) Get() (v []EditorInterfaceEditorLayoutItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceEditorLayoutItemArray) Or(d []EditorInterfaceEditorLayoutItem) []EditorInterfaceEditorLayoutItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilEditorInterfaceEditorsItemArray returns new OptNilEditorInterfaceEditorsItemArray with value set to v.
 func NewOptNilEditorInterfaceEditorsItemArray(v []EditorInterfaceEditorsItem) OptNilEditorInterfaceEditorsItemArray {
 	return OptNilEditorInterfaceEditorsItemArray{
@@ -2071,6 +2192,69 @@ func (o OptNilPutEditorInterfaceReqControlsItemArray) Get() (v []PutEditorInterf
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilPutEditorInterfaceReqControlsItemArray) Or(d []PutEditorInterfaceReqControlsItem) []PutEditorInterfaceReqControlsItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilPutEditorInterfaceReqEditorLayoutItemArray returns new OptNilPutEditorInterfaceReqEditorLayoutItemArray with value set to v.
+func NewOptNilPutEditorInterfaceReqEditorLayoutItemArray(v []PutEditorInterfaceReqEditorLayoutItem) OptNilPutEditorInterfaceReqEditorLayoutItemArray {
+	return OptNilPutEditorInterfaceReqEditorLayoutItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilPutEditorInterfaceReqEditorLayoutItemArray is optional nullable []PutEditorInterfaceReqEditorLayoutItem.
+type OptNilPutEditorInterfaceReqEditorLayoutItemArray struct {
+	Value []PutEditorInterfaceReqEditorLayoutItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilPutEditorInterfaceReqEditorLayoutItemArray was set.
+func (o OptNilPutEditorInterfaceReqEditorLayoutItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilPutEditorInterfaceReqEditorLayoutItemArray) Reset() {
+	var v []PutEditorInterfaceReqEditorLayoutItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilPutEditorInterfaceReqEditorLayoutItemArray) SetTo(v []PutEditorInterfaceReqEditorLayoutItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilPutEditorInterfaceReqEditorLayoutItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilPutEditorInterfaceReqEditorLayoutItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []PutEditorInterfaceReqEditorLayoutItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilPutEditorInterfaceReqEditorLayoutItemArray) Get() (v []PutEditorInterfaceReqEditorLayoutItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilPutEditorInterfaceReqEditorLayoutItemArray) Or(d []PutEditorInterfaceReqEditorLayoutItem) []PutEditorInterfaceReqEditorLayoutItem {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -3013,14 +3197,20 @@ func (s *PutContentTypeReqFieldsItemItems) SetValidations(val []jx.Raw) {
 }
 
 type PutEditorInterfaceReq struct {
-	Editors  OptNilPutEditorInterfaceReqEditorsItemArray  `json:"editors"`
-	Controls OptNilPutEditorInterfaceReqControlsItemArray `json:"controls"`
-	Sidebar  OptNilPutEditorInterfaceReqSidebarItemArray  `json:"sidebar"`
+	Editors      OptNilPutEditorInterfaceReqEditorsItemArray      `json:"editors"`
+	EditorLayout OptNilPutEditorInterfaceReqEditorLayoutItemArray `json:"editorLayout"`
+	Controls     OptNilPutEditorInterfaceReqControlsItemArray     `json:"controls"`
+	Sidebar      OptNilPutEditorInterfaceReqSidebarItemArray      `json:"sidebar"`
 }
 
 // GetEditors returns the value of Editors.
 func (s *PutEditorInterfaceReq) GetEditors() OptNilPutEditorInterfaceReqEditorsItemArray {
 	return s.Editors
+}
+
+// GetEditorLayout returns the value of EditorLayout.
+func (s *PutEditorInterfaceReq) GetEditorLayout() OptNilPutEditorInterfaceReqEditorLayoutItemArray {
+	return s.EditorLayout
 }
 
 // GetControls returns the value of Controls.
@@ -3036,6 +3226,11 @@ func (s *PutEditorInterfaceReq) GetSidebar() OptNilPutEditorInterfaceReqSidebarI
 // SetEditors sets the value of Editors.
 func (s *PutEditorInterfaceReq) SetEditors(val OptNilPutEditorInterfaceReqEditorsItemArray) {
 	s.Editors = val
+}
+
+// SetEditorLayout sets the value of EditorLayout.
+func (s *PutEditorInterfaceReq) SetEditorLayout(val OptNilPutEditorInterfaceReqEditorLayoutItemArray) {
+	s.EditorLayout = val
 }
 
 // SetControls sets the value of Controls.
@@ -3098,6 +3293,53 @@ func (s *PutEditorInterfaceReqControlsItem) SetSettings(val OptPutEditorInterfac
 type PutEditorInterfaceReqControlsItemSettings map[string]jx.Raw
 
 func (s *PutEditorInterfaceReqControlsItemSettings) init() PutEditorInterfaceReqControlsItemSettings {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type PutEditorInterfaceReqEditorLayoutItem struct {
+	GroupId string                                           `json:"groupId"`
+	Name    string                                           `json:"name"`
+	Items   []PutEditorInterfaceReqEditorLayoutItemItemsItem `json:"items"`
+}
+
+// GetGroupId returns the value of GroupId.
+func (s *PutEditorInterfaceReqEditorLayoutItem) GetGroupId() string {
+	return s.GroupId
+}
+
+// GetName returns the value of Name.
+func (s *PutEditorInterfaceReqEditorLayoutItem) GetName() string {
+	return s.Name
+}
+
+// GetItems returns the value of Items.
+func (s *PutEditorInterfaceReqEditorLayoutItem) GetItems() []PutEditorInterfaceReqEditorLayoutItemItemsItem {
+	return s.Items
+}
+
+// SetGroupId sets the value of GroupId.
+func (s *PutEditorInterfaceReqEditorLayoutItem) SetGroupId(val string) {
+	s.GroupId = val
+}
+
+// SetName sets the value of Name.
+func (s *PutEditorInterfaceReqEditorLayoutItem) SetName(val string) {
+	s.Name = val
+}
+
+// SetItems sets the value of Items.
+func (s *PutEditorInterfaceReqEditorLayoutItem) SetItems(val []PutEditorInterfaceReqEditorLayoutItemItemsItem) {
+	s.Items = val
+}
+
+type PutEditorInterfaceReqEditorLayoutItemItemsItem map[string]jx.Raw
+
+func (s *PutEditorInterfaceReqEditorLayoutItemItemsItem) init() PutEditorInterfaceReqEditorLayoutItemItemsItem {
 	m := *s
 	if m == nil {
 		m = map[string]jx.Raw{}

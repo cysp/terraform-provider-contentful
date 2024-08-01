@@ -24,6 +24,7 @@ description: |-
 ### Optional
 
 - `controls` (Attributes List) (see [below for nested schema](#nestedatt--controls))
+- `editor_layout` (Attributes List) (see [below for nested schema](#nestedatt--editor_layout))
 - `editors` (Attributes List) (see [below for nested schema](#nestedatt--editors))
 - `sidebar` (Attributes List) (see [below for nested schema](#nestedatt--sidebar))
 
@@ -39,6 +40,19 @@ Optional:
 - `settings` (String)
 - `widget_id` (String)
 - `widget_namespace` (String)
+
+
+<a id="nestedatt--editor_layout"></a>
+### Nested Schema for `editor_layout`
+
+Required:
+
+- `group_id` (String)
+- `name` (String)
+
+Optional:
+
+- `items` (String)
 
 
 <a id="nestedatt--editors"></a>
