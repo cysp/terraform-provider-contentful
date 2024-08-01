@@ -358,6 +358,47 @@
                         }
                     },
                     {
+                        "name": "editors",
+                        "list_nested": {
+                            "computed_optional_required": "computed_optional",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "widget_namespace",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "widget_id",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "disabled",
+                                        "bool": {
+                                            "computed_optional_required": "computed_optional"
+                                        }
+                                    },
+                                    {
+                                        "name": "settings",
+                                        "string": {
+                                            "computed_optional_required": "computed_optional",
+                                            "custom_type": {
+                                                "import": {
+                                                    "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                },
+                                                "type": "jsontypes.NormalizedType{}",
+                                                "value_type": "jsontypes.Normalized"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
                         "name": "controls",
                         "list_nested": {
                             "computed_optional_required": "computed_optional",

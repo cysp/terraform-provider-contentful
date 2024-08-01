@@ -14,6 +14,28 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 
 	request := contentfulManagement.PutEditorInterfaceReq{}
 
+	if model.Editors.IsNull() || model.Editors.IsUnknown() {
+		request.Editors.Reset()
+	} else {
+		editorsPath := path.Root("editors")
+
+		editorsElementValues := []EditorsValue{}
+		diags.Append(model.Editors.ElementsAs(ctx, &editorsElementValues, false)...)
+
+		requestEditorsItems := make([]contentfulManagement.PutEditorInterfaceReqEditorsItem, len(editorsElementValues))
+
+		for index, editorsElement := range editorsElementValues {
+			path := editorsPath.AtListIndex(index)
+
+			requestEditorsItem, requestEditorsItemDiags := editorsElement.ToPutEditorInterfaceReqEditorsItem(ctx, path)
+			diags.Append(requestEditorsItemDiags...)
+
+			requestEditorsItems[index] = requestEditorsItem
+		}
+
+		request.Editors.SetTo(requestEditorsItems)
+	}
+
 	if model.Controls.IsNull() || model.Controls.IsUnknown() {
 		request.Controls.Reset()
 	} else {
@@ -65,6 +87,15 @@ func (model *EditorInterfaceModel) ReadFromResponse(ctx context.Context, editorI
 	diags := diag.Diagnostics{}
 
 	// SpaceId, EnvironmentId and ContentTypeId are all already known
+
+	if editorInterfaceEditors, ok := editorInterface.Editors.Get(); ok {
+		editors, editorsDiags := NewEditorsListValueFromResponse(ctx, path.Root("editors"), editorInterfaceEditors)
+		diags.Append(editorsDiags...)
+
+		model.Editors = editors
+	} else {
+		model.Editors = NewEditorsListValueNull(ctx)
+	}
 
 	if editorInterfaceControls, ok := editorInterface.Controls.Get(); ok {
 		controlsListValue, controlsListValueDiags := NewControlsListValueFromResponse(ctx, path.Root("controls"), editorInterfaceControls)

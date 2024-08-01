@@ -54,6 +54,34 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 				Computed: true,
 			},
+			"editors": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"disabled": schema.BoolAttribute{
+							Optional: true,
+							Computed: true,
+						},
+						"settings": schema.StringAttribute{
+							CustomType: jsontypes.NormalizedType{},
+							Optional:   true,
+							Computed:   true,
+						},
+						"widget_id": schema.StringAttribute{
+							Required: true,
+						},
+						"widget_namespace": schema.StringAttribute{
+							Required: true,
+						},
+					},
+					CustomType: EditorsType{
+						ObjectType: types.ObjectType{
+							AttrTypes: EditorsValue{}.AttributeTypes(ctx),
+						},
+					},
+				},
+				Optional: true,
+				Computed: true,
+			},
 			"environment_id": schema.StringAttribute{
 				Required: true,
 				PlanModifiers: []planmodifier.String{
@@ -101,6 +129,7 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 type EditorInterfaceModel struct {
 	ContentTypeId types.String `tfsdk:"content_type_id"`
 	Controls      types.List   `tfsdk:"controls"`
+	Editors       types.List   `tfsdk:"editors"`
 	EnvironmentId types.String `tfsdk:"environment_id"`
 	Sidebar       types.List   `tfsdk:"sidebar"`
 	SpaceId       types.String `tfsdk:"space_id"`
@@ -589,6 +618,495 @@ func (v ControlsValue) Type(ctx context.Context) attr.Type {
 func (v ControlsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"field_id":         basetypes.StringType{},
+		"settings":         basetypes.StringType{},
+		"widget_id":        basetypes.StringType{},
+		"widget_namespace": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = EditorsType{}
+
+type EditorsType struct {
+	basetypes.ObjectType
+}
+
+func (t EditorsType) Equal(o attr.Type) bool {
+	other, ok := o.(EditorsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t EditorsType) String() string {
+	return "EditorsType"
+}
+
+func (t EditorsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	disabledAttribute, ok := attributes["disabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`disabled is missing from object`)
+
+		return nil, diags
+	}
+
+	disabledVal, ok := disabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`disabled expected to be basetypes.BoolValue, was: %T`, disabledAttribute))
+	}
+
+	settingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`settings is missing from object`)
+
+		return nil, diags
+	}
+
+	settingsVal, ok := settingsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`settings expected to be basetypes.StringValue, was: %T`, settingsAttribute))
+	}
+
+	widgetIdAttribute, ok := attributes["widget_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`widget_id is missing from object`)
+
+		return nil, diags
+	}
+
+	widgetIdVal, ok := widgetIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`widget_id expected to be basetypes.StringValue, was: %T`, widgetIdAttribute))
+	}
+
+	widgetNamespaceAttribute, ok := attributes["widget_namespace"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`widget_namespace is missing from object`)
+
+		return nil, diags
+	}
+
+	widgetNamespaceVal, ok := widgetNamespaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`widget_namespace expected to be basetypes.StringValue, was: %T`, widgetNamespaceAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return EditorsValue{
+		Disabled:        disabledVal,
+		Settings:        settingsVal,
+		WidgetId:        widgetIdVal,
+		WidgetNamespace: widgetNamespaceVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewEditorsValueNull() EditorsValue {
+	return EditorsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewEditorsValueUnknown() EditorsValue {
+	return EditorsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewEditorsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (EditorsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing EditorsValue Attribute Value",
+				"While creating a EditorsValue value, a missing attribute value was detected. "+
+					"A EditorsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("EditorsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid EditorsValue Attribute Type",
+				"While creating a EditorsValue value, an invalid attribute value was detected. "+
+					"A EditorsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("EditorsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("EditorsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra EditorsValue Attribute Value",
+				"While creating a EditorsValue value, an extra attribute value was detected. "+
+					"A EditorsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra EditorsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewEditorsValueUnknown(), diags
+	}
+
+	disabledAttribute, ok := attributes["disabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`disabled is missing from object`)
+
+		return NewEditorsValueUnknown(), diags
+	}
+
+	disabledVal, ok := disabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`disabled expected to be basetypes.BoolValue, was: %T`, disabledAttribute))
+	}
+
+	settingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`settings is missing from object`)
+
+		return NewEditorsValueUnknown(), diags
+	}
+
+	settingsVal, ok := settingsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`settings expected to be basetypes.StringValue, was: %T`, settingsAttribute))
+	}
+
+	widgetIdAttribute, ok := attributes["widget_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`widget_id is missing from object`)
+
+		return NewEditorsValueUnknown(), diags
+	}
+
+	widgetIdVal, ok := widgetIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`widget_id expected to be basetypes.StringValue, was: %T`, widgetIdAttribute))
+	}
+
+	widgetNamespaceAttribute, ok := attributes["widget_namespace"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`widget_namespace is missing from object`)
+
+		return NewEditorsValueUnknown(), diags
+	}
+
+	widgetNamespaceVal, ok := widgetNamespaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`widget_namespace expected to be basetypes.StringValue, was: %T`, widgetNamespaceAttribute))
+	}
+
+	if diags.HasError() {
+		return NewEditorsValueUnknown(), diags
+	}
+
+	return EditorsValue{
+		Disabled:        disabledVal,
+		Settings:        settingsVal,
+		WidgetId:        widgetIdVal,
+		WidgetNamespace: widgetNamespaceVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewEditorsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) EditorsValue {
+	object, diags := NewEditorsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewEditorsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t EditorsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewEditorsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewEditorsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewEditorsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewEditorsValueMust(EditorsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t EditorsType) ValueType(ctx context.Context) attr.Value {
+	return EditorsValue{}
+}
+
+var _ basetypes.ObjectValuable = EditorsValue{}
+
+type EditorsValue struct {
+	Disabled        basetypes.BoolValue   `tfsdk:"disabled"`
+	Settings        basetypes.StringValue `tfsdk:"settings"`
+	WidgetId        basetypes.StringValue `tfsdk:"widget_id"`
+	WidgetNamespace basetypes.StringValue `tfsdk:"widget_namespace"`
+	state           attr.ValueState
+}
+
+func (v EditorsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["disabled"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["settings"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["widget_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["widget_namespace"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.Disabled.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["disabled"] = val
+
+		val, err = v.Settings.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["settings"] = val
+
+		val, err = v.WidgetId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["widget_id"] = val
+
+		val, err = v.WidgetNamespace.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["widget_namespace"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v EditorsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v EditorsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v EditorsValue) String() string {
+	return "EditorsValue"
+}
+
+func (v EditorsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"disabled":         basetypes.BoolType{},
+		"settings":         basetypes.StringType{},
+		"widget_id":        basetypes.StringType{},
+		"widget_namespace": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"disabled":         v.Disabled,
+			"settings":         v.Settings,
+			"widget_id":        v.WidgetId,
+			"widget_namespace": v.WidgetNamespace,
+		})
+
+	return objVal, diags
+}
+
+func (v EditorsValue) Equal(o attr.Value) bool {
+	other, ok := o.(EditorsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Disabled.Equal(other.Disabled) {
+		return false
+	}
+
+	if !v.Settings.Equal(other.Settings) {
+		return false
+	}
+
+	if !v.WidgetId.Equal(other.WidgetId) {
+		return false
+	}
+
+	if !v.WidgetNamespace.Equal(other.WidgetNamespace) {
+		return false
+	}
+
+	return true
+}
+
+func (v EditorsValue) Type(ctx context.Context) attr.Type {
+	return EditorsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v EditorsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"disabled":         basetypes.BoolType{},
 		"settings":         basetypes.StringType{},
 		"widget_id":        basetypes.StringType{},
 		"widget_namespace": basetypes.StringType{},
