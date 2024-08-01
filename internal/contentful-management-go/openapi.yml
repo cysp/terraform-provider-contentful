@@ -283,6 +283,24 @@ components:
     EditorInterfaceFields:
       type: object
       properties:
+        editors:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              widgetNamespace:
+                type: string
+              widgetId:
+                type: string
+              disabled:
+                type: boolean
+              settings:
+                type: object
+                additionalProperties: true
+            required:
+              - widgetNamespace
+              - widgetId
         controls:
           type: array
           nullable: true

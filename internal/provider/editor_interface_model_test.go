@@ -225,16 +225,19 @@ func TestReadFromResponse(t *testing.T) {
 		"null": {
 			editorInterface: contentfulManagement.EditorInterface{},
 			expectedModel: provider.EditorInterfaceModel{
+				Editors:  types.ListNull(provider.EditorsValue{}.Type(context.Background())),
 				Controls: types.ListNull(provider.ControlsValue{}.Type(context.Background())),
 				Sidebar:  types.ListNull(provider.SidebarValue{}.Type(context.Background())),
 			},
 		},
 		"empty": {
 			editorInterface: contentfulManagement.EditorInterface{
+				Editors:  contentfulManagement.NewOptNilEditorInterfaceEditorsItemArray([]contentfulManagement.EditorInterfaceEditorsItem{}),
 				Controls: contentfulManagement.NewOptNilEditorInterfaceControlsItemArray([]contentfulManagement.EditorInterfaceControlsItem{}),
 				Sidebar:  contentfulManagement.NewOptNilEditorInterfaceSidebarItemArray([]contentfulManagement.EditorInterfaceSidebarItem{}),
 			},
 			expectedModel: provider.EditorInterfaceModel{
+				Editors:  util.NewEmptyListMust(provider.EditorsValue{}.Type(context.Background())),
 				Controls: util.NewEmptyListMust(provider.ControlsValue{}.Type(context.Background())),
 				Sidebar:  util.NewEmptyListMust(provider.SidebarValue{}.Type(context.Background())),
 			},
