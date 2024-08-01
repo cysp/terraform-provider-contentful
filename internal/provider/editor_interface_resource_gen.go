@@ -112,6 +112,33 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"group_controls": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"group_id": schema.StringAttribute{
+							Required: true,
+						},
+						"settings": schema.StringAttribute{
+							CustomType: jsontypes.NormalizedType{},
+							Optional:   true,
+							Computed:   true,
+						},
+						"widget_id": schema.StringAttribute{
+							Optional: true,
+						},
+						"widget_namespace": schema.StringAttribute{
+							Optional: true,
+						},
+					},
+					CustomType: GroupControlsType{
+						ObjectType: types.ObjectType{
+							AttrTypes: GroupControlsValue{}.AttributeTypes(ctx),
+						},
+					},
+				},
+				Optional: true,
+				Computed: true,
+			},
 			"sidebar": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -156,6 +183,7 @@ type EditorInterfaceModel struct {
 	EditorLayout  types.List   `tfsdk:"editor_layout"`
 	Editors       types.List   `tfsdk:"editors"`
 	EnvironmentId types.String `tfsdk:"environment_id"`
+	GroupControls types.List   `tfsdk:"group_controls"`
 	Sidebar       types.List   `tfsdk:"sidebar"`
 	SpaceId       types.String `tfsdk:"space_id"`
 }
@@ -1566,6 +1594,495 @@ func (v EditorsValue) Type(ctx context.Context) attr.Type {
 func (v EditorsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"disabled":         basetypes.BoolType{},
+		"settings":         basetypes.StringType{},
+		"widget_id":        basetypes.StringType{},
+		"widget_namespace": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = GroupControlsType{}
+
+type GroupControlsType struct {
+	basetypes.ObjectType
+}
+
+func (t GroupControlsType) Equal(o attr.Type) bool {
+	other, ok := o.(GroupControlsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t GroupControlsType) String() string {
+	return "GroupControlsType"
+}
+
+func (t GroupControlsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	groupIdAttribute, ok := attributes["group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`group_id is missing from object`)
+
+		return nil, diags
+	}
+
+	groupIdVal, ok := groupIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`group_id expected to be basetypes.StringValue, was: %T`, groupIdAttribute))
+	}
+
+	settingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`settings is missing from object`)
+
+		return nil, diags
+	}
+
+	settingsVal, ok := settingsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`settings expected to be basetypes.StringValue, was: %T`, settingsAttribute))
+	}
+
+	widgetIdAttribute, ok := attributes["widget_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`widget_id is missing from object`)
+
+		return nil, diags
+	}
+
+	widgetIdVal, ok := widgetIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`widget_id expected to be basetypes.StringValue, was: %T`, widgetIdAttribute))
+	}
+
+	widgetNamespaceAttribute, ok := attributes["widget_namespace"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`widget_namespace is missing from object`)
+
+		return nil, diags
+	}
+
+	widgetNamespaceVal, ok := widgetNamespaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`widget_namespace expected to be basetypes.StringValue, was: %T`, widgetNamespaceAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return GroupControlsValue{
+		GroupId:         groupIdVal,
+		Settings:        settingsVal,
+		WidgetId:        widgetIdVal,
+		WidgetNamespace: widgetNamespaceVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewGroupControlsValueNull() GroupControlsValue {
+	return GroupControlsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewGroupControlsValueUnknown() GroupControlsValue {
+	return GroupControlsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewGroupControlsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (GroupControlsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing GroupControlsValue Attribute Value",
+				"While creating a GroupControlsValue value, a missing attribute value was detected. "+
+					"A GroupControlsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("GroupControlsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid GroupControlsValue Attribute Type",
+				"While creating a GroupControlsValue value, an invalid attribute value was detected. "+
+					"A GroupControlsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("GroupControlsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("GroupControlsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra GroupControlsValue Attribute Value",
+				"While creating a GroupControlsValue value, an extra attribute value was detected. "+
+					"A GroupControlsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra GroupControlsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewGroupControlsValueUnknown(), diags
+	}
+
+	groupIdAttribute, ok := attributes["group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`group_id is missing from object`)
+
+		return NewGroupControlsValueUnknown(), diags
+	}
+
+	groupIdVal, ok := groupIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`group_id expected to be basetypes.StringValue, was: %T`, groupIdAttribute))
+	}
+
+	settingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`settings is missing from object`)
+
+		return NewGroupControlsValueUnknown(), diags
+	}
+
+	settingsVal, ok := settingsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`settings expected to be basetypes.StringValue, was: %T`, settingsAttribute))
+	}
+
+	widgetIdAttribute, ok := attributes["widget_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`widget_id is missing from object`)
+
+		return NewGroupControlsValueUnknown(), diags
+	}
+
+	widgetIdVal, ok := widgetIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`widget_id expected to be basetypes.StringValue, was: %T`, widgetIdAttribute))
+	}
+
+	widgetNamespaceAttribute, ok := attributes["widget_namespace"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`widget_namespace is missing from object`)
+
+		return NewGroupControlsValueUnknown(), diags
+	}
+
+	widgetNamespaceVal, ok := widgetNamespaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`widget_namespace expected to be basetypes.StringValue, was: %T`, widgetNamespaceAttribute))
+	}
+
+	if diags.HasError() {
+		return NewGroupControlsValueUnknown(), diags
+	}
+
+	return GroupControlsValue{
+		GroupId:         groupIdVal,
+		Settings:        settingsVal,
+		WidgetId:        widgetIdVal,
+		WidgetNamespace: widgetNamespaceVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewGroupControlsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) GroupControlsValue {
+	object, diags := NewGroupControlsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewGroupControlsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t GroupControlsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewGroupControlsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewGroupControlsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewGroupControlsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewGroupControlsValueMust(GroupControlsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t GroupControlsType) ValueType(ctx context.Context) attr.Value {
+	return GroupControlsValue{}
+}
+
+var _ basetypes.ObjectValuable = GroupControlsValue{}
+
+type GroupControlsValue struct {
+	GroupId         basetypes.StringValue `tfsdk:"group_id"`
+	Settings        basetypes.StringValue `tfsdk:"settings"`
+	WidgetId        basetypes.StringValue `tfsdk:"widget_id"`
+	WidgetNamespace basetypes.StringValue `tfsdk:"widget_namespace"`
+	state           attr.ValueState
+}
+
+func (v GroupControlsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["group_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["settings"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["widget_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["widget_namespace"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.GroupId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["group_id"] = val
+
+		val, err = v.Settings.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["settings"] = val
+
+		val, err = v.WidgetId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["widget_id"] = val
+
+		val, err = v.WidgetNamespace.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["widget_namespace"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v GroupControlsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v GroupControlsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v GroupControlsValue) String() string {
+	return "GroupControlsValue"
+}
+
+func (v GroupControlsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"group_id":         basetypes.StringType{},
+		"settings":         basetypes.StringType{},
+		"widget_id":        basetypes.StringType{},
+		"widget_namespace": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"group_id":         v.GroupId,
+			"settings":         v.Settings,
+			"widget_id":        v.WidgetId,
+			"widget_namespace": v.WidgetNamespace,
+		})
+
+	return objVal, diags
+}
+
+func (v GroupControlsValue) Equal(o attr.Value) bool {
+	other, ok := o.(GroupControlsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.GroupId.Equal(other.GroupId) {
+		return false
+	}
+
+	if !v.Settings.Equal(other.Settings) {
+		return false
+	}
+
+	if !v.WidgetId.Equal(other.WidgetId) {
+		return false
+	}
+
+	if !v.WidgetNamespace.Equal(other.WidgetNamespace) {
+		return false
+	}
+
+	return true
+}
+
+func (v GroupControlsValue) Type(ctx context.Context) attr.Type {
+	return GroupControlsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v GroupControlsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"group_id":         basetypes.StringType{},
 		"settings":         basetypes.StringType{},
 		"widget_id":        basetypes.StringType{},
 		"widget_namespace": basetypes.StringType{},

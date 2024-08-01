@@ -35,6 +35,28 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		request.Editors.SetTo(requestEditorsItems)
 	}
 
+	if model.EditorLayout.IsNull() || model.EditorLayout.IsUnknown() {
+		request.EditorLayout.Reset()
+	} else {
+		editorLayoutPath := path.Root("editor_layout")
+
+		editorLayoutElementValues := []EditorLayoutValue{}
+		diags.Append(model.EditorLayout.ElementsAs(ctx, &editorLayoutElementValues, false)...)
+
+		requestEditorLayoutItems := make([]contentfulManagement.PutEditorInterfaceReqEditorLayoutItem, len(editorLayoutElementValues))
+
+		for index, editorLayoutElement := range editorLayoutElementValues {
+			path := editorLayoutPath.AtListIndex(index)
+
+			requestEditorLayoutItem, requestEditorLayoutItemDiags := editorLayoutElement.ToPutEditorInterfaceReqEditorLayoutItem(ctx, path)
+			diags.Append(requestEditorLayoutItemDiags...)
+
+			requestEditorLayoutItems[index] = requestEditorLayoutItem
+		}
+
+		request.EditorLayout.SetTo(requestEditorLayoutItems)
+	}
+
 	if model.Controls.IsNull() || model.Controls.IsUnknown() {
 		request.Controls.Reset()
 	} else {
@@ -134,6 +156,15 @@ func (model *EditorInterfaceModel) ReadFromResponse(ctx context.Context, editorI
 		model.Controls = controlsListValue
 	} else {
 		model.Controls = NewControlsListValueNull(ctx)
+	}
+
+	if editorInterfaceGroupControls, ok := editorInterface.GroupControls.Get(); ok {
+		groupControlsListValue, groupControlsListValueDiags := NewGroupControlsListValueFromResponse(ctx, path.Root("group_controls"), editorInterfaceGroupControls)
+		diags.Append(groupControlsListValueDiags...)
+
+		model.GroupControls = groupControlsListValue
+	} else {
+		model.GroupControls = NewGroupControlsListValueNull(ctx)
 	}
 
 	if editorInterfaceSidebar, ok := editorInterface.Sidebar.Get(); ok {
