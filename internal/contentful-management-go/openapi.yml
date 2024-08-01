@@ -270,6 +270,23 @@ components:
                 additionalProperties: true
             required:
               - fieldId
+        groupControls:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              groupId:
+                type: string
+              widgetNamespace:
+                type: string
+              widgetId:
+                type: string
+              settings:
+                type: object
+                additionalProperties: true
+            required:
+              - groupId
         sidebar:
           type: array
           nullable: true

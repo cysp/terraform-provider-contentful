@@ -201,6 +201,24 @@ func (s *EditorInterface) Validate() error {
 		})
 	}
 	if err := func() error {
+		if value, ok := s.GroupControls.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "groupControls",
+			Error: err,
+		})
+	}
+	if err := func() error {
 		if value, ok := s.Sidebar.Get(); ok {
 			if err := func() error {
 				if value == nil {
@@ -430,6 +448,24 @@ func (s *PutEditorInterfaceReq) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "controls",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.GroupControls.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "groupControls",
 			Error: err,
 		})
 	}

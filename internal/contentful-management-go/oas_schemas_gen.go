@@ -461,11 +461,12 @@ func (s *ContentTypeSysType) UnmarshalText(data []byte) error {
 // Merged schema.
 // Ref: #/components/schemas/EditorInterface
 type EditorInterface struct {
-	Sys          EditorInterfaceSys                         `json:"sys"`
-	Editors      OptNilEditorInterfaceEditorsItemArray      `json:"editors"`
-	EditorLayout OptNilEditorInterfaceEditorLayoutItemArray `json:"editorLayout"`
-	Controls     OptNilEditorInterfaceControlsItemArray     `json:"controls"`
-	Sidebar      OptNilEditorInterfaceSidebarItemArray      `json:"sidebar"`
+	Sys           EditorInterfaceSys                          `json:"sys"`
+	Editors       OptNilEditorInterfaceEditorsItemArray       `json:"editors"`
+	EditorLayout  OptNilEditorInterfaceEditorLayoutItemArray  `json:"editorLayout"`
+	Controls      OptNilEditorInterfaceControlsItemArray      `json:"controls"`
+	GroupControls OptNilEditorInterfaceGroupControlsItemArray `json:"groupControls"`
+	Sidebar       OptNilEditorInterfaceSidebarItemArray       `json:"sidebar"`
 }
 
 // GetSys returns the value of Sys.
@@ -486,6 +487,11 @@ func (s *EditorInterface) GetEditorLayout() OptNilEditorInterfaceEditorLayoutIte
 // GetControls returns the value of Controls.
 func (s *EditorInterface) GetControls() OptNilEditorInterfaceControlsItemArray {
 	return s.Controls
+}
+
+// GetGroupControls returns the value of GroupControls.
+func (s *EditorInterface) GetGroupControls() OptNilEditorInterfaceGroupControlsItemArray {
+	return s.GroupControls
 }
 
 // GetSidebar returns the value of Sidebar.
@@ -511,6 +517,11 @@ func (s *EditorInterface) SetEditorLayout(val OptNilEditorInterfaceEditorLayoutI
 // SetControls sets the value of Controls.
 func (s *EditorInterface) SetControls(val OptNilEditorInterfaceControlsItemArray) {
 	s.Controls = val
+}
+
+// SetGroupControls sets the value of GroupControls.
+func (s *EditorInterface) SetGroupControls(val OptNilEditorInterfaceGroupControlsItemArray) {
+	s.GroupControls = val
 }
 
 // SetSidebar sets the value of Sidebar.
@@ -676,6 +687,64 @@ func (s *EditorInterfaceEditorsItem) SetSettings(val OptEditorInterfaceEditorsIt
 type EditorInterfaceEditorsItemSettings map[string]jx.Raw
 
 func (s *EditorInterfaceEditorsItemSettings) init() EditorInterfaceEditorsItemSettings {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type EditorInterfaceGroupControlsItem struct {
+	GroupId         string                                      `json:"groupId"`
+	WidgetNamespace OptString                                   `json:"widgetNamespace"`
+	WidgetId        OptString                                   `json:"widgetId"`
+	Settings        OptEditorInterfaceGroupControlsItemSettings `json:"settings"`
+}
+
+// GetGroupId returns the value of GroupId.
+func (s *EditorInterfaceGroupControlsItem) GetGroupId() string {
+	return s.GroupId
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *EditorInterfaceGroupControlsItem) GetWidgetNamespace() OptString {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *EditorInterfaceGroupControlsItem) GetWidgetId() OptString {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *EditorInterfaceGroupControlsItem) GetSettings() OptEditorInterfaceGroupControlsItemSettings {
+	return s.Settings
+}
+
+// SetGroupId sets the value of GroupId.
+func (s *EditorInterfaceGroupControlsItem) SetGroupId(val string) {
+	s.GroupId = val
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *EditorInterfaceGroupControlsItem) SetWidgetNamespace(val OptString) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *EditorInterfaceGroupControlsItem) SetWidgetId(val OptString) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *EditorInterfaceGroupControlsItem) SetSettings(val OptEditorInterfaceGroupControlsItemSettings) {
+	s.Settings = val
+}
+
+type EditorInterfaceGroupControlsItemSettings map[string]jx.Raw
+
+func (s *EditorInterfaceGroupControlsItemSettings) init() EditorInterfaceGroupControlsItemSettings {
 	m := *s
 	if m == nil {
 		m = map[string]jx.Raw{}
@@ -1269,6 +1338,52 @@ func (o OptEditorInterfaceEditorsItemSettings) Or(d EditorInterfaceEditorsItemSe
 	return d
 }
 
+// NewOptEditorInterfaceGroupControlsItemSettings returns new OptEditorInterfaceGroupControlsItemSettings with value set to v.
+func NewOptEditorInterfaceGroupControlsItemSettings(v EditorInterfaceGroupControlsItemSettings) OptEditorInterfaceGroupControlsItemSettings {
+	return OptEditorInterfaceGroupControlsItemSettings{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEditorInterfaceGroupControlsItemSettings is optional EditorInterfaceGroupControlsItemSettings.
+type OptEditorInterfaceGroupControlsItemSettings struct {
+	Value EditorInterfaceGroupControlsItemSettings
+	Set   bool
+}
+
+// IsSet returns true if OptEditorInterfaceGroupControlsItemSettings was set.
+func (o OptEditorInterfaceGroupControlsItemSettings) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEditorInterfaceGroupControlsItemSettings) Reset() {
+	var v EditorInterfaceGroupControlsItemSettings
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEditorInterfaceGroupControlsItemSettings) SetTo(v EditorInterfaceGroupControlsItemSettings) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEditorInterfaceGroupControlsItemSettings) Get() (v EditorInterfaceGroupControlsItemSettings, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEditorInterfaceGroupControlsItemSettings) Or(d EditorInterfaceGroupControlsItemSettings) EditorInterfaceGroupControlsItemSettings {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptEditorInterfaceSidebarItemSettings returns new OptEditorInterfaceSidebarItemSettings with value set to v.
 func NewOptEditorInterfaceSidebarItemSettings(v EditorInterfaceSidebarItemSettings) OptEditorInterfaceSidebarItemSettings {
 	return OptEditorInterfaceSidebarItemSettings{
@@ -1550,6 +1665,69 @@ func (o OptNilEditorInterfaceEditorsItemArray) Or(d []EditorInterfaceEditorsItem
 	return d
 }
 
+// NewOptNilEditorInterfaceGroupControlsItemArray returns new OptNilEditorInterfaceGroupControlsItemArray with value set to v.
+func NewOptNilEditorInterfaceGroupControlsItemArray(v []EditorInterfaceGroupControlsItem) OptNilEditorInterfaceGroupControlsItemArray {
+	return OptNilEditorInterfaceGroupControlsItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceGroupControlsItemArray is optional nullable []EditorInterfaceGroupControlsItem.
+type OptNilEditorInterfaceGroupControlsItemArray struct {
+	Value []EditorInterfaceGroupControlsItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceGroupControlsItemArray was set.
+func (o OptNilEditorInterfaceGroupControlsItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceGroupControlsItemArray) Reset() {
+	var v []EditorInterfaceGroupControlsItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceGroupControlsItemArray) SetTo(v []EditorInterfaceGroupControlsItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilEditorInterfaceGroupControlsItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilEditorInterfaceGroupControlsItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceGroupControlsItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceGroupControlsItemArray) Get() (v []EditorInterfaceGroupControlsItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceGroupControlsItemArray) Or(d []EditorInterfaceGroupControlsItem) []EditorInterfaceGroupControlsItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilEditorInterfaceSidebarItemArray returns new OptNilEditorInterfaceSidebarItemArray with value set to v.
 func NewOptNilEditorInterfaceSidebarItemArray(v []EditorInterfaceSidebarItem) OptNilEditorInterfaceSidebarItemArray {
 	return OptNilEditorInterfaceSidebarItemArray{
@@ -1802,6 +1980,69 @@ func (o OptNilPutEditorInterfaceReqEditorsItemArray) Or(d []PutEditorInterfaceRe
 	return d
 }
 
+// NewOptNilPutEditorInterfaceReqGroupControlsItemArray returns new OptNilPutEditorInterfaceReqGroupControlsItemArray with value set to v.
+func NewOptNilPutEditorInterfaceReqGroupControlsItemArray(v []PutEditorInterfaceReqGroupControlsItem) OptNilPutEditorInterfaceReqGroupControlsItemArray {
+	return OptNilPutEditorInterfaceReqGroupControlsItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilPutEditorInterfaceReqGroupControlsItemArray is optional nullable []PutEditorInterfaceReqGroupControlsItem.
+type OptNilPutEditorInterfaceReqGroupControlsItemArray struct {
+	Value []PutEditorInterfaceReqGroupControlsItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilPutEditorInterfaceReqGroupControlsItemArray was set.
+func (o OptNilPutEditorInterfaceReqGroupControlsItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilPutEditorInterfaceReqGroupControlsItemArray) Reset() {
+	var v []PutEditorInterfaceReqGroupControlsItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilPutEditorInterfaceReqGroupControlsItemArray) SetTo(v []PutEditorInterfaceReqGroupControlsItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilPutEditorInterfaceReqGroupControlsItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilPutEditorInterfaceReqGroupControlsItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []PutEditorInterfaceReqGroupControlsItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilPutEditorInterfaceReqGroupControlsItemArray) Get() (v []PutEditorInterfaceReqGroupControlsItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilPutEditorInterfaceReqGroupControlsItemArray) Or(d []PutEditorInterfaceReqGroupControlsItem) []PutEditorInterfaceReqGroupControlsItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilPutEditorInterfaceReqSidebarItemArray returns new OptNilPutEditorInterfaceReqSidebarItemArray with value set to v.
 func NewOptNilPutEditorInterfaceReqSidebarItemArray(v []PutEditorInterfaceReqSidebarItem) OptNilPutEditorInterfaceReqSidebarItemArray {
 	return OptNilPutEditorInterfaceReqSidebarItemArray{
@@ -2043,6 +2284,52 @@ func (o OptPutEditorInterfaceReqEditorsItemSettings) Get() (v PutEditorInterface
 
 // Or returns value if set, or given parameter if does not.
 func (o OptPutEditorInterfaceReqEditorsItemSettings) Or(d PutEditorInterfaceReqEditorsItemSettings) PutEditorInterfaceReqEditorsItemSettings {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptPutEditorInterfaceReqGroupControlsItemSettings returns new OptPutEditorInterfaceReqGroupControlsItemSettings with value set to v.
+func NewOptPutEditorInterfaceReqGroupControlsItemSettings(v PutEditorInterfaceReqGroupControlsItemSettings) OptPutEditorInterfaceReqGroupControlsItemSettings {
+	return OptPutEditorInterfaceReqGroupControlsItemSettings{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPutEditorInterfaceReqGroupControlsItemSettings is optional PutEditorInterfaceReqGroupControlsItemSettings.
+type OptPutEditorInterfaceReqGroupControlsItemSettings struct {
+	Value PutEditorInterfaceReqGroupControlsItemSettings
+	Set   bool
+}
+
+// IsSet returns true if OptPutEditorInterfaceReqGroupControlsItemSettings was set.
+func (o OptPutEditorInterfaceReqGroupControlsItemSettings) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPutEditorInterfaceReqGroupControlsItemSettings) Reset() {
+	var v PutEditorInterfaceReqGroupControlsItemSettings
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPutEditorInterfaceReqGroupControlsItemSettings) SetTo(v PutEditorInterfaceReqGroupControlsItemSettings) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPutEditorInterfaceReqGroupControlsItemSettings) Get() (v PutEditorInterfaceReqGroupControlsItemSettings, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPutEditorInterfaceReqGroupControlsItemSettings) Or(d PutEditorInterfaceReqGroupControlsItemSettings) PutEditorInterfaceReqGroupControlsItemSettings {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -2382,10 +2669,11 @@ func (s *PutContentTypeReqFieldsItemItems) SetValidations(val []jx.Raw) {
 }
 
 type PutEditorInterfaceReq struct {
-	Editors      OptNilPutEditorInterfaceReqEditorsItemArray      `json:"editors"`
-	EditorLayout OptNilPutEditorInterfaceReqEditorLayoutItemArray `json:"editorLayout"`
-	Controls     OptNilPutEditorInterfaceReqControlsItemArray     `json:"controls"`
-	Sidebar      OptNilPutEditorInterfaceReqSidebarItemArray      `json:"sidebar"`
+	Editors       OptNilPutEditorInterfaceReqEditorsItemArray       `json:"editors"`
+	EditorLayout  OptNilPutEditorInterfaceReqEditorLayoutItemArray  `json:"editorLayout"`
+	Controls      OptNilPutEditorInterfaceReqControlsItemArray      `json:"controls"`
+	GroupControls OptNilPutEditorInterfaceReqGroupControlsItemArray `json:"groupControls"`
+	Sidebar       OptNilPutEditorInterfaceReqSidebarItemArray       `json:"sidebar"`
 }
 
 // GetEditors returns the value of Editors.
@@ -2401,6 +2689,11 @@ func (s *PutEditorInterfaceReq) GetEditorLayout() OptNilPutEditorInterfaceReqEdi
 // GetControls returns the value of Controls.
 func (s *PutEditorInterfaceReq) GetControls() OptNilPutEditorInterfaceReqControlsItemArray {
 	return s.Controls
+}
+
+// GetGroupControls returns the value of GroupControls.
+func (s *PutEditorInterfaceReq) GetGroupControls() OptNilPutEditorInterfaceReqGroupControlsItemArray {
+	return s.GroupControls
 }
 
 // GetSidebar returns the value of Sidebar.
@@ -2421,6 +2714,11 @@ func (s *PutEditorInterfaceReq) SetEditorLayout(val OptNilPutEditorInterfaceReqE
 // SetControls sets the value of Controls.
 func (s *PutEditorInterfaceReq) SetControls(val OptNilPutEditorInterfaceReqControlsItemArray) {
 	s.Controls = val
+}
+
+// SetGroupControls sets the value of GroupControls.
+func (s *PutEditorInterfaceReq) SetGroupControls(val OptNilPutEditorInterfaceReqGroupControlsItemArray) {
+	s.GroupControls = val
 }
 
 // SetSidebar sets the value of Sidebar.
@@ -2583,6 +2881,64 @@ func (s *PutEditorInterfaceReqEditorsItem) SetSettings(val OptPutEditorInterface
 type PutEditorInterfaceReqEditorsItemSettings map[string]jx.Raw
 
 func (s *PutEditorInterfaceReqEditorsItemSettings) init() PutEditorInterfaceReqEditorsItemSettings {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type PutEditorInterfaceReqGroupControlsItem struct {
+	GroupId         string                                            `json:"groupId"`
+	WidgetNamespace OptString                                         `json:"widgetNamespace"`
+	WidgetId        OptString                                         `json:"widgetId"`
+	Settings        OptPutEditorInterfaceReqGroupControlsItemSettings `json:"settings"`
+}
+
+// GetGroupId returns the value of GroupId.
+func (s *PutEditorInterfaceReqGroupControlsItem) GetGroupId() string {
+	return s.GroupId
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *PutEditorInterfaceReqGroupControlsItem) GetWidgetNamespace() OptString {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *PutEditorInterfaceReqGroupControlsItem) GetWidgetId() OptString {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *PutEditorInterfaceReqGroupControlsItem) GetSettings() OptPutEditorInterfaceReqGroupControlsItemSettings {
+	return s.Settings
+}
+
+// SetGroupId sets the value of GroupId.
+func (s *PutEditorInterfaceReqGroupControlsItem) SetGroupId(val string) {
+	s.GroupId = val
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *PutEditorInterfaceReqGroupControlsItem) SetWidgetNamespace(val OptString) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *PutEditorInterfaceReqGroupControlsItem) SetWidgetId(val OptString) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *PutEditorInterfaceReqGroupControlsItem) SetSettings(val OptPutEditorInterfaceReqGroupControlsItemSettings) {
+	s.Settings = val
+}
+
+type PutEditorInterfaceReqGroupControlsItemSettings map[string]jx.Raw
+
+func (s *PutEditorInterfaceReqGroupControlsItemSettings) init() PutEditorInterfaceReqGroupControlsItemSettings {
 	m := *s
 	if m == nil {
 		m = map[string]jx.Raw{}
