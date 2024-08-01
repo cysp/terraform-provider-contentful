@@ -486,6 +486,45 @@
                         }
                     },
                     {
+                        "name": "editor_layout",
+                        "list_nested": {
+                            "computed_optional_required": "optional",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "group_id",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "name",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "items",
+                                        "list": {
+                                            "computed_optional_required": "optional",
+                                            "element_type": {
+                                                "string": {
+                                                    "custom_type": {
+                                                        "import": {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                        },
+                                                        "type": "jsontypes.NormalizedType{}",
+                                                        "value_type": "jsontypes.Normalized"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
                         "name": "controls",
                         "list_nested": {
                             "computed_optional_required": "optional",
@@ -493,6 +532,47 @@
                                 "attributes": [
                                     {
                                         "name": "field_id",
+                                        "string": {
+                                            "computed_optional_required": "required"
+                                        }
+                                    },
+                                    {
+                                        "name": "widget_namespace",
+                                        "string": {
+                                            "computed_optional_required": "optional"
+                                        }
+                                    },
+                                    {
+                                        "name": "widget_id",
+                                        "string": {
+                                            "computed_optional_required": "optional"
+                                        }
+                                    },
+                                    {
+                                        "name": "settings",
+                                        "string": {
+                                            "computed_optional_required": "optional",
+                                            "custom_type": {
+                                                "import": {
+                                                    "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                },
+                                                "type": "jsontypes.NormalizedType{}",
+                                                "value_type": "jsontypes.Normalized"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "group_controls",
+                        "list_nested": {
+                            "computed_optional_required": "optional",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "group_id",
                                         "string": {
                                             "computed_optional_required": "required"
                                         }

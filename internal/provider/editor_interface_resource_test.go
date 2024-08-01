@@ -147,19 +147,19 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 
 					controls = [
 						{
-						field_id         = "name",
-						widget_namespace = "builtin",
-						widget_id        = "singleLine",
+							field_id         = "name",
+							widget_namespace = "builtin",
+							widget_id        = "singleLine",
 						},
 						{
-						field_id         = "avatar",
-						widget_namespace = "builtin",
-						widget_id        = "assetLinkEditor",
+							field_id         = "avatar",
+							widget_namespace = "builtin",
+							widget_id        = "assetLinkEditor",
 						},
 						{
-						field_id         = "blurb",
-						widget_namespace = "builtin",
-						widget_id        = "richTextEditor",
+							field_id         = "blurb",
+							widget_namespace = "builtin",
+							widget_id        = "richTextEditor",
 						}
 					]
 
@@ -182,19 +182,19 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 
 					controls = [
 						{
-						field_id         = "name",
-						widget_namespace = "builtin",
-						widget_id        = "singleLine",
+							field_id         = "name",
+							widget_namespace = "builtin",
+							widget_id        = "singleLine",
 						},
 						{
-						field_id         = "avatar",
-						widget_namespace = "builtin",
-						widget_id        = "assetLinkEditor",
+							field_id         = "avatar",
+							widget_namespace = "builtin",
+							widget_id        = "assetLinkEditor",
 						},
 						{
-						field_id         = "blurb",
-						widget_namespace = "builtin",
-						widget_id        = "richTextEditor",
+							field_id         = "blurb",
+							widget_namespace = "builtin",
+							widget_id        = "richTextEditor",
 						}
 					]
 
@@ -222,19 +222,19 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 
 					controls = [
 						{
-						field_id         = "name",
-						widget_namespace = "builtin",
-						widget_id        = "singleLine",
+							field_id         = "name",
+							widget_namespace = "builtin",
+							widget_id        = "singleLine",
 						},
 						{
-						field_id         = "avatar",
-						widget_namespace = "builtin",
-						widget_id        = "assetLinkEditor",
+							field_id         = "avatar",
+							widget_namespace = "builtin",
+							widget_id        = "assetLinkEditor",
 						},
 						{
-						field_id         = "blurb",
-						widget_namespace = "builtin",
-						widget_id        = "richTextEditor",
+							field_id         = "blurb",
+							widget_namespace = "builtin",
+							widget_id        = "richTextEditor",
 						}
 					]
 
@@ -242,6 +242,96 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 						widget_namespace = "app"
 						widget_id        = "1WkQ2J9LERPtbMTdUfSHka"
 					}]
+				}
+				`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				Config: `
+				resource "contentful_editor_interface" "test" {
+					space_id = "0p38pssr0fi3"
+					environment_id = "test"
+					content_type_id = "author"
+
+					editor_layout = [{
+						group_id = "content"
+						name     = "Content"
+						items = [
+							jsonencode(
+								{
+									groupId = "name"
+									name    = "name"
+									items = [
+										{
+											fieldId = "name"
+										},
+									]
+								}
+							),
+							jsonencode(
+								{
+									groupId = "bio"
+									name    = "Bio"
+									items = [
+										{
+											fieldId = "avatar"
+										},
+										{
+											fieldId = "blurb"
+										},
+									]
+								}
+							),
+						]
+					}]
+
+					controls = [
+						{
+							field_id         = "name",
+							widget_namespace = "builtin",
+							widget_id        = "singleLine",
+						},
+						{
+							field_id         = "avatar",
+							widget_namespace = "builtin",
+							widget_id        = "assetLinkEditor",
+						},
+						{
+							field_id         = "blurb",
+							widget_namespace = "builtin",
+							widget_id        = "richTextEditor",
+						}
+					]
+
+					group_controls = [
+						{
+							group_id         = "content"
+							widget_namespace = "builtin"
+							widget_id        = "topLevelTab"
+						},
+						{
+							group_id         = "name"
+							widget_namespace = "builtin"
+							widget_id        = "fieldset"
+							settings = jsonencode({
+								collapsedByDefault = false
+								helpText           = ""
+							})
+						},
+						{
+							group_id         = "bio"
+							widget_namespace = "builtin"
+							widget_id        = "fieldset"
+							settings = jsonencode({
+								collapsedByDefault = false
+								helpText           = ""
+							})
+						},
+					]
 				}
 				`,
 				ConfigPlanChecks: resource.ConfigPlanChecks{

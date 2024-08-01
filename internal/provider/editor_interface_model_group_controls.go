@@ -12,21 +12,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewControlsListValueNull(ctx context.Context) types.List {
-	return types.ListNull(ControlsValue{}.Type(ctx))
+func NewGroupControlsListValueNull(ctx context.Context) types.List {
+	return types.ListNull(GroupControlsValue{}.Type(ctx))
 }
 
-func NewControlsValueKnown() ControlsValue {
-	return ControlsValue{
+func NewGroupControlsValueKnown() GroupControlsValue {
+	return GroupControlsValue{
 		state: attr.ValueStateKnown,
 	}
 }
 
-func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(_ context.Context, _ path.Path) (contentfulManagement.PutEditorInterfaceReqControlsItem, diag.Diagnostics) {
+func (model *GroupControlsValue) ToPutEditorInterfaceReqGroupControlsItem(_ context.Context, _ path.Path) (contentfulManagement.PutEditorInterfaceReqGroupControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := contentfulManagement.PutEditorInterfaceReqControlsItem{
-		FieldId:         model.FieldId.ValueString(),
+	item := contentfulManagement.PutEditorInterfaceReqGroupControlsItem{
+		GroupId:         model.GroupId.ValueString(),
 		WidgetNamespace: util.StringValueToOptString(model.WidgetNamespace),
 		WidgetId:        util.StringValueToOptString(model.WidgetId),
 	}
@@ -39,31 +39,31 @@ func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(_ context.Contex
 	return item, diags
 }
 
-func NewControlsListValueFromResponse(ctx context.Context, path path.Path, controlsItems []contentfulManagement.EditorInterfaceControlsItem) (types.List, diag.Diagnostics) {
+func NewGroupControlsListValueFromResponse(ctx context.Context, path path.Path, groupControlsItems []contentfulManagement.EditorInterfaceGroupControlsItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]attr.Value, len(controlsItems))
+	listElementValues := make([]attr.Value, len(groupControlsItems))
 
-	for index, item := range controlsItems {
+	for index, item := range groupControlsItems {
 		path := path.AtListIndex(index)
 
-		controlsValue, controlsValueDiags := NewControlsValueFromResponse(path, item)
-		diags.Append(controlsValueDiags...)
+		groupControlsValue, groupControlsValueDiags := NewGroupControlsValueFromResponse(path, item)
+		diags.Append(groupControlsValueDiags...)
 
-		listElementValues[index] = controlsValue
+		listElementValues[index] = groupControlsValue
 	}
 
-	list, listDiags := types.ListValue(ControlsValue{}.Type(ctx), listElementValues)
+	list, listDiags := types.ListValue(GroupControlsValue{}.Type(ctx), listElementValues)
 	diags.Append(listDiags...)
 
 	return list, diags
 }
 
-func NewControlsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceControlsItem) (ControlsValue, diag.Diagnostics) {
+func NewGroupControlsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceGroupControlsItem) (GroupControlsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := ControlsValue{
-		FieldId:         types.StringValue(item.FieldId),
+	value := GroupControlsValue{
+		GroupId:         types.StringValue(item.GroupId),
 		WidgetNamespace: util.OptStringToStringValue(item.WidgetNamespace),
 		WidgetId:        util.OptStringToStringValue(item.WidgetId),
 		Settings:        types.StringNull(),

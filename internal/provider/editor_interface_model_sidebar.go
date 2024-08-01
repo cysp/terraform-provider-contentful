@@ -17,25 +17,22 @@ func NewSidebarValueKnown() SidebarValue {
 	}
 }
 
-func (m *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context, _ path.Path) (contentfulManagement.PutEditorInterfaceReqSidebarItem, diag.Diagnostics) {
+func (model *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context, _ path.Path) (contentfulManagement.PutEditorInterfaceReqSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := contentfulManagement.PutEditorInterfaceReqSidebarItem{
-		WidgetNamespace: m.WidgetNamespace.ValueString(),
-		WidgetId:        m.WidgetId.ValueString(),
+		WidgetNamespace: model.WidgetNamespace.ValueString(),
+		WidgetId:        model.WidgetId.ValueString(),
 	}
 
-	modelDisabled := m.Disabled.ValueBoolPointer()
+	modelDisabled := model.Disabled.ValueBoolPointer()
 	if modelDisabled != nil {
 		item.Disabled.SetTo(*modelDisabled)
 	}
 
-	if !m.Settings.IsNull() && !m.Settings.IsUnknown() {
-		modelSettings := m.Settings.ValueString()
-
-		if modelSettings != "" {
-			item.Settings = []byte(modelSettings)
-		}
+	modelSettingsString := model.Settings.ValueString()
+	if modelSettingsString != "" {
+		item.Settings = []byte(modelSettingsString)
 	}
 
 	return item, diags
@@ -57,9 +54,9 @@ func NewSidebarValueFromResponse(path path.Path, item contentfulManagement.Edito
 	}
 
 	if item.Settings != nil {
-		settings, err := util.JxNormalizeOpaqueBytes(item.Settings, util.JxEncodeOpaqueOptions{EscapeStrings: true})
-		if err != nil {
-			diags.AddAttributeError(path.AtName("settings"), "Failed to read settings", err.Error())
+		settings, settingsErr := util.JxNormalizeOpaqueBytes(item.Settings, util.JxEncodeOpaqueOptions{EscapeStrings: true})
+		if settingsErr != nil {
+			diags.AddAttributeError(path.AtName("settings"), "Failed to read settings", settingsErr.Error())
 		}
 
 		value.Settings = types.StringValue(string(settings))

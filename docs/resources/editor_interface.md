@@ -79,6 +79,8 @@ resource "contentful_editor_interface" "author" {
 ### Optional
 
 - `controls` (Attributes List) (see [below for nested schema](#nestedatt--controls))
+- `editor_layout` (Attributes List) (see [below for nested schema](#nestedatt--editor_layout))
+- `group_controls` (Attributes List) (see [below for nested schema](#nestedatt--group_controls))
 - `sidebar` (Attributes List) (see [below for nested schema](#nestedatt--sidebar))
 
 <a id="nestedatt--controls"></a>
@@ -87,6 +89,33 @@ resource "contentful_editor_interface" "author" {
 Required:
 
 - `field_id` (String)
+
+Optional:
+
+- `settings` (String)
+- `widget_id` (String)
+- `widget_namespace` (String)
+
+
+<a id="nestedatt--editor_layout"></a>
+### Nested Schema for `editor_layout`
+
+Required:
+
+- `group_id` (String)
+- `name` (String)
+
+Optional:
+
+- `items` (List of String)
+
+
+<a id="nestedatt--group_controls"></a>
+### Nested Schema for `group_controls`
+
+Required:
+
+- `group_id` (String)
 
 Optional:
 

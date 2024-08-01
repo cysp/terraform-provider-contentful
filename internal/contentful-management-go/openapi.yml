@@ -336,6 +336,22 @@ components:
     EditorInterfaceFields:
       type: object
       properties:
+        editorLayout:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              groupId:
+                type: string
+              name:
+                type: string
+              items:
+                type: array
+                items: {}
+            required:
+              - groupId
+              - name
         controls:
           type: array
           nullable: true
@@ -351,6 +367,21 @@ components:
               settings: {}
             required:
               - fieldId
+        groupControls:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              groupId:
+                type: string
+              widgetNamespace:
+                type: string
+              widgetId:
+                type: string
+              settings: {}
+            required:
+              - groupId
         sidebar:
           type: array
           nullable: true
