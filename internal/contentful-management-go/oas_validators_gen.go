@@ -525,6 +525,42 @@ func (s *EditorInterface) Validate() error {
 		})
 	}
 	if err := func() error {
+		if value, ok := s.Editors.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "editors",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.EditorLayout.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "editorLayout",
+			Error: err,
+		})
+	}
+	if err := func() error {
 		if value, ok := s.Controls.Get(); ok {
 			if err := func() error {
 				if value == nil {
@@ -539,6 +575,24 @@ func (s *EditorInterface) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "controls",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.GroupControls.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "groupControls",
 			Error: err,
 		})
 	}
@@ -943,6 +997,42 @@ func (s *PutEditorInterfaceReq) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
+		if value, ok := s.Editors.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "editors",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.EditorLayout.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "editorLayout",
+			Error: err,
+		})
+	}
+	if err := func() error {
 		if value, ok := s.Controls.Get(); ok {
 			if err := func() error {
 				if value == nil {
@@ -957,6 +1047,24 @@ func (s *PutEditorInterfaceReq) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "controls",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.GroupControls.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "groupControls",
 			Error: err,
 		})
 	}
