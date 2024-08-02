@@ -1,4 +1,4 @@
-//nolint:dupl,revive,stylecheck
+//nolint:revive,stylecheck
 package resource_editor_interface
 
 import (
@@ -13,19 +13,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewControlsValueKnown() ControlsValue {
-	return ControlsValue{
+func NewEditorsValueKnown() EditorsValue {
+	return EditorsValue{
 		state: attr.ValueStateKnown,
 	}
 }
 
-func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(ctx context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqControlsItem, diag.Diagnostics) {
+func (model *EditorsValue) ToPutEditorInterfaceReqEditorsItem(ctx context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqEditorsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := contentfulManagement.PutEditorInterfaceReqControlsItem{
-		FieldId:         model.FieldId.ValueString(),
-		WidgetNamespace: util.StringValueToOptString(model.WidgetNamespace),
-		WidgetId:        util.StringValueToOptString(model.WidgetId),
+	item := contentfulManagement.PutEditorInterfaceReqEditorsItem{
+		WidgetNamespace: model.WidgetNamespace.ValueString(),
+		WidgetId:        model.WidgetId.ValueString(),
+		Disabled:        util.BoolValueToOptBool(model.Disabled),
 	}
 
 	if model.Settings.IsNull() || model.Settings.IsUnknown() {
@@ -47,13 +47,13 @@ func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(ctx context.Cont
 	return item, diags
 }
 
-func NewControlsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceControlsItem) (ControlsValue, diag.Diagnostics) {
+func NewEditorsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceEditorsItem) (EditorsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := ControlsValue{
-		FieldId:         types.StringValue(item.FieldId),
-		WidgetNamespace: util.OptStringToStringValue(item.WidgetNamespace),
-		WidgetId:        util.OptStringToStringValue(item.WidgetId),
+	value := EditorsValue{
+		WidgetNamespace: types.StringValue(item.WidgetNamespace),
+		WidgetId:        types.StringValue(item.WidgetId),
+		Disabled:        util.OptBoolToBoolValue(item.Disabled),
 		Settings:        types.StringNull(),
 		state:           attr.ValueStateKnown,
 	}
@@ -67,11 +67,11 @@ func NewControlsValueFromResponse(path path.Path, item contentfulManagement.Edit
 	return value, diags
 }
 
-func NewControlsListValueNull(ctx context.Context) types.List {
-	return types.ListNull(ControlsValue{}.Type(ctx))
+func NewEditorsListValueNull(ctx context.Context) types.List {
+	return types.ListNull(EditorsValue{}.Type(ctx))
 }
 
-func NewControlsListValueFromResponse(ctx context.Context, path path.Path, controlsItems []contentfulManagement.EditorInterfaceControlsItem) (types.List, diag.Diagnostics) {
+func NewEditorsListValueFromResponse(ctx context.Context, path path.Path, controlsItems []contentfulManagement.EditorInterfaceEditorsItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(controlsItems))
@@ -79,13 +79,13 @@ func NewControlsListValueFromResponse(ctx context.Context, path path.Path, contr
 	for index, item := range controlsItems {
 		path := path.AtListIndex(index)
 
-		controlsValue, controlsValueDiags := NewControlsValueFromResponse(path, item)
-		diags.Append(controlsValueDiags...)
+		EditorsValue, EditorsValueDiags := NewEditorsValueFromResponse(path, item)
+		diags.Append(EditorsValueDiags...)
 
-		listElementValues[index] = controlsValue
+		listElementValues[index] = EditorsValue
 	}
 
-	list, listDiags := types.ListValue(ControlsValue{}.Type(ctx), listElementValues)
+	list, listDiags := types.ListValue(EditorsValue{}.Type(ctx), listElementValues)
 	diags.Append(listDiags...)
 
 	return list, diags
