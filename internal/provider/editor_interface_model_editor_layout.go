@@ -5,6 +5,8 @@ import (
 	"context"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -27,18 +29,10 @@ func (model *EditorLayoutValue) ToPutEditorInterfaceReqEditorLayoutItem(ctx cont
 
 	if model.Items.IsNull() || model.Items.IsUnknown() {
 	} else {
-		// modelItems := model.Items.ValueString()
+		itemItems := []contentfulManagement.PutEditorInterfaceReqEditorLayoutItemItemsItem{}
+		diags.Append(model.Items.ElementsAs(ctx, &itemItems, false)...)
 
-		// path := path.AtName("items")
-
-		// if modelItems != "" {
-		// 	decoder := jx.DecodeStr(modelItems)
-
-		// 	err := item.Items.Decode(decoder)
-		// 	if err != nil {
-		// 		diags.AddAttributeError(path, "Failed to decode items", err.Error())
-		// 	}
-		// }
+		item.SetItems(itemItems)
 	}
 
 	return item, diags
@@ -53,11 +47,18 @@ func NewEditorLayoutValueFromResponse(path path.Path, item contentfulManagement.
 		state:   attr.ValueStateKnown,
 	}
 
-	// if Items, ok := item.Items.Get(); ok {
-	// 	encoder := jx.Encoder{}
-	// 	util.EncodeJxRawMapOrdered(&encoder, Items)
-	// 	value.Items = types.StringValue(encoder.String())
-	// }
+	valueItemsElements := make([]attr.Value, len(item.Items))
+
+	for index, item := range item.Items {
+		encoder := jx.Encoder{}
+		util.EncodeJxRawMapOrdered(&encoder, item)
+		valueItemsElements[index] = types.StringValue(encoder.String())
+	}
+
+	list, listDiags := types.ListValue(types.StringType, valueItemsElements)
+	diags.Append(listDiags...)
+
+	value.Items = list
 
 	return value, diags
 }
