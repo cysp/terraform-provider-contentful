@@ -1,4 +1,4 @@
-//nolint:revive,stylecheck
+//nolint:dupl,revive,stylecheck
 package resource_editor_interface
 
 import (
