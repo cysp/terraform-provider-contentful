@@ -60,10 +60,10 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 						"group_id": schema.StringAttribute{
 							Required: true,
 						},
-						"items": schema.StringAttribute{
-							CustomType: jsontypes.NormalizedType{},
-							Optional:   true,
-							Computed:   true,
+						"items": schema.ListAttribute{
+							ElementType: jsontypes.NormalizedType{},
+							Optional:    true,
+							Computed:    true,
 						},
 						"name": schema.StringAttribute{
 							Required: true,
@@ -730,12 +730,12 @@ func (t EditorLayoutType) ValueFromObject(ctx context.Context, in basetypes.Obje
 		return nil, diags
 	}
 
-	itemsVal, ok := itemsAttribute.(basetypes.StringValue)
+	itemsVal, ok := itemsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`items expected to be basetypes.StringValue, was: %T`, itemsAttribute))
+			fmt.Sprintf(`items expected to be basetypes.ListValue, was: %T`, itemsAttribute))
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -859,12 +859,12 @@ func NewEditorLayoutValue(attributeTypes map[string]attr.Type, attributes map[st
 		return NewEditorLayoutValueUnknown(), diags
 	}
 
-	itemsVal, ok := itemsAttribute.(basetypes.StringValue)
+	itemsVal, ok := itemsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`items expected to be basetypes.StringValue, was: %T`, itemsAttribute))
+			fmt.Sprintf(`items expected to be basetypes.ListValue, was: %T`, itemsAttribute))
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -966,7 +966,7 @@ var _ basetypes.ObjectValuable = EditorLayoutValue{}
 
 type EditorLayoutValue struct {
 	GroupId basetypes.StringValue `tfsdk:"group_id"`
-	Items   basetypes.StringValue `tfsdk:"items"`
+	Items   basetypes.ListValue   `tfsdk:"items"`
 	Name    basetypes.StringValue `tfsdk:"name"`
 	state   attr.ValueState
 }
@@ -978,7 +978,9 @@ func (v EditorLayoutValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 	var err error
 
 	attrTypes["group_id"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["items"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["items"] = basetypes.ListType{
+		ElemType: types.StringType,
+	}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
@@ -1040,10 +1042,26 @@ func (v EditorLayoutValue) String() string {
 func (v EditorLayoutValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
+	itemsVal, d := types.ListValue(types.StringType, v.Items.Elements())
+
+	diags.Append(d...)
+
+	if d.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"group_id": basetypes.StringType{},
+			"items": basetypes.ListType{
+				ElemType: types.StringType,
+			},
+			"name": basetypes.StringType{},
+		}), diags
+	}
+
 	attributeTypes := map[string]attr.Type{
 		"group_id": basetypes.StringType{},
-		"items":    basetypes.StringType{},
-		"name":     basetypes.StringType{},
+		"items": basetypes.ListType{
+			ElemType: types.StringType,
+		},
+		"name": basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -1058,7 +1076,7 @@ func (v EditorLayoutValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 		attributeTypes,
 		map[string]attr.Value{
 			"group_id": v.GroupId,
-			"items":    v.Items,
+			"items":    itemsVal,
 			"name":     v.Name,
 		})
 
@@ -1106,8 +1124,10 @@ func (v EditorLayoutValue) Type(ctx context.Context) attr.Type {
 func (v EditorLayoutValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"group_id": basetypes.StringType{},
-		"items":    basetypes.StringType{},
-		"name":     basetypes.StringType{},
+		"items": basetypes.ListType{
+			ElemType: types.StringType,
+		},
+		"name": basetypes.StringType{},
 	}
 }
 

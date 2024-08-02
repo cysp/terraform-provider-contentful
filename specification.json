@@ -505,14 +505,18 @@
                                     },
                                     {
                                         "name": "items",
-                                        "string": {
+                                        "list": {
                                             "computed_optional_required": "computed_optional",
-                                            "custom_type": {
-                                                "import": {
-                                                    "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-                                                },
-                                                "type": "jsontypes.NormalizedType{}",
-                                                "value_type": "jsontypes.Normalized"
+                                            "element_type": {
+                                                "string": {
+                                                    "custom_type": {
+                                                        "import": {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                        },
+                                                        "type": "jsontypes.NormalizedType{}",
+                                                        "value_type": "jsontypes.Normalized"
+                                                    }
+                                                }
                                             }
                                         }
                                     }

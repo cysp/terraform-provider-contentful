@@ -53,7 +53,7 @@ Required:
 
 Optional:
 
-- `items` (String)
+- `items` (List of String)
 
 
 <a id="nestedatt--editors"></a>
