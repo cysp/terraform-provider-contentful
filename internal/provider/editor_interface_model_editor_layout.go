@@ -29,8 +29,24 @@ func (model *EditorLayoutValue) ToPutEditorInterfaceReqEditorLayoutItem(ctx cont
 
 	if model.Items.IsNull() || model.Items.IsUnknown() {
 	} else {
-		itemItems := []contentfulManagement.PutEditorInterfaceReqEditorLayoutItemItemsItem{}
-		diags.Append(model.Items.ElementsAs(ctx, &itemItems, false)...)
+		var itemItemsStrings []string
+
+		diags.Append(model.Items.ElementsAs(ctx, &itemItemsStrings, false)...)
+
+		itemItems := make([]contentfulManagement.PutEditorInterfaceReqEditorLayoutItemItemsItem, len(itemItemsStrings))
+
+		for index, itemString := range itemItemsStrings {
+			path := path.AtListIndex(index)
+
+			if itemString != "" {
+				decoder := jx.DecodeStr(itemString)
+
+				err := itemItems[index].Decode(decoder)
+				if err != nil {
+					diags.AddAttributeError(path, "Failed to decode item", err.Error())
+				}
+			}
+		}
 
 		item.SetItems(itemItems)
 	}
