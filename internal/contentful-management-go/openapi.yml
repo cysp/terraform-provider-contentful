@@ -144,6 +144,14 @@ components:
               enum:
                 - ContentType
     ContentTypeFields:
+      allOf:
+        - $ref: '#/components/schemas/ContentTypeRequestFields'
+        - type: object
+          properties:
+            description:
+              type: string
+              nullable: true
+    ContentTypeRequestFields:
       type: object
       properties:
         name:
@@ -454,7 +462,7 @@ paths:
           application/vnd.contentful.management.v1+json:
             schema:
               allOf:
-                - $ref: '#/components/schemas/ContentTypeFields'
+                - $ref: '#/components/schemas/ContentTypeRequestFields'
       responses:
         200:
           description: A content type

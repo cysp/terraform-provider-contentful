@@ -137,7 +137,7 @@ func (model *ContentTypeModel) ReadFromResponse(ctx context.Context, contentType
 	// SpaceId, EnvironmentId and ContentTypeId are all already known
 
 	model.Name = types.StringValue(contentType.Name)
-	model.Description = types.StringValue(contentType.Description)
+	model.Description = types.StringValue(contentType.Description.Or(""))
 	model.DisplayField = types.StringValue(contentType.DisplayField)
 
 	fieldsList, fieldsListDiags := NewFieldsListFromResponse(ctx, path.Root("fields"), contentType.Fields)
