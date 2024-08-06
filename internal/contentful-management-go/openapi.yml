@@ -151,6 +151,9 @@ components:
             description:
               type: string
               nullable: true
+            displayField:
+              type: string
+              nullable: true
     ContentTypeRequestFields:
       type: object
       properties:

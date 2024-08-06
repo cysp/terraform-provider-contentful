@@ -122,8 +122,9 @@ type ContentType struct {
 	Sys  ContentTypeSys `json:"sys"`
 	Name string         `json:"name"`
 	// Merged property.
-	Description  NilString               `json:"description"`
-	DisplayField string                  `json:"displayField"`
+	Description NilString `json:"description"`
+	// Merged property.
+	DisplayField NilString               `json:"displayField"`
 	Fields       []ContentTypeFieldsItem `json:"fields"`
 }
 
@@ -143,7 +144,7 @@ func (s *ContentType) GetDescription() NilString {
 }
 
 // GetDisplayField returns the value of DisplayField.
-func (s *ContentType) GetDisplayField() string {
+func (s *ContentType) GetDisplayField() NilString {
 	return s.DisplayField
 }
 
@@ -168,7 +169,7 @@ func (s *ContentType) SetDescription(val NilString) {
 }
 
 // SetDisplayField sets the value of DisplayField.
-func (s *ContentType) SetDisplayField(val string) {
+func (s *ContentType) SetDisplayField(val NilString) {
 	s.DisplayField = val
 }
 

@@ -338,7 +338,7 @@ func (s *ContentType) encodeFields(e *jx.Encoder) {
 	}
 	{
 		e.FieldStart("displayField")
-		e.Str(s.DisplayField)
+		s.DisplayField.Encode(e)
 	}
 	{
 		e.FieldStart("fields")
@@ -402,9 +402,7 @@ func (s *ContentType) Decode(d *jx.Decoder) error {
 		case "displayField":
 			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
-				v, err := d.Str()
-				s.DisplayField = string(v)
-				if err != nil {
+				if err := s.DisplayField.Decode(d); err != nil {
 					return err
 				}
 				return nil
