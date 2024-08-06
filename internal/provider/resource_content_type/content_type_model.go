@@ -138,7 +138,7 @@ func (model *ContentTypeModel) ReadFromResponse(ctx context.Context, contentType
 
 	model.Name = types.StringValue(contentType.Name)
 	model.Description = types.StringValue(contentType.Description.Or(""))
-	model.DisplayField = types.StringValue(contentType.DisplayField)
+	model.DisplayField = types.StringValue(contentType.DisplayField.Or(""))
 
 	fieldsList, fieldsListDiags := NewFieldsListFromResponse(ctx, path.Root("fields"), contentType.Fields)
 	diags.Append(fieldsListDiags...)
