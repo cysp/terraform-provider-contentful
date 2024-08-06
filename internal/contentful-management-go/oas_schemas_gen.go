@@ -119,9 +119,10 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 // Merged schema.
 // Ref: #/components/schemas/ContentType
 type ContentType struct {
-	Sys          ContentTypeSys          `json:"sys"`
-	Name         string                  `json:"name"`
-	Description  string                  `json:"description"`
+	Sys  ContentTypeSys `json:"sys"`
+	Name string         `json:"name"`
+	// Merged property.
+	Description  NilString               `json:"description"`
 	DisplayField string                  `json:"displayField"`
 	Fields       []ContentTypeFieldsItem `json:"fields"`
 }
@@ -137,7 +138,7 @@ func (s *ContentType) GetName() string {
 }
 
 // GetDescription returns the value of Description.
-func (s *ContentType) GetDescription() string {
+func (s *ContentType) GetDescription() NilString {
 	return s.Description
 }
 
@@ -162,7 +163,7 @@ func (s *ContentType) SetName(val string) {
 }
 
 // SetDescription sets the value of Description.
-func (s *ContentType) SetDescription(val string) {
+func (s *ContentType) SetDescription(val NilString) {
 	s.Description = val
 }
 
@@ -857,6 +858,51 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+// NewNilString returns new NilString with value set to v.
+func NewNilString(v string) NilString {
+	return NilString{
+		Value: v,
+	}
+}
+
+// NilString is nullable string.
+type NilString struct {
+	Value string
+	Null  bool
+}
+
+// SetTo sets value to v.
+func (o *NilString) SetTo(v string) {
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o NilString) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *NilString) SetToNull() {
+	o.Null = true
+	var v string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o NilString) Get() (v string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o NilString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
 }
 
 // Ref: #/components/responses/no-content
