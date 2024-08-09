@@ -110,6 +110,61 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/UserFields'
+    ApiKeySys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - ApiKey
+    ApiKeyFields:
+      allOf:
+        - $ref: '#/components/schemas/ApiKeyRequestFields'
+        - type: object
+          properties:
+            accessToken:
+              type: string
+            preview_api_key:
+              type: object
+              properties:
+                sys:
+                  allOf:
+                    - $ref: '#/components/schemas/LinkSys'
+                    - type: object
+                      properties:
+                        linkType:
+                          type: string
+                          enum:
+                            - PreviewApiKey
+              required:
+                - sys
+          required:
+            - accessToken
+    ApiKeyRequestFields:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        environments:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnvironmentLink'
+      required:
+        - name
+    ApiKey:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/ApiKeySys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/ApiKeyFields'
     AppInstallationSys:
       allOf:
         - $ref: '#/components/schemas/BaseSys'
@@ -272,6 +327,68 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/EditorInterfaceFields'
+    LinkSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithId'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - Link
+            linkType:
+              type: string
+          required:
+            - linkType
+    EnvironmentLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: '#/components/schemas/LinkSys'
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - Environment
+      required:
+        - sys
+    PreviewApiKeySys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - PreviewApiKey
+    PreviewApiKeyFields:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        accessToken:
+          type: string
+        environments:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnvironmentLink'
+      required:
+        - name
+        - accessToken
+    PreviewApiKey:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/PreviewApiKeySys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/PreviewApiKeyFields'
   securitySchemes:
     accessToken:
       type: http
@@ -306,6 +423,144 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: '#/components/schemas/User'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/api_keys:
+    post:
+      operationId: postApiKey
+      summary: Create a delivery api key
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ApiKeyRequestFields'
+      responses:
+        201:
+          description: A delivery api key
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/ApiKey'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/api_keys/{api_key_id}:
+    get:
+      operationId: getApiKey
+      summary: Get a single delivery api key
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: api_key_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: A delivery api key
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/ApiKey'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    put:
+      operationId: putApiKey
+      summary: Update a single delivery api key
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: api_key_id
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: X-Contentful-Version
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ApiKeyRequestFields'
+      responses:
+        200:
+          description: A delivery api key
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/ApiKey'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    delete:
+      operationId: deleteApiKey
+      summary: Delete a single delivery api key
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: api_key_id
+          schema:
+            type: string
+          required: true
+      responses:
+        204:
+          $ref: '#/components/responses/no-content'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/preview_api_keys/{preview_api_key_id}:
+    get:
+      operationId: getPreviewApiKey
+      summary: Get a single preview api key
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: preview_api_key_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: A preview api key
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/PreviewApiKey'
         401:
           $ref: '#/components/responses/unauthorized'
         default:
