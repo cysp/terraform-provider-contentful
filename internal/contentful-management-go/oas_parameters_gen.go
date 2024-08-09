@@ -17,6 +17,12 @@ type DeactivateContentTypeParams struct {
 	ContentTypeID string
 }
 
+// DeleteApiKeyParams is parameters of deleteApiKey operation.
+type DeleteApiKeyParams struct {
+	SpaceID  string
+	APIKeyID string
+}
+
 // DeleteAppInstallationParams is parameters of deleteAppInstallation operation.
 type DeleteAppInstallationParams struct {
 	SpaceID         string
@@ -29,6 +35,12 @@ type DeleteContentTypeParams struct {
 	SpaceID       string
 	EnvironmentID string
 	ContentTypeID string
+}
+
+// GetApiKeyParams is parameters of getApiKey operation.
+type GetApiKeyParams struct {
+	SpaceID  string
+	APIKeyID string
 }
 
 // GetAppInstallationParams is parameters of getAppInstallation operation.
@@ -50,6 +62,24 @@ type GetEditorInterfaceParams struct {
 	SpaceID       string
 	EnvironmentID string
 	ContentTypeID string
+}
+
+// GetPreviewApiKeyParams is parameters of getPreviewApiKey operation.
+type GetPreviewApiKeyParams struct {
+	SpaceID         string
+	PreviewAPIKeyID string
+}
+
+// PostApiKeyParams is parameters of postApiKey operation.
+type PostApiKeyParams struct {
+	SpaceID string
+}
+
+// PutApiKeyParams is parameters of putApiKey operation.
+type PutApiKeyParams struct {
+	SpaceID            string
+	APIKeyID           string
+	XContentfulVersion int
 }
 
 // PutAppInstallationParams is parameters of putAppInstallation operation.

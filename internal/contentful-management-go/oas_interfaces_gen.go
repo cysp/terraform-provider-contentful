@@ -9,12 +9,20 @@ type DeactivateContentTypeRes interface {
 	deactivateContentTypeRes()
 }
 
+type DeleteApiKeyRes interface {
+	deleteApiKeyRes()
+}
+
 type DeleteAppInstallationRes interface {
 	deleteAppInstallationRes()
 }
 
 type DeleteContentTypeRes interface {
 	deleteContentTypeRes()
+}
+
+type GetApiKeyRes interface {
+	getApiKeyRes()
 }
 
 type GetAppInstallationRes interface {
@@ -31,6 +39,18 @@ type GetContentTypeRes interface {
 
 type GetEditorInterfaceRes interface {
 	getEditorInterfaceRes()
+}
+
+type GetPreviewApiKeyRes interface {
+	getPreviewApiKeyRes()
+}
+
+type PostApiKeyRes interface {
+	postApiKeyRes()
+}
+
+type PutApiKeyRes interface {
+	putApiKeyRes()
 }
 
 type PutAppInstallationRes interface {
