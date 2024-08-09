@@ -42,6 +42,24 @@ func OptStringToStringValue(s contentfulManagement.OptString) basetypes.StringVa
 	return types.StringPointerValue(s.ValueStringPointer())
 }
 
+func OptNilStringToStringValue(s contentfulManagement.OptNilString) basetypes.StringValue {
+	return types.StringPointerValue(s.ValueStringPointer())
+}
+
 func StringValueToOptString(s basetypes.StringValue) contentfulManagement.OptString {
 	return contentfulManagement.NewOptPointerString(s.ValueStringPointer())
+}
+
+func StringValueToOptNilString(value basetypes.StringValue) contentfulManagement.OptNilString {
+	ons := contentfulManagement.OptNilString{}
+
+	if !value.IsUnknown() {
+		if value.IsNull() {
+			ons.SetToNull()
+		} else {
+			ons.SetTo(value.ValueString())
+		}
+	}
+
+	return ons
 }
