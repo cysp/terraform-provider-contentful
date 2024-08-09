@@ -24,6 +24,418 @@ func (s *AccessToken) SetToken(val string) {
 }
 
 // Merged schema.
+// Ref: #/components/schemas/ApiKey
+type ApiKey struct {
+	Sys           ApiKeySys                `json:"sys"`
+	Name          string                   `json:"name"`
+	Description   OptNilString             `json:"description"`
+	AccessToken   string                   `json:"accessToken"`
+	Environments  []ApiKeyEnvironmentsItem `json:"environments"`
+	PreviewAPIKey OptApiKeyPreviewAPIKey   `json:"preview_api_key"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ApiKey) GetSys() ApiKeySys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *ApiKey) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *ApiKey) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetAccessToken returns the value of AccessToken.
+func (s *ApiKey) GetAccessToken() string {
+	return s.AccessToken
+}
+
+// GetEnvironments returns the value of Environments.
+func (s *ApiKey) GetEnvironments() []ApiKeyEnvironmentsItem {
+	return s.Environments
+}
+
+// GetPreviewAPIKey returns the value of PreviewAPIKey.
+func (s *ApiKey) GetPreviewAPIKey() OptApiKeyPreviewAPIKey {
+	return s.PreviewAPIKey
+}
+
+// SetSys sets the value of Sys.
+func (s *ApiKey) SetSys(val ApiKeySys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *ApiKey) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *ApiKey) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetAccessToken sets the value of AccessToken.
+func (s *ApiKey) SetAccessToken(val string) {
+	s.AccessToken = val
+}
+
+// SetEnvironments sets the value of Environments.
+func (s *ApiKey) SetEnvironments(val []ApiKeyEnvironmentsItem) {
+	s.Environments = val
+}
+
+// SetPreviewAPIKey sets the value of PreviewAPIKey.
+func (s *ApiKey) SetPreviewAPIKey(val OptApiKeyPreviewAPIKey) {
+	s.PreviewAPIKey = val
+}
+
+func (*ApiKey) getApiKeyRes() {}
+func (*ApiKey) putApiKeyRes() {}
+
+type ApiKeyEnvironmentsItem struct {
+	Sys ApiKeyEnvironmentsItemSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ApiKeyEnvironmentsItem) GetSys() ApiKeyEnvironmentsItemSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *ApiKeyEnvironmentsItem) SetSys(val ApiKeyEnvironmentsItemSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type ApiKeyEnvironmentsItemSys struct {
+	// Merged property.
+	Type     ApiKeyEnvironmentsItemSysType        `json:"type"`
+	ID       string                               `json:"id"`
+	LinkType OptApiKeyEnvironmentsItemSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ApiKeyEnvironmentsItemSys) GetType() ApiKeyEnvironmentsItemSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ApiKeyEnvironmentsItemSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ApiKeyEnvironmentsItemSys) GetLinkType() OptApiKeyEnvironmentsItemSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ApiKeyEnvironmentsItemSys) SetType(val ApiKeyEnvironmentsItemSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ApiKeyEnvironmentsItemSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ApiKeyEnvironmentsItemSys) SetLinkType(val OptApiKeyEnvironmentsItemSysLinkType) {
+	s.LinkType = val
+}
+
+type ApiKeyEnvironmentsItemSysLinkType string
+
+const (
+	ApiKeyEnvironmentsItemSysLinkTypeEnvironment ApiKeyEnvironmentsItemSysLinkType = "Environment"
+)
+
+// AllValues returns all ApiKeyEnvironmentsItemSysLinkType values.
+func (ApiKeyEnvironmentsItemSysLinkType) AllValues() []ApiKeyEnvironmentsItemSysLinkType {
+	return []ApiKeyEnvironmentsItemSysLinkType{
+		ApiKeyEnvironmentsItemSysLinkTypeEnvironment,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ApiKeyEnvironmentsItemSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case ApiKeyEnvironmentsItemSysLinkTypeEnvironment:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ApiKeyEnvironmentsItemSysLinkType) UnmarshalText(data []byte) error {
+	switch ApiKeyEnvironmentsItemSysLinkType(data) {
+	case ApiKeyEnvironmentsItemSysLinkTypeEnvironment:
+		*s = ApiKeyEnvironmentsItemSysLinkTypeEnvironment
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type ApiKeyEnvironmentsItemSysType string
+
+const (
+	ApiKeyEnvironmentsItemSysTypeLink ApiKeyEnvironmentsItemSysType = "Link"
+)
+
+// AllValues returns all ApiKeyEnvironmentsItemSysType values.
+func (ApiKeyEnvironmentsItemSysType) AllValues() []ApiKeyEnvironmentsItemSysType {
+	return []ApiKeyEnvironmentsItemSysType{
+		ApiKeyEnvironmentsItemSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ApiKeyEnvironmentsItemSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ApiKeyEnvironmentsItemSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ApiKeyEnvironmentsItemSysType) UnmarshalText(data []byte) error {
+	switch ApiKeyEnvironmentsItemSysType(data) {
+	case ApiKeyEnvironmentsItemSysTypeLink:
+		*s = ApiKeyEnvironmentsItemSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type ApiKeyPreviewAPIKey struct {
+	Sys OptApiKeyPreviewAPIKeySys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ApiKeyPreviewAPIKey) GetSys() OptApiKeyPreviewAPIKeySys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *ApiKeyPreviewAPIKey) SetSys(val OptApiKeyPreviewAPIKeySys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type ApiKeyPreviewAPIKeySys struct {
+	// Merged property.
+	Type     ApiKeyPreviewAPIKeySysType        `json:"type"`
+	ID       string                            `json:"id"`
+	LinkType OptApiKeyPreviewAPIKeySysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ApiKeyPreviewAPIKeySys) GetType() ApiKeyPreviewAPIKeySysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ApiKeyPreviewAPIKeySys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ApiKeyPreviewAPIKeySys) GetLinkType() OptApiKeyPreviewAPIKeySysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ApiKeyPreviewAPIKeySys) SetType(val ApiKeyPreviewAPIKeySysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ApiKeyPreviewAPIKeySys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ApiKeyPreviewAPIKeySys) SetLinkType(val OptApiKeyPreviewAPIKeySysLinkType) {
+	s.LinkType = val
+}
+
+type ApiKeyPreviewAPIKeySysLinkType string
+
+const (
+	ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey ApiKeyPreviewAPIKeySysLinkType = "PreviewApiKey"
+)
+
+// AllValues returns all ApiKeyPreviewAPIKeySysLinkType values.
+func (ApiKeyPreviewAPIKeySysLinkType) AllValues() []ApiKeyPreviewAPIKeySysLinkType {
+	return []ApiKeyPreviewAPIKeySysLinkType{
+		ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ApiKeyPreviewAPIKeySysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ApiKeyPreviewAPIKeySysLinkType) UnmarshalText(data []byte) error {
+	switch ApiKeyPreviewAPIKeySysLinkType(data) {
+	case ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey:
+		*s = ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type ApiKeyPreviewAPIKeySysType string
+
+const (
+	ApiKeyPreviewAPIKeySysTypeLink ApiKeyPreviewAPIKeySysType = "Link"
+)
+
+// AllValues returns all ApiKeyPreviewAPIKeySysType values.
+func (ApiKeyPreviewAPIKeySysType) AllValues() []ApiKeyPreviewAPIKeySysType {
+	return []ApiKeyPreviewAPIKeySysType{
+		ApiKeyPreviewAPIKeySysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ApiKeyPreviewAPIKeySysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ApiKeyPreviewAPIKeySysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ApiKeyPreviewAPIKeySysType) UnmarshalText(data []byte) error {
+	switch ApiKeyPreviewAPIKeySysType(data) {
+	case ApiKeyPreviewAPIKeySysTypeLink:
+		*s = ApiKeyPreviewAPIKeySysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/components/schemas/ApiKeySys
+type ApiKeySys struct {
+	// Merged property.
+	Type      ApiKeySysType `json:"type"`
+	ID        string        `json:"id"`
+	Version   int           `json:"version"`
+	CreatedAt OptDateTime   `json:"createdAt"`
+	UpdatedAt OptDateTime   `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *ApiKeySys) GetType() ApiKeySysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ApiKeySys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *ApiKeySys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *ApiKeySys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *ApiKeySys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *ApiKeySys) SetType(val ApiKeySysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ApiKeySys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *ApiKeySys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *ApiKeySys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *ApiKeySys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type ApiKeySysType string
+
+const (
+	ApiKeySysTypeApiKey ApiKeySysType = "ApiKey"
+)
+
+// AllValues returns all ApiKeySysType values.
+func (ApiKeySysType) AllValues() []ApiKeySysType {
+	return []ApiKeySysType{
+		ApiKeySysTypeApiKey,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ApiKeySysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ApiKeySysTypeApiKey:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ApiKeySysType) UnmarshalText(data []byte) error {
+	switch ApiKeySysType(data) {
+	case ApiKeySysTypeApiKey:
+		*s = ApiKeySysTypeApiKey
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
 // Ref: #/components/schemas/AppInstallation
 type AppInstallation struct {
 	Sys        AppInstallationSys           `json:"sys"`
@@ -753,12 +1165,16 @@ func (s *Error) SetDetails(val jx.Raw) {
 
 func (*Error) activateContentTypeRes()   {}
 func (*Error) deactivateContentTypeRes() {}
+func (*Error) deleteApiKeyRes()          {}
 func (*Error) deleteAppInstallationRes() {}
 func (*Error) deleteContentTypeRes()     {}
+func (*Error) getApiKeyRes()             {}
 func (*Error) getAppInstallationRes()    {}
 func (*Error) getAuthenticatedUserRes()  {}
 func (*Error) getContentTypeRes()        {}
 func (*Error) getEditorInterfaceRes()    {}
+func (*Error) getPreviewApiKeyRes()      {}
+func (*Error) putApiKeyRes()             {}
 func (*Error) putAppInstallationRes()    {}
 func (*Error) putContentTypeRes()        {}
 func (*Error) putEditorInterfaceRes()    {}
@@ -791,12 +1207,16 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 
 func (*ErrorStatusCode) activateContentTypeRes()   {}
 func (*ErrorStatusCode) deactivateContentTypeRes() {}
+func (*ErrorStatusCode) deleteApiKeyRes()          {}
 func (*ErrorStatusCode) deleteAppInstallationRes() {}
 func (*ErrorStatusCode) deleteContentTypeRes()     {}
+func (*ErrorStatusCode) getApiKeyRes()             {}
 func (*ErrorStatusCode) getAppInstallationRes()    {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()  {}
 func (*ErrorStatusCode) getContentTypeRes()        {}
 func (*ErrorStatusCode) getEditorInterfaceRes()    {}
+func (*ErrorStatusCode) getPreviewApiKeyRes()      {}
+func (*ErrorStatusCode) putApiKeyRes()             {}
 func (*ErrorStatusCode) putAppInstallationRes()    {}
 func (*ErrorStatusCode) putContentTypeRes()        {}
 func (*ErrorStatusCode) putEditorInterfaceRes()    {}
@@ -910,8 +1330,193 @@ func (o NilString) Or(d string) string {
 type NoContent struct{}
 
 func (*NoContent) deactivateContentTypeRes() {}
+func (*NoContent) deleteApiKeyRes()          {}
 func (*NoContent) deleteAppInstallationRes() {}
 func (*NoContent) deleteContentTypeRes()     {}
+
+// NewOptApiKeyEnvironmentsItemSysLinkType returns new OptApiKeyEnvironmentsItemSysLinkType with value set to v.
+func NewOptApiKeyEnvironmentsItemSysLinkType(v ApiKeyEnvironmentsItemSysLinkType) OptApiKeyEnvironmentsItemSysLinkType {
+	return OptApiKeyEnvironmentsItemSysLinkType{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptApiKeyEnvironmentsItemSysLinkType is optional ApiKeyEnvironmentsItemSysLinkType.
+type OptApiKeyEnvironmentsItemSysLinkType struct {
+	Value ApiKeyEnvironmentsItemSysLinkType
+	Set   bool
+}
+
+// IsSet returns true if OptApiKeyEnvironmentsItemSysLinkType was set.
+func (o OptApiKeyEnvironmentsItemSysLinkType) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptApiKeyEnvironmentsItemSysLinkType) Reset() {
+	var v ApiKeyEnvironmentsItemSysLinkType
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptApiKeyEnvironmentsItemSysLinkType) SetTo(v ApiKeyEnvironmentsItemSysLinkType) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptApiKeyEnvironmentsItemSysLinkType) Get() (v ApiKeyEnvironmentsItemSysLinkType, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptApiKeyEnvironmentsItemSysLinkType) Or(d ApiKeyEnvironmentsItemSysLinkType) ApiKeyEnvironmentsItemSysLinkType {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptApiKeyPreviewAPIKey returns new OptApiKeyPreviewAPIKey with value set to v.
+func NewOptApiKeyPreviewAPIKey(v ApiKeyPreviewAPIKey) OptApiKeyPreviewAPIKey {
+	return OptApiKeyPreviewAPIKey{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptApiKeyPreviewAPIKey is optional ApiKeyPreviewAPIKey.
+type OptApiKeyPreviewAPIKey struct {
+	Value ApiKeyPreviewAPIKey
+	Set   bool
+}
+
+// IsSet returns true if OptApiKeyPreviewAPIKey was set.
+func (o OptApiKeyPreviewAPIKey) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptApiKeyPreviewAPIKey) Reset() {
+	var v ApiKeyPreviewAPIKey
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptApiKeyPreviewAPIKey) SetTo(v ApiKeyPreviewAPIKey) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptApiKeyPreviewAPIKey) Get() (v ApiKeyPreviewAPIKey, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptApiKeyPreviewAPIKey) Or(d ApiKeyPreviewAPIKey) ApiKeyPreviewAPIKey {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptApiKeyPreviewAPIKeySys returns new OptApiKeyPreviewAPIKeySys with value set to v.
+func NewOptApiKeyPreviewAPIKeySys(v ApiKeyPreviewAPIKeySys) OptApiKeyPreviewAPIKeySys {
+	return OptApiKeyPreviewAPIKeySys{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptApiKeyPreviewAPIKeySys is optional ApiKeyPreviewAPIKeySys.
+type OptApiKeyPreviewAPIKeySys struct {
+	Value ApiKeyPreviewAPIKeySys
+	Set   bool
+}
+
+// IsSet returns true if OptApiKeyPreviewAPIKeySys was set.
+func (o OptApiKeyPreviewAPIKeySys) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptApiKeyPreviewAPIKeySys) Reset() {
+	var v ApiKeyPreviewAPIKeySys
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptApiKeyPreviewAPIKeySys) SetTo(v ApiKeyPreviewAPIKeySys) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptApiKeyPreviewAPIKeySys) Get() (v ApiKeyPreviewAPIKeySys, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptApiKeyPreviewAPIKeySys) Or(d ApiKeyPreviewAPIKeySys) ApiKeyPreviewAPIKeySys {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptApiKeyPreviewAPIKeySysLinkType returns new OptApiKeyPreviewAPIKeySysLinkType with value set to v.
+func NewOptApiKeyPreviewAPIKeySysLinkType(v ApiKeyPreviewAPIKeySysLinkType) OptApiKeyPreviewAPIKeySysLinkType {
+	return OptApiKeyPreviewAPIKeySysLinkType{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptApiKeyPreviewAPIKeySysLinkType is optional ApiKeyPreviewAPIKeySysLinkType.
+type OptApiKeyPreviewAPIKeySysLinkType struct {
+	Value ApiKeyPreviewAPIKeySysLinkType
+	Set   bool
+}
+
+// IsSet returns true if OptApiKeyPreviewAPIKeySysLinkType was set.
+func (o OptApiKeyPreviewAPIKeySysLinkType) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptApiKeyPreviewAPIKeySysLinkType) Reset() {
+	var v ApiKeyPreviewAPIKeySysLinkType
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptApiKeyPreviewAPIKeySysLinkType) SetTo(v ApiKeyPreviewAPIKeySysLinkType) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptApiKeyPreviewAPIKeySysLinkType) Get() (v ApiKeyPreviewAPIKeySysLinkType, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptApiKeyPreviewAPIKeySysLinkType) Or(d ApiKeyPreviewAPIKeySysLinkType) ApiKeyPreviewAPIKeySysLinkType {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
 
 // NewOptAppInstallationParameters returns new OptAppInstallationParameters with value set to v.
 func NewOptAppInstallationParameters(v AppInstallationParameters) OptAppInstallationParameters {
@@ -1487,6 +2092,161 @@ func (o OptNilPutEditorInterfaceReqSidebarItemArray) Or(d []PutEditorInterfaceRe
 	return d
 }
 
+// NewOptNilString returns new OptNilString with value set to v.
+func NewOptNilString(v string) OptNilString {
+	return OptNilString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilString is optional nullable string.
+type OptNilString struct {
+	Value string
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilString was set.
+func (o OptNilString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilString) Reset() {
+	var v string
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilString) SetTo(v string) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilString) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilString) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilString) Get() (v string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptPreviewApiKeyEnvironmentsItemSysLinkType returns new OptPreviewApiKeyEnvironmentsItemSysLinkType with value set to v.
+func NewOptPreviewApiKeyEnvironmentsItemSysLinkType(v PreviewApiKeyEnvironmentsItemSysLinkType) OptPreviewApiKeyEnvironmentsItemSysLinkType {
+	return OptPreviewApiKeyEnvironmentsItemSysLinkType{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPreviewApiKeyEnvironmentsItemSysLinkType is optional PreviewApiKeyEnvironmentsItemSysLinkType.
+type OptPreviewApiKeyEnvironmentsItemSysLinkType struct {
+	Value PreviewApiKeyEnvironmentsItemSysLinkType
+	Set   bool
+}
+
+// IsSet returns true if OptPreviewApiKeyEnvironmentsItemSysLinkType was set.
+func (o OptPreviewApiKeyEnvironmentsItemSysLinkType) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPreviewApiKeyEnvironmentsItemSysLinkType) Reset() {
+	var v PreviewApiKeyEnvironmentsItemSysLinkType
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPreviewApiKeyEnvironmentsItemSysLinkType) SetTo(v PreviewApiKeyEnvironmentsItemSysLinkType) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPreviewApiKeyEnvironmentsItemSysLinkType) Get() (v PreviewApiKeyEnvironmentsItemSysLinkType, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPreviewApiKeyEnvironmentsItemSysLinkType) Or(d PreviewApiKeyEnvironmentsItemSysLinkType) PreviewApiKeyEnvironmentsItemSysLinkType {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptPutApiKeyReqEnvironmentsItemSysLinkType returns new OptPutApiKeyReqEnvironmentsItemSysLinkType with value set to v.
+func NewOptPutApiKeyReqEnvironmentsItemSysLinkType(v PutApiKeyReqEnvironmentsItemSysLinkType) OptPutApiKeyReqEnvironmentsItemSysLinkType {
+	return OptPutApiKeyReqEnvironmentsItemSysLinkType{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPutApiKeyReqEnvironmentsItemSysLinkType is optional PutApiKeyReqEnvironmentsItemSysLinkType.
+type OptPutApiKeyReqEnvironmentsItemSysLinkType struct {
+	Value PutApiKeyReqEnvironmentsItemSysLinkType
+	Set   bool
+}
+
+// IsSet returns true if OptPutApiKeyReqEnvironmentsItemSysLinkType was set.
+func (o OptPutApiKeyReqEnvironmentsItemSysLinkType) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPutApiKeyReqEnvironmentsItemSysLinkType) Reset() {
+	var v PutApiKeyReqEnvironmentsItemSysLinkType
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPutApiKeyReqEnvironmentsItemSysLinkType) SetTo(v PutApiKeyReqEnvironmentsItemSysLinkType) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPutApiKeyReqEnvironmentsItemSysLinkType) Get() (v PutApiKeyReqEnvironmentsItemSysLinkType, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPutApiKeyReqEnvironmentsItemSysLinkType) Or(d PutApiKeyReqEnvironmentsItemSysLinkType) PutApiKeyReqEnvironmentsItemSysLinkType {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptPutAppInstallationReqParameters returns new OptPutAppInstallationReqParameters with value set to v.
 func NewOptPutAppInstallationReqParameters(v PutAppInstallationReqParameters) OptPutAppInstallationReqParameters {
 	return OptPutAppInstallationReqParameters{
@@ -1715,6 +2475,453 @@ func (o OptString) Or(d string) string {
 		return v
 	}
 	return d
+}
+
+// Merged schema.
+// Ref: #/components/schemas/PreviewApiKey
+type PreviewApiKey struct {
+	Sys          PreviewApiKeySys                `json:"sys"`
+	Name         string                          `json:"name"`
+	Description  OptNilString                    `json:"description"`
+	AccessToken  string                          `json:"accessToken"`
+	Environments []PreviewApiKeyEnvironmentsItem `json:"environments"`
+}
+
+// GetSys returns the value of Sys.
+func (s *PreviewApiKey) GetSys() PreviewApiKeySys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *PreviewApiKey) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *PreviewApiKey) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetAccessToken returns the value of AccessToken.
+func (s *PreviewApiKey) GetAccessToken() string {
+	return s.AccessToken
+}
+
+// GetEnvironments returns the value of Environments.
+func (s *PreviewApiKey) GetEnvironments() []PreviewApiKeyEnvironmentsItem {
+	return s.Environments
+}
+
+// SetSys sets the value of Sys.
+func (s *PreviewApiKey) SetSys(val PreviewApiKeySys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *PreviewApiKey) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *PreviewApiKey) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetAccessToken sets the value of AccessToken.
+func (s *PreviewApiKey) SetAccessToken(val string) {
+	s.AccessToken = val
+}
+
+// SetEnvironments sets the value of Environments.
+func (s *PreviewApiKey) SetEnvironments(val []PreviewApiKeyEnvironmentsItem) {
+	s.Environments = val
+}
+
+func (*PreviewApiKey) getPreviewApiKeyRes() {}
+
+type PreviewApiKeyEnvironmentsItem struct {
+	Sys PreviewApiKeyEnvironmentsItemSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *PreviewApiKeyEnvironmentsItem) GetSys() PreviewApiKeyEnvironmentsItemSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *PreviewApiKeyEnvironmentsItem) SetSys(val PreviewApiKeyEnvironmentsItemSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type PreviewApiKeyEnvironmentsItemSys struct {
+	// Merged property.
+	Type     PreviewApiKeyEnvironmentsItemSysType        `json:"type"`
+	ID       string                                      `json:"id"`
+	LinkType OptPreviewApiKeyEnvironmentsItemSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *PreviewApiKeyEnvironmentsItemSys) GetType() PreviewApiKeyEnvironmentsItemSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *PreviewApiKeyEnvironmentsItemSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *PreviewApiKeyEnvironmentsItemSys) GetLinkType() OptPreviewApiKeyEnvironmentsItemSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *PreviewApiKeyEnvironmentsItemSys) SetType(val PreviewApiKeyEnvironmentsItemSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *PreviewApiKeyEnvironmentsItemSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *PreviewApiKeyEnvironmentsItemSys) SetLinkType(val OptPreviewApiKeyEnvironmentsItemSysLinkType) {
+	s.LinkType = val
+}
+
+type PreviewApiKeyEnvironmentsItemSysLinkType string
+
+const (
+	PreviewApiKeyEnvironmentsItemSysLinkTypeEnvironment PreviewApiKeyEnvironmentsItemSysLinkType = "Environment"
+)
+
+// AllValues returns all PreviewApiKeyEnvironmentsItemSysLinkType values.
+func (PreviewApiKeyEnvironmentsItemSysLinkType) AllValues() []PreviewApiKeyEnvironmentsItemSysLinkType {
+	return []PreviewApiKeyEnvironmentsItemSysLinkType{
+		PreviewApiKeyEnvironmentsItemSysLinkTypeEnvironment,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PreviewApiKeyEnvironmentsItemSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case PreviewApiKeyEnvironmentsItemSysLinkTypeEnvironment:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PreviewApiKeyEnvironmentsItemSysLinkType) UnmarshalText(data []byte) error {
+	switch PreviewApiKeyEnvironmentsItemSysLinkType(data) {
+	case PreviewApiKeyEnvironmentsItemSysLinkTypeEnvironment:
+		*s = PreviewApiKeyEnvironmentsItemSysLinkTypeEnvironment
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type PreviewApiKeyEnvironmentsItemSysType string
+
+const (
+	PreviewApiKeyEnvironmentsItemSysTypeLink PreviewApiKeyEnvironmentsItemSysType = "Link"
+)
+
+// AllValues returns all PreviewApiKeyEnvironmentsItemSysType values.
+func (PreviewApiKeyEnvironmentsItemSysType) AllValues() []PreviewApiKeyEnvironmentsItemSysType {
+	return []PreviewApiKeyEnvironmentsItemSysType{
+		PreviewApiKeyEnvironmentsItemSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PreviewApiKeyEnvironmentsItemSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case PreviewApiKeyEnvironmentsItemSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PreviewApiKeyEnvironmentsItemSysType) UnmarshalText(data []byte) error {
+	switch PreviewApiKeyEnvironmentsItemSysType(data) {
+	case PreviewApiKeyEnvironmentsItemSysTypeLink:
+		*s = PreviewApiKeyEnvironmentsItemSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/components/schemas/PreviewApiKeySys
+type PreviewApiKeySys struct {
+	// Merged property.
+	Type      PreviewApiKeySysType `json:"type"`
+	ID        string               `json:"id"`
+	Version   int                  `json:"version"`
+	CreatedAt OptDateTime          `json:"createdAt"`
+	UpdatedAt OptDateTime          `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *PreviewApiKeySys) GetType() PreviewApiKeySysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *PreviewApiKeySys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *PreviewApiKeySys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *PreviewApiKeySys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *PreviewApiKeySys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *PreviewApiKeySys) SetType(val PreviewApiKeySysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *PreviewApiKeySys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *PreviewApiKeySys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *PreviewApiKeySys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *PreviewApiKeySys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type PreviewApiKeySysType string
+
+const (
+	PreviewApiKeySysTypePreviewApiKey PreviewApiKeySysType = "PreviewApiKey"
+)
+
+// AllValues returns all PreviewApiKeySysType values.
+func (PreviewApiKeySysType) AllValues() []PreviewApiKeySysType {
+	return []PreviewApiKeySysType{
+		PreviewApiKeySysTypePreviewApiKey,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PreviewApiKeySysType) MarshalText() ([]byte, error) {
+	switch s {
+	case PreviewApiKeySysTypePreviewApiKey:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PreviewApiKeySysType) UnmarshalText(data []byte) error {
+	switch PreviewApiKeySysType(data) {
+	case PreviewApiKeySysTypePreviewApiKey:
+		*s = PreviewApiKeySysTypePreviewApiKey
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type PutApiKeyReq struct {
+	Name         string                         `json:"name"`
+	Description  OptNilString                   `json:"description"`
+	AccessToken  string                         `json:"accessToken"`
+	Environments []PutApiKeyReqEnvironmentsItem `json:"environments"`
+}
+
+// GetName returns the value of Name.
+func (s *PutApiKeyReq) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *PutApiKeyReq) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetAccessToken returns the value of AccessToken.
+func (s *PutApiKeyReq) GetAccessToken() string {
+	return s.AccessToken
+}
+
+// GetEnvironments returns the value of Environments.
+func (s *PutApiKeyReq) GetEnvironments() []PutApiKeyReqEnvironmentsItem {
+	return s.Environments
+}
+
+// SetName sets the value of Name.
+func (s *PutApiKeyReq) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *PutApiKeyReq) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetAccessToken sets the value of AccessToken.
+func (s *PutApiKeyReq) SetAccessToken(val string) {
+	s.AccessToken = val
+}
+
+// SetEnvironments sets the value of Environments.
+func (s *PutApiKeyReq) SetEnvironments(val []PutApiKeyReqEnvironmentsItem) {
+	s.Environments = val
+}
+
+type PutApiKeyReqEnvironmentsItem struct {
+	Sys PutApiKeyReqEnvironmentsItemSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *PutApiKeyReqEnvironmentsItem) GetSys() PutApiKeyReqEnvironmentsItemSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *PutApiKeyReqEnvironmentsItem) SetSys(val PutApiKeyReqEnvironmentsItemSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type PutApiKeyReqEnvironmentsItemSys struct {
+	// Merged property.
+	Type     PutApiKeyReqEnvironmentsItemSysType        `json:"type"`
+	ID       string                                     `json:"id"`
+	LinkType OptPutApiKeyReqEnvironmentsItemSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *PutApiKeyReqEnvironmentsItemSys) GetType() PutApiKeyReqEnvironmentsItemSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *PutApiKeyReqEnvironmentsItemSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *PutApiKeyReqEnvironmentsItemSys) GetLinkType() OptPutApiKeyReqEnvironmentsItemSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *PutApiKeyReqEnvironmentsItemSys) SetType(val PutApiKeyReqEnvironmentsItemSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *PutApiKeyReqEnvironmentsItemSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *PutApiKeyReqEnvironmentsItemSys) SetLinkType(val OptPutApiKeyReqEnvironmentsItemSysLinkType) {
+	s.LinkType = val
+}
+
+type PutApiKeyReqEnvironmentsItemSysLinkType string
+
+const (
+	PutApiKeyReqEnvironmentsItemSysLinkTypeEnvironment PutApiKeyReqEnvironmentsItemSysLinkType = "Environment"
+)
+
+// AllValues returns all PutApiKeyReqEnvironmentsItemSysLinkType values.
+func (PutApiKeyReqEnvironmentsItemSysLinkType) AllValues() []PutApiKeyReqEnvironmentsItemSysLinkType {
+	return []PutApiKeyReqEnvironmentsItemSysLinkType{
+		PutApiKeyReqEnvironmentsItemSysLinkTypeEnvironment,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PutApiKeyReqEnvironmentsItemSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case PutApiKeyReqEnvironmentsItemSysLinkTypeEnvironment:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PutApiKeyReqEnvironmentsItemSysLinkType) UnmarshalText(data []byte) error {
+	switch PutApiKeyReqEnvironmentsItemSysLinkType(data) {
+	case PutApiKeyReqEnvironmentsItemSysLinkTypeEnvironment:
+		*s = PutApiKeyReqEnvironmentsItemSysLinkTypeEnvironment
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type PutApiKeyReqEnvironmentsItemSysType string
+
+const (
+	PutApiKeyReqEnvironmentsItemSysTypeLink PutApiKeyReqEnvironmentsItemSysType = "Link"
+)
+
+// AllValues returns all PutApiKeyReqEnvironmentsItemSysType values.
+func (PutApiKeyReqEnvironmentsItemSysType) AllValues() []PutApiKeyReqEnvironmentsItemSysType {
+	return []PutApiKeyReqEnvironmentsItemSysType{
+		PutApiKeyReqEnvironmentsItemSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PutApiKeyReqEnvironmentsItemSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case PutApiKeyReqEnvironmentsItemSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PutApiKeyReqEnvironmentsItemSysType) UnmarshalText(data []byte) error {
+	switch PutApiKeyReqEnvironmentsItemSysType(data) {
+	case PutApiKeyReqEnvironmentsItemSysTypeLink:
+		*s = PutApiKeyReqEnvironmentsItemSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 type PutAppInstallationReq struct {
