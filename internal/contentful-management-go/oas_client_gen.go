@@ -83,6 +83,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
 	GetPreviewApiKey(ctx context.Context, params GetPreviewApiKeyParams) (GetPreviewApiKeyRes, error)
+	// PostApiKey invokes postApiKey operation.
+	//
+	// Create a delivery api key.
+	//
+	// POST /spaces/{space_id}/api_keys
+	PostApiKey(ctx context.Context, request *PostApiKeyReq, params PostApiKeyParams) (PostApiKeyRes, error)
 	// PutApiKey invokes putApiKey operation.
 	//
 	// Update a single delivery api key.
@@ -1433,6 +1439,97 @@ func (c *Client) sendGetPreviewApiKey(ctx context.Context, params GetPreviewApiK
 	return result, nil
 }
 
+// PostApiKey invokes postApiKey operation.
+//
+// Create a delivery api key.
+//
+// POST /spaces/{space_id}/api_keys
+func (c *Client) PostApiKey(ctx context.Context, request *PostApiKeyReq, params PostApiKeyParams) (PostApiKeyRes, error) {
+	res, err := c.sendPostApiKey(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendPostApiKey(ctx context.Context, request *PostApiKeyReq, params PostApiKeyParams) (res PostApiKeyRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/api_keys"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePostApiKeyRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "PostApiKey", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodePostApiKeyResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // PutApiKey invokes putApiKey operation.
 //
 // Update a single delivery api key.
@@ -1493,6 +1590,19 @@ func (c *Client) sendPutApiKey(ctx context.Context, request *PutApiKeyReq, param
 	}
 	if err := encodePutApiKeyRequest(request, r); err != nil {
 		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
 	}
 
 	{

@@ -120,6 +120,29 @@ components:
               enum:
                 - ApiKey
     ApiKeyFields:
+      allOf:
+        - $ref: '#/components/schemas/ApiKeyRequestFields'
+        - type: object
+          properties:
+            accessToken:
+              type: string
+            preview_api_key:
+              type: object
+              properties:
+                sys:
+                  allOf:
+                    - $ref: '#/components/schemas/LinkSys'
+                    - type: object
+                      properties:
+                        linkType:
+                          type: string
+                          enum:
+                            - PreviewApiKey
+              required:
+                - sys
+          required:
+            - accessToken
+    ApiKeyRequestFields:
       type: object
       properties:
         name:
@@ -127,8 +150,6 @@ components:
         description:
           type: string
           nullable: true
-        accessToken:
-          type: string
         environments:
           type: array
           items:
@@ -147,8 +168,6 @@ components:
               - sys
       required:
         - name
-        - accessToken
-        - environments
     ApiKey:
       allOf:
         - type: object
@@ -158,20 +177,6 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/ApiKeyFields'
-        - type: object
-          properties:
-            preview_api_key:
-              type: object
-              properties:
-                sys:
-                  allOf:
-                    - $ref: '#/components/schemas/LinkSys'
-                    - type: object
-                      properties:
-                        linkType:
-                          type: string
-                          enum:
-                            - PreviewApiKey
     AppInstallationSys:
       allOf:
         - $ref: '#/components/schemas/BaseSys'
@@ -353,7 +358,35 @@ components:
               enum:
                 - PreviewApiKey
     PreviewApiKeyFields:
-      $ref: '#/components/schemas/ApiKeyFields'
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        accessToken:
+          type: string
+        environments:
+          type: array
+          items:
+            type: object
+            properties:
+              sys:
+                allOf:
+                  - $ref: '#/components/schemas/LinkSys'
+                  - type: object
+                    properties:
+                      linkType:
+                        type: string
+                        enum:
+                          - Environment
+            required:
+              - sys
+      required:
+        - name
+        - accessToken
+        - environments
     PreviewApiKey:
       allOf:
         - type: object
@@ -401,6 +434,34 @@ paths:
           $ref: '#/components/responses/unauthorized'
         default:
           $ref: '#/components/responses/error'
+  /spaces/{space_id}/api_keys:
+    post:
+      operationId: postApiKey
+      summary: Create a delivery api key
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ApiKeyRequestFields'
+      responses:
+        201:
+          description: A delivery api key
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/ApiKey'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
   /spaces/{space_id}/api_keys/{api_key_id}:
     get:
       operationId: getApiKey
@@ -441,13 +502,18 @@ paths:
           schema:
             type: string
           required: true
+        - in: header
+          name: X-Contentful-Version
+          schema:
+            type: integer
+          required: true
       requestBody:
         required: true
         content:
           application/vnd.contentful.management.v1+json:
             schema:
               allOf:
-                - $ref: '#/components/schemas/ApiKeyFields'
+                - $ref: '#/components/schemas/ApiKeyRequestFields'
       responses:
         200:
           description: A delivery api key

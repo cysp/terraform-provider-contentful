@@ -45,6 +45,10 @@ type GetPreviewApiKeyRes interface {
 	getPreviewApiKeyRes()
 }
 
+type PostApiKeyRes interface {
+	postApiKeyRes()
+}
+
 type PutApiKeyRes interface {
 	putApiKeyRes()
 }

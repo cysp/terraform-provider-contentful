@@ -70,10 +70,16 @@ type GetPreviewApiKeyParams struct {
 	PreviewAPIKeyID string
 }
 
+// PostApiKeyParams is parameters of postApiKey operation.
+type PostApiKeyParams struct {
+	SpaceID string
+}
+
 // PutApiKeyParams is parameters of putApiKey operation.
 type PutApiKeyParams struct {
-	SpaceID  string
-	APIKeyID string
+	SpaceID            string
+	APIKeyID           string
+	XContentfulVersion int
 }
 
 // PutAppInstallationParams is parameters of putAppInstallation operation.
