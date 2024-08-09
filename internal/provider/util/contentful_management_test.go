@@ -134,3 +134,39 @@ func TestStringValueToOptString(t *testing.T) {
 		})
 	}
 }
+
+func TestStringValueToOptNilString(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		input    basetypes.StringValue
+		expected contentfulManagement.OptNilString
+	}{
+		"set": {
+			input:    types.StringValue("string"),
+			expected: contentfulManagement.NewOptNilString("string"),
+		},
+		"set: empty": {
+			input:    types.StringValue(""),
+			expected: contentfulManagement.NewOptNilString(""),
+		},
+		"null": {
+			input:    types.StringNull(),
+			expected: contentfulManagement.NewOptNilStringNull(),
+		},
+		"unknown": {
+			input:    types.StringUnknown(),
+			expected: contentfulManagement.OptNilString{},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			actual := util.StringValueToOptNilString(test.input)
+
+			assert.EqualValues(t, test.expected, actual)
+		})
+	}
+}
