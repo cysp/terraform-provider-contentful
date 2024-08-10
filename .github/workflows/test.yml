@@ -75,8 +75,6 @@ jobs:
         terraform:
           - "1.8.*"
           - "1.9.*"
-    concurrency:
-      group: testacc
     steps:
       - uses: actions/checkout@v4.1.7
       - uses: actions/setup-go@v5.0.2
