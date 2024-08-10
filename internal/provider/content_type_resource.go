@@ -68,6 +68,10 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	request, requestDiags := data.ToPutContentTypeReq(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	response, err := r.providerData.client.PutContentType(ctx, &request, params)
 
 	tflog.Info(ctx, "content_type.create", map[string]interface{}{
