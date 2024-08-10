@@ -69,6 +69,10 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 	request, requestDiags := data.ToPutEditorInterfaceReq(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	response, err := r.providerData.client.PutEditorInterface(ctx, &request, params)
 
 	tflog.Info(ctx, "editor_interface.create", map[string]interface{}{
