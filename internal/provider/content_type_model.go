@@ -1,5 +1,4 @@
-//nolint:revive,stylecheck
-package resource_content_type
+package provider
 
 import (
 	"context"
@@ -115,7 +114,7 @@ func (model *ItemsValue) ToPutContentTypeReqFieldsItemItems(ctx context.Context,
 	return items, diags
 }
 
-func ValidationsListToPutContentTypeReqValidations(ctx context.Context, path path.Path, validationsList types.List) ([]jx.Raw, diag.Diagnostics) {
+func ValidationsListToPutContentTypeReqValidations(ctx context.Context, _ path.Path, validationsList types.List) ([]jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	validationsStrings := []string{}
@@ -131,19 +130,19 @@ func ValidationsListToPutContentTypeReqValidations(ctx context.Context, path pat
 	return validations, diags
 }
 
-func (model *ContentTypeModel) ReadFromResponse(ctx context.Context, contentType *contentfulManagement.ContentType) diag.Diagnostics {
+func (m *ContentTypeModel) ReadFromResponse(ctx context.Context, contentType *contentfulManagement.ContentType) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	// SpaceId, EnvironmentId and ContentTypeId are all already known
 
-	model.Name = types.StringValue(contentType.Name)
-	model.Description = types.StringValue(contentType.Description.Or(""))
-	model.DisplayField = types.StringValue(contentType.DisplayField.Or(""))
+	m.Name = types.StringValue(contentType.Name)
+	m.Description = types.StringValue(contentType.Description.Or(""))
+	m.DisplayField = types.StringValue(contentType.DisplayField.Or(""))
 
 	fieldsList, fieldsListDiags := NewFieldsListFromResponse(ctx, path.Root("fields"), contentType.Fields)
 	diags.Append(fieldsListDiags...)
 
-	model.Fields = fieldsList
+	m.Fields = fieldsList
 
 	return diags
 }

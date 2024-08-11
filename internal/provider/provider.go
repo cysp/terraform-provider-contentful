@@ -6,7 +6,6 @@ import (
 	"time"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/provider_contentful"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -33,11 +32,11 @@ type ContentfulProvider struct {
 }
 
 func (p *ContentfulProvider) Schema(ctx context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
-	resp.Schema = provider_contentful.ContentfulProviderSchema(ctx)
+	resp.Schema = ContentfulProviderSchema(ctx)
 }
 
 func (p *ContentfulProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data provider_contentful.ContentfulModel
+	var data ContentfulModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_content_type"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -32,7 +31,7 @@ func (r *contentTypeResource) Metadata(_ context.Context, req resource.MetadataR
 }
 
 func (r *contentTypeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = resource_content_type.ContentTypeResourceSchema(ctx)
+	resp.Schema = ContentTypeResourceSchema(ctx)
 }
 
 func (r *contentTypeResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -48,7 +47,7 @@ func (r *contentTypeResource) ImportState(ctx context.Context, req resource.Impo
 }
 
 func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data resource_content_type.ContentTypeModel
+	var data ContentTypeModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -126,7 +125,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data resource_content_type.ContentTypeModel
+	var data ContentTypeModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -177,7 +176,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data resource_content_type.ContentTypeModel
+	var data ContentTypeModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -260,7 +259,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 
 //nolint:cyclop
 func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data resource_content_type.ContentTypeModel
+	var data ContentTypeModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 

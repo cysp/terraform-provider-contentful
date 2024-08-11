@@ -1,10 +1,10 @@
-package resource_app_installation_test
+package provider_test
 
 import (
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_app_installation"
+	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,38 +13,38 @@ func TestToPutAppInstallationReq(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		model               resource_app_installation.AppInstallationModel
+		model               provider.AppInstallationModel
 		expectErrors        bool
 		expectWarnings      bool
 		expectedRequestBody string
 	}{
 		"null": {
-			model: resource_app_installation.AppInstallationModel{
+			model: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedNull(),
 			},
 			expectedRequestBody: "{}",
 		},
 		"unknown": {
-			model: resource_app_installation.AppInstallationModel{
+			model: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedUnknown(),
 			},
 			expectWarnings:      true,
 			expectedRequestBody: "{}",
 		},
 		"empty": {
-			model: resource_app_installation.AppInstallationModel{
+			model: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("{}"),
 			},
 			expectedRequestBody: "{\"parameters\":{}}",
 		},
 		"foo=bar": {
-			model: resource_app_installation.AppInstallationModel{
+			model: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
 			},
 			expectedRequestBody: "{\"parameters\":{\"foo\":\"bar\"}}",
 		},
 		"invalid": {
-			model: resource_app_installation.AppInstallationModel{
+			model: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("invalid"),
 			},
 			expectErrors:        true,
@@ -77,22 +77,22 @@ func TestToPutAppInstallationReq(t *testing.T) {
 	}
 }
 
-func TestReadFromResponse(t *testing.T) {
+func TestAppInstallationModelReadFromResponse(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
 		appInstallation contentfulManagement.AppInstallation
-		expectedModel   resource_app_installation.AppInstallationModel
+		expectedModel   provider.AppInstallationModel
 	}{
 		"null": {
 			appInstallation: contentfulManagement.AppInstallation{},
-			expectedModel:   resource_app_installation.AppInstallationModel{},
+			expectedModel:   provider.AppInstallationModel{},
 		},
 		"empty": {
 			appInstallation: contentfulManagement.AppInstallation{
 				Parameters: contentfulManagement.NewOptAppInstallationParameters(contentfulManagement.AppInstallationParameters{}),
 			},
-			expectedModel: resource_app_installation.AppInstallationModel{
+			expectedModel: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("{}"),
 			},
 		},
@@ -102,7 +102,7 @@ func TestReadFromResponse(t *testing.T) {
 					"foo": []byte{'"', 'b', 'a', 'r', '"'},
 				}),
 			},
-			expectedModel: resource_app_installation.AppInstallationModel{
+			expectedModel: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
 			},
 		},
@@ -112,7 +112,7 @@ func TestReadFromResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model := resource_app_installation.AppInstallationModel{}
+			model := provider.AppInstallationModel{}
 
 			diags := model.ReadFromResponse(&test.appInstallation)
 

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_editor_interface"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -32,7 +31,7 @@ func (r *editorInterfaceResource) Metadata(_ context.Context, req resource.Metad
 }
 
 func (r *editorInterfaceResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = resource_editor_interface.EditorInterfaceResourceSchema(ctx)
+	resp.Schema = EditorInterfaceResourceSchema(ctx)
 }
 
 func (r *editorInterfaceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -48,7 +47,7 @@ func (r *editorInterfaceResource) ImportState(ctx context.Context, req resource.
 }
 
 func (r *editorInterfaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data resource_editor_interface.EditorInterfaceModel
+	var data EditorInterfaceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -102,7 +101,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data resource_editor_interface.EditorInterfaceModel
+	var data EditorInterfaceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -155,7 +154,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 func (r *editorInterfaceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data resource_editor_interface.EditorInterfaceModel
+	var data EditorInterfaceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 

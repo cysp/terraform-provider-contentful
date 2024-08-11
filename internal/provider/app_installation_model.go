@@ -1,5 +1,4 @@
-//nolint:revive,stylecheck
-package resource_app_installation
+package provider
 
 import (
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
