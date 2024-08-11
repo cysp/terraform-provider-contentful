@@ -9,10 +9,55 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
+//nolint:cyclop
 func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) (contentfulManagement.PutEditorInterfaceReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	request := contentfulManagement.PutEditorInterfaceReq{}
+
+	if model.Editors.IsNull() || model.Editors.IsUnknown() {
+		request.Editors.Reset()
+	} else {
+		editorsPath := path.Root("editors")
+
+		editorsElementValues := []EditorsValue{}
+		diags.Append(model.Editors.ElementsAs(ctx, &editorsElementValues, false)...)
+
+		requestEditorsItems := make([]contentfulManagement.PutEditorInterfaceReqEditorsItem, len(editorsElementValues))
+
+		for index, editorsElement := range editorsElementValues {
+			path := editorsPath.AtListIndex(index)
+
+			requestEditorsItem, requestEditorsItemDiags := editorsElement.ToPutEditorInterfaceReqEditorsItem(ctx, path)
+			diags.Append(requestEditorsItemDiags...)
+
+			requestEditorsItems[index] = requestEditorsItem
+		}
+
+		request.Editors.SetTo(requestEditorsItems)
+	}
+
+	if model.EditorLayout.IsNull() || model.EditorLayout.IsUnknown() {
+		request.EditorLayout.Reset()
+	} else {
+		editorLayoutPath := path.Root("editor_layout")
+
+		editorLayoutElementValues := []EditorLayoutValue{}
+		diags.Append(model.EditorLayout.ElementsAs(ctx, &editorLayoutElementValues, false)...)
+
+		requestEditorLayoutItems := make([]contentfulManagement.PutEditorInterfaceReqEditorLayoutItem, len(editorLayoutElementValues))
+
+		for index, editorLayoutElement := range editorLayoutElementValues {
+			path := editorLayoutPath.AtListIndex(index)
+
+			requestEditorLayoutItem, requestEditorLayoutItemDiags := editorLayoutElement.ToPutEditorInterfaceReqEditorLayoutItem(ctx, path)
+			diags.Append(requestEditorLayoutItemDiags...)
+
+			requestEditorLayoutItems[index] = requestEditorLayoutItem
+		}
+
+		request.EditorLayout.SetTo(requestEditorLayoutItems)
+	}
 
 	if model.Controls.IsNull() || model.Controls.IsUnknown() {
 		request.Controls.Reset()
@@ -34,6 +79,28 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		}
 
 		request.Controls.SetTo(requestControlsItems)
+	}
+
+	if model.GroupControls.IsNull() || model.GroupControls.IsUnknown() {
+		request.GroupControls.Reset()
+	} else {
+		controlsPath := path.Root("group_controls")
+
+		groupControlsElementValues := []GroupControlsValue{}
+		diags.Append(model.GroupControls.ElementsAs(ctx, &groupControlsElementValues, false)...)
+
+		requestGroupControlsItems := make([]contentfulManagement.PutEditorInterfaceReqGroupControlsItem, len(groupControlsElementValues))
+
+		for index, groupControlsElement := range groupControlsElementValues {
+			path := controlsPath.AtListIndex(index)
+
+			requestGroupControlsItem, requestGroupControlsItemDiags := groupControlsElement.ToPutEditorInterfaceReqGroupControlsItem(ctx, path)
+			diags.Append(requestGroupControlsItemDiags...)
+
+			requestGroupControlsItems[index] = requestGroupControlsItem
+		}
+
+		request.GroupControls.SetTo(requestGroupControlsItems)
 	}
 
 	if model.Sidebar.IsNull() || model.Sidebar.IsUnknown() {
@@ -66,6 +133,24 @@ func (model *EditorInterfaceModel) ReadFromResponse(ctx context.Context, editorI
 
 	// SpaceId, EnvironmentId and ContentTypeId are all already known
 
+	if editorInterfaceEditors, ok := editorInterface.Editors.Get(); ok {
+		editors, editorsDiags := NewEditorsListValueFromResponse(ctx, path.Root("editors"), editorInterfaceEditors)
+		diags.Append(editorsDiags...)
+
+		model.Editors = editors
+	} else {
+		model.Editors = NewEditorsListValueNull(ctx)
+	}
+
+	if editorInterfaceEditorLayout, ok := editorInterface.EditorLayout.Get(); ok {
+		editorLayout, editorLayoutDiags := NewEditorLayoutListValueFromResponse(ctx, path.Root("editor_layout"), editorInterfaceEditorLayout)
+		diags.Append(editorLayoutDiags...)
+
+		model.EditorLayout = editorLayout
+	} else {
+		model.EditorLayout = NewEditorLayoutListValueNull(ctx)
+	}
+
 	if editorInterfaceControls, ok := editorInterface.Controls.Get(); ok {
 		controlsListValue, controlsListValueDiags := NewControlsListValueFromResponse(ctx, path.Root("controls"), editorInterfaceControls)
 		diags.Append(controlsListValueDiags...)
@@ -73,6 +158,15 @@ func (model *EditorInterfaceModel) ReadFromResponse(ctx context.Context, editorI
 		model.Controls = controlsListValue
 	} else {
 		model.Controls = NewControlsListValueNull(ctx)
+	}
+
+	if editorInterfaceGroupControls, ok := editorInterface.GroupControls.Get(); ok {
+		groupControlsListValue, groupControlsListValueDiags := NewGroupControlsListValueFromResponse(ctx, path.Root("group_controls"), editorInterfaceGroupControls)
+		diags.Append(groupControlsListValueDiags...)
+
+		model.GroupControls = groupControlsListValue
+	} else {
+		model.GroupControls = NewGroupControlsListValueNull(ctx)
 	}
 
 	if editorInterfaceSidebar, ok := editorInterface.Sidebar.Get(); ok {
