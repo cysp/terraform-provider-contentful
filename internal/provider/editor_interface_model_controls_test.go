@@ -1,11 +1,11 @@
-package resource_editor_interface_test
+package provider_test
 
 import (
 	"context"
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_editor_interface"
+	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -18,7 +18,7 @@ func TestControlsValueToPutEditorInterfaceReqControlsItem(t *testing.T) {
 	ctx := context.Background()
 	path := path.Root("controls")
 
-	model := resource_editor_interface.NewControlsValueKnown()
+	model := provider.NewControlsValueKnown()
 	model.FieldId = types.StringValue("field_id")
 	model.WidgetNamespace = types.StringValue("widget_namespace")
 	model.WidgetId = types.StringValue("widget_id")
@@ -40,7 +40,7 @@ func TestControlsValueToPutEditorInterfaceReqControlsItemInvalidSettings(t *test
 	ctx := context.Background()
 	path := path.Root("controls")
 
-	model := resource_editor_interface.NewControlsValueKnown()
+	model := provider.NewControlsValueKnown()
 	model.FieldId = types.StringValue("field_id")
 	model.WidgetNamespace = types.StringValue("widget_namespace")
 	model.WidgetId = types.StringValue("widget_id")
@@ -67,7 +67,7 @@ func TestNewControlsValueFromResponse(t *testing.T) {
 		}),
 	}
 
-	value, diags := resource_editor_interface.NewControlsValueFromResponse(path, item)
+	value, diags := provider.NewControlsValueFromResponse(path, item)
 
 	assert.EqualValues(t, "field_id", value.FieldId.ValueString())
 	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
@@ -88,7 +88,7 @@ func TestNewControlsValueFromResponseSettingsNull(t *testing.T) {
 		WidgetId:        contentfulManagement.NewOptString("widget_id"),
 	}
 
-	value, diags := resource_editor_interface.NewControlsValueFromResponse(path, item)
+	value, diags := provider.NewControlsValueFromResponse(path, item)
 
 	assert.EqualValues(t, "field_id", value.FieldId.ValueString())
 	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())

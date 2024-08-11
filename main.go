@@ -11,7 +11,7 @@ import (
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
 
-//go:generate go run github.com/hashicorp/terraform-plugin-codegen-framework/cmd/tfplugingen-framework generate all -input specification.json -output internal/provider
+//go:generate go run github.com/hashicorp/terraform-plugin-codegen-framework/cmd/tfplugingen-framework generate all -input specification.json -output internal/provider -package provider
 
 // If you do not have terraform installed, you can remove the formatting command, but its suggested to
 // ensure the documentation is formatted properly.

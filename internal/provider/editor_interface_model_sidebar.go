@@ -1,5 +1,4 @@
-//nolint:revive,stylecheck
-package resource_editor_interface
+package provider
 
 import (
 	"context"
@@ -19,22 +18,21 @@ func NewSidebarValueKnown() SidebarValue {
 	}
 }
 
-func (model *SidebarValue) ToPutEditorInterfaceReqSidebarItem(ctx context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqSidebarItem, diag.Diagnostics) {
+func (m *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := contentfulManagement.PutEditorInterfaceReqSidebarItem{
-		WidgetNamespace: model.WidgetNamespace.ValueString(),
-		WidgetId:        model.WidgetId.ValueString(),
+		WidgetNamespace: m.WidgetNamespace.ValueString(),
+		WidgetId:        m.WidgetId.ValueString(),
 	}
 
-	modelDisabled := model.Disabled.ValueBoolPointer()
+	modelDisabled := m.Disabled.ValueBoolPointer()
 	if modelDisabled != nil {
 		item.Disabled.SetTo(*modelDisabled)
 	}
 
-	if model.Settings.IsNull() || model.Settings.IsUnknown() {
-	} else {
-		modelSettings := model.Settings.ValueString()
+	if !m.Settings.IsNull() && !m.Settings.IsUnknown() {
+		modelSettings := m.Settings.ValueString()
 
 		path := path.AtName("settings")
 
@@ -51,7 +49,7 @@ func (model *SidebarValue) ToPutEditorInterfaceReqSidebarItem(ctx context.Contex
 	return item, diags
 }
 
-func NewSidebarValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceSidebarItem) (SidebarValue, diag.Diagnostics) {
+func NewSidebarValueFromResponse(_ path.Path, item contentfulManagement.EditorInterfaceSidebarItem) (SidebarValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := SidebarValue{

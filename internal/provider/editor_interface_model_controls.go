@@ -1,5 +1,4 @@
-//nolint:revive,stylecheck
-package resource_editor_interface
+package provider
 
 import (
 	"context"
@@ -19,18 +18,17 @@ func NewControlsValueKnown() ControlsValue {
 	}
 }
 
-func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(ctx context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqControlsItem, diag.Diagnostics) {
+func (m *ControlsValue) ToPutEditorInterfaceReqControlsItem(_ context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := contentfulManagement.PutEditorInterfaceReqControlsItem{
-		FieldId:         model.FieldId.ValueString(),
-		WidgetNamespace: util.StringValueToOptString(model.WidgetNamespace),
-		WidgetId:        util.StringValueToOptString(model.WidgetId),
+		FieldId:         m.FieldId.ValueString(),
+		WidgetNamespace: util.StringValueToOptString(m.WidgetNamespace),
+		WidgetId:        util.StringValueToOptString(m.WidgetId),
 	}
 
-	if model.Settings.IsNull() || model.Settings.IsUnknown() {
-	} else {
-		modelSettings := model.Settings.ValueString()
+	if !m.Settings.IsNull() && !m.Settings.IsUnknown() {
+		modelSettings := m.Settings.ValueString()
 
 		path := path.AtName("settings")
 
@@ -47,7 +45,7 @@ func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(ctx context.Cont
 	return item, diags
 }
 
-func NewControlsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceControlsItem) (ControlsValue, diag.Diagnostics) {
+func NewControlsValueFromResponse(_ path.Path, item contentfulManagement.EditorInterfaceControlsItem) (ControlsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := ControlsValue{

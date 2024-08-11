@@ -1,5 +1,4 @@
-//nolint:revive,stylecheck
-package resource_content_type
+package provider
 
 import (
 	"context"
@@ -90,7 +89,7 @@ func NewItemsValueFromResponse(ctx context.Context, path path.Path, item content
 	return value, diags
 }
 
-func NewValidationsListFromResponse(ctx context.Context, path path.Path, validations []jx.Raw) (types.List, diag.Diagnostics) {
+func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations []jx.Raw) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	validationElements := make([]attr.Value, len(validations))

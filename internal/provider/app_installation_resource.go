@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_app_installation"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -32,7 +31,7 @@ func (r *appInstallationResource) Metadata(_ context.Context, req resource.Metad
 }
 
 func (r *appInstallationResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = resource_app_installation.AppInstallationResourceSchema(ctx)
+	resp.Schema = AppInstallationResourceSchema(ctx)
 }
 
 func (r *appInstallationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -49,7 +48,7 @@ func (r *appInstallationResource) ImportState(ctx context.Context, req resource.
 
 //nolint:dupl
 func (r *appInstallationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data resource_app_installation.AppInstallationModel
+	var data AppInstallationModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -95,7 +94,7 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data resource_app_installation.AppInstallationModel
+	var data AppInstallationModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -143,7 +142,7 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 
 //nolint:dupl
 func (r *appInstallationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data resource_app_installation.AppInstallationModel
+	var data AppInstallationModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -189,7 +188,7 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 }
 
 func (r *appInstallationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data resource_app_installation.AppInstallationModel
+	var data AppInstallationModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
