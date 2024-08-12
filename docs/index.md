@@ -23,5 +23,5 @@ provider "contentful" {
 
 ### Optional
 
-- `access_token` (String)
+- `access_token` (String, Sensitive)
 - `url` (String)
