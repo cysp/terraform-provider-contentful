@@ -94,7 +94,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	resp.Diagnostics.Append(util.PrivateDataSetValue(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(data.ContentTypeId.ValueString())
@@ -147,7 +147,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	resp.Diagnostics.Append(util.PrivateDataSetValue(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(data.ContentTypeId.ValueString())
@@ -163,7 +163,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	var currentVersion int
-	currentVersionDiags := util.PrivateDataGetValue(ctx, req.Private, "version", &currentVersion)
+	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(data.ContentTypeId.ValueString())
@@ -204,7 +204,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	resp.Diagnostics.Append(util.PrivateDataSetValue(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(data.ContentTypeId.ValueString())

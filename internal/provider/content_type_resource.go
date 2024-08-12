@@ -120,7 +120,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	resp.Diagnostics.Append(util.PrivateDataSetValue(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -171,7 +171,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	resp.Diagnostics.Append(util.PrivateDataSetValue(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -185,7 +185,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	var currentVersion int
-	currentVersionDiags := util.PrivateDataGetValue(ctx, req.Private, "version", &currentVersion)
+	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	putContentTypeParams := contentfulManagement.PutContentTypeParams{
@@ -251,7 +251,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	resp.Diagnostics.Append(util.PrivateDataSetValue(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 	r.providerData.editorInterfaceVersionOffset.Increment(data.ContentTypeId.ValueString())
