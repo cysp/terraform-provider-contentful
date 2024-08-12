@@ -35,7 +35,7 @@ func (r *appInstallationResource) Schema(ctx context.Context, _ resource.SchemaR
 }
 
 func (r *appInstallationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	util.ProviderDataFromResourceConfigureRequest(req, &r.providerData, resp)
+	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
 
 func (r *appInstallationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

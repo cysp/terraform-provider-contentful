@@ -1,9 +1,9 @@
-package util_test
+package provider_test
 
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/stretchr/testify/assert"
@@ -32,19 +32,14 @@ func TestProviderDataFromDataSourceConfigureRequest(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			var (
-				providerData string
-				resp         datasource.ConfigureResponse
-			)
+			var providerData string
 
-			result := util.ProviderDataFromDataSourceConfigureRequest(datasource.ConfigureRequest{
+			diags := provider.SetProviderDataFromDataSourceConfigureRequest(datasource.ConfigureRequest{
 				ProviderData: test.providerData,
-			}, &providerData, &resp)
-
-			assert.EqualValues(t, test.expectedSuccess, result)
+			}, &providerData)
 
 			if test.expectedSuccess {
-				assert.Empty(t, resp.Diagnostics.Errors())
+				assert.Empty(t, diags.Errors())
 			}
 		})
 	}
@@ -73,20 +68,15 @@ func TestProviderDataFromResourceeConfigureRequest(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			var (
-				providerData string
-				resp         resource.ConfigureResponse
-			)
+			var providerData string
 
-			result := util.ProviderDataFromResourceConfigureRequest(resource.ConfigureRequest{
+			diags := provider.SetProviderDataFromResourceConfigureRequest(resource.ConfigureRequest{
 				ProviderData: test.providerData,
-			}, &providerData, &resp)
-
-			assert.EqualValues(t, test.expectedSuccess, result)
+			}, &providerData)
 
 			if test.expectedSuccess {
 				assert.EqualValues(t, test.providerData, providerData)
-				assert.Empty(t, resp.Diagnostics.Errors())
+				assert.Empty(t, diags.Errors())
 			}
 		})
 	}
