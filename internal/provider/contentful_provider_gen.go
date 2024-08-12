@@ -13,7 +13,8 @@ func ContentfulProviderSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"access_token": schema.StringAttribute{
-				Optional: true,
+				Optional:  true,
+				Sensitive: true,
 			},
 			"url": schema.StringAttribute{
 				Optional: true,

@@ -14,7 +14,8 @@
                 {
                     "name": "access_token",
                     "string": {
-                        "optional_required": "optional"
+                        "optional_required": "optional",
+                        "sensitive": true
                     }
                 }
             ]
