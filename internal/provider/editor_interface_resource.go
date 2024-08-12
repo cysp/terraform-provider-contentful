@@ -40,7 +40,7 @@ func (r *editorInterfaceResource) Configure(_ context.Context, req resource.Conf
 }
 
 func (r *editorInterfaceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	util.ImportStatePassthroughMultipartID(ctx, []path.Path{
+	ImportStatePassthroughMultipartID(ctx, []path.Path{
 		path.Root("space_id"),
 		path.Root("environment_id"),
 		path.Root("content_type_id"),
