@@ -40,7 +40,7 @@ func (r *appInstallationResource) Configure(_ context.Context, req resource.Conf
 }
 
 func (r *appInstallationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	util.ImportStatePassthroughMultipartID(ctx, []path.Path{
+	ImportStatePassthroughMultipartID(ctx, []path.Path{
 		path.Root("space_id"),
 		path.Root("environment_id"),
 		path.Root("app_definition_id"),
