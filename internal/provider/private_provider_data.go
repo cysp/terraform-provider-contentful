@@ -1,4 +1,4 @@
-package util
+package provider
 
 import (
 	"context"
@@ -7,12 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
-type ProviderPrivateData interface {
+type PrivateProviderData interface {
 	GetKey(ctx context.Context, key string) ([]byte, diag.Diagnostics)
 	SetKey(ctx context.Context, key string, value []byte) diag.Diagnostics
 }
 
-func PrivateDataSetValue[T interface{}](ctx context.Context, providerData ProviderPrivateData, key string, value T) diag.Diagnostics {
+func SetPrivateProviderData[T interface{}](ctx context.Context, providerData PrivateProviderData, key string, value T) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	valueBytes, err := json.Marshal(value)
@@ -27,7 +27,7 @@ func PrivateDataSetValue[T interface{}](ctx context.Context, providerData Provid
 	return providerData.SetKey(ctx, key, valueBytes)
 }
 
-func PrivateDataGetValue[T interface{}](ctx context.Context, providerData ProviderPrivateData, key string, value *T) diag.Diagnostics {
+func GetPrivateProviderData[T interface{}](ctx context.Context, providerData PrivateProviderData, key string, value *T) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	valueBytes, getDiags := providerData.GetKey(ctx, key)

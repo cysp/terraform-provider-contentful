@@ -1,26 +1,26 @@
-package util_test
+package provider_test
 
 import (
 	"context"
 	"math"
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/stretchr/testify/assert"
 )
 
-type providerPrivateData struct {
+type privateProviderData struct {
 	data map[string][]byte
 }
 
-func newProviderPrivateData() *providerPrivateData {
-	return &providerPrivateData{
+func newProviderPrivateData() *privateProviderData {
+	return &privateProviderData{
 		data: make(map[string][]byte),
 	}
 }
 
-func (p *providerPrivateData) GetKey(_ context.Context, key string) ([]byte, diag.Diagnostics) {
+func (p *privateProviderData) GetKey(_ context.Context, key string) ([]byte, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value, found := p.data[key]
@@ -31,7 +31,7 @@ func (p *providerPrivateData) GetKey(_ context.Context, key string) ([]byte, dia
 	return value, diags
 }
 
-func (p *providerPrivateData) SetKey(_ context.Context, key string, value []byte) diag.Diagnostics {
+func (p *privateProviderData) SetKey(_ context.Context, key string, value []byte) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	p.data[key] = value
@@ -39,7 +39,7 @@ func (p *providerPrivateData) SetKey(_ context.Context, key string, value []byte
 	return diags
 }
 
-var _ util.ProviderPrivateData = &providerPrivateData{}
+var _ provider.PrivateProviderData = &privateProviderData{}
 
 func TestPrivateDataGetIntNotSet(t *testing.T) {
 	t.Parallel()
@@ -49,7 +49,7 @@ func TestPrivateDataGetIntNotSet(t *testing.T) {
 	privateData := newProviderPrivateData()
 
 	var value int
-	diags := util.PrivateDataGetValue(ctx, privateData, "key", &value)
+	diags := provider.GetPrivateProviderData(ctx, privateData, "key", &value)
 
 	assert.EqualValues(t, 0, value)
 	assert.NotEmpty(t, diags)
@@ -62,13 +62,13 @@ func TestPrivateDataGetSetInt(t *testing.T) {
 
 	privateData := newProviderPrivateData()
 
-	diags := util.PrivateDataSetValue(ctx, privateData, "key", 42)
+	diags := provider.SetPrivateProviderData(ctx, privateData, "key", 42)
 
 	assert.EqualValues(t, []byte{'4', '2'}, privateData.data["key"])
 	assert.Empty(t, diags)
 
 	var value int
-	diags = util.PrivateDataGetValue(ctx, privateData, "key", &value)
+	diags = provider.GetPrivateProviderData(ctx, privateData, "key", &value)
 
 	assert.EqualValues(t, 42, value)
 	assert.Empty(t, diags)
@@ -83,7 +83,7 @@ func TestPrivateDataGetIntInvalid(t *testing.T) {
 	privateData.data["key"] = []byte("invalid")
 
 	var value int
-	diags := util.PrivateDataGetValue(ctx, privateData, "key", &value)
+	diags := provider.GetPrivateProviderData(ctx, privateData, "key", &value)
 
 	assert.EqualValues(t, 0, value)
 	assert.NotEmpty(t, diags)
@@ -96,7 +96,7 @@ func TestPrivateDataSetInf(t *testing.T) {
 
 	privateData := newProviderPrivateData()
 
-	diags := util.PrivateDataSetValue(ctx, privateData, "key", math.Inf(1))
+	diags := provider.SetPrivateProviderData(ctx, privateData, "key", math.Inf(1))
 
 	assert.NotEmpty(t, diags)
 }
