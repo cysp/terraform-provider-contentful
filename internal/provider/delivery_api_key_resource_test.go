@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -71,6 +72,36 @@ func TestAccDeliveryApiKeyResource(t *testing.T) {
 					preview_api_key_id = contentful_delivery_api_key.test.preview_api_key_id
 				}
 				`, apiKeyID),
+			},
+		},
+	})
+}
+
+func TestAccDeliveryApiKeyResourceImportNotFound(t *testing.T) {
+	t.Parallel()
+
+	apiKeyID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				import {
+					id = "0p38pssr0fi3/%[1]s"
+					to = contentful_delivery_api_key.test
+				}
+
+				resource "contentful_delivery_api_key" "test" {
+					space_id = "0p38pssr0fi3"
+
+					name = %[1]q
+					description = "key: %[1]s"
+
+					environments = ["test"]
+				}
+				`, apiKeyID),
+				ExpectError: regexp.MustCompile(`Cannot import non-existent remote object`),
 			},
 		},
 	})
