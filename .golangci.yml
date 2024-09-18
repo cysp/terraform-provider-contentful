@@ -10,6 +10,7 @@ linters:
     - depguard
     - execinquery
     - exhaustruct
+    - exportloopref
     - funlen
     - gomnd
     - lll
