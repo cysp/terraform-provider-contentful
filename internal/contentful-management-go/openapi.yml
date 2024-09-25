@@ -360,6 +360,10 @@ paths:
           schema:
             type: string
           required: true
+        - in: header
+          name: X-Contentful-Marketplace
+          schema:
+            type: string
       requestBody:
         required: true
         content:

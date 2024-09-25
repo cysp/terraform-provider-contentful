@@ -23,6 +23,7 @@ description: |-
 
 ### Optional
 
+- `marketplace` (Set of String)
 - `parameters` (String)
 
 

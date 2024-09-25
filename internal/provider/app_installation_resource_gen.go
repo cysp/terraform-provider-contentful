@@ -27,6 +27,10 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"marketplace": schema.SetAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"parameters": schema.StringAttribute{
 				CustomType: jsontypes.NormalizedType{},
 				Optional:   true,
@@ -44,6 +48,7 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 type AppInstallationModel struct {
 	AppDefinitionId types.String         `tfsdk:"app_definition_id"`
 	EnvironmentId   types.String         `tfsdk:"environment_id"`
+	Marketplace     types.Set            `tfsdk:"marketplace"`
 	Parameters      jsontypes.Normalized `tfsdk:"parameters"`
 	SpaceId         types.String         `tfsdk:"space_id"`
 }
