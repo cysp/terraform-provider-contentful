@@ -54,9 +54,10 @@ type GetEditorInterfaceParams struct {
 
 // PutAppInstallationParams is parameters of putAppInstallation operation.
 type PutAppInstallationParams struct {
-	SpaceID         string
-	EnvironmentID   string
-	AppDefinitionID string
+	SpaceID                string
+	EnvironmentID          string
+	AppDefinitionID        string
+	XContentfulMarketplace OptString
 }
 
 // PutContentTypeParams is parameters of putContentType operation.

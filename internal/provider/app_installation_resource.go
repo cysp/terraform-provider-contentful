@@ -56,10 +56,14 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
+	xContentfulMarketplace, xContentfulMarketplaceDiags := data.ToXContentfulMarketplaceHeaderValue(ctx)
+	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
+
 	params := contentfulManagement.PutAppInstallationParams{
-		SpaceID:         data.SpaceId.ValueString(),
-		EnvironmentID:   data.EnvironmentId.ValueString(),
-		AppDefinitionID: data.AppDefinitionId.ValueString(),
+		SpaceID:                data.SpaceId.ValueString(),
+		EnvironmentID:          data.EnvironmentId.ValueString(),
+		AppDefinitionID:        data.AppDefinitionId.ValueString(),
+		XContentfulMarketplace: xContentfulMarketplace,
 	}
 
 	request, requestDiags := data.ToPutAppInstallationReq()
@@ -150,10 +154,14 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
+	xContentfulMarketplace, xContentfulMarketplaceDiags := data.ToXContentfulMarketplaceHeaderValue(ctx)
+	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
+
 	params := contentfulManagement.PutAppInstallationParams{
-		SpaceID:         data.SpaceId.ValueString(),
-		EnvironmentID:   data.EnvironmentId.ValueString(),
-		AppDefinitionID: data.AppDefinitionId.ValueString(),
+		SpaceID:                data.SpaceId.ValueString(),
+		EnvironmentID:          data.EnvironmentId.ValueString(),
+		AppDefinitionID:        data.AppDefinitionId.ValueString(),
+		XContentfulMarketplace: xContentfulMarketplace,
 	}
 
 	request, requestDiags := data.ToPutAppInstallationReq()

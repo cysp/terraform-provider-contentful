@@ -1,13 +1,78 @@
 package provider_test
 
 import (
+	"context"
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		model        provider.AppInstallationModel
+		expectErrors bool
+		expected     contentfulManagement.OptString
+	}{
+		"absent": {
+			model:    provider.AppInstallationModel{},
+			expected: contentfulManagement.OptString{},
+		},
+		"null": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetNull(types.StringType),
+			},
+			expected: contentfulManagement.OptString{},
+		},
+		"unknown": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetUnknown(types.StringType),
+			},
+			expected: contentfulManagement.OptString{},
+		},
+		"empty": {
+			model: provider.AppInstallationModel{
+				Marketplace: util.NewEmptySetMust(types.StringType),
+			},
+			expected: contentfulManagement.OptString{},
+		},
+		"foo": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("foo")}),
+			},
+			expected: contentfulManagement.NewOptString("foo"),
+		},
+		"foo,bar": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("foo"), types.StringValue("bar")}),
+			},
+			expected: contentfulManagement.NewOptString("bar,foo"),
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			value, diags := test.model.ToXContentfulMarketplaceHeaderValue(context.Background())
+
+			assert.EqualValues(t, test.expected, value)
+
+			if test.expectErrors {
+				assert.NotEmpty(t, diags.Errors())
+			} else {
+				assert.Empty(t, diags.Errors())
+			}
+		})
+	}
+}
 
 func TestToPutAppInstallationReq(t *testing.T) {
 	t.Parallel()

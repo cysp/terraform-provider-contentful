@@ -11,3 +11,9 @@ func NewEmptyListMust(elementType attr.Type) basetypes.ListValue {
 
 	return list
 }
+
+func NewEmptySetMust(elementType attr.Type) basetypes.SetValue {
+	list, _ := types.SetValue(elementType, []attr.Value{})
+
+	return list
+}
