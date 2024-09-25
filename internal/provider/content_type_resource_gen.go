@@ -903,11 +903,19 @@ func (v FieldsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 		)
 	}
 
-	validationsVal, d := types.ListValue(types.StringType, v.Validations.Elements())
+	var validationsVal basetypes.ListValue
+	switch {
+	case v.Validations.IsUnknown():
+		validationsVal = types.ListUnknown(types.StringType)
+	case v.Validations.IsNull():
+		validationsVal = types.ListNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		validationsVal, d = types.ListValue(types.StringType, v.Validations.Elements())
+		diags.Append(d...)
+	}
 
-	diags.Append(d...)
-
-	if d.HasError() {
+	if diags.HasError() {
 		return types.ObjectUnknown(map[string]attr.Type{
 			"default_value": basetypes.StringType{},
 			"disabled":      basetypes.BoolType{},
@@ -1427,11 +1435,19 @@ func (v ItemsValue) String() string {
 func (v ItemsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	validationsVal, d := types.ListValue(types.StringType, v.Validations.Elements())
+	var validationsVal basetypes.ListValue
+	switch {
+	case v.Validations.IsUnknown():
+		validationsVal = types.ListUnknown(types.StringType)
+	case v.Validations.IsNull():
+		validationsVal = types.ListNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		validationsVal, d = types.ListValue(types.StringType, v.Validations.Elements())
+		diags.Append(d...)
+	}
 
-	diags.Append(d...)
-
-	if d.HasError() {
+	if diags.HasError() {
 		return types.ObjectUnknown(map[string]attr.Type{
 			"link_type": basetypes.StringType{},
 			"type":      basetypes.StringType{},
