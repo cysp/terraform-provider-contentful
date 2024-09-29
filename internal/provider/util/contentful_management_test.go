@@ -60,6 +60,45 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			},
 			expected: "Error: UnknownError: Error message",
 		},
+		"ErrorStatusCodeWithMessageAndUnsupportedDetails": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
+						ID:   "UnknownError",
+					},
+					Message: cm.NewOptString("Error message"),
+					Details: []byte(`"Detailed reason for error"`),
+				},
+			},
+			expected: "Error: UnknownError: Error message",
+		},
+		"ErrorStatusCodeWithMessageAndReasons": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
+						ID:   "UnknownError",
+					},
+					Message: cm.NewOptString("Error message"),
+					Details: []byte(`{"reasons":"Detailed reason for error"}`),
+				},
+			},
+			expected: "Error: UnknownError: Error message: Detailed reason for error",
+		},
+		"ErrorStatusCodeWithMessageAndUnsupportedReason": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
+						ID:   "UnknownError",
+					},
+					Message: cm.NewOptString("Error message"),
+					Details: []byte(`{"reasons":["Reason 1", "Reason 2"]}`),
+				},
+			},
+			expected: "Error: UnknownError: Error message",
+		},
 		"string": {
 			response: "string",
 			expected: "string",

@@ -59,6 +59,10 @@ func ErrorDetailFromContentfulManagementError(response cm.Error) string {
 		detail += ": " + responseMessage
 	}
 
+	if reasons := ContentfulManagementErrorDetailReasons(response.Details); reasons != "" {
+		detail += ": " + reasons
+	}
+
 	if response.Sys.ID == "ValidationFailed" {
 		if details, ok := ContentfulManagementValidationFailedErrorDetails(response.Details); ok {
 			for _, s := range details {
@@ -68,6 +72,21 @@ func ErrorDetailFromContentfulManagementError(response cm.Error) string {
 	}
 
 	return detail
+}
+
+func ContentfulManagementErrorDetailReasons(detailsJSONBytes []byte) string {
+	type ContentfulManagementErrorDetails struct {
+		Reasons *string `json:"reasons"`
+	}
+
+	details := ContentfulManagementErrorDetails{}
+	jsonUnmarshalErr := json.Unmarshal(detailsJSONBytes, &details)
+
+	if jsonUnmarshalErr == nil && details.Reasons != nil {
+		return *details.Reasons
+	}
+
+	return ""
 }
 
 type ValidationFailedErrorDetails struct {
