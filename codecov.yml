@@ -1,3 +1,13 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 85%
+        threshold: 0%
+    patch:
+      default:
+        informational: true
+
 ignore:
   - 'main.go'
   - '**/*_gen.go'
