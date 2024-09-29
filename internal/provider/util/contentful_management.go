@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -12,15 +13,7 @@ import (
 
 func ErrorDetailFromContentfulManagementResponse(response interface{}, err error) string {
 	if response, ok := response.(*cm.ErrorStatusCode); ok {
-		responseType, err := response.Response.Sys.Type.MarshalText()
-
-		if err == nil {
-			detail := string(responseType) + ": " + response.Response.Sys.ID
-
-			if responseMessage, ok := response.Response.Message.Get(); ok {
-				detail += ": " + responseMessage
-			}
-
+		if detail := ErrorDetailFromContentfulManagementErrorStatusCode(response); detail != "" {
 			return detail
 		}
 	}
@@ -30,6 +23,44 @@ func ErrorDetailFromContentfulManagementResponse(response interface{}, err error
 	}
 
 	return fmt.Sprintf("%v", response)
+}
+
+func ErrorDetailFromContentfulManagementErrorStatusCode(response *cm.ErrorStatusCode) string {
+	if response == nil {
+		return ""
+	}
+
+	responseType, err := response.Response.Sys.Type.MarshalText()
+	if err != nil {
+		return ""
+	}
+
+	detail := string(responseType) + ": " + response.Response.Sys.ID
+
+	if responseMessage, ok := response.Response.Message.Get(); ok {
+		detail += ": " + responseMessage
+	}
+
+	if responseReasons := ErrorReasonsFromContentfulManagementErrorStatusCodeDetails(response.Response.Details); responseReasons != "" {
+		detail += ": " + responseReasons
+	}
+
+	return detail
+}
+
+func ErrorReasonsFromContentfulManagementErrorStatusCodeDetails(detailsJSONBytes []byte) string {
+	type ContentfulManagementErrorDetails struct {
+		Reasons *string `json:"reasons"`
+	}
+
+	details := ContentfulManagementErrorDetails{}
+	jsonUnmarshalErr := json.Unmarshal(detailsJSONBytes, &details)
+
+	if jsonUnmarshalErr == nil && details.Reasons != nil {
+		return *details.Reasons
+	}
+
+	return ""
 }
 
 func OptBoolToBoolValue(b cm.OptBool) basetypes.BoolValue {
