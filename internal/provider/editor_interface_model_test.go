@@ -225,11 +225,11 @@ func TestReadFromResponse(t *testing.T) {
 		"null": {
 			editorInterface: contentfulManagement.EditorInterface{},
 			expectedModel: provider.EditorInterfaceModel{
-				Editors:  types.ListNull(provider.EditorsValue{}.Type(context.Background())),
-				EditorLayout: types.ListNull(provider.EditorLayoutValue{}.Type(context.Background())),
-				Controls: types.ListNull(provider.ControlsValue{}.Type(context.Background())),
+				Editors:       types.ListNull(provider.EditorsValue{}.Type(context.Background())),
+				EditorLayout:  types.ListNull(provider.EditorLayoutValue{}.Type(context.Background())),
+				Controls:      types.ListNull(provider.ControlsValue{}.Type(context.Background())),
 				GroupControls: types.ListNull(provider.GroupControlsValue{}.Type(context.Background())),
-				Sidebar:  types.ListNull(provider.SidebarValue{}.Type(context.Background())),
+				Sidebar:       types.ListNull(provider.SidebarValue{}.Type(context.Background())),
 			},
 		},
 		"empty": {
@@ -241,11 +241,11 @@ func TestReadFromResponse(t *testing.T) {
 				Sidebar:       contentfulManagement.NewOptNilEditorInterfaceSidebarItemArray([]contentfulManagement.EditorInterfaceSidebarItem{}),
 			},
 			expectedModel: provider.EditorInterfaceModel{
-				Editors:  util.NewEmptyListMust(provider.EditorsValue{}.Type(context.Background())),
-				EditorLayout: util.NewEmptyListMust(provider.EditorLayoutValue{}.Type(context.Background())),
-				Controls: util.NewEmptyListMust(provider.ControlsValue{}.Type(context.Background())),
+				Editors:       util.NewEmptyListMust(provider.EditorsValue{}.Type(context.Background())),
+				EditorLayout:  util.NewEmptyListMust(provider.EditorLayoutValue{}.Type(context.Background())),
+				Controls:      util.NewEmptyListMust(provider.ControlsValue{}.Type(context.Background())),
 				GroupControls: util.NewEmptyListMust(provider.GroupControlsValue{}.Type(context.Background())),
-				Sidebar:  util.NewEmptyListMust(provider.SidebarValue{}.Type(context.Background())),
+				Sidebar:       util.NewEmptyListMust(provider.SidebarValue{}.Type(context.Background())),
 			},
 		},
 	}

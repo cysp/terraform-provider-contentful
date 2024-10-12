@@ -1,4 +1,4 @@
-//nolint:dupl,revive,stylecheck
+//nolint:dupl
 package provider
 
 import (
@@ -19,7 +19,7 @@ func NewGroupControlsValueKnown() GroupControlsValue {
 	}
 }
 
-func (model *GroupControlsValue) ToPutEditorInterfaceReqGroupControlsItem(ctx context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqGroupControlsItem, diag.Diagnostics) {
+func (model *GroupControlsValue) ToPutEditorInterfaceReqGroupControlsItem(_ context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqGroupControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := contentfulManagement.PutEditorInterfaceReqGroupControlsItem{
@@ -28,8 +28,7 @@ func (model *GroupControlsValue) ToPutEditorInterfaceReqGroupControlsItem(ctx co
 		WidgetId:        util.StringValueToOptString(model.WidgetId),
 	}
 
-	if model.Settings.IsNull() || model.Settings.IsUnknown() {
-	} else {
+	if !model.Settings.IsNull() && !model.Settings.IsUnknown() {
 		modelSettings := model.Settings.ValueString()
 
 		path := path.AtName("settings")
@@ -47,7 +46,7 @@ func (model *GroupControlsValue) ToPutEditorInterfaceReqGroupControlsItem(ctx co
 	return item, diags
 }
 
-func NewGroupControlsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceGroupControlsItem) (GroupControlsValue, diag.Diagnostics) {
+func NewGroupControlsValueFromResponse(_ path.Path, item contentfulManagement.EditorInterfaceGroupControlsItem) (GroupControlsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := GroupControlsValue{

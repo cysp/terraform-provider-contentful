@@ -1,4 +1,4 @@
-//nolint:dupl,revive,stylecheck
+//nolint:dupl
 package provider
 
 import (

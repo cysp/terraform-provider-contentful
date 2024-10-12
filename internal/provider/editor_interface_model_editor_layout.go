@@ -1,4 +1,3 @@
-//nolint:revive,stylecheck
 package provider
 
 import (
@@ -27,8 +26,7 @@ func (model *EditorLayoutValue) ToPutEditorInterfaceReqEditorLayoutItem(ctx cont
 		Name:    model.Name.ValueString(),
 	}
 
-	if model.Items.IsNull() || model.Items.IsUnknown() {
-	} else {
+	if !model.Items.IsNull() && !model.Items.IsUnknown() {
 		var itemItemsStrings []string
 
 		diags.Append(model.Items.ElementsAs(ctx, &itemItemsStrings, false)...)
@@ -54,7 +52,7 @@ func (model *EditorLayoutValue) ToPutEditorInterfaceReqEditorLayoutItem(ctx cont
 	return item, diags
 }
 
-func NewEditorLayoutValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceEditorLayoutItem) (EditorLayoutValue, diag.Diagnostics) {
+func NewEditorLayoutValueFromResponse(_ path.Path, item contentfulManagement.EditorInterfaceEditorLayoutItem) (EditorLayoutValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := EditorLayoutValue{

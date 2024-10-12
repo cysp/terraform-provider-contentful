@@ -1,4 +1,3 @@
-//nolint:revive,stylecheck
 package provider
 
 import (
@@ -19,7 +18,7 @@ func NewEditorsValueKnown() EditorsValue {
 	}
 }
 
-func (model *EditorsValue) ToPutEditorInterfaceReqEditorsItem(ctx context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqEditorsItem, diag.Diagnostics) {
+func (model *EditorsValue) ToPutEditorInterfaceReqEditorsItem(_ context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqEditorsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := contentfulManagement.PutEditorInterfaceReqEditorsItem{
@@ -28,8 +27,7 @@ func (model *EditorsValue) ToPutEditorInterfaceReqEditorsItem(ctx context.Contex
 		Disabled:        util.BoolValueToOptBool(model.Disabled),
 	}
 
-	if model.Settings.IsNull() || model.Settings.IsUnknown() {
-	} else {
+	if !model.Settings.IsNull() && !model.Settings.IsUnknown() {
 		modelSettings := model.Settings.ValueString()
 
 		path := path.AtName("settings")
@@ -47,7 +45,7 @@ func (model *EditorsValue) ToPutEditorInterfaceReqEditorsItem(ctx context.Contex
 	return item, diags
 }
 
-func NewEditorsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceEditorsItem) (EditorsValue, diag.Diagnostics) {
+func NewEditorsValueFromResponse(_ path.Path, item contentfulManagement.EditorInterfaceEditorsItem) (EditorsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := EditorsValue{
