@@ -1042,11 +1042,19 @@ func (v EditorLayoutValue) String() string {
 func (v EditorLayoutValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	itemsVal, d := types.ListValue(types.StringType, v.Items.Elements())
+	var itemsVal basetypes.ListValue
+	switch {
+	case v.Items.IsUnknown():
+		itemsVal = types.ListUnknown(types.StringType)
+	case v.Items.IsNull():
+		itemsVal = types.ListNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		itemsVal, d = types.ListValue(types.StringType, v.Items.Elements())
+		diags.Append(d...)
+	}
 
-	diags.Append(d...)
-
-	if d.HasError() {
+	if diags.HasError() {
 		return types.ObjectUnknown(map[string]attr.Type{
 			"group_id": basetypes.StringType{},
 			"items": basetypes.ListType{

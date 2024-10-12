@@ -1,5 +1,5 @@
 //nolint:revive,stylecheck
-package resource_editor_interface
+package provider
 
 import (
 	"context"
