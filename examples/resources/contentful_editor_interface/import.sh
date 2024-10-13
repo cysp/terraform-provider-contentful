@@ -1,0 +1,1 @@
+terraform import contentful_editor_interface.author $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/author

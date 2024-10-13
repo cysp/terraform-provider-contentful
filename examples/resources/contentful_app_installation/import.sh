@@ -1,0 +1,1 @@
+terraform import contentful_app_installation.cool_app $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/cool_app
