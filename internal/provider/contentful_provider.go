@@ -33,6 +33,7 @@ type ContentfulProvider struct {
 
 func (p *ContentfulProvider) Schema(ctx context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = ContentfulProviderSchema(ctx)
+	resp.Schema.Description = "Manage Contentful space configuration."
 }
 
 func (p *ContentfulProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {

@@ -3,12 +3,12 @@
 page_title: "contentful Provider"
 subcategory: ""
 description: |-
-  
+  Manage Contentful space configuration.
 ---
 
 # contentful Provider
 
-
+Manage Contentful space configuration.
 
 ## Example Usage
 
