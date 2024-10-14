@@ -623,145 +623,22 @@
                                 "static": true
                             }
                         }
+                    },
+                    {
+                        "name": "filter",
+                        "string": {
+                            "computed_optional_required": "optional",
+                            "custom_type": {
+                                "import": {
+                                    "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                },
+                                "type": "jsontypes.NormalizedType{}",
+                                "value_type": "jsontypes.Normalized"
+                            }
+                        }
                     }
                 ],
                 "blocks": [
-                    {
-                        "name": "filter",
-                        "list_nested": {
-                            "nested_object": {
-                                "blocks": [
-                                    {
-                                        "name": "equals",
-                                        "single_nested": {
-                                            "attributes": [
-                                                {
-                                                    "name": "doc",
-                                                    "string": {
-                                                        "computed_optional_required": "required"
-                                                    }
-                                                },
-                                                {
-                                                    "name": "string",
-                                                    "string": {
-                                                        "computed_optional_required": "required"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "name": "in",
-                                        "single_nested": {
-                                            "attributes": [
-                                                {
-                                                    "name": "doc",
-                                                    "string": {
-                                                        "computed_optional_required": "required"
-                                                    }
-                                                },
-                                                {
-                                                    "name": "strings",
-                                                    "list": {
-                                                        "computed_optional_required": "required",
-                                                        "element_type": {
-                                                            "string": {}
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "name": "regexp",
-                                        "single_nested": {
-                                            "attributes": [
-                                                {
-                                                    "name": "doc",
-                                                    "string": {
-                                                        "computed_optional_required": "required"
-                                                    }
-                                                },
-                                                {
-                                                    "name": "pattern",
-                                                    "string": {
-                                                        "computed_optional_required": "required"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "name": "not",
-                                        "single_nested": {
-                                            "blocks": [
-                                                {
-                                                    "name": "equals",
-                                                    "single_nested": {
-                                                        "attributes": [
-                                                            {
-                                                                "name": "doc",
-                                                                "string": {
-                                                                    "computed_optional_required": "required"
-                                                                }
-                                                            },
-                                                            {
-                                                                "name": "string",
-                                                                "string": {
-                                                                    "computed_optional_required": "required"
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "name": "in",
-                                                    "single_nested": {
-                                                        "attributes": [
-                                                            {
-                                                                "name": "doc",
-                                                                "string": {
-                                                                    "computed_optional_required": "required"
-                                                                }
-                                                            },
-                                                            {
-                                                                "name": "strings",
-                                                                "list": {
-                                                                    "computed_optional_required": "required",
-                                                                    "element_type": {
-                                                                        "string": {}
-                                                                    }
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "name": "regexp",
-                                                    "single_nested": {
-                                                        "attributes": [
-                                                            {
-                                                                "name": "doc",
-                                                                "string": {
-                                                                    "computed_optional_required": "required"
-                                                                }
-                                                            },
-                                                            {
-                                                                "name": "pattern",
-                                                                "string": {
-                                                                    "computed_optional_required": "required"
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    },
                     {
                         "name": "transformation",
                         "single_nested": {
