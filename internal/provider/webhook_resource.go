@@ -2,22 +2,29 @@ package provider
 
 import (
 	"context"
+	"net/http"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider/resource_webhook"
+	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-var _ resource.Resource = (*webhookResource)(nil)
+var (
+	_ resource.Resource                = (*webhookResource)(nil)
+	_ resource.ResourceWithConfigure   = (*webhookResource)(nil)
+	_ resource.ResourceWithImportState = (*webhookResource)(nil)
+)
 
+//nolint:ireturn,revive,stylecheck
 func NewWebhookResource() resource.Resource {
 	return &webhookResource{}
 }
 
-type webhookResource struct{}
-
-type webhookResourceModel struct {
-	Id types.String `tfsdk:"id"`
+//nolint:revive,stylecheck
+type webhookResource struct {
+	providerData ContentfulProviderData
 }
 
 func (r *webhookResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -25,69 +32,200 @@ func (r *webhookResource) Metadata(_ context.Context, req resource.MetadataReque
 }
 
 func (r *webhookResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = resource_webhook.WebhookResourceSchema(ctx)
+	resp.Schema = WebhookResourceSchema(ctx)
+}
+
+func (r *webhookResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
+}
+
+func (r *webhookResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	ImportStatePassthroughMultipartID(ctx, []path.Path{
+		path.Root("space_id"),
+		path.Root("api_key_id"),
+	}, req, resp)
 }
 
 func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data webhookResourceModel
+	var data WebhookModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Create API call logic
+	currentVersion := 1
 
-	// Example data value setting
-	data.Id = types.StringValue("example-id")
+	params := contentfulManagement.PostApiKeyParams{
+		SpaceID: data.SpaceId.ValueString(),
+	}
 
-	// Save data into Terraform state
+	request, requestDiags := data.ToPostAPIKeyReq(ctx)
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	response, err := r.providerData.client.PostApiKey(ctx, &request, params)
+
+	tflog.Info(ctx, "delivery_api_key.create", map[string]interface{}{
+		"params":   params,
+		"request":  request,
+		"response": response,
+		"err":      err,
+	})
+
+	switch response := response.(type) {
+	case *contentfulManagement.ApiKey:
+		currentVersion = response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+
+	default:
+		resp.Diagnostics.AddError("Failed to create delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data webhookResourceModel
+	var data WebhookModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Read API call logic
+	params := contentfulManagement.GetApiKeyParams{
+		SpaceID:  data.SpaceId.ValueString(),
+		APIKeyID: data.ApiKeyId.ValueString(),
+	}
 
-	// Save updated data into Terraform state
+	response, err := r.providerData.client.GetApiKey(ctx, params)
+
+	tflog.Info(ctx, "delivery_api_key.read", map[string]interface{}{
+		"params":   params,
+		"response": response,
+		"err":      err,
+	})
+
+	currentVersion := 0
+
+	switch response := response.(type) {
+	case *contentfulManagement.ApiKey:
+		currentVersion = response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+
+	default:
+		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+			if response.StatusCode == http.StatusNotFound {
+				resp.Diagnostics.AddWarning("Failed to read delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+				resp.State.RemoveResource(ctx)
+
+				return
+			}
+		}
+
+		resp.Diagnostics.AddError("Failed to read delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data webhookResourceModel
+	var data WebhookModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Update API call logic
+	var currentVersion int
+	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
+	resp.Diagnostics.Append(currentVersionDiags...)
 
-	// Save updated data into Terraform state
+	params := contentfulManagement.PutApiKeyParams{
+		SpaceID:            data.SpaceId.ValueString(),
+		APIKeyID:           data.ApiKeyId.ValueString(),
+		XContentfulVersion: currentVersion,
+	}
+
+	request, requestDiags := data.ToPutAPIKeyReq(ctx)
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	response, err := r.providerData.client.PutApiKey(ctx, &request, params)
+
+	tflog.Info(ctx, "delivery_api_key.update", map[string]interface{}{
+		"params":   params,
+		"request":  request,
+		"response": response,
+		"err":      err,
+	})
+
+	switch response := response.(type) {
+	case *contentfulManagement.ApiKey:
+		currentVersion = response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+
+	default:
+		resp.Diagnostics.AddError("Failed to update delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data webhookResourceModel
+	var data WebhookModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Delete API call logic
+	response, err := r.providerData.client.DeleteApiKey(ctx, contentfulManagement.DeleteApiKeyParams{
+		SpaceID:  data.SpaceId.ValueString(),
+		APIKeyID: data.ApiKeyId.ValueString(),
+	})
+
+	switch response := response.(type) {
+	case *contentfulManagement.NoContent:
+
+	default:
+		handled := false
+
+		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+			if response.StatusCode == http.StatusNotFound {
+				resp.Diagnostics.AddWarning("Delivery api key already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
+				handled = true
+			}
+		}
+
+		if !handled {
+			resp.Diagnostics.AddError("Failed to delete delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		}
+	}
 }
