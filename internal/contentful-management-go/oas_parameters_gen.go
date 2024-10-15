@@ -76,6 +76,13 @@ type DeleteDeliveryApiKeyParams struct {
 	APIKeyID string
 }
 
+// DeleteExtensionParams is parameters of deleteExtension operation.
+type DeleteExtensionParams struct {
+	SpaceID       string
+	EnvironmentID string
+	ExtensionID   string
+}
+
 // DeleteRoleParams is parameters of deleteRole operation.
 type DeleteRoleParams struct {
 	SpaceID string
@@ -132,6 +139,13 @@ type GetEditorInterfaceParams struct {
 	SpaceID       string
 	EnvironmentID string
 	ContentTypeID string
+}
+
+// GetExtensionParams is parameters of getExtension operation.
+type GetExtensionParams struct {
+	SpaceID       string
+	EnvironmentID string
+	ExtensionID   string
 }
 
 // GetPersonalAccessTokenParams is parameters of getPersonalAccessToken operation.
@@ -202,6 +216,14 @@ type PutEditorInterfaceParams struct {
 	SpaceID            string
 	EnvironmentID      string
 	ContentTypeID      string
+	XContentfulVersion int
+}
+
+// PutExtensionParams is parameters of putExtension operation.
+type PutExtensionParams struct {
+	SpaceID            string
+	EnvironmentID      string
+	ExtensionID        string
 	XContentfulVersion int
 }
 
