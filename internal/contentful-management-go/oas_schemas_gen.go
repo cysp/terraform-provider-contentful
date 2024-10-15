@@ -1174,17 +1174,20 @@ func (*Error) deactivateContentTypeRes() {}
 func (*Error) deleteApiKeyRes()          {}
 func (*Error) deleteAppInstallationRes() {}
 func (*Error) deleteContentTypeRes()     {}
+func (*Error) deleteExtensionRes()       {}
 func (*Error) getApiKeyRes()             {}
 func (*Error) getAppInstallationRes()    {}
 func (*Error) getAuthenticatedUserRes()  {}
 func (*Error) getContentTypeRes()        {}
 func (*Error) getEditorInterfaceRes()    {}
+func (*Error) getExtensionRes()          {}
 func (*Error) getPreviewApiKeyRes()      {}
 func (*Error) postApiKeyRes()            {}
 func (*Error) putApiKeyRes()             {}
 func (*Error) putAppInstallationRes()    {}
 func (*Error) putContentTypeRes()        {}
 func (*Error) putEditorInterfaceRes()    {}
+func (*Error) putExtensionRes()          {}
 
 // ErrorStatusCode wraps Error with StatusCode.
 type ErrorStatusCode struct {
@@ -1217,17 +1220,20 @@ func (*ErrorStatusCode) deactivateContentTypeRes() {}
 func (*ErrorStatusCode) deleteApiKeyRes()          {}
 func (*ErrorStatusCode) deleteAppInstallationRes() {}
 func (*ErrorStatusCode) deleteContentTypeRes()     {}
+func (*ErrorStatusCode) deleteExtensionRes()       {}
 func (*ErrorStatusCode) getApiKeyRes()             {}
 func (*ErrorStatusCode) getAppInstallationRes()    {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()  {}
 func (*ErrorStatusCode) getContentTypeRes()        {}
 func (*ErrorStatusCode) getEditorInterfaceRes()    {}
+func (*ErrorStatusCode) getExtensionRes()          {}
 func (*ErrorStatusCode) getPreviewApiKeyRes()      {}
 func (*ErrorStatusCode) postApiKeyRes()            {}
 func (*ErrorStatusCode) putApiKeyRes()             {}
 func (*ErrorStatusCode) putAppInstallationRes()    {}
 func (*ErrorStatusCode) putContentTypeRes()        {}
 func (*ErrorStatusCode) putEditorInterfaceRes()    {}
+func (*ErrorStatusCode) putExtensionRes()          {}
 
 // Ref: #/components/schemas/ErrorSys
 type ErrorSys struct {
@@ -1289,6 +1295,836 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Merged schema.
+// Ref: #/components/schemas/Extension
+type Extension struct {
+	Sys        ExtensionSys           `json:"sys"`
+	Name       string                 `json:"name"`
+	FieldTypes []ExtensionFieldType   `json:"fieldTypes"`
+	Src        OptString              `json:"src"`
+	Srcdoc     OptString              `json:"srcdoc"`
+	Sidebar    OptBool                `json:"sidebar"`
+	Parameters OptExtensionParameters `json:"parameters"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Extension) GetSys() ExtensionSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Extension) GetName() string {
+	return s.Name
+}
+
+// GetFieldTypes returns the value of FieldTypes.
+func (s *Extension) GetFieldTypes() []ExtensionFieldType {
+	return s.FieldTypes
+}
+
+// GetSrc returns the value of Src.
+func (s *Extension) GetSrc() OptString {
+	return s.Src
+}
+
+// GetSrcdoc returns the value of Srcdoc.
+func (s *Extension) GetSrcdoc() OptString {
+	return s.Srcdoc
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *Extension) GetSidebar() OptBool {
+	return s.Sidebar
+}
+
+// GetParameters returns the value of Parameters.
+func (s *Extension) GetParameters() OptExtensionParameters {
+	return s.Parameters
+}
+
+// SetSys sets the value of Sys.
+func (s *Extension) SetSys(val ExtensionSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Extension) SetName(val string) {
+	s.Name = val
+}
+
+// SetFieldTypes sets the value of FieldTypes.
+func (s *Extension) SetFieldTypes(val []ExtensionFieldType) {
+	s.FieldTypes = val
+}
+
+// SetSrc sets the value of Src.
+func (s *Extension) SetSrc(val OptString) {
+	s.Src = val
+}
+
+// SetSrcdoc sets the value of Srcdoc.
+func (s *Extension) SetSrcdoc(val OptString) {
+	s.Srcdoc = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *Extension) SetSidebar(val OptBool) {
+	s.Sidebar = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *Extension) SetParameters(val OptExtensionParameters) {
+	s.Parameters = val
+}
+
+func (*Extension) getExtensionRes() {}
+func (*Extension) putExtensionRes() {}
+
+// Ref: #/components/schemas/ExtensionFieldType
+// ExtensionFieldType represents sum type.
+type ExtensionFieldType struct {
+	Type                ExtensionFieldTypeType // switch on this field
+	ExtensionFieldType0 ExtensionFieldType0
+	ExtensionFieldType1 ExtensionFieldType1
+	ExtensionFieldType2 ExtensionFieldType2
+}
+
+// ExtensionFieldTypeType is oneOf type of ExtensionFieldType.
+type ExtensionFieldTypeType string
+
+// Possible values for ExtensionFieldTypeType.
+const (
+	ExtensionFieldType0ExtensionFieldType ExtensionFieldTypeType = "ExtensionFieldType0"
+	ExtensionFieldType1ExtensionFieldType ExtensionFieldTypeType = "ExtensionFieldType1"
+	ExtensionFieldType2ExtensionFieldType ExtensionFieldTypeType = "ExtensionFieldType2"
+)
+
+// IsExtensionFieldType0 reports whether ExtensionFieldType is ExtensionFieldType0.
+func (s ExtensionFieldType) IsExtensionFieldType0() bool {
+	return s.Type == ExtensionFieldType0ExtensionFieldType
+}
+
+// IsExtensionFieldType1 reports whether ExtensionFieldType is ExtensionFieldType1.
+func (s ExtensionFieldType) IsExtensionFieldType1() bool {
+	return s.Type == ExtensionFieldType1ExtensionFieldType
+}
+
+// IsExtensionFieldType2 reports whether ExtensionFieldType is ExtensionFieldType2.
+func (s ExtensionFieldType) IsExtensionFieldType2() bool {
+	return s.Type == ExtensionFieldType2ExtensionFieldType
+}
+
+// SetExtensionFieldType0 sets ExtensionFieldType to ExtensionFieldType0.
+func (s *ExtensionFieldType) SetExtensionFieldType0(v ExtensionFieldType0) {
+	s.Type = ExtensionFieldType0ExtensionFieldType
+	s.ExtensionFieldType0 = v
+}
+
+// GetExtensionFieldType0 returns ExtensionFieldType0 and true boolean if ExtensionFieldType is ExtensionFieldType0.
+func (s ExtensionFieldType) GetExtensionFieldType0() (v ExtensionFieldType0, ok bool) {
+	if !s.IsExtensionFieldType0() {
+		return v, false
+	}
+	return s.ExtensionFieldType0, true
+}
+
+// NewExtensionFieldType0ExtensionFieldType returns new ExtensionFieldType from ExtensionFieldType0.
+func NewExtensionFieldType0ExtensionFieldType(v ExtensionFieldType0) ExtensionFieldType {
+	var s ExtensionFieldType
+	s.SetExtensionFieldType0(v)
+	return s
+}
+
+// SetExtensionFieldType1 sets ExtensionFieldType to ExtensionFieldType1.
+func (s *ExtensionFieldType) SetExtensionFieldType1(v ExtensionFieldType1) {
+	s.Type = ExtensionFieldType1ExtensionFieldType
+	s.ExtensionFieldType1 = v
+}
+
+// GetExtensionFieldType1 returns ExtensionFieldType1 and true boolean if ExtensionFieldType is ExtensionFieldType1.
+func (s ExtensionFieldType) GetExtensionFieldType1() (v ExtensionFieldType1, ok bool) {
+	if !s.IsExtensionFieldType1() {
+		return v, false
+	}
+	return s.ExtensionFieldType1, true
+}
+
+// NewExtensionFieldType1ExtensionFieldType returns new ExtensionFieldType from ExtensionFieldType1.
+func NewExtensionFieldType1ExtensionFieldType(v ExtensionFieldType1) ExtensionFieldType {
+	var s ExtensionFieldType
+	s.SetExtensionFieldType1(v)
+	return s
+}
+
+// SetExtensionFieldType2 sets ExtensionFieldType to ExtensionFieldType2.
+func (s *ExtensionFieldType) SetExtensionFieldType2(v ExtensionFieldType2) {
+	s.Type = ExtensionFieldType2ExtensionFieldType
+	s.ExtensionFieldType2 = v
+}
+
+// GetExtensionFieldType2 returns ExtensionFieldType2 and true boolean if ExtensionFieldType is ExtensionFieldType2.
+func (s ExtensionFieldType) GetExtensionFieldType2() (v ExtensionFieldType2, ok bool) {
+	if !s.IsExtensionFieldType2() {
+		return v, false
+	}
+	return s.ExtensionFieldType2, true
+}
+
+// NewExtensionFieldType2ExtensionFieldType returns new ExtensionFieldType from ExtensionFieldType2.
+func NewExtensionFieldType2ExtensionFieldType(v ExtensionFieldType2) ExtensionFieldType {
+	var s ExtensionFieldType
+	s.SetExtensionFieldType2(v)
+	return s
+}
+
+type ExtensionFieldType0 struct {
+	Type ExtensionFieldType0Type `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionFieldType0) GetType() ExtensionFieldType0Type {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionFieldType0) SetType(val ExtensionFieldType0Type) {
+	s.Type = val
+}
+
+type ExtensionFieldType0Type string
+
+const (
+	ExtensionFieldType0TypeSymbol   ExtensionFieldType0Type = "Symbol"
+	ExtensionFieldType0TypeText     ExtensionFieldType0Type = "Text"
+	ExtensionFieldType0TypeRichText ExtensionFieldType0Type = "RichText"
+	ExtensionFieldType0TypeInteger  ExtensionFieldType0Type = "Integer"
+	ExtensionFieldType0TypeNumber   ExtensionFieldType0Type = "Number"
+	ExtensionFieldType0TypeDate     ExtensionFieldType0Type = "Date"
+	ExtensionFieldType0TypeBoolean  ExtensionFieldType0Type = "Boolean"
+	ExtensionFieldType0TypeLocation ExtensionFieldType0Type = "Location"
+	ExtensionFieldType0TypeObject   ExtensionFieldType0Type = "Object"
+)
+
+// AllValues returns all ExtensionFieldType0Type values.
+func (ExtensionFieldType0Type) AllValues() []ExtensionFieldType0Type {
+	return []ExtensionFieldType0Type{
+		ExtensionFieldType0TypeSymbol,
+		ExtensionFieldType0TypeText,
+		ExtensionFieldType0TypeRichText,
+		ExtensionFieldType0TypeInteger,
+		ExtensionFieldType0TypeNumber,
+		ExtensionFieldType0TypeDate,
+		ExtensionFieldType0TypeBoolean,
+		ExtensionFieldType0TypeLocation,
+		ExtensionFieldType0TypeObject,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ExtensionFieldType0Type) MarshalText() ([]byte, error) {
+	switch s {
+	case ExtensionFieldType0TypeSymbol:
+		return []byte(s), nil
+	case ExtensionFieldType0TypeText:
+		return []byte(s), nil
+	case ExtensionFieldType0TypeRichText:
+		return []byte(s), nil
+	case ExtensionFieldType0TypeInteger:
+		return []byte(s), nil
+	case ExtensionFieldType0TypeNumber:
+		return []byte(s), nil
+	case ExtensionFieldType0TypeDate:
+		return []byte(s), nil
+	case ExtensionFieldType0TypeBoolean:
+		return []byte(s), nil
+	case ExtensionFieldType0TypeLocation:
+		return []byte(s), nil
+	case ExtensionFieldType0TypeObject:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ExtensionFieldType0Type) UnmarshalText(data []byte) error {
+	switch ExtensionFieldType0Type(data) {
+	case ExtensionFieldType0TypeSymbol:
+		*s = ExtensionFieldType0TypeSymbol
+		return nil
+	case ExtensionFieldType0TypeText:
+		*s = ExtensionFieldType0TypeText
+		return nil
+	case ExtensionFieldType0TypeRichText:
+		*s = ExtensionFieldType0TypeRichText
+		return nil
+	case ExtensionFieldType0TypeInteger:
+		*s = ExtensionFieldType0TypeInteger
+		return nil
+	case ExtensionFieldType0TypeNumber:
+		*s = ExtensionFieldType0TypeNumber
+		return nil
+	case ExtensionFieldType0TypeDate:
+		*s = ExtensionFieldType0TypeDate
+		return nil
+	case ExtensionFieldType0TypeBoolean:
+		*s = ExtensionFieldType0TypeBoolean
+		return nil
+	case ExtensionFieldType0TypeLocation:
+		*s = ExtensionFieldType0TypeLocation
+		return nil
+	case ExtensionFieldType0TypeObject:
+		*s = ExtensionFieldType0TypeObject
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type ExtensionFieldType1 struct {
+	Type     ExtensionFieldType1Type `json:"type"`
+	LinkType string                  `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionFieldType1) GetType() ExtensionFieldType1Type {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ExtensionFieldType1) GetLinkType() string {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionFieldType1) SetType(val ExtensionFieldType1Type) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ExtensionFieldType1) SetLinkType(val string) {
+	s.LinkType = val
+}
+
+type ExtensionFieldType1Type string
+
+const (
+	ExtensionFieldType1TypeLink ExtensionFieldType1Type = "Link"
+)
+
+// AllValues returns all ExtensionFieldType1Type values.
+func (ExtensionFieldType1Type) AllValues() []ExtensionFieldType1Type {
+	return []ExtensionFieldType1Type{
+		ExtensionFieldType1TypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ExtensionFieldType1Type) MarshalText() ([]byte, error) {
+	switch s {
+	case ExtensionFieldType1TypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ExtensionFieldType1Type) UnmarshalText(data []byte) error {
+	switch ExtensionFieldType1Type(data) {
+	case ExtensionFieldType1TypeLink:
+		*s = ExtensionFieldType1TypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type ExtensionFieldType2 struct {
+	Type  ExtensionFieldType2Type  `json:"type"`
+	Items ExtensionFieldType2Items `json:"items"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionFieldType2) GetType() ExtensionFieldType2Type {
+	return s.Type
+}
+
+// GetItems returns the value of Items.
+func (s *ExtensionFieldType2) GetItems() ExtensionFieldType2Items {
+	return s.Items
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionFieldType2) SetType(val ExtensionFieldType2Type) {
+	s.Type = val
+}
+
+// SetItems sets the value of Items.
+func (s *ExtensionFieldType2) SetItems(val ExtensionFieldType2Items) {
+	s.Items = val
+}
+
+// ExtensionFieldType2Items represents sum type.
+type ExtensionFieldType2Items struct {
+	Type                      ExtensionFieldType2ItemsType // switch on this field
+	ExtensionFieldType2Items0 ExtensionFieldType2Items0
+	ExtensionFieldType2Items1 ExtensionFieldType2Items1
+}
+
+// ExtensionFieldType2ItemsType is oneOf type of ExtensionFieldType2Items.
+type ExtensionFieldType2ItemsType string
+
+// Possible values for ExtensionFieldType2ItemsType.
+const (
+	ExtensionFieldType2Items0ExtensionFieldType2Items ExtensionFieldType2ItemsType = "ExtensionFieldType2Items0"
+	ExtensionFieldType2Items1ExtensionFieldType2Items ExtensionFieldType2ItemsType = "ExtensionFieldType2Items1"
+)
+
+// IsExtensionFieldType2Items0 reports whether ExtensionFieldType2Items is ExtensionFieldType2Items0.
+func (s ExtensionFieldType2Items) IsExtensionFieldType2Items0() bool {
+	return s.Type == ExtensionFieldType2Items0ExtensionFieldType2Items
+}
+
+// IsExtensionFieldType2Items1 reports whether ExtensionFieldType2Items is ExtensionFieldType2Items1.
+func (s ExtensionFieldType2Items) IsExtensionFieldType2Items1() bool {
+	return s.Type == ExtensionFieldType2Items1ExtensionFieldType2Items
+}
+
+// SetExtensionFieldType2Items0 sets ExtensionFieldType2Items to ExtensionFieldType2Items0.
+func (s *ExtensionFieldType2Items) SetExtensionFieldType2Items0(v ExtensionFieldType2Items0) {
+	s.Type = ExtensionFieldType2Items0ExtensionFieldType2Items
+	s.ExtensionFieldType2Items0 = v
+}
+
+// GetExtensionFieldType2Items0 returns ExtensionFieldType2Items0 and true boolean if ExtensionFieldType2Items is ExtensionFieldType2Items0.
+func (s ExtensionFieldType2Items) GetExtensionFieldType2Items0() (v ExtensionFieldType2Items0, ok bool) {
+	if !s.IsExtensionFieldType2Items0() {
+		return v, false
+	}
+	return s.ExtensionFieldType2Items0, true
+}
+
+// NewExtensionFieldType2Items0ExtensionFieldType2Items returns new ExtensionFieldType2Items from ExtensionFieldType2Items0.
+func NewExtensionFieldType2Items0ExtensionFieldType2Items(v ExtensionFieldType2Items0) ExtensionFieldType2Items {
+	var s ExtensionFieldType2Items
+	s.SetExtensionFieldType2Items0(v)
+	return s
+}
+
+// SetExtensionFieldType2Items1 sets ExtensionFieldType2Items to ExtensionFieldType2Items1.
+func (s *ExtensionFieldType2Items) SetExtensionFieldType2Items1(v ExtensionFieldType2Items1) {
+	s.Type = ExtensionFieldType2Items1ExtensionFieldType2Items
+	s.ExtensionFieldType2Items1 = v
+}
+
+// GetExtensionFieldType2Items1 returns ExtensionFieldType2Items1 and true boolean if ExtensionFieldType2Items is ExtensionFieldType2Items1.
+func (s ExtensionFieldType2Items) GetExtensionFieldType2Items1() (v ExtensionFieldType2Items1, ok bool) {
+	if !s.IsExtensionFieldType2Items1() {
+		return v, false
+	}
+	return s.ExtensionFieldType2Items1, true
+}
+
+// NewExtensionFieldType2Items1ExtensionFieldType2Items returns new ExtensionFieldType2Items from ExtensionFieldType2Items1.
+func NewExtensionFieldType2Items1ExtensionFieldType2Items(v ExtensionFieldType2Items1) ExtensionFieldType2Items {
+	var s ExtensionFieldType2Items
+	s.SetExtensionFieldType2Items1(v)
+	return s
+}
+
+type ExtensionFieldType2Items0 struct {
+	Type ExtensionFieldType2Items0Type `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionFieldType2Items0) GetType() ExtensionFieldType2Items0Type {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionFieldType2Items0) SetType(val ExtensionFieldType2Items0Type) {
+	s.Type = val
+}
+
+type ExtensionFieldType2Items0Type string
+
+const (
+	ExtensionFieldType2Items0TypeSymbol ExtensionFieldType2Items0Type = "Symbol"
+)
+
+// AllValues returns all ExtensionFieldType2Items0Type values.
+func (ExtensionFieldType2Items0Type) AllValues() []ExtensionFieldType2Items0Type {
+	return []ExtensionFieldType2Items0Type{
+		ExtensionFieldType2Items0TypeSymbol,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ExtensionFieldType2Items0Type) MarshalText() ([]byte, error) {
+	switch s {
+	case ExtensionFieldType2Items0TypeSymbol:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ExtensionFieldType2Items0Type) UnmarshalText(data []byte) error {
+	switch ExtensionFieldType2Items0Type(data) {
+	case ExtensionFieldType2Items0TypeSymbol:
+		*s = ExtensionFieldType2Items0TypeSymbol
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type ExtensionFieldType2Items1 struct {
+	Type     ExtensionFieldType2Items1Type     `json:"type"`
+	LinkType ExtensionFieldType2Items1LinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionFieldType2Items1) GetType() ExtensionFieldType2Items1Type {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ExtensionFieldType2Items1) GetLinkType() ExtensionFieldType2Items1LinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionFieldType2Items1) SetType(val ExtensionFieldType2Items1Type) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ExtensionFieldType2Items1) SetLinkType(val ExtensionFieldType2Items1LinkType) {
+	s.LinkType = val
+}
+
+type ExtensionFieldType2Items1LinkType string
+
+const (
+	ExtensionFieldType2Items1LinkTypeEntry ExtensionFieldType2Items1LinkType = "Entry"
+	ExtensionFieldType2Items1LinkTypeAsset ExtensionFieldType2Items1LinkType = "Asset"
+)
+
+// AllValues returns all ExtensionFieldType2Items1LinkType values.
+func (ExtensionFieldType2Items1LinkType) AllValues() []ExtensionFieldType2Items1LinkType {
+	return []ExtensionFieldType2Items1LinkType{
+		ExtensionFieldType2Items1LinkTypeEntry,
+		ExtensionFieldType2Items1LinkTypeAsset,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ExtensionFieldType2Items1LinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case ExtensionFieldType2Items1LinkTypeEntry:
+		return []byte(s), nil
+	case ExtensionFieldType2Items1LinkTypeAsset:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ExtensionFieldType2Items1LinkType) UnmarshalText(data []byte) error {
+	switch ExtensionFieldType2Items1LinkType(data) {
+	case ExtensionFieldType2Items1LinkTypeEntry:
+		*s = ExtensionFieldType2Items1LinkTypeEntry
+		return nil
+	case ExtensionFieldType2Items1LinkTypeAsset:
+		*s = ExtensionFieldType2Items1LinkTypeAsset
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type ExtensionFieldType2Items1Type string
+
+const (
+	ExtensionFieldType2Items1TypeLink ExtensionFieldType2Items1Type = "Link"
+)
+
+// AllValues returns all ExtensionFieldType2Items1Type values.
+func (ExtensionFieldType2Items1Type) AllValues() []ExtensionFieldType2Items1Type {
+	return []ExtensionFieldType2Items1Type{
+		ExtensionFieldType2Items1TypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ExtensionFieldType2Items1Type) MarshalText() ([]byte, error) {
+	switch s {
+	case ExtensionFieldType2Items1TypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ExtensionFieldType2Items1Type) UnmarshalText(data []byte) error {
+	switch ExtensionFieldType2Items1Type(data) {
+	case ExtensionFieldType2Items1TypeLink:
+		*s = ExtensionFieldType2Items1TypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type ExtensionFieldType2Type string
+
+const (
+	ExtensionFieldType2TypeArray ExtensionFieldType2Type = "Array"
+)
+
+// AllValues returns all ExtensionFieldType2Type values.
+func (ExtensionFieldType2Type) AllValues() []ExtensionFieldType2Type {
+	return []ExtensionFieldType2Type{
+		ExtensionFieldType2TypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ExtensionFieldType2Type) MarshalText() ([]byte, error) {
+	switch s {
+	case ExtensionFieldType2TypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ExtensionFieldType2Type) UnmarshalText(data []byte) error {
+	switch ExtensionFieldType2Type(data) {
+	case ExtensionFieldType2TypeArray:
+		*s = ExtensionFieldType2TypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/ExtensionFields
+type ExtensionFields struct {
+	Name       string                       `json:"name"`
+	FieldTypes []ExtensionFieldType         `json:"fieldTypes"`
+	Src        OptString                    `json:"src"`
+	Srcdoc     OptString                    `json:"srcdoc"`
+	Sidebar    OptBool                      `json:"sidebar"`
+	Parameters OptExtensionFieldsParameters `json:"parameters"`
+}
+
+// GetName returns the value of Name.
+func (s *ExtensionFields) GetName() string {
+	return s.Name
+}
+
+// GetFieldTypes returns the value of FieldTypes.
+func (s *ExtensionFields) GetFieldTypes() []ExtensionFieldType {
+	return s.FieldTypes
+}
+
+// GetSrc returns the value of Src.
+func (s *ExtensionFields) GetSrc() OptString {
+	return s.Src
+}
+
+// GetSrcdoc returns the value of Srcdoc.
+func (s *ExtensionFields) GetSrcdoc() OptString {
+	return s.Srcdoc
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *ExtensionFields) GetSidebar() OptBool {
+	return s.Sidebar
+}
+
+// GetParameters returns the value of Parameters.
+func (s *ExtensionFields) GetParameters() OptExtensionFieldsParameters {
+	return s.Parameters
+}
+
+// SetName sets the value of Name.
+func (s *ExtensionFields) SetName(val string) {
+	s.Name = val
+}
+
+// SetFieldTypes sets the value of FieldTypes.
+func (s *ExtensionFields) SetFieldTypes(val []ExtensionFieldType) {
+	s.FieldTypes = val
+}
+
+// SetSrc sets the value of Src.
+func (s *ExtensionFields) SetSrc(val OptString) {
+	s.Src = val
+}
+
+// SetSrcdoc sets the value of Srcdoc.
+func (s *ExtensionFields) SetSrcdoc(val OptString) {
+	s.Srcdoc = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *ExtensionFields) SetSidebar(val OptBool) {
+	s.Sidebar = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *ExtensionFields) SetParameters(val OptExtensionFieldsParameters) {
+	s.Parameters = val
+}
+
+type ExtensionFieldsParameters map[string]jx.Raw
+
+func (s *ExtensionFieldsParameters) init() ExtensionFieldsParameters {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type ExtensionParameters map[string]jx.Raw
+
+func (s *ExtensionParameters) init() ExtensionParameters {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+// Merged schema.
+// Ref: #/components/schemas/ExtensionSys
+type ExtensionSys struct {
+	// Merged property.
+	Type             ExtensionSysType `json:"type"`
+	ID               string           `json:"id"`
+	Version          int              `json:"version"`
+	CreatedAt        OptDateTime      `json:"createdAt"`
+	UpdatedAt        OptDateTime      `json:"updatedAt"`
+	PublishedVersion OptInt           `json:"publishedVersion"`
+	PublishedAt      OptDateTime      `json:"publishedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionSys) GetType() ExtensionSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ExtensionSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *ExtensionSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *ExtensionSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *ExtensionSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// GetPublishedVersion returns the value of PublishedVersion.
+func (s *ExtensionSys) GetPublishedVersion() OptInt {
+	return s.PublishedVersion
+}
+
+// GetPublishedAt returns the value of PublishedAt.
+func (s *ExtensionSys) GetPublishedAt() OptDateTime {
+	return s.PublishedAt
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionSys) SetType(val ExtensionSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ExtensionSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *ExtensionSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *ExtensionSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *ExtensionSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// SetPublishedVersion sets the value of PublishedVersion.
+func (s *ExtensionSys) SetPublishedVersion(val OptInt) {
+	s.PublishedVersion = val
+}
+
+// SetPublishedAt sets the value of PublishedAt.
+func (s *ExtensionSys) SetPublishedAt(val OptDateTime) {
+	s.PublishedAt = val
+}
+
+// Merged schema.
+type ExtensionSysType string
+
+const (
+	ExtensionSysTypeExtension ExtensionSysType = "Extension"
+)
+
+// AllValues returns all ExtensionSysType values.
+func (ExtensionSysType) AllValues() []ExtensionSysType {
+	return []ExtensionSysType{
+		ExtensionSysTypeExtension,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ExtensionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ExtensionSysTypeExtension:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ExtensionSysType) UnmarshalText(data []byte) error {
+	switch ExtensionSysType(data) {
+	case ExtensionSysTypeExtension:
+		*s = ExtensionSysTypeExtension
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // NewNilString returns new NilString with value set to v.
 func NewNilString(v string) NilString {
 	return NilString{
@@ -1341,6 +2177,7 @@ func (*NoContent) deactivateContentTypeRes() {}
 func (*NoContent) deleteApiKeyRes()          {}
 func (*NoContent) deleteAppInstallationRes() {}
 func (*NoContent) deleteContentTypeRes()     {}
+func (*NoContent) deleteExtensionRes()       {}
 
 // NewOptApiKeyPreviewAPIKey returns new OptApiKeyPreviewAPIKey with value set to v.
 func NewOptApiKeyPreviewAPIKey(v ApiKeyPreviewAPIKey) OptApiKeyPreviewAPIKey {
@@ -1658,6 +2495,98 @@ func (o OptEditorInterfaceSidebarItemSettings) Get() (v EditorInterfaceSidebarIt
 
 // Or returns value if set, or given parameter if does not.
 func (o OptEditorInterfaceSidebarItemSettings) Or(d EditorInterfaceSidebarItemSettings) EditorInterfaceSidebarItemSettings {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptExtensionFieldsParameters returns new OptExtensionFieldsParameters with value set to v.
+func NewOptExtensionFieldsParameters(v ExtensionFieldsParameters) OptExtensionFieldsParameters {
+	return OptExtensionFieldsParameters{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptExtensionFieldsParameters is optional ExtensionFieldsParameters.
+type OptExtensionFieldsParameters struct {
+	Value ExtensionFieldsParameters
+	Set   bool
+}
+
+// IsSet returns true if OptExtensionFieldsParameters was set.
+func (o OptExtensionFieldsParameters) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptExtensionFieldsParameters) Reset() {
+	var v ExtensionFieldsParameters
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptExtensionFieldsParameters) SetTo(v ExtensionFieldsParameters) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptExtensionFieldsParameters) Get() (v ExtensionFieldsParameters, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptExtensionFieldsParameters) Or(d ExtensionFieldsParameters) ExtensionFieldsParameters {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptExtensionParameters returns new OptExtensionParameters with value set to v.
+func NewOptExtensionParameters(v ExtensionParameters) OptExtensionParameters {
+	return OptExtensionParameters{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptExtensionParameters is optional ExtensionParameters.
+type OptExtensionParameters struct {
+	Value ExtensionParameters
+	Set   bool
+}
+
+// IsSet returns true if OptExtensionParameters was set.
+func (o OptExtensionParameters) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptExtensionParameters) Reset() {
+	var v ExtensionParameters
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptExtensionParameters) SetTo(v ExtensionParameters) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptExtensionParameters) Get() (v ExtensionParameters, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptExtensionParameters) Or(d ExtensionParameters) ExtensionParameters {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -2864,6 +3793,20 @@ func (s *PutEditorInterfaceReqSidebarItemSettings) init() PutEditorInterfaceReqS
 		*s = m
 	}
 	return m
+}
+
+type PutExtensionReq struct {
+	Extension ExtensionFields `json:"extension"`
+}
+
+// GetExtension returns the value of Extension.
+func (s *PutExtensionReq) GetExtension() ExtensionFields {
+	return s.Extension
+}
+
+// SetExtension sets the value of Extension.
+func (s *PutExtensionReq) SetExtension(val ExtensionFields) {
+	s.Extension = val
 }
 
 // Merged schema.

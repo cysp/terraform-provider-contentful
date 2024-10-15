@@ -21,6 +21,10 @@ type DeleteContentTypeRes interface {
 	deleteContentTypeRes()
 }
 
+type DeleteExtensionRes interface {
+	deleteExtensionRes()
+}
+
 type GetApiKeyRes interface {
 	getApiKeyRes()
 }
@@ -39,6 +43,10 @@ type GetContentTypeRes interface {
 
 type GetEditorInterfaceRes interface {
 	getEditorInterfaceRes()
+}
+
+type GetExtensionRes interface {
+	getExtensionRes()
 }
 
 type GetPreviewApiKeyRes interface {
@@ -63,4 +71,8 @@ type PutContentTypeRes interface {
 
 type PutEditorInterfaceRes interface {
 	putEditorInterfaceRes()
+}
+
+type PutExtensionRes interface {
+	putExtensionRes()
 }

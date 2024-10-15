@@ -37,6 +37,14 @@ type DeleteContentTypeParams struct {
 	ContentTypeID string
 }
 
+// DeleteExtensionParams is parameters of deleteExtension operation.
+type DeleteExtensionParams struct {
+	SpaceID            string
+	EnvironmentID      string
+	ExtensionID        string
+	XContentfulVersion int
+}
+
 // GetApiKeyParams is parameters of getApiKey operation.
 type GetApiKeyParams struct {
 	SpaceID  string
@@ -62,6 +70,13 @@ type GetEditorInterfaceParams struct {
 	SpaceID       string
 	EnvironmentID string
 	ContentTypeID string
+}
+
+// GetExtensionParams is parameters of getExtension operation.
+type GetExtensionParams struct {
+	SpaceID       string
+	EnvironmentID string
+	ExtensionID   string
 }
 
 // GetPreviewApiKeyParams is parameters of getPreviewApiKey operation.
@@ -103,5 +118,13 @@ type PutEditorInterfaceParams struct {
 	SpaceID            string
 	EnvironmentID      string
 	ContentTypeID      string
+	XContentfulVersion int
+}
+
+// PutExtensionParams is parameters of putExtension operation.
+type PutExtensionParams struct {
+	SpaceID            string
+	EnvironmentID      string
+	ExtensionID        string
 	XContentfulVersion int
 }
