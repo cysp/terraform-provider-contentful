@@ -2706,6 +2706,14 @@ type DeleteDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized Er
 func (*DeleteDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) deleteDeliveryApiKeyRes() {
 }
 
+type DeleteExtensionApplicationJSONUnauthorized Error
+
+func (*DeleteExtensionApplicationJSONUnauthorized) deleteExtensionRes() {}
+
+type DeleteExtensionApplicationVndContentfulManagementV1JSONUnauthorized Error
+
+func (*DeleteExtensionApplicationVndContentfulManagementV1JSONUnauthorized) deleteExtensionRes() {}
+
 type DeleteRoleApplicationJSONUnauthorized Error
 
 func (*DeleteRoleApplicationJSONUnauthorized) deleteRoleRes() {}
@@ -3594,6 +3602,7 @@ func (*ErrorStatusCode) deleteAppDefinitionResourceTypeRes()     {}
 func (*ErrorStatusCode) deleteAppInstallationRes()               {}
 func (*ErrorStatusCode) deleteContentTypeRes()                   {}
 func (*ErrorStatusCode) deleteDeliveryApiKeyRes()                {}
+func (*ErrorStatusCode) deleteExtensionRes()                     {}
 func (*ErrorStatusCode) deleteRoleRes()                          {}
 func (*ErrorStatusCode) deleteWebhookDefinitionRes()             {}
 func (*ErrorStatusCode) getAppDefinitionRes()                    {}
@@ -3604,6 +3613,7 @@ func (*ErrorStatusCode) getAuthenticatedUserRes()                {}
 func (*ErrorStatusCode) getContentTypeRes()                      {}
 func (*ErrorStatusCode) getDeliveryApiKeyRes()                   {}
 func (*ErrorStatusCode) getEditorInterfaceRes()                  {}
+func (*ErrorStatusCode) getExtensionRes()                        {}
 func (*ErrorStatusCode) getPersonalAccessTokenRes()              {}
 func (*ErrorStatusCode) getPreviewApiKeyRes()                    {}
 func (*ErrorStatusCode) getRoleRes()                             {}
@@ -3615,6 +3625,7 @@ func (*ErrorStatusCode) putAppDefinitionResourceTypeRes()        {}
 func (*ErrorStatusCode) putAppInstallationRes()                  {}
 func (*ErrorStatusCode) putContentTypeRes()                      {}
 func (*ErrorStatusCode) putEditorInterfaceRes()                  {}
+func (*ErrorStatusCode) putExtensionRes()                        {}
 func (*ErrorStatusCode) putSpaceEnablementsRes()                 {}
 func (*ErrorStatusCode) revokePersonalAccessTokenRes()           {}
 func (*ErrorStatusCode) updateDeliveryApiKeyRes()                {}
@@ -3675,6 +3686,478 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 	switch ErrorSysType(data) {
 	case ErrorSysTypeError:
 		*s = ErrorSysTypeError
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/components/schemas/Extension
+type Extension struct {
+	Sys        ExtensionSys       `json:"sys"`
+	Extension  ExtensionExtension `json:"extension"`
+	Parameters jx.Raw             `json:"parameters"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Extension) GetSys() ExtensionSys {
+	return s.Sys
+}
+
+// GetExtension returns the value of Extension.
+func (s *Extension) GetExtension() ExtensionExtension {
+	return s.Extension
+}
+
+// GetParameters returns the value of Parameters.
+func (s *Extension) GetParameters() jx.Raw {
+	return s.Parameters
+}
+
+// SetSys sets the value of Sys.
+func (s *Extension) SetSys(val ExtensionSys) {
+	s.Sys = val
+}
+
+// SetExtension sets the value of Extension.
+func (s *Extension) SetExtension(val ExtensionExtension) {
+	s.Extension = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *Extension) SetParameters(val jx.Raw) {
+	s.Parameters = val
+}
+
+func (*Extension) getExtensionRes() {}
+
+type ExtensionExtension struct {
+	Name       string                             `json:"name"`
+	Src        OptString                          `json:"src"`
+	Srcdoc     OptString                          `json:"srcdoc"`
+	FieldTypes []ExtensionExtensionFieldTypesItem `json:"fieldTypes"`
+	Sidebar    OptBool                            `json:"sidebar"`
+	Parameters OptAppDefinitionParameters         `json:"parameters"`
+}
+
+// GetName returns the value of Name.
+func (s *ExtensionExtension) GetName() string {
+	return s.Name
+}
+
+// GetSrc returns the value of Src.
+func (s *ExtensionExtension) GetSrc() OptString {
+	return s.Src
+}
+
+// GetSrcdoc returns the value of Srcdoc.
+func (s *ExtensionExtension) GetSrcdoc() OptString {
+	return s.Srcdoc
+}
+
+// GetFieldTypes returns the value of FieldTypes.
+func (s *ExtensionExtension) GetFieldTypes() []ExtensionExtensionFieldTypesItem {
+	return s.FieldTypes
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *ExtensionExtension) GetSidebar() OptBool {
+	return s.Sidebar
+}
+
+// GetParameters returns the value of Parameters.
+func (s *ExtensionExtension) GetParameters() OptAppDefinitionParameters {
+	return s.Parameters
+}
+
+// SetName sets the value of Name.
+func (s *ExtensionExtension) SetName(val string) {
+	s.Name = val
+}
+
+// SetSrc sets the value of Src.
+func (s *ExtensionExtension) SetSrc(val OptString) {
+	s.Src = val
+}
+
+// SetSrcdoc sets the value of Srcdoc.
+func (s *ExtensionExtension) SetSrcdoc(val OptString) {
+	s.Srcdoc = val
+}
+
+// SetFieldTypes sets the value of FieldTypes.
+func (s *ExtensionExtension) SetFieldTypes(val []ExtensionExtensionFieldTypesItem) {
+	s.FieldTypes = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *ExtensionExtension) SetSidebar(val OptBool) {
+	s.Sidebar = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *ExtensionExtension) SetParameters(val OptAppDefinitionParameters) {
+	s.Parameters = val
+}
+
+type ExtensionExtensionFieldTypesItem struct {
+	Type     string                                   `json:"type"`
+	LinkType OptString                                `json:"linkType"`
+	Items    OptExtensionExtensionFieldTypesItemItems `json:"items"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionExtensionFieldTypesItem) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ExtensionExtensionFieldTypesItem) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetItems returns the value of Items.
+func (s *ExtensionExtensionFieldTypesItem) GetItems() OptExtensionExtensionFieldTypesItemItems {
+	return s.Items
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionExtensionFieldTypesItem) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ExtensionExtensionFieldTypesItem) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetItems sets the value of Items.
+func (s *ExtensionExtensionFieldTypesItem) SetItems(val OptExtensionExtensionFieldTypesItemItems) {
+	s.Items = val
+}
+
+type ExtensionExtensionFieldTypesItemItems struct {
+	Type     string    `json:"type"`
+	LinkType OptString `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionExtensionFieldTypesItemItems) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ExtensionExtensionFieldTypesItemItems) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionExtensionFieldTypesItemItems) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ExtensionExtensionFieldTypesItemItems) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// Ref: #/components/schemas/ExtensionFields
+type ExtensionFields struct {
+	Extension  ExtensionFieldsExtension `json:"extension"`
+	Parameters jx.Raw                   `json:"parameters"`
+}
+
+// GetExtension returns the value of Extension.
+func (s *ExtensionFields) GetExtension() ExtensionFieldsExtension {
+	return s.Extension
+}
+
+// GetParameters returns the value of Parameters.
+func (s *ExtensionFields) GetParameters() jx.Raw {
+	return s.Parameters
+}
+
+// SetExtension sets the value of Extension.
+func (s *ExtensionFields) SetExtension(val ExtensionFieldsExtension) {
+	s.Extension = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *ExtensionFields) SetParameters(val jx.Raw) {
+	s.Parameters = val
+}
+
+type ExtensionFieldsExtension struct {
+	Name       string                                   `json:"name"`
+	Src        OptString                                `json:"src"`
+	Srcdoc     OptString                                `json:"srcdoc"`
+	FieldTypes []ExtensionFieldsExtensionFieldTypesItem `json:"fieldTypes"`
+	Sidebar    OptBool                                  `json:"sidebar"`
+	Parameters OptAppDefinitionParameters               `json:"parameters"`
+}
+
+// GetName returns the value of Name.
+func (s *ExtensionFieldsExtension) GetName() string {
+	return s.Name
+}
+
+// GetSrc returns the value of Src.
+func (s *ExtensionFieldsExtension) GetSrc() OptString {
+	return s.Src
+}
+
+// GetSrcdoc returns the value of Srcdoc.
+func (s *ExtensionFieldsExtension) GetSrcdoc() OptString {
+	return s.Srcdoc
+}
+
+// GetFieldTypes returns the value of FieldTypes.
+func (s *ExtensionFieldsExtension) GetFieldTypes() []ExtensionFieldsExtensionFieldTypesItem {
+	return s.FieldTypes
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *ExtensionFieldsExtension) GetSidebar() OptBool {
+	return s.Sidebar
+}
+
+// GetParameters returns the value of Parameters.
+func (s *ExtensionFieldsExtension) GetParameters() OptAppDefinitionParameters {
+	return s.Parameters
+}
+
+// SetName sets the value of Name.
+func (s *ExtensionFieldsExtension) SetName(val string) {
+	s.Name = val
+}
+
+// SetSrc sets the value of Src.
+func (s *ExtensionFieldsExtension) SetSrc(val OptString) {
+	s.Src = val
+}
+
+// SetSrcdoc sets the value of Srcdoc.
+func (s *ExtensionFieldsExtension) SetSrcdoc(val OptString) {
+	s.Srcdoc = val
+}
+
+// SetFieldTypes sets the value of FieldTypes.
+func (s *ExtensionFieldsExtension) SetFieldTypes(val []ExtensionFieldsExtensionFieldTypesItem) {
+	s.FieldTypes = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *ExtensionFieldsExtension) SetSidebar(val OptBool) {
+	s.Sidebar = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *ExtensionFieldsExtension) SetParameters(val OptAppDefinitionParameters) {
+	s.Parameters = val
+}
+
+type ExtensionFieldsExtensionFieldTypesItem struct {
+	Type     string                                         `json:"type"`
+	LinkType OptString                                      `json:"linkType"`
+	Items    OptExtensionFieldsExtensionFieldTypesItemItems `json:"items"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionFieldsExtensionFieldTypesItem) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ExtensionFieldsExtensionFieldTypesItem) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetItems returns the value of Items.
+func (s *ExtensionFieldsExtensionFieldTypesItem) GetItems() OptExtensionFieldsExtensionFieldTypesItemItems {
+	return s.Items
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionFieldsExtensionFieldTypesItem) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ExtensionFieldsExtensionFieldTypesItem) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetItems sets the value of Items.
+func (s *ExtensionFieldsExtensionFieldTypesItem) SetItems(val OptExtensionFieldsExtensionFieldTypesItemItems) {
+	s.Items = val
+}
+
+type ExtensionFieldsExtensionFieldTypesItemItems struct {
+	Type     string    `json:"type"`
+	LinkType OptString `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionFieldsExtensionFieldTypesItemItems) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ExtensionFieldsExtensionFieldTypesItemItems) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionFieldsExtensionFieldTypesItemItems) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ExtensionFieldsExtensionFieldTypesItemItems) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// ExtensionStatusCode wraps Extension with StatusCode.
+type ExtensionStatusCode struct {
+	StatusCode int
+	Response   Extension
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *ExtensionStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *ExtensionStatusCode) GetResponse() Extension {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *ExtensionStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *ExtensionStatusCode) SetResponse(val Extension) {
+	s.Response = val
+}
+
+func (*ExtensionStatusCode) putExtensionRes() {}
+
+// Merged schema.
+// Ref: #/components/schemas/ExtensionSys
+type ExtensionSys struct {
+	// Merged property.
+	Type        ExtensionSysType `json:"type"`
+	Space       SpaceLink        `json:"space"`
+	Environment EnvironmentLink  `json:"environment"`
+	ID          string           `json:"id"`
+	Version     int              `json:"version"`
+	CreatedAt   OptDateTime      `json:"createdAt"`
+	UpdatedAt   OptDateTime      `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionSys) GetType() ExtensionSysType {
+	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *ExtensionSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *ExtensionSys) GetEnvironment() EnvironmentLink {
+	return s.Environment
+}
+
+// GetID returns the value of ID.
+func (s *ExtensionSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *ExtensionSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *ExtensionSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *ExtensionSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionSys) SetType(val ExtensionSysType) {
+	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *ExtensionSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *ExtensionSys) SetEnvironment(val EnvironmentLink) {
+	s.Environment = val
+}
+
+// SetID sets the value of ID.
+func (s *ExtensionSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *ExtensionSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *ExtensionSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *ExtensionSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type ExtensionSysType string
+
+const (
+	ExtensionSysTypeExtension ExtensionSysType = "Extension"
+)
+
+// AllValues returns all ExtensionSysType values.
+func (ExtensionSysType) AllValues() []ExtensionSysType {
+	return []ExtensionSysType{
+		ExtensionSysTypeExtension,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ExtensionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ExtensionSysTypeExtension:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ExtensionSysType) UnmarshalText(data []byte) error {
+	switch ExtensionSysType(data) {
+	case ExtensionSysTypeExtension:
+		*s = ExtensionSysTypeExtension
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -3891,6 +4374,14 @@ type GetEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized Erro
 func (*GetEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized) getEditorInterfaceRes() {
 }
 
+type GetExtensionApplicationJSONUnauthorized Error
+
+func (*GetExtensionApplicationJSONUnauthorized) getExtensionRes() {}
+
+type GetExtensionApplicationVndContentfulManagementV1JSONUnauthorized Error
+
+func (*GetExtensionApplicationVndContentfulManagementV1JSONUnauthorized) getExtensionRes() {}
+
 type GetPersonalAccessTokenApplicationJSONUnauthorized Error
 
 func (*GetPersonalAccessTokenApplicationJSONUnauthorized) getPersonalAccessTokenRes() {}
@@ -3997,6 +4488,7 @@ func (*NoContent) deleteAppDefinitionResourceTypeRes()     {}
 func (*NoContent) deleteAppInstallationRes()               {}
 func (*NoContent) deleteContentTypeRes()                   {}
 func (*NoContent) deleteDeliveryApiKeyRes()                {}
+func (*NoContent) deleteExtensionRes()                     {}
 func (*NoContent) deleteRoleRes()                          {}
 func (*NoContent) deleteWebhookDefinitionRes()             {}
 
@@ -4592,6 +5084,98 @@ func (o OptDateTime) Get() (v time.Time, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptExtensionExtensionFieldTypesItemItems returns new OptExtensionExtensionFieldTypesItemItems with value set to v.
+func NewOptExtensionExtensionFieldTypesItemItems(v ExtensionExtensionFieldTypesItemItems) OptExtensionExtensionFieldTypesItemItems {
+	return OptExtensionExtensionFieldTypesItemItems{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptExtensionExtensionFieldTypesItemItems is optional ExtensionExtensionFieldTypesItemItems.
+type OptExtensionExtensionFieldTypesItemItems struct {
+	Value ExtensionExtensionFieldTypesItemItems
+	Set   bool
+}
+
+// IsSet returns true if OptExtensionExtensionFieldTypesItemItems was set.
+func (o OptExtensionExtensionFieldTypesItemItems) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptExtensionExtensionFieldTypesItemItems) Reset() {
+	var v ExtensionExtensionFieldTypesItemItems
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptExtensionExtensionFieldTypesItemItems) SetTo(v ExtensionExtensionFieldTypesItemItems) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptExtensionExtensionFieldTypesItemItems) Get() (v ExtensionExtensionFieldTypesItemItems, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptExtensionExtensionFieldTypesItemItems) Or(d ExtensionExtensionFieldTypesItemItems) ExtensionExtensionFieldTypesItemItems {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptExtensionFieldsExtensionFieldTypesItemItems returns new OptExtensionFieldsExtensionFieldTypesItemItems with value set to v.
+func NewOptExtensionFieldsExtensionFieldTypesItemItems(v ExtensionFieldsExtensionFieldTypesItemItems) OptExtensionFieldsExtensionFieldTypesItemItems {
+	return OptExtensionFieldsExtensionFieldTypesItemItems{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptExtensionFieldsExtensionFieldTypesItemItems is optional ExtensionFieldsExtensionFieldTypesItemItems.
+type OptExtensionFieldsExtensionFieldTypesItemItems struct {
+	Value ExtensionFieldsExtensionFieldTypesItemItems
+	Set   bool
+}
+
+// IsSet returns true if OptExtensionFieldsExtensionFieldTypesItemItems was set.
+func (o OptExtensionFieldsExtensionFieldTypesItemItems) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptExtensionFieldsExtensionFieldTypesItemItems) Reset() {
+	var v ExtensionFieldsExtensionFieldTypesItemItems
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptExtensionFieldsExtensionFieldTypesItemItems) SetTo(v ExtensionFieldsExtensionFieldTypesItemItems) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptExtensionFieldsExtensionFieldTypesItemItems) Get() (v ExtensionFieldsExtensionFieldTypesItemItems, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptExtensionFieldsExtensionFieldTypesItemItems) Or(d ExtensionFieldsExtensionFieldTypesItemItems) ExtensionFieldsExtensionFieldTypesItemItems {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -6325,6 +6909,14 @@ type PutEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized Erro
 
 func (*PutEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized) putEditorInterfaceRes() {
 }
+
+type PutExtensionApplicationJSONUnauthorized Error
+
+func (*PutExtensionApplicationJSONUnauthorized) putExtensionRes() {}
+
+type PutExtensionApplicationVndContentfulManagementV1JSONUnauthorized Error
+
+func (*PutExtensionApplicationVndContentfulManagementV1JSONUnauthorized) putExtensionRes() {}
 
 type PutSpaceEnablementsApplicationJSONUnauthorized Error
 
