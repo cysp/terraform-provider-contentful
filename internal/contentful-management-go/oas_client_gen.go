@@ -29,6 +29,12 @@ type Invoker interface {
 	//
 	// POST /spaces/{space_id}/api_keys
 	CreateDeliveryApiKey(ctx context.Context, request *CreateDeliveryApiKeyReq, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error)
+	// CreatePersonalAccessToken invokes createPersonalAccessToken operation.
+	//
+	// Create a personal access token.
+	//
+	// POST /users/me/access_tokens
+	CreatePersonalAccessToken(ctx context.Context, request *CreatePersonalAccessTokenReq) (CreatePersonalAccessTokenRes, error)
 	// DeactivateContentType invokes deactivateContentType operation.
 	//
 	// Deactivate a content type.
@@ -83,6 +89,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
 	GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (GetEditorInterfaceRes, error)
+	// GetPersonalAccessToken invokes getPersonalAccessToken operation.
+	//
+	// Get a single personal access token.
+	//
+	// GET /users/me/access_tokens/{access_token_id}
+	GetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams) (GetPersonalAccessTokenRes, error)
 	// GetPreviewApiKey invokes getPreviewApiKey operation.
 	//
 	// Get a single preview api key.
@@ -107,6 +119,12 @@ type Invoker interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
 	PutEditorInterface(ctx context.Context, request *PutEditorInterfaceReq, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error)
+	// RevokePersonalAccessToken invokes revokePersonalAccessToken operation.
+	//
+	// Revoke a personal access token.
+	//
+	// PUT /users/me/access_tokens/{access_token_id}/revoked
+	RevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams) (RevokePersonalAccessTokenRes, error)
 	// UpdateDeliveryApiKey invokes updateDeliveryApiKey operation.
 	//
 	// Update a single delivery api key.
@@ -384,6 +402,78 @@ func (c *Client) sendCreateDeliveryApiKey(ctx context.Context, request *CreateDe
 	defer resp.Body.Close()
 
 	result, err := decodeCreateDeliveryApiKeyResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// CreatePersonalAccessToken invokes createPersonalAccessToken operation.
+//
+// Create a personal access token.
+//
+// POST /users/me/access_tokens
+func (c *Client) CreatePersonalAccessToken(ctx context.Context, request *CreatePersonalAccessTokenReq) (CreatePersonalAccessTokenRes, error) {
+	res, err := c.sendCreatePersonalAccessToken(ctx, request)
+	return res, err
+}
+
+func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *CreatePersonalAccessTokenReq) (res CreatePersonalAccessTokenRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/users/me/access_tokens"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeCreatePersonalAccessTokenRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "CreatePersonalAccessToken", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeCreatePersonalAccessTokenResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -1424,6 +1514,93 @@ func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInt
 	return result, nil
 }
 
+// GetPersonalAccessToken invokes getPersonalAccessToken operation.
+//
+// Get a single personal access token.
+//
+// GET /users/me/access_tokens/{access_token_id}
+func (c *Client) GetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams) (GetPersonalAccessTokenRes, error) {
+	res, err := c.sendGetPersonalAccessToken(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams) (res GetPersonalAccessTokenRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [2]string
+	pathParts[0] = "/users/me/access_tokens/"
+	{
+		// Encode "access_token_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "access_token_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AccessTokenID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "GetPersonalAccessToken", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetPersonalAccessTokenResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetPreviewApiKey invokes getPreviewApiKey operation.
 //
 // Get a single preview api key.
@@ -1950,6 +2127,94 @@ func (c *Client) sendPutEditorInterface(ctx context.Context, request *PutEditorI
 	defer resp.Body.Close()
 
 	result, err := decodePutEditorInterfaceResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// RevokePersonalAccessToken invokes revokePersonalAccessToken operation.
+//
+// Revoke a personal access token.
+//
+// PUT /users/me/access_tokens/{access_token_id}/revoked
+func (c *Client) RevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams) (RevokePersonalAccessTokenRes, error) {
+	res, err := c.sendRevokePersonalAccessToken(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendRevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams) (res RevokePersonalAccessTokenRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/users/me/access_tokens/"
+	{
+		// Encode "access_token_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "access_token_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AccessTokenID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/revoked"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "RevokePersonalAccessToken", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeRevokePersonalAccessTokenResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

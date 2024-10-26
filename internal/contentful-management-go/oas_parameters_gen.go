@@ -69,6 +69,11 @@ type GetEditorInterfaceParams struct {
 	ContentTypeID string
 }
 
+// GetPersonalAccessTokenParams is parameters of getPersonalAccessToken operation.
+type GetPersonalAccessTokenParams struct {
+	AccessTokenID string
+}
+
 // GetPreviewApiKeyParams is parameters of getPreviewApiKey operation.
 type GetPreviewApiKeyParams struct {
 	SpaceID         string
@@ -97,6 +102,11 @@ type PutEditorInterfaceParams struct {
 	EnvironmentID      string
 	ContentTypeID      string
 	XContentfulVersion int
+}
+
+// RevokePersonalAccessTokenParams is parameters of revokePersonalAccessToken operation.
+type RevokePersonalAccessTokenParams struct {
+	AccessTokenID string
 }
 
 // UpdateDeliveryApiKeyParams is parameters of updateDeliveryApiKey operation.

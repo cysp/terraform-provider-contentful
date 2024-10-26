@@ -25,6 +25,20 @@ func encodeCreateDeliveryApiKeyRequest(
 	return nil
 }
 
+func encodeCreatePersonalAccessTokenRequest(
+	req *CreatePersonalAccessTokenReq,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodePutAppInstallationRequest(
 	req *PutAppInstallationReq,
 	r *http.Request,

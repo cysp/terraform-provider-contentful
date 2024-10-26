@@ -9,6 +9,10 @@ type CreateDeliveryApiKeyRes interface {
 	createDeliveryApiKeyRes()
 }
 
+type CreatePersonalAccessTokenRes interface {
+	createPersonalAccessTokenRes()
+}
+
 type DeactivateContentTypeRes interface {
 	deactivateContentTypeRes()
 }
@@ -45,6 +49,10 @@ type GetEditorInterfaceRes interface {
 	getEditorInterfaceRes()
 }
 
+type GetPersonalAccessTokenRes interface {
+	getPersonalAccessTokenRes()
+}
+
 type GetPreviewApiKeyRes interface {
 	getPreviewApiKeyRes()
 }
@@ -59,6 +67,10 @@ type PutContentTypeRes interface {
 
 type PutEditorInterfaceRes interface {
 	putEditorInterfaceRes()
+}
+
+type RevokePersonalAccessTokenRes interface {
+	revokePersonalAccessTokenRes()
 }
 
 type UpdateDeliveryApiKeyRes interface {
