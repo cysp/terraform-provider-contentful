@@ -3885,6 +3885,57 @@ func (s *OptNilEditorInterfaceSidebarItemArray) UnmarshalJSON(data []byte) error
 	return s.Decode(d)
 }
 
+// Encode encodes int as json.
+func (o OptNilInt) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.Int(int(o.Value))
+}
+
+// Decode decodes int from json.
+func (o *OptNilInt) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilInt to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v int
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	v, err := d.Int()
+	if err != nil {
+		return err
+	}
+	o.Value = int(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilInt) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilInt) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes []PutEditorInterfaceReqControlsItem as json.
 func (o OptNilPutEditorInterfaceReqControlsItemArray) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -4420,22 +4471,6 @@ func (s *PersonalAccessTokenSys) encodeFields(e *jx.Encoder) {
 		e.Str(s.ID)
 	}
 	{
-		e.FieldStart("version")
-		e.Int(s.Version)
-	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
 		if s.ExpiresAt.Set {
 			e.FieldStart("expiresAt")
 			s.ExpiresAt.Encode(e, json.EncodeDateTime)
@@ -4455,15 +4490,12 @@ func (s *PersonalAccessTokenSys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfPersonalAccessTokenSys = [8]string{
+var jsonFieldsNameOfPersonalAccessTokenSys = [5]string{
 	0: "type",
 	1: "id",
-	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
-	5: "expiresAt",
-	6: "lastUsedAt",
-	7: "redactedValue",
+	2: "expiresAt",
+	3: "lastUsedAt",
+	4: "redactedValue",
 }
 
 // Decode decodes PersonalAccessTokenSys from json.
@@ -4496,38 +4528,6 @@ func (s *PersonalAccessTokenSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"id\"")
-			}
-		case "version":
-			requiredBitSet[0] |= 1 << 2
-			if err := func() error {
-				v, err := d.Int()
-				s.Version = int(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		case "expiresAt":
 			if err := func() error {
@@ -4569,7 +4569,7 @@ func (s *PersonalAccessTokenSys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

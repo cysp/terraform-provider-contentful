@@ -791,9 +791,9 @@ func (s *CreateDeliveryApiKeyReq) SetEnvironments(val []EnvironmentLink) {
 }
 
 type CreatePersonalAccessTokenReq struct {
-	Name      string   `json:"name"`
-	Scopes    []string `json:"scopes"`
-	ExpiresIn OptInt   `json:"expiresIn"`
+	Name      string    `json:"name"`
+	Scopes    []string  `json:"scopes"`
+	ExpiresIn OptNilInt `json:"expiresIn"`
 }
 
 // GetName returns the value of Name.
@@ -807,7 +807,7 @@ func (s *CreatePersonalAccessTokenReq) GetScopes() []string {
 }
 
 // GetExpiresIn returns the value of ExpiresIn.
-func (s *CreatePersonalAccessTokenReq) GetExpiresIn() OptInt {
+func (s *CreatePersonalAccessTokenReq) GetExpiresIn() OptNilInt {
 	return s.ExpiresIn
 }
 
@@ -822,7 +822,7 @@ func (s *CreatePersonalAccessTokenReq) SetScopes(val []string) {
 }
 
 // SetExpiresIn sets the value of ExpiresIn.
-func (s *CreatePersonalAccessTokenReq) SetExpiresIn(val OptInt) {
+func (s *CreatePersonalAccessTokenReq) SetExpiresIn(val OptNilInt) {
 	s.ExpiresIn = val
 }
 
@@ -1977,6 +1977,69 @@ func (o OptNilEditorInterfaceSidebarItemArray) Or(d []EditorInterfaceSidebarItem
 	return d
 }
 
+// NewOptNilInt returns new OptNilInt with value set to v.
+func NewOptNilInt(v int) OptNilInt {
+	return OptNilInt{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilInt is optional nullable int.
+type OptNilInt struct {
+	Value int
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilInt was set.
+func (o OptNilInt) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilInt) Reset() {
+	var v int
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilInt) SetTo(v int) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilInt) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilInt) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v int
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilInt) Get() (v int, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilInt) Or(d int) int {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilPutEditorInterfaceReqControlsItemArray returns new OptNilPutEditorInterfaceReqControlsItemArray with value set to v.
 func NewOptNilPutEditorInterfaceReqControlsItemArray(v []PutEditorInterfaceReqControlsItem) OptNilPutEditorInterfaceReqControlsItemArray {
 	return OptNilPutEditorInterfaceReqControlsItemArray{
@@ -2466,9 +2529,6 @@ type PersonalAccessTokenSys struct {
 	// Merged property.
 	Type          PersonalAccessTokenSysType `json:"type"`
 	ID            string                     `json:"id"`
-	Version       int                        `json:"version"`
-	CreatedAt     OptDateTime                `json:"createdAt"`
-	UpdatedAt     OptDateTime                `json:"updatedAt"`
 	ExpiresAt     OptNilDateTime             `json:"expiresAt"`
 	LastUsedAt    OptNilDateTime             `json:"lastUsedAt"`
 	RedactedValue OptString                  `json:"redactedValue"`
@@ -2482,21 +2542,6 @@ func (s *PersonalAccessTokenSys) GetType() PersonalAccessTokenSysType {
 // GetID returns the value of ID.
 func (s *PersonalAccessTokenSys) GetID() string {
 	return s.ID
-}
-
-// GetVersion returns the value of Version.
-func (s *PersonalAccessTokenSys) GetVersion() int {
-	return s.Version
-}
-
-// GetCreatedAt returns the value of CreatedAt.
-func (s *PersonalAccessTokenSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *PersonalAccessTokenSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
 }
 
 // GetExpiresAt returns the value of ExpiresAt.
@@ -2522,21 +2567,6 @@ func (s *PersonalAccessTokenSys) SetType(val PersonalAccessTokenSysType) {
 // SetID sets the value of ID.
 func (s *PersonalAccessTokenSys) SetID(val string) {
 	s.ID = val
-}
-
-// SetVersion sets the value of Version.
-func (s *PersonalAccessTokenSys) SetVersion(val int) {
-	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *PersonalAccessTokenSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *PersonalAccessTokenSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // SetExpiresAt sets the value of ExpiresAt.

@@ -356,7 +356,7 @@ components:
         - sys
     PersonalAccessTokenSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - $ref: '#/components/schemas/BaseSysWithId'
         - type: object
           properties:
             type:
@@ -386,6 +386,7 @@ components:
             type: string
         expiresIn:
           type: integer
+          nullable: true
       required:
         - name
         - scopes
