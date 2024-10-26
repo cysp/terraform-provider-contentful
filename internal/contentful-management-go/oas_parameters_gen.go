@@ -10,17 +10,16 @@ type ActivateContentTypeParams struct {
 	XContentfulVersion int
 }
 
+// CreateDeliveryApiKeyParams is parameters of createDeliveryApiKey operation.
+type CreateDeliveryApiKeyParams struct {
+	SpaceID string
+}
+
 // DeactivateContentTypeParams is parameters of deactivateContentType operation.
 type DeactivateContentTypeParams struct {
 	SpaceID       string
 	EnvironmentID string
 	ContentTypeID string
-}
-
-// DeleteApiKeyParams is parameters of deleteApiKey operation.
-type DeleteApiKeyParams struct {
-	SpaceID  string
-	APIKeyID string
 }
 
 // DeleteAppInstallationParams is parameters of deleteAppInstallation operation.
@@ -37,8 +36,8 @@ type DeleteContentTypeParams struct {
 	ContentTypeID string
 }
 
-// GetApiKeyParams is parameters of getApiKey operation.
-type GetApiKeyParams struct {
+// DeleteDeliveryApiKeyParams is parameters of deleteDeliveryApiKey operation.
+type DeleteDeliveryApiKeyParams struct {
 	SpaceID  string
 	APIKeyID string
 }
@@ -57,6 +56,12 @@ type GetContentTypeParams struct {
 	ContentTypeID string
 }
 
+// GetDeliveryApiKeyParams is parameters of getDeliveryApiKey operation.
+type GetDeliveryApiKeyParams struct {
+	SpaceID  string
+	APIKeyID string
+}
+
 // GetEditorInterfaceParams is parameters of getEditorInterface operation.
 type GetEditorInterfaceParams struct {
 	SpaceID       string
@@ -68,18 +73,6 @@ type GetEditorInterfaceParams struct {
 type GetPreviewApiKeyParams struct {
 	SpaceID         string
 	PreviewAPIKeyID string
-}
-
-// PostApiKeyParams is parameters of postApiKey operation.
-type PostApiKeyParams struct {
-	SpaceID string
-}
-
-// PutApiKeyParams is parameters of putApiKey operation.
-type PutApiKeyParams struct {
-	SpaceID            string
-	APIKeyID           string
-	XContentfulVersion int
 }
 
 // PutAppInstallationParams is parameters of putAppInstallation operation.
@@ -103,5 +96,12 @@ type PutEditorInterfaceParams struct {
 	SpaceID            string
 	EnvironmentID      string
 	ContentTypeID      string
+	XContentfulVersion int
+}
+
+// UpdateDeliveryApiKeyParams is parameters of updateDeliveryApiKey operation.
+type UpdateDeliveryApiKeyParams struct {
+	SpaceID            string
+	APIKeyID           string
 	XContentfulVersion int
 }

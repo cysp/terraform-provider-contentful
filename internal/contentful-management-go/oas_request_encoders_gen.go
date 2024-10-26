@@ -11,22 +11,8 @@ import (
 	ht "github.com/ogen-go/ogen/http"
 )
 
-func encodePostApiKeyRequest(
-	req *PostApiKeyReq,
-	r *http.Request,
-) error {
-	const contentType = "application/vnd.contentful.management.v1+json"
-	e := new(jx.Encoder)
-	{
-		req.Encode(e)
-	}
-	encoded := e.Bytes()
-	ht.SetBody(r, bytes.NewReader(encoded), contentType)
-	return nil
-}
-
-func encodePutApiKeyRequest(
-	req *PutApiKeyReq,
+func encodeCreateDeliveryApiKeyRequest(
+	req *CreateDeliveryApiKeyReq,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -69,6 +55,20 @@ func encodePutContentTypeRequest(
 
 func encodePutEditorInterfaceRequest(
 	req *PutEditorInterfaceReq,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodeUpdateDeliveryApiKeyRequest(
+	req *UpdateDeliveryApiKeyReq,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

@@ -429,7 +429,7 @@ paths:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/api_keys:
     post:
-      operationId: postApiKey
+      operationId: createDeliveryApiKey
       summary: Create a delivery api key
       parameters:
         - in: path
@@ -457,7 +457,7 @@ paths:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/api_keys/{api_key_id}:
     get:
-      operationId: getApiKey
+      operationId: getDeliveryApiKey
       summary: Get a single delivery api key
       parameters:
         - in: path
@@ -482,7 +482,7 @@ paths:
         default:
           $ref: '#/components/responses/error'
     put:
-      operationId: putApiKey
+      operationId: updateDeliveryApiKey
       summary: Update a single delivery api key
       parameters:
         - in: path
@@ -519,7 +519,7 @@ paths:
         default:
           $ref: '#/components/responses/error'
     delete:
-      operationId: deleteApiKey
+      operationId: deleteDeliveryApiKey
       summary: Delete a single delivery api key
       parameters:
         - in: path

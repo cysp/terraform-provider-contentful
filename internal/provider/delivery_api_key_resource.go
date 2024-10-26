@@ -57,18 +57,18 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 
 	currentVersion := 1
 
-	params := contentfulManagement.PostApiKeyParams{
+	params := contentfulManagement.CreateDeliveryApiKeyParams{
 		SpaceID: data.SpaceId.ValueString(),
 	}
 
-	request, requestDiags := data.ToPostAPIKeyReq(ctx)
+	request, requestDiags := data.ToCreateDeliveryAPIKeyReq(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	response, err := r.providerData.client.PostApiKey(ctx, &request, params)
+	response, err := r.providerData.client.CreateDeliveryApiKey(ctx, &request, params)
 
 	tflog.Info(ctx, "delivery_api_key.create", map[string]interface{}{
 		"params":   params,
@@ -103,12 +103,12 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	params := contentfulManagement.GetApiKeyParams{
+	params := contentfulManagement.GetDeliveryApiKeyParams{
 		SpaceID:  data.SpaceId.ValueString(),
 		APIKeyID: data.ApiKeyId.ValueString(),
 	}
 
-	response, err := r.providerData.client.GetApiKey(ctx, params)
+	response, err := r.providerData.client.GetDeliveryApiKey(ctx, params)
 
 	tflog.Info(ctx, "delivery_api_key.read", map[string]interface{}{
 		"params":   params,
@@ -157,20 +157,20 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
-	params := contentfulManagement.PutApiKeyParams{
+	params := contentfulManagement.UpdateDeliveryApiKeyParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		APIKeyID:           data.ApiKeyId.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToPutAPIKeyReq(ctx)
+	request, requestDiags := data.ToUpdateDeliveryAPIKeyReq(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	response, err := r.providerData.client.PutApiKey(ctx, &request, params)
+	response, err := r.providerData.client.UpdateDeliveryApiKey(ctx, &request, params)
 
 	tflog.Info(ctx, "delivery_api_key.update", map[string]interface{}{
 		"params":   params,
@@ -205,7 +205,7 @@ func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	response, err := r.providerData.client.DeleteApiKey(ctx, contentfulManagement.DeleteApiKeyParams{
+	response, err := r.providerData.client.DeleteDeliveryApiKey(ctx, contentfulManagement.DeleteDeliveryApiKeyParams{
 		SpaceID:  data.SpaceId.ValueString(),
 		APIKeyID: data.ApiKeyId.ValueString(),
 	})
