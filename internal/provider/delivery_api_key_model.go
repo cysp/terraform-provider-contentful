@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *DeliveryApiKeyModel) ToPostAPIKeyReq(ctx context.Context) (contentfulManagement.PostApiKeyReq, diag.Diagnostics) {
+func (model *DeliveryApiKeyModel) ToCreateDeliveryAPIKeyReq(ctx context.Context) (contentfulManagement.CreateDeliveryApiKeyReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := contentfulManagement.PostApiKeyReq{
+	req := contentfulManagement.CreateDeliveryApiKeyReq{
 		Name:        model.Name.ValueString(),
 		Description: util.StringValueToOptNilString(model.Description),
 	}
@@ -26,10 +26,10 @@ func (model *DeliveryApiKeyModel) ToPostAPIKeyReq(ctx context.Context) (contentf
 	return req, diags
 }
 
-func (model *DeliveryApiKeyModel) ToPutAPIKeyReq(ctx context.Context) (contentfulManagement.PutApiKeyReq, diag.Diagnostics) {
+func (model *DeliveryApiKeyModel) ToUpdateDeliveryAPIKeyReq(ctx context.Context) (contentfulManagement.UpdateDeliveryApiKeyReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := contentfulManagement.PutApiKeyReq{
+	req := contentfulManagement.UpdateDeliveryApiKeyReq{
 		Name:        model.Name.ValueString(),
 		Description: util.StringValueToOptNilString(model.Description),
 	}

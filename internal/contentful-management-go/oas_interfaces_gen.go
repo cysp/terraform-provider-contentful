@@ -5,12 +5,12 @@ type ActivateContentTypeRes interface {
 	activateContentTypeRes()
 }
 
-type DeactivateContentTypeRes interface {
-	deactivateContentTypeRes()
+type CreateDeliveryApiKeyRes interface {
+	createDeliveryApiKeyRes()
 }
 
-type DeleteApiKeyRes interface {
-	deleteApiKeyRes()
+type DeactivateContentTypeRes interface {
+	deactivateContentTypeRes()
 }
 
 type DeleteAppInstallationRes interface {
@@ -21,8 +21,8 @@ type DeleteContentTypeRes interface {
 	deleteContentTypeRes()
 }
 
-type GetApiKeyRes interface {
-	getApiKeyRes()
+type DeleteDeliveryApiKeyRes interface {
+	deleteDeliveryApiKeyRes()
 }
 
 type GetAppInstallationRes interface {
@@ -37,20 +37,16 @@ type GetContentTypeRes interface {
 	getContentTypeRes()
 }
 
+type GetDeliveryApiKeyRes interface {
+	getDeliveryApiKeyRes()
+}
+
 type GetEditorInterfaceRes interface {
 	getEditorInterfaceRes()
 }
 
 type GetPreviewApiKeyRes interface {
 	getPreviewApiKeyRes()
-}
-
-type PostApiKeyRes interface {
-	postApiKeyRes()
-}
-
-type PutApiKeyRes interface {
-	putApiKeyRes()
 }
 
 type PutAppInstallationRes interface {
@@ -63,4 +59,8 @@ type PutContentTypeRes interface {
 
 type PutEditorInterfaceRes interface {
 	putEditorInterfaceRes()
+}
+
+type UpdateDeliveryApiKeyRes interface {
+	updateDeliveryApiKeyRes()
 }

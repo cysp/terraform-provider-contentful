@@ -94,9 +94,9 @@ func (s *ApiKey) SetPreviewAPIKey(val OptApiKeyPreviewAPIKey) {
 	s.PreviewAPIKey = val
 }
 
-func (*ApiKey) getApiKeyRes()  {}
-func (*ApiKey) postApiKeyRes() {}
-func (*ApiKey) putApiKeyRes()  {}
+func (*ApiKey) createDeliveryApiKeyRes() {}
+func (*ApiKey) getDeliveryApiKeyRes()    {}
+func (*ApiKey) updateDeliveryApiKeyRes() {}
 
 type ApiKeyPreviewAPIKey struct {
 	Sys ApiKeyPreviewAPIKeySys `json:"sys"`
@@ -754,6 +754,42 @@ func (s *ContentTypeSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+type CreateDeliveryApiKeyReq struct {
+	Name         string            `json:"name"`
+	Description  OptNilString      `json:"description"`
+	Environments []EnvironmentLink `json:"environments"`
+}
+
+// GetName returns the value of Name.
+func (s *CreateDeliveryApiKeyReq) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *CreateDeliveryApiKeyReq) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetEnvironments returns the value of Environments.
+func (s *CreateDeliveryApiKeyReq) GetEnvironments() []EnvironmentLink {
+	return s.Environments
+}
+
+// SetName sets the value of Name.
+func (s *CreateDeliveryApiKeyReq) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *CreateDeliveryApiKeyReq) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetEnvironments sets the value of Environments.
+func (s *CreateDeliveryApiKeyReq) SetEnvironments(val []EnvironmentLink) {
+	s.Environments = val
+}
+
 // Merged schema.
 // Ref: #/components/schemas/EditorInterface
 type EditorInterface struct {
@@ -1170,21 +1206,21 @@ func (s *Error) SetDetails(val jx.Raw) {
 }
 
 func (*Error) activateContentTypeRes()   {}
+func (*Error) createDeliveryApiKeyRes()  {}
 func (*Error) deactivateContentTypeRes() {}
-func (*Error) deleteApiKeyRes()          {}
 func (*Error) deleteAppInstallationRes() {}
 func (*Error) deleteContentTypeRes()     {}
-func (*Error) getApiKeyRes()             {}
+func (*Error) deleteDeliveryApiKeyRes()  {}
 func (*Error) getAppInstallationRes()    {}
 func (*Error) getAuthenticatedUserRes()  {}
 func (*Error) getContentTypeRes()        {}
+func (*Error) getDeliveryApiKeyRes()     {}
 func (*Error) getEditorInterfaceRes()    {}
 func (*Error) getPreviewApiKeyRes()      {}
-func (*Error) postApiKeyRes()            {}
-func (*Error) putApiKeyRes()             {}
 func (*Error) putAppInstallationRes()    {}
 func (*Error) putContentTypeRes()        {}
 func (*Error) putEditorInterfaceRes()    {}
+func (*Error) updateDeliveryApiKeyRes()  {}
 
 // ErrorStatusCode wraps Error with StatusCode.
 type ErrorStatusCode struct {
@@ -1213,21 +1249,21 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 }
 
 func (*ErrorStatusCode) activateContentTypeRes()   {}
+func (*ErrorStatusCode) createDeliveryApiKeyRes()  {}
 func (*ErrorStatusCode) deactivateContentTypeRes() {}
-func (*ErrorStatusCode) deleteApiKeyRes()          {}
 func (*ErrorStatusCode) deleteAppInstallationRes() {}
 func (*ErrorStatusCode) deleteContentTypeRes()     {}
-func (*ErrorStatusCode) getApiKeyRes()             {}
+func (*ErrorStatusCode) deleteDeliveryApiKeyRes()  {}
 func (*ErrorStatusCode) getAppInstallationRes()    {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()  {}
 func (*ErrorStatusCode) getContentTypeRes()        {}
+func (*ErrorStatusCode) getDeliveryApiKeyRes()     {}
 func (*ErrorStatusCode) getEditorInterfaceRes()    {}
 func (*ErrorStatusCode) getPreviewApiKeyRes()      {}
-func (*ErrorStatusCode) postApiKeyRes()            {}
-func (*ErrorStatusCode) putApiKeyRes()             {}
 func (*ErrorStatusCode) putAppInstallationRes()    {}
 func (*ErrorStatusCode) putContentTypeRes()        {}
 func (*ErrorStatusCode) putEditorInterfaceRes()    {}
+func (*ErrorStatusCode) updateDeliveryApiKeyRes()  {}
 
 // Ref: #/components/schemas/ErrorSys
 type ErrorSys struct {
@@ -1338,9 +1374,9 @@ func (o NilString) Or(d string) string {
 type NoContent struct{}
 
 func (*NoContent) deactivateContentTypeRes() {}
-func (*NoContent) deleteApiKeyRes()          {}
 func (*NoContent) deleteAppInstallationRes() {}
 func (*NoContent) deleteContentTypeRes()     {}
+func (*NoContent) deleteDeliveryApiKeyRes()  {}
 
 // NewOptApiKeyPreviewAPIKey returns new OptApiKeyPreviewAPIKey with value set to v.
 func NewOptApiKeyPreviewAPIKey(v ApiKeyPreviewAPIKey) OptApiKeyPreviewAPIKey {
@@ -2255,42 +2291,6 @@ func (o OptString) Or(d string) string {
 	return d
 }
 
-type PostApiKeyReq struct {
-	Name         string            `json:"name"`
-	Description  OptNilString      `json:"description"`
-	Environments []EnvironmentLink `json:"environments"`
-}
-
-// GetName returns the value of Name.
-func (s *PostApiKeyReq) GetName() string {
-	return s.Name
-}
-
-// GetDescription returns the value of Description.
-func (s *PostApiKeyReq) GetDescription() OptNilString {
-	return s.Description
-}
-
-// GetEnvironments returns the value of Environments.
-func (s *PostApiKeyReq) GetEnvironments() []EnvironmentLink {
-	return s.Environments
-}
-
-// SetName sets the value of Name.
-func (s *PostApiKeyReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetDescription sets the value of Description.
-func (s *PostApiKeyReq) SetDescription(val OptNilString) {
-	s.Description = val
-}
-
-// SetEnvironments sets the value of Environments.
-func (s *PostApiKeyReq) SetEnvironments(val []EnvironmentLink) {
-	s.Environments = val
-}
-
 // Merged schema.
 // Ref: #/components/schemas/PreviewApiKey
 type PreviewApiKey struct {
@@ -2447,42 +2447,6 @@ func (s *PreviewApiKeySysType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
-}
-
-type PutApiKeyReq struct {
-	Name         string            `json:"name"`
-	Description  OptNilString      `json:"description"`
-	Environments []EnvironmentLink `json:"environments"`
-}
-
-// GetName returns the value of Name.
-func (s *PutApiKeyReq) GetName() string {
-	return s.Name
-}
-
-// GetDescription returns the value of Description.
-func (s *PutApiKeyReq) GetDescription() OptNilString {
-	return s.Description
-}
-
-// GetEnvironments returns the value of Environments.
-func (s *PutApiKeyReq) GetEnvironments() []EnvironmentLink {
-	return s.Environments
-}
-
-// SetName sets the value of Name.
-func (s *PutApiKeyReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetDescription sets the value of Description.
-func (s *PutApiKeyReq) SetDescription(val OptNilString) {
-	s.Description = val
-}
-
-// SetEnvironments sets the value of Environments.
-func (s *PutApiKeyReq) SetEnvironments(val []EnvironmentLink) {
-	s.Environments = val
 }
 
 type PutAppInstallationReq struct {
@@ -2864,6 +2828,42 @@ func (s *PutEditorInterfaceReqSidebarItemSettings) init() PutEditorInterfaceReqS
 		*s = m
 	}
 	return m
+}
+
+type UpdateDeliveryApiKeyReq struct {
+	Name         string            `json:"name"`
+	Description  OptNilString      `json:"description"`
+	Environments []EnvironmentLink `json:"environments"`
+}
+
+// GetName returns the value of Name.
+func (s *UpdateDeliveryApiKeyReq) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *UpdateDeliveryApiKeyReq) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetEnvironments returns the value of Environments.
+func (s *UpdateDeliveryApiKeyReq) GetEnvironments() []EnvironmentLink {
+	return s.Environments
+}
+
+// SetName sets the value of Name.
+func (s *UpdateDeliveryApiKeyReq) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *UpdateDeliveryApiKeyReq) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetEnvironments sets the value of Environments.
+func (s *UpdateDeliveryApiKeyReq) SetEnvironments(val []EnvironmentLink) {
+	s.Environments = val
 }
 
 // Merged schema.
