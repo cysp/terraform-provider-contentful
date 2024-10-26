@@ -1,0 +1,1 @@
+terraform import contentful_personal_access_token.this abcdef
