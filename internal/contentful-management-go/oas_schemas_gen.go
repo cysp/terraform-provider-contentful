@@ -790,6 +790,42 @@ func (s *CreateDeliveryApiKeyReq) SetEnvironments(val []EnvironmentLink) {
 	s.Environments = val
 }
 
+type CreatePersonalAccessTokenReq struct {
+	Name      string   `json:"name"`
+	Scopes    []string `json:"scopes"`
+	ExpiresIn OptInt   `json:"expiresIn"`
+}
+
+// GetName returns the value of Name.
+func (s *CreatePersonalAccessTokenReq) GetName() string {
+	return s.Name
+}
+
+// GetScopes returns the value of Scopes.
+func (s *CreatePersonalAccessTokenReq) GetScopes() []string {
+	return s.Scopes
+}
+
+// GetExpiresIn returns the value of ExpiresIn.
+func (s *CreatePersonalAccessTokenReq) GetExpiresIn() OptInt {
+	return s.ExpiresIn
+}
+
+// SetName sets the value of Name.
+func (s *CreatePersonalAccessTokenReq) SetName(val string) {
+	s.Name = val
+}
+
+// SetScopes sets the value of Scopes.
+func (s *CreatePersonalAccessTokenReq) SetScopes(val []string) {
+	s.Scopes = val
+}
+
+// SetExpiresIn sets the value of ExpiresIn.
+func (s *CreatePersonalAccessTokenReq) SetExpiresIn(val OptInt) {
+	s.ExpiresIn = val
+}
+
 // Merged schema.
 // Ref: #/components/schemas/EditorInterface
 type EditorInterface struct {
@@ -1205,22 +1241,25 @@ func (s *Error) SetDetails(val jx.Raw) {
 	s.Details = val
 }
 
-func (*Error) activateContentTypeRes()   {}
-func (*Error) createDeliveryApiKeyRes()  {}
-func (*Error) deactivateContentTypeRes() {}
-func (*Error) deleteAppInstallationRes() {}
-func (*Error) deleteContentTypeRes()     {}
-func (*Error) deleteDeliveryApiKeyRes()  {}
-func (*Error) getAppInstallationRes()    {}
-func (*Error) getAuthenticatedUserRes()  {}
-func (*Error) getContentTypeRes()        {}
-func (*Error) getDeliveryApiKeyRes()     {}
-func (*Error) getEditorInterfaceRes()    {}
-func (*Error) getPreviewApiKeyRes()      {}
-func (*Error) putAppInstallationRes()    {}
-func (*Error) putContentTypeRes()        {}
-func (*Error) putEditorInterfaceRes()    {}
-func (*Error) updateDeliveryApiKeyRes()  {}
+func (*Error) activateContentTypeRes()       {}
+func (*Error) createDeliveryApiKeyRes()      {}
+func (*Error) createPersonalAccessTokenRes() {}
+func (*Error) deactivateContentTypeRes()     {}
+func (*Error) deleteAppInstallationRes()     {}
+func (*Error) deleteContentTypeRes()         {}
+func (*Error) deleteDeliveryApiKeyRes()      {}
+func (*Error) getAppInstallationRes()        {}
+func (*Error) getAuthenticatedUserRes()      {}
+func (*Error) getContentTypeRes()            {}
+func (*Error) getDeliveryApiKeyRes()         {}
+func (*Error) getEditorInterfaceRes()        {}
+func (*Error) getPersonalAccessTokenRes()    {}
+func (*Error) getPreviewApiKeyRes()          {}
+func (*Error) putAppInstallationRes()        {}
+func (*Error) putContentTypeRes()            {}
+func (*Error) putEditorInterfaceRes()        {}
+func (*Error) revokePersonalAccessTokenRes() {}
+func (*Error) updateDeliveryApiKeyRes()      {}
 
 // ErrorStatusCode wraps Error with StatusCode.
 type ErrorStatusCode struct {
@@ -1248,22 +1287,25 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 	s.Response = val
 }
 
-func (*ErrorStatusCode) activateContentTypeRes()   {}
-func (*ErrorStatusCode) createDeliveryApiKeyRes()  {}
-func (*ErrorStatusCode) deactivateContentTypeRes() {}
-func (*ErrorStatusCode) deleteAppInstallationRes() {}
-func (*ErrorStatusCode) deleteContentTypeRes()     {}
-func (*ErrorStatusCode) deleteDeliveryApiKeyRes()  {}
-func (*ErrorStatusCode) getAppInstallationRes()    {}
-func (*ErrorStatusCode) getAuthenticatedUserRes()  {}
-func (*ErrorStatusCode) getContentTypeRes()        {}
-func (*ErrorStatusCode) getDeliveryApiKeyRes()     {}
-func (*ErrorStatusCode) getEditorInterfaceRes()    {}
-func (*ErrorStatusCode) getPreviewApiKeyRes()      {}
-func (*ErrorStatusCode) putAppInstallationRes()    {}
-func (*ErrorStatusCode) putContentTypeRes()        {}
-func (*ErrorStatusCode) putEditorInterfaceRes()    {}
-func (*ErrorStatusCode) updateDeliveryApiKeyRes()  {}
+func (*ErrorStatusCode) activateContentTypeRes()       {}
+func (*ErrorStatusCode) createDeliveryApiKeyRes()      {}
+func (*ErrorStatusCode) createPersonalAccessTokenRes() {}
+func (*ErrorStatusCode) deactivateContentTypeRes()     {}
+func (*ErrorStatusCode) deleteAppInstallationRes()     {}
+func (*ErrorStatusCode) deleteContentTypeRes()         {}
+func (*ErrorStatusCode) deleteDeliveryApiKeyRes()      {}
+func (*ErrorStatusCode) getAppInstallationRes()        {}
+func (*ErrorStatusCode) getAuthenticatedUserRes()      {}
+func (*ErrorStatusCode) getContentTypeRes()            {}
+func (*ErrorStatusCode) getDeliveryApiKeyRes()         {}
+func (*ErrorStatusCode) getEditorInterfaceRes()        {}
+func (*ErrorStatusCode) getPersonalAccessTokenRes()    {}
+func (*ErrorStatusCode) getPreviewApiKeyRes()          {}
+func (*ErrorStatusCode) putAppInstallationRes()        {}
+func (*ErrorStatusCode) putContentTypeRes()            {}
+func (*ErrorStatusCode) putEditorInterfaceRes()        {}
+func (*ErrorStatusCode) revokePersonalAccessTokenRes() {}
+func (*ErrorStatusCode) updateDeliveryApiKeyRes()      {}
 
 // Ref: #/components/schemas/ErrorSys
 type ErrorSys struct {
@@ -1740,6 +1782,69 @@ func (o OptInt) Get() (v int, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptInt) Or(d int) int {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilDateTime returns new OptNilDateTime with value set to v.
+func NewOptNilDateTime(v time.Time) OptNilDateTime {
+	return OptNilDateTime{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilDateTime is optional nullable time.Time.
+type OptNilDateTime struct {
+	Value time.Time
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilDateTime was set.
+func (o OptNilDateTime) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilDateTime) Reset() {
+	var v time.Time
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilDateTime) SetTo(v time.Time) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilDateTime) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilDateTime) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v time.Time
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilDateTime) Get() (v time.Time, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilDateTime) Or(d time.Time) time.Time {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -2289,6 +2394,199 @@ func (o OptString) Or(d string) string {
 		return v
 	}
 	return d
+}
+
+// Merged schema.
+// Ref: #/components/schemas/PersonalAccessToken
+type PersonalAccessToken struct {
+	Sys       PersonalAccessTokenSys `json:"sys"`
+	Name      string                 `json:"name"`
+	Scopes    []string               `json:"scopes"`
+	Token     OptString              `json:"token"`
+	RevokedAt OptNilDateTime         `json:"revokedAt"`
+}
+
+// GetSys returns the value of Sys.
+func (s *PersonalAccessToken) GetSys() PersonalAccessTokenSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *PersonalAccessToken) GetName() string {
+	return s.Name
+}
+
+// GetScopes returns the value of Scopes.
+func (s *PersonalAccessToken) GetScopes() []string {
+	return s.Scopes
+}
+
+// GetToken returns the value of Token.
+func (s *PersonalAccessToken) GetToken() OptString {
+	return s.Token
+}
+
+// GetRevokedAt returns the value of RevokedAt.
+func (s *PersonalAccessToken) GetRevokedAt() OptNilDateTime {
+	return s.RevokedAt
+}
+
+// SetSys sets the value of Sys.
+func (s *PersonalAccessToken) SetSys(val PersonalAccessTokenSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *PersonalAccessToken) SetName(val string) {
+	s.Name = val
+}
+
+// SetScopes sets the value of Scopes.
+func (s *PersonalAccessToken) SetScopes(val []string) {
+	s.Scopes = val
+}
+
+// SetToken sets the value of Token.
+func (s *PersonalAccessToken) SetToken(val OptString) {
+	s.Token = val
+}
+
+// SetRevokedAt sets the value of RevokedAt.
+func (s *PersonalAccessToken) SetRevokedAt(val OptNilDateTime) {
+	s.RevokedAt = val
+}
+
+func (*PersonalAccessToken) createPersonalAccessTokenRes() {}
+func (*PersonalAccessToken) getPersonalAccessTokenRes()    {}
+func (*PersonalAccessToken) revokePersonalAccessTokenRes() {}
+
+// Merged schema.
+// Ref: #/components/schemas/PersonalAccessTokenSys
+type PersonalAccessTokenSys struct {
+	// Merged property.
+	Type          PersonalAccessTokenSysType `json:"type"`
+	ID            string                     `json:"id"`
+	Version       int                        `json:"version"`
+	CreatedAt     OptDateTime                `json:"createdAt"`
+	UpdatedAt     OptDateTime                `json:"updatedAt"`
+	ExpiresAt     OptNilDateTime             `json:"expiresAt"`
+	LastUsedAt    OptNilDateTime             `json:"lastUsedAt"`
+	RedactedValue OptString                  `json:"redactedValue"`
+}
+
+// GetType returns the value of Type.
+func (s *PersonalAccessTokenSys) GetType() PersonalAccessTokenSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *PersonalAccessTokenSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *PersonalAccessTokenSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *PersonalAccessTokenSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *PersonalAccessTokenSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// GetExpiresAt returns the value of ExpiresAt.
+func (s *PersonalAccessTokenSys) GetExpiresAt() OptNilDateTime {
+	return s.ExpiresAt
+}
+
+// GetLastUsedAt returns the value of LastUsedAt.
+func (s *PersonalAccessTokenSys) GetLastUsedAt() OptNilDateTime {
+	return s.LastUsedAt
+}
+
+// GetRedactedValue returns the value of RedactedValue.
+func (s *PersonalAccessTokenSys) GetRedactedValue() OptString {
+	return s.RedactedValue
+}
+
+// SetType sets the value of Type.
+func (s *PersonalAccessTokenSys) SetType(val PersonalAccessTokenSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *PersonalAccessTokenSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *PersonalAccessTokenSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *PersonalAccessTokenSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *PersonalAccessTokenSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// SetExpiresAt sets the value of ExpiresAt.
+func (s *PersonalAccessTokenSys) SetExpiresAt(val OptNilDateTime) {
+	s.ExpiresAt = val
+}
+
+// SetLastUsedAt sets the value of LastUsedAt.
+func (s *PersonalAccessTokenSys) SetLastUsedAt(val OptNilDateTime) {
+	s.LastUsedAt = val
+}
+
+// SetRedactedValue sets the value of RedactedValue.
+func (s *PersonalAccessTokenSys) SetRedactedValue(val OptString) {
+	s.RedactedValue = val
+}
+
+// Merged schema.
+type PersonalAccessTokenSysType string
+
+const (
+	PersonalAccessTokenSysTypePersonalAccessToken PersonalAccessTokenSysType = "PersonalAccessToken"
+)
+
+// AllValues returns all PersonalAccessTokenSysType values.
+func (PersonalAccessTokenSysType) AllValues() []PersonalAccessTokenSysType {
+	return []PersonalAccessTokenSysType{
+		PersonalAccessTokenSysTypePersonalAccessToken,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PersonalAccessTokenSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case PersonalAccessTokenSysTypePersonalAccessToken:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PersonalAccessTokenSysType) UnmarshalText(data []byte) error {
+	switch PersonalAccessTokenSysType(data) {
+	case PersonalAccessTokenSysTypePersonalAccessToken:
+		*s = PersonalAccessTokenSysTypePersonalAccessToken
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // Merged schema.

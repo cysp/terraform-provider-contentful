@@ -354,6 +354,68 @@ components:
                     - Environment
       required:
         - sys
+    PersonalAccessTokenSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - PersonalAccessToken
+        - type: object
+          properties:
+            expiresAt:
+              type: string
+              format: date-time
+              nullable: true
+            lastUsedAt:
+              type: string
+              format: date-time
+              nullable: true
+            redactedValue:
+              type: string
+    PersonalAccessTokenRequestFields:
+      type: object
+      properties:
+        name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        expiresIn:
+          type: integer
+      required:
+        - name
+        - scopes
+    PersonalAccessTokenFields:
+      type: object
+      properties:
+        name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        token:
+          type: string
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - name
+        - scopes
+    PersonalAccessToken:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/PersonalAccessTokenSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/PersonalAccessTokenFields'
     PreviewApiKeySys:
       allOf:
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
@@ -423,6 +485,70 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: '#/components/schemas/User'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /users/me/access_tokens:
+    post:
+      operationId: createPersonalAccessToken
+      summary: Create a personal access token
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PersonalAccessTokenRequestFields'
+      responses:
+        201:
+          description: A personal access token
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/PersonalAccessToken'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /users/me/access_tokens/{access_token_id}:
+    get:
+      operationId: getPersonalAccessToken
+      summary: Get a single personal access token
+      parameters:
+        - in: path
+          name: access_token_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: Get a single access token
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/PersonalAccessToken'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /users/me/access_tokens/{access_token_id}/revoked:
+    put:
+      operationId: revokePersonalAccessToken
+      summary: Revoke a personal access token
+      parameters:
+        - in: path
+          name: access_token_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: A personal access token
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/PersonalAccessToken'
         401:
           $ref: '#/components/responses/unauthorized'
         default:
