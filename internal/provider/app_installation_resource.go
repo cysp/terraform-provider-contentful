@@ -204,10 +204,18 @@ func (r *appInstallationResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	response, err := r.providerData.client.DeleteAppInstallation(ctx, contentfulManagement.DeleteAppInstallationParams{
+	params := contentfulManagement.DeleteAppInstallationParams{
 		SpaceID:         data.SpaceId.ValueString(),
 		EnvironmentID:   data.EnvironmentId.ValueString(),
 		AppDefinitionID: data.AppDefinitionId.ValueString(),
+	}
+
+	response, err := r.providerData.client.DeleteAppInstallation(ctx, params)
+
+	tflog.Info(ctx, "app_installation.delete", map[string]interface{}{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {
