@@ -143,6 +143,12 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 		AccessTokenID: data.Id.ValueString(),
 	})
 
+	tflog.Info(ctx, "personal_access_token.delete", map[string]interface{}{
+		"params":   data,
+		"response": response,
+		"err":      err,
+	})
+
 	switch response := response.(type) {
 	case *contentfulManagement.PersonalAccessToken:
 		if !response.RevokedAt.IsSet() || response.RevokedAt.IsNull() {

@@ -26,12 +26,14 @@ var version = "dev"
 
 func main() {
 	var debug bool
+	var address string
 
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	flag.StringVar(&address, "address", "registry.terraform.io/cysp/contentful", "set the provider address")
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/cysp/contentful",
+		Address: address,
 		Debug:   debug,
 	}
 

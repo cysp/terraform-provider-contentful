@@ -231,3 +231,29 @@ func TestAccAppInstallationResourceDeleted(t *testing.T) {
 		},
 	})
 }
+
+// New integration test to increase test coverage
+func TestAccAppInstallationResourceWithParameters(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "contentful_app_installation" "test" {
+					space_id = "0p38pssr0fi3"
+					environment_id = "master"
+					app_definition_id = "1WkQ2J9LERPtbMTdUfSHka"
+					parameters = jsonencode({ foo = "bar" })
+				}
+				`,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_app_installation.test",
+						tfjsonpath.New("parameters"),
+						knownvalue.StringExact(`{"foo":"bar"}`),
+					),
+				},
+			},
+		},
+	})
+}

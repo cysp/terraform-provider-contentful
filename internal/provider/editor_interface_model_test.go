@@ -253,3 +253,74 @@ func TestReadFromResponse(t *testing.T) {
 		})
 	}
 }
+
+// New unit test to increase test coverage
+func TestEditorInterfaceModelToPutEditorInterfaceReq(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	controlsValue := provider.NewControlsValueKnown()
+	controlsValue.FieldId = types.StringValue("field_id")
+	controlsValue.WidgetNamespace = types.StringValue("widget_namespace")
+	controlsValue.WidgetId = types.StringValue("widget_id")
+	controlsValue.Settings = types.StringValue(`{"foo":"bar"}`)
+
+	controls, controlsDiags := types.ListValue(provider.ControlsValue{}.Type(ctx), []attr.Value{
+		controlsValue,
+	})
+
+	require.Empty(t, controlsDiags)
+
+	sidebarValue := provider.NewSidebarValueKnown()
+	sidebarValue.WidgetNamespace = types.StringValue("widget_namespace")
+	sidebarValue.WidgetId = types.StringValue("widget_id")
+	sidebarValue.Settings = types.StringValue(`{"foo":"bar"}`)
+
+	sidebar, sidebarDiags := types.ListValue(provider.SidebarValue{}.Type(ctx), []attr.Value{
+		sidebarValue,
+	})
+
+	require.Empty(t, sidebarDiags)
+
+	model := provider.EditorInterfaceModel{
+		SpaceId:       types.StringValue("space_id"),
+		EnvironmentId: types.StringValue("environment_id"),
+		ContentTypeId: types.StringValue("content_type_id"),
+
+		Controls: controls,
+		Sidebar:  sidebar,
+	}
+
+	req, diags := model.ToPutEditorInterfaceReq(ctx)
+
+	assert.Empty(t, diags)
+
+	assert.EqualValues(t, contentfulManagement.PutEditorInterfaceReq{
+		Controls: contentfulManagement.NewOptNilPutEditorInterfaceReqControlsItemArray([]contentfulManagement.PutEditorInterfaceReqControlsItem{
+			{
+				FieldId:         "field_id",
+				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
+				WidgetId:        contentfulManagement.NewOptString("widget_id"),
+				Settings: contentfulManagement.OptPutEditorInterfaceReqControlsItemSettings{
+					Set: true,
+					Value: map[string]jx.Raw{
+						"foo": jx.Raw(`"bar"`),
+					},
+				},
+			},
+		}),
+		Sidebar: contentfulManagement.NewOptNilPutEditorInterfaceReqSidebarItemArray([]contentfulManagement.PutEditorInterfaceReqSidebarItem{
+			{
+				WidgetNamespace: "widget_namespace",
+				WidgetId:        "widget_id",
+				Settings: contentfulManagement.OptPutEditorInterfaceReqSidebarItemSettings{
+					Set: true,
+					Value: map[string]jx.Raw{
+						"foo": jx.Raw(`"bar"`),
+					},
+				},
+			},
+		}),
+	}, req)
+}

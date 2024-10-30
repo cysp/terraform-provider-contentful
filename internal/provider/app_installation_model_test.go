@@ -187,3 +187,111 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		})
 	}
 }
+
+func TestAppInstallationModelToXContentfulMarketplaceHeaderValueElements(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		model        provider.AppInstallationModel
+		expectErrors bool
+		expected     []string
+	}{
+		"absent": {
+			model:    provider.AppInstallationModel{},
+			expected: []string{},
+		},
+		"null": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetNull(types.StringType),
+			},
+			expected: []string{},
+		},
+		"unknown": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetUnknown(types.StringType),
+			},
+			expected: []string{},
+		},
+		"empty": {
+			model: provider.AppInstallationModel{
+				Marketplace: util.NewEmptySetMust(types.StringType),
+			},
+			expected: []string{},
+		},
+		"foo": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("foo")}),
+			},
+			expected: []string{"foo"},
+		},
+		"foo,bar": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("foo"), types.StringValue("bar")}),
+			},
+			expected: []string{"foo", "bar"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			value, diags := test.model.ToXContentfulMarketplaceHeaderValueElements(context.Background())
+
+			assert.EqualValues(t, test.expected, value)
+
+			if test.expectErrors {
+				assert.NotEmpty(t, diags.Errors())
+			} else {
+				assert.Empty(t, diags.Errors())
+			}
+		})
+	}
+}
+
+func TestAppInstallationModelToXContentfulMarketplaceHeaderValueElementsErrors(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		model        provider.AppInstallationModel
+		expectErrors bool
+		expected     []string
+	}{
+		"unknown element": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringUnknown()}),
+			},
+			expectErrors: true,
+			expected:     []string{},
+		},
+		"null element": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringNull()}),
+			},
+			expected: []string{},
+		},
+		"mixed elements": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("foo"), types.StringUnknown(), types.StringNull()}),
+			},
+			expectErrors: true,
+			expected:     []string{"foo"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			value, diags := test.model.ToXContentfulMarketplaceHeaderValueElements(context.Background())
+
+			assert.EqualValues(t, test.expected, value)
+
+			if test.expectErrors {
+				assert.NotEmpty(t, diags.Errors())
+			} else {
+				assert.Empty(t, diags.Errors())
+			}
+		})
+	}
+}

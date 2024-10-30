@@ -479,3 +479,73 @@ func TestAccContentTypeResourceDeleted(t *testing.T) {
 		},
 	})
 }
+
+// New integration test to increase test coverage
+func TestAccContentTypeResourceWithValidations(t *testing.T) {
+	t.Parallel()
+
+	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "contentful_content_type" %[1]q {
+					space_id = "0p38pssr0fi3"
+					environment_id = "test"
+					content_type_id = %[1]q
+
+					name = "Test"
+					description = "Test content type (%[1]s)"
+
+					display_field = "name"
+
+					fields = [
+						{
+							id  	  = "name"
+							name      = "Name"
+							type      = "Symbol"
+							required  = true
+							localized = false
+						},
+						{
+							id  	  = "slug"
+							name      = "Slug"
+							type      = "Symbol"
+							required  = true
+							localized = false
+							validations = [
+								jsonencode({
+									regexp = {
+										pattern = "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+										flags = null
+									}
+								}),
+							]
+						},
+						{
+							id  	  = "flags"
+							name      = "Flags"
+							type      = "Array"
+							items = {
+								type = "Symbol"
+								validations = [
+									jsonencode({
+										in = ["abc", "def", "ghi"]
+									}),
+								]
+							}
+							default_value = jsonencode({
+								"en-AU": ["def"],
+							})
+							required  = true
+							localized = false
+						}
+					]
+				}
+				`, contentTypeID),
+			},
+		},
+	})
+}

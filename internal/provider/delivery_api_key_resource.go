@@ -70,7 +70,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 
 	response, err := r.providerData.client.CreateDeliveryApiKey(ctx, &request, params)
 
-	tflog.Info(ctx, "delivery_api_key.create", map[string]interface{}{
+	tflog.Info(ctx, "app_installation.create", map[string]interface{}{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -208,6 +208,12 @@ func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.Delete
 	response, err := r.providerData.client.DeleteDeliveryApiKey(ctx, contentfulManagement.DeleteDeliveryApiKeyParams{
 		SpaceID:  data.SpaceId.ValueString(),
 		APIKeyID: data.ApiKeyId.ValueString(),
+	})
+
+	tflog.Info(ctx, "delivery_api_key.delete", map[string]interface{}{
+		"params":   data,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {

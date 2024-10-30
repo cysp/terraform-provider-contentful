@@ -253,3 +253,47 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 		},
 	})
 }
+
+// New integration test to increase test coverage
+func TestAccEditorInterfaceResourceWithControlsAndSidebar(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "contentful_editor_interface" "test" {
+					space_id = "0p38pssr0fi3"
+					environment_id = "test"
+					content_type_id = "author"
+
+					controls = [
+						{
+						field_id         = "name",
+						widget_namespace = "builtin",
+						widget_id        = "singleLine",
+						},
+						{
+						field_id         = "avatar",
+						widget_namespace = "builtin",
+						widget_id        = "assetLinkEditor",
+						},
+						{
+						field_id         = "blurb",
+						widget_namespace = "builtin",
+						widget_id        = "richTextEditor",
+						}
+					]
+
+					sidebar = [{
+						widget_namespace = "app"
+						widget_id        = "1WkQ2J9LERPtbMTdUfSHka"
+						settings = jsonencode({
+							foo = "bar"
+						})
+					}]
+				}
+				`,
+			},
+		},
+	})
+}
