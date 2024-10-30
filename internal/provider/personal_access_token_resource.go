@@ -139,8 +139,16 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 		return
 	}
 
-	response, err := r.providerData.client.RevokePersonalAccessToken(ctx, contentfulManagement.RevokePersonalAccessTokenParams{
+	params := contentfulManagement.RevokePersonalAccessTokenParams{
 		AccessTokenID: data.Id.ValueString(),
+	}
+
+	response, err := r.providerData.client.RevokePersonalAccessToken(ctx, params)
+
+	tflog.Info(ctx, "personal_access_token.delete", map[string]interface{}{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {

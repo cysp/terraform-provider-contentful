@@ -205,9 +205,17 @@ func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	response, err := r.providerData.client.DeleteDeliveryApiKey(ctx, contentfulManagement.DeleteDeliveryApiKeyParams{
+	params := contentfulManagement.DeleteDeliveryApiKeyParams{
 		SpaceID:  data.SpaceId.ValueString(),
 		APIKeyID: data.ApiKeyId.ValueString(),
+	}
+
+	response, err := r.providerData.client.DeleteDeliveryApiKey(ctx, params)
+
+	tflog.Info(ctx, "delivery_api_key.delete", map[string]interface{}{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {
