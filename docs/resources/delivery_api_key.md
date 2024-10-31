@@ -32,12 +32,12 @@ resource "contentful_delivery_api_key" "this" {
 
 - `description` (String)
 - `environments` (List of String)
-- `preview_api_key_id` (String)
 
 ### Read-Only
 
 - `access_token` (String, Sensitive)
 - `api_key_id` (String)
+- `preview_api_key_id` (String)
 
 ## Import
 

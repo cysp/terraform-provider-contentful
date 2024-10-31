@@ -380,7 +380,7 @@
                     {
                         "name": "preview_api_key_id",
                         "string": {
-                            "computed_optional_required": "computed_optional"
+                            "computed_optional_required": "computed"
                         }
                     }
                 ]

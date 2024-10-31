@@ -36,7 +36,6 @@ func DeliveryApiKeyResourceSchema(ctx context.Context) schema.Schema {
 				Required: true,
 			},
 			"preview_api_key_id": schema.StringAttribute{
-				Optional: true,
 				Computed: true,
 			},
 			"space_id": schema.StringAttribute{
