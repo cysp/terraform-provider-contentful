@@ -112,6 +112,16 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			},
 			expectedSuccess: true,
 		},
+		"config: url,access_token,invalid": {
+			config: map[string]interface{}{
+				"url":          "https://api.test.contentful.com",
+				"access_token": "CFPAT-12345",
+			},
+			env: map[string]string{
+				"CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "invalid",
+			},
+			expectedSuccess: false,
+		},
 	}
 
 	for name, test := range tests {

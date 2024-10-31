@@ -55,6 +55,13 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 			},
 			expected: contentfulManagement.NewOptString("bar,foo"),
 		},
+		"error": {
+			model: provider.AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("error")}),
+			},
+			expectErrors: true,
+			expected:     contentfulManagement.OptString{},
+		},
 	}
 
 	for name, test := range tests {
@@ -115,6 +122,13 @@ func TestToPutAppInstallationReq(t *testing.T) {
 			expectErrors:        true,
 			expectedRequestBody: "{\"parameters\":{}}",
 		},
+		"error": {
+			model: provider.AppInstallationModel{
+				Parameters: jsontypes.NewNormalizedValue("{\"error\":\"true\"}"),
+			},
+			expectErrors:        true,
+			expectedRequestBody: "{}",
+		},
 	}
 
 	for name, test := range tests {
@@ -171,6 +185,16 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				Parameters: jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
 			},
 		},
+		"error": {
+			appInstallation: contentfulManagement.AppInstallation{
+				Parameters: contentfulManagement.NewOptAppInstallationParameters(contentfulManagement.AppInstallationParameters{
+					"error": []byte{'"', 't', 'r', 'u', 'e', '"'},
+				}),
+			},
+			expectedModel: provider.AppInstallationModel{
+				Parameters: jsontypes.NewNormalizedValue("{\"error\":\"true\"}"),
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -183,7 +207,11 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 
 			assert.EqualValues(t, test.expectedModel, model)
 
-			assert.Empty(t, diags)
+			if name == "error" {
+				assert.NotEmpty(t, diags.Errors())
+			} else {
+				assert.Empty(t, diags)
+			}
 		})
 	}
 }

@@ -50,6 +50,18 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			err:      errors.ErrUnsupported,
 			expected: "unsupported operation",
 		},
+		"mocked API error": {
+			response: &contentfulManagement.ErrorStatusCode{
+				Response: contentfulManagement.Error{
+					Sys: contentfulManagement.ErrorSys{
+						Type: contentfulManagement.ErrorSysTypeError,
+						ID:   "MockedAPIError",
+					},
+					Message: contentfulManagement.NewOptString("Mocked API error message"),
+				},
+			},
+			expected: "Error: MockedAPIError: Mocked API error message",
+		},
 	}
 
 	for name, test := range tests {
