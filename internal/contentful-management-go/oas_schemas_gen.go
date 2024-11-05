@@ -815,6 +815,277 @@ func (s *CreatePersonalAccessTokenReq) SetExpiresIn(val OptNilInt) {
 	s.ExpiresIn = val
 }
 
+type CreateRoleReq struct {
+	Name        string                      `json:"name"`
+	Description OptNilString                `json:"description"`
+	Permissions CreateRoleReqPermissions    `json:"permissions"`
+	Policies    []CreateRoleReqPoliciesItem `json:"policies"`
+}
+
+// GetName returns the value of Name.
+func (s *CreateRoleReq) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *CreateRoleReq) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetPermissions returns the value of Permissions.
+func (s *CreateRoleReq) GetPermissions() CreateRoleReqPermissions {
+	return s.Permissions
+}
+
+// GetPolicies returns the value of Policies.
+func (s *CreateRoleReq) GetPolicies() []CreateRoleReqPoliciesItem {
+	return s.Policies
+}
+
+// SetName sets the value of Name.
+func (s *CreateRoleReq) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *CreateRoleReq) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetPermissions sets the value of Permissions.
+func (s *CreateRoleReq) SetPermissions(val CreateRoleReqPermissions) {
+	s.Permissions = val
+}
+
+// SetPolicies sets the value of Policies.
+func (s *CreateRoleReq) SetPolicies(val []CreateRoleReqPoliciesItem) {
+	s.Policies = val
+}
+
+type CreateRoleReqPermissions map[string]CreateRoleReqPermissionsItem
+
+func (s *CreateRoleReqPermissions) init() CreateRoleReqPermissions {
+	m := *s
+	if m == nil {
+		m = map[string]CreateRoleReqPermissionsItem{}
+		*s = m
+	}
+	return m
+}
+
+// CreateRoleReqPermissionsItem represents sum type.
+type CreateRoleReqPermissionsItem struct {
+	Type        CreateRoleReqPermissionsItemType // switch on this field
+	String      string
+	StringArray []string
+}
+
+// CreateRoleReqPermissionsItemType is oneOf type of CreateRoleReqPermissionsItem.
+type CreateRoleReqPermissionsItemType string
+
+// Possible values for CreateRoleReqPermissionsItemType.
+const (
+	StringCreateRoleReqPermissionsItem      CreateRoleReqPermissionsItemType = "string"
+	StringArrayCreateRoleReqPermissionsItem CreateRoleReqPermissionsItemType = "[]string"
+)
+
+// IsString reports whether CreateRoleReqPermissionsItem is string.
+func (s CreateRoleReqPermissionsItem) IsString() bool {
+	return s.Type == StringCreateRoleReqPermissionsItem
+}
+
+// IsStringArray reports whether CreateRoleReqPermissionsItem is []string.
+func (s CreateRoleReqPermissionsItem) IsStringArray() bool {
+	return s.Type == StringArrayCreateRoleReqPermissionsItem
+}
+
+// SetString sets CreateRoleReqPermissionsItem to string.
+func (s *CreateRoleReqPermissionsItem) SetString(v string) {
+	s.Type = StringCreateRoleReqPermissionsItem
+	s.String = v
+}
+
+// GetString returns string and true boolean if CreateRoleReqPermissionsItem is string.
+func (s CreateRoleReqPermissionsItem) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringCreateRoleReqPermissionsItem returns new CreateRoleReqPermissionsItem from string.
+func NewStringCreateRoleReqPermissionsItem(v string) CreateRoleReqPermissionsItem {
+	var s CreateRoleReqPermissionsItem
+	s.SetString(v)
+	return s
+}
+
+// SetStringArray sets CreateRoleReqPermissionsItem to []string.
+func (s *CreateRoleReqPermissionsItem) SetStringArray(v []string) {
+	s.Type = StringArrayCreateRoleReqPermissionsItem
+	s.StringArray = v
+}
+
+// GetStringArray returns []string and true boolean if CreateRoleReqPermissionsItem is []string.
+func (s CreateRoleReqPermissionsItem) GetStringArray() (v []string, ok bool) {
+	if !s.IsStringArray() {
+		return v, false
+	}
+	return s.StringArray, true
+}
+
+// NewStringArrayCreateRoleReqPermissionsItem returns new CreateRoleReqPermissionsItem from []string.
+func NewStringArrayCreateRoleReqPermissionsItem(v []string) CreateRoleReqPermissionsItem {
+	var s CreateRoleReqPermissionsItem
+	s.SetStringArray(v)
+	return s
+}
+
+type CreateRoleReqPoliciesItem struct {
+	Effect     CreateRoleReqPoliciesItemEffect  `json:"effect"`
+	Actions    CreateRoleReqPoliciesItemActions `json:"actions"`
+	Constraint jx.Raw                           `json:"constraint"`
+}
+
+// GetEffect returns the value of Effect.
+func (s *CreateRoleReqPoliciesItem) GetEffect() CreateRoleReqPoliciesItemEffect {
+	return s.Effect
+}
+
+// GetActions returns the value of Actions.
+func (s *CreateRoleReqPoliciesItem) GetActions() CreateRoleReqPoliciesItemActions {
+	return s.Actions
+}
+
+// GetConstraint returns the value of Constraint.
+func (s *CreateRoleReqPoliciesItem) GetConstraint() jx.Raw {
+	return s.Constraint
+}
+
+// SetEffect sets the value of Effect.
+func (s *CreateRoleReqPoliciesItem) SetEffect(val CreateRoleReqPoliciesItemEffect) {
+	s.Effect = val
+}
+
+// SetActions sets the value of Actions.
+func (s *CreateRoleReqPoliciesItem) SetActions(val CreateRoleReqPoliciesItemActions) {
+	s.Actions = val
+}
+
+// SetConstraint sets the value of Constraint.
+func (s *CreateRoleReqPoliciesItem) SetConstraint(val jx.Raw) {
+	s.Constraint = val
+}
+
+// CreateRoleReqPoliciesItemActions represents sum type.
+type CreateRoleReqPoliciesItemActions struct {
+	Type        CreateRoleReqPoliciesItemActionsType // switch on this field
+	String      string
+	StringArray []string
+}
+
+// CreateRoleReqPoliciesItemActionsType is oneOf type of CreateRoleReqPoliciesItemActions.
+type CreateRoleReqPoliciesItemActionsType string
+
+// Possible values for CreateRoleReqPoliciesItemActionsType.
+const (
+	StringCreateRoleReqPoliciesItemActions      CreateRoleReqPoliciesItemActionsType = "string"
+	StringArrayCreateRoleReqPoliciesItemActions CreateRoleReqPoliciesItemActionsType = "[]string"
+)
+
+// IsString reports whether CreateRoleReqPoliciesItemActions is string.
+func (s CreateRoleReqPoliciesItemActions) IsString() bool {
+	return s.Type == StringCreateRoleReqPoliciesItemActions
+}
+
+// IsStringArray reports whether CreateRoleReqPoliciesItemActions is []string.
+func (s CreateRoleReqPoliciesItemActions) IsStringArray() bool {
+	return s.Type == StringArrayCreateRoleReqPoliciesItemActions
+}
+
+// SetString sets CreateRoleReqPoliciesItemActions to string.
+func (s *CreateRoleReqPoliciesItemActions) SetString(v string) {
+	s.Type = StringCreateRoleReqPoliciesItemActions
+	s.String = v
+}
+
+// GetString returns string and true boolean if CreateRoleReqPoliciesItemActions is string.
+func (s CreateRoleReqPoliciesItemActions) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringCreateRoleReqPoliciesItemActions returns new CreateRoleReqPoliciesItemActions from string.
+func NewStringCreateRoleReqPoliciesItemActions(v string) CreateRoleReqPoliciesItemActions {
+	var s CreateRoleReqPoliciesItemActions
+	s.SetString(v)
+	return s
+}
+
+// SetStringArray sets CreateRoleReqPoliciesItemActions to []string.
+func (s *CreateRoleReqPoliciesItemActions) SetStringArray(v []string) {
+	s.Type = StringArrayCreateRoleReqPoliciesItemActions
+	s.StringArray = v
+}
+
+// GetStringArray returns []string and true boolean if CreateRoleReqPoliciesItemActions is []string.
+func (s CreateRoleReqPoliciesItemActions) GetStringArray() (v []string, ok bool) {
+	if !s.IsStringArray() {
+		return v, false
+	}
+	return s.StringArray, true
+}
+
+// NewStringArrayCreateRoleReqPoliciesItemActions returns new CreateRoleReqPoliciesItemActions from []string.
+func NewStringArrayCreateRoleReqPoliciesItemActions(v []string) CreateRoleReqPoliciesItemActions {
+	var s CreateRoleReqPoliciesItemActions
+	s.SetStringArray(v)
+	return s
+}
+
+type CreateRoleReqPoliciesItemEffect string
+
+const (
+	CreateRoleReqPoliciesItemEffectAllow CreateRoleReqPoliciesItemEffect = "allow"
+	CreateRoleReqPoliciesItemEffectDeny  CreateRoleReqPoliciesItemEffect = "deny"
+)
+
+// AllValues returns all CreateRoleReqPoliciesItemEffect values.
+func (CreateRoleReqPoliciesItemEffect) AllValues() []CreateRoleReqPoliciesItemEffect {
+	return []CreateRoleReqPoliciesItemEffect{
+		CreateRoleReqPoliciesItemEffectAllow,
+		CreateRoleReqPoliciesItemEffectDeny,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s CreateRoleReqPoliciesItemEffect) MarshalText() ([]byte, error) {
+	switch s {
+	case CreateRoleReqPoliciesItemEffectAllow:
+		return []byte(s), nil
+	case CreateRoleReqPoliciesItemEffectDeny:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *CreateRoleReqPoliciesItemEffect) UnmarshalText(data []byte) error {
+	switch CreateRoleReqPoliciesItemEffect(data) {
+	case CreateRoleReqPoliciesItemEffectAllow:
+		*s = CreateRoleReqPoliciesItemEffectAllow
+		return nil
+	case CreateRoleReqPoliciesItemEffectDeny:
+		*s = CreateRoleReqPoliciesItemEffectDeny
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Merged schema.
 // Ref: #/components/schemas/EditorInterface
 type EditorInterface struct {
@@ -1211,10 +1482,12 @@ func (s *Error) SetDetails(val jx.Raw) {
 func (*Error) activateContentTypeRes()       {}
 func (*Error) createDeliveryApiKeyRes()      {}
 func (*Error) createPersonalAccessTokenRes() {}
+func (*Error) createRoleRes()                {}
 func (*Error) deactivateContentTypeRes()     {}
 func (*Error) deleteAppInstallationRes()     {}
 func (*Error) deleteContentTypeRes()         {}
 func (*Error) deleteDeliveryApiKeyRes()      {}
+func (*Error) deleteRoleRes()                {}
 func (*Error) getAppInstallationRes()        {}
 func (*Error) getAuthenticatedUserRes()      {}
 func (*Error) getContentTypeRes()            {}
@@ -1222,11 +1495,13 @@ func (*Error) getDeliveryApiKeyRes()         {}
 func (*Error) getEditorInterfaceRes()        {}
 func (*Error) getPersonalAccessTokenRes()    {}
 func (*Error) getPreviewApiKeyRes()          {}
+func (*Error) getRoleRes()                   {}
 func (*Error) putAppInstallationRes()        {}
 func (*Error) putContentTypeRes()            {}
 func (*Error) putEditorInterfaceRes()        {}
 func (*Error) revokePersonalAccessTokenRes() {}
 func (*Error) updateDeliveryApiKeyRes()      {}
+func (*Error) updateRoleRes()                {}
 
 // ErrorStatusCode wraps Error with StatusCode.
 type ErrorStatusCode struct {
@@ -1257,10 +1532,12 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 func (*ErrorStatusCode) activateContentTypeRes()       {}
 func (*ErrorStatusCode) createDeliveryApiKeyRes()      {}
 func (*ErrorStatusCode) createPersonalAccessTokenRes() {}
+func (*ErrorStatusCode) createRoleRes()                {}
 func (*ErrorStatusCode) deactivateContentTypeRes()     {}
 func (*ErrorStatusCode) deleteAppInstallationRes()     {}
 func (*ErrorStatusCode) deleteContentTypeRes()         {}
 func (*ErrorStatusCode) deleteDeliveryApiKeyRes()      {}
+func (*ErrorStatusCode) deleteRoleRes()                {}
 func (*ErrorStatusCode) getAppInstallationRes()        {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()      {}
 func (*ErrorStatusCode) getContentTypeRes()            {}
@@ -1268,11 +1545,13 @@ func (*ErrorStatusCode) getDeliveryApiKeyRes()         {}
 func (*ErrorStatusCode) getEditorInterfaceRes()        {}
 func (*ErrorStatusCode) getPersonalAccessTokenRes()    {}
 func (*ErrorStatusCode) getPreviewApiKeyRes()          {}
+func (*ErrorStatusCode) getRoleRes()                   {}
 func (*ErrorStatusCode) putAppInstallationRes()        {}
 func (*ErrorStatusCode) putContentTypeRes()            {}
 func (*ErrorStatusCode) putEditorInterfaceRes()        {}
 func (*ErrorStatusCode) revokePersonalAccessTokenRes() {}
 func (*ErrorStatusCode) updateDeliveryApiKeyRes()      {}
+func (*ErrorStatusCode) updateRoleRes()                {}
 
 // Ref: #/components/schemas/ErrorSys
 type ErrorSys struct {
@@ -1386,6 +1665,7 @@ func (*NoContent) deactivateContentTypeRes() {}
 func (*NoContent) deleteAppInstallationRes() {}
 func (*NoContent) deleteContentTypeRes()     {}
 func (*NoContent) deleteDeliveryApiKeyRes()  {}
+func (*NoContent) deleteRoleRes()            {}
 
 // NewOptApiKeyPreviewAPIKey returns new OptApiKeyPreviewAPIKey with value set to v.
 func NewOptApiKeyPreviewAPIKey(v ApiKeyPreviewAPIKey) OptApiKeyPreviewAPIKey {
@@ -2816,6 +3096,384 @@ func (s *PutEditorInterfaceReqSidebarItem) SetDisabled(val OptBool) {
 	s.Disabled = val
 }
 
+// Merged schema.
+// Ref: #/components/schemas/Role
+type Role struct {
+	Sys         RoleSys            `json:"sys"`
+	Name        string             `json:"name"`
+	Description OptNilString       `json:"description"`
+	Permissions RolePermissions    `json:"permissions"`
+	Policies    []RolePoliciesItem `json:"policies"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Role) GetSys() RoleSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Role) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *Role) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetPermissions returns the value of Permissions.
+func (s *Role) GetPermissions() RolePermissions {
+	return s.Permissions
+}
+
+// GetPolicies returns the value of Policies.
+func (s *Role) GetPolicies() []RolePoliciesItem {
+	return s.Policies
+}
+
+// SetSys sets the value of Sys.
+func (s *Role) SetSys(val RoleSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Role) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *Role) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetPermissions sets the value of Permissions.
+func (s *Role) SetPermissions(val RolePermissions) {
+	s.Permissions = val
+}
+
+// SetPolicies sets the value of Policies.
+func (s *Role) SetPolicies(val []RolePoliciesItem) {
+	s.Policies = val
+}
+
+func (*Role) createRoleRes() {}
+func (*Role) getRoleRes()    {}
+func (*Role) updateRoleRes() {}
+
+type RolePermissions map[string]RolePermissionsItem
+
+func (s *RolePermissions) init() RolePermissions {
+	m := *s
+	if m == nil {
+		m = map[string]RolePermissionsItem{}
+		*s = m
+	}
+	return m
+}
+
+// RolePermissionsItem represents sum type.
+type RolePermissionsItem struct {
+	Type        RolePermissionsItemType // switch on this field
+	String      string
+	StringArray []string
+}
+
+// RolePermissionsItemType is oneOf type of RolePermissionsItem.
+type RolePermissionsItemType string
+
+// Possible values for RolePermissionsItemType.
+const (
+	StringRolePermissionsItem      RolePermissionsItemType = "string"
+	StringArrayRolePermissionsItem RolePermissionsItemType = "[]string"
+)
+
+// IsString reports whether RolePermissionsItem is string.
+func (s RolePermissionsItem) IsString() bool { return s.Type == StringRolePermissionsItem }
+
+// IsStringArray reports whether RolePermissionsItem is []string.
+func (s RolePermissionsItem) IsStringArray() bool { return s.Type == StringArrayRolePermissionsItem }
+
+// SetString sets RolePermissionsItem to string.
+func (s *RolePermissionsItem) SetString(v string) {
+	s.Type = StringRolePermissionsItem
+	s.String = v
+}
+
+// GetString returns string and true boolean if RolePermissionsItem is string.
+func (s RolePermissionsItem) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringRolePermissionsItem returns new RolePermissionsItem from string.
+func NewStringRolePermissionsItem(v string) RolePermissionsItem {
+	var s RolePermissionsItem
+	s.SetString(v)
+	return s
+}
+
+// SetStringArray sets RolePermissionsItem to []string.
+func (s *RolePermissionsItem) SetStringArray(v []string) {
+	s.Type = StringArrayRolePermissionsItem
+	s.StringArray = v
+}
+
+// GetStringArray returns []string and true boolean if RolePermissionsItem is []string.
+func (s RolePermissionsItem) GetStringArray() (v []string, ok bool) {
+	if !s.IsStringArray() {
+		return v, false
+	}
+	return s.StringArray, true
+}
+
+// NewStringArrayRolePermissionsItem returns new RolePermissionsItem from []string.
+func NewStringArrayRolePermissionsItem(v []string) RolePermissionsItem {
+	var s RolePermissionsItem
+	s.SetStringArray(v)
+	return s
+}
+
+type RolePoliciesItem struct {
+	Effect     RolePoliciesItemEffect  `json:"effect"`
+	Actions    RolePoliciesItemActions `json:"actions"`
+	Constraint jx.Raw                  `json:"constraint"`
+}
+
+// GetEffect returns the value of Effect.
+func (s *RolePoliciesItem) GetEffect() RolePoliciesItemEffect {
+	return s.Effect
+}
+
+// GetActions returns the value of Actions.
+func (s *RolePoliciesItem) GetActions() RolePoliciesItemActions {
+	return s.Actions
+}
+
+// GetConstraint returns the value of Constraint.
+func (s *RolePoliciesItem) GetConstraint() jx.Raw {
+	return s.Constraint
+}
+
+// SetEffect sets the value of Effect.
+func (s *RolePoliciesItem) SetEffect(val RolePoliciesItemEffect) {
+	s.Effect = val
+}
+
+// SetActions sets the value of Actions.
+func (s *RolePoliciesItem) SetActions(val RolePoliciesItemActions) {
+	s.Actions = val
+}
+
+// SetConstraint sets the value of Constraint.
+func (s *RolePoliciesItem) SetConstraint(val jx.Raw) {
+	s.Constraint = val
+}
+
+// RolePoliciesItemActions represents sum type.
+type RolePoliciesItemActions struct {
+	Type        RolePoliciesItemActionsType // switch on this field
+	String      string
+	StringArray []string
+}
+
+// RolePoliciesItemActionsType is oneOf type of RolePoliciesItemActions.
+type RolePoliciesItemActionsType string
+
+// Possible values for RolePoliciesItemActionsType.
+const (
+	StringRolePoliciesItemActions      RolePoliciesItemActionsType = "string"
+	StringArrayRolePoliciesItemActions RolePoliciesItemActionsType = "[]string"
+)
+
+// IsString reports whether RolePoliciesItemActions is string.
+func (s RolePoliciesItemActions) IsString() bool { return s.Type == StringRolePoliciesItemActions }
+
+// IsStringArray reports whether RolePoliciesItemActions is []string.
+func (s RolePoliciesItemActions) IsStringArray() bool {
+	return s.Type == StringArrayRolePoliciesItemActions
+}
+
+// SetString sets RolePoliciesItemActions to string.
+func (s *RolePoliciesItemActions) SetString(v string) {
+	s.Type = StringRolePoliciesItemActions
+	s.String = v
+}
+
+// GetString returns string and true boolean if RolePoliciesItemActions is string.
+func (s RolePoliciesItemActions) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringRolePoliciesItemActions returns new RolePoliciesItemActions from string.
+func NewStringRolePoliciesItemActions(v string) RolePoliciesItemActions {
+	var s RolePoliciesItemActions
+	s.SetString(v)
+	return s
+}
+
+// SetStringArray sets RolePoliciesItemActions to []string.
+func (s *RolePoliciesItemActions) SetStringArray(v []string) {
+	s.Type = StringArrayRolePoliciesItemActions
+	s.StringArray = v
+}
+
+// GetStringArray returns []string and true boolean if RolePoliciesItemActions is []string.
+func (s RolePoliciesItemActions) GetStringArray() (v []string, ok bool) {
+	if !s.IsStringArray() {
+		return v, false
+	}
+	return s.StringArray, true
+}
+
+// NewStringArrayRolePoliciesItemActions returns new RolePoliciesItemActions from []string.
+func NewStringArrayRolePoliciesItemActions(v []string) RolePoliciesItemActions {
+	var s RolePoliciesItemActions
+	s.SetStringArray(v)
+	return s
+}
+
+type RolePoliciesItemEffect string
+
+const (
+	RolePoliciesItemEffectAllow RolePoliciesItemEffect = "allow"
+	RolePoliciesItemEffectDeny  RolePoliciesItemEffect = "deny"
+)
+
+// AllValues returns all RolePoliciesItemEffect values.
+func (RolePoliciesItemEffect) AllValues() []RolePoliciesItemEffect {
+	return []RolePoliciesItemEffect{
+		RolePoliciesItemEffectAllow,
+		RolePoliciesItemEffectDeny,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s RolePoliciesItemEffect) MarshalText() ([]byte, error) {
+	switch s {
+	case RolePoliciesItemEffectAllow:
+		return []byte(s), nil
+	case RolePoliciesItemEffectDeny:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *RolePoliciesItemEffect) UnmarshalText(data []byte) error {
+	switch RolePoliciesItemEffect(data) {
+	case RolePoliciesItemEffectAllow:
+		*s = RolePoliciesItemEffectAllow
+		return nil
+	case RolePoliciesItemEffectDeny:
+		*s = RolePoliciesItemEffectDeny
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/components/schemas/RoleSys
+type RoleSys struct {
+	// Merged property.
+	Type      RoleSysType `json:"type"`
+	ID        string      `json:"id"`
+	Version   int         `json:"version"`
+	CreatedAt OptDateTime `json:"createdAt"`
+	UpdatedAt OptDateTime `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *RoleSys) GetType() RoleSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *RoleSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *RoleSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *RoleSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *RoleSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *RoleSys) SetType(val RoleSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *RoleSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *RoleSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *RoleSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *RoleSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type RoleSysType string
+
+const (
+	RoleSysTypeRole RoleSysType = "Role"
+)
+
+// AllValues returns all RoleSysType values.
+func (RoleSysType) AllValues() []RoleSysType {
+	return []RoleSysType{
+		RoleSysTypeRole,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s RoleSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case RoleSysTypeRole:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *RoleSysType) UnmarshalText(data []byte) error {
+	switch RoleSysType(data) {
+	case RoleSysTypeRole:
+		*s = RoleSysTypeRole
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 type UpdateDeliveryApiKeyReq struct {
 	Name         string            `json:"name"`
 	Description  OptNilString      `json:"description"`
@@ -2850,6 +3508,277 @@ func (s *UpdateDeliveryApiKeyReq) SetDescription(val OptNilString) {
 // SetEnvironments sets the value of Environments.
 func (s *UpdateDeliveryApiKeyReq) SetEnvironments(val []EnvironmentLink) {
 	s.Environments = val
+}
+
+type UpdateRoleReq struct {
+	Name        string                      `json:"name"`
+	Description OptNilString                `json:"description"`
+	Permissions UpdateRoleReqPermissions    `json:"permissions"`
+	Policies    []UpdateRoleReqPoliciesItem `json:"policies"`
+}
+
+// GetName returns the value of Name.
+func (s *UpdateRoleReq) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *UpdateRoleReq) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetPermissions returns the value of Permissions.
+func (s *UpdateRoleReq) GetPermissions() UpdateRoleReqPermissions {
+	return s.Permissions
+}
+
+// GetPolicies returns the value of Policies.
+func (s *UpdateRoleReq) GetPolicies() []UpdateRoleReqPoliciesItem {
+	return s.Policies
+}
+
+// SetName sets the value of Name.
+func (s *UpdateRoleReq) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *UpdateRoleReq) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetPermissions sets the value of Permissions.
+func (s *UpdateRoleReq) SetPermissions(val UpdateRoleReqPermissions) {
+	s.Permissions = val
+}
+
+// SetPolicies sets the value of Policies.
+func (s *UpdateRoleReq) SetPolicies(val []UpdateRoleReqPoliciesItem) {
+	s.Policies = val
+}
+
+type UpdateRoleReqPermissions map[string]UpdateRoleReqPermissionsItem
+
+func (s *UpdateRoleReqPermissions) init() UpdateRoleReqPermissions {
+	m := *s
+	if m == nil {
+		m = map[string]UpdateRoleReqPermissionsItem{}
+		*s = m
+	}
+	return m
+}
+
+// UpdateRoleReqPermissionsItem represents sum type.
+type UpdateRoleReqPermissionsItem struct {
+	Type        UpdateRoleReqPermissionsItemType // switch on this field
+	String      string
+	StringArray []string
+}
+
+// UpdateRoleReqPermissionsItemType is oneOf type of UpdateRoleReqPermissionsItem.
+type UpdateRoleReqPermissionsItemType string
+
+// Possible values for UpdateRoleReqPermissionsItemType.
+const (
+	StringUpdateRoleReqPermissionsItem      UpdateRoleReqPermissionsItemType = "string"
+	StringArrayUpdateRoleReqPermissionsItem UpdateRoleReqPermissionsItemType = "[]string"
+)
+
+// IsString reports whether UpdateRoleReqPermissionsItem is string.
+func (s UpdateRoleReqPermissionsItem) IsString() bool {
+	return s.Type == StringUpdateRoleReqPermissionsItem
+}
+
+// IsStringArray reports whether UpdateRoleReqPermissionsItem is []string.
+func (s UpdateRoleReqPermissionsItem) IsStringArray() bool {
+	return s.Type == StringArrayUpdateRoleReqPermissionsItem
+}
+
+// SetString sets UpdateRoleReqPermissionsItem to string.
+func (s *UpdateRoleReqPermissionsItem) SetString(v string) {
+	s.Type = StringUpdateRoleReqPermissionsItem
+	s.String = v
+}
+
+// GetString returns string and true boolean if UpdateRoleReqPermissionsItem is string.
+func (s UpdateRoleReqPermissionsItem) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringUpdateRoleReqPermissionsItem returns new UpdateRoleReqPermissionsItem from string.
+func NewStringUpdateRoleReqPermissionsItem(v string) UpdateRoleReqPermissionsItem {
+	var s UpdateRoleReqPermissionsItem
+	s.SetString(v)
+	return s
+}
+
+// SetStringArray sets UpdateRoleReqPermissionsItem to []string.
+func (s *UpdateRoleReqPermissionsItem) SetStringArray(v []string) {
+	s.Type = StringArrayUpdateRoleReqPermissionsItem
+	s.StringArray = v
+}
+
+// GetStringArray returns []string and true boolean if UpdateRoleReqPermissionsItem is []string.
+func (s UpdateRoleReqPermissionsItem) GetStringArray() (v []string, ok bool) {
+	if !s.IsStringArray() {
+		return v, false
+	}
+	return s.StringArray, true
+}
+
+// NewStringArrayUpdateRoleReqPermissionsItem returns new UpdateRoleReqPermissionsItem from []string.
+func NewStringArrayUpdateRoleReqPermissionsItem(v []string) UpdateRoleReqPermissionsItem {
+	var s UpdateRoleReqPermissionsItem
+	s.SetStringArray(v)
+	return s
+}
+
+type UpdateRoleReqPoliciesItem struct {
+	Effect     UpdateRoleReqPoliciesItemEffect  `json:"effect"`
+	Actions    UpdateRoleReqPoliciesItemActions `json:"actions"`
+	Constraint jx.Raw                           `json:"constraint"`
+}
+
+// GetEffect returns the value of Effect.
+func (s *UpdateRoleReqPoliciesItem) GetEffect() UpdateRoleReqPoliciesItemEffect {
+	return s.Effect
+}
+
+// GetActions returns the value of Actions.
+func (s *UpdateRoleReqPoliciesItem) GetActions() UpdateRoleReqPoliciesItemActions {
+	return s.Actions
+}
+
+// GetConstraint returns the value of Constraint.
+func (s *UpdateRoleReqPoliciesItem) GetConstraint() jx.Raw {
+	return s.Constraint
+}
+
+// SetEffect sets the value of Effect.
+func (s *UpdateRoleReqPoliciesItem) SetEffect(val UpdateRoleReqPoliciesItemEffect) {
+	s.Effect = val
+}
+
+// SetActions sets the value of Actions.
+func (s *UpdateRoleReqPoliciesItem) SetActions(val UpdateRoleReqPoliciesItemActions) {
+	s.Actions = val
+}
+
+// SetConstraint sets the value of Constraint.
+func (s *UpdateRoleReqPoliciesItem) SetConstraint(val jx.Raw) {
+	s.Constraint = val
+}
+
+// UpdateRoleReqPoliciesItemActions represents sum type.
+type UpdateRoleReqPoliciesItemActions struct {
+	Type        UpdateRoleReqPoliciesItemActionsType // switch on this field
+	String      string
+	StringArray []string
+}
+
+// UpdateRoleReqPoliciesItemActionsType is oneOf type of UpdateRoleReqPoliciesItemActions.
+type UpdateRoleReqPoliciesItemActionsType string
+
+// Possible values for UpdateRoleReqPoliciesItemActionsType.
+const (
+	StringUpdateRoleReqPoliciesItemActions      UpdateRoleReqPoliciesItemActionsType = "string"
+	StringArrayUpdateRoleReqPoliciesItemActions UpdateRoleReqPoliciesItemActionsType = "[]string"
+)
+
+// IsString reports whether UpdateRoleReqPoliciesItemActions is string.
+func (s UpdateRoleReqPoliciesItemActions) IsString() bool {
+	return s.Type == StringUpdateRoleReqPoliciesItemActions
+}
+
+// IsStringArray reports whether UpdateRoleReqPoliciesItemActions is []string.
+func (s UpdateRoleReqPoliciesItemActions) IsStringArray() bool {
+	return s.Type == StringArrayUpdateRoleReqPoliciesItemActions
+}
+
+// SetString sets UpdateRoleReqPoliciesItemActions to string.
+func (s *UpdateRoleReqPoliciesItemActions) SetString(v string) {
+	s.Type = StringUpdateRoleReqPoliciesItemActions
+	s.String = v
+}
+
+// GetString returns string and true boolean if UpdateRoleReqPoliciesItemActions is string.
+func (s UpdateRoleReqPoliciesItemActions) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringUpdateRoleReqPoliciesItemActions returns new UpdateRoleReqPoliciesItemActions from string.
+func NewStringUpdateRoleReqPoliciesItemActions(v string) UpdateRoleReqPoliciesItemActions {
+	var s UpdateRoleReqPoliciesItemActions
+	s.SetString(v)
+	return s
+}
+
+// SetStringArray sets UpdateRoleReqPoliciesItemActions to []string.
+func (s *UpdateRoleReqPoliciesItemActions) SetStringArray(v []string) {
+	s.Type = StringArrayUpdateRoleReqPoliciesItemActions
+	s.StringArray = v
+}
+
+// GetStringArray returns []string and true boolean if UpdateRoleReqPoliciesItemActions is []string.
+func (s UpdateRoleReqPoliciesItemActions) GetStringArray() (v []string, ok bool) {
+	if !s.IsStringArray() {
+		return v, false
+	}
+	return s.StringArray, true
+}
+
+// NewStringArrayUpdateRoleReqPoliciesItemActions returns new UpdateRoleReqPoliciesItemActions from []string.
+func NewStringArrayUpdateRoleReqPoliciesItemActions(v []string) UpdateRoleReqPoliciesItemActions {
+	var s UpdateRoleReqPoliciesItemActions
+	s.SetStringArray(v)
+	return s
+}
+
+type UpdateRoleReqPoliciesItemEffect string
+
+const (
+	UpdateRoleReqPoliciesItemEffectAllow UpdateRoleReqPoliciesItemEffect = "allow"
+	UpdateRoleReqPoliciesItemEffectDeny  UpdateRoleReqPoliciesItemEffect = "deny"
+)
+
+// AllValues returns all UpdateRoleReqPoliciesItemEffect values.
+func (UpdateRoleReqPoliciesItemEffect) AllValues() []UpdateRoleReqPoliciesItemEffect {
+	return []UpdateRoleReqPoliciesItemEffect{
+		UpdateRoleReqPoliciesItemEffectAllow,
+		UpdateRoleReqPoliciesItemEffectDeny,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s UpdateRoleReqPoliciesItemEffect) MarshalText() ([]byte, error) {
+	switch s {
+	case UpdateRoleReqPoliciesItemEffectAllow:
+		return []byte(s), nil
+	case UpdateRoleReqPoliciesItemEffectDeny:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *UpdateRoleReqPoliciesItemEffect) UnmarshalText(data []byte) error {
+	switch UpdateRoleReqPoliciesItemEffect(data) {
+	case UpdateRoleReqPoliciesItemEffectAllow:
+		*s = UpdateRoleReqPoliciesItemEffectAllow
+		return nil
+	case UpdateRoleReqPoliciesItemEffectDeny:
+		*s = UpdateRoleReqPoliciesItemEffectDeny
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // Merged schema.

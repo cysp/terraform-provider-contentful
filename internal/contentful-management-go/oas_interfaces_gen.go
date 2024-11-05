@@ -13,6 +13,10 @@ type CreatePersonalAccessTokenRes interface {
 	createPersonalAccessTokenRes()
 }
 
+type CreateRoleRes interface {
+	createRoleRes()
+}
+
 type DeactivateContentTypeRes interface {
 	deactivateContentTypeRes()
 }
@@ -27,6 +31,10 @@ type DeleteContentTypeRes interface {
 
 type DeleteDeliveryApiKeyRes interface {
 	deleteDeliveryApiKeyRes()
+}
+
+type DeleteRoleRes interface {
+	deleteRoleRes()
 }
 
 type GetAppInstallationRes interface {
@@ -57,6 +65,10 @@ type GetPreviewApiKeyRes interface {
 	getPreviewApiKeyRes()
 }
 
+type GetRoleRes interface {
+	getRoleRes()
+}
+
 type PutAppInstallationRes interface {
 	putAppInstallationRes()
 }
@@ -75,4 +87,8 @@ type RevokePersonalAccessTokenRes interface {
 
 type UpdateDeliveryApiKeyRes interface {
 	updateDeliveryApiKeyRes()
+}
+
+type UpdateRoleRes interface {
+	updateRoleRes()
 }

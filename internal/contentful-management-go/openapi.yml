@@ -446,6 +446,63 @@ components:
           required:
             - sys
         - $ref: '#/components/schemas/PreviewApiKeyFields'
+    RoleSys:
+      allOf:
+        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - Role
+    RoleFields:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        permissions:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+        policies:
+          type: array
+          items:
+            type: object
+            properties:
+              effect:
+                type: string
+                enum:
+                  - allow
+                  - deny
+              actions:
+                oneOf:
+                  - type: string
+                  - type: array
+                    items:
+                      type: string
+              constraint: {}
+            required:
+              - effect
+              - actions
+      required:
+        - name
+        - permissions
+    Role:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: '#/components/schemas/RoleSys'
+          required:
+            - sys
+        - $ref: '#/components/schemas/RoleFields'
   securitySchemes:
     accessToken:
       type: http
@@ -1026,6 +1083,118 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: '#/components/schemas/EditorInterface'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/roles:
+    post:
+      operationId: createRole
+      summary: Create a role
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/RoleFields'
+      responses:
+        201:
+          description: A role
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+  /spaces/{space_id}/roles/{role_id}:
+    get:
+      operationId: getRole
+      summary: Get a role
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: role_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: A role
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    put:
+      operationId: updateRole
+      summary: Update a role
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: role_id
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: X-Contentful-Version
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/RoleFields'
+      responses:
+        200:
+          description: A role
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        default:
+          $ref: '#/components/responses/error'
+    delete:
+      operationId: deleteRole
+      summary: Delete a role
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: role_id
+          schema:
+            type: string
+          required: true
+      responses:
+        204:
+          $ref: '#/components/responses/no-content'
         401:
           $ref: '#/components/responses/unauthorized'
         default:
