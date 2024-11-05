@@ -15,6 +15,11 @@ type CreateDeliveryApiKeyParams struct {
 	SpaceID string
 }
 
+// CreateRoleParams is parameters of createRole operation.
+type CreateRoleParams struct {
+	SpaceID string
+}
+
 // DeactivateContentTypeParams is parameters of deactivateContentType operation.
 type DeactivateContentTypeParams struct {
 	SpaceID       string
@@ -40,6 +45,12 @@ type DeleteContentTypeParams struct {
 type DeleteDeliveryApiKeyParams struct {
 	SpaceID  string
 	APIKeyID string
+}
+
+// DeleteRoleParams is parameters of deleteRole operation.
+type DeleteRoleParams struct {
+	SpaceID string
+	RoleID  string
 }
 
 // GetAppInstallationParams is parameters of getAppInstallation operation.
@@ -80,6 +91,12 @@ type GetPreviewApiKeyParams struct {
 	PreviewAPIKeyID string
 }
 
+// GetRoleParams is parameters of getRole operation.
+type GetRoleParams struct {
+	SpaceID string
+	RoleID  string
+}
+
 // PutAppInstallationParams is parameters of putAppInstallation operation.
 type PutAppInstallationParams struct {
 	SpaceID                string
@@ -113,5 +130,12 @@ type RevokePersonalAccessTokenParams struct {
 type UpdateDeliveryApiKeyParams struct {
 	SpaceID            string
 	APIKeyID           string
+	XContentfulVersion int
+}
+
+// UpdateRoleParams is parameters of updateRole operation.
+type UpdateRoleParams struct {
+	SpaceID            string
+	RoleID             string
 	XContentfulVersion int
 }

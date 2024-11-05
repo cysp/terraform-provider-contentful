@@ -35,6 +35,12 @@ type Invoker interface {
 	//
 	// POST /users/me/access_tokens
 	CreatePersonalAccessToken(ctx context.Context, request *CreatePersonalAccessTokenReq) (CreatePersonalAccessTokenRes, error)
+	// CreateRole invokes createRole operation.
+	//
+	// Create a role.
+	//
+	// POST /spaces/{space_id}/roles
+	CreateRole(ctx context.Context, request *CreateRoleReq, params CreateRoleParams) (CreateRoleRes, error)
 	// DeactivateContentType invokes deactivateContentType operation.
 	//
 	// Deactivate a content type.
@@ -59,6 +65,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/api_keys/{api_key_id}
 	DeleteDeliveryApiKey(ctx context.Context, params DeleteDeliveryApiKeyParams) (DeleteDeliveryApiKeyRes, error)
+	// DeleteRole invokes deleteRole operation.
+	//
+	// Delete a role.
+	//
+	// DELETE /spaces/{space_id}/roles/{role_id}
+	DeleteRole(ctx context.Context, params DeleteRoleParams) (DeleteRoleRes, error)
 	// GetAppInstallation invokes getAppInstallation operation.
 	//
 	// Get one app installation.
@@ -101,6 +113,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
 	GetPreviewApiKey(ctx context.Context, params GetPreviewApiKeyParams) (GetPreviewApiKeyRes, error)
+	// GetRole invokes getRole operation.
+	//
+	// Get a role.
+	//
+	// GET /spaces/{space_id}/roles/{role_id}
+	GetRole(ctx context.Context, params GetRoleParams) (GetRoleRes, error)
 	// PutAppInstallation invokes putAppInstallation operation.
 	//
 	// Install or update an app.
@@ -131,6 +149,12 @@ type Invoker interface {
 	//
 	// PUT /spaces/{space_id}/api_keys/{api_key_id}
 	UpdateDeliveryApiKey(ctx context.Context, request *UpdateDeliveryApiKeyReq, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error)
+	// UpdateRole invokes updateRole operation.
+	//
+	// Update a role.
+	//
+	// PUT /spaces/{space_id}/roles/{role_id}
+	UpdateRole(ctx context.Context, request *UpdateRoleReq, params UpdateRoleParams) (UpdateRoleRes, error)
 }
 
 // Client implements OAS client.
@@ -474,6 +498,97 @@ func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *Cre
 	defer resp.Body.Close()
 
 	result, err := decodeCreatePersonalAccessTokenResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// CreateRole invokes createRole operation.
+//
+// Create a role.
+//
+// POST /spaces/{space_id}/roles
+func (c *Client) CreateRole(ctx context.Context, request *CreateRoleReq, params CreateRoleParams) (CreateRoleRes, error) {
+	res, err := c.sendCreateRole(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendCreateRole(ctx context.Context, request *CreateRoleReq, params CreateRoleParams) (res CreateRoleRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/roles"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeCreateRoleRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "CreateRole", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeCreateRoleResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -956,6 +1071,112 @@ func (c *Client) sendDeleteDeliveryApiKey(ctx context.Context, params DeleteDeli
 	defer resp.Body.Close()
 
 	result, err := decodeDeleteDeliveryApiKeyResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// DeleteRole invokes deleteRole operation.
+//
+// Delete a role.
+//
+// DELETE /spaces/{space_id}/roles/{role_id}
+func (c *Client) DeleteRole(ctx context.Context, params DeleteRoleParams) (DeleteRoleRes, error) {
+	res, err := c.sendDeleteRole(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeleteRole(ctx context.Context, params DeleteRoleParams) (res DeleteRoleRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/roles/"
+	{
+		// Encode "role_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "role_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.RoleID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "DeleteRole", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeDeleteRoleResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -1707,6 +1928,112 @@ func (c *Client) sendGetPreviewApiKey(ctx context.Context, params GetPreviewApiK
 	return result, nil
 }
 
+// GetRole invokes getRole operation.
+//
+// Get a role.
+//
+// GET /spaces/{space_id}/roles/{role_id}
+func (c *Client) GetRole(ctx context.Context, params GetRoleParams) (GetRoleRes, error) {
+	res, err := c.sendGetRole(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetRole(ctx context.Context, params GetRoleParams) (res GetRoleRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/roles/"
+	{
+		// Encode "role_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "role_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.RoleID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "GetRole", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetRoleResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // PutAppInstallation invokes putAppInstallation operation.
 //
 // Install or update an app.
@@ -2337,6 +2664,128 @@ func (c *Client) sendUpdateDeliveryApiKey(ctx context.Context, request *UpdateDe
 	defer resp.Body.Close()
 
 	result, err := decodeUpdateDeliveryApiKeyResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// UpdateRole invokes updateRole operation.
+//
+// Update a role.
+//
+// PUT /spaces/{space_id}/roles/{role_id}
+func (c *Client) UpdateRole(ctx context.Context, request *UpdateRoleReq, params UpdateRoleParams) (UpdateRoleRes, error) {
+	res, err := c.sendUpdateRole(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendUpdateRole(ctx context.Context, request *UpdateRoleReq, params UpdateRoleParams) (res UpdateRoleRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/roles/"
+	{
+		// Encode "role_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "role_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.RoleID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeUpdateRoleRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, "UpdateRole", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeUpdateRoleResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
