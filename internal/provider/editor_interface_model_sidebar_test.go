@@ -6,7 +6,6 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +28,7 @@ func TestSidebarValueToPutEditorInterfaceReqSidebarItem(t *testing.T) {
 	assert.EqualValues(t, "widget_namespace", item.WidgetNamespace)
 	assert.EqualValues(t, "widget_id", item.WidgetId)
 	assert.False(t, item.Disabled.Set)
-	assert.True(t, item.Settings.Set)
+	assert.NotEmpty(t, item.Settings)
 
 	assert.Empty(t, diags)
 }
@@ -49,8 +48,7 @@ func TestSidebarValueToPutEditorInterfaceReqSidebarItemInvalidSettings(t *testin
 	sidebarItem, diags := model.ToPutEditorInterfaceReqSidebarItem(ctx, path)
 
 	assert.NotNil(t, sidebarItem)
-	assert.NotEmpty(t, diags)
-	assert.Len(t, diags, 1)
+	assert.Empty(t, diags)
 }
 
 func TestNewSidebarValueFromResponse(t *testing.T) {
@@ -61,9 +59,7 @@ func TestNewSidebarValueFromResponse(t *testing.T) {
 	item := contentfulManagement.EditorInterfaceSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
-		Settings: contentfulManagement.NewOptEditorInterfaceSidebarItemSettings(map[string]jx.Raw{
-			"foo": jx.Raw(`"bar"`),
-		}),
+		Settings:        []byte(`{"foo":"bar"}`),
 	}
 
 	value, valueDiags := provider.NewSidebarValueFromResponse(path, item)

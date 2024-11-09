@@ -7,7 +7,6 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -62,9 +61,7 @@ func (model *AppInstallationModel) ToPutAppInstallationReq() (contentfulManageme
 		diags.AddAttributeWarning(path.Root("parameters"), "Failed to update app installation parameters", "Parameters are unknown")
 	case model.Parameters.IsNull():
 	default:
-		appInstallationParametersValue := contentfulManagement.PutAppInstallationReqParameters{}
-		diags.Append(model.Parameters.Unmarshal(&appInstallationParametersValue)...)
-		req.Parameters.SetTo(appInstallationParametersValue)
+		req.Parameters = []byte(model.Parameters.ValueString())
 	}
 
 	return req, diags
@@ -75,10 +72,13 @@ func (model *AppInstallationModel) ReadFromResponse(appInstallation *contentfulM
 
 	// SpaceId, EnvironmentId and AppDefinitionId are all already known
 
-	if parameters, ok := appInstallation.Parameters.Get(); ok {
-		encoder := jx.Encoder{}
-		util.EncodeJxRawMapOrdered(&encoder, parameters)
-		model.Parameters = jsontypes.NewNormalizedValue(encoder.String())
+	if appInstallation.Parameters != nil {
+		constraint, err := util.JxNormalizeOpaqueBytes(appInstallation.Parameters, util.JxEncodeOpaqueOptions{EscapeStrings: true})
+		if err != nil {
+			diags.AddAttributeError(path.Root("parameters"), "Failed to read parameters", err.Error())
+		}
+
+		model.Parameters = jsontypes.NewNormalizedValue(string(constraint))
 	} else {
 		model.Parameters = jsontypes.NewNormalizedNull()
 	}

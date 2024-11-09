@@ -714,9 +714,9 @@ func (s *AppInstallation) encodeFields(e *jx.Encoder) {
 		s.Sys.Encode(e)
 	}
 	{
-		if s.Parameters.Set {
+		if len(s.Parameters) != 0 {
 			e.FieldStart("parameters")
-			s.Parameters.Encode(e)
+			e.Raw(s.Parameters)
 		}
 	}
 }
@@ -747,8 +747,9 @@ func (s *AppInstallation) Decode(d *jx.Decoder) error {
 			}
 		case "parameters":
 			if err := func() error {
-				s.Parameters.Reset()
-				if err := s.Parameters.Decode(d); err != nil {
+				v, err := d.RawAppend(nil)
+				s.Parameters = jx.Raw(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -807,64 +808,6 @@ func (s *AppInstallation) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *AppInstallation) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
-func (s AppInstallationParameters) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields implements json.Marshaler.
-func (s AppInstallationParameters) encodeFields(e *jx.Encoder) {
-	for k, elem := range s {
-		e.FieldStart(k)
-
-		if len(elem) != 0 {
-			e.Raw(elem)
-		}
-	}
-}
-
-// Decode decodes AppInstallationParameters from json.
-func (s *AppInstallationParameters) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode AppInstallationParameters to nil")
-	}
-	m := s.init()
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem jx.Raw
-		if err := func() error {
-			v, err := d.RawAppend(nil)
-			elem = jx.Raw(v)
-			if err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrapf(err, "decode field %q", k)
-		}
-		m[string(k)] = elem
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode AppInstallationParameters")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s AppInstallationParameters) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *AppInstallationParameters) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -2235,9 +2178,9 @@ func (s *EditorInterfaceControlsItem) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
-		if s.Settings.Set {
+		if len(s.Settings) != 0 {
 			e.FieldStart("settings")
-			s.Settings.Encode(e)
+			e.Raw(s.Settings)
 		}
 	}
 }
@@ -2292,8 +2235,9 @@ func (s *EditorInterfaceControlsItem) Decode(d *jx.Decoder) error {
 			}
 		case "settings":
 			if err := func() error {
-				s.Settings.Reset()
-				if err := s.Settings.Decode(d); err != nil {
+				v, err := d.RawAppend(nil)
+				s.Settings = jx.Raw(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -2357,64 +2301,6 @@ func (s *EditorInterfaceControlsItem) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s EditorInterfaceControlsItemSettings) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields implements json.Marshaler.
-func (s EditorInterfaceControlsItemSettings) encodeFields(e *jx.Encoder) {
-	for k, elem := range s {
-		e.FieldStart(k)
-
-		if len(elem) != 0 {
-			e.Raw(elem)
-		}
-	}
-}
-
-// Decode decodes EditorInterfaceControlsItemSettings from json.
-func (s *EditorInterfaceControlsItemSettings) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode EditorInterfaceControlsItemSettings to nil")
-	}
-	m := s.init()
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem jx.Raw
-		if err := func() error {
-			v, err := d.RawAppend(nil)
-			elem = jx.Raw(v)
-			if err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrapf(err, "decode field %q", k)
-		}
-		m[string(k)] = elem
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode EditorInterfaceControlsItemSettings")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s EditorInterfaceControlsItemSettings) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *EditorInterfaceControlsItemSettings) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
 func (s *EditorInterfaceSidebarItem) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -2432,9 +2318,9 @@ func (s *EditorInterfaceSidebarItem) encodeFields(e *jx.Encoder) {
 		e.Str(s.WidgetId)
 	}
 	{
-		if s.Settings.Set {
+		if len(s.Settings) != 0 {
 			e.FieldStart("settings")
-			s.Settings.Encode(e)
+			e.Raw(s.Settings)
 		}
 	}
 	{
@@ -2487,8 +2373,9 @@ func (s *EditorInterfaceSidebarItem) Decode(d *jx.Decoder) error {
 			}
 		case "settings":
 			if err := func() error {
-				s.Settings.Reset()
-				if err := s.Settings.Decode(d); err != nil {
+				v, err := d.RawAppend(nil)
+				s.Settings = jx.Raw(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -2557,64 +2444,6 @@ func (s *EditorInterfaceSidebarItem) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *EditorInterfaceSidebarItem) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
-func (s EditorInterfaceSidebarItemSettings) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields implements json.Marshaler.
-func (s EditorInterfaceSidebarItemSettings) encodeFields(e *jx.Encoder) {
-	for k, elem := range s {
-		e.FieldStart(k)
-
-		if len(elem) != 0 {
-			e.Raw(elem)
-		}
-	}
-}
-
-// Decode decodes EditorInterfaceSidebarItemSettings from json.
-func (s *EditorInterfaceSidebarItemSettings) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode EditorInterfaceSidebarItemSettings to nil")
-	}
-	m := s.init()
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem jx.Raw
-		if err := func() error {
-			v, err := d.RawAppend(nil)
-			elem = jx.Raw(v)
-			if err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrapf(err, "decode field %q", k)
-		}
-		m[string(k)] = elem
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode EditorInterfaceSidebarItemSettings")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s EditorInterfaceSidebarItemSettings) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *EditorInterfaceSidebarItemSettings) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -3472,40 +3301,6 @@ func (s *OptApiKeyPreviewAPIKey) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
-// Encode encodes AppInstallationParameters as json.
-func (o OptAppInstallationParameters) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes AppInstallationParameters from json.
-func (o *OptAppInstallationParameters) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptAppInstallationParameters to nil")
-	}
-	o.Set = true
-	o.Value = make(AppInstallationParameters)
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptAppInstallationParameters) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptAppInstallationParameters) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
 // Encode encodes bool as json.
 func (o OptBool) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -3607,74 +3402,6 @@ func (s OptDateTime) MarshalJSON() ([]byte, error) {
 func (s *OptDateTime) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d, json.DecodeDateTime)
-}
-
-// Encode encodes EditorInterfaceControlsItemSettings as json.
-func (o OptEditorInterfaceControlsItemSettings) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes EditorInterfaceControlsItemSettings from json.
-func (o *OptEditorInterfaceControlsItemSettings) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptEditorInterfaceControlsItemSettings to nil")
-	}
-	o.Set = true
-	o.Value = make(EditorInterfaceControlsItemSettings)
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptEditorInterfaceControlsItemSettings) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptEditorInterfaceControlsItemSettings) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes EditorInterfaceSidebarItemSettings as json.
-func (o OptEditorInterfaceSidebarItemSettings) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes EditorInterfaceSidebarItemSettings from json.
-func (o *OptEditorInterfaceSidebarItemSettings) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptEditorInterfaceSidebarItemSettings to nil")
-	}
-	o.Set = true
-	o.Value = make(EditorInterfaceSidebarItemSettings)
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptEditorInterfaceSidebarItemSettings) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptEditorInterfaceSidebarItemSettings) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
 }
 
 // Encode encodes int as json.
@@ -4109,40 +3836,6 @@ func (s *OptNilString) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
-// Encode encodes PutAppInstallationReqParameters as json.
-func (o OptPutAppInstallationReqParameters) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes PutAppInstallationReqParameters from json.
-func (o *OptPutAppInstallationReqParameters) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptPutAppInstallationReqParameters to nil")
-	}
-	o.Set = true
-	o.Value = make(PutAppInstallationReqParameters)
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptPutAppInstallationReqParameters) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptPutAppInstallationReqParameters) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
 // Encode encodes PutContentTypeReqFieldsItemItems as json.
 func (o OptPutContentTypeReqFieldsItemItems) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -4172,74 +3865,6 @@ func (s OptPutContentTypeReqFieldsItemItems) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptPutContentTypeReqFieldsItemItems) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes PutEditorInterfaceReqControlsItemSettings as json.
-func (o OptPutEditorInterfaceReqControlsItemSettings) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes PutEditorInterfaceReqControlsItemSettings from json.
-func (o *OptPutEditorInterfaceReqControlsItemSettings) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptPutEditorInterfaceReqControlsItemSettings to nil")
-	}
-	o.Set = true
-	o.Value = make(PutEditorInterfaceReqControlsItemSettings)
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptPutEditorInterfaceReqControlsItemSettings) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptPutEditorInterfaceReqControlsItemSettings) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes PutEditorInterfaceReqSidebarItemSettings as json.
-func (o OptPutEditorInterfaceReqSidebarItemSettings) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes PutEditorInterfaceReqSidebarItemSettings from json.
-func (o *OptPutEditorInterfaceReqSidebarItemSettings) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptPutEditorInterfaceReqSidebarItemSettings to nil")
-	}
-	o.Set = true
-	o.Value = make(PutEditorInterfaceReqSidebarItemSettings)
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptPutEditorInterfaceReqSidebarItemSettings) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptPutEditorInterfaceReqSidebarItemSettings) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -5036,9 +4661,9 @@ func (s *PutAppInstallationReq) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *PutAppInstallationReq) encodeFields(e *jx.Encoder) {
 	{
-		if s.Parameters.Set {
+		if len(s.Parameters) != 0 {
 			e.FieldStart("parameters")
-			s.Parameters.Encode(e)
+			e.Raw(s.Parameters)
 		}
 	}
 }
@@ -5057,8 +4682,9 @@ func (s *PutAppInstallationReq) Decode(d *jx.Decoder) error {
 		switch string(k) {
 		case "parameters":
 			if err := func() error {
-				s.Parameters.Reset()
-				if err := s.Parameters.Decode(d); err != nil {
+				v, err := d.RawAppend(nil)
+				s.Parameters = jx.Raw(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -5085,64 +4711,6 @@ func (s *PutAppInstallationReq) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *PutAppInstallationReq) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
-func (s PutAppInstallationReqParameters) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields implements json.Marshaler.
-func (s PutAppInstallationReqParameters) encodeFields(e *jx.Encoder) {
-	for k, elem := range s {
-		e.FieldStart(k)
-
-		if len(elem) != 0 {
-			e.Raw(elem)
-		}
-	}
-}
-
-// Decode decodes PutAppInstallationReqParameters from json.
-func (s *PutAppInstallationReqParameters) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode PutAppInstallationReqParameters to nil")
-	}
-	m := s.init()
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem jx.Raw
-		if err := func() error {
-			v, err := d.RawAppend(nil)
-			elem = jx.Raw(v)
-			if err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrapf(err, "decode field %q", k)
-		}
-		m[string(k)] = elem
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode PutAppInstallationReqParameters")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s PutAppInstallationReqParameters) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *PutAppInstallationReqParameters) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -5881,9 +5449,9 @@ func (s *PutEditorInterfaceReqControlsItem) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
-		if s.Settings.Set {
+		if len(s.Settings) != 0 {
 			e.FieldStart("settings")
-			s.Settings.Encode(e)
+			e.Raw(s.Settings)
 		}
 	}
 }
@@ -5938,8 +5506,9 @@ func (s *PutEditorInterfaceReqControlsItem) Decode(d *jx.Decoder) error {
 			}
 		case "settings":
 			if err := func() error {
-				s.Settings.Reset()
-				if err := s.Settings.Decode(d); err != nil {
+				v, err := d.RawAppend(nil)
+				s.Settings = jx.Raw(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -6003,64 +5572,6 @@ func (s *PutEditorInterfaceReqControlsItem) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s PutEditorInterfaceReqControlsItemSettings) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields implements json.Marshaler.
-func (s PutEditorInterfaceReqControlsItemSettings) encodeFields(e *jx.Encoder) {
-	for k, elem := range s {
-		e.FieldStart(k)
-
-		if len(elem) != 0 {
-			e.Raw(elem)
-		}
-	}
-}
-
-// Decode decodes PutEditorInterfaceReqControlsItemSettings from json.
-func (s *PutEditorInterfaceReqControlsItemSettings) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode PutEditorInterfaceReqControlsItemSettings to nil")
-	}
-	m := s.init()
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem jx.Raw
-		if err := func() error {
-			v, err := d.RawAppend(nil)
-			elem = jx.Raw(v)
-			if err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrapf(err, "decode field %q", k)
-		}
-		m[string(k)] = elem
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode PutEditorInterfaceReqControlsItemSettings")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s PutEditorInterfaceReqControlsItemSettings) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *PutEditorInterfaceReqControlsItemSettings) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
 func (s *PutEditorInterfaceReqSidebarItem) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -6078,9 +5589,9 @@ func (s *PutEditorInterfaceReqSidebarItem) encodeFields(e *jx.Encoder) {
 		e.Str(s.WidgetId)
 	}
 	{
-		if s.Settings.Set {
+		if len(s.Settings) != 0 {
 			e.FieldStart("settings")
-			s.Settings.Encode(e)
+			e.Raw(s.Settings)
 		}
 	}
 	{
@@ -6133,8 +5644,9 @@ func (s *PutEditorInterfaceReqSidebarItem) Decode(d *jx.Decoder) error {
 			}
 		case "settings":
 			if err := func() error {
-				s.Settings.Reset()
-				if err := s.Settings.Decode(d); err != nil {
+				v, err := d.RawAppend(nil)
+				s.Settings = jx.Raw(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -6203,64 +5715,6 @@ func (s *PutEditorInterfaceReqSidebarItem) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *PutEditorInterfaceReqSidebarItem) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
-func (s PutEditorInterfaceReqSidebarItemSettings) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields implements json.Marshaler.
-func (s PutEditorInterfaceReqSidebarItemSettings) encodeFields(e *jx.Encoder) {
-	for k, elem := range s {
-		e.FieldStart(k)
-
-		if len(elem) != 0 {
-			e.Raw(elem)
-		}
-	}
-}
-
-// Decode decodes PutEditorInterfaceReqSidebarItemSettings from json.
-func (s *PutEditorInterfaceReqSidebarItemSettings) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode PutEditorInterfaceReqSidebarItemSettings to nil")
-	}
-	m := s.init()
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem jx.Raw
-		if err := func() error {
-			v, err := d.RawAppend(nil)
-			elem = jx.Raw(v)
-			if err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrapf(err, "decode field %q", k)
-		}
-		m[string(k)] = elem
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode PutEditorInterfaceReqSidebarItemSettings")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s PutEditorInterfaceReqSidebarItemSettings) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *PutEditorInterfaceReqSidebarItemSettings) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
