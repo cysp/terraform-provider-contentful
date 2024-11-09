@@ -24,47 +24,186 @@ func TestJsonMarshalEscaping(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestEncodeJxRawMapOrdered(t *testing.T) {
+func TestJxNormalizeOpaqueBytes(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		input    map[string]jx.Raw
-		expected string
+		input                      []byte
+		expected                   []byte
+		expectedWithEscapedStrings []byte
 	}{
-		"empty": {
-			input:    map[string]jx.Raw{},
-			expected: "{}",
+		"object": {
+			input:                      []byte(`{"string": "string", "number": 2, "boolean": true, "null": null, "string_with_escapes": "a<b&c>d"}`),
+			expected:                   []byte(`{"boolean":true,"null":null,"number":2,"string":"string","string_with_escapes":"a<b&c>d"}`),
+			expectedWithEscapedStrings: []byte(`{"boolean":true,"null":null,"number":2,"string":"string","string_with_escapes":"a\u003cb\u0026c\u003ed"}`),
 		},
-		"a=b": {
-			input: map[string]jx.Raw{
-				"a": jx.Raw(`"b"`),
-			},
-			expected: `{"a":"b"}`,
+		"array": {
+			input:    []byte(`["string", 2, true]`),
+			expected: []byte(`["string",2,true]`),
 		},
-		"a=2": {
-			input: map[string]jx.Raw{
-				"a": jx.Raw(`2`),
-			},
-			expected: `{"a":2}`,
+		"string": {
+			input:    []byte(`"string"`),
+			expected: []byte(`"string"`),
 		},
-		"a<b&c>d=e<f&g>h": {
-			input: map[string]jx.Raw{
-				"a<b&c>d": jx.Raw(`"e<f&g>h"`),
-			},
-			// n.b. not applying escaping to keys, since i don't need that at this time
-			expected: `{"a<b&c>d":"e\u003cf\u0026g\u003eh"}`,
+		"number": {
+			input:    []byte(`123`),
+			expected: []byte(`123`),
+		},
+		"boolean": {
+			input:    []byte(`true`),
+			expected: []byte(`true`),
+		},
+		"null": {
+			input:    []byte(`null`),
+			expected: []byte(`null`),
 		},
 	}
 
-	for name, test := range tests {
+	for name, testcase := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			actual, err := util.JxNormalizeOpaqueBytes(testcase.input, util.JxEncodeOpaqueOptions{EscapeStrings: false})
+
+			assert.Equal(t, testcase.expected, actual)
+			assert.NoError(t, err)
+		})
+
+		t.Run(name+" with escaped strings", func(t *testing.T) {
+			t.Parallel()
+
+			actual, err := util.JxNormalizeOpaqueBytes(testcase.input, util.JxEncodeOpaqueOptions{EscapeStrings: true})
+
+			expected := testcase.expectedWithEscapedStrings
+			if expected == nil {
+				expected = testcase.expected
+			}
+
+			assert.Equal(t, expected, actual)
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestJxNormalizeOpaqueBytesInvalid(t *testing.T) {
+	t.Parallel()
+
+	_, err := util.JxNormalizeOpaqueBytes([]byte("invalid"), util.JxEncodeOpaqueOptions{})
+
+	assert.Error(t, err)
+}
+
+func TestJxDecodeOpaque(t *testing.T) {
+	t.Parallel()
+
+	input := []byte(`{"a": "b", "c": 4, "d": true}`)
+	expected := map[string]interface{}{
+		"a": "b",
+		"c": float64(4),
+		"d": true,
+	}
+
+	decoder := jx.DecodeBytes(input)
+	actual, err := util.JxDecodeOpaque(decoder)
+
+	assert.Equal(t, expected, actual)
+	assert.NoError(t, err)
+}
+
+func TestJxEncodeOpaqueOrdered(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"object": map[string]interface{}{
+			"b": 1,
+			"d": 2,
+			"c": 3,
+			"a": 4,
+		},
+		"array": []interface{}{
+			"b",
+			"d",
+			"c",
+			"a",
+		},
+		"string": "abcd",
+		"int":    int(-42),
+		"int8":   []interface{}{int8(-128), int8(127)},
+		"int16":  []interface{}{int16(-32768), int16(32767)},
+		"int32":  []interface{}{int32(-2147483648), int32(2147483647)},
+		"int64":  []interface{}{int64(-9223372036854775808), int64(9223372036854775807)},
+		"uint":   uint(42),
+		"uint8":  []interface{}{uint8(0), uint8(255)},
+		"uint16": []interface{}{uint16(0), uint16(65535)},
+		"uint32": []interface{}{uint32(0), uint32(4294967295)},
+		"uint64": []interface{}{uint64(0), uint64(18446744073709551615)},
+		"float32": []interface{}{
+			float32(-3.40282346638528859811704183484516925440e+38),
+			float32(3.40282346638528859811704183484516925440e+38),
+		},
+		"float64": []interface{}{
+			float64(-1.797693134862315708145274237317043567981e+308),
+			float64(1.797693134862315708145274237317043567981e+308),
+		},
+		"bool": []interface{}{true, false},
+		"null": []interface{}{nil},
+	}
+	expected := `{` +
+		`"array":["b","d","c","a"],` +
+		`"bool":[true,false],` +
+		`"float32":[-3.4028235e+38,3.4028235e+38],` +
+		`"float64":[-1.7976931348623157e+308,1.7976931348623157e+308],` +
+		`"int":-42,` +
+		`"int16":[-32768,32767],` +
+		`"int32":[-2147483648,2147483647],` +
+		`"int64":[-9223372036854775808,9223372036854775807],` +
+		`"int8":[-128,127],` +
+		`"null":[null],` +
+		`"object":{"a":4,"b":1,"c":3,"d":2},` +
+		`"string":"abcd",` +
+		`"uint":42,` +
+		`"uint16":[0,65535],` +
+		`"uint32":[0,4294967295],` +
+		`"uint64":[0,18446744073709551615],` +
+		`"uint8":[0,255]` +
+		`}`
+
+	encoder := jx.Encoder{}
+	err := util.JxEncodeOpaqueOrdered(&encoder, input, util.JxEncodeOpaqueOptions{EscapeStrings: false})
+
+	assert.Equal(t, expected, string(encoder.Bytes()))
+	assert.NoError(t, err)
+}
+
+func TestJxEncodeOpaqueOrderedInvalid(t *testing.T) {
+	t.Parallel()
+
+	type Unencodable struct{}
+
+	tests := map[string]struct {
+		input interface{}
+	}{
+		"root": {
+			input: Unencodable{},
+		},
+		"object": {
+			input: map[string]interface{}{
+				"key": Unencodable{},
+			},
+		},
+		"array": {input: []interface{}{
+			Unencodable{},
+		}},
+	}
+
+	for name, testcase := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
 			encoder := jx.Encoder{}
+			err := util.JxEncodeOpaqueOrdered(&encoder, testcase.input, util.JxEncodeOpaqueOptions{})
 
-			util.EncodeJxRawMapOrdered(&encoder, test.input)
-
-			assert.Equal(t, test.expected, encoder.String())
+			assert.Error(t, err)
 		})
 	}
 }

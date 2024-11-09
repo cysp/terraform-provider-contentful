@@ -71,7 +71,7 @@ func (model *FieldsValue) ToPutContentTypeReqFieldsItem(ctx context.Context, pat
 
 	modelDefaultValueValue := model.DefaultValue.ValueString()
 	if modelDefaultValueValue != "" {
-		fieldsItem.DefaultValue = jx.Raw(modelDefaultValueValue)
+		fieldsItem.DefaultValue = []byte(modelDefaultValueValue)
 	}
 
 	return fieldsItem, diags

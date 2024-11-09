@@ -7,9 +7,7 @@ import (
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -62,24 +60,14 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 				FieldId:         "field_id",
 				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
 				WidgetId:        contentfulManagement.NewOptString("widget_id"),
-				Settings: contentfulManagement.OptPutEditorInterfaceReqControlsItemSettings{
-					Set: true,
-					Value: map[string]jx.Raw{
-						"foo": jx.Raw(`"bar"`),
-					},
-				},
+				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
 		Sidebar: contentfulManagement.NewOptNilPutEditorInterfaceReqSidebarItemArray([]contentfulManagement.PutEditorInterfaceReqSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
-				Settings: contentfulManagement.OptPutEditorInterfaceReqSidebarItemSettings{
-					Set: true,
-					Value: map[string]jx.Raw{
-						"foo": jx.Raw(`"bar"`),
-					},
-				},
+				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
 	}, req)
@@ -161,21 +149,13 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 				FieldId:         "field_id",
 				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
 				WidgetId:        contentfulManagement.NewOptString("widget_id"),
-				Settings: contentfulManagement.OptPutEditorInterfaceReqControlsItemSettings{
-					Set:   true,
-					Value: map[string]jx.Raw{},
-				},
+				Settings:        []byte("invalid json"),
 			},
 			{
 				FieldId:         "field_id",
 				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
 				WidgetId:        contentfulManagement.NewOptString("widget_id"),
-				Settings: contentfulManagement.OptPutEditorInterfaceReqControlsItemSettings{
-					Set: true,
-					Value: map[string]jx.Raw{
-						"foo": jx.Raw(`"bar"`),
-					},
-				},
+				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
 		Sidebar: contentfulManagement.NewOptNilPutEditorInterfaceReqSidebarItemArray([]contentfulManagement.PutEditorInterfaceReqSidebarItem{
@@ -186,33 +166,17 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
-				Settings: contentfulManagement.OptPutEditorInterfaceReqSidebarItemSettings{
-					Set:   true,
-					Value: map[string]jx.Raw{},
-				},
+				Settings:        []byte("invalid json"),
 			},
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
-				Settings: contentfulManagement.OptPutEditorInterfaceReqSidebarItemSettings{
-					Set: true,
-					Value: map[string]jx.Raw{
-						"foo": jx.Raw(`"bar"`),
-					},
-				},
+				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
 	}, req)
 
-	assert.Len(t, diags, 2)
-
-	//nolint:forcetypeassert
-	assert.EqualValues(t, "controls[1].settings", diags[0].(diag.DiagnosticWithPath).Path().String())
-	assert.EqualValues(t, "Failed to decode settings", diags[0].Summary())
-
-	//nolint:forcetypeassert
-	assert.EqualValues(t, "sidebar[1].settings", diags[1].(diag.DiagnosticWithPath).Path().String())
-	assert.EqualValues(t, "Failed to decode settings", diags[1].Summary())
+	assert.Empty(t, diags)
 }
 
 func TestReadFromResponse(t *testing.T) {

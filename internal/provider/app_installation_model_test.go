@@ -112,8 +112,7 @@ func TestToPutAppInstallationReq(t *testing.T) {
 			model: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("invalid"),
 			},
-			expectErrors:        true,
-			expectedRequestBody: "{\"parameters\":{}}",
+			expectedRequestBody: "{\"parameters\":invalid}",
 		},
 	}
 
@@ -155,7 +154,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		},
 		"empty": {
 			appInstallation: contentfulManagement.AppInstallation{
-				Parameters: contentfulManagement.NewOptAppInstallationParameters(contentfulManagement.AppInstallationParameters{}),
+				Parameters: []byte("{}"),
 			},
 			expectedModel: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("{}"),
@@ -163,9 +162,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		},
 		"foo=bar": {
 			appInstallation: contentfulManagement.AppInstallation{
-				Parameters: contentfulManagement.NewOptAppInstallationParameters(contentfulManagement.AppInstallationParameters{
-					"foo": []byte{'"', 'b', 'a', 'r', '"'},
-				}),
+				Parameters: []byte("{\"foo\":\"bar\"}"),
 			},
 			expectedModel: provider.AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),

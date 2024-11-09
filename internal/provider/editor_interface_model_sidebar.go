@@ -5,7 +5,6 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -18,7 +17,7 @@ func NewSidebarValueKnown() SidebarValue {
 	}
 }
 
-func (m *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context, path path.Path) (contentfulManagement.PutEditorInterfaceReqSidebarItem, diag.Diagnostics) {
+func (m *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context, _ path.Path) (contentfulManagement.PutEditorInterfaceReqSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := contentfulManagement.PutEditorInterfaceReqSidebarItem{
@@ -34,22 +33,15 @@ func (m *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context, pat
 	if !m.Settings.IsNull() && !m.Settings.IsUnknown() {
 		modelSettings := m.Settings.ValueString()
 
-		path := path.AtName("settings")
-
 		if modelSettings != "" {
-			decoder := jx.DecodeStr(modelSettings)
-
-			err := item.Settings.Decode(decoder)
-			if err != nil {
-				diags.AddAttributeError(path, "Failed to decode settings", err.Error())
-			}
+			item.Settings = []byte(modelSettings)
 		}
 	}
 
 	return item, diags
 }
 
-func NewSidebarValueFromResponse(_ path.Path, item contentfulManagement.EditorInterfaceSidebarItem) (SidebarValue, diag.Diagnostics) {
+func NewSidebarValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceSidebarItem) (SidebarValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := SidebarValue{
@@ -64,10 +56,13 @@ func NewSidebarValueFromResponse(_ path.Path, item contentfulManagement.EditorIn
 		value.Disabled = types.BoolValue(disabled)
 	}
 
-	if settings, ok := item.Settings.Get(); ok {
-		encoder := jx.Encoder{}
-		util.EncodeJxRawMapOrdered(&encoder, settings)
-		value.Settings = types.StringValue(encoder.String())
+	if item.Settings != nil {
+		settings, err := util.JxNormalizeOpaqueBytes(item.Settings, util.JxEncodeOpaqueOptions{EscapeStrings: true})
+		if err != nil {
+			diags.AddAttributeError(path.AtName("settings"), "Failed to read settings", err.Error())
+		}
+
+		value.Settings = types.StringValue(string(settings))
 	}
 
 	return value, diags
