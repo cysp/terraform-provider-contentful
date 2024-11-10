@@ -7,6 +7,38 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewOptNilPointerString(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		input    *string
+		expected contentfulManagement.OptNilString
+	}{
+		"test": {
+			input:    addressOf("test"),
+			expected: contentfulManagement.NewOptNilString("test"),
+		},
+		"empty": {
+			input:    addressOf(""),
+			expected: contentfulManagement.NewOptNilString(""),
+		},
+		"nil": {
+			input:    nil,
+			expected: contentfulManagement.NewOptNilStringNull(),
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			actual := contentfulManagement.NewOptNilPointerString(test.input)
+
+			assert.EqualValues(t, test.expected, actual)
+		})
+	}
+}
+
 func TestOptNilStringValueStringPointer(t *testing.T) {
 	t.Parallel()
 
