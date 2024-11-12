@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"slices"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -16,32 +17,33 @@ func NewHeadersValueKnown() HeadersValue {
 	}
 }
 
-func ReadHeadersListValueFromResponse(ctx context.Context, path path.Path, model types.List, headers []contentfulManagement.WebhookDefinitionHeader) (types.List, diag.Diagnostics) {
+func ReadHeadersListValueFromResponse(ctx context.Context, path path.Path, model types.Map, headers []contentfulManagement.WebhookDefinitionHeader) (types.Map, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	headersValues := make([]attr.Value, len(headers))
+	headersValues := make(map[string]attr.Value, len(headers))
 
-	existingHeaderValues := make([]HeadersValue, len(headers))
+	// existingHeaderValues := make([]HeadersValue, len(headers))
+	// diags.Append(model.ElementsAs(ctx, &existingHeaderValues, false)...)
+
+	existingHeaderValues := make(map[string]HeadersValue, len(model.Elements()))
 	diags.Append(model.ElementsAs(ctx, &existingHeaderValues, false)...)
+	// for _, value := range existingHeaderValues {
+	// 	existingHeaderValuesByKey[value.Key.ValueString()] = value
+	// }
 
-	existingHeaderValuesByKey := make(map[string]HeadersValue, len(existingHeaderValues))
-	for _, value := range existingHeaderValues {
-		existingHeaderValuesByKey[value.Key.ValueString()] = value
-	}
-
-	for index, header := range headers {
+	for _, header := range headers {
 		var value HeadersValue
-		if existingHeader, found := existingHeaderValuesByKey[header.Key]; found {
+		if existingHeader, found := existingHeaderValues[header.Key]; found {
 			value = existingHeader
 		} else {
 			value = NewHeadersValueKnown()
 		}
 
-		diags.Append(value.ReadFromResponse(ctx, path.AtListIndex(index), header)...)
-		headersValues[index] = value
+		diags.Append(value.ReadFromResponse(ctx, path.AtMapKey(header.Key), header)...)
+		headersValues[header.Key] = value
 	}
 
-	headersList, headersListDiags := types.ListValue(HeadersValue{}.Type(ctx), headersValues)
+	headersList, headersListDiags := types.MapValue(HeadersValue{}.Type(ctx), headersValues)
 	diags.Append(headersListDiags...)
 
 	return headersList, diags
@@ -51,8 +53,6 @@ func (model *HeadersValue) ReadFromResponse(_ context.Context, _ path.Path, head
 	diags := diag.Diagnostics{}
 
 	headerIsSecret := header.Secret.Or(false)
-
-	model.Key = types.StringValue(header.Key)
 
 	if value, ok := header.Value.Get(); ok {
 		model.Value = types.StringValue(value)
@@ -65,16 +65,29 @@ func (model *HeadersValue) ReadFromResponse(_ context.Context, _ path.Path, head
 	return diags
 }
 
-func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model types.List) (contentfulManagement.WebhookDefinitionHeaders, diag.Diagnostics) {
+func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model types.Map) (contentfulManagement.WebhookDefinitionHeaders, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	headers := make(contentfulManagement.WebhookDefinitionHeaders, len(model.Elements()))
 
-	headersValues := make([]HeadersValue, len(model.Elements()))
+	headersValues := make(map[string]HeadersValue, len(model.Elements()))
 	diags.Append(model.ElementsAs(ctx, &headersValues, false)...)
 
-	for index, headersValue := range headersValues {
-		header, headerDiags := headersValue.ToWebhookDefinitionHeader(ctx, path.AtListIndex(index))
+	headersKeys := make([]string, len(headersValues))
+
+	index := 0
+
+	for key := range headersValues {
+		headersKeys[index] = key
+		index++
+	}
+
+	slices.Sort(headersKeys)
+
+	for index, key := range headersKeys {
+		headersValue := headersValues[key]
+
+		header, headerDiags := headersValue.ToWebhookDefinitionHeader(ctx, path.AtMapKey(key), key)
 		diags.Append(headerDiags...)
 
 		headers[index] = header
@@ -83,11 +96,11 @@ func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model types
 	return headers, diags
 }
 
-func (model *HeadersValue) ToWebhookDefinitionHeader(_ context.Context, path path.Path) (contentfulManagement.WebhookDefinitionHeader, diag.Diagnostics) {
+func (model *HeadersValue) ToWebhookDefinitionHeader(_ context.Context, path path.Path, key string) (contentfulManagement.WebhookDefinitionHeader, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	header := contentfulManagement.WebhookDefinitionHeader{
-		Key: model.Key.ValueString(),
+		Key: key,
 	}
 
 	if model.Value.IsNull() || model.Value.IsUnknown() {
