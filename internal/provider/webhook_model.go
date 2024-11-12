@@ -10,21 +10,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *WebhookModel) ToCreateWebhookDefinitionReq(_ context.Context) (contentfulManagement.CreateWebhookDefinitionReq, diag.Diagnostics) {
+func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context) (contentfulManagement.CreateWebhookDefinitionReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	req := contentfulManagement.CreateWebhookDefinitionReq{
-		Name: model.Name.ValueString(),
+		Name:              model.Name.ValueString(),
+		URL:               model.Url.ValueString(),
+		Active:            util.BoolValueToOptBool(model.Active),
+		HttpBasicUsername: contentfulManagement.NewOptNilPointerString(model.HttpBasicUsername.ValueStringPointer()),
+		HttpBasicPassword: contentfulManagement.NewOptNilPointerString(model.HttpBasicPassword.ValueStringPointer()),
 	}
 
-	// scopes := make([]string, len(model.Scopes.Elements()))
-	// diags.Append(model.Scopes.ElementsAs(ctx, &scopes, false)...)
+	topics := make([]string, len(model.Topics.Elements()))
+	diags.Append(model.Topics.ElementsAs(ctx, &topics, false)...)
 
-	// req.Scopes = scopes
+	req.Topics = topics
 
-	// if !model.ExpiresIn.IsNull() && !model.ExpiresIn.IsUnknown() {
-	// 	req.ExpiresIn = contentfulManagement.NewOptNilPointerInt64(model.ExpiresIn.ValueInt64Pointer())
-	// }
+	// filters:
+	//   type: array
+	//   items: {}
+
+	headersList, headersListDiags := ToWebhookDefinitionHeaders(ctx, path.Root("headers"), model.Headers)
+	diags.Append(headersListDiags...)
+
+	req.Headers = headersList
 
 	return req, diags
 }
@@ -44,6 +53,10 @@ func (model *WebhookModel) ToUpdateWebhookDefinitionReq(ctx context.Context) (co
 	diags.Append(model.Topics.ElementsAs(ctx, &topics, false)...)
 
 	req.Topics = topics
+
+	// filters:
+	//   type: array
+	//   items: {}
 
 	headersList, headersListDiags := ToWebhookDefinitionHeaders(ctx, path.Root("headers"), model.Headers)
 	diags.Append(headersListDiags...)
@@ -67,26 +80,17 @@ func (model *WebhookModel) ReadFromResponse(ctx context.Context, webhookDefiniti
 
 	model.Topics = topicsList
 
-	if httpBasicUsername, ok := webhookDefinition.HttpBasicUsername.Get(); ok {
-		model.HttpBasicUsername = types.StringValue(httpBasicUsername)
-	} else {
-		model.HttpBasicUsername = types.StringNull()
-	}
+	// filters:
+	//   type: array
+	//   items: {}
 
-	if httpBasicPassword, ok := webhookDefinition.HttpBasicPassword.Get(); ok {
-		model.HttpBasicPassword = types.StringValue(httpBasicPassword)
-	} else {
-		model.HttpBasicPassword = types.StringNull()
-	}
+	model.HttpBasicUsername = types.StringPointerValue(webhookDefinition.HttpBasicUsername.ValueStringPointer())
+	model.HttpBasicPassword = types.StringPointerValue(webhookDefinition.HttpBasicPassword.ValueStringPointer())
 
 	headersList, headersListDiags := ReadHeadersListValueFromResponse(ctx, path.Root("headers"), model.Headers, webhookDefinition.Headers)
 	diags.Append(headersListDiags...)
 
 	model.Headers = headersList
-
-	// filters:
-	//   type: array
-	//   items: {}
 
 	// transformation:
 	//   type: object

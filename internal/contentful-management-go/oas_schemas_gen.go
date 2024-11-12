@@ -1090,10 +1090,10 @@ type CreateWebhookDefinitionReq struct {
 	Name              string                                         `json:"name"`
 	URL               string                                         `json:"url"`
 	Topics            []string                                       `json:"topics"`
+	Filters           OptNilWebhookDefinitionFilterArray             `json:"filters"`
 	HttpBasicUsername OptNilString                                   `json:"httpBasicUsername"`
 	HttpBasicPassword OptNilString                                   `json:"httpBasicPassword"`
 	Headers           WebhookDefinitionHeaders                       `json:"headers"`
-	Filters           OptNilWebhookDefinitionFilterArray             `json:"filters"`
 	Transformation    OptNilCreateWebhookDefinitionReqTransformation `json:"transformation"`
 	Active            OptBool                                        `json:"active"`
 }
@@ -1113,6 +1113,11 @@ func (s *CreateWebhookDefinitionReq) GetTopics() []string {
 	return s.Topics
 }
 
+// GetFilters returns the value of Filters.
+func (s *CreateWebhookDefinitionReq) GetFilters() OptNilWebhookDefinitionFilterArray {
+	return s.Filters
+}
+
 // GetHttpBasicUsername returns the value of HttpBasicUsername.
 func (s *CreateWebhookDefinitionReq) GetHttpBasicUsername() OptNilString {
 	return s.HttpBasicUsername
@@ -1126,11 +1131,6 @@ func (s *CreateWebhookDefinitionReq) GetHttpBasicPassword() OptNilString {
 // GetHeaders returns the value of Headers.
 func (s *CreateWebhookDefinitionReq) GetHeaders() WebhookDefinitionHeaders {
 	return s.Headers
-}
-
-// GetFilters returns the value of Filters.
-func (s *CreateWebhookDefinitionReq) GetFilters() OptNilWebhookDefinitionFilterArray {
-	return s.Filters
 }
 
 // GetTransformation returns the value of Transformation.
@@ -1158,6 +1158,11 @@ func (s *CreateWebhookDefinitionReq) SetTopics(val []string) {
 	s.Topics = val
 }
 
+// SetFilters sets the value of Filters.
+func (s *CreateWebhookDefinitionReq) SetFilters(val OptNilWebhookDefinitionFilterArray) {
+	s.Filters = val
+}
+
 // SetHttpBasicUsername sets the value of HttpBasicUsername.
 func (s *CreateWebhookDefinitionReq) SetHttpBasicUsername(val OptNilString) {
 	s.HttpBasicUsername = val
@@ -1171,11 +1176,6 @@ func (s *CreateWebhookDefinitionReq) SetHttpBasicPassword(val OptNilString) {
 // SetHeaders sets the value of Headers.
 func (s *CreateWebhookDefinitionReq) SetHeaders(val WebhookDefinitionHeaders) {
 	s.Headers = val
-}
-
-// SetFilters sets the value of Filters.
-func (s *CreateWebhookDefinitionReq) SetFilters(val OptNilWebhookDefinitionFilterArray) {
-	s.Filters = val
 }
 
 // SetTransformation sets the value of Transformation.
@@ -4195,10 +4195,10 @@ type UpdateWebhookDefinitionReq struct {
 	Name              string                                         `json:"name"`
 	URL               string                                         `json:"url"`
 	Topics            []string                                       `json:"topics"`
+	Filters           OptNilWebhookDefinitionFilterArray             `json:"filters"`
 	HttpBasicUsername OptNilString                                   `json:"httpBasicUsername"`
 	HttpBasicPassword OptNilString                                   `json:"httpBasicPassword"`
 	Headers           WebhookDefinitionHeaders                       `json:"headers"`
-	Filters           OptNilWebhookDefinitionFilterArray             `json:"filters"`
 	Transformation    OptNilUpdateWebhookDefinitionReqTransformation `json:"transformation"`
 	Active            OptBool                                        `json:"active"`
 }
@@ -4218,6 +4218,11 @@ func (s *UpdateWebhookDefinitionReq) GetTopics() []string {
 	return s.Topics
 }
 
+// GetFilters returns the value of Filters.
+func (s *UpdateWebhookDefinitionReq) GetFilters() OptNilWebhookDefinitionFilterArray {
+	return s.Filters
+}
+
 // GetHttpBasicUsername returns the value of HttpBasicUsername.
 func (s *UpdateWebhookDefinitionReq) GetHttpBasicUsername() OptNilString {
 	return s.HttpBasicUsername
@@ -4231,11 +4236,6 @@ func (s *UpdateWebhookDefinitionReq) GetHttpBasicPassword() OptNilString {
 // GetHeaders returns the value of Headers.
 func (s *UpdateWebhookDefinitionReq) GetHeaders() WebhookDefinitionHeaders {
 	return s.Headers
-}
-
-// GetFilters returns the value of Filters.
-func (s *UpdateWebhookDefinitionReq) GetFilters() OptNilWebhookDefinitionFilterArray {
-	return s.Filters
 }
 
 // GetTransformation returns the value of Transformation.
@@ -4263,6 +4263,11 @@ func (s *UpdateWebhookDefinitionReq) SetTopics(val []string) {
 	s.Topics = val
 }
 
+// SetFilters sets the value of Filters.
+func (s *UpdateWebhookDefinitionReq) SetFilters(val OptNilWebhookDefinitionFilterArray) {
+	s.Filters = val
+}
+
 // SetHttpBasicUsername sets the value of HttpBasicUsername.
 func (s *UpdateWebhookDefinitionReq) SetHttpBasicUsername(val OptNilString) {
 	s.HttpBasicUsername = val
@@ -4276,11 +4281,6 @@ func (s *UpdateWebhookDefinitionReq) SetHttpBasicPassword(val OptNilString) {
 // SetHeaders sets the value of Headers.
 func (s *UpdateWebhookDefinitionReq) SetHeaders(val WebhookDefinitionHeaders) {
 	s.Headers = val
-}
-
-// SetFilters sets the value of Filters.
-func (s *UpdateWebhookDefinitionReq) SetFilters(val OptNilWebhookDefinitionFilterArray) {
-	s.Filters = val
 }
 
 // SetTransformation sets the value of Transformation.
@@ -4494,10 +4494,10 @@ type WebhookDefinition struct {
 	Name              string                                `json:"name"`
 	URL               string                                `json:"url"`
 	Topics            []string                              `json:"topics"`
+	Filters           OptNilWebhookDefinitionFilterArray    `json:"filters"`
 	HttpBasicUsername OptNilString                          `json:"httpBasicUsername"`
 	HttpBasicPassword OptNilString                          `json:"httpBasicPassword"`
 	Headers           WebhookDefinitionHeaders              `json:"headers"`
-	Filters           OptNilWebhookDefinitionFilterArray    `json:"filters"`
 	Transformation    OptNilWebhookDefinitionTransformation `json:"transformation"`
 	Active            OptBool                               `json:"active"`
 }
@@ -4522,6 +4522,11 @@ func (s *WebhookDefinition) GetTopics() []string {
 	return s.Topics
 }
 
+// GetFilters returns the value of Filters.
+func (s *WebhookDefinition) GetFilters() OptNilWebhookDefinitionFilterArray {
+	return s.Filters
+}
+
 // GetHttpBasicUsername returns the value of HttpBasicUsername.
 func (s *WebhookDefinition) GetHttpBasicUsername() OptNilString {
 	return s.HttpBasicUsername
@@ -4535,11 +4540,6 @@ func (s *WebhookDefinition) GetHttpBasicPassword() OptNilString {
 // GetHeaders returns the value of Headers.
 func (s *WebhookDefinition) GetHeaders() WebhookDefinitionHeaders {
 	return s.Headers
-}
-
-// GetFilters returns the value of Filters.
-func (s *WebhookDefinition) GetFilters() OptNilWebhookDefinitionFilterArray {
-	return s.Filters
 }
 
 // GetTransformation returns the value of Transformation.
@@ -4572,6 +4572,11 @@ func (s *WebhookDefinition) SetTopics(val []string) {
 	s.Topics = val
 }
 
+// SetFilters sets the value of Filters.
+func (s *WebhookDefinition) SetFilters(val OptNilWebhookDefinitionFilterArray) {
+	s.Filters = val
+}
+
 // SetHttpBasicUsername sets the value of HttpBasicUsername.
 func (s *WebhookDefinition) SetHttpBasicUsername(val OptNilString) {
 	s.HttpBasicUsername = val
@@ -4585,11 +4590,6 @@ func (s *WebhookDefinition) SetHttpBasicPassword(val OptNilString) {
 // SetHeaders sets the value of Headers.
 func (s *WebhookDefinition) SetHeaders(val WebhookDefinitionHeaders) {
 	s.Headers = val
-}
-
-// SetFilters sets the value of Filters.
-func (s *WebhookDefinition) SetFilters(val OptNilWebhookDefinitionFilterArray) {
-	s.Filters = val
 }
 
 // SetTransformation sets the value of Transformation.
