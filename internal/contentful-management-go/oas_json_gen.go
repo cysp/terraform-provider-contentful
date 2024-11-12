@@ -2551,6 +2551,12 @@ func (s *CreateWebhookDefinitionReq) encodeFields(e *jx.Encoder) {
 		e.ArrEnd()
 	}
 	{
+		if s.Filters.Set {
+			e.FieldStart("filters")
+			s.Filters.Encode(e)
+		}
+	}
+	{
 		if s.HttpBasicUsername.Set {
 			e.FieldStart("httpBasicUsername")
 			s.HttpBasicUsername.Encode(e)
@@ -2566,12 +2572,6 @@ func (s *CreateWebhookDefinitionReq) encodeFields(e *jx.Encoder) {
 		if s.Headers != nil {
 			e.FieldStart("headers")
 			s.Headers.Encode(e)
-		}
-	}
-	{
-		if s.Filters.Set {
-			e.FieldStart("filters")
-			s.Filters.Encode(e)
 		}
 	}
 	{
@@ -2592,10 +2592,10 @@ var jsonFieldsNameOfCreateWebhookDefinitionReq = [9]string{
 	0: "name",
 	1: "url",
 	2: "topics",
-	3: "httpBasicUsername",
-	4: "httpBasicPassword",
-	5: "headers",
-	6: "filters",
+	3: "filters",
+	4: "httpBasicUsername",
+	5: "httpBasicPassword",
+	6: "headers",
 	7: "transformation",
 	8: "active",
 }
@@ -2653,6 +2653,16 @@ func (s *CreateWebhookDefinitionReq) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"topics\"")
 			}
+		case "filters":
+			if err := func() error {
+				s.Filters.Reset()
+				if err := s.Filters.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"filters\"")
+			}
 		case "httpBasicUsername":
 			if err := func() error {
 				s.HttpBasicUsername.Reset()
@@ -2681,16 +2691,6 @@ func (s *CreateWebhookDefinitionReq) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"headers\"")
-			}
-		case "filters":
-			if err := func() error {
-				s.Filters.Reset()
-				if err := s.Filters.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"filters\"")
 			}
 		case "transformation":
 			if err := func() error {
@@ -9069,6 +9069,12 @@ func (s *UpdateWebhookDefinitionReq) encodeFields(e *jx.Encoder) {
 		e.ArrEnd()
 	}
 	{
+		if s.Filters.Set {
+			e.FieldStart("filters")
+			s.Filters.Encode(e)
+		}
+	}
+	{
 		if s.HttpBasicUsername.Set {
 			e.FieldStart("httpBasicUsername")
 			s.HttpBasicUsername.Encode(e)
@@ -9084,12 +9090,6 @@ func (s *UpdateWebhookDefinitionReq) encodeFields(e *jx.Encoder) {
 		if s.Headers != nil {
 			e.FieldStart("headers")
 			s.Headers.Encode(e)
-		}
-	}
-	{
-		if s.Filters.Set {
-			e.FieldStart("filters")
-			s.Filters.Encode(e)
 		}
 	}
 	{
@@ -9110,10 +9110,10 @@ var jsonFieldsNameOfUpdateWebhookDefinitionReq = [9]string{
 	0: "name",
 	1: "url",
 	2: "topics",
-	3: "httpBasicUsername",
-	4: "httpBasicPassword",
-	5: "headers",
-	6: "filters",
+	3: "filters",
+	4: "httpBasicUsername",
+	5: "httpBasicPassword",
+	6: "headers",
 	7: "transformation",
 	8: "active",
 }
@@ -9171,6 +9171,16 @@ func (s *UpdateWebhookDefinitionReq) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"topics\"")
 			}
+		case "filters":
+			if err := func() error {
+				s.Filters.Reset()
+				if err := s.Filters.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"filters\"")
+			}
 		case "httpBasicUsername":
 			if err := func() error {
 				s.HttpBasicUsername.Reset()
@@ -9199,16 +9209,6 @@ func (s *UpdateWebhookDefinitionReq) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"headers\"")
-			}
-		case "filters":
-			if err := func() error {
-				s.Filters.Reset()
-				if err := s.Filters.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"filters\"")
 			}
 		case "transformation":
 			if err := func() error {
@@ -9777,6 +9777,12 @@ func (s *WebhookDefinition) encodeFields(e *jx.Encoder) {
 		e.ArrEnd()
 	}
 	{
+		if s.Filters.Set {
+			e.FieldStart("filters")
+			s.Filters.Encode(e)
+		}
+	}
+	{
 		if s.HttpBasicUsername.Set {
 			e.FieldStart("httpBasicUsername")
 			s.HttpBasicUsername.Encode(e)
@@ -9792,12 +9798,6 @@ func (s *WebhookDefinition) encodeFields(e *jx.Encoder) {
 		if s.Headers != nil {
 			e.FieldStart("headers")
 			s.Headers.Encode(e)
-		}
-	}
-	{
-		if s.Filters.Set {
-			e.FieldStart("filters")
-			s.Filters.Encode(e)
 		}
 	}
 	{
@@ -9819,10 +9819,10 @@ var jsonFieldsNameOfWebhookDefinition = [10]string{
 	1: "name",
 	2: "url",
 	3: "topics",
-	4: "httpBasicUsername",
-	5: "httpBasicPassword",
-	6: "headers",
-	7: "filters",
+	4: "filters",
+	5: "httpBasicUsername",
+	6: "httpBasicPassword",
+	7: "headers",
 	8: "transformation",
 	9: "active",
 }
@@ -9890,6 +9890,16 @@ func (s *WebhookDefinition) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"topics\"")
 			}
+		case "filters":
+			if err := func() error {
+				s.Filters.Reset()
+				if err := s.Filters.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"filters\"")
+			}
 		case "httpBasicUsername":
 			if err := func() error {
 				s.HttpBasicUsername.Reset()
@@ -9918,16 +9928,6 @@ func (s *WebhookDefinition) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"headers\"")
-			}
-		case "filters":
-			if err := func() error {
-				s.Filters.Reset()
-				if err := s.Filters.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"filters\"")
 			}
 		case "transformation":
 			if err := func() error {
