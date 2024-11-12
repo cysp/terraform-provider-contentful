@@ -609,6 +609,11 @@ components:
           type: array
           items:
             type: string
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookDefinitionFilter'
+          nullable: true
         httpBasicUsername:
           type: string
           nullable: true
@@ -617,11 +622,6 @@ components:
           nullable: true
         headers:
           $ref: '#/components/schemas/WebhookDefinitionHeaders'
-        filters:
-          type: array
-          items:
-            $ref: '#/components/schemas/WebhookDefinitionFilter'
-          nullable: true
         transformation:
           type: object
           properties:

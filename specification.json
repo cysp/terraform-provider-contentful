@@ -948,6 +948,23 @@
                         }
                     },
                     {
+                        "name": "filters",
+                        "list": {
+                            "computed_optional_required": "optional",
+                            "element_type": {
+                                "string": {
+                                    "custom_type": {
+                                        "import": {
+                                            "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                        },
+                                        "type": "jsontypes.NormalizedType{}",
+                                        "value_type": "jsontypes.Normalized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
                         "name": "http_basic_username",
                         "string": {
                             "computed_optional_required": "optional"
@@ -981,23 +998,6 @@
                                         }
                                     }
                                 ]
-                            }
-                        }
-                    },
-                    {
-                        "name": "filters",
-                        "list": {
-                            "computed_optional_required": "optional",
-                            "element_type": {
-                                "string": {
-                                    "custom_type": {
-                                        "import": {
-                                            "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-                                        },
-                                        "type": "jsontypes.NormalizedType{}",
-                                        "value_type": "jsontypes.Normalized"
-                                    }
-                                }
                             }
                         }
                     },
