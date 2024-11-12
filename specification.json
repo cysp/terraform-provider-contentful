@@ -801,16 +801,10 @@
                     },
                     {
                         "name": "headers",
-                        "list_nested": {
+                        "map_nested": {
                             "computed_optional_required": "optional",
                             "nested_object": {
                                 "attributes": [
-                                    {
-                                        "name": "key",
-                                        "string": {
-                                            "computed_optional_required": "required"
-                                        }
-                                    },
                                     {
                                         "name": "value",
                                         "string": {

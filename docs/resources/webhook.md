@@ -25,7 +25,7 @@ description: |-
 
 - `active` (Boolean)
 - `filters` (List of String)
-- `headers` (Attributes List) (see [below for nested schema](#nestedatt--headers))
+- `headers` (Attributes Map) (see [below for nested schema](#nestedatt--headers))
 - `http_basic_password` (String)
 - `http_basic_username` (String)
 - `topics` (List of String)
@@ -40,7 +40,6 @@ description: |-
 
 Required:
 
-- `key` (String)
 - `value` (String)
 
 Optional:
