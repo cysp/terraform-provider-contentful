@@ -31,12 +31,9 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				ElementType: jsontypes.NormalizedType{},
 				Optional:    true,
 			},
-			"headers": schema.ListNestedAttribute{
+			"headers": schema.MapNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"key": schema.StringAttribute{
-							Required: true,
-						},
 						"secret": schema.BoolAttribute{
 							Optional: true,
 							Computed: true,
@@ -112,7 +109,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 type WebhookModel struct {
 	Active            types.Bool          `tfsdk:"active"`
 	Filters           types.List          `tfsdk:"filters"`
-	Headers           types.List          `tfsdk:"headers"`
+	Headers           types.Map           `tfsdk:"headers"`
 	HttpBasicPassword types.String        `tfsdk:"http_basic_password"`
 	HttpBasicUsername types.String        `tfsdk:"http_basic_username"`
 	Name              types.String        `tfsdk:"name"`
@@ -147,24 +144,6 @@ func (t HeadersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	var diags diag.Diagnostics
 
 	attributes := in.Attributes()
-
-	keyAttribute, ok := attributes["key"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`key is missing from object`)
-
-		return nil, diags
-	}
-
-	keyVal, ok := keyAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`key expected to be basetypes.StringValue, was: %T`, keyAttribute))
-	}
 
 	secretAttribute, ok := attributes["secret"]
 
@@ -207,7 +186,6 @@ func (t HeadersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	}
 
 	return HeadersValue{
-		Key:    keyVal,
 		Secret: secretVal,
 		Value:  valueVal,
 		state:  attr.ValueStateKnown,
@@ -277,24 +255,6 @@ func NewHeadersValue(attributeTypes map[string]attr.Type, attributes map[string]
 		return NewHeadersValueUnknown(), diags
 	}
 
-	keyAttribute, ok := attributes["key"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`key is missing from object`)
-
-		return NewHeadersValueUnknown(), diags
-	}
-
-	keyVal, ok := keyAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`key expected to be basetypes.StringValue, was: %T`, keyAttribute))
-	}
-
 	secretAttribute, ok := attributes["secret"]
 
 	if !ok {
@@ -336,7 +296,6 @@ func NewHeadersValue(attributeTypes map[string]attr.Type, attributes map[string]
 	}
 
 	return HeadersValue{
-		Key:    keyVal,
 		Secret: secretVal,
 		Value:  valueVal,
 		state:  attr.ValueStateKnown,
@@ -411,19 +370,17 @@ func (t HeadersType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = HeadersValue{}
 
 type HeadersValue struct {
-	Key    basetypes.StringValue `tfsdk:"key"`
 	Secret basetypes.BoolValue   `tfsdk:"secret"`
 	Value  basetypes.StringValue `tfsdk:"value"`
 	state  attr.ValueState
 }
 
 func (v HeadersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
-	attrTypes["key"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["secret"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["value"] = basetypes.StringType{}.TerraformType(ctx)
 
@@ -431,15 +388,7 @@ func (v HeadersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
-
-		val, err = v.Key.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["key"] = val
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Secret.ToTerraformValue(ctx)
 
@@ -487,7 +436,6 @@ func (v HeadersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"key":    basetypes.StringType{},
 		"secret": basetypes.BoolType{},
 		"value":  basetypes.StringType{},
 	}
@@ -503,7 +451,6 @@ func (v HeadersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"key":    v.Key,
 			"secret": v.Secret,
 			"value":  v.Value,
 		})
@@ -524,10 +471,6 @@ func (v HeadersValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
-	}
-
-	if !v.Key.Equal(other.Key) {
-		return false
 	}
 
 	if !v.Secret.Equal(other.Secret) {
@@ -551,7 +494,6 @@ func (v HeadersValue) Type(ctx context.Context) attr.Type {
 
 func (v HeadersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"key":    basetypes.StringType{},
 		"secret": basetypes.BoolType{},
 		"value":  basetypes.StringType{},
 	}
