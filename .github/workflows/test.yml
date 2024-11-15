@@ -40,7 +40,7 @@ jobs:
       - run: go mod download
       - run: go test -v -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
         timeout-minutes: 10
-      - uses: codecov/codecov-action@v4.6.0
+      - uses: codecov/codecov-action@v5.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: test
@@ -61,7 +61,7 @@ jobs:
         env:
           CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
         timeout-minutes: 10
-      - uses: codecov/codecov-action@v4.6.0
+      - uses: codecov/codecov-action@v5.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: contentful-management-go
@@ -93,7 +93,7 @@ jobs:
           TF_ACC: "1"
           CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
         timeout-minutes: 10
-      - uses: codecov/codecov-action@v4.6.0
+      - uses: codecov/codecov-action@v5.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: testacc-${{ matrix.terraform }}
