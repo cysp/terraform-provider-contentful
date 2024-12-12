@@ -12,10 +12,10 @@ import (
 // SecuritySource is provider of security values (tokens, passwords, etc.).
 type SecuritySource interface {
 	// AccessToken provides accessToken security value.
-	AccessToken(ctx context.Context, operationName string, client *Client) (AccessToken, error)
+	AccessToken(ctx context.Context, operationName OperationName, client *Client) (AccessToken, error)
 }
 
-func (s *Client) securityAccessToken(ctx context.Context, operationName string, req *http.Request) error {
+func (s *Client) securityAccessToken(ctx context.Context, operationName OperationName, req *http.Request) error {
 	t, err := s.sec.AccessToken(ctx, operationName, s)
 	if err != nil {
 		return errors.Wrap(err, "security source \"AccessToken\"")

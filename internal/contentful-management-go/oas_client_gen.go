@@ -300,7 +300,7 @@ func (c *Client) sendActivateContentType(ctx context.Context, params ActivateCon
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "ActivateContentType", r); {
+			switch err := c.securityAccessToken(ctx, ActivateContentTypeOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -391,7 +391,7 @@ func (c *Client) sendCreateDeliveryApiKey(ctx context.Context, request *CreateDe
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "CreateDeliveryApiKey", r); {
+			switch err := c.securityAccessToken(ctx, CreateDeliveryApiKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -463,7 +463,7 @@ func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *Cre
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "CreatePersonalAccessToken", r); {
+			switch err := c.securityAccessToken(ctx, CreatePersonalAccessTokenOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -554,7 +554,7 @@ func (c *Client) sendCreateRole(ctx context.Context, request *CreateRoleReq, par
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "CreateRole", r); {
+			switch err := c.securityAccessToken(ctx, CreateRoleOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -680,7 +680,7 @@ func (c *Client) sendDeactivateContentType(ctx context.Context, params Deactivat
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "DeactivateContentType", r); {
+			switch err := c.securityAccessToken(ctx, DeactivateContentTypeOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -805,7 +805,7 @@ func (c *Client) sendDeleteAppInstallation(ctx context.Context, params DeleteApp
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "DeleteAppInstallation", r); {
+			switch err := c.securityAccessToken(ctx, DeleteAppInstallationOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -930,7 +930,7 @@ func (c *Client) sendDeleteContentType(ctx context.Context, params DeleteContent
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "DeleteContentType", r); {
+			switch err := c.securityAccessToken(ctx, DeleteContentTypeOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1036,7 +1036,7 @@ func (c *Client) sendDeleteDeliveryApiKey(ctx context.Context, params DeleteDeli
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "DeleteDeliveryApiKey", r); {
+			switch err := c.securityAccessToken(ctx, DeleteDeliveryApiKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1142,7 +1142,7 @@ func (c *Client) sendDeleteRole(ctx context.Context, params DeleteRoleParams) (r
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "DeleteRole", r); {
+			switch err := c.securityAccessToken(ctx, DeleteRoleOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1267,7 +1267,7 @@ func (c *Client) sendGetAppInstallation(ctx context.Context, params GetAppInstal
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "GetAppInstallation", r); {
+			switch err := c.securityAccessToken(ctx, GetAppInstallationOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1336,7 +1336,7 @@ func (c *Client) sendGetAuthenticatedUser(ctx context.Context) (res GetAuthentic
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "GetAuthenticatedUser", r); {
+			switch err := c.securityAccessToken(ctx, GetAuthenticatedUserOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1461,7 +1461,7 @@ func (c *Client) sendGetContentType(ctx context.Context, params GetContentTypePa
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "GetContentType", r); {
+			switch err := c.securityAccessToken(ctx, GetContentTypeOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1567,7 +1567,7 @@ func (c *Client) sendGetDeliveryApiKey(ctx context.Context, params GetDeliveryAp
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "GetDeliveryApiKey", r); {
+			switch err := c.securityAccessToken(ctx, GetDeliveryApiKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1693,7 +1693,7 @@ func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInt
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "GetEditorInterface", r); {
+			switch err := c.securityAccessToken(ctx, GetEditorInterfaceOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1780,7 +1780,7 @@ func (c *Client) sendGetPersonalAccessToken(ctx context.Context, params GetPerso
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "GetPersonalAccessToken", r); {
+			switch err := c.securityAccessToken(ctx, GetPersonalAccessTokenOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1886,7 +1886,7 @@ func (c *Client) sendGetPreviewApiKey(ctx context.Context, params GetPreviewApiK
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "GetPreviewApiKey", r); {
+			switch err := c.securityAccessToken(ctx, GetPreviewApiKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1992,7 +1992,7 @@ func (c *Client) sendGetRole(ctx context.Context, params GetRoleParams) (res Get
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "GetRole", r); {
+			switch err := c.securityAccessToken(ctx, GetRoleOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -2136,7 +2136,7 @@ func (c *Client) sendPutAppInstallation(ctx context.Context, request *PutAppInst
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "PutAppInstallation", r); {
+			switch err := c.securityAccessToken(ctx, PutAppInstallationOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -2277,7 +2277,7 @@ func (c *Client) sendPutContentType(ctx context.Context, request *PutContentType
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "PutContentType", r); {
+			switch err := c.securityAccessToken(ctx, PutContentTypeOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -2419,7 +2419,7 @@ func (c *Client) sendPutEditorInterface(ctx context.Context, request *PutEditorI
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "PutEditorInterface", r); {
+			switch err := c.securityAccessToken(ctx, PutEditorInterfaceOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -2507,7 +2507,7 @@ func (c *Client) sendRevokePersonalAccessToken(ctx context.Context, params Revok
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "RevokePersonalAccessToken", r); {
+			switch err := c.securityAccessToken(ctx, RevokePersonalAccessTokenOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -2629,7 +2629,7 @@ func (c *Client) sendUpdateDeliveryApiKey(ctx context.Context, request *UpdateDe
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "UpdateDeliveryApiKey", r); {
+			switch err := c.securityAccessToken(ctx, UpdateDeliveryApiKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -2751,7 +2751,7 @@ func (c *Client) sendUpdateRole(ctx context.Context, request *UpdateRoleReq, par
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "UpdateRole", r); {
+			switch err := c.securityAccessToken(ctx, UpdateRoleOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
