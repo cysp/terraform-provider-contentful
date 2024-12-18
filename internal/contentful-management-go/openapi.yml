@@ -5,6 +5,61 @@ info:
 servers:
   - url: https://api.contentful.com
 components:
+  parameters:
+    space_id:
+      in: path
+      name: space_id
+      required: true
+      schema:
+        type: string
+    environment_id:
+      in: path
+      name: environment_id
+      required: true
+      schema:
+        type: string
+    access_token_id:
+      in: path
+      name: access_token_id
+      required: true
+      schema:
+        type: string
+    api_key_id:
+      in: path
+      name: api_key_id
+      required: true
+      schema:
+        type: string
+    app_definition_id:
+      in: path
+      name: app_definition_id
+      required: true
+      schema:
+        type: string
+    content_type_id:
+      in: path
+      name: content_type_id
+      required: true
+      schema:
+        type: string
+    preview_api_key_id:
+      in: path
+      name: preview_api_key_id
+      required: true
+      schema:
+        type: string
+    role_id:
+      in: path
+      name: role_id
+      required: true
+      schema:
+        type: string
+    x-contentful-version:
+      in: header
+      name: X-Contentful-Version
+      required: true
+      schema:
+        type: integer
   schemas:
     ErrorSysId:
       type: string
@@ -564,15 +619,11 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /users/me/access_tokens/{access_token_id}:
+    parameters:
+      - $ref: '#/components/parameters/access_token_id'
     get:
       operationId: getPersonalAccessToken
       summary: Get a single personal access token
-      parameters:
-        - in: path
-          name: access_token_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: Get a single access token
@@ -585,15 +636,11 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /users/me/access_tokens/{access_token_id}/revoked:
+    parameters:
+      - $ref: '#/components/parameters/access_token_id'
     put:
       operationId: revokePersonalAccessToken
       summary: Revoke a personal access token
-      parameters:
-        - in: path
-          name: access_token_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: A personal access token
@@ -606,15 +653,11 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/api_keys:
+    parameters:
+      - $ref: '#/components/parameters/space_id'
     post:
       operationId: createDeliveryApiKey
       summary: Create a delivery api key
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
       requestBody:
         required: true
         content:
@@ -634,20 +677,12 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/api_keys/{api_key_id}:
+    parameters:
+      - $ref: '#/components/parameters/space_id'
+      - $ref: '#/components/parameters/api_key_id'
     get:
       operationId: getDeliveryApiKey
       summary: Get a single delivery api key
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: api_key_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: A delivery api key
@@ -663,21 +698,9 @@ paths:
       operationId: updateDeliveryApiKey
       summary: Update a single delivery api key
       parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: api_key_id
-          schema:
-            type: string
-          required: true
-        - in: header
-          name: X-Contentful-Version
-          schema:
-            type: integer
-          required: true
+        - $ref: '#/components/parameters/space_id'
+        - $ref: '#/components/parameters/api_key_id'
+        - $ref: '#/components/parameters/x-contentful-version'
       requestBody:
         required: true
         content:
@@ -699,17 +722,6 @@ paths:
     delete:
       operationId: deleteDeliveryApiKey
       summary: Delete a single delivery api key
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: api_key_id
-          schema:
-            type: string
-          required: true
       responses:
         204:
           $ref: '#/components/responses/no-content'
@@ -718,20 +730,12 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/preview_api_keys/{preview_api_key_id}:
+    parameters:
+      - $ref: '#/components/parameters/space_id'
+      - $ref: '#/components/parameters/preview_api_key_id'
     get:
       operationId: getPreviewApiKey
       summary: Get a single preview api key
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: preview_api_key_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: A preview api key
@@ -744,25 +748,13 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}:
+    parameters:
+      - $ref: '#/components/parameters/space_id'
+      - $ref: '#/components/parameters/environment_id'
+      - $ref: '#/components/parameters/app_definition_id'
     get:
       operationId: getAppInstallation
       summary: Get one app installation
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: app_definition_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: An app installation
@@ -778,21 +770,9 @@ paths:
       operationId: putAppInstallation
       summary: Install or update an app
       parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: app_definition_id
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/space_id'
+        - $ref: '#/components/parameters/environment_id'
+        - $ref: '#/components/parameters/app_definition_id'
         - in: header
           name: X-Contentful-Marketplace
           schema:
@@ -818,22 +798,6 @@ paths:
     delete:
       operationId: deleteAppInstallation
       summary: Uninstall an app
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: app_definition_id
-          schema:
-            type: string
-          required: true
       responses:
         204:
           $ref: '#/components/responses/no-content'
@@ -842,25 +806,13 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}:
+    parameters:
+      - $ref: '#/components/parameters/space_id'
+      - $ref: '#/components/parameters/environment_id'
+      - $ref: '#/components/parameters/content_type_id'
     get:
       operationId: getContentType
       summary: Get a content type
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: content_type_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: A content type
@@ -876,26 +828,10 @@ paths:
       operationId: putContentType
       summary: Update a content type
       parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: content_type_id
-          schema:
-            type: string
-          required: true
-        - in: header
-          name: X-Contentful-Version
-          schema:
-            type: integer
-          required: true
+        - $ref: '#/components/parameters/space_id'
+        - $ref: '#/components/parameters/environment_id'
+        - $ref: '#/components/parameters/content_type_id'
+        - $ref: '#/components/parameters/x-contentful-version'
       requestBody:
         required: true
         content:
@@ -923,22 +859,6 @@ paths:
     delete:
       operationId: deleteContentType
       summary: Delete a content type
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: content_type_id
-          schema:
-            type: string
-          required: true
       responses:
         204:
           $ref: '#/components/responses/no-content'
@@ -947,30 +867,18 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published:
+    parameters:
+      - $ref: '#/components/parameters/space_id'
+      - $ref: '#/components/parameters/environment_id'
+      - $ref: '#/components/parameters/content_type_id'
     put:
       operationId: activateContentType
       summary: Activate a content type
       parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: content_type_id
-          schema:
-            type: string
-          required: true
-        - in: header
-          name: X-Contentful-Version
-          schema:
-            type: integer
-          required: true
+        - $ref: '#/components/parameters/space_id'
+        - $ref: '#/components/parameters/environment_id'
+        - $ref: '#/components/parameters/content_type_id'
+        - $ref: '#/components/parameters/x-contentful-version'
       responses:
         200:
           description: A content type
@@ -985,22 +893,6 @@ paths:
     delete:
       operationId: deactivateContentType
       summary: Deactivate a content type
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: content_type_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: A content type
@@ -1015,25 +907,13 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface:
+    parameters:
+      - $ref: '#/components/parameters/space_id'
+      - $ref: '#/components/parameters/environment_id'
+      - $ref: '#/components/parameters/content_type_id'
     get:
       operationId: getEditorInterface
       summary: Get the editor interface for a content type
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: content_type_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: An editor interface
@@ -1049,26 +929,10 @@ paths:
       operationId: putEditorInterface
       summary: Update the editor interface for a content type
       parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: environment_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: content_type_id
-          schema:
-            type: string
-          required: true
-        - in: header
-          name: X-Contentful-Version
-          schema:
-            type: integer
-          required: true
+        - $ref: '#/components/parameters/space_id'
+        - $ref: '#/components/parameters/environment_id'
+        - $ref: '#/components/parameters/content_type_id'
+        - $ref: '#/components/parameters/x-contentful-version'
       requestBody:
         required: true
         content:
@@ -1088,15 +952,11 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/roles:
+    parameters:
+      - $ref: '#/components/parameters/space_id'
     post:
       operationId: createRole
       summary: Create a role
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
       requestBody:
         required: true
         content:
@@ -1116,20 +976,12 @@ paths:
         default:
           $ref: '#/components/responses/error'
   /spaces/{space_id}/roles/{role_id}:
+    parameters:
+      - $ref: '#/components/parameters/space_id'
+      - $ref: '#/components/parameters/role_id'
     get:
       operationId: getRole
       summary: Get a role
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: role_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: A role
@@ -1145,21 +997,9 @@ paths:
       operationId: updateRole
       summary: Update a role
       parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: role_id
-          schema:
-            type: string
-          required: true
-        - in: header
-          name: X-Contentful-Version
-          schema:
-            type: integer
-          required: true
+        - $ref: '#/components/parameters/space_id'
+        - $ref: '#/components/parameters/role_id'
+        - $ref: '#/components/parameters/x-contentful-version'
       requestBody:
         required: true
         content:
@@ -1181,17 +1021,6 @@ paths:
     delete:
       operationId: deleteRole
       summary: Delete a role
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: role_id
-          schema:
-            type: string
-          required: true
       responses:
         204:
           $ref: '#/components/responses/no-content'
