@@ -242,6 +242,22 @@
                                                                     "value_type": "jsontypes.Normalized"
                                                                 }
                                                             }
+                                                        },
+                                                        "default": {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{}))"
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -263,13 +279,19 @@
                                     {
                                         "name": "disabled",
                                         "bool": {
-                                            "computed_optional_required": "computed_optional"
+                                            "computed_optional_required": "computed_optional",
+                                            "default": {
+                                                "static": false
+                                            }
                                         }
                                     },
                                     {
                                         "name": "omitted",
                                         "bool": {
-                                            "computed_optional_required": "computed_optional"
+                                            "computed_optional_required": "computed_optional",
+                                            "default": {
+                                                "static": false
+                                            }
                                         }
                                     },
                                     {
@@ -286,6 +308,22 @@
                                                         "value_type": "jsontypes.Normalized"
                                                     }
                                                 }
+                                            },
+                                            "default": {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
+                                                        },
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+                                                        },
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{}))"
+                                                }
                                             }
                                         }
                                     },
@@ -299,6 +337,9 @@
                                                 },
                                                 "type": "jsontypes.NormalizedType{}",
                                                 "value_type": "jsontypes.Normalized"
+                                            },
+                                            "default": {
+                                                "static": ""
                                             }
                                         }
                                     }

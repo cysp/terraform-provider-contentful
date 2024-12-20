@@ -5,10 +5,14 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -46,10 +50,12 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 							CustomType: jsontypes.NormalizedType{},
 							Optional:   true,
 							Computed:   true,
+							Default:    stringdefault.StaticString(""),
 						},
 						"disabled": schema.BoolAttribute{
 							Optional: true,
 							Computed: true,
+							Default:  booldefault.StaticBool(false),
 						},
 						"id": schema.StringAttribute{
 							Required: true,
@@ -66,6 +72,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 									ElementType: jsontypes.NormalizedType{},
 									Optional:    true,
 									Computed:    true,
+									Default:     listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{})),
 								},
 							},
 							CustomType: ItemsType{
@@ -87,6 +94,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 						"omitted": schema.BoolAttribute{
 							Optional: true,
 							Computed: true,
+							Default:  booldefault.StaticBool(false),
 						},
 						"required": schema.BoolAttribute{
 							Required: true,
@@ -98,6 +106,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 							ElementType: jsontypes.NormalizedType{},
 							Optional:    true,
 							Computed:    true,
+							Default:     listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{})),
 						},
 					},
 					CustomType: FieldsType{
