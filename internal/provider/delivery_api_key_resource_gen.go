@@ -18,6 +18,9 @@ func DeliveryApiKeyResourceSchema(ctx context.Context) schema.Schema {
 			"access_token": schema.StringAttribute{
 				Computed:  true,
 				Sensitive: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"api_key_id": schema.StringAttribute{
 				Computed: true,
