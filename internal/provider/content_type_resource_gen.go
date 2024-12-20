@@ -5,7 +5,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/cysp/terraform-provider-contentful/internal/tf"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -72,7 +72,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 									ElementType: jsontypes.NormalizedType{},
 									Optional:    true,
 									Computed:    true,
-									Default:     listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{})),
+									Default:     listdefault.StaticValue(tf.NewEmptyListMust(jsontypes.NormalizedType{})),
 								},
 							},
 							CustomType: ItemsType{
@@ -106,7 +106,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 							ElementType: jsontypes.NormalizedType{},
 							Optional:    true,
 							Computed:    true,
-							Default:     listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{})),
+							Default:     listdefault.StaticValue(tf.NewEmptyListMust(jsontypes.NormalizedType{})),
 						},
 					},
 					CustomType: FieldsType{
@@ -905,7 +905,7 @@ func (v FieldsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 		)
 	}
 
-	if !v.Items.IsNull() && !v.Items.IsUnknown() {
+	if tf.IsKnownAndPresent(v.Items) {
 		items = types.ObjectValueMust(
 			ItemsValue{}.AttributeTypes(ctx),
 			v.Items.Attributes(),

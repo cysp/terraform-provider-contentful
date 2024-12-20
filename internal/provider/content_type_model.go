@@ -5,6 +5,7 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/cysp/terraform-provider-contentful/internal/tf"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -82,7 +83,7 @@ func ItemsObjectToOptPutContentTypeReqFieldsItemItems(ctx context.Context, path 
 
 	fieldsItemItems := contentfulManagement.OptPutContentTypeReqFieldsItemItems{}
 
-	if !itemsObject.IsNull() && !itemsObject.IsUnknown() {
+	if tf.IsKnownAndPresent(itemsObject) {
 		modelItemsObjectValue, modelItemsObjectValueDiags := ItemsType{}.ValueFromObject(ctx, itemsObject)
 		diags.Append(modelItemsObjectValueDiags...)
 
@@ -117,10 +118,8 @@ func (model *ItemsValue) ToPutContentTypeReqFieldsItemItems(ctx context.Context,
 func ValidationsListToPutContentTypeReqValidations(ctx context.Context, _ path.Path, validationsList types.List) ([]jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	validationsStrings := []string{}
-	if !validationsList.IsNull() && !validationsList.IsUnknown() {
-		diags.Append(validationsList.ElementsAs(ctx, &validationsStrings, false)...)
-	}
+	validationsStrings, validationsStringsDiags := tf.KnownAndPresentStringValues(ctx, validationsList)
+	diags.Append(validationsStringsDiags...)
 
 	validations := make([]jx.Raw, len(validationsStrings))
 	for index, validationsString := range validationsStrings {
