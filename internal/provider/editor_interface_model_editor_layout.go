@@ -5,6 +5,7 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/cysp/terraform-provider-contentful/internal/tf"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -30,7 +31,7 @@ func (model *EditorLayoutValue) ToPutEditorInterfaceReqEditorLayoutItem(ctx cont
 		Name:    model.Name.ValueString(),
 	}
 
-	if !model.Items.IsNull() && !model.Items.IsUnknown() {
+	if tf.IsKnownAndPresent(model.Items) {
 		var itemItemsStrings []string
 
 		diags.Append(model.Items.ElementsAs(ctx, &itemItemsStrings, false)...)

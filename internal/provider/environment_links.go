@@ -4,6 +4,7 @@ import (
 	"context"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/cysp/terraform-provider-contentful/internal/tf"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -17,8 +18,8 @@ func ToEnvironmentLinks(ctx context.Context, path path.Path, value types.List) (
 		return nil, diags
 	}
 
-	environmentIDs := make([]string, len(value.Elements()))
-	diags.Append(value.ElementsAs(ctx, &environmentIDs, false)...)
+	environmentIDs, environmentIDsDiags := tf.KnownAndPresentStringValues(ctx, value)
+	diags.Append(environmentIDsDiags...)
 
 	environments := make([]contentfulManagement.EnvironmentLink, len(environmentIDs))
 
