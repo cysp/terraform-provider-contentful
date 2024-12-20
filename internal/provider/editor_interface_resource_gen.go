@@ -36,7 +36,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 						"settings": schema.StringAttribute{
 							CustomType: jsontypes.NormalizedType{},
 							Optional:   true,
-							Computed:   true,
 						},
 						"widget_id": schema.StringAttribute{
 							Optional: true,
@@ -52,7 +51,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional: true,
-				Computed: true,
 			},
 			"environment_id": schema.StringAttribute{
 				Required: true,
@@ -65,12 +63,10 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 					Attributes: map[string]schema.Attribute{
 						"disabled": schema.BoolAttribute{
 							Optional: true,
-							Computed: true,
 						},
 						"settings": schema.StringAttribute{
 							CustomType: jsontypes.NormalizedType{},
 							Optional:   true,
-							Computed:   true,
 						},
 						"widget_id": schema.StringAttribute{
 							Required: true,
@@ -86,7 +82,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional: true,
-				Computed: true,
 			},
 			"space_id": schema.StringAttribute{
 				Required: true,
