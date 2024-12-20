@@ -408,7 +408,19 @@
                             "computed_optional_required": "computed_optional",
                             "element_type": {
                                 "string": {}
-                            }
+                            },
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "listplanmodifier.UseStateForUnknown()"
+                                    }
+                                }
+                            ]
                         }
                     },
                     {
