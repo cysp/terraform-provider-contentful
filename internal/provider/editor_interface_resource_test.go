@@ -246,7 +246,7 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 				`,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionUpdate),
 					},
 				},
 			},
