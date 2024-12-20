@@ -44,6 +44,9 @@ func DeliveryApiKeyResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"preview_api_key_id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"space_id": schema.StringAttribute{
 				Required: true,
