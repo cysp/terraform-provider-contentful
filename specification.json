@@ -488,7 +488,7 @@
                     {
                         "name": "controls",
                         "list_nested": {
-                            "computed_optional_required": "computed_optional",
+                            "computed_optional_required": "optional",
                             "nested_object": {
                                 "attributes": [
                                     {
@@ -512,7 +512,7 @@
                                     {
                                         "name": "settings",
                                         "string": {
-                                            "computed_optional_required": "computed_optional",
+                                            "computed_optional_required": "optional",
                                             "custom_type": {
                                                 "import": {
                                                     "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -529,7 +529,7 @@
                     {
                         "name": "sidebar",
                         "list_nested": {
-                            "computed_optional_required": "computed_optional",
+                            "computed_optional_required": "optional",
                             "nested_object": {
                                 "attributes": [
                                     {
@@ -547,7 +547,7 @@
                                     {
                                         "name": "settings",
                                         "string": {
-                                            "computed_optional_required": "computed_optional",
+                                            "computed_optional_required": "optional",
                                             "custom_type": {
                                                 "import": {
                                                     "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -560,7 +560,10 @@
                                     {
                                         "name": "disabled",
                                         "bool": {
-                                            "computed_optional_required": "computed_optional"
+                                            "computed_optional_required": "computed_optional",
+                                            "default": {
+                                                "static": false
+                                            }
                                         }
                                     }
                                 ]

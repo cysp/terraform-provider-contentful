@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -36,7 +37,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 						"settings": schema.StringAttribute{
 							CustomType: jsontypes.NormalizedType{},
 							Optional:   true,
-							Computed:   true,
 						},
 						"widget_id": schema.StringAttribute{
 							Optional: true,
@@ -52,7 +52,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional: true,
-				Computed: true,
 			},
 			"environment_id": schema.StringAttribute{
 				Required: true,
@@ -66,11 +65,11 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 						"disabled": schema.BoolAttribute{
 							Optional: true,
 							Computed: true,
+							Default:  booldefault.StaticBool(false),
 						},
 						"settings": schema.StringAttribute{
 							CustomType: jsontypes.NormalizedType{},
 							Optional:   true,
-							Computed:   true,
 						},
 						"widget_id": schema.StringAttribute{
 							Required: true,
@@ -86,7 +85,6 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional: true,
-				Computed: true,
 			},
 			"space_id": schema.StringAttribute{
 				Required: true,
