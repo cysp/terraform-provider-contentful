@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/cysp/terraform-provider-contentful/internal/tf"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -57,8 +58,8 @@ func (m *PoliciesValue) ToCreateRoleReqPoliciesItem(ctx context.Context, path pa
 func ToCreateRoleReqPoliciesItemActions(ctx context.Context, _ path.Path, actions types.List) (contentfulManagement.CreateRoleReqPoliciesItemActions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	actionsStrings := make([]string, len(actions.Elements()))
-	diags.Append(actions.ElementsAs(ctx, &actionsStrings, false)...)
+	actionsStrings, actionsStringsDiags := tf.KnownAndPresentStringValues(ctx, actions)
+	diags.Append(actionsStringsDiags...)
 
 	if slices.Contains(actionsStrings, "all") {
 		return contentfulManagement.CreateRoleReqPoliciesItemActions{

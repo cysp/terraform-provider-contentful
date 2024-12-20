@@ -4,7 +4,7 @@ import (
 	"context"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/cysp/terraform-provider-contentful/internal/tf"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -26,7 +26,7 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 		permissionsValuesMap[permission] = permissionActionsListValue
 	}
 
-	permissionsMapValue, permissionsListValueDiags := basetypes.NewMapValue(util.NewEmptyListMust(types.String{}.Type(ctx)).Type(ctx), permissionsValuesMap)
+	permissionsMapValue, permissionsListValueDiags := basetypes.NewMapValue(tf.NewEmptyListMust(types.String{}.Type(ctx)).Type(ctx), permissionsValuesMap)
 	diags.Append(permissionsListValueDiags...)
 
 	return permissionsMapValue, diags

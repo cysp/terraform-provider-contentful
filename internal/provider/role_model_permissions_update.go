@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/cysp/terraform-provider-contentful/internal/tf"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -38,8 +39,8 @@ func ToUpdateRoleReqPermissions(ctx context.Context, path path.Path, permissions
 func ToUpdateRoleReqPermissionsItem(ctx context.Context, _ path.Path, value types.List) (contentfulManagement.UpdateRoleReqPermissionsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	actionStrings := make([]string, len(value.Elements()))
-	diags.Append(value.ElementsAs(ctx, &actionStrings, false)...)
+	actionStrings, acactionStringsDiags := tf.KnownAndPresentStringValues(ctx, value)
+	diags.Append(acactionStringsDiags...)
 
 	if slices.Contains(actionStrings, "all") {
 		return contentfulManagement.UpdateRoleReqPermissionsItem{

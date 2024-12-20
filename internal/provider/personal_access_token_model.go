@@ -5,6 +5,7 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/cysp/terraform-provider-contentful/internal/tf"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -17,12 +18,12 @@ func (model *PersonalAccessTokenModel) ToCreatePersonalAccessTokenReq(ctx contex
 		Name: model.Name.ValueString(),
 	}
 
-	scopes := make([]string, len(model.Scopes.Elements()))
-	diags.Append(model.Scopes.ElementsAs(ctx, &scopes, false)...)
+	scopes, scopesDiags := tf.KnownAndPresentStringValues(ctx, model.Scopes)
+	diags.Append(scopesDiags...)
 
 	req.Scopes = scopes
 
-	if !model.ExpiresIn.IsNull() && !model.ExpiresIn.IsUnknown() {
+	if tf.IsKnownAndPresent(model.ExpiresIn) {
 		req.ExpiresIn = contentfulManagement.NewOptNilPointerInt64(model.ExpiresIn.ValueInt64Pointer())
 	}
 
