@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -46,10 +47,10 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 							CustomType: jsontypes.NormalizedType{},
 							Optional:   true,
 							Computed:   true,
+							Default:    stringdefault.StaticString(""),
 						},
 						"disabled": schema.BoolAttribute{
 							Optional: true,
-							Computed: true,
 						},
 						"id": schema.StringAttribute{
 							Required: true,
@@ -65,7 +66,6 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 								"validations": schema.ListAttribute{
 									ElementType: jsontypes.NormalizedType{},
 									Optional:    true,
-									Computed:    true,
 								},
 							},
 							CustomType: ItemsType{
@@ -86,7 +86,6 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"omitted": schema.BoolAttribute{
 							Optional: true,
-							Computed: true,
 						},
 						"required": schema.BoolAttribute{
 							Required: true,
@@ -97,7 +96,6 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 						"validations": schema.ListAttribute{
 							ElementType: jsontypes.NormalizedType{},
 							Optional:    true,
-							Computed:    true,
 						},
 					},
 					CustomType: FieldsType{

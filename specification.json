@@ -231,7 +231,7 @@
                                                 {
                                                     "name": "validations",
                                                     "list": {
-                                                        "computed_optional_required": "computed_optional",
+                                                        "computed_optional_required": "optional",
                                                         "element_type": {
                                                             "string": {
                                                                 "custom_type": {
@@ -263,19 +263,19 @@
                                     {
                                         "name": "disabled",
                                         "bool": {
-                                            "computed_optional_required": "computed_optional"
+                                            "computed_optional_required": "optional"
                                         }
                                     },
                                     {
                                         "name": "omitted",
                                         "bool": {
-                                            "computed_optional_required": "computed_optional"
+                                            "computed_optional_required": "optional"
                                         }
                                     },
                                     {
                                         "name": "validations",
                                         "list": {
-                                            "computed_optional_required": "computed_optional",
+                                            "computed_optional_required": "optional",
                                             "element_type": {
                                                 "string": {
                                                     "custom_type": {
@@ -299,6 +299,9 @@
                                                 },
                                                 "type": "jsontypes.NormalizedType{}",
                                                 "value_type": "jsontypes.Normalized"
+                                            },
+                                            "default": {
+                                                "static": ""
                                             }
                                         }
                                     }
