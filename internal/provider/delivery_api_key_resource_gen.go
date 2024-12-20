@@ -30,7 +30,6 @@ func DeliveryApiKeyResourceSchema(ctx context.Context) schema.Schema {
 			"environments": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				Computed:    true,
 			},
 			"name": schema.StringAttribute{
 				Required: true,
