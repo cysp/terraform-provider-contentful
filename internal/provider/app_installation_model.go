@@ -18,7 +18,7 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx conte
 
 	value := contentfulManagement.OptString{}
 
-	marketplaceStrings, marketplaceStringDiags := tf.KnownAndPresentStringValues(ctx, model.Marketplace)
+	marketplaceStrings, marketplaceStringDiags := tf.ElementsAsStringSlice(ctx, model.Marketplace)
 	diags.Append(marketplaceStringDiags...)
 
 	if len(marketplaceStrings) > 0 {

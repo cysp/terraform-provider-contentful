@@ -58,7 +58,7 @@ func (m *PoliciesValue) ToUpdateRoleReqPoliciesItem(ctx context.Context, path pa
 func ToUpdateRoleReqPoliciesItemActions(ctx context.Context, _ path.Path, actions types.List) (contentfulManagement.UpdateRoleReqPoliciesItemActions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	actionsStrings, actionsStringsDiags := tf.KnownAndPresentStringValues(ctx, actions)
+	actionsStrings, actionsStringsDiags := tf.ElementsAsStringSlice(ctx, actions)
 	diags.Append(actionsStringsDiags...)
 
 	if slices.Contains(actionsStrings, "all") {

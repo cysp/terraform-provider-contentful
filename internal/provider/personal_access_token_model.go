@@ -18,7 +18,7 @@ func (model *PersonalAccessTokenModel) ToCreatePersonalAccessTokenReq(ctx contex
 		Name: model.Name.ValueString(),
 	}
 
-	scopes, scopesDiags := tf.KnownAndPresentStringValues(ctx, model.Scopes)
+	scopes, scopesDiags := tf.ElementsAsStringSlice(ctx, model.Scopes)
 	diags.Append(scopesDiags...)
 
 	req.Scopes = scopes

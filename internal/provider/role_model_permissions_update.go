@@ -39,7 +39,7 @@ func ToUpdateRoleReqPermissions(ctx context.Context, path path.Path, permissions
 func ToUpdateRoleReqPermissionsItem(ctx context.Context, _ path.Path, value types.List) (contentfulManagement.UpdateRoleReqPermissionsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	actionStrings, acactionStringsDiags := tf.KnownAndPresentStringValues(ctx, value)
+	actionStrings, acactionStringsDiags := tf.ElementsAsStringSlice(ctx, value)
 	diags.Append(acactionStringsDiags...)
 
 	if slices.Contains(actionStrings, "all") {

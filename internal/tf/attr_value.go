@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 type AttrValue interface {
@@ -28,23 +27,15 @@ type KnownAndPresentStringValuable interface {
 	ElementsAs(ctx context.Context, dest interface{}, allowUnhandled bool) diag.Diagnostics
 }
 
-func KnownAndPresentStringValues(ctx context.Context, values KnownAndPresentStringValuable) ([]string, diag.Diagnostics) {
+func ElementsAsStringSlice(ctx context.Context, value KnownAndPresentStringValuable) ([]string, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if IsNullOrUnknown(values) {
+	if IsNullOrUnknown(value) {
 		return []string{}, diags
 	}
 
-	elements := make([]types.String, len(values.Elements()))
-	diags.Append(values.ElementsAs(ctx, &elements, false)...)
-
-	strings := make([]string, 0, len(elements))
-
-	for _, element := range elements {
-		if IsKnownAndPresent(element) {
-			strings = append(strings, element.ValueString())
-		}
-	}
+	strings := make([]string, len(value.Elements()))
+	diags.Append(value.ElementsAs(ctx, &strings, false)...)
 
 	return strings, diags
 }

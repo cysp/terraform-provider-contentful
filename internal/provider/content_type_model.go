@@ -118,13 +118,8 @@ func (model *ItemsValue) ToPutContentTypeReqFieldsItemItems(ctx context.Context,
 func ValidationsListToPutContentTypeReqValidations(ctx context.Context, _ path.Path, validationsList types.List) ([]jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	validationsStrings, validationsStringsDiags := tf.KnownAndPresentStringValues(ctx, validationsList)
-	diags.Append(validationsStringsDiags...)
-
-	validations := make([]jx.Raw, len(validationsStrings))
-	for index, validationsString := range validationsStrings {
-		validations[index] = jx.Raw(validationsString)
-	}
+	validations := make([]jx.Raw, len(validationsList.Elements()))
+	diags.Append(validationsList.ElementsAs(ctx, &validations, false)...)
 
 	return validations, diags
 }
