@@ -247,7 +247,7 @@
                                                             "custom": {
                                                                 "imports": [
                                                                     {
-                                                                        "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
+                                                                        "path": "github.com/cysp/terraform-provider-contentful/internal/tf"
                                                                     },
                                                                     {
                                                                         "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
@@ -256,7 +256,7 @@
                                                                         "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
                                                                     }
                                                                 ],
-                                                                "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{}))"
+                                                                "schema_definition": "listdefault.StaticValue(tf.NewEmptyListMust(jsontypes.NormalizedType{}))"
                                                             }
                                                         }
                                                     }
@@ -313,7 +313,7 @@
                                                 "custom": {
                                                     "imports": [
                                                         {
-                                                            "path": "github.com/cysp/terraform-provider-contentful/internal/provider/util"
+                                                            "path": "github.com/cysp/terraform-provider-contentful/internal/tf"
                                                         },
                                                         {
                                                             "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
@@ -322,7 +322,7 @@
                                                             "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
                                                         }
                                                     ],
-                                                    "schema_definition": "listdefault.StaticValue(util.NewEmptyListMust(jsontypes.NormalizedType{}))"
+                                                    "schema_definition": "listdefault.StaticValue(tf.NewEmptyListMust(jsontypes.NormalizedType{}))"
                                                 }
                                             }
                                         }
