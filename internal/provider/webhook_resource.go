@@ -17,12 +17,11 @@ var (
 	_ resource.ResourceWithImportState = (*webhookResource)(nil)
 )
 
-//nolint:ireturn,revive,stylecheck
+//nolint:ireturn
 func NewWebhookResource() resource.Resource {
 	return &webhookResource{}
 }
 
-//nolint:revive,stylecheck
 type webhookResource struct {
 	providerData ContentfulProviderData
 }
@@ -46,6 +45,7 @@ func (r *webhookResource) ImportState(ctx context.Context, req resource.ImportSt
 	}, req, resp)
 }
 
+//nolint:dupl
 func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data WebhookModel
 
