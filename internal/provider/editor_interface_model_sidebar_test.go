@@ -66,7 +66,7 @@ func TestNewSidebarValueFromResponse(t *testing.T) {
 
 	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
 	assert.EqualValues(t, "widget_id", value.WidgetId.ValueString())
-	assert.EqualValues(t, "{\"foo\":\"bar\"}", value.Settings.ValueString())
+	assert.JSONEq(t, `{"foo":"bar"}`, value.Settings.ValueString())
 
 	assert.Empty(t, valueDiags)
 }
