@@ -669,7 +669,7 @@ func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *Creat
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "CreateWebhookDefinition", r); {
+			switch err := c.securityAccessToken(ctx, CreateWebhookDefinitionOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -1363,7 +1363,7 @@ func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteW
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "DeleteWebhookDefinition", r); {
+			switch err := c.securityAccessToken(ctx, DeleteWebhookDefinitionOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -2319,7 +2319,7 @@ func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhook
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "GetWebhookDefinition", r); {
+			switch err := c.securityAccessToken(ctx, GetWebhookDefinitionOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -3200,7 +3200,7 @@ func (c *Client) sendUpdateWebhookDefinition(ctx context.Context, request *Updat
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, "UpdateWebhookDefinition", r); {
+			switch err := c.securityAccessToken(ctx, UpdateWebhookDefinitionOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
