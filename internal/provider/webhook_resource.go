@@ -31,7 +31,9 @@ func (r *webhookResource) Metadata(_ context.Context, req resource.MetadataReque
 }
 
 func (r *webhookResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = WebhookResourceSchema(ctx)
+	s := WebhookResourceSchema(ctx)
+	s.Attributes["filters"] = WebhookFiltersSchema(ctx, true)
+	resp.Schema = s
 }
 
 func (r *webhookResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
