@@ -29,6 +29,22 @@ func (m WebhookFilterModel) AttributesSchema(ctx context.Context) map[string]sch
 		"not": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterInteriorModel{}.AttributesSchema(ctx),
 			CustomType: WebhookFilterInteriorModel{}.ObjectType(ctx),
+			Optional:   true,
+		},
+		"equals": schema.SingleNestedAttribute{
+			Attributes: WebhookFilterEqualityConstraintModel{}.AttributesSchema(ctx),
+			CustomType: WebhookFilterEqualityConstraintModel{}.ObjectType(ctx),
+			Optional:   true,
+		},
+		"in": schema.SingleNestedAttribute{
+			Attributes: WebhookFilterInConstraintModel{}.AttributesSchema(ctx),
+			CustomType: WebhookFilterInConstraintModel{}.ObjectType(ctx),
+			Optional:   true,
+		},
+		"regexp": schema.SingleNestedAttribute{
+			Attributes: WebhookFilterRegexpConstraintModel{}.AttributesSchema(ctx),
+			CustomType: WebhookFilterRegexpConstraintModel{}.ObjectType(ctx),
+			Optional:   true,
 		},
 	}
 }
@@ -77,6 +93,17 @@ func (m WebhookFilterInteriorModel) AttributesSchema(ctx context.Context) map[st
 		"equals": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterEqualityConstraintModel{}.AttributesSchema(ctx),
 			CustomType: WebhookFilterEqualityConstraintModel{}.ObjectType(ctx),
+			Optional:   true,
+		},
+		"in": schema.SingleNestedAttribute{
+			Attributes: WebhookFilterInConstraintModel{}.AttributesSchema(ctx),
+			CustomType: WebhookFilterInConstraintModel{}.ObjectType(ctx),
+			Optional:   true,
+		},
+		"regexp": schema.SingleNestedAttribute{
+			Attributes: WebhookFilterRegexpConstraintModel{}.AttributesSchema(ctx),
+			CustomType: WebhookFilterRegexpConstraintModel{}.ObjectType(ctx),
+			Optional:   true,
 		},
 	}
 }

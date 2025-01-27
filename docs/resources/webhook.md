@@ -24,7 +24,7 @@ description: |-
 ### Optional
 
 - `active` (Boolean)
-- `filters` (List of String)
+- `filters` (Attributes List) (see [below for nested schema](#nestedatt--filters))
 - `headers` (Attributes Map) (see [below for nested schema](#nestedatt--headers))
 - `http_basic_password` (String)
 - `http_basic_username` (String)
@@ -34,6 +34,81 @@ description: |-
 ### Read-Only
 
 - `webhook_id` (String)
+
+<a id="nestedatt--filters"></a>
+### Nested Schema for `filters`
+
+Optional:
+
+- `equals` (Attributes) (see [below for nested schema](#nestedatt--filters--equals))
+- `in` (Attributes) (see [below for nested schema](#nestedatt--filters--in))
+- `not` (Attributes) (see [below for nested schema](#nestedatt--filters--not))
+- `regexp` (Attributes) (see [below for nested schema](#nestedatt--filters--regexp))
+
+<a id="nestedatt--filters--equals"></a>
+### Nested Schema for `filters.equals`
+
+Required:
+
+- `doc` (String)
+- `string` (String)
+
+
+<a id="nestedatt--filters--in"></a>
+### Nested Schema for `filters.in`
+
+Required:
+
+- `doc` (String)
+- `strings` (List of String)
+
+
+<a id="nestedatt--filters--not"></a>
+### Nested Schema for `filters.not`
+
+Optional:
+
+- `equals` (Attributes) (see [below for nested schema](#nestedatt--filters--not--equals))
+- `in` (Attributes) (see [below for nested schema](#nestedatt--filters--not--in))
+- `regexp` (Attributes) (see [below for nested schema](#nestedatt--filters--not--regexp))
+
+<a id="nestedatt--filters--not--equals"></a>
+### Nested Schema for `filters.not.equals`
+
+Required:
+
+- `doc` (String)
+- `string` (String)
+
+
+<a id="nestedatt--filters--not--in"></a>
+### Nested Schema for `filters.not.in`
+
+Required:
+
+- `doc` (String)
+- `strings` (List of String)
+
+
+<a id="nestedatt--filters--not--regexp"></a>
+### Nested Schema for `filters.not.regexp`
+
+Required:
+
+- `doc` (String)
+- `pattern` (String)
+
+
+
+<a id="nestedatt--filters--regexp"></a>
+### Nested Schema for `filters.regexp`
+
+Required:
+
+- `doc` (String)
+- `pattern` (String)
+
+
 
 <a id="nestedatt--headers"></a>
 ### Nested Schema for `headers`
