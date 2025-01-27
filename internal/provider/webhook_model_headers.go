@@ -71,7 +71,7 @@ func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model types
 	headers := make(contentfulManagement.WebhookDefinitionHeaders, len(model.Elements()))
 
 	headersValues := make(map[string]HeadersValue, len(model.Elements()))
-	diags.Append(model.ElementsAs(ctx, &headersValues, false)...)
+	// diags.Append(model.ElementsAs(ctx, &headersValues, false)...)
 
 	headersKeys := make([]string, len(headersValues))
 
