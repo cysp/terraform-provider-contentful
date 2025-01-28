@@ -36,6 +36,11 @@ func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context) (co
 		diags.Append(model.Filters.ElementsAs(ctx, &modelFilters, false)...)
 
 		filters := make([]contentfulManagement.WebhookDefinitionFilter, len(modelFilters))
+		for i, modelFilter := range modelFilters {
+			filter, filterDiags := modelFilter.ToWebhookDefinitionFilter(ctx)
+			diags.Append(filterDiags...)
+			filters[i] = filter
+		}
 		req.Filters = contentfulManagement.NewOptNilWebhookDefinitionFilterArray(filters)
 	}
 

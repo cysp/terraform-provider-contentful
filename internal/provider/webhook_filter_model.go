@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 
+	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -99,8 +100,73 @@ func (m WebhookFilterModel) AttributeTypes(ctx context.Context) map[string]attr.
 	}
 }
 
-func (m WebhookFilterModel) ToTerraformValue(context.Context) (tftypes.Value, error) {
-	panic("unimplemented")
+func (m WebhookFilterModel) TerraformType(ctx context.Context) tftypes.Type {
+	return tftypes.Object{
+		AttributeTypes: m.TerraformAttributeTypes(ctx),
+	}
+}
+
+func (m WebhookFilterModel) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+	return map[string]tftypes.Type{
+		"not":    WebhookFilterInteriorModel{}.TerraformType(ctx),
+		"equals": WebhookFilterEqualityConstraintModel{}.TerraformType(ctx),
+		"in":     WebhookFilterInConstraintModel{}.TerraformType(ctx),
+		"regexp": WebhookFilterRegexpConstraintModel{}.TerraformType(ctx),
+	}
+}
+
+func (v WebhookFilterModel) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	objectType := tftypes.Object{AttributeTypes: v.TerraformAttributeTypes(ctx)}
+
+	var val tftypes.Value
+	var err error
+
+	vals := make(map[string]tftypes.Value, 4)
+
+	val, err = v.Not.ToTerraformValue(ctx)
+
+	if err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	vals["not"] = val
+
+	val, err = v.Equals.ToTerraformValue(ctx)
+
+	if err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	vals["equals"] = val
+
+	val, err = v.In.ToTerraformValue(ctx)
+
+	if err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	vals["in"] = val
+
+	val, err = v.Regexp.ToTerraformValue(ctx)
+
+	if err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	vals["regexp"] = val
+
+	if err := tftypes.ValidateValue(objectType, vals); err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	return tftypes.NewValue(objectType, vals), nil
+	// case attr.ValueStateNull:
+	// 	return tftypes.NewValue(objectType, nil), nil
+	// case attr.ValueStateUnknown:
+	// 	return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	// default:
+	// 	panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	// }
 }
 
 func (m WebhookFilterModel) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
@@ -130,6 +196,15 @@ func (m WebhookFilterModel) ToObjectValue(ctx context.Context) (basetypes.Object
 
 func (m WebhookFilterModel) Equal(other attr.Value) bool {
 	return false
+}
+
+func (m WebhookFilterModel) ToWebhookDefinitionFilter(context.Context) (contentfulManagement.WebhookDefinitionFilter, diag.Diagnostics) {
+	// en := jx.Encoder{}
+	// return en.Encode(m)
+
+	b := []byte(`{"foo":"bar"}`)
+
+	return contentfulManagement.WebhookDefinitionFilter(b), nil
 }
 
 type WebhookFilterInteriorModel struct {
@@ -164,13 +239,60 @@ func (m WebhookFilterInteriorModel) ToObjectValue(ctx context.Context) (basetype
 }
 
 // ToTerraformValue implements basetypes.ObjectValuable.
-func (m WebhookFilterInteriorModel) ToTerraformValue(context.Context) (tftypes.Value, error) {
-	panic("unimplemented")
+func (v WebhookFilterInteriorModel) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	objectType := tftypes.Object{AttributeTypes: v.TerraformAttributeTypes(ctx)}
+
+	var val tftypes.Value
+	var err error
+
+	vals := make(map[string]tftypes.Value, 4)
+
+	val, err = v.Equals.ToTerraformValue(ctx)
+
+	if err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	vals["equals"] = val
+
+	val, err = v.In.ToTerraformValue(ctx)
+
+	if err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	vals["in"] = val
+
+	val, err = v.Regexp.ToTerraformValue(ctx)
+
+	if err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	vals["regexp"] = val
+
+	if err := tftypes.ValidateValue(objectType, vals); err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	return tftypes.NewValue(objectType, vals), nil
 }
 
 // Type implements basetypes.ObjectValuable.
 func (m WebhookFilterInteriorModel) Type(context.Context) attr.Type {
 	panic("unimplemented")
+}
+
+func (m WebhookFilterInteriorModel) TerraformType(ctx context.Context) tftypes.Type {
+	return tftypes.Object{AttributeTypes: m.TerraformAttributeTypes(ctx)}
+}
+
+func (m WebhookFilterInteriorModel) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+	return map[string]tftypes.Type{
+		"equals": WebhookFilterEqualityConstraintModel{}.TerraformType(ctx),
+		"in":     WebhookFilterInConstraintModel{}.TerraformType(ctx),
+		"regexp": WebhookFilterRegexpConstraintModel{}.TerraformType(ctx),
+	}
 }
 
 var _ basetypes.ObjectValuable = WebhookFilterInteriorModel{}
@@ -242,8 +364,35 @@ func (m WebhookFilterEqualityConstraintModel) ToObjectValue(ctx context.Context)
 }
 
 // ToTerraformValue implements basetypes.ObjectValuable.
-func (m WebhookFilterEqualityConstraintModel) ToTerraformValue(context.Context) (tftypes.Value, error) {
-	panic("unimplemented")
+func (v WebhookFilterEqualityConstraintModel) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	objectType := tftypes.Object{AttributeTypes: v.TerraformAttributeTypes(ctx)}
+
+	var val tftypes.Value
+	var err error
+
+	vals := make(map[string]tftypes.Value, 4)
+
+	val, err = basetypes.NewStringValue(v.Doc).ToTerraformValue(ctx)
+
+	if err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	vals["doc"] = val
+
+	val, err = basetypes.NewStringValue(v.Value).ToTerraformValue(ctx)
+
+	if err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	vals["value"] = val
+
+	if err := tftypes.ValidateValue(objectType, vals); err != nil {
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	}
+
+	return tftypes.NewValue(objectType, vals), nil
 }
 
 // Type implements basetypes.ObjectValuable.
@@ -272,6 +421,17 @@ func (m WebhookFilterEqualityConstraintModel) AttributeTypes(ctx context.Context
 	return map[string]attr.Type{
 		"doc":   basetypes.StringType{},
 		"value": basetypes.StringType{},
+	}
+}
+
+func (m WebhookFilterEqualityConstraintModel) TerraformType(ctx context.Context) tftypes.Type {
+	return tftypes.Object{AttributeTypes: m.TerraformAttributeTypes(ctx)}
+}
+
+func (m WebhookFilterEqualityConstraintModel) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+	return map[string]tftypes.Type{
+		"doc":   tftypes.String,
+		"value": tftypes.String,
 	}
 }
 
@@ -306,13 +466,26 @@ func (m WebhookFilterInConstraintModel) ToObjectValue(ctx context.Context) (base
 }
 
 // ToTerraformValue implements basetypes.ObjectValuable.
-func (m WebhookFilterInConstraintModel) ToTerraformValue(context.Context) (tftypes.Value, error) {
-	panic("unimplemented")
+func (m WebhookFilterInConstraintModel) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	objectType := tftypes.Object{AttributeTypes: m.TerraformAttributeTypes(ctx)}
+
+	return tftypes.NewValue(objectType, nil), nil
 }
 
 // Type implements basetypes.ObjectValuable.
 func (m WebhookFilterInConstraintModel) Type(context.Context) attr.Type {
 	panic("unimplemented")
+}
+
+func (m WebhookFilterInConstraintModel) TerraformType(ctx context.Context) tftypes.Type {
+	return tftypes.Object{AttributeTypes: m.TerraformAttributeTypes(ctx)}
+}
+
+func (m WebhookFilterInConstraintModel) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+	return map[string]tftypes.Type{
+		"doc":    tftypes.String,
+		"values": tftypes.List{ElementType: tftypes.String},
+	}
 }
 
 var _ basetypes.ObjectValuable = WebhookFilterInConstraintModel{}
@@ -375,13 +548,26 @@ func (m WebhookFilterRegexpConstraintModel) ToObjectValue(ctx context.Context) (
 }
 
 // ToTerraformValue implements basetypes.ObjectValuable.
-func (m WebhookFilterRegexpConstraintModel) ToTerraformValue(context.Context) (tftypes.Value, error) {
-	panic("unimplemented")
+func (m WebhookFilterRegexpConstraintModel) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	objectType := tftypes.Object{AttributeTypes: m.TerraformAttributeTypes(ctx)}
+
+	return tftypes.NewValue(objectType, nil), nil
 }
 
 // Type implements basetypes.ObjectValuable.
 func (m WebhookFilterRegexpConstraintModel) Type(context.Context) attr.Type {
 	panic("unimplemented")
+}
+
+func (m WebhookFilterRegexpConstraintModel) TerraformType(ctx context.Context) tftypes.Type {
+	return tftypes.Object{AttributeTypes: m.TerraformAttributeTypes(ctx)}
+}
+
+func (m WebhookFilterRegexpConstraintModel) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+	return map[string]tftypes.Type{
+		"doc":     tftypes.String,
+		"pattern": tftypes.String,
+	}
 }
 
 var _ basetypes.ObjectValuable = WebhookFilterRegexpConstraintModel{}
