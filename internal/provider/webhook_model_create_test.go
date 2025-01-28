@@ -6,6 +6,7 @@ import (
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	webhookfilter "github.com/cysp/terraform-provider-contentful/internal/provider/webhook_filter"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -16,9 +17,9 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 
 	ctx := context.Background()
 
-	filters, filtersDiags := types.ListValueFrom(ctx, provider.WebhookFilterModel{}.CustomType(ctx), []attr.Value{
-		provider.WebhookFilterModel{
-			Equals: provider.WebhookFilterEqualityConstraintModel{
+	filters, filtersDiags := types.ListValueFrom(ctx, webhookfilter.WebhookFilterValue{}.CustomType(ctx), []attr.Value{
+		webhookfilter.WebhookFilterValue{
+			Equals: webhookfilter.WebhookFilterEqualsValue{
 				Doc:   "sys.type",
 				Value: "abc",
 			},
