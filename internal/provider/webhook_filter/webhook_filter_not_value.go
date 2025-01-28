@@ -10,12 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-type WebhookFilterNotType struct {
-	basetypes.ObjectType
-}
-
-var _ basetypes.ObjectTypable = WebhookFilterNotType{}
-
 type WebhookFilterNotValue struct {
 	Equals WebhookFilterEqualsValue `tfsdk:"equals"`
 	In     WebhookFilterInValue     `tfsdk:"in"`

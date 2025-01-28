@@ -10,10 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-type WebhookFilterEqualsType struct {
-	basetypes.ObjectType
-}
-
 type WebhookFilterEqualsValue struct {
 	Doc   string `tfsdk:"doc"`
 	Value string `tfsdk:"value"`
