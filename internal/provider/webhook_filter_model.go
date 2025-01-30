@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
+//nolint:ireturn
 func WebhookFiltersSchema(ctx context.Context, optional bool) schema.Attribute {
 	return schema.ListNestedAttribute{
 		NestedObject: schema.NestedAttributeObject{
@@ -20,66 +21,65 @@ func WebhookFiltersSchema(ctx context.Context, optional bool) schema.Attribute {
 	}
 }
 
-func ToWebhookDefinitionFilter(ctx context.Context, m webhookfilter.WebhookFilterValue) (contentfulManagement.WebhookDefinitionFilter, diag.Diagnostics) {
-	// en := jx.Encoder{}
-	// return en.Encode(m)
-
-	// b := []byte(`{"foo":"bar"}`)
-
+func ToWebhookDefinitionFilter(ctx context.Context, value webhookfilter.WebhookFilterValue) (contentfulManagement.WebhookDefinitionFilter, diag.Diagnostics) {
 	encoder := jx.Encoder{}
 
-	encodeWebhookFilterValue(ctx, &encoder, m)
+	encodeWebhookFilterValue(ctx, &encoder, value)
 
 	return contentfulManagement.WebhookDefinitionFilter(encoder.Bytes()), nil
 }
 
-func encodeWebhookFilterValue(ctx context.Context, encoder *jx.Encoder, m webhookfilter.WebhookFilterValue) {
+func encodeWebhookFilterValue(ctx context.Context, encoder *jx.Encoder, value webhookfilter.WebhookFilterValue) {
 	encoder.Obj(func(encoder *jx.Encoder) {
-		if !m.Not.IsNull() && !m.Not.IsUnknown() {
+		if !value.Not.IsNull() && !value.Not.IsUnknown() {
 			encoder.Field("not", func(encoder *jx.Encoder) {
-				encodeWebhookFilterNotValue(ctx, encoder, m.Not)
+				encodeWebhookFilterNotValue(ctx, encoder, value.Not)
 			})
 		}
-		if !m.Equals.IsNull() && !m.Equals.IsUnknown() {
+
+		if !value.Equals.IsNull() && !value.Equals.IsUnknown() {
 			encoder.Field("equals", func(encoder *jx.Encoder) {
-				encodeWebhookFilterEqualsValue(ctx, encoder, m.Equals)
+				encodeWebhookFilterEqualsValue(ctx, encoder, value.Equals)
 			})
 		}
-		if !m.In.IsNull() && !m.In.IsUnknown() {
+
+		if !value.In.IsNull() && !value.In.IsUnknown() {
 			encoder.Field("in", func(encoder *jx.Encoder) {
-				encodeWebhookFilterInValue(ctx, encoder, m.In)
+				encodeWebhookFilterInValue(ctx, encoder, value.In)
 			})
 		}
-		if !m.Regexp.IsNull() && !m.Regexp.IsUnknown() {
+
+		if !value.Regexp.IsNull() && !value.Regexp.IsUnknown() {
 			encoder.Field("regexp", func(encoder *jx.Encoder) {
-				encodeWebhookFilterRegexpValue(ctx, encoder, m.Regexp)
+				encodeWebhookFilterRegexpValue(ctx, encoder, value.Regexp)
 			})
 		}
 	})
 }
 
-func encodeWebhookFilterNotValue(ctx context.Context, encoder *jx.Encoder, m webhookfilter.WebhookFilterNotValue) {
+func encodeWebhookFilterNotValue(ctx context.Context, encoder *jx.Encoder, value webhookfilter.WebhookFilterNotValue) {
 	encoder.Obj(func(encoder *jx.Encoder) {
 		encoder.Field("equals", func(encoder *jx.Encoder) {
-			encodeWebhookFilterEqualsValue(ctx, encoder, m.Equals)
+			encodeWebhookFilterEqualsValue(ctx, encoder, value.Equals)
 		})
 	})
 }
 
-func encodeWebhookFilterEqualsValue(ctx context.Context, encoder *jx.Encoder, m webhookfilter.WebhookFilterEqualsValue) {
+func encodeWebhookFilterEqualsValue(_ context.Context, encoder *jx.Encoder, value webhookfilter.WebhookFilterEqualsValue) {
 	encoder.Obj(func(encoder *jx.Encoder) {
-		encoder.Field("doc", func(encoder *jx.Encoder) { encoder.Str(m.Doc.ValueString()) })
-		encoder.Field("value", func(encoder *jx.Encoder) { encoder.Str(m.Value.ValueString()) })
+		encoder.Field("doc", func(encoder *jx.Encoder) { encoder.Str(value.Doc.ValueString()) })
+		encoder.Field("value", func(encoder *jx.Encoder) { encoder.Str(value.Value.ValueString()) })
 	})
 }
 
-func encodeWebhookFilterInValue(ctx context.Context, encoder *jx.Encoder, m webhookfilter.WebhookFilterInValue) {
+func encodeWebhookFilterInValue(ctx context.Context, encoder *jx.Encoder, value webhookfilter.WebhookFilterInValue) {
 	encoder.Obj(func(encoder *jx.Encoder) {
-		encoder.Field("doc", func(encoder *jx.Encoder) { encoder.Str(m.Doc.ValueString()) })
+		encoder.Field("doc", func(encoder *jx.Encoder) { encoder.Str(value.Doc.ValueString()) })
 		encoder.Field("values", func(encoder *jx.Encoder) {
 			encoder.Arr(func(e *jx.Encoder) {
-				values := make([]string, len(m.Values.Elements()))
-				m.Values.ElementsAs(ctx, &values, false)
+				values := make([]string, len(value.Values.Elements()))
+				value.Values.ElementsAs(ctx, &values, false)
+
 				for _, v := range values {
 					e.Str(v)
 				}
@@ -88,7 +88,7 @@ func encodeWebhookFilterInValue(ctx context.Context, encoder *jx.Encoder, m webh
 	})
 }
 
-func encodeWebhookFilterRegexpValue(ctx context.Context, encoder *jx.Encoder, m webhookfilter.WebhookFilterRegexpValue) {
+func encodeWebhookFilterRegexpValue(_ context.Context, encoder *jx.Encoder, m webhookfilter.WebhookFilterRegexpValue) {
 	encoder.Obj(func(encoder *jx.Encoder) {
 		encoder.Field("doc", func(encoder *jx.Encoder) { encoder.Str(m.Doc.ValueString()) })
 		encoder.Field("pattern", func(encoder *jx.Encoder) { encoder.Str(m.Pattern.ValueString()) })

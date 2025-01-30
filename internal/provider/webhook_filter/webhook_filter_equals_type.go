@@ -4,52 +4,61 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
+//nolint:revive
 type WebhookFilterEqualsType struct {
 	basetypes.ObjectType
 }
 
 var _ basetypes.ObjectTypable = WebhookFilterEqualsType{}
 
-func (m WebhookFilterEqualsType) Equal(other attr.Type) bool {
-	//xxx
-	return true
+func (t WebhookFilterEqualsType) Equal(o attr.Type) bool {
+	other, ok := o.(WebhookFilterEqualsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (m WebhookFilterEqualsType) ValueType(ctx context.Context) attr.Value {
+//nolint:ireturn
+func (t WebhookFilterEqualsType) ValueType(context.Context) attr.Value {
 	return WebhookFilterEqualsValue{}
 }
 
-func (m WebhookFilterEqualsType) String() string {
+func (t WebhookFilterEqualsType) String() string {
 	return "WebhookFilterEqualsType"
 }
 
-func (m WebhookFilterEqualsType) TerraformType(ctx context.Context) tftypes.Type {
+//nolint:ireturn
+func (t WebhookFilterEqualsType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
-		AttributeTypes: m.TerraformAttributeTypes(ctx),
+		AttributeTypes: t.TerraformAttributeTypes(ctx),
 	}
 }
 
-func (m WebhookFilterEqualsType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+func (t WebhookFilterEqualsType) TerraformAttributeTypes(context.Context) map[string]tftypes.Type {
 	return map[string]tftypes.Type{
 		"doc":   tftypes.String,
 		"value": tftypes.String,
 	}
 }
 
-func (m WebhookFilterEqualsType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
+//nolint:ireturn
+func (t WebhookFilterEqualsType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
 	if value.Type() == nil {
 		return NewWebhookFilterEqualsValueNull(), nil
 	}
 
-	if !value.Type().Equal(m.TerraformType(ctx)) {
-		return nil, fmt.Errorf("expected %s, got %s", m.TerraformType(ctx), value.Type())
+	if !value.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), value.Type())
 	}
 
 	if value.IsNull() {
@@ -65,14 +74,12 @@ func (m WebhookFilterEqualsType) ValueFromTerraform(ctx context.Context, value t
 	val := map[string]tftypes.Value{}
 
 	err := value.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
-		a, err := m.AttrTypes[k].ValueFromTerraform(ctx, v)
-
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
 		if err != nil {
 			return nil, err
 		}
@@ -80,10 +87,13 @@ func (m WebhookFilterEqualsType) ValueFromTerraform(ctx context.Context, value t
 		attributes[k] = a
 	}
 
-	return NewWebhookFilterEqualsValueKnownFromAttributes(attributes), nil
+	v, diags := NewWebhookFilterEqualsValueKnownFromAttributes(ctx, attributes)
+
+	return v, util.ErrorFromDiags(diags)
 }
 
-func (m WebhookFilterEqualsType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+//nolint:ireturn
+func (t WebhookFilterEqualsType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if value.IsNull() {
@@ -94,29 +104,7 @@ func (m WebhookFilterEqualsType) ValueFromObject(ctx context.Context, value base
 		return NewWebhookFilterEqualsValueUnknown(), diags
 	}
 
-	v := NewWebhookFilterEqualsValueKnown()
-
 	attributes := value.Attributes()
 
-	doc, diags := types.StringType.ValueFromString(ctx, attributes["doc"].(types.String))
-	if diags.HasError() {
-		return v, diags
-	}
-
-	v.Doc, diags = doc.ToStringValue(ctx)
-	if diags.HasError() {
-		return v, diags
-	}
-
-	valueValue, diags := types.StringType.ValueFromString(ctx, attributes["value"].(types.String))
-	if diags.HasError() {
-		return v, diags
-	}
-
-	v.Value, diags = valueValue.ToStringValue(ctx)
-	if diags.HasError() {
-		return v, diags
-	}
-
-	return v, diags
+	return NewWebhookFilterEqualsValueKnownFromAttributes(ctx, attributes)
 }

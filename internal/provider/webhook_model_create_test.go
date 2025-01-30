@@ -21,12 +21,12 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 	filterEquals.Doc = types.StringValue("sys.type")
 	filterEquals.Value = types.StringValue("abc")
 
-	filterNot := webhookfilter.NewWebhookFilterNotValueKnown()
-	filterNot.Equals = filterEquals
+	// filterNot := webhookfilter.NewWebhookFilterNotValueKnown()
+	// filterNot.Equals = filterEquals
 
 	filter := webhookfilter.NewWebhookFilterValueKnown()
-	// filter.Equals = filterEquals
-	filter.Not = filterNot
+	filter.Equals = filterEquals
+	// filter.Not = filterNot
 
 	filters, filtersDiags := types.ListValueFrom(ctx, webhookfilter.WebhookFilterValue{}.CustomType(ctx), []attr.Value{
 		filter,
