@@ -11,41 +11,41 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-type WebhookFilterEqualsType struct {
+type WebhookFilterRegexpType struct {
 	basetypes.ObjectType
 }
 
-var _ basetypes.ObjectTypable = WebhookFilterEqualsType{}
+var _ basetypes.ObjectTypable = WebhookFilterRegexpType{}
 
-func (m WebhookFilterEqualsType) Equal(other attr.Type) bool {
+func (m WebhookFilterRegexpType) Equal(other attr.Type) bool {
 	//xxx
 	return true
 }
 
-func (m WebhookFilterEqualsType) ValueType(ctx context.Context) attr.Value {
-	return WebhookFilterEqualsValue{}
+func (m WebhookFilterRegexpType) ValueType(ctx context.Context) attr.Value {
+	return WebhookFilterRegexpValue{}
 }
 
-func (m WebhookFilterEqualsType) String() string {
-	return "WebhookFilterEqualsType"
+func (m WebhookFilterRegexpType) String() string {
+	return "WebhookFilterRegexpType"
 }
 
-func (m WebhookFilterEqualsType) TerraformType(ctx context.Context) tftypes.Type {
+func (m WebhookFilterRegexpType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
 		AttributeTypes: m.TerraformAttributeTypes(ctx),
 	}
 }
 
-func (m WebhookFilterEqualsType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+func (m WebhookFilterRegexpType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
 	return map[string]tftypes.Type{
-		"doc":   tftypes.String,
-		"value": tftypes.String,
+		"doc":     tftypes.String,
+		"pattern": tftypes.String,
 	}
 }
 
-func (m WebhookFilterEqualsType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
+func (m WebhookFilterRegexpType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
 	if value.Type() == nil {
-		return NewWebhookFilterEqualsValueNull(), nil
+		return NewWebhookFilterRegexpValueNull(), nil
 	}
 
 	if !value.Type().Equal(m.TerraformType(ctx)) {
@@ -53,12 +53,14 @@ func (m WebhookFilterEqualsType) ValueFromTerraform(ctx context.Context, value t
 	}
 
 	if value.IsNull() {
-		return NewWebhookFilterEqualsValueNull(), nil
+		return NewWebhookFilterRegexpValueNull(), nil
 	}
 
 	if !value.IsKnown() {
-		return NewWebhookFilterEqualsValueUnknown(), nil
+		return NewWebhookFilterRegexpValueUnknown(), nil
 	}
+
+	v := NewWebhookFilterRegexpValueKnown()
 
 	attributes := map[string]attr.Value{}
 
@@ -80,21 +82,21 @@ func (m WebhookFilterEqualsType) ValueFromTerraform(ctx context.Context, value t
 		attributes[k] = a
 	}
 
-	return NewWebhookFilterEqualsValueKnownFromAttributes(attributes), nil
+	return v, nil
 }
 
-func (m WebhookFilterEqualsType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (m WebhookFilterRegexpType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if value.IsNull() {
-		return NewWebhookFilterEqualsValueNull(), diags
+		return NewWebhookFilterRegexpValueNull(), diags
 	}
 
 	if value.IsUnknown() {
-		return NewWebhookFilterEqualsValueUnknown(), diags
+		return NewWebhookFilterRegexpValueUnknown(), diags
 	}
 
-	v := NewWebhookFilterEqualsValueKnown()
+	v := NewWebhookFilterRegexpValueKnown()
 
 	attributes := value.Attributes()
 
@@ -102,18 +104,16 @@ func (m WebhookFilterEqualsType) ValueFromObject(ctx context.Context, value base
 	if diags.HasError() {
 		return v, diags
 	}
-
 	v.Doc, diags = doc.ToStringValue(ctx)
 	if diags.HasError() {
 		return v, diags
 	}
 
-	valueValue, diags := types.StringType.ValueFromString(ctx, attributes["value"].(types.String))
+	valuePattern, diags := types.StringType.ValueFromString(ctx, attributes["pattern"].(types.String))
 	if diags.HasError() {
 		return v, diags
 	}
-
-	v.Value, diags = valueValue.ToStringValue(ctx)
+	v.Pattern, diags = valuePattern.ToStringValue(ctx)
 	if diags.HasError() {
 		return v, diags
 	}

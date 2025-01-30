@@ -22,13 +22,36 @@ type WebhookFilterValue struct {
 
 func NewWebhookFilterValueKnown() WebhookFilterValue {
 	return WebhookFilterValue{
-		state: attr.ValueStateKnown,
+		Not:    NewWebhookFilterNotValueNull(),
+		Equals: NewWebhookFilterEqualsValueNull(),
+		In:     NewWebhookFilterInValueNull(),
+		Regexp: NewWebhookFilterRegexpValueNull(),
+		state:  attr.ValueStateKnown,
 	}
 }
-func NewWebhookFilterValueKnownFromAttributes(attributes map[string]attr.Value) WebhookFilterValue {
+
+func NewWebhookFilterValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (WebhookFilterValue, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	not, notDiags := WebhookFilterNotType{}.ValueFromObject(ctx, attributes["not"].(basetypes.ObjectValue))
+	diags.Append(notDiags...)
+
+	equals, equalsDiags := WebhookFilterEqualsType{}.ValueFromObject(ctx, attributes["equals"].(basetypes.ObjectValue))
+	diags.Append(equalsDiags...)
+
+	in, inDiags := WebhookFilterInType{}.ValueFromObject(ctx, attributes["in"].(basetypes.ObjectValue))
+	diags.Append(inDiags...)
+
+	regexp, regexpDiags := WebhookFilterRegexpType{}.ValueFromObject(ctx, attributes["regexp"].(basetypes.ObjectValue))
+	diags.Append(regexpDiags...)
+
 	return WebhookFilterValue{
-		state: attr.ValueStateKnown,
-	}
+		Not:    not.(WebhookFilterNotValue),
+		Equals: equals.(WebhookFilterEqualsValue),
+		In:     in.(WebhookFilterInValue),
+		Regexp: regexp.(WebhookFilterRegexpValue),
+		state:  attr.ValueStateKnown,
+	}, diags
 }
 
 func NewWebhookFilterValueNull() WebhookFilterValue {

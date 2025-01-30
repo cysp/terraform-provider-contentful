@@ -51,7 +51,7 @@ Optional:
 Required:
 
 - `doc` (String)
-- `string` (String)
+- `value` (String)
 
 
 <a id="nestedatt--filters--in"></a>
@@ -60,7 +60,7 @@ Required:
 Required:
 
 - `doc` (String)
-- `strings` (List of String)
+- `values` (List of String)
 
 
 <a id="nestedatt--filters--not"></a>
@@ -78,7 +78,7 @@ Optional:
 Required:
 
 - `doc` (String)
-- `string` (String)
+- `value` (String)
 
 
 <a id="nestedatt--filters--not--in"></a>
@@ -87,7 +87,7 @@ Required:
 Required:
 
 - `doc` (String)
-- `strings` (List of String)
+- `values` (List of String)
 
 
 <a id="nestedatt--filters--not--regexp"></a>

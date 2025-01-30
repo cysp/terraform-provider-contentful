@@ -2,89 +2,49 @@ package webhookfilter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 type WebhookFilterEqualsValue struct {
-	Doc   string `tfsdk:"doc"`
-	Value string `tfsdk:"value"`
+	Doc   basetypes.StringValue `tfsdk:"doc"`
+	Value basetypes.StringValue `tfsdk:"value"`
+	state attr.ValueState
 }
 
-func (m WebhookFilterEqualsValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return WebhookFilterEqualsType{
-		ObjectType: m.ObjectType(ctx),
+func NewWebhookFilterEqualsValueKnown() WebhookFilterEqualsValue {
+	return WebhookFilterEqualsValue{
+		Doc:   basetypes.NewStringNull(),
+		Value: basetypes.NewStringNull(),
+		state: attr.ValueStateKnown,
 	}
 }
 
-var _ basetypes.ObjectTypable = WebhookFilterEqualsType{}
+func NewWebhookFilterEqualsValueKnownFromAttributes(attributes map[string]attr.Value) WebhookFilterEqualsValue {
 
-var _ basetypes.ObjectValuable = WebhookFilterEqualsValue{}
-
-// Equal implements basetypes.ObjectValuable.
-func (m WebhookFilterEqualsValue) Equal(attr.Value) bool {
-	panic("unimplemented")
-}
-
-// IsNull implements basetypes.ObjectValuable.
-func (m WebhookFilterEqualsValue) IsNull() bool {
-	panic("unimplemented")
-}
-
-// IsUnknown implements basetypes.ObjectValuable.
-func (m WebhookFilterEqualsValue) IsUnknown() bool {
-	panic("unimplemented")
-}
-
-// String implements basetypes.ObjectValuable.
-func (m WebhookFilterEqualsValue) String() string {
-	panic("unimplemented")
-}
-
-// ToObjectValue implements basetypes.ObjectValuable.
-func (m WebhookFilterEqualsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	panic("unimplemented")
-}
-
-// ToTerraformValue implements basetypes.ObjectValuable.
-func (v WebhookFilterEqualsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	objectType := tftypes.Object{AttributeTypes: v.TerraformAttributeTypes(ctx)}
-
-	var val tftypes.Value
-	var err error
-
-	vals := make(map[string]tftypes.Value, 4)
-
-	val, err = basetypes.NewStringValue(v.Doc).ToTerraformValue(ctx)
-
-	if err != nil {
-		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+	return WebhookFilterEqualsValue{
+		Doc:   attributes["doc"].(basetypes.StringValue),
+		Value: attributes["value"].(basetypes.StringValue),
+		state: attr.ValueStateKnown,
 	}
-
-	vals["doc"] = val
-
-	val, err = basetypes.NewStringValue(v.Value).ToTerraformValue(ctx)
-
-	if err != nil {
-		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-	}
-
-	vals["value"] = val
-
-	if err := tftypes.ValidateValue(objectType, vals); err != nil {
-		return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(objectType, vals), nil
 }
 
-// Type implements basetypes.ObjectValuable.
-func (m WebhookFilterEqualsValue) Type(context.Context) attr.Type {
-	panic("unimplemented")
+func NewWebhookFilterEqualsValueNull() WebhookFilterEqualsValue {
+	return WebhookFilterEqualsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewWebhookFilterEqualsValueUnknown() WebhookFilterEqualsValue {
+	return WebhookFilterEqualsValue{
+		state: attr.ValueStateUnknown,
+	}
 }
 
 func (m WebhookFilterEqualsValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
@@ -98,26 +58,108 @@ func (m WebhookFilterEqualsValue) SchemaAttributes(ctx context.Context) map[stri
 	}
 }
 
+func (m WebhookFilterEqualsValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
+	return WebhookFilterEqualsType{
+		m.ObjectType(ctx),
+	}
+}
+
+var _ basetypes.ObjectValuable = WebhookFilterEqualsValue{}
+
+func (m WebhookFilterEqualsValue) Type(ctx context.Context) attr.Type {
+	return WebhookFilterEqualsType{
+		ObjectType: m.ObjectType(ctx),
+	}
+}
+
 func (m WebhookFilterEqualsValue) ObjectType(ctx context.Context) basetypes.ObjectType {
 	return basetypes.ObjectType{
-		AttrTypes: m.AttributeTypes(ctx),
+		AttrTypes: m.ObjectAttrTypes(ctx),
 	}
 }
 
-func (m WebhookFilterEqualsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (m WebhookFilterEqualsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"doc":   basetypes.StringType{},
-		"value": basetypes.StringType{},
+		"doc":   types.StringType,
+		"value": types.StringType,
 	}
 }
 
-func (m WebhookFilterEqualsValue) TerraformType(ctx context.Context) tftypes.Type {
-	return tftypes.Object{AttributeTypes: m.TerraformAttributeTypes(ctx)}
+func (m WebhookFilterEqualsValue) Equal(other attr.Value) bool {
+	return false
 }
 
-func (m WebhookFilterEqualsValue) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
-	return map[string]tftypes.Type{
-		"doc":   tftypes.String,
-		"value": tftypes.String,
+func (m WebhookFilterEqualsValue) IsNull() bool {
+	return m.state == attr.ValueStateNull
+}
+
+func (m WebhookFilterEqualsValue) IsUnknown() bool {
+	return m.state == attr.ValueStateUnknown
+}
+
+func (m WebhookFilterEqualsValue) String() string {
+	return ""
+}
+
+func (v WebhookFilterEqualsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	tft := WebhookFilterEqualsType{}.TerraformType(ctx)
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		break
+	case attr.ValueStateNull:
+		return tftypes.NewValue(tft, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
 	}
+
+	var val tftypes.Value
+	var err error
+
+	vals := make(map[string]tftypes.Value, 4)
+
+	val, err = v.Doc.ToTerraformValue(ctx)
+	if err != nil {
+		return tftypes.NewValue(tft, tftypes.UnknownValue), err
+	}
+
+	vals["doc"] = val
+
+	val, err = v.Value.ToTerraformValue(ctx)
+	if err != nil {
+		return tftypes.NewValue(tft, tftypes.UnknownValue), err
+	}
+
+	vals["value"] = val
+
+	if err := tftypes.ValidateValue(tft, vals); err != nil {
+		return tftypes.NewValue(tft, tftypes.UnknownValue), err
+	}
+
+	return tftypes.NewValue(tft, vals), nil
+}
+
+func (m WebhookFilterEqualsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := m.ObjectAttrTypes(ctx)
+
+	if m.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if m.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"doc":   m.Doc,
+			"value": m.Value,
+		})
+
+	return objVal, diags
 }

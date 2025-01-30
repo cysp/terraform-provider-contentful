@@ -11,23 +11,43 @@ import (
 )
 
 type WebhookFilterRegexpValue struct {
-	Doc     string `tfsdk:"doc"`
-	Pattern string `tfsdk:"pattern"`
+	Doc     basetypes.StringValue `tfsdk:"doc"`
+	Pattern basetypes.StringValue `tfsdk:"pattern"`
+	state   attr.ValueState
+}
+
+func NewWebhookFilterRegexpValueKnown() WebhookFilterRegexpValue {
+	return WebhookFilterRegexpValue{
+		state: attr.ValueStateKnown,
+	}
+}
+
+func NewWebhookFilterRegexpValueNull() WebhookFilterRegexpValue {
+	return WebhookFilterRegexpValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewWebhookFilterRegexpValueUnknown() WebhookFilterRegexpValue {
+	return WebhookFilterRegexpValue{
+		state: attr.ValueStateUnknown,
+	}
 }
 
 // Equal implements basetypes.ObjectValuable.
 func (m WebhookFilterRegexpValue) Equal(attr.Value) bool {
-	panic("unimplemented")
+	//xxx
+	return true
 }
 
 // IsNull implements basetypes.ObjectValuable.
 func (m WebhookFilterRegexpValue) IsNull() bool {
-	panic("unimplemented")
+	return m.state == attr.ValueStateNull
 }
 
 // IsUnknown implements basetypes.ObjectValuable.
 func (m WebhookFilterRegexpValue) IsUnknown() bool {
-	panic("unimplemented")
+	return m.state == attr.ValueStateUnknown
 }
 
 // String implements basetypes.ObjectValuable.
@@ -49,7 +69,9 @@ func (m WebhookFilterRegexpValue) ToTerraformValue(ctx context.Context) (tftypes
 
 // Type implements basetypes.ObjectValuable.
 func (m WebhookFilterRegexpValue) Type(context.Context) attr.Type {
-	panic("unimplemented")
+	return WebhookFilterRegexpType{
+		ObjectType: m.ObjectType(context.Background()),
+	}
 }
 
 func (m WebhookFilterRegexpValue) TerraformType(ctx context.Context) tftypes.Type {

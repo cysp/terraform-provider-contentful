@@ -21,7 +21,7 @@ func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context) (co
 		HttpBasicPassword: contentfulManagement.NewOptNilPointerString(model.HttpBasicPassword.ValueStringPointer()),
 	}
 
-	if model.Topics.IsNull() {
+	if model.Topics.IsNull() || model.Topics.IsUnknown() {
 		req.Topics = nil
 	} else {
 		topics := make([]string, len(model.Topics.Elements()))
@@ -30,7 +30,7 @@ func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context) (co
 		req.Topics = topics
 	}
 
-	if model.Filters.IsNull() {
+	if model.Filters.IsNull() || model.Filters.IsUnknown() {
 		req.Filters = contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull()
 	} else {
 		modelFilters := make([]webhookfilter.WebhookFilterValue, len(model.Filters.Elements()))

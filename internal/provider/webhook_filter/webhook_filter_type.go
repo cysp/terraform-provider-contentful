@@ -17,7 +17,7 @@ type WebhookFilterType struct {
 var _ basetypes.ObjectTypable = WebhookFilterType{}
 
 func (m WebhookFilterType) Equal(other attr.Type) bool {
-	panic("unimplemented")
+	return true
 }
 
 func (m WebhookFilterType) ValueType(ctx context.Context) attr.Value {
@@ -60,20 +60,17 @@ func (m WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes
 		return NewWebhookFilterValueUnknown(), nil
 	}
 
-	v := NewWebhookFilterValueKnown()
-
 	attributes := map[string]attr.Value{}
 
 	val := map[string]tftypes.Value{}
 
 	err := value.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
-		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		a, err := m.AttrTypes[k].ValueFromTerraform(ctx, v)
 
 		if err != nil {
 			return nil, err
@@ -82,43 +79,52 @@ func (m WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes
 		attributes[k] = a
 	}
 
+	v, diags := NewWebhookFilterValueKnownFromAttributes(ctx, attributes)
+	if diags.HasError() {
+		return nil, fmt.Errorf("failed to create WebhookFilterValue from attributes: %s", diags)
+	}
+
 	return v, nil
 }
 
-func (m WebhookFilterType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (m WebhookFilterType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	if value.IsNull() {
+	if in.IsNull() {
 		return NewWebhookFilterValueNull(), diags
 	}
 
-	if value.IsUnknown() {
+	if in.IsUnknown() {
 		return NewWebhookFilterValueUnknown(), diags
 	}
 
-	v := NewWebhookFilterValueKnown()
+	value := NewWebhookFilterValueKnown()
 
-	attributes := value.Attributes()
+	attributes := in.Attributes()
 
-	v.Not, diags = WebhookFilterNotValue{}.ValueFromObject(ctx, attributes["not"])
+	valueNot, diags := WebhookFilterNotType{}.ValueFromObject(ctx, attributes["not"].(basetypes.ObjectValue))
 	if diags.HasError() {
-		return v, diags
+		return value, diags
 	}
+	value.Not = valueNot.(WebhookFilterNotValue)
 
-	v.Equals, diags = WebhookFilterEqualsValue{}.ValueFromObject(ctx, attributes["equals"])
+	valueEquals, diags := WebhookFilterEqualsType{}.ValueFromObject(ctx, attributes["equals"].(basetypes.ObjectValue))
 	if diags.HasError() {
-		return v, diags
+		return value, diags
 	}
+	value.Equals = valueEquals.(WebhookFilterEqualsValue)
 
-	v.In, diags = WebhookFilterInValue{}.ValueFromObject(ctx, attributes["in"])
+	valueIn, diags := WebhookFilterInType{}.ValueFromObject(ctx, attributes["in"].(basetypes.ObjectValue))
 	if diags.HasError() {
-		return v, diags
+		return value, diags
 	}
+	value.In = valueIn.(WebhookFilterInValue)
 
-	v.Regexp, diags = WebhookFilterRegexpValue{}.ValueFromObject(ctx, attributes["regexp"])
+	valueRegexp, diags := WebhookFilterRegexpType{}.ValueFromObject(ctx, attributes["regexp"].(basetypes.ObjectValue))
 	if diags.HasError() {
-		return v, diags
+		return value, diags
 	}
+	value.Regexp = valueRegexp.(WebhookFilterRegexpValue)
 
-	return v, diags
+	return value, diags
 }

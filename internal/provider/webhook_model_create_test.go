@@ -17,16 +17,23 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 
 	ctx := context.Background()
 
+	filterEquals := webhookfilter.NewWebhookFilterEqualsValueKnown()
+	filterEquals.Doc = types.StringValue("sys.type")
+	filterEquals.Value = types.StringValue("abc")
+
+	filterNot := webhookfilter.NewWebhookFilterNotValueKnown()
+	filterNot.Equals = filterEquals
+
+	filter := webhookfilter.NewWebhookFilterValueKnown()
+	// filter.Equals = filterEquals
+	filter.Not = filterNot
+
 	filters, filtersDiags := types.ListValueFrom(ctx, webhookfilter.WebhookFilterValue{}.CustomType(ctx), []attr.Value{
-		webhookfilter.WebhookFilterValue{
-			Equals: webhookfilter.WebhookFilterEqualsValue{
-				Doc:   "sys.type",
-				Value: "abc",
-			},
-		},
+		filter,
 	})
 
-	assert.False(t, filtersDiags.HasError())
+	assert.Empty(t, filtersDiags)
+	// assert.False(t, filtersDiags.HasError())
 
 	testcases := map[string]struct {
 		model     provider.WebhookModel
@@ -96,13 +103,8 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				Headers:           contentfulManagement.WebhookDefinitionHeaders{},
 				HttpBasicUsername: contentfulManagement.NewOptNilStringNull(),
 				HttpBasicPassword: contentfulManagement.NewOptNilStringNull(),
-				Filters:           contentfulManagement.NewOptNilWebhookDefinitionFilterArray([]contentfulManagement.WebhookDefinitionFilter{
-
-					// Equals: &contentfulManagement.WebhookFilterEqualityConstraint{
-					// 	Doc: "sys.type",
-
-					// 	Value: "abc",
-					// },
+				Filters: contentfulManagement.NewOptNilWebhookDefinitionFilterArray([]contentfulManagement.WebhookDefinitionFilter{
+					[]byte(`{"equals":{"doc":"sys.type","value":"abc"}}`),
 				}),
 			},
 			expectErr: false,
@@ -118,6 +120,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 			if testcase.expectErr {
 				assert.True(t, diags.HasError())
 			} else {
+				assert.Empty(t, diags)
 				assert.False(t, diags.HasError())
 				assert.Equal(t, testcase.expected, got)
 			}

@@ -11,24 +11,43 @@ import (
 )
 
 type WebhookFilterInValue struct {
-	basetypes.ObjectValue
-	Doc    string   `tfsdk:"doc"`
-	Values []string `tfsdk:"values"`
+	Doc    basetypes.StringValue `tfsdk:"doc"`
+	Values basetypes.ListValue   `tfsdk:"values"`
+	state  attr.ValueState
+}
+
+func NewWebhookFilterInValueKnown() WebhookFilterInValue {
+	return WebhookFilterInValue{
+		state: attr.ValueStateKnown,
+	}
+}
+
+func NewWebhookFilterInValueNull() WebhookFilterInValue {
+	return WebhookFilterInValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewWebhookFilterInValueUnknown() WebhookFilterInValue {
+	return WebhookFilterInValue{
+		state: attr.ValueStateUnknown,
+	}
 }
 
 // Equal implements basetypes.ObjectValuable.
 func (m WebhookFilterInValue) Equal(attr.Value) bool {
-	panic("unimplemented")
+	//xxx
+	return true
 }
 
 // IsNull implements basetypes.ObjectValuable.
 func (m WebhookFilterInValue) IsNull() bool {
-	panic("unimplemented")
+	return m.state == attr.ValueStateNull
 }
 
 // IsUnknown implements basetypes.ObjectValuable.
 func (m WebhookFilterInValue) IsUnknown() bool {
-	panic("unimplemented")
+	return m.state == attr.ValueStateUnknown
 }
 
 // String implements basetypes.ObjectValuable.
@@ -49,8 +68,10 @@ func (m WebhookFilterInValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 }
 
 // Type implements basetypes.ObjectValuable.
-func (m WebhookFilterInValue) Type(context.Context) attr.Type {
-	panic("unimplemented")
+func (m WebhookFilterInValue) Type(ctx context.Context) attr.Type {
+	return WebhookFilterInType{
+		ObjectType: m.ObjectType(ctx),
+	}
 }
 
 func (m WebhookFilterInValue) TerraformType(ctx context.Context) tftypes.Type {
