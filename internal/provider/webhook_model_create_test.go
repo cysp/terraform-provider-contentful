@@ -21,72 +21,104 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 	filterEquals.Doc = types.StringValue("sys.type")
 	filterEquals.Value = types.StringValue("abc")
 
-	// filterNot := webhookfilter.NewWebhookFilterNotValueKnown()
-	// filterNot.Equals = filterEquals
+	filterIn := webhookfilter.NewWebhookFilterInValueKnown()
+	filterIn.Doc = types.StringValue("sys.type")
+	filterIn.Values = types.ListValueMust(types.StringType, []attr.Value{types.StringValue("abc"), types.StringValue("def")})
 
-	filter := webhookfilter.NewWebhookFilterValueKnown()
-	filter.Equals = filterEquals
-	// filter.Not = filterNot
+	filterRegexp := webhookfilter.NewWebhookFilterRegexpValueKnown()
+	filterRegexp.Doc = types.StringValue("sys.type")
+	filterRegexp.Pattern = types.StringValue("abc.*")
+
+	filterNotEquals := webhookfilter.NewWebhookFilterNotValueKnown()
+	filterNotEquals.Equals = filterEquals
+
+	filterNotIn := webhookfilter.NewWebhookFilterNotValueKnown()
+	filterNotIn.In = filterIn
+
+	filterNotRegexp := webhookfilter.NewWebhookFilterNotValueKnown()
+	filterNotRegexp.Regexp = filterRegexp
+
+	filterFilterEquals := webhookfilter.NewWebhookFilterValueKnown()
+	filterFilterEquals.Equals = filterEquals
+
+	filterFilterIn := webhookfilter.NewWebhookFilterValueKnown()
+	filterFilterIn.In = filterIn
+
+	filterFilterRegexp := webhookfilter.NewWebhookFilterValueKnown()
+	filterFilterRegexp.Regexp = filterRegexp
+
+	filterFilterNotEquals := webhookfilter.NewWebhookFilterValueKnown()
+	filterFilterNotEquals.Not = filterNotEquals
+
+	filterFilterNotIn := webhookfilter.NewWebhookFilterValueKnown()
+	filterFilterNotIn.Not = filterNotIn
+
+	filterFilterNotRegexp := webhookfilter.NewWebhookFilterValueKnown()
+	filterFilterNotRegexp.Not = filterNotRegexp
 
 	filters, filtersDiags := types.ListValueFrom(ctx, webhookfilter.WebhookFilterValue{}.CustomType(ctx), []attr.Value{
-		filter,
+		filterFilterEquals,
+		filterFilterIn,
+		filterFilterRegexp,
+		filterFilterNotEquals,
+		filterFilterNotIn,
+		filterFilterNotRegexp,
 	})
 
 	assert.Empty(t, filtersDiags)
-	// assert.False(t, filtersDiags.HasError())
 
 	testcases := map[string]struct {
 		model     provider.WebhookModel
 		expected  contentfulManagement.CreateWebhookDefinitionReq
 		expectErr bool
 	}{
-		// "basic": {
-		// 	model: provider.WebhookModel{
-		// 		Name:              types.StringValue("test-webhook"),
-		// 		Active:            types.BoolValue(true),
-		// 		Url:               types.StringValue("https://example.com/webhook"),
-		// 		HttpBasicUsername: types.StringNull(),
-		// 		HttpBasicPassword: types.StringNull(),
-		// 		Topics: types.ListValueMust(types.StringType, []attr.Value{
-		// 			types.StringValue("Entry.create"),
-		// 			types.StringValue("Entry.delete"),
-		// 		}),
-		// 	},
-		// 	expected: contentfulManagement.CreateWebhookDefinitionReq{
-		// 		Name:              "test-webhook",
-		// 		Active:            contentfulManagement.NewOptBool(true),
-		// 		URL:               "https://example.com/webhook",
-		// 		Headers:           contentfulManagement.WebhookDefinitionHeaders{},
-		// 		HttpBasicUsername: contentfulManagement.NewOptNilStringNull(),
-		// 		HttpBasicPassword: contentfulManagement.NewOptNilStringNull(),
-		// 		Topics:            []string{"Entry.create", "Entry.delete"},
-		// 		Filters:           contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(),
-		// 	},
-		// 	expectErr: false,
-		// },
-		// "with auth": {
-		// 	model: provider.WebhookModel{
-		// 		Name:              types.StringValue("auth-webhook"),
-		// 		Active:            types.BoolValue(true),
-		// 		Url:               types.StringValue("https://example.com/webhook"),
-		// 		HttpBasicUsername: types.StringValue("user"),
-		// 		HttpBasicPassword: types.StringValue("pass"),
-		// 		Topics: types.ListValueMust(types.StringType, []attr.Value{
-		// 			types.StringValue("Entry.*"),
-		// 		}),
-		// 	},
-		// 	expected: contentfulManagement.CreateWebhookDefinitionReq{
-		// 		Name:              "auth-webhook",
-		// 		Active:            contentfulManagement.NewOptBool(true),
-		// 		URL:               "https://example.com/webhook",
-		// 		Headers:           contentfulManagement.WebhookDefinitionHeaders{},
-		// 		HttpBasicUsername: contentfulManagement.NewOptNilString("user"),
-		// 		HttpBasicPassword: contentfulManagement.NewOptNilString("pass"),
-		// 		Topics:            []string{"Entry.*"},
-		// 		Filters:           contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(),
-		// 	},
-		// 	expectErr: false,
-		// },
+		"basic": {
+			model: provider.WebhookModel{
+				Name:              types.StringValue("test-webhook"),
+				Active:            types.BoolValue(true),
+				Url:               types.StringValue("https://example.com/webhook"),
+				HttpBasicUsername: types.StringNull(),
+				HttpBasicPassword: types.StringNull(),
+				Topics: types.ListValueMust(types.StringType, []attr.Value{
+					types.StringValue("Entry.create"),
+					types.StringValue("Entry.delete"),
+				}),
+			},
+			expected: contentfulManagement.CreateWebhookDefinitionReq{
+				Name:              "test-webhook",
+				Active:            contentfulManagement.NewOptBool(true),
+				URL:               "https://example.com/webhook",
+				Headers:           contentfulManagement.WebhookDefinitionHeaders{},
+				HttpBasicUsername: contentfulManagement.NewOptNilStringNull(),
+				HttpBasicPassword: contentfulManagement.NewOptNilStringNull(),
+				Topics:            []string{"Entry.create", "Entry.delete"},
+				Filters:           contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(),
+			},
+			expectErr: false,
+		},
+		"with auth": {
+			model: provider.WebhookModel{
+				Name:              types.StringValue("auth-webhook"),
+				Active:            types.BoolValue(true),
+				Url:               types.StringValue("https://example.com/webhook"),
+				HttpBasicUsername: types.StringValue("user"),
+				HttpBasicPassword: types.StringValue("pass"),
+				Topics: types.ListValueMust(types.StringType, []attr.Value{
+					types.StringValue("Entry.*"),
+				}),
+			},
+			expected: contentfulManagement.CreateWebhookDefinitionReq{
+				Name:              "auth-webhook",
+				Active:            contentfulManagement.NewOptBool(true),
+				URL:               "https://example.com/webhook",
+				Headers:           contentfulManagement.WebhookDefinitionHeaders{},
+				HttpBasicUsername: contentfulManagement.NewOptNilString("user"),
+				HttpBasicPassword: contentfulManagement.NewOptNilString("pass"),
+				Topics:            []string{"Entry.*"},
+				Filters:           contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(),
+			},
+			expectErr: false,
+		},
 		"with filters": {
 			model: provider.WebhookModel{
 				Name:              types.StringValue("auth-webhook"),
@@ -105,6 +137,15 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				HttpBasicPassword: contentfulManagement.NewOptNilStringNull(),
 				Filters: contentfulManagement.NewOptNilWebhookDefinitionFilterArray([]contentfulManagement.WebhookDefinitionFilter{
 					[]byte(`{"equals":{"doc":"sys.type","value":"abc"}}`),
+					// []byte(`{"in":{"doc":"sys.type","value":"abc"}}`),
+					[]byte(`{}`),
+					// []byte(`{"regexp":{"doc":"sys.type","pattern":"abc"}}`),
+					[]byte(`{}`),
+					[]byte(`{"not":{"equals":{"doc":"sys.type","value":"abc"}}}`),
+					// []byte(`{"not":{"in":{"doc":"sys.type","value":"abc"}}}`),
+					[]byte(`{"not":{}}`),
+					// []byte(`{"not":{"regexp":{"doc":"sys.type","pattern":"abc"}}}`),
+					[]byte(`{"not":{}}`),
 				}),
 			},
 			expectErr: false,

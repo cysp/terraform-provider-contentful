@@ -59,9 +59,23 @@ func encodeWebhookFilterValue(ctx context.Context, encoder *jx.Encoder, value we
 
 func encodeWebhookFilterNotValue(ctx context.Context, encoder *jx.Encoder, value webhookfilter.WebhookFilterNotValue) {
 	encoder.Obj(func(encoder *jx.Encoder) {
-		encoder.Field("equals", func(encoder *jx.Encoder) {
-			encodeWebhookFilterEqualsValue(ctx, encoder, value.Equals)
-		})
+		if !value.Equals.IsNull() && !value.Equals.IsUnknown() {
+			encoder.Field("equals", func(encoder *jx.Encoder) {
+				encodeWebhookFilterEqualsValue(ctx, encoder, value.Equals)
+			})
+		}
+
+		if !value.In.IsNull() && !value.In.IsUnknown() {
+			encoder.Field("in", func(encoder *jx.Encoder) {
+				encodeWebhookFilterInValue(ctx, encoder, value.In)
+			})
+		}
+
+		if !value.Regexp.IsNull() && !value.Regexp.IsUnknown() {
+			encoder.Field("regexp", func(encoder *jx.Encoder) {
+				encodeWebhookFilterRegexpValue(ctx, encoder, value.Regexp)
+			})
+		}
 	})
 }
 
