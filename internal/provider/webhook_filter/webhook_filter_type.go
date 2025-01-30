@@ -16,25 +16,25 @@ type WebhookFilterType struct {
 
 var _ basetypes.ObjectTypable = WebhookFilterType{}
 
-func (m WebhookFilterType) Equal(other attr.Type) bool {
+func (t WebhookFilterType) Equal(other attr.Type) bool {
 	return true
 }
 
-func (m WebhookFilterType) ValueType(ctx context.Context) attr.Value {
+func (t WebhookFilterType) ValueType(ctx context.Context) attr.Value {
 	return WebhookFilterValue{}
 }
 
-func (m WebhookFilterType) String() string {
+func (t WebhookFilterType) String() string {
 	return "WebhookFilterType"
 }
 
-func (m WebhookFilterType) TerraformType(ctx context.Context) tftypes.Type {
+func (t WebhookFilterType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
-		AttributeTypes: m.TerraformAttributeTypes(ctx),
+		AttributeTypes: t.TerraformAttributeTypes(ctx),
 	}
 }
 
-func (m WebhookFilterType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+func (t WebhookFilterType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
 	return map[string]tftypes.Type{
 		"not":    WebhookFilterNotType{}.TerraformType(ctx),
 		"equals": WebhookFilterEqualsType{}.TerraformType(ctx),
@@ -43,13 +43,13 @@ func (m WebhookFilterType) TerraformAttributeTypes(ctx context.Context) map[stri
 	}
 }
 
-func (m WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
+func (t WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
 	if value.Type() == nil {
 		return NewWebhookFilterValueNull(), nil
 	}
 
-	if !value.Type().Equal(m.TerraformType(ctx)) {
-		return nil, fmt.Errorf("expected %s, got %s", m.TerraformType(ctx), value.Type())
+	if !value.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), value.Type())
 	}
 
 	if value.IsNull() {
@@ -70,7 +70,7 @@ func (m WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes
 	}
 
 	for k, v := range val {
-		a, err := m.AttrTypes[k].ValueFromTerraform(ctx, v)
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
 
 		if err != nil {
 			return nil, err
@@ -87,7 +87,7 @@ func (m WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes
 	return v, nil
 }
 
-func (m WebhookFilterType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t WebhookFilterType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if in.IsNull() {

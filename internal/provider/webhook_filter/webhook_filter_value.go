@@ -66,7 +66,7 @@ func NewWebhookFilterValueUnknown() WebhookFilterValue {
 	}
 }
 
-func (m WebhookFilterValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+func (v WebhookFilterValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"not": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterNotValue{}.SchemaAttributes(ctx),
@@ -91,27 +91,27 @@ func (m WebhookFilterValue) SchemaAttributes(ctx context.Context) map[string]sch
 	}
 }
 
-func (m WebhookFilterValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
+func (v WebhookFilterValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
 	return WebhookFilterType{
-		m.ObjectType(ctx),
+		v.ObjectType(ctx),
 	}
 }
 
 var _ basetypes.ObjectValuable = WebhookFilterValue{}
 
-func (m WebhookFilterValue) Type(ctx context.Context) attr.Type {
+func (v WebhookFilterValue) Type(ctx context.Context) attr.Type {
 	return WebhookFilterType{
-		ObjectType: m.ObjectType(ctx),
+		ObjectType: v.ObjectType(ctx),
 	}
 }
 
-func (m WebhookFilterValue) ObjectType(ctx context.Context) basetypes.ObjectType {
+func (v WebhookFilterValue) ObjectType(ctx context.Context) basetypes.ObjectType {
 	return basetypes.ObjectType{
-		AttrTypes: m.ObjectAttrTypes(ctx),
+		AttrTypes: v.ObjectAttrTypes(ctx),
 	}
 }
 
-func (m WebhookFilterValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+func (v WebhookFilterValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"not":    WebhookFilterNotValue{}.ObjectType(ctx),
 		"equals": WebhookFilterEqualsValue{}.ObjectType(ctx),
@@ -120,19 +120,19 @@ func (m WebhookFilterValue) ObjectAttrTypes(ctx context.Context) map[string]attr
 	}
 }
 
-func (m WebhookFilterValue) Equal(other attr.Value) bool {
+func (v WebhookFilterValue) Equal(other attr.Value) bool {
 	return false
 }
 
-func (m WebhookFilterValue) IsNull() bool {
-	return m.state == attr.ValueStateNull
+func (v WebhookFilterValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
 }
 
-func (m WebhookFilterValue) IsUnknown() bool {
-	return m.state == attr.ValueStateUnknown
+func (v WebhookFilterValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
 }
 
-func (m WebhookFilterValue) String() string {
+func (v WebhookFilterValue) String() string {
 	return ""
 }
 
@@ -190,26 +190,26 @@ func (v WebhookFilterValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 	return tftypes.NewValue(tft, vals), nil
 }
 
-func (m WebhookFilterValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v WebhookFilterValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	attributeTypes := m.ObjectAttrTypes(ctx)
+	attributeTypes := v.ObjectAttrTypes(ctx)
 
-	if m.IsNull() {
+	if v.IsNull() {
 		return types.ObjectNull(attributeTypes), diags
 	}
 
-	if m.IsUnknown() {
+	if v.IsUnknown() {
 		return types.ObjectUnknown(attributeTypes), diags
 	}
 
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"not":    m.Not,
-			"equals": m.Equals,
-			"in":     m.In,
-			"regexp": m.Regexp,
+			"not":    v.Not,
+			"equals": v.Equals,
+			"in":     v.In,
+			"regexp": v.Regexp,
 		})
 
 	return objVal, diags

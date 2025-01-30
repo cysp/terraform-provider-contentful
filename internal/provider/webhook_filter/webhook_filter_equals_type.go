@@ -29,7 +29,7 @@ func (t WebhookFilterEqualsType) Equal(o attr.Type) bool {
 }
 
 //nolint:ireturn
-func (t WebhookFilterEqualsType) ValueType(context.Context) attr.Value {
+func (t WebhookFilterEqualsType) ValueType(_ context.Context) attr.Value {
 	return WebhookFilterEqualsValue{}
 }
 
