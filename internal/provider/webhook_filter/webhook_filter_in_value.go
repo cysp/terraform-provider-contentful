@@ -104,7 +104,6 @@ func (v WebhookFilterInValue) ObjectAttrTypes(_ context.Context) map[string]attr
 
 func (v WebhookFilterInValue) Equal(o attr.Value) bool {
 	other, ok := o.(WebhookFilterInValue)
-
 	if !ok {
 		return false
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
+//nolint:revive
 type WebhookFilterNotValue struct {
 	Equals WebhookFilterEqualsValue `tfsdk:"equals"`
 	In     WebhookFilterInValue     `tfsdk:"in"`
@@ -21,7 +22,10 @@ type WebhookFilterNotValue struct {
 
 func NewWebhookFilterNotValueKnown() WebhookFilterNotValue {
 	return WebhookFilterNotValue{
-		state: attr.ValueStateKnown,
+		Equals: NewWebhookFilterEqualsValueNull(),
+		In:     NewWebhookFilterInValueNull(),
+		Regexp: NewWebhookFilterRegexpValueNull(),
+		state:  attr.ValueStateKnown,
 	}
 }
 
@@ -77,6 +81,7 @@ func (v WebhookFilterNotValue) SchemaAttributes(ctx context.Context) map[string]
 	}
 }
 
+//nolint:ireturn
 func (v WebhookFilterNotValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
 	return WebhookFilterNotType{
 		v.ObjectType(ctx),
@@ -85,6 +90,7 @@ func (v WebhookFilterNotValue) CustomType(ctx context.Context) basetypes.ObjectT
 
 var _ basetypes.ObjectValuable = WebhookFilterNotValue{}
 
+//nolint:ireturn
 func (v WebhookFilterNotValue) Type(ctx context.Context) attr.Type {
 	return WebhookFilterNotType{
 		ObjectType: v.ObjectType(ctx),
@@ -105,8 +111,33 @@ func (v WebhookFilterNotValue) ObjectAttrTypes(ctx context.Context) map[string]a
 	}
 }
 
-func (v WebhookFilterNotValue) Equal(other attr.Value) bool {
-	return false
+func (v WebhookFilterNotValue) Equal(o attr.Value) bool {
+	other, ok := o.(WebhookFilterNotValue)
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Equals.Equal(other.Equals) {
+		return false
+	}
+
+	if !v.In.Equal(other.In) {
+		return false
+	}
+
+	if !v.Regexp.Equal(other.Regexp) {
+		return false
+	}
+
+	return true
 }
 
 func (v WebhookFilterNotValue) IsNull() bool {
@@ -135,37 +166,30 @@ func (v WebhookFilterNotValue) ToTerraformValue(ctx context.Context) (tftypes.Va
 		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
 	}
 
-	var val tftypes.Value
 	var err error
 
-	vals := make(map[string]tftypes.Value, 4)
+	val := make(map[string]tftypes.Value, 4)
 
-	val, err = v.Equals.ToTerraformValue(ctx)
+	val["equals"], err = v.Equals.ToTerraformValue(ctx)
 	if err != nil {
 		return tftypes.NewValue(tft, tftypes.UnknownValue), err
 	}
 
-	vals["equals"] = val
-
-	val, err = v.In.ToTerraformValue(ctx)
+	val["in"], err = v.In.ToTerraformValue(ctx)
 	if err != nil {
 		return tftypes.NewValue(tft, tftypes.UnknownValue), err
 	}
 
-	vals["in"] = val
-
-	val, err = v.Regexp.ToTerraformValue(ctx)
+	val["regexp"], err = v.Regexp.ToTerraformValue(ctx)
 	if err != nil {
 		return tftypes.NewValue(tft, tftypes.UnknownValue), err
 	}
 
-	vals["regexp"] = val
-
-	if err := tftypes.ValidateValue(tft, vals); err != nil {
+	if err := tftypes.ValidateValue(tft, val); err != nil {
 		return tftypes.NewValue(tft, tftypes.UnknownValue), err
 	}
 
-	return tftypes.NewValue(tft, vals), nil
+	return tftypes.NewValue(tft, val), nil
 }
 
 func (v WebhookFilterNotValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
@@ -181,13 +205,11 @@ func (v WebhookFilterNotValue) ToObjectValue(ctx context.Context) (basetypes.Obj
 		return types.ObjectUnknown(attributeTypes), diags
 	}
 
-	objVal, diags := types.ObjectValue(
-		attributeTypes,
-		map[string]attr.Value{
-			"equals": v.Equals,
-			"in":     v.In,
-			"regexp": v.Regexp,
-		})
+	attributes := map[string]attr.Value{
+		"equals": v.Equals,
+		"in":     v.In,
+		"regexp": v.Regexp,
+	}
 
-	return objVal, diags
+	return types.ObjectValue(attributeTypes, attributes)
 }
