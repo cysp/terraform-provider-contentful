@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
+//nolint:revive
 type WebhookFilterValue struct {
 	Not    WebhookFilterNotValue    `tfsdk:"not"`
 	Equals WebhookFilterEqualsValue `tfsdk:"equals"`

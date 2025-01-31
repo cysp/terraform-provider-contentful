@@ -7,7 +7,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -21,7 +20,6 @@ var _ basetypes.ObjectTypable = WebhookFilterInType{}
 
 func (t WebhookFilterInType) Equal(o attr.Type) bool {
 	other, ok := o.(WebhookFilterInType)
-
 	if !ok {
 		return false
 	}
@@ -45,7 +43,7 @@ func (t WebhookFilterInType) TerraformType(ctx context.Context) tftypes.Type {
 	}
 }
 
-func (t WebhookFilterInType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+func (t WebhookFilterInType) TerraformAttributeTypes(_ context.Context) map[string]tftypes.Type {
 	return map[string]tftypes.Type{
 		"doc":    tftypes.String,
 		"values": tftypes.List{ElementType: tftypes.String},
@@ -105,27 +103,5 @@ func (t WebhookFilterInType) ValueFromObject(ctx context.Context, value basetype
 		return NewWebhookFilterInValueUnknown(), diags
 	}
 
-	v := NewWebhookFilterInValueKnown()
-
-	attributes := value.Attributes()
-
-	doc, diags := types.StringType.ValueFromString(ctx, attributes["doc"].(types.String))
-	if diags.HasError() {
-		return v, diags
-	}
-	v.Doc, diags = doc.ToStringValue(ctx)
-	if diags.HasError() {
-		return v, diags
-	}
-
-	valueValues, diags := types.ListType{ElemType: types.StringType}.ValueFromList(ctx, attributes["values"].(types.List))
-	if diags.HasError() {
-		return v, diags
-	}
-	v.Values, diags = valueValues.ToListValue(ctx)
-	if diags.HasError() {
-		return v, diags
-	}
-
-	return v, diags
+	return NewWebhookFilterInValueKnownFromAttributes(ctx, value.Attributes())
 }

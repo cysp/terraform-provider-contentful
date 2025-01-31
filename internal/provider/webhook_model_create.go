@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context) (contentfulManagement.CreateWebhookDefinitionReq, diag.Diagnostics) {
+func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context, path path.Path) (contentfulManagement.CreateWebhookDefinitionReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	req := contentfulManagement.CreateWebhookDefinitionReq{
@@ -33,23 +33,26 @@ func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context) (co
 	if model.Filters.IsNull() || model.Filters.IsUnknown() {
 		req.Filters = contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull()
 	} else {
+		path := path.AtName("filters")
+
 		modelFilters := make([]webhookfilter.WebhookFilterValue, len(model.Filters.Elements()))
 		diags.Append(model.Filters.ElementsAs(ctx, &modelFilters, false)...)
 
 		filters := make([]contentfulManagement.WebhookDefinitionFilter, len(modelFilters))
-		for i, modelFilter := range modelFilters {
-			filter, filterDiags := ToWebhookDefinitionFilter(ctx, modelFilter)
+
+		for index, modelFilter := range modelFilters {
+			path := path.AtListIndex(index)
+
+			filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, modelFilter)
 			diags.Append(filterDiags...)
-			filters[i] = filter
+
+			filters[index] = filter
 		}
+
 		req.Filters = contentfulManagement.NewOptNilWebhookDefinitionFilterArray(filters)
 	}
 
-	// filters:
-	//   type: array
-	//   items: {}
-
-	headersList, headersListDiags := ToWebhookDefinitionHeaders(ctx, path.Root("headers"), model.Headers)
+	headersList, headersListDiags := ToWebhookDefinitionHeaders(ctx, path.AtName("headers"), model.Headers)
 	diags.Append(headersListDiags...)
 
 	req.Headers = headersList

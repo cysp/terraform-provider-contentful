@@ -20,7 +20,6 @@ var _ basetypes.ObjectTypable = WebhookFilterEqualsType{}
 
 func (t WebhookFilterEqualsType) Equal(o attr.Type) bool {
 	other, ok := o.(WebhookFilterEqualsType)
-
 	if !ok {
 		return false
 	}

@@ -10,17 +10,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
+//nolint:revive
 type WebhookFilterType struct {
 	basetypes.ObjectType
 }
 
 var _ basetypes.ObjectTypable = WebhookFilterType{}
 
-func (t WebhookFilterType) Equal(other attr.Type) bool {
-	return true
+func (t WebhookFilterType) Equal(o attr.Type) bool {
+	other, ok := o.(WebhookFilterType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (t WebhookFilterType) ValueType(ctx context.Context) attr.Value {
+//nolint:ireturn
+func (t WebhookFilterType) ValueType(_ context.Context) attr.Value {
 	return WebhookFilterValue{}
 }
 
@@ -28,6 +36,7 @@ func (t WebhookFilterType) String() string {
 	return "WebhookFilterType"
 }
 
+//nolint:ireturn
 func (t WebhookFilterType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
 		AttributeTypes: t.TerraformAttributeTypes(ctx),
@@ -43,6 +52,7 @@ func (t WebhookFilterType) TerraformAttributeTypes(ctx context.Context) map[stri
 	}
 }
 
+//nolint:ireturn
 func (t WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
 	if value.Type() == nil {
 		return NewWebhookFilterValueNull(), nil
@@ -69,14 +79,13 @@ func (t WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes
 		return nil, err
 	}
 
-	for k, v := range val {
-		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
+	for key, tfattrval := range val {
+		attrval, err := t.AttrTypes[key].ValueFromTerraform(ctx, tfattrval)
 		if err != nil {
 			return nil, err
 		}
 
-		attributes[k] = a
+		attributes[key] = attrval
 	}
 
 	v, diags := NewWebhookFilterValueKnownFromAttributes(ctx, attributes)
@@ -87,44 +96,17 @@ func (t WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes
 	return v, nil
 }
 
-func (t WebhookFilterType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+//nolint:ireturn
+func (t WebhookFilterType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	if in.IsNull() {
+	if value.IsNull() {
 		return NewWebhookFilterValueNull(), diags
 	}
 
-	if in.IsUnknown() {
+	if value.IsUnknown() {
 		return NewWebhookFilterValueUnknown(), diags
 	}
 
-	value := NewWebhookFilterValueKnown()
-
-	attributes := in.Attributes()
-
-	valueNot, diags := WebhookFilterNotType{}.ValueFromObject(ctx, attributes["not"].(basetypes.ObjectValue))
-	if diags.HasError() {
-		return value, diags
-	}
-	value.Not = valueNot.(WebhookFilterNotValue)
-
-	valueEquals, diags := WebhookFilterEqualsType{}.ValueFromObject(ctx, attributes["equals"].(basetypes.ObjectValue))
-	if diags.HasError() {
-		return value, diags
-	}
-	value.Equals = valueEquals.(WebhookFilterEqualsValue)
-
-	valueIn, diags := WebhookFilterInType{}.ValueFromObject(ctx, attributes["in"].(basetypes.ObjectValue))
-	if diags.HasError() {
-		return value, diags
-	}
-	value.In = valueIn.(WebhookFilterInValue)
-
-	valueRegexp, diags := WebhookFilterRegexpType{}.ValueFromObject(ctx, attributes["regexp"].(basetypes.ObjectValue))
-	if diags.HasError() {
-		return value, diags
-	}
-	value.Regexp = valueRegexp.(WebhookFilterRegexpValue)
-
-	return value, diags
+	return NewWebhookFilterValueKnownFromAttributes(ctx, value.Attributes())
 }

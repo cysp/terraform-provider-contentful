@@ -63,7 +63,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		SpaceID: data.SpaceId.ValueString(),
 	}
 
-	request, requestDiags := data.ToCreateWebhookDefinitionReq(ctx)
+	request, requestDiags := data.ToCreateWebhookDefinitionReq(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

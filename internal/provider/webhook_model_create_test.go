@@ -8,6 +8,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	webhookfilter "github.com/cysp/terraform-provider-contentful/internal/provider/webhook_filter"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -152,7 +153,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, diags := testcase.model.ToCreateWebhookDefinitionReq(ctx)
+			got, diags := testcase.model.ToCreateWebhookDefinitionReq(ctx, path.Empty())
 
 			if testcase.expectErr {
 				assert.True(t, diags.HasError())
