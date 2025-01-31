@@ -46,6 +46,12 @@ type Invoker interface {
 	//
 	// POST /spaces/{space_id}/roles
 	CreateRole(ctx context.Context, request *CreateRoleReq, params CreateRoleParams) (CreateRoleRes, error)
+	// CreateWebhookDefinition invokes createWebhookDefinition operation.
+	//
+	// Create a webhook definition.
+	//
+	// POST /spaces/{space_id}/webhook_definitions
+	CreateWebhookDefinition(ctx context.Context, request *CreateWebhookDefinitionReq, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error)
 	// DeactivateContentType invokes deactivateContentType operation.
 	//
 	// Deactivate a content type.
@@ -76,6 +82,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/roles/{role_id}
 	DeleteRole(ctx context.Context, params DeleteRoleParams) (DeleteRoleRes, error)
+	// DeleteWebhookDefinition invokes deleteWebhookDefinition operation.
+	//
+	// Delete a webhook definition.
+	//
+	// DELETE /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
+	DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams) (DeleteWebhookDefinitionRes, error)
 	// GetAppInstallation invokes getAppInstallation operation.
 	//
 	// Get one app installation.
@@ -124,6 +136,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/roles/{role_id}
 	GetRole(ctx context.Context, params GetRoleParams) (GetRoleRes, error)
+	// GetWebhookDefinition invokes getWebhookDefinition operation.
+	//
+	// Get a webhook definition.
+	//
+	// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
+	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (GetWebhookDefinitionRes, error)
 	// PutAppInstallation invokes putAppInstallation operation.
 	//
 	// Install or update an app.
@@ -160,6 +178,12 @@ type Invoker interface {
 	//
 	// PUT /spaces/{space_id}/roles/{role_id}
 	UpdateRole(ctx context.Context, request *UpdateRoleReq, params UpdateRoleParams) (UpdateRoleRes, error)
+	// UpdateWebhookDefinition invokes updateWebhookDefinition operation.
+	//
+	// Update a webhook definition.
+	//
+	// PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
+	UpdateWebhookDefinition(ctx context.Context, request *UpdateWebhookDefinitionReq, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error)
 }
 
 // Client implements OAS client.
@@ -589,6 +613,97 @@ func (c *Client) sendCreateRole(ctx context.Context, request *CreateRoleReq, par
 	defer resp.Body.Close()
 
 	result, err := decodeCreateRoleResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// CreateWebhookDefinition invokes createWebhookDefinition operation.
+//
+// Create a webhook definition.
+//
+// POST /spaces/{space_id}/webhook_definitions
+func (c *Client) CreateWebhookDefinition(ctx context.Context, request *CreateWebhookDefinitionReq, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error) {
+	res, err := c.sendCreateWebhookDefinition(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *CreateWebhookDefinitionReq, params CreateWebhookDefinitionParams) (res CreateWebhookDefinitionRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/webhook_definitions"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeCreateWebhookDefinitionRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, CreateWebhookDefinitionOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeCreateWebhookDefinitionResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -1177,6 +1292,112 @@ func (c *Client) sendDeleteRole(ctx context.Context, params DeleteRoleParams) (r
 	defer resp.Body.Close()
 
 	result, err := decodeDeleteRoleResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// DeleteWebhookDefinition invokes deleteWebhookDefinition operation.
+//
+// Delete a webhook definition.
+//
+// DELETE /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
+func (c *Client) DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams) (DeleteWebhookDefinitionRes, error) {
+	res, err := c.sendDeleteWebhookDefinition(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams) (res DeleteWebhookDefinitionRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/webhook_definitions/"
+	{
+		// Encode "webhook_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "webhook_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.WebhookDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteWebhookDefinitionOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeDeleteWebhookDefinitionResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -2034,6 +2255,112 @@ func (c *Client) sendGetRole(ctx context.Context, params GetRoleParams) (res Get
 	return result, nil
 }
 
+// GetWebhookDefinition invokes getWebhookDefinition operation.
+//
+// Get a webhook definition.
+//
+// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
+func (c *Client) GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (GetWebhookDefinitionRes, error) {
+	res, err := c.sendGetWebhookDefinition(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (res GetWebhookDefinitionRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/webhook_definitions/"
+	{
+		// Encode "webhook_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "webhook_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.WebhookDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetWebhookDefinitionOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetWebhookDefinitionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // PutAppInstallation invokes putAppInstallation operation.
 //
 // Install or update an app.
@@ -2786,6 +3113,128 @@ func (c *Client) sendUpdateRole(ctx context.Context, request *UpdateRoleReq, par
 	defer resp.Body.Close()
 
 	result, err := decodeUpdateRoleResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// UpdateWebhookDefinition invokes updateWebhookDefinition operation.
+//
+// Update a webhook definition.
+//
+// PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
+func (c *Client) UpdateWebhookDefinition(ctx context.Context, request *UpdateWebhookDefinitionReq, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error) {
+	res, err := c.sendUpdateWebhookDefinition(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendUpdateWebhookDefinition(ctx context.Context, request *UpdateWebhookDefinitionReq, params UpdateWebhookDefinitionParams) (res UpdateWebhookDefinitionRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/webhook_definitions/"
+	{
+		// Encode "webhook_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "webhook_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.WebhookDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeUpdateWebhookDefinitionRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, UpdateWebhookDefinitionOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeUpdateWebhookDefinitionResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

@@ -17,6 +17,10 @@ type CreateRoleRes interface {
 	createRoleRes()
 }
 
+type CreateWebhookDefinitionRes interface {
+	createWebhookDefinitionRes()
+}
+
 type DeactivateContentTypeRes interface {
 	deactivateContentTypeRes()
 }
@@ -35,6 +39,10 @@ type DeleteDeliveryApiKeyRes interface {
 
 type DeleteRoleRes interface {
 	deleteRoleRes()
+}
+
+type DeleteWebhookDefinitionRes interface {
+	deleteWebhookDefinitionRes()
 }
 
 type GetAppInstallationRes interface {
@@ -69,6 +77,10 @@ type GetRoleRes interface {
 	getRoleRes()
 }
 
+type GetWebhookDefinitionRes interface {
+	getWebhookDefinitionRes()
+}
+
 type PutAppInstallationRes interface {
 	putAppInstallationRes()
 }
@@ -91,4 +103,8 @@ type UpdateDeliveryApiKeyRes interface {
 
 type UpdateRoleRes interface {
 	updateRoleRes()
+}
+
+type UpdateWebhookDefinitionRes interface {
+	updateWebhookDefinitionRes()
 }
