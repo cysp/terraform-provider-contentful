@@ -43,7 +43,7 @@ func (t WebhookFilterEqualsType) TerraformType(ctx context.Context) tftypes.Type
 	}
 }
 
-func (t WebhookFilterEqualsType) TerraformAttributeTypes(context.Context) map[string]tftypes.Type {
+func (t WebhookFilterEqualsType) TerraformAttributeTypes(_ context.Context) map[string]tftypes.Type {
 	return map[string]tftypes.Type{
 		"doc":   tftypes.String,
 		"value": tftypes.String,
@@ -103,7 +103,5 @@ func (t WebhookFilterEqualsType) ValueFromObject(ctx context.Context, value base
 		return NewWebhookFilterEqualsValueUnknown(), diags
 	}
 
-	attributes := value.Attributes()
-
-	return NewWebhookFilterEqualsValueKnownFromAttributes(ctx, attributes)
+	return NewWebhookFilterEqualsValueKnownFromAttributes(ctx, value.Attributes())
 }

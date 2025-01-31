@@ -20,7 +20,6 @@ var _ basetypes.ObjectTypable = WebhookFilterRegexpType{}
 
 func (t WebhookFilterRegexpType) Equal(o attr.Type) bool {
 	other, ok := o.(WebhookFilterRegexpType)
-
 	if !ok {
 		return false
 	}
@@ -44,7 +43,7 @@ func (t WebhookFilterRegexpType) TerraformType(ctx context.Context) tftypes.Type
 	}
 }
 
-func (t WebhookFilterRegexpType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+func (t WebhookFilterRegexpType) TerraformAttributeTypes(_ context.Context) map[string]tftypes.Type {
 	return map[string]tftypes.Type{
 		"doc":     tftypes.String,
 		"pattern": tftypes.String,
@@ -104,7 +103,5 @@ func (t WebhookFilterRegexpType) ValueFromObject(ctx context.Context, value base
 		return NewWebhookFilterRegexpValueUnknown(), diags
 	}
 
-	attributes := value.Attributes()
-
-	return NewWebhookFilterRegexpValueKnownFromAttributes(ctx, attributes)
+	return NewWebhookFilterRegexpValueKnownFromAttributes(ctx, value.Attributes())
 }
