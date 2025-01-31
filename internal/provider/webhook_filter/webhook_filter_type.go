@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -19,7 +20,6 @@ var _ basetypes.ObjectTypable = WebhookFilterType{}
 
 func (t WebhookFilterType) Equal(o attr.Type) bool {
 	other, ok := o.(WebhookFilterType)
-
 	if !ok {
 		return false
 	}
@@ -70,30 +70,13 @@ func (t WebhookFilterType) ValueFromTerraform(ctx context.Context, value tftypes
 		return NewWebhookFilterValueUnknown(), nil
 	}
 
-	attributes := map[string]attr.Value{}
-
-	val := map[string]tftypes.Value{}
-
-	err := value.As(&val)
+	attributes, err := util.AttributesFromTerraform(ctx, t.AttrTypes, value)
 	if err != nil {
-		return nil, err
-	}
-
-	for key, tfattrval := range val {
-		attrval, err := t.AttrTypes[key].ValueFromTerraform(ctx, tfattrval)
-		if err != nil {
-			return nil, err
-		}
-
-		attributes[key] = attrval
+		return nil, fmt.Errorf("failed to create WebhookFilterValue from Terraform: %w", err)
 	}
 
 	v, diags := NewWebhookFilterValueKnownFromAttributes(ctx, attributes)
-	if diags.HasError() {
-		return nil, fmt.Errorf("failed to create WebhookFilterValue from attributes: %s", diags)
-	}
-
-	return v, nil
+	return v, util.ErrorFromDiags(diags)
 }
 
 //nolint:ireturn

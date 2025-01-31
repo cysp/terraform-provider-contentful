@@ -69,26 +69,12 @@ func (t WebhookFilterNotType) ValueFromTerraform(ctx context.Context, value tfty
 		return NewWebhookFilterNotValueUnknown(), nil
 	}
 
-	attributes := map[string]attr.Value{}
-
-	val := map[string]tftypes.Value{}
-
-	err := value.As(&val)
+	attributes, err := util.AttributesFromTerraform(ctx, t.AttrTypes, value)
 	if err != nil {
-		return nil, err
-	}
-
-	for k, v := range val {
-		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-		if err != nil {
-			return nil, err
-		}
-
-		attributes[k] = a
+		return nil, fmt.Errorf("failed to create WebhookFilterNotValue from Terraform: %w", err)
 	}
 
 	v, diags := NewWebhookFilterNotValueKnownFromAttributes(ctx, attributes)
-
 	return v, util.ErrorFromDiags(diags)
 }
 
@@ -105,5 +91,4 @@ func (t WebhookFilterNotType) ValueFromObject(ctx context.Context, value basetyp
 	}
 
 	return NewWebhookFilterNotValueKnownFromAttributes(ctx, value.Attributes())
-
 }
