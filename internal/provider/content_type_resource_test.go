@@ -26,24 +26,44 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":       config.StringVariable("0p38pssr0fi3"),
+					"environment_id": config.StringVariable("test"),
+				},
 				ResourceName:  "contentful_content_type.author",
 				ImportState:   true,
 				ImportStateId: "a",
 				ExpectError:   regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":       config.StringVariable("0p38pssr0fi3"),
+					"environment_id": config.StringVariable("test"),
+				},
 				ResourceName:  "contentful_content_type.author",
 				ImportState:   true,
 				ImportStateId: "a/b",
 				ExpectError:   regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":       config.StringVariable("0p38pssr0fi3"),
+					"environment_id": config.StringVariable("test"),
+				},
 				ResourceName:  "contentful_content_type.author",
 				ImportState:   true,
 				ImportStateId: "a/b/c/d",
 				ExpectError:   regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":       config.StringVariable("0p38pssr0fi3"),
+					"environment_id": config.StringVariable("test"),
+				},
 				ResourceName:  "contentful_content_type.author",
 				ImportState:   true,
 				ImportStateId: "0p38pssr0fi3/test/author",
@@ -69,6 +89,11 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":       config.StringVariable("0p38pssr0fi3"),
+					"environment_id": config.StringVariable("test"),
+				},
 				ResourceName:  "contentful_content_type.test",
 				ImportState:   true,
 				ImportStateId: "0p38pssr0fi3/test/nonexistent",
