@@ -1,10 +1,10 @@
 package provider_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -17,43 +17,34 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "contentful_content_type" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "author"
-
-					name = "Author"
-					description = "An author"
-
-					display_field = "name"
-
-					fields = []
-				}
-				`,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":       config.StringVariable("0p38pssr0fi3"),
+					"environment_id": config.StringVariable("test"),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				ResourceName:  "contentful_content_type.test",
+				ResourceName:  "contentful_content_type.author",
 				ImportState:   true,
 				ImportStateId: "a",
 				ExpectError:   regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
-				ResourceName:  "contentful_content_type.test",
+				ResourceName:  "contentful_content_type.author",
 				ImportState:   true,
 				ImportStateId: "a/b",
 				ExpectError:   regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
-				ResourceName:  "contentful_content_type.test",
+				ResourceName:  "contentful_content_type.author",
 				ImportState:   true,
 				ImportStateId: "a/b/c/d",
 				ExpectError:   regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
-				ResourceName:  "contentful_content_type.test",
+				ResourceName:  "contentful_content_type.author",
 				ImportState:   true,
 				ImportStateId: "0p38pssr0fi3/test/author",
 				// ImportStateVerify: true,
@@ -69,20 +60,11 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "contentful_content_type" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "nonexistent"
-
-					name = ""
-					description = ""
-
-					display_field = ""
-
-					fields = []
-				}
-				`,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":       config.StringVariable("0p38pssr0fi3"),
+					"environment_id": config.StringVariable("test"),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
@@ -103,20 +85,11 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "contentful_content_type" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "nonexistent"
-					content_type_id = "nonexistent"
-
-					name = ""
-					description = ""
-
-					display_field = ""
-
-					fields = []
-				}
-				`,
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":       config.StringVariable("0p38pssr0fi3"),
+					"environment_id": config.StringVariable("nonexistent"),
+				},
 				ExpectError: regexp.MustCompile(`Failed to create content type`),
 			},
 		},
@@ -132,28 +105,12 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-				resource "contentful_content_type" %[1]q {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					name = "Test"
-					description = "Test content type (%[1]s)"
-
-					display_field = "name"
-
-					fields = [
-						{
-							id  	  = "name"
-							name      = "Name"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						}
-					]
-				}
-				`, contentTypeID),
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":             config.StringVariable("0p38pssr0fi3"),
+					"environment_id":       config.StringVariable("test"),
+					"test_content_type_id": config.StringVariable(contentTypeID),
+				},
 			},
 		},
 	})
@@ -168,195 +125,58 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-				resource "contentful_content_type" %[1]q {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					name = "Test"
-					description = "Test content type (%[1]s)"
-
-					display_field = "name"
-
-					fields = [
-						{
-							id  	  = "name"
-							name      = "Name"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						}
-					]
-				}
-
-				resource "contentful_editor_interface" %[1]q {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					depends_on = [contentful_content_type.%[1]s]
-				}
-				`, contentTypeID),
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":             config.StringVariable("0p38pssr0fi3"),
+					"environment_id":       config.StringVariable("test"),
+					"test_content_type_id": config.StringVariable(contentTypeID),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type."+contentTypeID, plancheck.ResourceActionCreate),
-						plancheck.ExpectResourceAction("contentful_editor_interface."+contentTypeID, plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionCreate),
 					},
 				},
 			},
 			{
-				Config: fmt.Sprintf(`
-				resource "contentful_content_type" %[1]q {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					name = "Test"
-					description = "Test content type (%[1]s)"
-
-					display_field = "name"
-
-					fields = [
-						{
-							id  	  = "name"
-							name      = "Name"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						},
-						{
-							id  	  = "slug"
-							name      = "Slug"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						}
-					]
-				}
-
-				resource "contentful_editor_interface" %[1]q {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-				}
-				`, contentTypeID),
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":             config.StringVariable("0p38pssr0fi3"),
+					"environment_id":       config.StringVariable("test"),
+					"test_content_type_id": config.StringVariable(contentTypeID),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type."+contentTypeID, plancheck.ResourceActionUpdate),
-						plancheck.ExpectResourceAction("contentful_editor_interface."+contentTypeID, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionNoop),
 					},
 				},
 			},
 			{
-				Config: fmt.Sprintf(`
-				resource "contentful_content_type" %[1]q {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					name = "Test"
-					description = "Test content type (%[1]s)"
-
-					display_field = "name"
-
-					fields = [
-						{
-							id  	  = "name"
-							name      = "Name"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						},
-						{
-							id  	  = "slug"
-							name      = "Slug"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						}
-					]
-				}
-
-				resource "contentful_editor_interface" %[1]q {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-				}
-				`, contentTypeID),
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":             config.StringVariable("0p38pssr0fi3"),
+					"environment_id":       config.StringVariable("test"),
+					"test_content_type_id": config.StringVariable(contentTypeID),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type."+contentTypeID, plancheck.ResourceActionNoop),
-						plancheck.ExpectResourceAction("contentful_editor_interface."+contentTypeID, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionNoop),
 					},
 				},
 			},
 			{
-				Config: fmt.Sprintf(`
-				resource "contentful_content_type" %[1]q {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					name = "Test"
-					description = "Test content type (%[1]s)"
-
-					display_field = "name"
-
-					fields = [
-						{
-							id  	  = "name"
-							name      = "Name"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						},
-						{
-							id  	  = "slug"
-							name      = "Slug"
-							type      = "Symbol"
-							required  = true
-							localized = false
-							validations = [
-								jsonencode({
-									regexp = {
-										pattern = "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-										flags = null
-									}
-								}),
-							]
-						},
-						{
-							id  	  = "flags"
-							name      = "Flags"
-							type      = "Array"
-							items = {
-								type = "Symbol"
-								validations = [
-									jsonencode({
-										in = ["abc", "def", "ghi"]
-									}),
-								]
-							}
-							default_value = jsonencode({
-								"en-AU": ["def"],
-							})
-							required  = true
-							localized = false
-						}
-					]
-				}
-
-				resource "contentful_editor_interface" %[1]q {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-				}
-				`, contentTypeID),
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":             config.StringVariable("0p38pssr0fi3"),
+					"environment_id":       config.StringVariable("test"),
+					"test_content_type_id": config.StringVariable(contentTypeID),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type."+contentTypeID, plancheck.ResourceActionUpdate),
-						plancheck.ExpectResourceAction("contentful_editor_interface."+contentTypeID, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionNoop),
 					},
 				},
 			},
@@ -373,102 +193,28 @@ func TestAccContentTypeResourceDeleted(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-				resource "contentful_content_type" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					name = "Test"
-					description = "Test content type (%[1]s)"
-
-					display_field = "name"
-
-					fields = [
-						{
-							id  	  = "name"
-							name      = "Name"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						}
-					]
-				}
-				`, contentTypeID),
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":             config.StringVariable("0p38pssr0fi3"),
+					"environment_id":       config.StringVariable("test"),
+					"test_content_type_id": config.StringVariable(contentTypeID),
+				},
 			},
 			{
-				Config: fmt.Sprintf(`
-				resource "contentful_content_type" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					name = "Test"
-					description = "Test content type (%[1]s)"
-
-					display_field = "name"
-
-					fields = [
-						{
-							id  	  = "name"
-							name      = "Name"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						}
-					]
-				}
-
-				import {
-					id = "0p38pssr0fi3/test/%[1]s"
-					to = contentful_content_type.test_dup
-				}
-
-				resource "contentful_content_type" "test_dup" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					name = "Test"
-					description = "Test content type (%[1]s)"
-
-					display_field = "name"
-
-					fields = [
-						{
-							id  	  = "name"
-							name      = "Name"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						}
-					]
-				}
-				`, contentTypeID),
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":             config.StringVariable("0p38pssr0fi3"),
+					"environment_id":       config.StringVariable("test"),
+					"test_content_type_id": config.StringVariable(contentTypeID),
+				},
 			},
 			{
-				Config: fmt.Sprintf(`
-				resource "contentful_content_type" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = %[1]q
-
-					name = "Test"
-					description = "Test content type (%[1]s)"
-
-					display_field = "name"
-
-					fields = [
-						{
-							id  	  = "name"
-							name      = "Name"
-							type      = "Symbol"
-							required  = true
-							localized = false
-						}
-					]
-				}
-				`, contentTypeID),
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":             config.StringVariable("0p38pssr0fi3"),
+					"environment_id":       config.StringVariable("test"),
+					"test_content_type_id": config.StringVariable(contentTypeID),
+				},
 				ExpectNonEmptyPlan: true,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{

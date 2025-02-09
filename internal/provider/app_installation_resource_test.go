@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -17,13 +18,12 @@ func TestAccAppInstallationResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "contentful_app_installation" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "master"
-					app_definition_id = "1WkQ2J9LERPtbMTdUfSHka"
-				}
-				`,
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: config.Variables{
+					"space_id":               config.StringVariable("0p38pssr0fi3"),
+					"environment_id":         config.StringVariable("master"),
+					"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
+				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"contentful_app_installation.test",
