@@ -2,12 +2,16 @@ module github.com/cysp/terraform-provider-contentful
 
 go 1.24.0
 
+tool (
+	github.com/hashicorp/terraform-plugin-codegen-framework/cmd/tfplugingen-framework
+	github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+	github.com/ogen-go/ogen/cmd/ogen
+)
+
 require (
 	github.com/go-faster/errors v0.7.1
 	github.com/go-faster/jx v1.1.0
 	github.com/hashicorp/go-retryablehttp v0.7.7
-	github.com/hashicorp/terraform-plugin-codegen-framework v0.4.1
-	github.com/hashicorp/terraform-plugin-docs v0.20.1
 	github.com/hashicorp/terraform-plugin-framework v1.13.0
 	github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0
 	github.com/hashicorp/terraform-plugin-framework-timetypes v0.5.0
@@ -55,7 +59,9 @@ require (
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.22.0 // indirect
 	github.com/hashicorp/terraform-json v0.24.0 // indirect
+	github.com/hashicorp/terraform-plugin-codegen-framework v0.4.1 // indirect
 	github.com/hashicorp/terraform-plugin-codegen-spec v0.2.0 // indirect
+	github.com/hashicorp/terraform-plugin-docs v0.20.1 // indirect
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.2.4 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
