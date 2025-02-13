@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -18,7 +17,7 @@ func TestToOptPutContentTypeReqFieldsItemItemsErrorHandling(t *testing.T) {
 	itemsObject, itemsObjectDiags := basetypes.NewObjectValue(map[string]attr.Type{}, map[string]attr.Value{})
 	assert.Empty(t, itemsObjectDiags)
 
-	items, itemsDiags := provider.ItemsObjectToOptPutContentTypeReqFieldsItemItems(context.Background(), path.Root("items"), itemsObject)
+	items, itemsDiags := provider.ItemsObjectToOptPutContentTypeReqFieldsItemItems(t.Context(), path.Root("items"), itemsObject)
 	assert.NotEmpty(t, itemsDiags)
 
 	assert.EqualValues(t, contentfulManagement.OptPutContentTypeReqFieldsItemItems{

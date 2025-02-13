@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
@@ -13,7 +12,7 @@ import (
 func TestWebhookFilterInValueObjectRoundtrip(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	value, valueDiags := provider.NewWebhookFilterInValueKnownFromAttributes(ctx, map[string]attr.Value{
 		"doc":    types.StringValue("doc"),

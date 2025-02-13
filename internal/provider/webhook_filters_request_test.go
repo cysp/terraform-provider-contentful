@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -14,7 +13,7 @@ import (
 func TestToOptNilWebhookDefinitionFilterArrayNil(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testcases := map[string]struct {
 		input types.List
@@ -48,7 +47,7 @@ func TestToOptNilWebhookDefinitionFilterArrayNil(t *testing.T) {
 func TestToWebhookDefinitionFilterNil(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testcases := map[string]provider.WebhookFilterValue{
 		"null":    provider.NewWebhookFilterValueNull(),
@@ -74,7 +73,7 @@ func TestToWebhookDefinitionFilterNil(t *testing.T) {
 func TestToWebhookDefinitionFilterNotNil(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testcases := map[string]provider.WebhookFilterNotValue{
 		"null":    provider.NewWebhookFilterNotValueNull(),
@@ -100,7 +99,7 @@ func TestToWebhookDefinitionFilterNotNil(t *testing.T) {
 func TestToWebhookDefinitionFilterEqualsNil(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testcases := map[string]provider.WebhookFilterEqualsValue{
 		"null":    provider.NewWebhookFilterEqualsValueNull(),
@@ -126,7 +125,7 @@ func TestToWebhookDefinitionFilterEqualsNil(t *testing.T) {
 func TestToWebhookDefinitionFilterInValue(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testcases := map[string]provider.WebhookFilterInValue{
 		"null":    provider.NewWebhookFilterInValueNull(),
@@ -152,7 +151,7 @@ func TestToWebhookDefinitionFilterInValue(t *testing.T) {
 func TestToWebhookDefinitionFilterRegexpValue(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testcases := map[string]provider.WebhookFilterRegexpValue{
 		"null":    provider.NewWebhookFilterRegexpValueNull(),

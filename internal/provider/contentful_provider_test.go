@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -46,7 +45,7 @@ func TestProtocol6ProviderServerSchemaVersion(t *testing.T) {
 	require.NotNil(t, providerServer)
 	require.NoError(t, err)
 
-	resp, err := providerServer.GetProviderSchema(context.Background(), &tfprotov6.GetProviderSchemaRequest{})
+	resp, err := providerServer.GetProviderSchema(t.Context(), &tfprotov6.GetProviderSchemaRequest{})
 	require.NotNil(t, resp.Provider)
 	require.NoError(t, err)
 	assert.Empty(t, resp.Diagnostics)
@@ -128,7 +127,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			require.NotNil(t, providerConfigValue)
 			require.NoError(t, err)
 
-			resp, err := providerServer.ConfigureProvider(context.Background(), &tfprotov6.ConfigureProviderRequest{
+			resp, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{
 				Config: &providerConfigValue,
 			})
 			require.NotNil(t, resp)

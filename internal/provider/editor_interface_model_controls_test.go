@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -14,7 +13,7 @@ import (
 func TestControlsValueToPutEditorInterfaceReqControlsItem(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	path := path.Root("controls")
 
 	model := provider.NewControlsValueKnown()
@@ -36,7 +35,7 @@ func TestControlsValueToPutEditorInterfaceReqControlsItem(t *testing.T) {
 func TestControlsValueToPutEditorInterfaceReqControlsItemInvalidSettings(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	path := path.Root("controls")
 
 	model := provider.NewControlsValueKnown()

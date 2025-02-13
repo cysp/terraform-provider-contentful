@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
@@ -12,7 +11,7 @@ import (
 func TestReadWebhookDefinitionFilterTermString(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testcases := map[string]struct {
 		input       []byte
@@ -54,7 +53,7 @@ func TestReadWebhookDefinitionFilterTermString(t *testing.T) {
 func TestReadWebhookDefinitionFilterTermStringArray(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testcases := map[string]struct {
 		input       []byte
@@ -100,7 +99,7 @@ func TestReadWebhookDefinitionFilterTermStringArray(t *testing.T) {
 func TestReadWebhookDefinitionFilterTermStringObject(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testcases := map[string]struct {
 		input       []byte

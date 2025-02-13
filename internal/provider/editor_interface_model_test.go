@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -16,7 +15,7 @@ import (
 func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	editorInterface := contentfulManagement.EditorInterface{
 		EditorLayout: contentfulManagement.NewOptNilEditorInterfaceEditorLayoutItemArray([]contentfulManagement.EditorInterfaceEditorLayoutItem{
@@ -95,7 +94,7 @@ func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
 func TestToPutEditorInterfaceReq(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	controlsValue1 := provider.NewControlsValueKnown()
 	controlsValue1.FieldId = types.StringValue("field_id")
@@ -155,7 +154,7 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	controlsValue1 := provider.NewControlsValueKnown()
 	controlsValue1.FieldId = types.StringValue("field_id")
@@ -268,10 +267,10 @@ func TestReadFromResponse(t *testing.T) {
 		"null": {
 			editorInterface: contentfulManagement.EditorInterface{},
 			expectedModel: provider.EditorInterfaceModel{
-				EditorLayout:  types.ListNull(provider.EditorLayoutValue{}.Type(context.Background())),
-				Controls:      types.ListNull(provider.ControlsValue{}.Type(context.Background())),
-				GroupControls: types.ListNull(provider.GroupControlsValue{}.Type(context.Background())),
-				Sidebar:       types.ListNull(provider.SidebarValue{}.Type(context.Background())),
+				EditorLayout:  types.ListNull(provider.EditorLayoutValue{}.Type(t.Context())),
+				Controls:      types.ListNull(provider.ControlsValue{}.Type(t.Context())),
+				GroupControls: types.ListNull(provider.GroupControlsValue{}.Type(t.Context())),
+				Sidebar:       types.ListNull(provider.SidebarValue{}.Type(t.Context())),
 			},
 		},
 		"empty": {
@@ -282,10 +281,10 @@ func TestReadFromResponse(t *testing.T) {
 				Sidebar:       contentfulManagement.NewOptNilEditorInterfaceSidebarItemArray([]contentfulManagement.EditorInterfaceSidebarItem{}),
 			},
 			expectedModel: provider.EditorInterfaceModel{
-				EditorLayout:  provider.NewEmptyListMust(provider.EditorLayoutValue{}.Type(context.Background())),
-				Controls:      provider.NewEmptyListMust(provider.ControlsValue{}.Type(context.Background())),
-				GroupControls: provider.NewEmptyListMust(provider.GroupControlsValue{}.Type(context.Background())),
-				Sidebar:       provider.NewEmptyListMust(provider.SidebarValue{}.Type(context.Background())),
+				EditorLayout:  provider.NewEmptyListMust(provider.EditorLayoutValue{}.Type(t.Context())),
+				Controls:      provider.NewEmptyListMust(provider.ControlsValue{}.Type(t.Context())),
+				GroupControls: provider.NewEmptyListMust(provider.GroupControlsValue{}.Type(t.Context())),
+				Sidebar:       provider.NewEmptyListMust(provider.SidebarValue{}.Type(t.Context())),
 			},
 		},
 	}
@@ -295,7 +294,7 @@ func TestReadFromResponse(t *testing.T) {
 
 			model := provider.EditorInterfaceModel{}
 
-			diags := model.ReadFromResponse(context.Background(), &test.editorInterface)
+			diags := model.ReadFromResponse(t.Context(), &test.editorInterface)
 
 			assert.EqualValues(t, test.expectedModel, model)
 			assert.Empty(t, diags)
