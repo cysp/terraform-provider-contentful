@@ -9,6 +9,6 @@ linters:
   disable:
     - depguard
     - exhaustruct
-    - exportloopref
     - funlen
     - lll
+    - tenv
