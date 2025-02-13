@@ -44,7 +44,7 @@ var _ provider.PrivateProviderData = &privateProviderData{}
 func TestPrivateDataGetIntNotSet(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	privateData := newProviderPrivateData()
 
@@ -58,7 +58,7 @@ func TestPrivateDataGetIntNotSet(t *testing.T) {
 func TestPrivateDataGetSetInt(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	privateData := newProviderPrivateData()
 
@@ -77,7 +77,7 @@ func TestPrivateDataGetSetInt(t *testing.T) {
 func TestPrivateDataGetIntInvalid(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	privateData := newProviderPrivateData()
 	privateData.data["key"] = []byte("invalid")
@@ -92,7 +92,7 @@ func TestPrivateDataGetIntInvalid(t *testing.T) {
 func TestPrivateDataSetInf(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	privateData := newProviderPrivateData()
 

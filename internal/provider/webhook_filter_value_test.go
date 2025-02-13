@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
@@ -12,7 +11,7 @@ import (
 func TestWebhookFilterValueKnownFromAttributesInvalid(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	attributes := map[string]attr.Value{
 		"not":    provider.NewWebhookFilterNotValueNull(),

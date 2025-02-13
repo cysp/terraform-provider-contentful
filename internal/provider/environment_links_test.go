@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -15,7 +14,7 @@ import (
 func TestToEnvironmentLinks(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	path := path.Root("test")
 
 	tests := map[string]struct {
@@ -121,7 +120,7 @@ func TestToEnvironmentLinks(t *testing.T) {
 func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	path := path.Root("test")
 
 	environmentLinks := []contentfulManagement.EnvironmentLink{

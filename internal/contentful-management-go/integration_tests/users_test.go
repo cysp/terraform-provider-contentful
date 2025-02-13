@@ -1,7 +1,6 @@
 package integration_tests_test
 
 import (
-	"context"
 	"net/http"
 	"os"
 	"testing"
@@ -49,7 +48,7 @@ func TestGetAuthenticatedUserUnauthorized(t *testing.T) {
 
 	client := testContentfulManagementClient(t)
 
-	response, err := client.GetAuthenticatedUser(context.Background())
+	response, err := client.GetAuthenticatedUser(t.Context())
 	require.NoError(t, err)
 
 	switch response := response.(type) {
@@ -66,7 +65,7 @@ func TestGetAuthenticatedUserSuccess(t *testing.T) {
 
 	client := testAuthorizedContentfulManagementClient(t)
 
-	response, err := client.GetAuthenticatedUser(context.Background())
+	response, err := client.GetAuthenticatedUser(t.Context())
 	require.NoError(t, err)
 
 	switch response := response.(type) {
