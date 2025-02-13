@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	provider "github.com/cysp/terraform-provider-contentful/internal/provider"
@@ -15,7 +14,7 @@ import (
 func webhookFiltersListForTesting(t *testing.T) types.List {
 	t.Helper()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	filterEquals := provider.NewWebhookFilterEqualsValueKnown()
 	filterEquals.Doc = types.StringValue("sys.type")
@@ -136,7 +135,7 @@ func TestWebhookFilterTypeEqual(t *testing.T) {
 func TestWebhookFilterTypeValueFromTerraform(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	types := []attr.Type{
 		provider.WebhookFilterType{},
@@ -180,7 +179,7 @@ func TestWebhookFilterValueEqual(t *testing.T) {
 func TestWebhookFilterValueToObjectValueUnknown(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	values := []provider.AttrValueWithToObjectValue{
 		provider.NewWebhookFilterValueUnknown(),
@@ -203,7 +202,7 @@ func TestWebhookFilterValueToObjectValueUnknown(t *testing.T) {
 func TestWebhookFilterValueToObjectValue(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	values := []provider.AttrValueWithToObjectValue{
 		provider.NewWebhookFilterValueKnown(),
@@ -225,7 +224,7 @@ func TestWebhookFilterValueToObjectValue(t *testing.T) {
 func TestWebhookFilterValueToTerraformValueNull(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	values := []attr.Value{
 		provider.NewWebhookFilterValueNull(),
@@ -247,7 +246,7 @@ func TestWebhookFilterValueToTerraformValueNull(t *testing.T) {
 func TestWebhookFilterValueToTerraformValueUnknown(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	values := []attr.Value{
 		provider.NewWebhookFilterValueUnknown(),

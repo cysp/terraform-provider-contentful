@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -60,7 +59,7 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			value, diags := test.model.ToXContentfulMarketplaceHeaderValue(context.Background())
+			value, diags := test.model.ToXContentfulMarketplaceHeaderValue(t.Context())
 
 			assert.EqualValues(t, test.expected, value)
 

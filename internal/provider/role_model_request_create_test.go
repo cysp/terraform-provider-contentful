@@ -2,7 +2,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -13,7 +12,7 @@ import (
 func TestRoleModelRoundTripToCreateRoleReq(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	model := provider.RoleModel{}
 	model.ReadFromResponse(ctx, &contentfulManagement.Role{
