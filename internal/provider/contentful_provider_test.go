@@ -15,7 +15,7 @@ import (
 
 //nolint:gochecknoglobals
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"contentful": providerserver.NewProtocol6WithError(provider.New("test")()),
+	"contentful": providerserver.NewProtocol6WithError(provider.Factory("test")()),
 }
 
 func providerConfigDynamicValue(config map[string]interface{}) (tfprotov6.DynamicValue, error) {
