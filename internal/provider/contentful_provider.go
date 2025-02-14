@@ -14,14 +14,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-var _ provider.Provider = (*ContentfulProvider)(nil)
-
-func New(version string) func() provider.Provider {
+func Factory(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &ContentfulProvider{
-			version: version,
-		}
+		return New(version)
 	}
+}
+
+func New(version string) *ContentfulProvider {
+	provider := ContentfulProvider{
+		version: version,
+	}
+
+	return &provider
 }
 
 type ContentfulProvider struct {
@@ -30,6 +34,8 @@ type ContentfulProvider struct {
 	// testing.
 	version string
 }
+
+var _ provider.Provider = (*ContentfulProvider)(nil)
 
 func (p *ContentfulProvider) Schema(ctx context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = ContentfulProviderSchema(ctx)
