@@ -9,7 +9,7 @@ coverage:
         informational: true
 
 comment:
-  layout: "header,diff,flags,components"
+  layout: "condensed_header,condensed_files,diff,flags,components"
 
 component_management:
   default_rules:
