@@ -22,8 +22,7 @@ func TestAccDeliveryApiKeyResource(t *testing.T) {
 		"test_delivery_api_key_name": config.StringVariable(apiKeyName),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -72,8 +71,7 @@ func TestAccDeliveryApiKeyResourceImportNotFound(t *testing.T) {
 		"test_delivery_api_key_name": config.StringVariable(apiKeyName),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

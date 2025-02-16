@@ -16,8 +16,7 @@ func TestAccPreviewApiKeyDataSourceNotFound(t *testing.T) {
 		"preview_api_key_id": config.StringVariable("nonexistent"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
