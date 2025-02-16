@@ -17,8 +17,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -70,8 +69,7 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -99,8 +97,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -119,8 +116,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -139,8 +135,7 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestStepDirectory(),
