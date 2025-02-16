@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"time"
 
@@ -14,15 +15,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-func Factory(version string) func() provider.Provider {
+func Factory(version string, options ...Option) func() provider.Provider {
 	return func() provider.Provider {
-		return New(version)
+		return New(version, options...)
 	}
 }
 
-func New(version string) *ContentfulProvider {
+func New(version string, options ...Option) *ContentfulProvider {
 	provider := ContentfulProvider{
 		version: version,
+	}
+
+	for _, option := range options {
+		option(&provider)
 	}
 
 	return &provider
@@ -33,9 +38,19 @@ type ContentfulProvider struct {
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
+
+	httpClient *http.Client
 }
 
 var _ provider.Provider = (*ContentfulProvider)(nil)
+
+type Option func(*ContentfulProvider)
+
+func WithHTTPClient(httpClient *http.Client) Option {
+	return func(p *ContentfulProvider) {
+		p.httpClient = httpClient
+	}
+}
 
 func (p *ContentfulProvider) Schema(ctx context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = ContentfulProviderSchema(ctx)
@@ -85,6 +100,10 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	retryableClient.RetryWaitMin = time.Duration(1) * time.Second
 	retryableClient.RetryWaitMax = time.Duration(3) * time.Second //nolint:mnd
 	retryableClient.Backoff = retryablehttp.LinearJitterBackoff
+
+	if p.httpClient != nil {
+		retryableClient.HTTPClient = p.httpClient
+	}
 
 	contentfulManagementClient, err := contentfulManagement.NewClient(
 		contentfulURL,
