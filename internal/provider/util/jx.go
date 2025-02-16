@@ -24,7 +24,7 @@ func JxNormalizeOpaqueBytes(bytes []byte, options JxEncodeOpaqueOptions) ([]byte
 	return encoder.Bytes(), err
 }
 
-//nolint:cyclop,wrapcheck
+//nolint:wrapcheck
 func JxDecodeOpaque(decoder *jx.Decoder) (interface{}, error) {
 	switch decoder.Next() {
 	case jx.Object:
@@ -76,54 +76,16 @@ type JxEncodeOpaqueOptions struct {
 	EscapeStrings bool
 }
 
-//nolint:cyclop
 func JxEncodeOpaqueOrdered(encoder *jx.Encoder, value interface{}, options JxEncodeOpaqueOptions) error {
 	switch value := value.(type) {
 	case map[string]interface{}:
-		encoder.ObjStart()
-
-		keys := make([]string, 0, len(value))
-		for k := range value {
-			keys = append(keys, k)
-		}
-
-		slices.Sort(keys)
-
-		for _, key := range keys {
-			element := value[key]
-
-			encoder.FieldStart(key)
-
-			if err := JxEncodeOpaqueOrdered(encoder, element, options); err != nil {
-				return err
-			}
-		}
-
-		encoder.ObjEnd()
-
-		return nil
+		return jxEncodeOpaqueOrderedObject(encoder, value, options)
 
 	case []interface{}:
-		encoder.ArrStart()
-
-		for _, element := range value {
-			if err := JxEncodeOpaqueOrdered(encoder, element, options); err != nil {
-				return err
-			}
-		}
-
-		encoder.ArrEnd()
-
-		return nil
+		return jxEncodeOpaqueOrderedArray(encoder, value, options)
 
 	case string:
-		if options.EscapeStrings {
-			encoder.StrEscape(value)
-		} else {
-			encoder.Str(value)
-		}
-
-		return nil
+		return jxEncodeOpaqueOrderedString(encoder, value, options)
 
 	case int:
 		encoder.Int(value)
@@ -198,4 +160,53 @@ func JxEncodeOpaqueOrdered(encoder *jx.Encoder, value interface{}, options JxEnc
 	default:
 		return errInvalid
 	}
+}
+
+func jxEncodeOpaqueOrderedObject(encoder *jx.Encoder, value map[string]interface{}, options JxEncodeOpaqueOptions) error {
+	encoder.ObjStart()
+
+	keys := make([]string, 0, len(value))
+	for k := range value {
+		keys = append(keys, k)
+	}
+
+	slices.Sort(keys)
+
+	for _, key := range keys {
+		element := value[key]
+
+		encoder.FieldStart(key)
+
+		if err := JxEncodeOpaqueOrdered(encoder, element, options); err != nil {
+			return err
+		}
+	}
+
+	encoder.ObjEnd()
+
+	return nil
+}
+
+func jxEncodeOpaqueOrderedArray(encoder *jx.Encoder, value []interface{}, options JxEncodeOpaqueOptions) error {
+	encoder.ArrStart()
+
+	for _, element := range value {
+		if err := JxEncodeOpaqueOrdered(encoder, element, options); err != nil {
+			return err
+		}
+	}
+
+	encoder.ArrEnd()
+
+	return nil
+}
+
+func jxEncodeOpaqueOrderedString(encoder *jx.Encoder, value string, options JxEncodeOpaqueOptions) error {
+	if options.EscapeStrings {
+		encoder.StrEscape(value)
+	} else {
+		encoder.Str(value)
+	}
+
+	return nil
 }

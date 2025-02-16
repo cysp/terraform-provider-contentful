@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-//nolint:cyclop
 func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) (contentfulManagement.PutEditorInterfaceReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 

@@ -12,3 +12,8 @@ linters:
     - funlen
     - lll
     - tenv
+
+linters-settings:
+  cyclop:
+    max-complexity: 20
+    package-average: 0
