@@ -13,8 +13,7 @@ import (
 func TestAccContentTypeResourceImport(t *testing.T) {
 	t.Parallel()
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -65,8 +64,7 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -99,8 +97,7 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 	t.Parallel()
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -128,8 +125,7 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -164,8 +160,7 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -369,8 +364,7 @@ func TestAccContentTypeResourceDeleted(t *testing.T) {
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

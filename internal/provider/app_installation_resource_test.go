@@ -13,8 +13,7 @@ import (
 
 //nolint:paralleltest
 func TestAccAppInstallationResource(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -48,8 +47,7 @@ func TestAccAppInstallationResource(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceImport(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -89,8 +87,7 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -115,8 +112,7 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -134,8 +130,7 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceUpdate(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -181,8 +176,7 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceDeleted(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `

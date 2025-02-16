@@ -9,8 +9,7 @@ import (
 
 //nolint:paralleltest
 func TestAccRoleResourceImport(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -37,8 +36,7 @@ func TestAccRoleResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccRoleResourceImportNotFound(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
