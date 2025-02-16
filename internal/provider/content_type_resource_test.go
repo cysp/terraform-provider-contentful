@@ -18,8 +18,7 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 		"environment_id": config.StringVariable("test"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -71,8 +70,7 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 		"environment_id": config.StringVariable("test"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -100,8 +98,7 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 		"environment_id": config.StringVariable("nonexistent"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -123,8 +120,7 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -145,8 +141,7 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -203,8 +198,7 @@ func TestAccContentTypeResourceDeleted(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),

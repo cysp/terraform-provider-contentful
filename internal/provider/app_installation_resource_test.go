@@ -20,8 +20,7 @@ func TestAccAppInstallationResource(t *testing.T) {
 		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -56,8 +55,7 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -106,8 +104,7 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 		"test_app_definition_id": config.StringVariable("nonexistent"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -135,8 +132,7 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 		"test_app_definition_id": config.StringVariable("12345"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -155,8 +151,7 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -192,8 +187,7 @@ func TestAccAppInstallationResourceDeleted(t *testing.T) {
 		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
