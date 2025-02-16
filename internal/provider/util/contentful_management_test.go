@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -20,10 +20,10 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 		expected string
 	}{
 		"ErrorStatusCode": {
-			response: &contentfulManagement.ErrorStatusCode{
-				Response: contentfulManagement.Error{
-					Sys: contentfulManagement.ErrorSys{
-						Type: contentfulManagement.ErrorSysTypeError,
+			response: &cm.ErrorStatusCode{
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
 						ID:   "UnknownError",
 					},
 				},
@@ -31,13 +31,13 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			expected: "Error: UnknownError",
 		},
 		"ErrorStatusCodeWithMessage": {
-			response: &contentfulManagement.ErrorStatusCode{
-				Response: contentfulManagement.Error{
-					Sys: contentfulManagement.ErrorSys{
-						Type: contentfulManagement.ErrorSysTypeError,
+			response: &cm.ErrorStatusCode{
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
 						ID:   "UnknownError",
 					},
-					Message: contentfulManagement.NewOptString("Error message"),
+					Message: cm.NewOptString("Error message"),
 				},
 			},
 			expected: "Error: UnknownError: Error message",
@@ -67,23 +67,23 @@ func TestOptStringToStringValue(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		input    contentfulManagement.OptString
+		input    cm.OptString
 		expected basetypes.StringValue
 	}{
 		"set": {
-			input:    contentfulManagement.NewOptString("string"),
+			input:    cm.NewOptString("string"),
 			expected: types.StringValue("string"),
 		},
 		"set: empty": {
-			input:    contentfulManagement.NewOptString(""),
+			input:    cm.NewOptString(""),
 			expected: types.StringValue(""),
 		},
 		"unset": {
-			input:    contentfulManagement.OptString{},
+			input:    cm.OptString{},
 			expected: types.StringNull(),
 		},
 		"unset: non-empty": {
-			input:    contentfulManagement.OptString{Value: "string"},
+			input:    cm.OptString{Value: "string"},
 			expected: types.StringNull(),
 		},
 	}
@@ -104,23 +104,23 @@ func TestStringValueToOptString(t *testing.T) {
 
 	tests := map[string]struct {
 		input    basetypes.StringValue
-		expected contentfulManagement.OptString
+		expected cm.OptString
 	}{
 		"set": {
 			input:    types.StringValue("string"),
-			expected: contentfulManagement.NewOptString("string"),
+			expected: cm.NewOptString("string"),
 		},
 		"set: empty": {
 			input:    types.StringValue(""),
-			expected: contentfulManagement.NewOptString(""),
+			expected: cm.NewOptString(""),
 		},
 		"null": {
 			input:    types.StringNull(),
-			expected: contentfulManagement.OptString{},
+			expected: cm.OptString{},
 		},
 		"unknown": {
 			input:    types.StringUnknown(),
-			expected: contentfulManagement.NewOptString(""),
+			expected: cm.NewOptString(""),
 		},
 	}
 
@@ -140,23 +140,23 @@ func TestStringValueToOptNilString(t *testing.T) {
 
 	tests := map[string]struct {
 		input    basetypes.StringValue
-		expected contentfulManagement.OptNilString
+		expected cm.OptNilString
 	}{
 		"set": {
 			input:    types.StringValue("string"),
-			expected: contentfulManagement.NewOptNilString("string"),
+			expected: cm.NewOptNilString("string"),
 		},
 		"set: empty": {
 			input:    types.StringValue(""),
-			expected: contentfulManagement.NewOptNilString(""),
+			expected: cm.NewOptNilString(""),
 		},
 		"null": {
 			input:    types.StringNull(),
-			expected: contentfulManagement.NewOptNilStringNull(),
+			expected: cm.NewOptNilStringNull(),
 		},
 		"unknown": {
 			input:    types.StringUnknown(),
-			expected: contentfulManagement.OptNilString{},
+			expected: cm.OptNilString{},
 		},
 	}
 

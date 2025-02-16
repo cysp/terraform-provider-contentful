@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -72,7 +72,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	} else if contentfulURLFromEnv, found := os.LookupEnv("CONTENTFUL_URL"); found {
 		contentfulURL = contentfulURLFromEnv
 	} else {
-		contentfulURL = contentfulManagement.DefaultServerURL
+		contentfulURL = cm.DefaultServerURL
 	}
 
 	if contentfulURL == "" {
@@ -105,10 +105,10 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		retryableClient.HTTPClient = p.httpClient
 	}
 
-	contentfulManagementClient, err := contentfulManagement.NewClient(
+	contentfulManagementClient, err := cm.NewClient(
 		contentfulURL,
-		contentfulManagement.NewAccessTokenSecuritySource(accessToken),
-		contentfulManagement.WithClient(util.NewClientWithUserAgent(retryableClient.StandardClient(), "terraform-provider-contentful/"+p.version)),
+		cm.NewAccessTokenSecuritySource(accessToken),
+		cm.WithClient(util.NewClientWithUserAgent(retryableClient.StandardClient(), "terraform-provider-contentful/"+p.version)),
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create Contentful client: %s", err.Error())

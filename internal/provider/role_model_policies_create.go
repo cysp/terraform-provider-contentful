@@ -5,14 +5,14 @@ import (
 	"context"
 	"slices"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToCreateRoleReqPolicies(ctx context.Context, path path.Path, policies types.List) ([]contentfulManagement.CreateRoleReqPoliciesItem, diag.Diagnostics) {
+func ToCreateRoleReqPolicies(ctx context.Context, path path.Path, policies types.List) ([]cm.CreateRoleReqPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if policies.IsUnknown() {
@@ -22,7 +22,7 @@ func ToCreateRoleReqPolicies(ctx context.Context, path path.Path, policies types
 	policiesValues := make([]PoliciesValue, len(policies.Elements()))
 	diags.Append(policies.ElementsAs(ctx, &policiesValues, false)...)
 
-	rolePoliciesItems := make([]contentfulManagement.CreateRoleReqPoliciesItem, len(policies.Elements()))
+	rolePoliciesItems := make([]cm.CreateRoleReqPoliciesItem, len(policies.Elements()))
 
 	for index, policiesValueElement := range policiesValues {
 		path := path.AtListIndex(index)
@@ -36,7 +36,7 @@ func ToCreateRoleReqPolicies(ctx context.Context, path path.Path, policies types
 	return rolePoliciesItems, diags
 }
 
-func (m *PoliciesValue) ToCreateRoleReqPoliciesItem(ctx context.Context, path path.Path) (contentfulManagement.CreateRoleReqPoliciesItem, diag.Diagnostics) {
+func (m *PoliciesValue) ToCreateRoleReqPoliciesItem(ctx context.Context, path path.Path) (cm.CreateRoleReqPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	effect := m.Effect.ValueString()
@@ -47,28 +47,28 @@ func (m *PoliciesValue) ToCreateRoleReqPoliciesItem(ctx context.Context, path pa
 	constraint, constraintDiags := ToOptCreateRoleReqPoliciesItemConstraint(ctx, path.AtName("constraint"), m.Constraint)
 	diags.Append(constraintDiags...)
 
-	return contentfulManagement.CreateRoleReqPoliciesItem{
-		Effect:     contentfulManagement.CreateRoleReqPoliciesItemEffect(effect),
+	return cm.CreateRoleReqPoliciesItem{
+		Effect:     cm.CreateRoleReqPoliciesItemEffect(effect),
 		Actions:    actions,
 		Constraint: constraint,
 	}, diags
 }
 
-func ToCreateRoleReqPoliciesItemActions(ctx context.Context, _ path.Path, actions types.List) (contentfulManagement.CreateRoleReqPoliciesItemActions, diag.Diagnostics) {
+func ToCreateRoleReqPoliciesItemActions(ctx context.Context, _ path.Path, actions types.List) (cm.CreateRoleReqPoliciesItemActions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	actionsStrings := make([]string, len(actions.Elements()))
 	diags.Append(actions.ElementsAs(ctx, &actionsStrings, false)...)
 
 	if slices.Contains(actionsStrings, "all") {
-		return contentfulManagement.CreateRoleReqPoliciesItemActions{
-			Type:   contentfulManagement.StringCreateRoleReqPoliciesItemActions,
+		return cm.CreateRoleReqPoliciesItemActions{
+			Type:   cm.StringCreateRoleReqPoliciesItemActions,
 			String: "all",
 		}, diags
 	}
 
-	return contentfulManagement.CreateRoleReqPoliciesItemActions{
-		Type:        contentfulManagement.StringArrayCreateRoleReqPoliciesItemActions,
+	return cm.CreateRoleReqPoliciesItemActions{
+		Type:        cm.StringArrayCreateRoleReqPoliciesItemActions,
 		StringArray: actionsStrings,
 	}, diags
 }

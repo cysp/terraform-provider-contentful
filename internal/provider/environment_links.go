@@ -3,14 +3,14 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToEnvironmentLinks(ctx context.Context, path path.Path, value types.List) ([]contentfulManagement.EnvironmentLink, diag.Diagnostics) {
+func ToEnvironmentLinks(ctx context.Context, path path.Path, value types.List) ([]cm.EnvironmentLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if value.IsUnknown() {
@@ -20,7 +20,7 @@ func ToEnvironmentLinks(ctx context.Context, path path.Path, value types.List) (
 	environmentIDs := make([]string, len(value.Elements()))
 	diags.Append(value.ElementsAs(ctx, &environmentIDs, false)...)
 
-	environments := make([]contentfulManagement.EnvironmentLink, len(environmentIDs))
+	environments := make([]cm.EnvironmentLink, len(environmentIDs))
 
 	for index, environmentString := range environmentIDs {
 		path := path.AtListIndex(index)
@@ -34,13 +34,13 @@ func ToEnvironmentLinks(ctx context.Context, path path.Path, value types.List) (
 	return environments, diags
 }
 
-func ToEnvironmentLink(_ context.Context, _ path.Path, environmentID string) (contentfulManagement.EnvironmentLink, diag.Diagnostics) {
+func ToEnvironmentLink(_ context.Context, _ path.Path, environmentID string) (cm.EnvironmentLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := contentfulManagement.EnvironmentLink{
-		Sys: contentfulManagement.EnvironmentLinkSys{
-			Type:     contentfulManagement.EnvironmentLinkSysTypeLink,
-			LinkType: contentfulManagement.EnvironmentLinkSysLinkTypeEnvironment,
+	item := cm.EnvironmentLink{
+		Sys: cm.EnvironmentLinkSys{
+			Type:     cm.EnvironmentLinkSysTypeLink,
+			LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 			ID:       environmentID,
 		},
 	}
@@ -48,7 +48,7 @@ func ToEnvironmentLink(_ context.Context, _ path.Path, environmentID string) (co
 	return item, diags
 }
 
-func NewEnvironmentIDsListValueFromEnvironmentLinks(_ context.Context, _ path.Path, environmentLinks []contentfulManagement.EnvironmentLink) (types.List, diag.Diagnostics) {
+func NewEnvironmentIDsListValueFromEnvironmentLinks(_ context.Context, _ path.Path, environmentLinks []cm.EnvironmentLink) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(environmentLinks))

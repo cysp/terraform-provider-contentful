@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []contentfulManagement.RolePoliciesItem) (basetypes.ListValue, diag.Diagnostics) {
+func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) (basetypes.ListValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	policiesValues := make([]PoliciesValue, len(policies))
@@ -32,7 +32,7 @@ func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, polic
 	return policiesListValue, diags
 }
 
-func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item contentfulManagement.RolePoliciesItem) (PoliciesValue, diag.Diagnostics) {
+func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.RolePoliciesItem) (PoliciesValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	effect, err := item.Effect.MarshalText()
@@ -64,11 +64,11 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cont
 	return value, diags
 }
 
-func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, actions contentfulManagement.RolePoliciesItemActions) (basetypes.ListValue, diag.Diagnostics) {
+func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, actions cm.RolePoliciesItemActions) (basetypes.ListValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	switch actions.Type {
-	case contentfulManagement.StringRolePoliciesItemActions:
+	case cm.StringRolePoliciesItemActions:
 		actionsValues := make([]attr.Value, 1)
 		actionsValues[0] = types.StringValue(actions.String)
 
@@ -77,7 +77,7 @@ func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, 
 
 		return actionsListValue, diags
 
-	case contentfulManagement.StringArrayRolePoliciesItemActions:
+	case cm.StringArrayRolePoliciesItemActions:
 		actionsListValue, actionsListValueDiags := basetypes.NewListValueFrom(ctx, types.String{}.Type(ctx), actions.StringArray)
 		diags.Append(actionsListValueDiags...)
 

@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -22,10 +22,10 @@ func NewEditorLayoutValueKnown() EditorLayoutValue {
 	}
 }
 
-func (model *EditorLayoutValue) ToPutEditorInterfaceReqEditorLayoutItem(ctx context.Context, _ path.Path) (contentfulManagement.PutEditorInterfaceReqEditorLayoutItem, diag.Diagnostics) {
+func (model *EditorLayoutValue) ToPutEditorInterfaceReqEditorLayoutItem(ctx context.Context, _ path.Path) (cm.PutEditorInterfaceReqEditorLayoutItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := contentfulManagement.PutEditorInterfaceReqEditorLayoutItem{
+	item := cm.PutEditorInterfaceReqEditorLayoutItem{
 		GroupId: model.GroupId.ValueString(),
 		Name:    model.Name.ValueString(),
 	}
@@ -47,7 +47,7 @@ func (model *EditorLayoutValue) ToPutEditorInterfaceReqEditorLayoutItem(ctx cont
 	return item, diags
 }
 
-func NewEditorLayoutListValueFromResponse(ctx context.Context, path path.Path, controlsItems []contentfulManagement.EditorInterfaceEditorLayoutItem) (types.List, diag.Diagnostics) {
+func NewEditorLayoutListValueFromResponse(ctx context.Context, path path.Path, controlsItems []cm.EditorInterfaceEditorLayoutItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(controlsItems))
@@ -67,7 +67,7 @@ func NewEditorLayoutListValueFromResponse(ctx context.Context, path path.Path, c
 	return list, diags
 }
 
-func NewEditorLayoutValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceEditorLayoutItem) (EditorLayoutValue, diag.Diagnostics) {
+func NewEditorLayoutValueFromResponse(path path.Path, item cm.EditorInterfaceEditorLayoutItem) (EditorLayoutValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := EditorLayoutValue{

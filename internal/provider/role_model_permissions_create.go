@@ -5,13 +5,13 @@ import (
 	"context"
 	"slices"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToCreateRoleReqPermissions(ctx context.Context, path path.Path, permissions types.Map) (contentfulManagement.CreateRoleReqPermissions, diag.Diagnostics) {
+func ToCreateRoleReqPermissions(ctx context.Context, path path.Path, permissions types.Map) (cm.CreateRoleReqPermissions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if permissions.IsUnknown() {
@@ -21,7 +21,7 @@ func ToCreateRoleReqPermissions(ctx context.Context, path path.Path, permissions
 	permissionsValues := make(map[string]types.List, len(permissions.Elements()))
 	diags.Append(permissions.ElementsAs(ctx, &permissionsValues, false)...)
 
-	rolePermissionsItems := make(contentfulManagement.CreateRoleReqPermissions, len(permissions.Elements()))
+	rolePermissionsItems := make(cm.CreateRoleReqPermissions, len(permissions.Elements()))
 
 	for key, permissionsValueElement := range permissionsValues {
 		path := path.AtMapKey(key)
@@ -35,21 +35,21 @@ func ToCreateRoleReqPermissions(ctx context.Context, path path.Path, permissions
 	return rolePermissionsItems, diags
 }
 
-func ToCreateRoleReqPermissionsItem(ctx context.Context, _ path.Path, value types.List) (contentfulManagement.CreateRoleReqPermissionsItem, diag.Diagnostics) {
+func ToCreateRoleReqPermissionsItem(ctx context.Context, _ path.Path, value types.List) (cm.CreateRoleReqPermissionsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	actionStrings := make([]string, len(value.Elements()))
 	diags.Append(value.ElementsAs(ctx, &actionStrings, false)...)
 
 	if slices.Contains(actionStrings, "all") {
-		return contentfulManagement.CreateRoleReqPermissionsItem{
-			Type:   contentfulManagement.StringCreateRoleReqPermissionsItem,
+		return cm.CreateRoleReqPermissionsItem{
+			Type:   cm.StringCreateRoleReqPermissionsItem,
 			String: "all",
 		}, diags
 	}
 
-	return contentfulManagement.CreateRoleReqPermissionsItem{
-		Type:        contentfulManagement.StringArrayCreateRoleReqPermissionsItem,
+	return cm.CreateRoleReqPermissionsItem{
+		Type:        cm.StringArrayCreateRoleReqPermissionsItem,
 		StringArray: actionStrings,
 	}, diags
 }

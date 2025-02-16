@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -58,7 +58,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 
 	currentVersion := 1
 
-	params := contentfulManagement.CreateDeliveryApiKeyParams{
+	params := cm.CreateDeliveryApiKeyParams{
 		SpaceID: data.SpaceId.ValueString(),
 	}
 
@@ -79,7 +79,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.ApiKey:
+	case *cm.ApiKey:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
@@ -105,7 +105,7 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	params := contentfulManagement.GetDeliveryApiKeyParams{
+	params := cm.GetDeliveryApiKeyParams{
 		SpaceID:  data.SpaceId.ValueString(),
 		APIKeyID: data.ApiKeyId.ValueString(),
 	}
@@ -121,12 +121,12 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 	currentVersion := 0
 
 	switch response := response.(type) {
-	case *contentfulManagement.ApiKey:
+	case *cm.ApiKey:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
@@ -159,7 +159,7 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
-	params := contentfulManagement.UpdateDeliveryApiKeyParams{
+	params := cm.UpdateDeliveryApiKeyParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		APIKeyID:           data.ApiKeyId.ValueString(),
 		XContentfulVersion: currentVersion,
@@ -182,7 +182,7 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.ApiKey:
+	case *cm.ApiKey:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
@@ -207,7 +207,7 @@ func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	params := contentfulManagement.DeleteDeliveryApiKeyParams{
+	params := cm.DeleteDeliveryApiKeyParams{
 		SpaceID:  data.SpaceId.ValueString(),
 		APIKeyID: data.ApiKeyId.ValueString(),
 	}
@@ -221,12 +221,12 @@ func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.Delete
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.NoContent:
+	case *cm.NoContent:
 
 	default:
 		handled := false
 
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Delivery api key already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 

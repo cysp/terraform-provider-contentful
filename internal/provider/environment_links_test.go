@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -19,7 +19,7 @@ func TestToEnvironmentLinks(t *testing.T) {
 
 	tests := map[string]struct {
 		value         types.List
-		expected      []contentfulManagement.EnvironmentLink
+		expected      []cm.EnvironmentLink
 		expectedDiags bool
 	}{
 		"unknown": {
@@ -30,11 +30,11 @@ func TestToEnvironmentLinks(t *testing.T) {
 			value: types.ListValueMust(types.StringType, []attr.Value{
 				types.StringUnknown(),
 			}),
-			expected: []contentfulManagement.EnvironmentLink{
+			expected: []cm.EnvironmentLink{
 				{
-					Sys: contentfulManagement.EnvironmentLinkSys{
-						Type:     contentfulManagement.EnvironmentLinkSysTypeLink,
-						LinkType: contentfulManagement.EnvironmentLinkSysLinkTypeEnvironment,
+					Sys: cm.EnvironmentLinkSys{
+						Type:     cm.EnvironmentLinkSysTypeLink,
+						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 						ID:       "",
 					},
 				},
@@ -47,25 +47,25 @@ func TestToEnvironmentLinks(t *testing.T) {
 				types.StringUnknown(),
 				types.StringValue("c"),
 			}),
-			expected: []contentfulManagement.EnvironmentLink{
+			expected: []cm.EnvironmentLink{
 				{
-					Sys: contentfulManagement.EnvironmentLinkSys{
-						Type:     contentfulManagement.EnvironmentLinkSysTypeLink,
-						LinkType: contentfulManagement.EnvironmentLinkSysLinkTypeEnvironment,
+					Sys: cm.EnvironmentLinkSys{
+						Type:     cm.EnvironmentLinkSysTypeLink,
+						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 						ID:       "",
 					},
 				},
 				{
-					Sys: contentfulManagement.EnvironmentLinkSys{
-						Type:     contentfulManagement.EnvironmentLinkSysTypeLink,
-						LinkType: contentfulManagement.EnvironmentLinkSysLinkTypeEnvironment,
+					Sys: cm.EnvironmentLinkSys{
+						Type:     cm.EnvironmentLinkSysTypeLink,
+						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 						ID:       "",
 					},
 				},
 				{
-					Sys: contentfulManagement.EnvironmentLinkSys{
-						Type:     contentfulManagement.EnvironmentLinkSysTypeLink,
-						LinkType: contentfulManagement.EnvironmentLinkSysLinkTypeEnvironment,
+					Sys: cm.EnvironmentLinkSys{
+						Type:     cm.EnvironmentLinkSysTypeLink,
+						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 						ID:       "",
 					},
 				},
@@ -74,25 +74,25 @@ func TestToEnvironmentLinks(t *testing.T) {
 		},
 		"empty": {
 			value:    types.ListValueMust(types.StringType, []attr.Value{}),
-			expected: []contentfulManagement.EnvironmentLink{},
+			expected: []cm.EnvironmentLink{},
 		},
 		"known elements": {
 			value: types.ListValueMust(types.StringType, []attr.Value{
 				types.StringValue("env1"),
 				types.StringValue("env2"),
 			}),
-			expected: []contentfulManagement.EnvironmentLink{
+			expected: []cm.EnvironmentLink{
 				{
-					Sys: contentfulManagement.EnvironmentLinkSys{
-						Type:     contentfulManagement.EnvironmentLinkSysTypeLink,
-						LinkType: contentfulManagement.EnvironmentLinkSysLinkTypeEnvironment,
+					Sys: cm.EnvironmentLinkSys{
+						Type:     cm.EnvironmentLinkSysTypeLink,
+						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 						ID:       "env1",
 					},
 				},
 				{
-					Sys: contentfulManagement.EnvironmentLinkSys{
-						Type:     contentfulManagement.EnvironmentLinkSysTypeLink,
-						LinkType: contentfulManagement.EnvironmentLinkSysLinkTypeEnvironment,
+					Sys: cm.EnvironmentLinkSys{
+						Type:     cm.EnvironmentLinkSysTypeLink,
+						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 						ID:       "env2",
 					},
 				},
@@ -123,18 +123,18 @@ func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 	ctx := t.Context()
 	path := path.Root("test")
 
-	environmentLinks := []contentfulManagement.EnvironmentLink{
+	environmentLinks := []cm.EnvironmentLink{
 		{
-			Sys: contentfulManagement.EnvironmentLinkSys{
-				Type:     contentfulManagement.EnvironmentLinkSysTypeLink,
-				LinkType: contentfulManagement.EnvironmentLinkSysLinkTypeEnvironment,
+			Sys: cm.EnvironmentLinkSys{
+				Type:     cm.EnvironmentLinkSysTypeLink,
+				LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 				ID:       "env1",
 			},
 		},
 		{
-			Sys: contentfulManagement.EnvironmentLinkSys{
-				Type:     contentfulManagement.EnvironmentLinkSysTypeLink,
-				LinkType: contentfulManagement.EnvironmentLinkSysLinkTypeEnvironment,
+			Sys: cm.EnvironmentLinkSys{
+				Type:     cm.EnvironmentLinkSysTypeLink,
+				LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 				ID:       "env2",
 			},
 		},

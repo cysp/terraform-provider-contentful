@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -20,7 +20,7 @@ func TestToOptPutContentTypeReqFieldsItemItemsErrorHandling(t *testing.T) {
 	items, itemsDiags := provider.ItemsObjectToOptPutContentTypeReqFieldsItemItems(t.Context(), path.Root("items"), itemsObject)
 	assert.NotEmpty(t, itemsDiags)
 
-	assert.EqualValues(t, contentfulManagement.OptPutContentTypeReqFieldsItemItems{
+	assert.EqualValues(t, cm.OptPutContentTypeReqFieldsItemItems{
 		Set: false,
 	}, items)
 }

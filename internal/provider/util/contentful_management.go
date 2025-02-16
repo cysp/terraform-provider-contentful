@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 func ErrorDetailFromContentfulManagementResponse(response interface{}, err error) string {
-	if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+	if response, ok := response.(*cm.ErrorStatusCode); ok {
 		responseType, err := response.Response.Sys.Type.MarshalText()
 
 		if err == nil {
@@ -32,28 +32,28 @@ func ErrorDetailFromContentfulManagementResponse(response interface{}, err error
 	return fmt.Sprintf("%v", response)
 }
 
-func OptBoolToBoolValue(b contentfulManagement.OptBool) basetypes.BoolValue {
+func OptBoolToBoolValue(b cm.OptBool) basetypes.BoolValue {
 	return types.BoolPointerValue(b.ValueBoolPointer())
 }
 
-func BoolValueToOptBool(b basetypes.BoolValue) contentfulManagement.OptBool {
-	return contentfulManagement.NewOptPointerBool(b.ValueBoolPointer())
+func BoolValueToOptBool(b basetypes.BoolValue) cm.OptBool {
+	return cm.NewOptPointerBool(b.ValueBoolPointer())
 }
 
-func OptStringToStringValue(s contentfulManagement.OptString) basetypes.StringValue {
+func OptStringToStringValue(s cm.OptString) basetypes.StringValue {
 	return types.StringPointerValue(s.ValueStringPointer())
 }
 
-func OptNilStringToStringValue(s contentfulManagement.OptNilString) basetypes.StringValue {
+func OptNilStringToStringValue(s cm.OptNilString) basetypes.StringValue {
 	return types.StringPointerValue(s.ValueStringPointer())
 }
 
-func StringValueToOptString(s basetypes.StringValue) contentfulManagement.OptString {
-	return contentfulManagement.NewOptPointerString(s.ValueStringPointer())
+func StringValueToOptString(s basetypes.StringValue) cm.OptString {
+	return cm.NewOptPointerString(s.ValueStringPointer())
 }
 
-func StringValueToOptNilString(value basetypes.StringValue) contentfulManagement.OptNilString {
-	ons := contentfulManagement.OptNilString{}
+func StringValueToOptNilString(value basetypes.StringValue) cm.OptNilString {
+	ons := cm.OptNilString{}
 
 	if !value.IsUnknown() {
 		if value.IsNull() {

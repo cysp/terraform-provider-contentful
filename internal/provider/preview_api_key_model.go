@@ -3,14 +3,14 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *PreviewApiKeyModel) ReadFromResponse(ctx context.Context, previewAPIKey *contentfulManagement.PreviewApiKey) diag.Diagnostics {
+func (model *PreviewApiKeyModel) ReadFromResponse(ctx context.Context, previewAPIKey *cm.PreviewApiKey) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	model.PreviewApiKeyId = types.StringValue(previewAPIKey.Sys.ID)

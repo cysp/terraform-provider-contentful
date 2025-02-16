@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -26,7 +26,7 @@ func TestToOptNilWebhookDefinitionFilterArrayNil(t *testing.T) {
 		},
 	}
 
-	expected := contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull()
+	expected := cm.NewOptNilWebhookDefinitionFilterArrayNull()
 
 	for name, testcase := range testcases {
 		t.Run(name, func(t *testing.T) {

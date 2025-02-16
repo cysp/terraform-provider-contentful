@@ -3,17 +3,17 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *DeliveryApiKeyModel) ToCreateDeliveryAPIKeyReq(ctx context.Context) (contentfulManagement.CreateDeliveryApiKeyReq, diag.Diagnostics) {
+func (model *DeliveryApiKeyModel) ToCreateDeliveryAPIKeyReq(ctx context.Context) (cm.CreateDeliveryApiKeyReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := contentfulManagement.CreateDeliveryApiKeyReq{
+	req := cm.CreateDeliveryApiKeyReq{
 		Name:        model.Name.ValueString(),
 		Description: util.StringValueToOptNilString(model.Description),
 	}
@@ -26,10 +26,10 @@ func (model *DeliveryApiKeyModel) ToCreateDeliveryAPIKeyReq(ctx context.Context)
 	return req, diags
 }
 
-func (model *DeliveryApiKeyModel) ToUpdateDeliveryAPIKeyReq(ctx context.Context) (contentfulManagement.UpdateDeliveryApiKeyReq, diag.Diagnostics) {
+func (model *DeliveryApiKeyModel) ToUpdateDeliveryAPIKeyReq(ctx context.Context) (cm.UpdateDeliveryApiKeyReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := contentfulManagement.UpdateDeliveryApiKeyReq{
+	req := cm.UpdateDeliveryApiKeyReq{
 		Name:        model.Name.ValueString(),
 		Description: util.StringValueToOptNilString(model.Description),
 	}
@@ -42,7 +42,7 @@ func (model *DeliveryApiKeyModel) ToUpdateDeliveryAPIKeyReq(ctx context.Context)
 	return req, diags
 }
 
-func (model *DeliveryApiKeyModel) ReadFromResponse(ctx context.Context, apiKey *contentfulManagement.ApiKey) diag.Diagnostics {
+func (model *DeliveryApiKeyModel) ReadFromResponse(ctx context.Context, apiKey *cm.ApiKey) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	model.ApiKeyId = types.StringValue(apiKey.Sys.ID)

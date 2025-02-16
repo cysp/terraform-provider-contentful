@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -59,7 +59,7 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 	xContentfulMarketplace, xContentfulMarketplaceDiags := data.ToXContentfulMarketplaceHeaderValue(ctx)
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
 
-	params := contentfulManagement.PutAppInstallationParams{
+	params := cm.PutAppInstallationParams{
 		SpaceID:                data.SpaceId.ValueString(),
 		EnvironmentID:          data.EnvironmentId.ValueString(),
 		AppDefinitionID:        data.AppDefinitionId.ValueString(),
@@ -83,7 +83,7 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.AppInstallation:
+	case *cm.AppInstallation:
 		resp.Diagnostics.Append(data.ReadFromResponse(response)...)
 
 	default:
@@ -106,7 +106,7 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	params := contentfulManagement.GetAppInstallationParams{
+	params := cm.GetAppInstallationParams{
 		SpaceID:         data.SpaceId.ValueString(),
 		EnvironmentID:   data.EnvironmentId.ValueString(),
 		AppDefinitionID: data.AppDefinitionId.ValueString(),
@@ -121,11 +121,11 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.AppInstallation:
+	case *cm.AppInstallation:
 		resp.Diagnostics.Append(data.ReadFromResponse(response)...)
 
 	default:
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
@@ -157,7 +157,7 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	xContentfulMarketplace, xContentfulMarketplaceDiags := data.ToXContentfulMarketplaceHeaderValue(ctx)
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
 
-	params := contentfulManagement.PutAppInstallationParams{
+	params := cm.PutAppInstallationParams{
 		SpaceID:                data.SpaceId.ValueString(),
 		EnvironmentID:          data.EnvironmentId.ValueString(),
 		AppDefinitionID:        data.AppDefinitionId.ValueString(),
@@ -181,7 +181,7 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.AppInstallation:
+	case *cm.AppInstallation:
 		resp.Diagnostics.Append(data.ReadFromResponse(response)...)
 
 	default:
@@ -204,7 +204,7 @@ func (r *appInstallationResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	params := contentfulManagement.DeleteAppInstallationParams{
+	params := cm.DeleteAppInstallationParams{
 		SpaceID:         data.SpaceId.ValueString(),
 		EnvironmentID:   data.EnvironmentId.ValueString(),
 		AppDefinitionID: data.AppDefinitionId.ValueString(),
@@ -219,12 +219,12 @@ func (r *appInstallationResource) Delete(ctx context.Context, req resource.Delet
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.NoContent:
+	case *cm.NoContent:
 
 	default:
 		handled := false
 
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("App already uninstalled", util.ErrorDetailFromContentfulManagementResponse(response, err))
 

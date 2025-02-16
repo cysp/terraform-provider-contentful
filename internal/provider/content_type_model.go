@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *ContentTypeModel) ToPutContentTypeReq(ctx context.Context) (contentfulManagement.PutContentTypeReq, diag.Diagnostics) {
+func (m *ContentTypeModel) ToPutContentTypeReq(ctx context.Context) (cm.PutContentTypeReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	request := contentfulManagement.PutContentTypeReq{
+	request := cm.PutContentTypeReq{
 		Name:         m.Name.ValueString(),
 		Description:  m.Description.ValueString(),
 		DisplayField: m.DisplayField.ValueString(),
@@ -28,13 +28,13 @@ func (m *ContentTypeModel) ToPutContentTypeReq(ctx context.Context) (contentfulM
 	return request, diags
 }
 
-func FieldsListToPutContentTypeReqFields(ctx context.Context, path path.Path, fieldsList types.List) ([]contentfulManagement.PutContentTypeReqFieldsItem, diag.Diagnostics) {
+func FieldsListToPutContentTypeReqFields(ctx context.Context, path path.Path, fieldsList types.List) ([]cm.PutContentTypeReqFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsValues := make([]FieldsValue, len(fieldsList.Elements()))
 	diags.Append(fieldsList.ElementsAs(ctx, &fieldsValues, false)...)
 
-	fieldsItems := make([]contentfulManagement.PutContentTypeReqFieldsItem, len(fieldsValues))
+	fieldsItems := make([]cm.PutContentTypeReqFieldsItem, len(fieldsValues))
 
 	for index, fieldsValue := range fieldsValues {
 		path := path.AtListIndex(index)
@@ -47,7 +47,7 @@ func FieldsListToPutContentTypeReqFields(ctx context.Context, path path.Path, fi
 	return fieldsItems, diags
 }
 
-func (model *FieldsValue) ToPutContentTypeReqFieldsItem(ctx context.Context, path path.Path) (contentfulManagement.PutContentTypeReqFieldsItem, diag.Diagnostics) {
+func (model *FieldsValue) ToPutContentTypeReqFieldsItem(ctx context.Context, path path.Path) (cm.PutContentTypeReqFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptPutContentTypeReqFieldsItemItems(ctx, path.AtName("items"), model.Items)
@@ -56,7 +56,7 @@ func (model *FieldsValue) ToPutContentTypeReqFieldsItem(ctx context.Context, pat
 	fieldsItemValidations, fieldsItemValidationsDiags := ValidationsListToPutContentTypeReqValidations(ctx, path.AtName("validations"), model.Validations)
 	diags.Append(fieldsItemValidationsDiags...)
 
-	fieldsItem := contentfulManagement.PutContentTypeReqFieldsItem{
+	fieldsItem := cm.PutContentTypeReqFieldsItem{
 		ID:          model.Id.ValueString(),
 		Name:        model.Name.ValueString(),
 		Type:        model.FieldsType.ValueString(),
@@ -77,10 +77,10 @@ func (model *FieldsValue) ToPutContentTypeReqFieldsItem(ctx context.Context, pat
 	return fieldsItem, diags
 }
 
-func ItemsObjectToOptPutContentTypeReqFieldsItemItems(ctx context.Context, path path.Path, itemsObject types.Object) (contentfulManagement.OptPutContentTypeReqFieldsItemItems, diag.Diagnostics) {
+func ItemsObjectToOptPutContentTypeReqFieldsItemItems(ctx context.Context, path path.Path, itemsObject types.Object) (cm.OptPutContentTypeReqFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldsItemItems := contentfulManagement.OptPutContentTypeReqFieldsItemItems{}
+	fieldsItemItems := cm.OptPutContentTypeReqFieldsItemItems{}
 
 	if !itemsObject.IsNull() && !itemsObject.IsUnknown() {
 		modelItemsObjectValue, modelItemsObjectValueDiags := ItemsType{}.ValueFromObject(ctx, itemsObject)
@@ -99,13 +99,13 @@ func ItemsObjectToOptPutContentTypeReqFieldsItemItems(ctx context.Context, path 
 	return fieldsItemItems, diags
 }
 
-func (model *ItemsValue) ToPutContentTypeReqFieldsItemItems(ctx context.Context, path path.Path) (contentfulManagement.PutContentTypeReqFieldsItemItems, diag.Diagnostics) {
+func (model *ItemsValue) ToPutContentTypeReqFieldsItemItems(ctx context.Context, path path.Path) (cm.PutContentTypeReqFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	itemsValidations, itemsValidationsDiags := ValidationsListToPutContentTypeReqValidations(ctx, path.AtName("validations"), model.Validations)
 	diags.Append(itemsValidationsDiags...)
 
-	items := contentfulManagement.PutContentTypeReqFieldsItemItems{
+	items := cm.PutContentTypeReqFieldsItemItems{
 		Type:        util.StringValueToOptString(model.ItemsType),
 		LinkType:    util.StringValueToOptString(model.LinkType),
 		Validations: itemsValidations,
@@ -130,7 +130,7 @@ func ValidationsListToPutContentTypeReqValidations(ctx context.Context, _ path.P
 	return validations, diags
 }
 
-func (m *ContentTypeModel) ReadFromResponse(ctx context.Context, contentType *contentfulManagement.ContentType) diag.Diagnostics {
+func (m *ContentTypeModel) ReadFromResponse(ctx context.Context, contentType *cm.ContentType) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	// SpaceId, EnvironmentId and ContentTypeId are all already known

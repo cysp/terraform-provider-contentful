@@ -1,11 +1,11 @@
 package provider
 
 import (
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
 type ContentfulProviderData struct {
-	client *contentfulManagement.Client
+	client *cm.Client
 
 	editorInterfaceVersionOffset *ContentfulContentTypeCounter
 }

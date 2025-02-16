@@ -3,15 +3,15 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) (contentfulManagement.PutEditorInterfaceReq, diag.Diagnostics) {
+func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) (cm.PutEditorInterfaceReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	request := contentfulManagement.PutEditorInterfaceReq{}
+	request := cm.PutEditorInterfaceReq{}
 
 	if model.EditorLayout.IsNull() || model.EditorLayout.IsUnknown() {
 		request.EditorLayout.Reset()
@@ -21,7 +21,7 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		editorLayoutElementValues := []EditorLayoutValue{}
 		diags.Append(model.EditorLayout.ElementsAs(ctx, &editorLayoutElementValues, false)...)
 
-		requestEditorLayoutItems := make([]contentfulManagement.PutEditorInterfaceReqEditorLayoutItem, len(editorLayoutElementValues))
+		requestEditorLayoutItems := make([]cm.PutEditorInterfaceReqEditorLayoutItem, len(editorLayoutElementValues))
 
 		for index, editorLayoutElement := range editorLayoutElementValues {
 			path := editorLayoutPath.AtListIndex(index)
@@ -43,7 +43,7 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		controlsElementValues := []ControlsValue{}
 		diags.Append(model.Controls.ElementsAs(ctx, &controlsElementValues, false)...)
 
-		requestControlsItems := make([]contentfulManagement.PutEditorInterfaceReqControlsItem, len(controlsElementValues))
+		requestControlsItems := make([]cm.PutEditorInterfaceReqControlsItem, len(controlsElementValues))
 
 		for index, controlsElement := range controlsElementValues {
 			path := controlsPath.AtListIndex(index)
@@ -65,7 +65,7 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		groupControlsElementValues := []GroupControlsValue{}
 		diags.Append(model.GroupControls.ElementsAs(ctx, &groupControlsElementValues, false)...)
 
-		requestGroupControlsItems := make([]contentfulManagement.PutEditorInterfaceReqGroupControlsItem, len(groupControlsElementValues))
+		requestGroupControlsItems := make([]cm.PutEditorInterfaceReqGroupControlsItem, len(groupControlsElementValues))
 
 		for index, groupControlsElement := range groupControlsElementValues {
 			path := controlsPath.AtListIndex(index)
@@ -87,7 +87,7 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		sidebarElementValues := []SidebarValue{}
 		diags.Append(model.Sidebar.ElementsAs(ctx, &sidebarElementValues, false)...)
 
-		requestSidebarItems := make([]contentfulManagement.PutEditorInterfaceReqSidebarItem, len(sidebarElementValues))
+		requestSidebarItems := make([]cm.PutEditorInterfaceReqSidebarItem, len(sidebarElementValues))
 
 		for index, sidebarElement := range sidebarElementValues {
 			path := sidebarPath.AtListIndex(index)
@@ -104,7 +104,7 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 	return request, diags
 }
 
-func (model *EditorInterfaceModel) ReadFromResponse(ctx context.Context, editorInterface *contentfulManagement.EditorInterface) diag.Diagnostics {
+func (model *EditorInterfaceModel) ReadFromResponse(ctx context.Context, editorInterface *cm.EditorInterface) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	// SpaceId, EnvironmentId and ContentTypeId are all already known

@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -20,7 +20,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 
 	testcases := map[string]struct {
 		model     provider.WebhookModel
-		expected  contentfulManagement.CreateWebhookDefinitionReq
+		expected  cm.CreateWebhookDefinitionReq
 		expectErr bool
 	}{
 		"basic": {
@@ -35,15 +35,15 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					types.StringValue("Entry.delete"),
 				}),
 			},
-			expected: contentfulManagement.CreateWebhookDefinitionReq{
+			expected: cm.CreateWebhookDefinitionReq{
 				Name:              "test-webhook",
-				Active:            contentfulManagement.NewOptBool(true),
+				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
-				HttpBasicUsername: contentfulManagement.NewOptNilStringNull(),
-				HttpBasicPassword: contentfulManagement.NewOptNilStringNull(),
+				HttpBasicUsername: cm.NewOptNilStringNull(),
+				HttpBasicPassword: cm.NewOptNilStringNull(),
 				Topics:            []string{"Entry.create", "Entry.delete"},
-				Filters:           contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation:    contentfulManagement.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
+				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
+				Transformation:    cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
 			},
 			expectErr: false,
 		},
@@ -58,15 +58,15 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					types.StringValue("Entry.*"),
 				}),
 			},
-			expected: contentfulManagement.CreateWebhookDefinitionReq{
+			expected: cm.CreateWebhookDefinitionReq{
 				Name:              "auth-webhook",
-				Active:            contentfulManagement.NewOptBool(true),
+				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
-				HttpBasicUsername: contentfulManagement.NewOptNilString("user"),
-				HttpBasicPassword: contentfulManagement.NewOptNilString("pass"),
+				HttpBasicUsername: cm.NewOptNilString("user"),
+				HttpBasicPassword: cm.NewOptNilString("pass"),
 				Topics:            []string{"Entry.*"},
-				Filters:           contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation:    contentfulManagement.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
+				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
+				Transformation:    cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
 			},
 			expectErr: false,
 		},
@@ -82,21 +82,21 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					}),
 				}),
 			},
-			expected: contentfulManagement.CreateWebhookDefinitionReq{
+			expected: cm.CreateWebhookDefinitionReq{
 				Name:              "headers-webhook",
-				Active:            contentfulManagement.NewOptBool(true),
+				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
-				HttpBasicUsername: contentfulManagement.NewOptNilStringNull(),
-				HttpBasicPassword: contentfulManagement.NewOptNilStringNull(),
-				Headers: []contentfulManagement.WebhookDefinitionHeader{
+				HttpBasicUsername: cm.NewOptNilStringNull(),
+				HttpBasicPassword: cm.NewOptNilStringNull(),
+				Headers: []cm.WebhookDefinitionHeader{
 					{
 						Key:    "X-Header",
-						Value:  contentfulManagement.NewOptString("value"),
-						Secret: contentfulManagement.NewOptBool(false),
+						Value:  cm.NewOptString("value"),
+						Secret: cm.NewOptBool(false),
 					},
 				},
-				Filters:        contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation: contentfulManagement.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
+				Filters:        cm.NewOptNilWebhookDefinitionFilterArrayNull(),
+				Transformation: cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
 			},
 		},
 		"with transformation": {
@@ -111,17 +111,17 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					"body":                   types.StringNull(),
 				}),
 			},
-			expected: contentfulManagement.CreateWebhookDefinitionReq{
+			expected: cm.CreateWebhookDefinitionReq{
 				Name:              "headers-webhook",
-				Active:            contentfulManagement.NewOptBool(true),
+				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
-				HttpBasicUsername: contentfulManagement.NewOptNilStringNull(),
-				HttpBasicPassword: contentfulManagement.NewOptNilStringNull(),
-				Filters:           contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation: contentfulManagement.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Value: contentfulManagement.CreateWebhookDefinitionReqTransformation{
-					Method:               contentfulManagement.NewOptString("POST"),
-					ContentType:          contentfulManagement.NewOptString("application/json"),
-					IncludeContentLength: contentfulManagement.NewOptBool(true),
+				HttpBasicUsername: cm.NewOptNilStringNull(),
+				HttpBasicPassword: cm.NewOptNilStringNull(),
+				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
+				Transformation: cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Value: cm.CreateWebhookDefinitionReqTransformation{
+					Method:               cm.NewOptString("POST"),
+					ContentType:          cm.NewOptString("application/json"),
+					IncludeContentLength: cm.NewOptBool(true),
 				}},
 			},
 		},
@@ -137,17 +137,17 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					"body":                   types.StringValue("{\"key\":\"value\"}"),
 				}),
 			},
-			expected: contentfulManagement.CreateWebhookDefinitionReq{
+			expected: cm.CreateWebhookDefinitionReq{
 				Name:              "headers-webhook",
-				Active:            contentfulManagement.NewOptBool(true),
+				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
-				HttpBasicUsername: contentfulManagement.NewOptNilStringNull(),
-				HttpBasicPassword: contentfulManagement.NewOptNilStringNull(),
-				Filters:           contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation: contentfulManagement.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Value: contentfulManagement.CreateWebhookDefinitionReqTransformation{
-					Method:               contentfulManagement.NewOptString("POST"),
-					ContentType:          contentfulManagement.NewOptString("application/json"),
-					IncludeContentLength: contentfulManagement.NewOptBool(true),
+				HttpBasicUsername: cm.NewOptNilStringNull(),
+				HttpBasicPassword: cm.NewOptNilStringNull(),
+				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
+				Transformation: cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Value: cm.CreateWebhookDefinitionReqTransformation{
+					Method:               cm.NewOptString("POST"),
+					ContentType:          cm.NewOptString("application/json"),
+					IncludeContentLength: cm.NewOptBool(true),
 					Body:                 []byte("{\"key\":\"value\"}"),
 				}},
 			},
@@ -161,39 +161,39 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				HttpBasicPassword: types.StringNull(),
 				Filters:           filters,
 			},
-			expected: contentfulManagement.CreateWebhookDefinitionReq{
+			expected: cm.CreateWebhookDefinitionReq{
 				Name:              "filters-webhook",
-				Active:            contentfulManagement.NewOptBool(true),
+				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
-				HttpBasicUsername: contentfulManagement.NewOptNilStringNull(),
-				HttpBasicPassword: contentfulManagement.NewOptNilStringNull(),
-				Filters: contentfulManagement.NewOptNilWebhookDefinitionFilterArray([]contentfulManagement.WebhookDefinitionFilter{
+				HttpBasicUsername: cm.NewOptNilStringNull(),
+				HttpBasicPassword: cm.NewOptNilStringNull(),
+				Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
 					{
-						Equals: contentfulManagement.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"abc"`)},
+						Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"abc"`)},
 					},
 					{
-						In: contentfulManagement.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.type"}`), []byte(`["abc","def"]`)},
+						In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.type"}`), []byte(`["abc","def"]`)},
 					},
 					{
-						Regexp: contentfulManagement.WebhookDefinitionFilterRegexp{[]byte(`{"doc":"sys.type"}`), []byte(`{"pattern":"abc.*"}`)},
+						Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(`{"doc":"sys.type"}`), []byte(`{"pattern":"abc.*"}`)},
 					},
 					{
-						Not: contentfulManagement.NewOptWebhookDefinitionFilterNot(contentfulManagement.WebhookDefinitionFilterNot{
-							Equals: contentfulManagement.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"abc"`)},
+						Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
+							Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"abc"`)},
 						}),
 					},
 					{
-						Not: contentfulManagement.NewOptWebhookDefinitionFilterNot(contentfulManagement.WebhookDefinitionFilterNot{
-							In: contentfulManagement.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.type"}`), []byte(`["abc","def"]`)},
+						Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
+							In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.type"}`), []byte(`["abc","def"]`)},
 						}),
 					},
 					{
-						Not: contentfulManagement.NewOptWebhookDefinitionFilterNot(contentfulManagement.WebhookDefinitionFilterNot{
-							Regexp: contentfulManagement.WebhookDefinitionFilterRegexp{[]byte(`{"doc":"sys.type"}`), []byte(`{"pattern":"abc.*"}`)},
+						Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
+							Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(`{"doc":"sys.type"}`), []byte(`{"pattern":"abc.*"}`)},
 						}),
 					},
 				}),
-				Transformation: contentfulManagement.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
+				Transformation: cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
 			},
 			expectErr: false,
 		},

@@ -5,18 +5,18 @@ import (
 	"os"
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func testContentfulManagementClient(t *testing.T) contentfulManagement.Client {
+func testContentfulManagementClient(t *testing.T) cm.Client {
 	t.Helper()
 
-	client, err := contentfulManagement.NewClient(
-		contentfulManagement.DefaultServerURL,
-		contentfulManagement.NewAccessTokenSecuritySource("CFPAT-12345"),
-		contentfulManagement.WithClient(contentfulManagement.NewClientWithUserAgent(http.DefaultClient, contentfulManagement.DefaultUserAgent)),
+	client, err := cm.NewClient(
+		cm.DefaultServerURL,
+		cm.NewAccessTokenSecuritySource("CFPAT-12345"),
+		cm.WithClient(cm.NewClientWithUserAgent(http.DefaultClient, cm.DefaultUserAgent)),
 	)
 	require.NoError(t, err)
 	require.NotNil(t, client)
@@ -24,7 +24,7 @@ func testContentfulManagementClient(t *testing.T) contentfulManagement.Client {
 	return *client
 }
 
-func testAuthorizedContentfulManagementClient(t *testing.T) contentfulManagement.Client {
+func testAuthorizedContentfulManagementClient(t *testing.T) cm.Client {
 	t.Helper()
 
 	accessToken := os.Getenv("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN")
@@ -32,10 +32,10 @@ func testAuthorizedContentfulManagementClient(t *testing.T) contentfulManagement
 		t.Skip("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN is not set")
 	}
 
-	client, err := contentfulManagement.NewClient(
-		contentfulManagement.DefaultServerURL,
-		contentfulManagement.NewAccessTokenSecuritySource(accessToken),
-		contentfulManagement.WithClient(contentfulManagement.NewClientWithUserAgent(http.DefaultClient, contentfulManagement.DefaultUserAgent)),
+	client, err := cm.NewClient(
+		cm.DefaultServerURL,
+		cm.NewAccessTokenSecuritySource(accessToken),
+		cm.WithClient(cm.NewClientWithUserAgent(http.DefaultClient, cm.DefaultUserAgent)),
 	)
 	require.NoError(t, err)
 	require.NotNil(t, client)
@@ -52,7 +52,7 @@ func TestGetAuthenticatedUserUnauthorized(t *testing.T) {
 	require.NoError(t, err)
 
 	switch response := response.(type) {
-	case *contentfulManagement.Error:
+	case *cm.Error:
 		require.NotNil(t, response)
 		assert.EqualValues(t, "AccessTokenInvalid", response.Sys.ID)
 	default:
@@ -69,7 +69,7 @@ func TestGetAuthenticatedUserSuccess(t *testing.T) {
 	require.NoError(t, err)
 
 	switch response := response.(type) {
-	case *contentfulManagement.User:
+	case *cm.User:
 		require.NotNil(t, response)
 	default:
 		t.Fatal("unexpected type")
