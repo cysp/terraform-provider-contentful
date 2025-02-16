@@ -1,0 +1,18 @@
+package testserver
+
+import (
+	"net/http"
+
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+)
+
+func WriteContentfulManagementErrorResponse(responseWriter http.ResponseWriter, statusCode int, id string, message *string, details []byte) error {
+	return WriteContentfulManagementResponse(responseWriter, statusCode, &cm.Error{
+		Sys: cm.ErrorSys{
+			Type: cm.ErrorSysTypeError,
+			ID:   id,
+		},
+		Message: cm.NewOptPointerString(message),
+		Details: details,
+	})
+}
