@@ -10,8 +10,7 @@ import (
 func TestAccPreviewApiKeyResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `

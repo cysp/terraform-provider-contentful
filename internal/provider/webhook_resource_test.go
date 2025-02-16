@@ -12,8 +12,7 @@ import (
 
 //nolint:paralleltest
 func TestAccWebhookResourceImport(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -39,8 +38,7 @@ func TestAccWebhookResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccWebhookResourceImportNotFound(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -68,8 +66,7 @@ func TestAccWebhookResourceCreate(t *testing.T) {
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -90,8 +87,7 @@ func TestAccWebhookResourceUpdate(t *testing.T) {
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

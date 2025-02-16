@@ -4,13 +4,14 @@ import (
 	"regexp"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testserver"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 //nolint:paralleltest
 func TestAccRoleResourceImport(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -37,8 +38,7 @@ func TestAccRoleResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccRoleResourceImportNotFound(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -57,6 +57,53 @@ func TestAccRoleResourceImportNotFound(t *testing.T) {
 				ImportState:   true,
 				ImportStateId: "0p38pssr0fi3/admin",
 				ExpectError:   regexp.MustCompile(`Cannot import non-existent remote object`),
+			},
+		},
+	})
+}
+
+//nolint:paralleltest
+func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server.Close()
+
+	role := cm.Role{
+		Sys: cm.RoleSys{
+			Type: cm.RoleSysTypeRole,
+			ID:   "abcdef",
+		},
+		Name:        "Test",
+		Permissions: cm.RolePermissions{},
+		Policies:    []cm.RolePoliciesItem{},
+	}
+
+	testserver.HandleRoleCreation("0p38pssr0fi3", &role)
+	testserver.HandleRole("0p38pssr0fi3", &role)
+
+	ContentfulProviderMockedResourceTest(t, testserver.Server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "contentful_role" "test" {
+						space_id = "0p38pssr0fi3"
+						name = "Test"
+						permissions = {}
+						policies = []
+					}
+					`,
+			},
+			{
+				PreConfig: func() {
+					role.Permissions["foo"] = cm.RolePermissionsItem{Type: cm.StringArrayRolePermissionsItem, StringArray: []string{"bar"}}
+				},
+				Config: `
+					resource "contentful_role" "test" {
+						space_id = "0p38pssr0fi3"
+						name = "Test"
+						permissions = { foo = ["bar"] }
+						policies = []
+					}
+					`,
 			},
 		},
 	})

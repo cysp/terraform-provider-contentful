@@ -10,8 +10,7 @@ import (
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImport(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -54,8 +53,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -80,8 +78,7 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -99,8 +96,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -118,8 +114,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
