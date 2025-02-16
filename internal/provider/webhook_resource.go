@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -58,7 +58,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	currentVersion := 1
 
-	params := contentfulManagement.CreateWebhookDefinitionParams{
+	params := cm.CreateWebhookDefinitionParams{
 		SpaceID: data.SpaceId.ValueString(),
 	}
 
@@ -79,7 +79,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.WebhookDefinition:
+	case *cm.WebhookDefinition:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
@@ -105,7 +105,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	params := contentfulManagement.GetWebhookDefinitionParams{
+	params := cm.GetWebhookDefinitionParams{
 		SpaceID:             data.SpaceId.ValueString(),
 		WebhookDefinitionID: data.WebhookId.ValueString(),
 	}
@@ -121,12 +121,12 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 	currentVersion := 0
 
 	switch response := response.(type) {
-	case *contentfulManagement.WebhookDefinition:
+	case *cm.WebhookDefinition:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
@@ -159,7 +159,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
-	params := contentfulManagement.UpdateWebhookDefinitionParams{
+	params := cm.UpdateWebhookDefinitionParams{
 		SpaceID:             data.SpaceId.ValueString(),
 		WebhookDefinitionID: data.WebhookId.ValueString(),
 		XContentfulVersion:  currentVersion,
@@ -182,7 +182,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.WebhookDefinition:
+	case *cm.WebhookDefinition:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
@@ -207,18 +207,18 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	response, err := r.providerData.client.DeleteWebhookDefinition(ctx, contentfulManagement.DeleteWebhookDefinitionParams{
+	response, err := r.providerData.client.DeleteWebhookDefinition(ctx, cm.DeleteWebhookDefinitionParams{
 		SpaceID:             data.SpaceId.ValueString(),
 		WebhookDefinitionID: data.WebhookId.ValueString(),
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.NoContent:
+	case *cm.NoContent:
 
 	default:
 		handled := false
 
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Webhook already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 

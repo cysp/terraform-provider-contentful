@@ -3,17 +3,17 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *RoleModel) ToUpdateRoleReq(ctx context.Context) (contentfulManagement.UpdateRoleReq, diag.Diagnostics) {
+func (model *RoleModel) ToUpdateRoleReq(ctx context.Context) (cm.UpdateRoleReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	request := contentfulManagement.UpdateRoleReq{
+	request := cm.UpdateRoleReq{
 		Name:        model.Name.ValueString(),
-		Description: contentfulManagement.NewOptNilPointerString(model.Description.ValueStringPointer()),
+		Description: cm.NewOptNilPointerString(model.Description.ValueStringPointer()),
 	}
 
 	permissions, permissionsDiags := ToUpdateRoleReqPermissions(ctx, path.Root("permissions"), model.Permissions)

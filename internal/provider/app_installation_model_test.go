@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -17,41 +17,41 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 	tests := map[string]struct {
 		model        provider.AppInstallationModel
 		expectErrors bool
-		expected     contentfulManagement.OptString
+		expected     cm.OptString
 	}{
 		"absent": {
 			model:    provider.AppInstallationModel{},
-			expected: contentfulManagement.OptString{},
+			expected: cm.OptString{},
 		},
 		"null": {
 			model: provider.AppInstallationModel{
 				Marketplace: types.SetNull(types.StringType),
 			},
-			expected: contentfulManagement.OptString{},
+			expected: cm.OptString{},
 		},
 		"unknown": {
 			model: provider.AppInstallationModel{
 				Marketplace: types.SetUnknown(types.StringType),
 			},
-			expected: contentfulManagement.OptString{},
+			expected: cm.OptString{},
 		},
 		"empty": {
 			model: provider.AppInstallationModel{
 				Marketplace: provider.NewEmptySetMust(types.StringType),
 			},
-			expected: contentfulManagement.OptString{},
+			expected: cm.OptString{},
 		},
 		"foo": {
 			model: provider.AppInstallationModel{
 				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("foo")}),
 			},
-			expected: contentfulManagement.NewOptString("foo"),
+			expected: cm.NewOptString("foo"),
 		},
 		"foo,bar": {
 			model: provider.AppInstallationModel{
 				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("foo"), types.StringValue("bar")}),
 			},
-			expected: contentfulManagement.NewOptString("bar,foo"),
+			expected: cm.NewOptString("bar,foo"),
 		},
 	}
 
@@ -143,15 +143,15 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		appInstallation contentfulManagement.AppInstallation
+		appInstallation cm.AppInstallation
 		expectedModel   provider.AppInstallationModel
 	}{
 		"null": {
-			appInstallation: contentfulManagement.AppInstallation{},
+			appInstallation: cm.AppInstallation{},
 			expectedModel:   provider.AppInstallationModel{},
 		},
 		"empty": {
-			appInstallation: contentfulManagement.AppInstallation{
+			appInstallation: cm.AppInstallation{
 				Parameters: []byte("{}"),
 			},
 			expectedModel: provider.AppInstallationModel{
@@ -159,7 +159,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 			},
 		},
 		"foo=bar": {
-			appInstallation: contentfulManagement.AppInstallation{
+			appInstallation: cm.AppInstallation{
 				Parameters: []byte("{\"foo\":\"bar\"}"),
 			},
 			expectedModel: provider.AppInstallationModel{

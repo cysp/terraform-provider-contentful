@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,19 +14,19 @@ func TestOptNilDateTimeValueTimePointer(t *testing.T) {
 	epoch := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
 
 	tests := map[string]struct {
-		input    contentfulManagement.OptNilDateTime
+		input    cm.OptNilDateTime
 		expected *time.Time
 	}{
 		"valid": {
-			input:    contentfulManagement.NewOptNilDateTime(epoch),
+			input:    cm.NewOptNilDateTime(epoch),
 			expected: addressOf(epoch),
 		},
 		"null": {
-			input:    contentfulManagement.NewOptNilDateTimeNull(),
+			input:    cm.NewOptNilDateTimeNull(),
 			expected: nil,
 		},
 		"nil": {
-			input:    contentfulManagement.OptNilDateTime{},
+			input:    cm.OptNilDateTime{},
 			expected: nil,
 		},
 	}

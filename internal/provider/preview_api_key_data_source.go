@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -46,7 +46,7 @@ func (d *previewApiKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	params := contentfulManagement.GetPreviewApiKeyParams{
+	params := cm.GetPreviewApiKeyParams{
 		SpaceID:         data.SpaceId.ValueString(),
 		PreviewAPIKeyID: data.PreviewApiKeyId.ValueString(),
 	}
@@ -60,11 +60,11 @@ func (d *previewApiKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.PreviewApiKey:
+	case *cm.PreviewApiKey:
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read preview api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)

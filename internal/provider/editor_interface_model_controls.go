@@ -4,7 +4,7 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -22,10 +22,10 @@ func NewControlsValueKnown() ControlsValue {
 	}
 }
 
-func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(_ context.Context, _ path.Path) (contentfulManagement.PutEditorInterfaceReqControlsItem, diag.Diagnostics) {
+func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(_ context.Context, _ path.Path) (cm.PutEditorInterfaceReqControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := contentfulManagement.PutEditorInterfaceReqControlsItem{
+	item := cm.PutEditorInterfaceReqControlsItem{
 		FieldId:         model.FieldId.ValueString(),
 		WidgetNamespace: util.StringValueToOptString(model.WidgetNamespace),
 		WidgetId:        util.StringValueToOptString(model.WidgetId),
@@ -39,7 +39,7 @@ func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(_ context.Contex
 	return item, diags
 }
 
-func NewControlsListValueFromResponse(ctx context.Context, path path.Path, controlsItems []contentfulManagement.EditorInterfaceControlsItem) (types.List, diag.Diagnostics) {
+func NewControlsListValueFromResponse(ctx context.Context, path path.Path, controlsItems []cm.EditorInterfaceControlsItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(controlsItems))
@@ -59,7 +59,7 @@ func NewControlsListValueFromResponse(ctx context.Context, path path.Path, contr
 	return list, diags
 }
 
-func NewControlsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceControlsItem) (ControlsValue, diag.Diagnostics) {
+func NewControlsValueFromResponse(path path.Path, item cm.EditorInterfaceControlsItem) (ControlsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := ControlsValue{

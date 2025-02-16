@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, permissions contentfulManagement.RolePermissions) (basetypes.MapValue, diag.Diagnostics) {
+func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, permissions cm.RolePermissions) (basetypes.MapValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	permissionsValuesMap := make(map[string]attr.Value, len(permissions))
@@ -31,11 +31,11 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 	return permissionsMapValue, diags
 }
 
-func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Path, item contentfulManagement.RolePermissionsItem) (basetypes.ListValue, diag.Diagnostics) {
+func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Path, item cm.RolePermissionsItem) (basetypes.ListValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	switch item.Type {
-	case contentfulManagement.StringRolePermissionsItem:
+	case cm.StringRolePermissionsItem:
 		actionsValues := make([]attr.Value, 1)
 		actionsValues[0] = types.StringValue(item.String)
 
@@ -44,7 +44,7 @@ func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Pa
 
 		return actionsListValue, diags
 
-	case contentfulManagement.StringArrayRolePermissionsItem:
+	case cm.StringArrayRolePermissionsItem:
 		actionsListValue, actionsListValueDiags := basetypes.NewListValueFrom(ctx, types.String{}.Type(ctx), item.StringArray)
 		diags.Append(actionsListValueDiags...)
 

@@ -3,16 +3,16 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList types.List) (contentfulManagement.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
+func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList types.List) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
 	if filterValuesList.IsNull() || filterValuesList.IsUnknown() {
-		return contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull(), nil
+		return cm.NewOptNilWebhookDefinitionFilterArrayNull(), nil
 	}
 
 	diags := diag.Diagnostics{}
@@ -20,7 +20,7 @@ func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, f
 	filterValues := make([]WebhookFilterValue, len(filterValuesList.Elements()))
 	diags.Append(filterValuesList.ElementsAs(ctx, &filterValues, false)...)
 
-	filters := make([]contentfulManagement.WebhookDefinitionFilter, len(filterValues))
+	filters := make([]cm.WebhookDefinitionFilter, len(filterValues))
 
 	for index, filterValue := range filterValues {
 		path := path.AtListIndex(index)
@@ -31,13 +31,13 @@ func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, f
 		filters[index] = filter
 	}
 
-	return contentfulManagement.NewOptNilWebhookDefinitionFilterArray(filters), diags
+	return cm.NewOptNilWebhookDefinitionFilterArray(filters), diags
 }
 
-func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value WebhookFilterValue) (contentfulManagement.WebhookDefinitionFilter, diag.Diagnostics) {
+func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value WebhookFilterValue) (cm.WebhookDefinitionFilter, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	filter := contentfulManagement.WebhookDefinitionFilter{}
+	filter := cm.WebhookDefinitionFilter{}
 
 	if !value.Not.IsNull() && !value.Not.IsUnknown() {
 		path := path.AtName("not")
@@ -78,13 +78,13 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 	return filter, diags
 }
 
-func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value WebhookFilterNotValue) (contentfulManagement.OptWebhookDefinitionFilterNot, diag.Diagnostics) {
+func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value WebhookFilterNotValue) (cm.OptWebhookDefinitionFilterNot, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	optFilterNot := contentfulManagement.OptWebhookDefinitionFilterNot{}
+	optFilterNot := cm.OptWebhookDefinitionFilterNot{}
 
 	if !value.IsNull() && !value.IsUnknown() {
-		filterNot := contentfulManagement.WebhookDefinitionFilterNot{}
+		filterNot := cm.WebhookDefinitionFilterNot{}
 
 		if !value.Equals.IsNull() && !value.Equals.IsUnknown() {
 			path := path.AtName("equals")
@@ -119,14 +119,14 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 	return optFilterNot, diags
 }
 
-func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value WebhookFilterEqualsValue) (contentfulManagement.WebhookDefinitionFilterEquals, diag.Diagnostics) {
+func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value WebhookFilterEqualsValue) (cm.WebhookDefinitionFilterEquals, diag.Diagnostics) {
 	if value.IsNull() || value.IsUnknown() {
 		return nil, nil
 	}
 
 	diags := diag.Diagnostics{}
 
-	filter := contentfulManagement.WebhookDefinitionFilterEquals{}
+	filter := cm.WebhookDefinitionFilterEquals{}
 
 	filterTermDoc, filterTermDocDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", value.Doc)
 	diags.Append(filterTermDocDiags...)
@@ -141,14 +141,14 @@ func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value 
 	return filter, diags
 }
 
-func ToWebhookDefinitionFilterIn(ctx context.Context, path path.Path, value WebhookFilterInValue) (contentfulManagement.WebhookDefinitionFilterIn, diag.Diagnostics) {
+func ToWebhookDefinitionFilterIn(ctx context.Context, path path.Path, value WebhookFilterInValue) (cm.WebhookDefinitionFilterIn, diag.Diagnostics) {
 	if value.IsNull() || value.IsUnknown() {
 		return nil, nil
 	}
 
 	diags := diag.Diagnostics{}
 
-	filter := contentfulManagement.WebhookDefinitionFilterIn{}
+	filter := cm.WebhookDefinitionFilterIn{}
 
 	filterTermDoc, filterTermDocDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", value.Doc)
 	diags.Append(filterTermDocDiags...)
@@ -163,14 +163,14 @@ func ToWebhookDefinitionFilterIn(ctx context.Context, path path.Path, value Webh
 	return filter, diags
 }
 
-func ToWebhookDefinitionFilterRegexp(ctx context.Context, path path.Path, value WebhookFilterRegexpValue) (contentfulManagement.WebhookDefinitionFilterRegexp, diag.Diagnostics) {
+func ToWebhookDefinitionFilterRegexp(ctx context.Context, path path.Path, value WebhookFilterRegexpValue) (cm.WebhookDefinitionFilterRegexp, diag.Diagnostics) {
 	if value.IsNull() || value.IsUnknown() {
 		return nil, nil
 	}
 
 	diags := diag.Diagnostics{}
 
-	filter := contentfulManagement.WebhookDefinitionFilterRegexp{}
+	filter := cm.WebhookDefinitionFilterRegexp{}
 
 	filterTermDoc, filterTermDocDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", value.Doc)
 	diags.Append(filterTermDocDiags...)

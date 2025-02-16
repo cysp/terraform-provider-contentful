@@ -4,7 +4,7 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -22,10 +22,10 @@ func NewGroupControlsValueKnown() GroupControlsValue {
 	}
 }
 
-func (model *GroupControlsValue) ToPutEditorInterfaceReqGroupControlsItem(_ context.Context, _ path.Path) (contentfulManagement.PutEditorInterfaceReqGroupControlsItem, diag.Diagnostics) {
+func (model *GroupControlsValue) ToPutEditorInterfaceReqGroupControlsItem(_ context.Context, _ path.Path) (cm.PutEditorInterfaceReqGroupControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := contentfulManagement.PutEditorInterfaceReqGroupControlsItem{
+	item := cm.PutEditorInterfaceReqGroupControlsItem{
 		GroupId:         model.GroupId.ValueString(),
 		WidgetNamespace: util.StringValueToOptString(model.WidgetNamespace),
 		WidgetId:        util.StringValueToOptString(model.WidgetId),
@@ -39,7 +39,7 @@ func (model *GroupControlsValue) ToPutEditorInterfaceReqGroupControlsItem(_ cont
 	return item, diags
 }
 
-func NewGroupControlsListValueFromResponse(ctx context.Context, path path.Path, groupControlsItems []contentfulManagement.EditorInterfaceGroupControlsItem) (types.List, diag.Diagnostics) {
+func NewGroupControlsListValueFromResponse(ctx context.Context, path path.Path, groupControlsItems []cm.EditorInterfaceGroupControlsItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(groupControlsItems))
@@ -59,7 +59,7 @@ func NewGroupControlsListValueFromResponse(ctx context.Context, path path.Path, 
 	return list, diags
 }
 
-func NewGroupControlsValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceGroupControlsItem) (GroupControlsValue, diag.Diagnostics) {
+func NewGroupControlsValueFromResponse(path path.Path, item cm.EditorInterfaceGroupControlsItem) (GroupControlsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := GroupControlsValue{

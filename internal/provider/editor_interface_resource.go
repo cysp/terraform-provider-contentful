@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -58,7 +58,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 	currentVersion := 1
 	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(data.ContentTypeId.ValueString())
 
-	params := contentfulManagement.PutEditorInterfaceParams{
+	params := cm.PutEditorInterfaceParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		EnvironmentID:      data.EnvironmentId.ValueString(),
 		ContentTypeID:      data.ContentTypeId.ValueString(),
@@ -82,7 +82,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.EditorInterface:
+	case *cm.EditorInterface:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
@@ -109,7 +109,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	params := contentfulManagement.GetEditorInterfaceParams{
+	params := cm.GetEditorInterfaceParams{
 		SpaceID:       data.SpaceId.ValueString(),
 		EnvironmentID: data.EnvironmentId.ValueString(),
 		ContentTypeID: data.ContentTypeId.ValueString(),
@@ -126,12 +126,12 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 	currentVersion := 0
 
 	switch response := response.(type) {
-	case *contentfulManagement.EditorInterface:
+	case *cm.EditorInterface:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
@@ -168,7 +168,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(data.ContentTypeId.ValueString())
 
-	params := contentfulManagement.PutEditorInterfaceParams{
+	params := cm.PutEditorInterfaceParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		EnvironmentID:      data.EnvironmentId.ValueString(),
 		ContentTypeID:      data.ContentTypeId.ValueString(),
@@ -192,7 +192,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.EditorInterface:
+	case *cm.EditorInterface:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 

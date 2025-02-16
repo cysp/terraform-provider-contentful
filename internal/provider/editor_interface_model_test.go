@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -17,31 +17,31 @@ func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
 
 	ctx := t.Context()
 
-	editorInterface := contentfulManagement.EditorInterface{
-		EditorLayout: contentfulManagement.NewOptNilEditorInterfaceEditorLayoutItemArray([]contentfulManagement.EditorInterfaceEditorLayoutItem{
+	editorInterface := cm.EditorInterface{
+		EditorLayout: cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{
 			{
 				GroupId: "group_id",
 				Name:    "name",
 				Items:   []jx.Raw{jx.Raw(`{"foo":"bar"}`)},
 			},
 		}),
-		Controls: contentfulManagement.NewOptNilEditorInterfaceControlsItemArray([]contentfulManagement.EditorInterfaceControlsItem{
+		Controls: cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{
 			{
 				FieldId:         "field_id",
-				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-				WidgetId:        contentfulManagement.NewOptString("widget_id"),
+				WidgetNamespace: cm.NewOptString("widget_namespace"),
+				WidgetId:        cm.NewOptString("widget_id"),
 				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
-		GroupControls: contentfulManagement.NewOptNilEditorInterfaceGroupControlsItemArray([]contentfulManagement.EditorInterfaceGroupControlsItem{
+		GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray([]cm.EditorInterfaceGroupControlsItem{
 			{
 				GroupId:         "group_id",
-				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-				WidgetId:        contentfulManagement.NewOptString("widget_id"),
+				WidgetNamespace: cm.NewOptString("widget_namespace"),
+				WidgetId:        cm.NewOptString("widget_id"),
 				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
-		Sidebar: contentfulManagement.NewOptNilEditorInterfaceSidebarItemArray([]contentfulManagement.EditorInterfaceSidebarItem{
+		Sidebar: cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
@@ -58,7 +58,7 @@ func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
 
 	assert.True(t, req.EditorLayout.Set)
 	assert.Len(t, req.EditorLayout.Value, 1)
-	assert.Equal(t, contentfulManagement.PutEditorInterfaceReqEditorLayoutItem{
+	assert.Equal(t, cm.PutEditorInterfaceReqEditorLayoutItem{
 		GroupId: "group_id",
 		Name:    "name",
 		Items:   []jx.Raw{jx.Raw(`{"foo":"bar"}`)},
@@ -66,25 +66,25 @@ func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
 
 	assert.True(t, req.Controls.Set)
 	assert.Len(t, req.Controls.Value, 1)
-	assert.Equal(t, contentfulManagement.PutEditorInterfaceReqControlsItem{
+	assert.Equal(t, cm.PutEditorInterfaceReqControlsItem{
 		FieldId:         "field_id",
-		WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-		WidgetId:        contentfulManagement.NewOptString("widget_id"),
+		WidgetNamespace: cm.NewOptString("widget_namespace"),
+		WidgetId:        cm.NewOptString("widget_id"),
 		Settings:        []byte(`{"foo":"bar"}`),
 	}, req.Controls.Value[0])
 
 	assert.True(t, req.GroupControls.Set)
 	assert.Len(t, req.GroupControls.Value, 1)
-	assert.Equal(t, contentfulManagement.PutEditorInterfaceReqGroupControlsItem{
+	assert.Equal(t, cm.PutEditorInterfaceReqGroupControlsItem{
 		GroupId:         "group_id",
-		WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-		WidgetId:        contentfulManagement.NewOptString("widget_id"),
+		WidgetNamespace: cm.NewOptString("widget_namespace"),
+		WidgetId:        cm.NewOptString("widget_id"),
 		Settings:        []byte(`{"foo":"bar"}`),
 	}, req.GroupControls.Value[0])
 
 	assert.True(t, req.Sidebar.Set)
 	assert.Len(t, req.Sidebar.Value, 1)
-	assert.Equal(t, contentfulManagement.PutEditorInterfaceReqSidebarItem{
+	assert.Equal(t, cm.PutEditorInterfaceReqSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
 		Settings:        []byte(`{"foo":"bar"}`),
@@ -132,16 +132,16 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 
 	assert.Empty(t, diags)
 
-	assert.EqualValues(t, contentfulManagement.PutEditorInterfaceReq{
-		Controls: contentfulManagement.NewOptNilPutEditorInterfaceReqControlsItemArray([]contentfulManagement.PutEditorInterfaceReqControlsItem{
+	assert.EqualValues(t, cm.PutEditorInterfaceReq{
+		Controls: cm.NewOptNilPutEditorInterfaceReqControlsItemArray([]cm.PutEditorInterfaceReqControlsItem{
 			{
 				FieldId:         "field_id",
-				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-				WidgetId:        contentfulManagement.NewOptString("widget_id"),
+				WidgetNamespace: cm.NewOptString("widget_namespace"),
+				WidgetId:        cm.NewOptString("widget_id"),
 				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
-		Sidebar: contentfulManagement.NewOptNilPutEditorInterfaceReqSidebarItemArray([]contentfulManagement.PutEditorInterfaceReqSidebarItem{
+		Sidebar: cm.NewOptNilPutEditorInterfaceReqSidebarItemArray([]cm.PutEditorInterfaceReqSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
@@ -216,27 +216,27 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 
 	req, diags := model.ToPutEditorInterfaceReq(ctx)
 
-	assert.EqualValues(t, contentfulManagement.PutEditorInterfaceReq{
-		Controls: contentfulManagement.NewOptNilPutEditorInterfaceReqControlsItemArray([]contentfulManagement.PutEditorInterfaceReqControlsItem{
+	assert.EqualValues(t, cm.PutEditorInterfaceReq{
+		Controls: cm.NewOptNilPutEditorInterfaceReqControlsItemArray([]cm.PutEditorInterfaceReqControlsItem{
 			{
 				FieldId:         "field_id",
-				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-				WidgetId:        contentfulManagement.NewOptString("widget_id"),
+				WidgetNamespace: cm.NewOptString("widget_namespace"),
+				WidgetId:        cm.NewOptString("widget_id"),
 			},
 			{
 				FieldId:         "field_id",
-				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-				WidgetId:        contentfulManagement.NewOptString("widget_id"),
+				WidgetNamespace: cm.NewOptString("widget_namespace"),
+				WidgetId:        cm.NewOptString("widget_id"),
 				Settings:        []byte("invalid json"),
 			},
 			{
 				FieldId:         "field_id",
-				WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-				WidgetId:        contentfulManagement.NewOptString("widget_id"),
+				WidgetNamespace: cm.NewOptString("widget_namespace"),
+				WidgetId:        cm.NewOptString("widget_id"),
 				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
-		Sidebar: contentfulManagement.NewOptNilPutEditorInterfaceReqSidebarItemArray([]contentfulManagement.PutEditorInterfaceReqSidebarItem{
+		Sidebar: cm.NewOptNilPutEditorInterfaceReqSidebarItemArray([]cm.PutEditorInterfaceReqSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
@@ -261,11 +261,11 @@ func TestReadFromResponse(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		editorInterface contentfulManagement.EditorInterface
+		editorInterface cm.EditorInterface
 		expectedModel   provider.EditorInterfaceModel
 	}{
 		"null": {
-			editorInterface: contentfulManagement.EditorInterface{},
+			editorInterface: cm.EditorInterface{},
 			expectedModel: provider.EditorInterfaceModel{
 				EditorLayout:  types.ListNull(provider.EditorLayoutValue{}.Type(t.Context())),
 				Controls:      types.ListNull(provider.ControlsValue{}.Type(t.Context())),
@@ -274,11 +274,11 @@ func TestReadFromResponse(t *testing.T) {
 			},
 		},
 		"empty": {
-			editorInterface: contentfulManagement.EditorInterface{
-				EditorLayout:  contentfulManagement.NewOptNilEditorInterfaceEditorLayoutItemArray([]contentfulManagement.EditorInterfaceEditorLayoutItem{}),
-				Controls:      contentfulManagement.NewOptNilEditorInterfaceControlsItemArray([]contentfulManagement.EditorInterfaceControlsItem{}),
-				GroupControls: contentfulManagement.NewOptNilEditorInterfaceGroupControlsItemArray([]contentfulManagement.EditorInterfaceGroupControlsItem{}),
-				Sidebar:       contentfulManagement.NewOptNilEditorInterfaceSidebarItemArray([]contentfulManagement.EditorInterfaceSidebarItem{}),
+			editorInterface: cm.EditorInterface{
+				EditorLayout:  cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{}),
+				Controls:      cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{}),
+				GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray([]cm.EditorInterfaceGroupControlsItem{}),
+				Sidebar:       cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{}),
 			},
 			expectedModel: provider.EditorInterfaceModel{
 				EditorLayout:  provider.NewEmptyListMust(provider.EditorLayoutValue{}.Type(t.Context())),

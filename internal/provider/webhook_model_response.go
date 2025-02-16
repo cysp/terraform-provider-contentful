@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *WebhookModel) ReadFromResponse(ctx context.Context, webhookDefinition *contentfulManagement.WebhookDefinition) diag.Diagnostics {
+func (model *WebhookModel) ReadFromResponse(ctx context.Context, webhookDefinition *cm.WebhookDefinition) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	model.WebhookId = types.StringValue(webhookDefinition.Sys.ID)
@@ -48,7 +48,7 @@ func (model *WebhookModel) ReadFromResponse(ctx context.Context, webhookDefiniti
 	return diags
 }
 
-func ReadWebhookTransformationValueFromResponse(ctx context.Context, _ path.Path, optNilTransformation contentfulManagement.OptNilWebhookDefinitionTransformation) (TransformationValue, diag.Diagnostics) {
+func ReadWebhookTransformationValueFromResponse(ctx context.Context, _ path.Path, optNilTransformation cm.OptNilWebhookDefinitionTransformation) (TransformationValue, diag.Diagnostics) {
 	transformation, transformationOk := optNilTransformation.Get()
 	if !transformationOk {
 		return NewTransformationValueNull(), nil

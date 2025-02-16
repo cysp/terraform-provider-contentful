@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -25,8 +25,8 @@ func TestControlsValueToPutEditorInterfaceReqControlsItem(t *testing.T) {
 	item, diags := model.ToPutEditorInterfaceReqControlsItem(ctx, path)
 
 	assert.EqualValues(t, "field_id", item.FieldId)
-	assert.EqualValues(t, contentfulManagement.NewOptString("widget_namespace"), item.WidgetNamespace)
-	assert.EqualValues(t, contentfulManagement.NewOptString("widget_id"), item.WidgetId)
+	assert.EqualValues(t, cm.NewOptString("widget_namespace"), item.WidgetNamespace)
+	assert.EqualValues(t, cm.NewOptString("widget_id"), item.WidgetId)
 	assert.NotEmpty(t, item.Settings)
 
 	assert.Empty(t, diags)
@@ -55,10 +55,10 @@ func TestNewControlsValueFromResponse(t *testing.T) {
 
 	path := path.Root("controls").AtListIndex(0)
 
-	item := contentfulManagement.EditorInterfaceControlsItem{
+	item := cm.EditorInterfaceControlsItem{
 		FieldId:         "field_id",
-		WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-		WidgetId:        contentfulManagement.NewOptString("widget_id"),
+		WidgetNamespace: cm.NewOptString("widget_namespace"),
+		WidgetId:        cm.NewOptString("widget_id"),
 		Settings:        []byte(`{"foo":"bar"}`),
 	}
 
@@ -77,10 +77,10 @@ func TestNewControlsValueFromResponseSettingsNull(t *testing.T) {
 
 	path := path.Root("controls").AtListIndex(0)
 
-	item := contentfulManagement.EditorInterfaceControlsItem{
+	item := cm.EditorInterfaceControlsItem{
 		FieldId:         "field_id",
-		WidgetNamespace: contentfulManagement.NewOptString("widget_namespace"),
-		WidgetId:        contentfulManagement.NewOptString("widget_id"),
+		WidgetNamespace: cm.NewOptString("widget_namespace"),
+		WidgetId:        cm.NewOptString("widget_id"),
 	}
 
 	value, diags := provider.NewControlsValueFromResponse(path, item)

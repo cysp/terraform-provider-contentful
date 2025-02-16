@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -67,7 +67,7 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.PersonalAccessToken:
+	case *cm.PersonalAccessToken:
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
@@ -90,7 +90,7 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	params := contentfulManagement.GetPersonalAccessTokenParams{
+	params := cm.GetPersonalAccessTokenParams{
 		AccessTokenID: data.Id.ValueString(),
 	}
 
@@ -103,11 +103,11 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.PersonalAccessToken:
+	case *cm.PersonalAccessToken:
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
@@ -139,7 +139,7 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 		return
 	}
 
-	params := contentfulManagement.RevokePersonalAccessTokenParams{
+	params := cm.RevokePersonalAccessTokenParams{
 		AccessTokenID: data.Id.ValueString(),
 	}
 
@@ -152,7 +152,7 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.PersonalAccessToken:
+	case *cm.PersonalAccessToken:
 		if !response.RevokedAt.IsSet() || response.RevokedAt.IsNull() {
 			resp.Diagnostics.AddError("Failed to revoke personal access token", "Personal access token was not revoked")
 		}
@@ -160,7 +160,7 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 	default:
 		handled := false
 
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			switch response.StatusCode {
 			case http.StatusNotFound:
 				resp.Diagnostics.AddWarning("personal access token not found", util.ErrorDetailFromContentfulManagementResponse(response, err))

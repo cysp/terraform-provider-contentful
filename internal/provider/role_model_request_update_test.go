@@ -4,7 +4,7 @@ package provider_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,30 +15,30 @@ func TestRoleModelRoundTripToUpdateRoleReq(t *testing.T) {
 	ctx := t.Context()
 
 	model := provider.RoleModel{}
-	model.ReadFromResponse(ctx, &contentfulManagement.Role{
-		Sys: contentfulManagement.RoleSys{
+	model.ReadFromResponse(ctx, &cm.Role{
+		Sys: cm.RoleSys{
 			ID: "abcdef",
 		},
 		Name:        "Reader",
-		Description: contentfulManagement.NewOptNilString("Read access to content"),
-		Permissions: map[string]contentfulManagement.RolePermissionsItem{
-			"ContentDelivery":   contentfulManagement.NewStringRolePermissionsItem("all"),
-			"ContentManagement": contentfulManagement.NewStringArrayRolePermissionsItem([]string{"read"}),
+		Description: cm.NewOptNilString("Read access to content"),
+		Permissions: map[string]cm.RolePermissionsItem{
+			"ContentDelivery":   cm.NewStringRolePermissionsItem("all"),
+			"ContentManagement": cm.NewStringArrayRolePermissionsItem([]string{"read"}),
 		},
-		Policies: []contentfulManagement.RolePoliciesItem{
+		Policies: []cm.RolePoliciesItem{
 			{
 				Effect:     "allow",
-				Actions:    contentfulManagement.NewStringRolePoliciesItemActions("all"),
+				Actions:    cm.NewStringRolePoliciesItemActions("all"),
 				Constraint: []byte("{\"sys.type\":\"Entry\"}"),
 			},
 			{
 				Effect:     "deny",
-				Actions:    contentfulManagement.NewStringArrayRolePoliciesItemActions([]string{"delete"}),
+				Actions:    cm.NewStringArrayRolePoliciesItemActions([]string{"delete"}),
 				Constraint: []byte("{\"sys.type\":\"Entry\"}"),
 			},
 			{
 				Effect:  "allow",
-				Actions: contentfulManagement.NewStringArrayRolePoliciesItemActions([]string{"all"}),
+				Actions: cm.NewStringArrayRolePoliciesItemActions([]string{"all"}),
 			},
 		},
 	})
@@ -54,23 +54,23 @@ func TestRoleModelRoundTripToUpdateRoleReq(t *testing.T) {
 	assert.Equal(t, "Read access to content", req.Description.Value)
 
 	assert.Len(t, req.Permissions, 2)
-	assert.Equal(t, contentfulManagement.NewStringUpdateRoleReqPermissionsItem("all"), req.Permissions["ContentDelivery"])
-	assert.Equal(t, contentfulManagement.NewStringArrayUpdateRoleReqPermissionsItem([]string{"read"}), req.Permissions["ContentManagement"])
+	assert.Equal(t, cm.NewStringUpdateRoleReqPermissionsItem("all"), req.Permissions["ContentDelivery"])
+	assert.Equal(t, cm.NewStringArrayUpdateRoleReqPermissionsItem([]string{"read"}), req.Permissions["ContentManagement"])
 
 	assert.Len(t, req.Policies, 3)
-	assert.Equal(t, contentfulManagement.UpdateRoleReqPoliciesItem{
+	assert.Equal(t, cm.UpdateRoleReqPoliciesItem{
 		Effect:     "allow",
-		Actions:    contentfulManagement.NewStringUpdateRoleReqPoliciesItemActions("all"),
+		Actions:    cm.NewStringUpdateRoleReqPoliciesItemActions("all"),
 		Constraint: []byte("{\"sys.type\":\"Entry\"}"),
 	}, req.Policies[0])
-	assert.Equal(t, contentfulManagement.UpdateRoleReqPoliciesItem{
+	assert.Equal(t, cm.UpdateRoleReqPoliciesItem{
 		Effect:     "deny",
-		Actions:    contentfulManagement.NewStringArrayUpdateRoleReqPoliciesItemActions([]string{"delete"}),
+		Actions:    cm.NewStringArrayUpdateRoleReqPoliciesItemActions([]string{"delete"}),
 		Constraint: []byte("{\"sys.type\":\"Entry\"}"),
 	}, req.Policies[1])
-	assert.Equal(t, contentfulManagement.UpdateRoleReqPoliciesItem{
+	assert.Equal(t, cm.UpdateRoleReqPoliciesItem{
 		Effect:  "allow",
-		Actions: contentfulManagement.NewStringUpdateRoleReqPoliciesItemActions("all"),
+		Actions: cm.NewStringUpdateRoleReqPoliciesItemActions("all"),
 	}, req.Policies[2])
 
 	assert.Empty(t, diags)

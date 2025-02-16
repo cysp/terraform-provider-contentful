@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -57,7 +57,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 
 	currentVersion := 1
 
-	params := contentfulManagement.PutContentTypeParams{
+	params := cm.PutContentTypeParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		EnvironmentID:      data.EnvironmentId.ValueString(),
 		ContentTypeID:      data.ContentTypeId.ValueString(),
@@ -81,9 +81,9 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.PutContentTypeCreated:
+	case *cm.PutContentTypeCreated:
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, (*contentfulManagement.ContentType)(response))...)
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, (*cm.ContentType)(response))...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -93,7 +93,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	activateContentTypeParams := contentfulManagement.ActivateContentTypeParams{
+	activateContentTypeParams := cm.ActivateContentTypeParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		EnvironmentID:      data.EnvironmentId.ValueString(),
 		ContentTypeID:      data.ContentTypeId.ValueString(),
@@ -109,7 +109,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	})
 
 	switch response := activateContentTypeResponse.(type) {
-	case *contentfulManagement.ContentType:
+	case *cm.ContentType:
 		currentVersion = response.Sys.Version
 
 	default:
@@ -133,7 +133,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	params := contentfulManagement.GetContentTypeParams{
+	params := cm.GetContentTypeParams{
 		SpaceID:       data.SpaceId.ValueString(),
 		EnvironmentID: data.EnvironmentId.ValueString(),
 		ContentTypeID: data.ContentTypeId.ValueString(),
@@ -150,12 +150,12 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 	currentVersion := 0
 
 	switch response := response.(type) {
-	case *contentfulManagement.ContentType:
+	case *cm.ContentType:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
@@ -188,7 +188,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
-	putContentTypeParams := contentfulManagement.PutContentTypeParams{
+	putContentTypeParams := cm.PutContentTypeParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		EnvironmentID:      data.EnvironmentId.ValueString(),
 		ContentTypeID:      data.ContentTypeId.ValueString(),
@@ -212,9 +212,9 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	})
 
 	switch response := putContentTypeResponse.(type) {
-	case *contentfulManagement.PutContentTypeOK:
+	case *cm.PutContentTypeOK:
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, (*contentfulManagement.ContentType)(response))...)
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, (*cm.ContentType)(response))...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -224,7 +224,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	activateContentTypeParams := contentfulManagement.ActivateContentTypeParams{
+	activateContentTypeParams := cm.ActivateContentTypeParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		EnvironmentID:      data.EnvironmentId.ValueString(),
 		ContentTypeID:      data.ContentTypeId.ValueString(),
@@ -240,7 +240,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	})
 
 	switch response := activateContentTypeResponse.(type) {
-	case *contentfulManagement.ContentType:
+	case *cm.ContentType:
 		currentVersion = response.Sys.Version
 
 	default:
@@ -266,7 +266,7 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	deactivateContentTypeParams := contentfulManagement.DeactivateContentTypeParams{
+	deactivateContentTypeParams := cm.DeactivateContentTypeParams{
 		SpaceID:       data.SpaceId.ValueString(),
 		EnvironmentID: data.EnvironmentId.ValueString(),
 		ContentTypeID: data.ContentTypeId.ValueString(),
@@ -281,13 +281,13 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	})
 
 	switch response := deactivateContentTypeResponse.(type) {
-	case *contentfulManagement.NoContent:
-	case *contentfulManagement.ContentType:
+	case *cm.NoContent:
+	case *cm.ContentType:
 
 	default:
 		handled := false
 
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound || (response.Response.Sys.ID == "BadRequest" && response.Response.Message.Value == "Not published") {
 				resp.Diagnostics.AddWarning("Content type already deactivated", "")
 
@@ -304,7 +304,7 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	deleteContentTypeParams := contentfulManagement.DeleteContentTypeParams{
+	deleteContentTypeParams := cm.DeleteContentTypeParams{
 		SpaceID:       data.SpaceId.ValueString(),
 		EnvironmentID: data.EnvironmentId.ValueString(),
 		ContentTypeID: data.ContentTypeId.ValueString(),
@@ -318,12 +318,12 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	})
 
 	switch response := deleteContentTypeResponse.(type) {
-	case *contentfulManagement.NoContent:
+	case *cm.NoContent:
 
 	default:
 		handled := false
 
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Content type already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 

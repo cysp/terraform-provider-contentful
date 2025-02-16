@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx context.Context) (contentfulManagement.OptString, diag.Diagnostics) {
+func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx context.Context) (cm.OptString, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := contentfulManagement.OptString{}
+	value := cm.OptString{}
 
 	marketplaceStrings, marketplaceStringDiags := model.ToXContentfulMarketplaceHeaderValueElements(ctx)
 	diags.Append(marketplaceStringDiags...)
@@ -51,10 +51,10 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(c
 	return marketplaceStrings, diags
 }
 
-func (model *AppInstallationModel) ToPutAppInstallationReq() (contentfulManagement.PutAppInstallationReq, diag.Diagnostics) {
+func (model *AppInstallationModel) ToPutAppInstallationReq() (cm.PutAppInstallationReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := contentfulManagement.PutAppInstallationReq{}
+	req := cm.PutAppInstallationReq{}
 
 	switch {
 	case model.Parameters.IsUnknown():
@@ -67,7 +67,7 @@ func (model *AppInstallationModel) ToPutAppInstallationReq() (contentfulManageme
 	return req, diags
 }
 
-func (model *AppInstallationModel) ReadFromResponse(appInstallation *contentfulManagement.AppInstallation) diag.Diagnostics {
+func (model *AppInstallationModel) ReadFromResponse(appInstallation *cm.AppInstallation) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	// SpaceId, EnvironmentId and AppDefinitionId are all already known

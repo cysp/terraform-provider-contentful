@@ -3,7 +3,7 @@ package client_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,19 +12,19 @@ func TestNewOptPointerString(t *testing.T) {
 
 	tests := map[string]struct {
 		input    *string
-		expected contentfulManagement.OptString
+		expected cm.OptString
 	}{
 		"test": {
 			input:    addressOf("test"),
-			expected: contentfulManagement.NewOptString("test"),
+			expected: cm.NewOptString("test"),
 		},
 		"empty": {
 			input:    addressOf(""),
-			expected: contentfulManagement.NewOptString(""),
+			expected: cm.NewOptString(""),
 		},
 		"nil": {
 			input:    nil,
-			expected: contentfulManagement.OptString{},
+			expected: cm.OptString{},
 		},
 	}
 
@@ -32,7 +32,7 @@ func TestNewOptPointerString(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := contentfulManagement.NewOptPointerString(test.input)
+			actual := cm.NewOptPointerString(test.input)
 
 			assert.EqualValues(t, test.expected, actual)
 		})
@@ -43,19 +43,19 @@ func TestOptStringValueStringPointer(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		input    contentfulManagement.OptString
+		input    cm.OptString
 		expected *string
 	}{
 		"test": {
-			input:    contentfulManagement.NewOptString("test"),
+			input:    cm.NewOptString("test"),
 			expected: addressOf("test"),
 		},
 		"empty": {
-			input:    contentfulManagement.NewOptString(""),
+			input:    cm.NewOptString(""),
 			expected: addressOf(""),
 		},
 		"nil": {
-			input:    contentfulManagement.OptString{},
+			input:    cm.OptString{},
 			expected: nil,
 		},
 	}

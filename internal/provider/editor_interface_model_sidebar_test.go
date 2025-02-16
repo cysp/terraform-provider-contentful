@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -55,7 +55,7 @@ func TestNewSidebarValueFromResponse(t *testing.T) {
 
 	path := path.Root("sidebar").AtListIndex(0)
 
-	item := contentfulManagement.EditorInterfaceSidebarItem{
+	item := cm.EditorInterfaceSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
 		Settings:        []byte(`{"foo":"bar"}`),
@@ -75,7 +75,7 @@ func TestNewSidebarValueFromResponseSettingsNull(t *testing.T) {
 
 	path := path.Root("sidebar").AtListIndex(0)
 
-	item := contentfulManagement.EditorInterfaceSidebarItem{
+	item := cm.EditorInterfaceSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
 	}

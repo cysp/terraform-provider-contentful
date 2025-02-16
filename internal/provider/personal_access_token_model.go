@@ -3,17 +3,17 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *PersonalAccessTokenModel) ToCreatePersonalAccessTokenReq(ctx context.Context) (contentfulManagement.CreatePersonalAccessTokenReq, diag.Diagnostics) {
+func (model *PersonalAccessTokenModel) ToCreatePersonalAccessTokenReq(ctx context.Context) (cm.CreatePersonalAccessTokenReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := contentfulManagement.CreatePersonalAccessTokenReq{
+	req := cm.CreatePersonalAccessTokenReq{
 		Name: model.Name.ValueString(),
 	}
 
@@ -23,13 +23,13 @@ func (model *PersonalAccessTokenModel) ToCreatePersonalAccessTokenReq(ctx contex
 	req.Scopes = scopes
 
 	if !model.ExpiresIn.IsNull() && !model.ExpiresIn.IsUnknown() {
-		req.ExpiresIn = contentfulManagement.NewOptNilPointerInt64(model.ExpiresIn.ValueInt64Pointer())
+		req.ExpiresIn = cm.NewOptNilPointerInt64(model.ExpiresIn.ValueInt64Pointer())
 	}
 
 	return req, diags
 }
 
-func (model *PersonalAccessTokenModel) ReadFromResponse(ctx context.Context, personalAccessToken *contentfulManagement.PersonalAccessToken) diag.Diagnostics {
+func (model *PersonalAccessTokenModel) ReadFromResponse(ctx context.Context, personalAccessToken *cm.PersonalAccessToken) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	model.Id = types.StringValue(personalAccessToken.Sys.ID)

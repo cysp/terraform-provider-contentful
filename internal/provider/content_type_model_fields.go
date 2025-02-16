@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []contentfulManagement.ContentTypeFieldsItem) (types.List, diag.Diagnostics) {
+func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.ContentTypeFieldsItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(items))
@@ -32,7 +32,7 @@ func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cont
 	return listValue, diags
 }
 
-func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item contentfulManagement.ContentTypeFieldsItem) (FieldsValue, diag.Diagnostics) {
+func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.ContentTypeFieldsItem) (FieldsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := FieldsValue{
@@ -65,7 +65,7 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item conten
 	return value, diags
 }
 
-func NewItemsValueFromResponse(ctx context.Context, path path.Path, item contentfulManagement.OptContentTypeFieldsItemItems) (ItemsValue, diag.Diagnostics) {
+func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptContentTypeFieldsItemItems) (ItemsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := ItemsValue{

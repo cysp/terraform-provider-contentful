@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"slices"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -48,7 +48,7 @@ func NewHeadersValueKnownFromAttributesMust(ctx context.Context, attributes map[
 	return value
 }
 
-func ReadHeadersListValueFromResponse(ctx context.Context, path path.Path, model types.Map, headers []contentfulManagement.WebhookDefinitionHeader) (types.Map, diag.Diagnostics) {
+func ReadHeadersListValueFromResponse(ctx context.Context, path path.Path, model types.Map, headers []cm.WebhookDefinitionHeader) (types.Map, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	existingHeaderValues := make(map[string]HeadersValue, len(model.Elements()))
@@ -76,7 +76,7 @@ func ReadHeadersListValueFromResponse(ctx context.Context, path path.Path, model
 	return headersList, diags
 }
 
-func (model *HeadersValue) ReadFromResponse(_ context.Context, _ path.Path, header contentfulManagement.WebhookDefinitionHeader) diag.Diagnostics {
+func (model *HeadersValue) ReadFromResponse(_ context.Context, _ path.Path, header cm.WebhookDefinitionHeader) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	headerIsSecret := header.Secret.Or(false)
@@ -92,14 +92,14 @@ func (model *HeadersValue) ReadFromResponse(_ context.Context, _ path.Path, head
 	return diags
 }
 
-func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model types.Map) (contentfulManagement.WebhookDefinitionHeaders, diag.Diagnostics) {
+func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model types.Map) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
 	if model.IsNull() || model.IsUnknown() {
 		return nil, nil
 	}
 
 	diags := diag.Diagnostics{}
 
-	headers := make(contentfulManagement.WebhookDefinitionHeaders, len(model.Elements()))
+	headers := make(cm.WebhookDefinitionHeaders, len(model.Elements()))
 
 	headersValues := make(map[string]HeadersValue, len(model.Elements()))
 	diags.Append(model.ElementsAs(ctx, &headersValues, false)...)
@@ -127,10 +127,10 @@ func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model types
 	return headers, diags
 }
 
-func (model *HeadersValue) ToWebhookDefinitionHeader(_ context.Context, path path.Path, key string) (contentfulManagement.WebhookDefinitionHeader, diag.Diagnostics) {
+func (model *HeadersValue) ToWebhookDefinitionHeader(_ context.Context, path path.Path, key string) (cm.WebhookDefinitionHeader, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	header := contentfulManagement.WebhookDefinitionHeader{
+	header := cm.WebhookDefinitionHeader{
 		Key: key,
 	}
 
@@ -138,9 +138,9 @@ func (model *HeadersValue) ToWebhookDefinitionHeader(_ context.Context, path pat
 		diags.AddAttributeError(path.AtName("value"), "Value is required", "")
 	}
 
-	header.Value = contentfulManagement.NewOptPointerString(model.Value.ValueStringPointer())
+	header.Value = cm.NewOptPointerString(model.Value.ValueStringPointer())
 
-	header.Secret = contentfulManagement.NewOptBool(model.Secret.ValueBool())
+	header.Secret = cm.NewOptBool(model.Secret.ValueBool())
 
 	return header, diags
 }

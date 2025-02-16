@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -57,7 +57,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	currentVersion := 1
 
-	params := contentfulManagement.CreateRoleParams{
+	params := cm.CreateRoleParams{
 		SpaceID: data.SpaceId.ValueString(),
 	}
 
@@ -78,7 +78,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.Role:
+	case *cm.Role:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
@@ -104,7 +104,7 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	params := contentfulManagement.GetRoleParams{
+	params := cm.GetRoleParams{
 		SpaceID: data.SpaceId.ValueString(),
 		RoleID:  data.RoleId.ValueString(),
 	}
@@ -120,12 +120,12 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	currentVersion := 0
 
 	switch response := response.(type) {
-	case *contentfulManagement.Role:
+	case *cm.Role:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read role", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
@@ -158,7 +158,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
-	params := contentfulManagement.UpdateRoleParams{
+	params := cm.UpdateRoleParams{
 		SpaceID:            data.SpaceId.ValueString(),
 		RoleID:             data.RoleId.ValueString(),
 		XContentfulVersion: currentVersion,
@@ -181,7 +181,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.Role:
+	case *cm.Role:
 		currentVersion = response.Sys.Version
 		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
@@ -206,7 +206,7 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	params := contentfulManagement.DeleteRoleParams{
+	params := cm.DeleteRoleParams{
 		SpaceID: data.SpaceId.ValueString(),
 		RoleID:  data.RoleId.ValueString(),
 	}
@@ -224,12 +224,12 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	})
 
 	switch response := response.(type) {
-	case *contentfulManagement.NoContent:
+	case *cm.NoContent:
 
 	default:
 		handled := false
 
-		if response, ok := response.(*contentfulManagement.ErrorStatusCode); ok {
+		if response, ok := response.(*cm.ErrorStatusCode); ok {
 			if response.StatusCode == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Role already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 

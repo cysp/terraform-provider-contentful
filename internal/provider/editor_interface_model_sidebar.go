@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -17,10 +17,10 @@ func NewSidebarValueKnown() SidebarValue {
 	}
 }
 
-func (model *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context, _ path.Path) (contentfulManagement.PutEditorInterfaceReqSidebarItem, diag.Diagnostics) {
+func (model *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context, _ path.Path) (cm.PutEditorInterfaceReqSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := contentfulManagement.PutEditorInterfaceReqSidebarItem{
+	item := cm.PutEditorInterfaceReqSidebarItem{
 		WidgetNamespace: model.WidgetNamespace.ValueString(),
 		WidgetId:        model.WidgetId.ValueString(),
 	}
@@ -38,7 +38,7 @@ func (model *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context,
 	return item, diags
 }
 
-func NewSidebarValueFromResponse(path path.Path, item contentfulManagement.EditorInterfaceSidebarItem) (SidebarValue, diag.Diagnostics) {
+func NewSidebarValueFromResponse(path path.Path, item cm.EditorInterfaceSidebarItem) (SidebarValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := SidebarValue{
@@ -69,7 +69,7 @@ func NewSidebarListValueNull(ctx context.Context) types.List {
 	return types.ListNull(SidebarValue{}.Type(ctx))
 }
 
-func NewSidebarListValueFromResponse(ctx context.Context, path path.Path, sidebarItems []contentfulManagement.EditorInterfaceSidebarItem) (types.List, diag.Diagnostics) {
+func NewSidebarListValueFromResponse(ctx context.Context, path path.Path, sidebarItems []cm.EditorInterfaceSidebarItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(sidebarItems))

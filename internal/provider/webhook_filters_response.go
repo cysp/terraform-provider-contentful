@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path, optNilFilters contentfulManagement.OptNilWebhookDefinitionFilterArray) (types.List, diag.Diagnostics) {
+func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path, optNilFilters cm.OptNilWebhookDefinitionFilterArray) (types.List, diag.Diagnostics) {
 	filters, filtersOk := optNilFilters.Get()
 	if !filtersOk {
 		return basetypes.NewListNull(WebhookFilterValue{}.CustomType(ctx)), nil
@@ -36,7 +36,7 @@ func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path
 	return filtersList, diags
 }
 
-func ReadWebhookFilterValueFromResponse(ctx context.Context, path path.Path, input contentfulManagement.WebhookDefinitionFilter) (WebhookFilterValue, diag.Diagnostics) {
+func ReadWebhookFilterValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilter) (WebhookFilterValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := NewWebhookFilterValueKnown()
@@ -72,7 +72,7 @@ func ReadWebhookFilterValueFromResponse(ctx context.Context, path path.Path, inp
 	return value, diags
 }
 
-func ReadWebhookFilterNotValueFromResponse(ctx context.Context, path path.Path, input contentfulManagement.WebhookDefinitionFilterNot) (WebhookFilterNotValue, diag.Diagnostics) {
+func ReadWebhookFilterNotValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilterNot) (WebhookFilterNotValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := NewWebhookFilterNotValueKnown()
@@ -101,7 +101,7 @@ func ReadWebhookFilterNotValueFromResponse(ctx context.Context, path path.Path, 
 	return value, diags
 }
 
-func ReadWebhookFilterEqualsValueFromResponse(ctx context.Context, path path.Path, input contentfulManagement.WebhookDefinitionFilterEquals) (WebhookFilterEqualsValue, diag.Diagnostics) {
+func ReadWebhookFilterEqualsValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilterEquals) (WebhookFilterEqualsValue, diag.Diagnostics) {
 	if input == nil {
 		return NewWebhookFilterEqualsValueNull(), nil
 	}
@@ -130,7 +130,7 @@ func ReadWebhookFilterEqualsValueFromResponse(ctx context.Context, path path.Pat
 	return value, diags
 }
 
-func ReadWebhookFilterInValueFromResponse(ctx context.Context, path path.Path, input contentfulManagement.WebhookDefinitionFilterIn) (WebhookFilterInValue, diag.Diagnostics) {
+func ReadWebhookFilterInValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilterIn) (WebhookFilterInValue, diag.Diagnostics) {
 	if input == nil {
 		return NewWebhookFilterInValueNull(), nil
 	}
@@ -159,7 +159,7 @@ func ReadWebhookFilterInValueFromResponse(ctx context.Context, path path.Path, i
 	return value, diags
 }
 
-func ReadWebhookFilterRegexpValueFromResponse(ctx context.Context, path path.Path, input contentfulManagement.WebhookDefinitionFilterRegexp) (WebhookFilterRegexpValue, diag.Diagnostics) {
+func ReadWebhookFilterRegexpValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilterRegexp) (WebhookFilterRegexpValue, diag.Diagnostics) {
 	if input == nil {
 		return NewWebhookFilterRegexpValueNull(), nil
 	}

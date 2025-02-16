@@ -4,21 +4,21 @@ package provider
 import (
 	"context"
 
-	contentfulManagement "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context, path path.Path) (contentfulManagement.CreateWebhookDefinitionReq, diag.Diagnostics) {
+func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context, path path.Path) (cm.CreateWebhookDefinitionReq, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := contentfulManagement.CreateWebhookDefinitionReq{
+	req := cm.CreateWebhookDefinitionReq{
 		Name:              model.Name.ValueString(),
 		URL:               model.Url.ValueString(),
 		Active:            util.BoolValueToOptBool(model.Active),
-		HttpBasicUsername: contentfulManagement.NewOptNilPointerString(model.HttpBasicUsername.ValueStringPointer()),
-		HttpBasicPassword: contentfulManagement.NewOptNilPointerString(model.HttpBasicPassword.ValueStringPointer()),
+		HttpBasicUsername: cm.NewOptNilPointerString(model.HttpBasicUsername.ValueStringPointer()),
+		HttpBasicPassword: cm.NewOptNilPointerString(model.HttpBasicPassword.ValueStringPointer()),
 	}
 
 	if model.Topics.IsNull() || model.Topics.IsUnknown() {
@@ -31,14 +31,14 @@ func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context, pat
 	}
 
 	if model.Filters.IsNull() || model.Filters.IsUnknown() {
-		req.Filters = contentfulManagement.NewOptNilWebhookDefinitionFilterArrayNull()
+		req.Filters = cm.NewOptNilWebhookDefinitionFilterArrayNull()
 	} else {
 		path := path.AtName("filters")
 
 		modelFilters := make([]WebhookFilterValue, len(model.Filters.Elements()))
 		diags.Append(model.Filters.ElementsAs(ctx, &modelFilters, false)...)
 
-		filters := make([]contentfulManagement.WebhookDefinitionFilter, len(modelFilters))
+		filters := make([]cm.WebhookDefinitionFilter, len(modelFilters))
 
 		for index, modelFilter := range modelFilters {
 			path := path.AtListIndex(index)
@@ -49,7 +49,7 @@ func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context, pat
 			filters[index] = filter
 		}
 
-		req.Filters = contentfulManagement.NewOptNilWebhookDefinitionFilterArray(filters)
+		req.Filters = cm.NewOptNilWebhookDefinitionFilterArray(filters)
 	}
 
 	headersList, headersListDiags := ToWebhookDefinitionHeaders(ctx, path.AtName("headers"), model.Headers)
@@ -65,10 +65,10 @@ func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context, pat
 	return req, diags
 }
 
-func ToOptNilCreateWebhookDefinitionReqTransformation(_ context.Context, _ path.Path, value TransformationValue) (contentfulManagement.OptNilCreateWebhookDefinitionReqTransformation, diag.Diagnostics) {
+func ToOptNilCreateWebhookDefinitionReqTransformation(_ context.Context, _ path.Path, value TransformationValue) (cm.OptNilCreateWebhookDefinitionReqTransformation, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	optNilTransformation := contentfulManagement.OptNilCreateWebhookDefinitionReqTransformation{}
+	optNilTransformation := cm.OptNilCreateWebhookDefinitionReqTransformation{}
 
 	switch {
 	case value.IsUnknown():
@@ -76,11 +76,11 @@ func ToOptNilCreateWebhookDefinitionReqTransformation(_ context.Context, _ path.
 	case value.IsNull():
 		optNilTransformation.SetToNull()
 	default:
-		transformation := contentfulManagement.CreateWebhookDefinitionReqTransformation{}
+		transformation := cm.CreateWebhookDefinitionReqTransformation{}
 
-		transformation.Method = contentfulManagement.NewOptPointerString(value.Method.ValueStringPointer())
-		transformation.ContentType = contentfulManagement.NewOptPointerString(value.ContentType.ValueStringPointer())
-		transformation.IncludeContentLength = contentfulManagement.NewOptPointerBool(value.IncludeContentLength.ValueBoolPointer())
+		transformation.Method = cm.NewOptPointerString(value.Method.ValueStringPointer())
+		transformation.ContentType = cm.NewOptPointerString(value.ContentType.ValueStringPointer())
+		transformation.IncludeContentLength = cm.NewOptPointerBool(value.IncludeContentLength.ValueBoolPointer())
 
 		//nolint:revive
 		if value.Body.IsUnknown() {
