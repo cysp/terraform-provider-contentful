@@ -14,8 +14,7 @@ func TestAccRoleResourceImport(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -42,8 +41,7 @@ func TestAccRoleResourceImportNotFound(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
