@@ -18,8 +18,7 @@ func TestAccPersonalAccessTokenResource(t *testing.T) {
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -46,8 +45,7 @@ func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -67,8 +65,7 @@ func TestAccPersonalAccessTokenResourceImportNotFound(t *testing.T) {
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
