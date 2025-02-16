@@ -39,16 +39,30 @@ type ContentfulProvider struct {
 	// testing.
 	version string
 
-	httpClient *http.Client
+	contentfulURL string
+	httpClient    *http.Client
+	accessToken   string
 }
 
 var _ provider.Provider = (*ContentfulProvider)(nil)
 
 type Option func(*ContentfulProvider)
 
+func WithContentfulURL(url string) Option {
+	return func(p *ContentfulProvider) {
+		p.contentfulURL = url
+	}
+}
+
 func WithHTTPClient(httpClient *http.Client) Option {
 	return func(p *ContentfulProvider) {
 		p.httpClient = httpClient
+	}
+}
+
+func WithAccessToken(accessToken string) Option {
+	return func(p *ContentfulProvider) {
+		p.accessToken = accessToken
 	}
 }
 
@@ -71,7 +85,13 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		contentfulURL = data.Url.ValueString()
 	} else if contentfulURLFromEnv, found := os.LookupEnv("CONTENTFUL_URL"); found {
 		contentfulURL = contentfulURLFromEnv
-	} else {
+	}
+
+	if contentfulURL == "" {
+		contentfulURL = p.contentfulURL
+	}
+
+	if contentfulURL == "" {
 		contentfulURL = cm.DefaultServerURL
 	}
 
@@ -86,6 +106,10 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		if accessTokenFromEnv, found := os.LookupEnv("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN"); found {
 			accessToken = accessTokenFromEnv
 		}
+	}
+
+	if accessToken == "" {
+		accessToken = p.accessToken
 	}
 
 	if accessToken == "" {
