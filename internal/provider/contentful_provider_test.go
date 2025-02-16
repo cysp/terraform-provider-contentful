@@ -13,10 +13,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//nolint:gochecknoglobals
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"contentful": providerserver.NewProtocol6WithError(provider.Factory("test")()),
+func makeTestAccProtoV6ProviderFactories(options ...provider.Option) map[string]func() (tfprotov6.ProviderServer, error) {
+	return map[string]func() (tfprotov6.ProviderServer, error){
+		"contentful": providerserver.NewProtocol6WithError(provider.Factory("test", options...)()),
+	}
 }
+
+//nolint:gochecknoglobals
+var testAccProtoV6ProviderFactories = makeTestAccProtoV6ProviderFactories()
 
 func providerConfigDynamicValue(config map[string]interface{}) (tfprotov6.DynamicValue, error) {
 	providerConfigTypes := map[string]tftypes.Type{
