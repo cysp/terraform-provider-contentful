@@ -972,39 +972,11 @@
                     },
                     {
                         "name": "headers",
-                        "map_nested": {
+                        "map": {
                             "computed_optional_required": "computed_optional",
-                            "nested_object": {
-                                "attributes": [
-                                    {
-                                        "name": "value",
-                                        "string": {
-                                            "computed_optional_required": "required"
-                                        }
-                                    },
-                                    {
-                                        "name": "secret",
-                                        "bool": {
-                                            "computed_optional_required": "computed_optional",
-                                            "default": {
-                                                "static": false
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            "plan_modifiers": [
-                                {
-                                    "custom": {
-                                        "imports": [
-                                            {
-                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
-                                            }
-                                        ],
-                                        "schema_definition": "mapplanmodifier.UseStateForUnknown()"
-                                    }
-                                }
-                            ]
+                            "element_type": {
+                                "string": {}
+                            }
                         }
                     },
                     {
