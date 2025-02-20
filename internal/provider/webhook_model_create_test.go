@@ -75,8 +75,8 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				Url:    types.StringValue("https://example.com/webhook"),
-				Headers: types.MapValueMust(provider.HeadersValue{}.Type(ctx), map[string]attr.Value{
-					"X-Header": provider.NewHeadersValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+				Headers: types.MapValueMust(provider.WebhookHeaderValue{}.Type(ctx), map[string]attr.Value{
+					"X-Header": provider.NewWebhookHeaderValueKnownFromAttributesMust(ctx, map[string]attr.Value{
 						"value":  types.StringValue("value"),
 						"secret": types.BoolValue(false),
 					}),
