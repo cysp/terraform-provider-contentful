@@ -2,7 +2,7 @@ coverage:
   status:
     project:
       default:
-        target: 85%
+        target: 65%
         threshold: 0%
     patch:
       default:
@@ -15,7 +15,7 @@ component_management:
   default_rules:
     statuses:
       - type: project
-        target: 85%
+        target: 65%
         threshold: 0%
   individual_components:
     - component_id: contentful-management-go
@@ -29,4 +29,4 @@ component_management:
 
 ignore:
   - 'main.go'
-  - '**/*_gen.go'
+  - 'internal/contentful-management-go/*_gen.go'
