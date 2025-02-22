@@ -56,27 +56,9 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"transformation": schema.SingleNestedAttribute{
-				Attributes: map[string]schema.Attribute{
-					"body": schema.StringAttribute{
-						CustomType: jsontypes.NormalizedType{},
-						Optional:   true,
-					},
-					"content_type": schema.StringAttribute{
-						Optional: true,
-					},
-					"include_content_length": schema.BoolAttribute{
-						Optional: true,
-					},
-					"method": schema.StringAttribute{
-						Optional: true,
-					},
-				},
-				CustomType: TransformationType{
-					ObjectType: types.ObjectType{
-						AttrTypes: TransformationValue{}.AttributeTypes(ctx),
-					},
-				},
-				Optional: true,
+				Attributes: map[string]schema.Attribute{},
+				CustomType: WebhookTransformationType{},
+				Optional:   true,
 			},
 			"url": schema.StringAttribute{
 				Required: true,
@@ -92,17 +74,17 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type WebhookModel struct {
-	Active            types.Bool          `tfsdk:"active"`
-	Filters           types.List          `tfsdk:"filters"`
-	Headers           types.Map           `tfsdk:"headers"`
-	HttpBasicPassword types.String        `tfsdk:"http_basic_password"`
-	HttpBasicUsername types.String        `tfsdk:"http_basic_username"`
-	Name              types.String        `tfsdk:"name"`
-	SpaceId           types.String        `tfsdk:"space_id"`
-	Topics            types.List          `tfsdk:"topics"`
-	Transformation    TransformationValue `tfsdk:"transformation"`
-	Url               types.String        `tfsdk:"url"`
-	WebhookId         types.String        `tfsdk:"webhook_id"`
+	Active            types.Bool                 `tfsdk:"active"`
+	Filters           types.List                 `tfsdk:"filters"`
+	Headers           types.Map                  `tfsdk:"headers"`
+	HttpBasicPassword types.String               `tfsdk:"http_basic_password"`
+	HttpBasicUsername types.String               `tfsdk:"http_basic_username"`
+	Name              types.String               `tfsdk:"name"`
+	SpaceId           types.String               `tfsdk:"space_id"`
+	Topics            types.List                 `tfsdk:"topics"`
+	Transformation    WebhookTransformationValue `tfsdk:"transformation"`
+	Url               types.String               `tfsdk:"url"`
+	WebhookId         types.String               `tfsdk:"webhook_id"`
 }
 
 var _ basetypes.ObjectTypable = TransformationType{}
@@ -128,90 +110,12 @@ func (t TransformationType) String() string {
 func (t TransformationType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	attributes := in.Attributes()
-
-	bodyAttribute, ok := attributes["body"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`body is missing from object`)
-
-		return nil, diags
-	}
-
-	bodyVal, ok := bodyAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`body expected to be basetypes.StringValue, was: %T`, bodyAttribute))
-	}
-
-	contentTypeAttribute, ok := attributes["content_type"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`content_type is missing from object`)
-
-		return nil, diags
-	}
-
-	contentTypeVal, ok := contentTypeAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`content_type expected to be basetypes.StringValue, was: %T`, contentTypeAttribute))
-	}
-
-	includeContentLengthAttribute, ok := attributes["include_content_length"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`include_content_length is missing from object`)
-
-		return nil, diags
-	}
-
-	includeContentLengthVal, ok := includeContentLengthAttribute.(basetypes.BoolValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`include_content_length expected to be basetypes.BoolValue, was: %T`, includeContentLengthAttribute))
-	}
-
-	methodAttribute, ok := attributes["method"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`method is missing from object`)
-
-		return nil, diags
-	}
-
-	methodVal, ok := methodAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`method expected to be basetypes.StringValue, was: %T`, methodAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return TransformationValue{
-		Body:                 bodyVal,
-		ContentType:          contentTypeVal,
-		IncludeContentLength: includeContentLengthVal,
-		Method:               methodVal,
-		state:                attr.ValueStateKnown,
+		state: attr.ValueStateKnown,
 	}, diags
 }
 
@@ -278,88 +182,12 @@ func NewTransformationValue(attributeTypes map[string]attr.Type, attributes map[
 		return NewTransformationValueUnknown(), diags
 	}
 
-	bodyAttribute, ok := attributes["body"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`body is missing from object`)
-
-		return NewTransformationValueUnknown(), diags
-	}
-
-	bodyVal, ok := bodyAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`body expected to be basetypes.StringValue, was: %T`, bodyAttribute))
-	}
-
-	contentTypeAttribute, ok := attributes["content_type"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`content_type is missing from object`)
-
-		return NewTransformationValueUnknown(), diags
-	}
-
-	contentTypeVal, ok := contentTypeAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`content_type expected to be basetypes.StringValue, was: %T`, contentTypeAttribute))
-	}
-
-	includeContentLengthAttribute, ok := attributes["include_content_length"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`include_content_length is missing from object`)
-
-		return NewTransformationValueUnknown(), diags
-	}
-
-	includeContentLengthVal, ok := includeContentLengthAttribute.(basetypes.BoolValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`include_content_length expected to be basetypes.BoolValue, was: %T`, includeContentLengthAttribute))
-	}
-
-	methodAttribute, ok := attributes["method"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`method is missing from object`)
-
-		return NewTransformationValueUnknown(), diags
-	}
-
-	methodVal, ok := methodAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`method expected to be basetypes.StringValue, was: %T`, methodAttribute))
-	}
-
 	if diags.HasError() {
 		return NewTransformationValueUnknown(), diags
 	}
 
 	return TransformationValue{
-		Body:                 bodyVal,
-		ContentType:          contentTypeVal,
-		IncludeContentLength: includeContentLengthVal,
-		Method:               methodVal,
-		state:                attr.ValueStateKnown,
+		state: attr.ValueStateKnown,
 	}, diags
 }
 
@@ -431,61 +259,17 @@ func (t TransformationType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = TransformationValue{}
 
 type TransformationValue struct {
-	Body                 basetypes.StringValue `tfsdk:"body"`
-	ContentType          basetypes.StringValue `tfsdk:"content_type"`
-	IncludeContentLength basetypes.BoolValue   `tfsdk:"include_content_length"`
-	Method               basetypes.StringValue `tfsdk:"method"`
-	state                attr.ValueState
+	state attr.ValueState
 }
 
 func (v TransformationValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 4)
-
-	var val tftypes.Value
-	var err error
-
-	attrTypes["body"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["content_type"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["include_content_length"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["method"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes := make(map[string]tftypes.Type, 0)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 4)
-
-		val, err = v.Body.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["body"] = val
-
-		val, err = v.ContentType.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["content_type"] = val
-
-		val, err = v.IncludeContentLength.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["include_content_length"] = val
-
-		val, err = v.Method.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["method"] = val
+		vals := make(map[string]tftypes.Value, 0)
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -516,12 +300,7 @@ func (v TransformationValue) String() string {
 func (v TransformationValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	attributeTypes := map[string]attr.Type{
-		"body":                   basetypes.StringType{},
-		"content_type":           basetypes.StringType{},
-		"include_content_length": basetypes.BoolType{},
-		"method":                 basetypes.StringType{},
-	}
+	attributeTypes := map[string]attr.Type{}
 
 	if v.IsNull() {
 		return types.ObjectNull(attributeTypes), diags
@@ -533,12 +312,7 @@ func (v TransformationValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
-		map[string]attr.Value{
-			"body":                   v.Body,
-			"content_type":           v.ContentType,
-			"include_content_length": v.IncludeContentLength,
-			"method":                 v.Method,
-		})
+		map[string]attr.Value{})
 
 	return objVal, diags
 }
@@ -558,22 +332,6 @@ func (v TransformationValue) Equal(o attr.Value) bool {
 		return true
 	}
 
-	if !v.Body.Equal(other.Body) {
-		return false
-	}
-
-	if !v.ContentType.Equal(other.ContentType) {
-		return false
-	}
-
-	if !v.IncludeContentLength.Equal(other.IncludeContentLength) {
-		return false
-	}
-
-	if !v.Method.Equal(other.Method) {
-		return false
-	}
-
 	return true
 }
 
@@ -586,10 +344,5 @@ func (v TransformationValue) Type(ctx context.Context) attr.Type {
 }
 
 func (v TransformationValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"body":                   basetypes.StringType{},
-		"content_type":           basetypes.StringType{},
-		"include_content_length": basetypes.BoolType{},
-		"method":                 basetypes.StringType{},
-	}
+	return map[string]attr.Type{}
 }

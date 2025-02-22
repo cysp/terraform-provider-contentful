@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -104,11 +105,11 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				Url:    types.StringValue("https://example.com/webhook"),
-				Transformation: provider.NewTransformationValueMust(provider.TransformationValue{}.AttributeTypes(ctx), map[string]attr.Value{
+				Transformation: provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
-					"body":                   types.StringNull(),
+					"body":                   jsontypes.NewNormalizedNull(),
 				}),
 			},
 			expected: cm.CreateWebhookDefinitionReq{
@@ -130,11 +131,11 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				Url:    types.StringValue("https://example.com/webhook"),
-				Transformation: provider.NewTransformationValueMust(provider.TransformationValue{}.AttributeTypes(ctx), map[string]attr.Value{
+				Transformation: provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
-					"body":                   types.StringValue("{\"key\":\"value\"}"),
+					"body":                   jsontypes.NewNormalizedValue("{\"key\":\"value\"}"),
 				}),
 			},
 			expected: cm.CreateWebhookDefinitionReq{

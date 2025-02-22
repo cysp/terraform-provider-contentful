@@ -34,6 +34,7 @@ func (r *webhookResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 	s := WebhookResourceSchema(ctx)
 	s.Attributes["headers"] = WebhookHeadersSchema(ctx, true)
 	s.Attributes["filters"] = WebhookFiltersSchema(ctx, true)
+	s.Attributes["transformation"] = WebhookTransformationSchema(ctx, true)
 	resp.Schema = s
 }
 
