@@ -15,11 +15,11 @@ import (
 func (model *WebhookModel) ReadFromResponse(ctx context.Context, webhookDefinition *cm.WebhookDefinition) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	model.WebhookId = types.StringValue(webhookDefinition.Sys.ID)
+	model.WebhookID = types.StringValue(webhookDefinition.Sys.ID)
 
 	model.Name = types.StringValue(webhookDefinition.Name)
 
-	model.Url = types.StringValue(webhookDefinition.URL)
+	model.URL = types.StringValue(webhookDefinition.URL)
 
 	topicsList, topicsListDiags := types.ListValueFrom(ctx, types.String{}.Type(ctx), webhookDefinition.Topics)
 	diags.Append(topicsListDiags...)
@@ -31,8 +31,8 @@ func (model *WebhookModel) ReadFromResponse(ctx context.Context, webhookDefiniti
 
 	model.Filters = filtersList
 
-	model.HttpBasicUsername = types.StringPointerValue(webhookDefinition.HttpBasicUsername.ValueStringPointer())
-	model.HttpBasicPassword = types.StringPointerValue(webhookDefinition.HttpBasicPassword.ValueStringPointer())
+	model.HTTPBasicUsername = types.StringPointerValue(webhookDefinition.HttpBasicUsername.ValueStringPointer())
+	model.HTTPBasicPassword = types.StringPointerValue(webhookDefinition.HttpBasicPassword.ValueStringPointer())
 
 	headersList, headersListDiags := ReadHeadersListValueFromResponse(ctx, path.Root("headers"), model.Headers, webhookDefinition.Headers)
 	diags.Append(headersListDiags...)

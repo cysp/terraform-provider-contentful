@@ -15,10 +15,10 @@ func (model *WebhookModel) ToUpdateWebhookDefinitionReq(ctx context.Context, pat
 
 	req := cm.UpdateWebhookDefinitionReq{
 		Name:              model.Name.ValueString(),
-		URL:               model.Url.ValueString(),
+		URL:               model.URL.ValueString(),
 		Active:            util.BoolValueToOptBool(model.Active),
-		HttpBasicUsername: cm.NewOptNilPointerString(model.HttpBasicUsername.ValueStringPointer()),
-		HttpBasicPassword: cm.NewOptNilPointerString(model.HttpBasicPassword.ValueStringPointer()),
+		HttpBasicUsername: cm.NewOptNilPointerString(model.HTTPBasicUsername.ValueStringPointer()),
+		HttpBasicPassword: cm.NewOptNilPointerString(model.HTTPBasicPassword.ValueStringPointer()),
 	}
 
 	if model.Topics.IsNull() || model.Topics.IsUnknown() {
