@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -48,10 +49,10 @@ func (model *WebhookModel) ReadFromResponse(ctx context.Context, webhookDefiniti
 	return diags
 }
 
-func ReadWebhookTransformationValueFromResponse(ctx context.Context, _ path.Path, optNilTransformation cm.OptNilWebhookDefinitionTransformation) (TransformationValue, diag.Diagnostics) {
+func ReadWebhookTransformationValueFromResponse(ctx context.Context, _ path.Path, optNilTransformation cm.OptNilWebhookDefinitionTransformation) (WebhookTransformationValue, diag.Diagnostics) {
 	transformation, transformationOk := optNilTransformation.Get()
 	if !transformationOk {
-		return NewTransformationValueNull(), nil
+		return NewWebhookTransformationValueNull(), nil
 	}
 
 	diags := diag.Diagnostics{}
@@ -60,13 +61,12 @@ func ReadWebhookTransformationValueFromResponse(ctx context.Context, _ path.Path
 	contentTypeValue := types.StringPointerValue(transformation.ContentType.ValueStringPointer())
 	includeContentLengthValue := types.BoolPointerValue(transformation.IncludeContentLength.ValueBoolPointer())
 
-	bodyValue := types.StringNull()
+	bodyValue := jsontypes.NewNormalizedNull()
 	if transformation.Body != nil {
-		bodyValue = types.StringValue(transformation.Body.String())
+		bodyValue = jsontypes.NewNormalizedValue(transformation.Body.String())
 	}
 
-	//nolint:contextcheck
-	value, valueDiags := NewTransformationValue(TransformationValue{}.AttributeTypes(ctx), map[string]attr.Value{
+	value, valueDiags := NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
 		"method":                 methodValue,
 		"content_type":           contentTypeValue,
 		"include_content_length": includeContentLengthValue,

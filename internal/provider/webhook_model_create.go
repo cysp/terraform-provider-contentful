@@ -65,7 +65,7 @@ func (model *WebhookModel) ToCreateWebhookDefinitionReq(ctx context.Context, pat
 	return req, diags
 }
 
-func ToOptNilCreateWebhookDefinitionReqTransformation(_ context.Context, _ path.Path, value TransformationValue) (cm.OptNilCreateWebhookDefinitionReqTransformation, diag.Diagnostics) {
+func ToOptNilCreateWebhookDefinitionReqTransformation(_ context.Context, _ path.Path, value WebhookTransformationValue) (cm.OptNilCreateWebhookDefinitionReqTransformation, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	optNilTransformation := cm.OptNilCreateWebhookDefinitionReqTransformation{}

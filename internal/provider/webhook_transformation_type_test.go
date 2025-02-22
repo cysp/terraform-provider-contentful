@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -12,11 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWebhookHeaderTypeEqual(t *testing.T) {
+func TestWebhookTransformationTypeEqual(t *testing.T) {
 	t.Parallel()
 
 	types := []attr.Type{
-		provider.WebhookHeaderType{},
+		provider.WebhookTransformationType{},
 	}
 
 	for aIndex, aType := range types {
@@ -34,19 +35,19 @@ func TestWebhookHeaderTypeEqual(t *testing.T) {
 	}
 }
 
-func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
+func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
 
-	typ := provider.WebhookHeaderValue{}.ObjectType(ctx)
+	typ := provider.WebhookTransformationValue{}.ObjectType(ctx)
 
 	t.Run("unknown", func(t *testing.T) {
 		t.Parallel()
 
 		value := basetypes.NewObjectUnknown(typ.AttrTypes)
 
-		object, diags := provider.WebhookHeaderType{}.ValueFromObject(ctx, value)
+		object, diags := provider.WebhookTransformationType{}.ValueFromObject(ctx, value)
 
 		assert.True(t, object.IsUnknown())
 		assert.Empty(t, diags)
@@ -57,7 +58,7 @@ func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
 
 		value := basetypes.NewObjectNull(typ.AttrTypes)
 
-		object, diags := provider.WebhookHeaderType{}.ValueFromObject(ctx, value)
+		object, diags := provider.WebhookTransformationType{}.ValueFromObject(ctx, value)
 
 		assert.True(t, object.IsNull())
 		assert.Empty(t, diags)
@@ -67,32 +68,35 @@ func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
 		t.Parallel()
 
 		value, diags := basetypes.NewObjectValue(typ.AttrTypes, map[string]attr.Value{
-			"value":  types.StringValue("value"),
-			"secret": types.BoolValue(true),
+			"method":                 types.StringValue("method"),
+			"content_type":           types.StringValue("content_type"),
+			"include_content_length": types.BoolValue(true),
+			"body":                   jsontypes.NewNormalizedValue("{}"),
 		})
-		assert.False(t, diags.HasError())
+		require.Empty(t, diags)
+		require.False(t, diags.HasError())
 
-		object, diags := provider.WebhookHeaderType{}.ValueFromObject(ctx, value)
+		object, diags := provider.WebhookTransformationType{}.ValueFromObject(ctx, value)
 
 		assert.False(t, diags.HasError())
 		assert.False(t, object.IsNull())
 		assert.False(t, object.IsUnknown())
 
-		header, headerOk := object.(provider.WebhookHeaderValue)
-		assert.True(t, headerOk)
-		assert.Equal(t, "value", header.Value.ValueString())
-		assert.True(t, header.Secret.ValueBool())
+		transformation, transformationOk := object.(provider.WebhookTransformationValue)
+		assert.True(t, transformationOk)
+		assert.Equal(t, "method", transformation.Method.ValueString())
+		assert.True(t, transformation.IncludeContentLength.ValueBool())
 	})
 }
 
 //nolint:dupl
-func TestWebhookHeaderTypeValueFromTerraform(t *testing.T) {
+func TestWebhookTransformationTypeValueFromTerraform(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
 
 	types := []attr.Type{
-		provider.WebhookHeaderType{},
+		provider.WebhookTransformationType{},
 	}
 
 	tfvalniltype := tftypes.NewValue(nil, nil)

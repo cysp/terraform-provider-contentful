@@ -65,7 +65,7 @@ func (model *WebhookModel) ToUpdateWebhookDefinitionReq(ctx context.Context, pat
 	return req, diags
 }
 
-func ToOptNilUpdateWebhookDefinitionReqTransformation(_ context.Context, _ path.Path, value TransformationValue) (cm.OptNilUpdateWebhookDefinitionReqTransformation, diag.Diagnostics) {
+func ToOptNilUpdateWebhookDefinitionReqTransformation(_ context.Context, _ path.Path, value WebhookTransformationValue) (cm.OptNilUpdateWebhookDefinitionReqTransformation, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	optNilTransformation := cm.OptNilUpdateWebhookDefinitionReqTransformation{}

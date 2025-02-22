@@ -983,39 +983,10 @@
                         "name": "transformation",
                         "single_nested": {
                             "computed_optional_required": "optional",
-                            "attributes": [
-                                {
-                                    "name": "method",
-                                    "string": {
-                                        "computed_optional_required": "optional"
-                                    }
-                                },
-                                {
-                                    "name": "content_type",
-                                    "string": {
-                                        "computed_optional_required": "optional"
-                                    }
-                                },
-                                {
-                                    "name": "include_content_length",
-                                    "bool": {
-                                        "computed_optional_required": "optional"
-                                    }
-                                },
-                                {
-                                    "name": "body",
-                                    "string": {
-                                        "computed_optional_required": "optional",
-                                        "custom_type": {
-                                            "import": {
-                                                "path": "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-                                            },
-                                            "type": "jsontypes.NormalizedType{}",
-                                            "value_type": "jsontypes.Normalized"
-                                        }
-                                    }
-                                }
-                            ]
+                            "custom_type": {
+                                "type": "WebhookTransformationType{}",
+                                "value_type": "WebhookTransformationValue"
+                            }
                         }
                     },
                     {
