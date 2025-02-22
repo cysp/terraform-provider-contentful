@@ -28,9 +28,9 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 			model: provider.WebhookModel{
 				Name:              types.StringValue("test-webhook"),
 				Active:            types.BoolValue(true),
-				Url:               types.StringValue("https://example.com/webhook"),
-				HttpBasicUsername: types.StringNull(),
-				HttpBasicPassword: types.StringNull(),
+				URL:               types.StringValue("https://example.com/webhook"),
+				HTTPBasicUsername: types.StringNull(),
+				HTTPBasicPassword: types.StringNull(),
 				Topics: types.ListValueMust(types.StringType, []attr.Value{
 					types.StringValue("Entry.create"),
 					types.StringValue("Entry.delete"),
@@ -52,9 +52,9 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 			model: provider.WebhookModel{
 				Name:              types.StringValue("auth-webhook"),
 				Active:            types.BoolValue(true),
-				Url:               types.StringValue("https://example.com/webhook"),
-				HttpBasicUsername: types.StringValue("user"),
-				HttpBasicPassword: types.StringValue("pass"),
+				URL:               types.StringValue("https://example.com/webhook"),
+				HTTPBasicUsername: types.StringValue("user"),
+				HTTPBasicPassword: types.StringValue("pass"),
 				Topics: types.ListValueMust(types.StringType, []attr.Value{
 					types.StringValue("Entry.*"),
 				}),
@@ -75,7 +75,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 			model: provider.WebhookModel{
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
-				Url:    types.StringValue("https://example.com/webhook"),
+				URL:    types.StringValue("https://example.com/webhook"),
 				Headers: types.MapValueMust(provider.WebhookHeaderValue{}.Type(ctx), map[string]attr.Value{
 					"X-Header": provider.NewWebhookHeaderValueKnownFromAttributesMust(ctx, map[string]attr.Value{
 						"value":  types.StringValue("value"),
@@ -104,7 +104,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 			model: provider.WebhookModel{
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
-				Url:    types.StringValue("https://example.com/webhook"),
+				URL:    types.StringValue("https://example.com/webhook"),
 				Transformation: provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
@@ -130,7 +130,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 			model: provider.WebhookModel{
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
-				Url:    types.StringValue("https://example.com/webhook"),
+				URL:    types.StringValue("https://example.com/webhook"),
 				Transformation: provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
@@ -157,9 +157,9 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 			model: provider.WebhookModel{
 				Name:              types.StringValue("filters-webhook"),
 				Active:            types.BoolValue(true),
-				Url:               types.StringValue("https://example.com/webhook"),
-				HttpBasicUsername: types.StringNull(),
-				HttpBasicPassword: types.StringNull(),
+				URL:               types.StringValue("https://example.com/webhook"),
+				HTTPBasicUsername: types.StringNull(),
+				HTTPBasicPassword: types.StringNull(),
 				Filters:           filters,
 			},
 			expected: cm.CreateWebhookDefinitionReq{

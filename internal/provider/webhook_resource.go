@@ -31,11 +31,7 @@ func (r *webhookResource) Metadata(_ context.Context, req resource.MetadataReque
 }
 
 func (r *webhookResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	s := WebhookResourceSchema(ctx)
-	s.Attributes["headers"] = WebhookHeadersSchema(ctx, true)
-	s.Attributes["filters"] = WebhookFiltersSchema(ctx, true)
-	s.Attributes["transformation"] = WebhookTransformationSchema(ctx, true)
-	resp.Schema = s
+	resp.Schema = WebhookResourceSchema(ctx)
 }
 
 func (r *webhookResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -61,7 +57,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	currentVersion := 1
 
 	params := cm.CreateWebhookDefinitionParams{
-		SpaceID: data.SpaceId.ValueString(),
+		SpaceID: data.SpaceID.ValueString(),
 	}
 
 	request, requestDiags := data.ToCreateWebhookDefinitionReq(ctx, path.Empty())
@@ -108,8 +104,8 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	params := cm.GetWebhookDefinitionParams{
-		SpaceID:             data.SpaceId.ValueString(),
-		WebhookDefinitionID: data.WebhookId.ValueString(),
+		SpaceID:             data.SpaceID.ValueString(),
+		WebhookDefinitionID: data.WebhookID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetWebhookDefinition(ctx, params)
@@ -162,8 +158,8 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.UpdateWebhookDefinitionParams{
-		SpaceID:             data.SpaceId.ValueString(),
-		WebhookDefinitionID: data.WebhookId.ValueString(),
+		SpaceID:             data.SpaceID.ValueString(),
+		WebhookDefinitionID: data.WebhookID.ValueString(),
 		XContentfulVersion:  currentVersion,
 	}
 
@@ -210,8 +206,8 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	response, err := r.providerData.client.DeleteWebhookDefinition(ctx, cm.DeleteWebhookDefinitionParams{
-		SpaceID:             data.SpaceId.ValueString(),
-		WebhookDefinitionID: data.WebhookId.ValueString(),
+		SpaceID:             data.SpaceID.ValueString(),
+		WebhookDefinitionID: data.WebhookID.ValueString(),
 	})
 
 	switch response := response.(type) {
