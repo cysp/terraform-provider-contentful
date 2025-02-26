@@ -105,7 +105,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Transformation: provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+				Transformation: provider.NewWebhookTransformationValueFromAttributesMust(ctx, path.Root("transformation"), map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
@@ -131,7 +131,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Transformation: provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+				Transformation: provider.NewWebhookTransformationValueFromAttributesMust(ctx, path.Root("transformation"), map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),

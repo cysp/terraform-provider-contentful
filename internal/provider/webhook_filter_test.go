@@ -16,9 +16,10 @@ func webhookFiltersListForTesting(t *testing.T) types.List {
 
 	ctx := t.Context()
 
-	filterEquals := provider.NewWebhookFilterEqualsValueKnown()
-	filterEquals.Doc = types.StringValue("sys.type")
-	filterEquals.Value = types.StringValue("abc")
+	filterEquals := provider.NewWebhookFilterEqualsValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		"doc":   types.StringValue("sys.type"),
+		"value": types.StringValue("abc"),
+	})
 
 	filterIn := provider.NewWebhookFilterInValueKnown()
 	filterIn.Doc = types.StringValue("sys.type")
@@ -207,7 +208,7 @@ func TestWebhookFilterValueToObjectValue(t *testing.T) {
 	values := []provider.AttrValueWithToObjectValue{
 		provider.NewWebhookFilterValueKnown(),
 		provider.NewWebhookFilterNotValueKnown(),
-		provider.NewWebhookFilterEqualsValueKnown(),
+		provider.NewWebhookFilterEqualsValueKnownFromAttributesMust(ctx, map[string]attr.Value{}),
 		provider.NewWebhookFilterInValueKnown(),
 		provider.NewWebhookFilterRegexpValueKnown(),
 	}

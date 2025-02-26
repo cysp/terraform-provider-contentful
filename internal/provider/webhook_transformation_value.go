@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
+// +tfgen:objectvalue
 type WebhookTransformationValue struct {
 	Method               basetypes.StringValue `tfsdk:"method"`
 	ContentType          basetypes.StringValue `tfsdk:"content_type"`
@@ -23,33 +24,39 @@ type WebhookTransformationValue struct {
 	state                attr.ValueState
 }
 
-func NewWebhookTransformationValueKnown() WebhookTransformationValue {
+func NewWebhookTransformationUnknown() WebhookTransformationValue {
 	return WebhookTransformationValue{
-		state: attr.ValueStateKnown,
+		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewWebhookTransformationValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookTransformationValue, diag.Diagnostics) {
+func NewWebhookTransformationNull() WebhookTransformationValue {
+	return WebhookTransformationValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewWebhookTransformationValueFromAttributes(_ context.Context, path path.Path, attributes map[string]attr.Value) (WebhookTransformationValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	methodValue, methodOk := attributes["method"].(types.String)
 	if !methodOk {
-		diags.AddAttributeError(path.Root("method"), "invalid data", fmt.Sprintf("expected string, got %T", attributes["method"]))
+		diags.AddAttributeError(path.AtName("method"), "invalid data", fmt.Sprintf("expected string, got %T", attributes["method"]))
 	}
 
 	contentTypeValue, contentTypeOk := attributes["content_type"].(types.String)
 	if !contentTypeOk {
-		diags.AddAttributeError(path.Root("content_type"), "invalid data", fmt.Sprintf("expected string, got %T", attributes["content_type"]))
+		diags.AddAttributeError(path.AtName("content_type"), "invalid data", fmt.Sprintf("expected string, got %T", attributes["content_type"]))
 	}
 
 	includeContentLengthValue, includeContentLengthOk := attributes["include_content_length"].(types.Bool)
 	if !includeContentLengthOk {
-		diags.AddAttributeError(path.Root("include_content_length"), "invalid data", fmt.Sprintf("expected bool, got %T", attributes["include_content_length"]))
+		diags.AddAttributeError(path.AtName("include_content_length"), "invalid data", fmt.Sprintf("expected bool, got %T", attributes["include_content_length"]))
 	}
 
-	bodyValue, contentTypeOk := attributes["body"].(jsontypes.Normalized)
-	if !contentTypeOk {
-		diags.AddAttributeError(path.Root("body"), "invalid data", fmt.Sprintf("expected json string, got %T", attributes["body"]))
+	bodyValue, bodyOk := attributes["body"].(jsontypes.Normalized)
+	if !bodyOk {
+		diags.AddAttributeError(path.AtName("body"), "invalid data", fmt.Sprintf("expected json string, got %T", attributes["body"]))
 	}
 
 	return WebhookTransformationValue{
@@ -61,25 +68,13 @@ func NewWebhookTransformationValueKnownFromAttributes(_ context.Context, attribu
 	}, diags
 }
 
-func NewWebhookTransformationValueKnownFromAttributesMust(ctx context.Context, attributes map[string]attr.Value) WebhookTransformationValue {
-	value, diags := NewWebhookTransformationValueKnownFromAttributes(ctx, attributes)
+func NewWebhookTransformationValueFromAttributesMust(ctx context.Context, path path.Path, attributes map[string]attr.Value) WebhookTransformationValue {
+	value, diags := NewWebhookTransformationValueFromAttributes(ctx, path, attributes)
 	if diags.HasError() {
 		panic(diags)
 	}
 
 	return value
-}
-
-func NewWebhookTransformationValueNull() WebhookTransformationValue {
-	return WebhookTransformationValue{
-		state: attr.ValueStateNull,
-	}
-}
-
-func NewWebhookTransformationValueUnknown() WebhookTransformationValue {
-	return WebhookTransformationValue{
-		state: attr.ValueStateUnknown,
-	}
 }
 
 func (v WebhookTransformationValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {

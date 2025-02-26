@@ -108,21 +108,22 @@ func ReadWebhookFilterEqualsValueFromResponse(ctx context.Context, path path.Pat
 
 	diags := diag.Diagnostics{}
 
-	value := WebhookFilterEqualsValue{}
+	var value WebhookFilterEqualsValue
 
 	//nolint:gomnd,mnd
 	if len(input) == 2 {
-		value = NewWebhookFilterEqualsValueKnown()
-
 		valueDoc, valueDocDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", input[0])
 		diags.Append(valueDocDiags...)
-
-		value.Doc = valueDoc
 
 		valueValue, valueValueDiags := ReadWebhookDefinitionFilterTermString(ctx, path.AtName("value"), input[1])
 		diags.Append(valueValueDiags...)
 
-		value.Value = valueValue
+		var valueDiags diag.Diagnostics
+		value, valueDiags = NewWebhookFilterEqualsValueKnownFromAttributes(ctx, map[string]attr.Value{
+			"doc":   valueDoc,
+			"value": valueValue,
+		})
+		diags.Append(valueDiags...)
 	} else {
 		diags.AddAttributeError(path, "failed to decode value", fmt.Sprintf("expected array of length 2, received array of length %d", len(input)))
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -55,7 +56,7 @@ func (t WebhookTransformationType) TerraformAttributeTypes(ctx context.Context) 
 //nolint:ireturn
 func (t WebhookTransformationType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
 	if value.Type() == nil {
-		return NewWebhookTransformationValueNull(), nil
+		return NewWebhookTransformationNull(), nil
 	}
 
 	if !value.Type().Equal(t.TerraformType(ctx)) {
@@ -63,11 +64,11 @@ func (t WebhookTransformationType) ValueFromTerraform(ctx context.Context, value
 	}
 
 	if value.IsNull() {
-		return NewWebhookTransformationValueNull(), nil
+		return NewWebhookTransformationNull(), nil
 	}
 
 	if !value.IsKnown() {
-		return NewWebhookTransformationValueUnknown(), nil
+		return NewWebhookTransformationUnknown(), nil
 	}
 
 	attributes, err := AttributesFromTerraformValue(ctx, t.AttrTypes, value)
@@ -75,7 +76,7 @@ func (t WebhookTransformationType) ValueFromTerraform(ctx context.Context, value
 		return nil, fmt.Errorf("failed to create WebhookTransformationValue from Terraform: %w", err)
 	}
 
-	v, diags := NewWebhookTransformationValueKnownFromAttributes(ctx, attributes)
+	v, diags := NewWebhookTransformationValueFromAttributes(ctx, path.Empty(), attributes)
 
 	return v, ErrorFromDiags(diags)
 }
@@ -84,10 +85,10 @@ func (t WebhookTransformationType) ValueFromTerraform(ctx context.Context, value
 func (t WebhookTransformationType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	switch {
 	case value.IsNull():
-		return NewWebhookTransformationValueNull(), nil
+		return NewWebhookTransformationNull(), nil
 	case value.IsUnknown():
-		return NewWebhookTransformationValueUnknown(), nil
+		return NewWebhookTransformationUnknown(), nil
 	}
 
-	return NewWebhookTransformationValueKnownFromAttributes(ctx, value.Attributes())
+	return NewWebhookTransformationValueFromAttributes(ctx, path.Empty(), value.Attributes())
 }

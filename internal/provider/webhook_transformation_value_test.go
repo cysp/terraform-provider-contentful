@@ -6,6 +6,7 @@ import (
 	provider "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,7 +17,7 @@ func TestWebhookTransformationValueUnknown(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := provider.NewWebhookTransformationValueUnknown()
+	value := provider.NewWebhookTransformationUnknown()
 	assert.True(t, value.IsUnknown())
 	assert.False(t, value.IsNull())
 
@@ -38,7 +39,7 @@ func TestWebhookTransformationValueNull(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := provider.NewWebhookTransformationValueNull()
+	value := provider.NewWebhookTransformationNull()
 	assert.False(t, value.IsUnknown())
 	assert.True(t, value.IsNull())
 
@@ -73,7 +74,7 @@ func TestWebhookTransformationValueInvalid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			value, diags := provider.NewWebhookTransformationValueKnownFromAttributes(ctx, attributes)
+			value, diags := provider.NewWebhookTransformationValueFromAttributes(ctx, path.Root("transformation"), attributes)
 
 			assert.False(t, value.IsUnknown())
 			assert.False(t, value.IsNull())
@@ -90,20 +91,19 @@ func TestWebhookTransformationValueConversion(t *testing.T) {
 	ctx := t.Context()
 
 	values := []provider.AttrValueWithToObjectValue{
-		provider.NewWebhookTransformationValueKnown(),
-		provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		provider.NewWebhookTransformationValueFromAttributesMust(ctx, path.Root("transformation"), map[string]attr.Value{
 			"method":                 types.StringUnknown(),
 			"content_type":           types.StringUnknown(),
 			"include_content_length": types.BoolUnknown(),
 			"body":                   jsontypes.NewNormalizedUnknown(),
 		}),
-		provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		provider.NewWebhookTransformationValueFromAttributesMust(ctx, path.Root("transformation"), map[string]attr.Value{
 			"method":                 types.StringNull(),
 			"content_type":           types.StringNull(),
 			"include_content_length": types.BoolNull(),
 			"body":                   jsontypes.NewNormalizedNull(),
 		}),
-		provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		provider.NewWebhookTransformationValueFromAttributesMust(ctx, path.Root("transformation"), map[string]attr.Value{
 			"method":                 types.StringValue("method"),
 			"content_type":           types.StringValue("content_type"),
 			"include_content_length": types.BoolValue(true),

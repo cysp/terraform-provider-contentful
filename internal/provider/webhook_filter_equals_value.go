@@ -19,25 +19,45 @@ type WebhookFilterEqualsValue struct {
 	state attr.ValueState
 }
 
-func NewWebhookFilterEqualsValueKnown() WebhookFilterEqualsValue {
+func NewWebhookFilterEqualsValueUnknown() WebhookFilterEqualsValue {
 	return WebhookFilterEqualsValue{
-		Doc:   basetypes.NewStringNull(),
-		Value: basetypes.NewStringNull(),
-		state: attr.ValueStateKnown,
+		state: attr.ValueStateUnknown,
 	}
 }
+
+func NewWebhookFilterEqualsValueNull() WebhookFilterEqualsValue {
+	return WebhookFilterEqualsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+// func NewWebhookFilterEqualsValueKnown() WebhookFilterEqualsValue {
+// 	return WebhookFilterEqualsValue{
+// 		Doc:   basetypes.NewStringNull(),
+// 		Value: basetypes.NewStringNull(),
+// 		state: attr.ValueStateKnown,
+// 	}
+// }
 
 func NewWebhookFilterEqualsValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookFilterEqualsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	docValue, docOk := attributes["doc"].(basetypes.StringValue)
-	if !docOk {
-		diags.AddError("Invalid data", fmt.Sprintf("expected doc to be of type String, got %T", attributes["doc"]))
+	var docValue basetypes.StringValue
+	if docRawValue, docExists := attributes["doc"]; docExists {
+		var docOk bool
+		docValue, docOk = docRawValue.(basetypes.StringValue)
+		if !docOk {
+			diags.AddError("Invalid data", fmt.Sprintf("expected doc to be of type String, got %T", attributes["doc"]))
+		}
 	}
 
-	valueValue, valueOk := attributes["value"].(basetypes.StringValue)
-	if !valueOk {
-		diags.AddError("Invalid data", fmt.Sprintf("expected value to be of type String, got %T", attributes["doc"]))
+	var valueValue basetypes.StringValue
+	if valueRawValue, valueExists := attributes["value"]; valueExists {
+		var valueOk bool
+		valueValue, valueOk = valueRawValue.(basetypes.StringValue)
+		if !valueOk {
+			diags.AddError("Invalid data", fmt.Sprintf("expected value to be of type String, got %T", attributes["doc"]))
+		}
 	}
 
 	return WebhookFilterEqualsValue{
@@ -47,16 +67,13 @@ func NewWebhookFilterEqualsValueKnownFromAttributes(_ context.Context, attribute
 	}, diags
 }
 
-func NewWebhookFilterEqualsValueNull() WebhookFilterEqualsValue {
-	return WebhookFilterEqualsValue{
-		state: attr.ValueStateNull,
+func NewWebhookFilterEqualsValueKnownFromAttributesMust(ctx context.Context, attributes map[string]attr.Value) WebhookFilterEqualsValue {
+	value, diags := NewWebhookFilterEqualsValueKnownFromAttributes(ctx, attributes)
+	if diags.HasError() {
+		panic(diags.Errors())
 	}
-}
 
-func NewWebhookFilterEqualsValueUnknown() WebhookFilterEqualsValue {
-	return WebhookFilterEqualsValue{
-		state: attr.ValueStateUnknown,
-	}
+	return value
 }
 
 func (v WebhookFilterEqualsValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
@@ -92,10 +109,10 @@ func (v WebhookFilterEqualsValue) ObjectType(ctx context.Context) basetypes.Obje
 	}
 }
 
-func (v WebhookFilterEqualsValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
+func (v WebhookFilterEqualsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"doc":   types.StringType,
-		"value": types.StringType,
+		"doc":   basetypes.StringValue{}.Type(ctx),
+		"value": basetypes.StringValue{}.Type(ctx),
 	}
 }
 
