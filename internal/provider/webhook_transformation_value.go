@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -123,29 +122,11 @@ func (v WebhookTransformationValue) ObjectType(ctx context.Context) basetypes.Ob
 }
 
 func (v WebhookTransformationValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"method":                 types.String{}.Type(ctx),
-		"content_type":           types.String{}.Type(ctx),
-		"include_content_length": types.Bool{}.Type(ctx),
-		"body":                   jsontypes.Normalized{}.Type(ctx),
-	}
+	return ReflectObjectAttrTypes(ctx, v)
 }
 
 func (v WebhookTransformationValue) Equal(o attr.Value) bool {
-	other, ok := o.(WebhookTransformationValue)
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state == attr.ValueStateKnown {
-		return v.Method.Equal(other.Method) && v.ContentType.Equal(other.ContentType) && v.IncludeContentLength.Equal(other.IncludeContentLength) && v.Body.Equal(other.Body)
-	}
-
-	return true
+	return ReflectAttrValueEqual(v, o)
 }
 
 func (v WebhookTransformationValue) IsNull() bool {
@@ -160,62 +141,14 @@ func (v WebhookTransformationValue) String() string {
 	return "WebhookTransformationValue"
 }
 
-//nolint:dupl
+type TerraformValuable interface {
+	ToTerraformValue(_ context.Context) (tftypes.Value, error)
+}
+
 func (v WebhookTransformationValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := WebhookTransformationType{}.TerraformType(ctx)
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		break
-	case attr.ValueStateNull:
-		return tftypes.NewValue(tft, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-
-	//nolint:gomnd,mnd
-	val := make(map[string]tftypes.Value, 4)
-
-	var methodErr error
-	val["method"], methodErr = v.Method.ToTerraformValue(ctx)
-
-	var contentTypeErr error
-	val["content_type"], contentTypeErr = v.ContentType.ToTerraformValue(ctx)
-
-	var includeContentLengthErr error
-	val["include_content_length"], includeContentLengthErr = v.IncludeContentLength.ToTerraformValue(ctx)
-
-	var bodyErr error
-	val["body"], bodyErr = v.Body.ToTerraformValue(ctx)
-
-	validateErr := tftypes.ValidateValue(tft, val)
-
-	err := errors.Join(methodErr, contentTypeErr, includeContentLengthErr, bodyErr, validateErr)
-	if err != nil {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(tft, val), nil
+	return ReflectIntoTerraformValue(ctx, v)
 }
 
 func (v WebhookTransformationValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	attributeTypes := v.ObjectAttrTypes(ctx)
-
-	switch {
-	case v.IsNull():
-		return types.ObjectNull(attributeTypes), nil
-	case v.IsUnknown():
-		return types.ObjectUnknown(attributeTypes), nil
-	}
-
-	attributes := map[string]attr.Value{
-		"method":                 v.Method,
-		"content_type":           v.ContentType,
-		"include_content_length": v.IncludeContentLength,
-		"body":                   v.Body,
-	}
-
-	return types.ObjectValue(attributeTypes, attributes)
+	return ReflectIntoObjectValue(ctx, v)
 }
