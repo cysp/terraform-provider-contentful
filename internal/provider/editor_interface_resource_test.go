@@ -4,48 +4,58 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImport(t *testing.T) {
+	configVariables := config.Variables{
+		"space_id":        config.StringVariable("0p38pssr0fi3"),
+		"environment_id":  config.StringVariable("test"),
+		"content_type_id": config.StringVariable("author"),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "contentful_editor_interface" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "author"
-				}
-				`,
+				ConfigDirectory:    config.TestNameDirectory(),
+				ConfigVariables:    configVariables,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				ResourceName:  "contentful_editor_interface.test",
-				ImportState:   true,
-				ImportStateId: "a",
-				ExpectError:   regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ResourceName:    "contentful_editor_interface.test",
+				ImportState:     true,
+				ImportStateId:   "a",
+				ExpectError:     regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
-				ResourceName:  "contentful_editor_interface.test",
-				ImportState:   true,
-				ImportStateId: "a/b",
-				ExpectError:   regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ResourceName:    "contentful_editor_interface.test",
+				ImportState:     true,
+				ImportStateId:   "a/b",
+				ExpectError:     regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
-				ResourceName:  "contentful_editor_interface.test",
-				ImportState:   true,
-				ImportStateId: "a/b/c/d",
-				ExpectError:   regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ResourceName:    "contentful_editor_interface.test",
+				ImportState:     true,
+				ImportStateId:   "a/b/c/d",
+				ExpectError:     regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
-				ResourceName:  "contentful_editor_interface.test",
-				ImportState:   true,
-				ImportStateId: "0p38pssr0fi3/test/author",
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ResourceName:    "contentful_editor_interface.test",
+				ImportState:     true,
+				ImportStateId:   "0p38pssr0fi3/test/author",
 				// ImportStateVerify: true,
 			},
 		},
@@ -54,25 +64,28 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
+	configVariables := config.Variables{
+		"space_id":        config.StringVariable("0p38pssr0fi3"),
+		"environment_id":  config.StringVariable("test"),
+		"content_type_id": config.StringVariable("nonexistent"),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "contentful_editor_interface" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "nonexistent"
-				}
-				`,
+				ConfigDirectory:    config.TestNameDirectory(),
+				ConfigVariables:    configVariables,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				ResourceName:  "contentful_editor_interface.test",
-				ImportState:   true,
-				ImportStateId: "0p38pssr0fi3/test/nonexistent",
-				ExpectError:   regexp.MustCompile(`Cannot import non-existent remote object`),
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ResourceName:    "contentful_editor_interface.test",
+				ImportState:     true,
+				ImportStateId:   "0p38pssr0fi3/test/nonexistent",
+				ExpectError:     regexp.MustCompile(`Cannot import non-existent remote object`),
 			},
 		},
 	})
@@ -80,18 +93,19 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
+	configVariables := config.Variables{
+		"space_id":        config.StringVariable("0p38pssr0fi3"),
+		"environment_id":  config.StringVariable("nonexistent"),
+		"content_type_id": config.StringVariable("nonexistent"),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "contentful_editor_interface" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "nonexistent"
-					content_type_id = "nonexistent"
-				}
-				`,
-				ExpectError: regexp.MustCompile(`Failed to create editor interface`),
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ExpectError:     regexp.MustCompile(`Failed to create editor interface`),
 			},
 		},
 	})
@@ -99,18 +113,19 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
+	configVariables := config.Variables{
+		"space_id":        config.StringVariable("0p38pssr0fi3"),
+		"environment_id":  config.StringVariable("test"),
+		"content_type_id": config.StringVariable("nonexistent"),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "contentful_editor_interface" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "nonexistent"
-				}
-				`,
-				ExpectError: regexp.MustCompile(`Failed to create editor interface`),
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ExpectError:     regexp.MustCompile(`Failed to create editor interface`),
 			},
 		},
 	})
@@ -118,95 +133,36 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
+	configVariables := config.Variables{
+		"space_id":        config.StringVariable("0p38pssr0fi3"),
+		"environment_id":  config.StringVariable("test"),
+		"content_type_id": config.StringVariable("author"),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "contentful_editor_interface" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "author"
-				}
-				`,
+				ConfigDirectory:    config.TestStepDirectory(),
+				ConfigVariables:    configVariables,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
 			{
+				ConfigDirectory:    config.TestStepDirectory(),
+				ConfigVariables:    configVariables,
 				ResourceName:       "contentful_editor_interface.test",
 				ImportState:        true,
 				ImportStateId:      "0p38pssr0fi3/test/author",
 				ImportStatePersist: true,
 			},
 			{
-				Config: `
-				resource "contentful_editor_interface" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "author"
-
-					controls = [
-						{
-							field_id         = "name",
-							widget_namespace = "builtin",
-							widget_id        = "singleLine",
-						},
-						{
-							field_id         = "avatar",
-							widget_namespace = "builtin",
-							widget_id        = "assetLinkEditor",
-						},
-						{
-							field_id         = "blurb",
-							widget_namespace = "builtin",
-							widget_id        = "richTextEditor",
-						}
-					]
-
-					sidebar = [{
-						widget_namespace = "app"
-						widget_id        = "1WkQ2J9LERPtbMTdUfSHka"
-						settings = jsonencode({
-							foo = "bar"
-						})
-					}]
-				}
-				`,
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
 			},
 			{
-				Config: `
-				resource "contentful_editor_interface" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "author"
-
-					controls = [
-						{
-							field_id         = "name",
-							widget_namespace = "builtin",
-							widget_id        = "singleLine",
-						},
-						{
-							field_id         = "avatar",
-							widget_namespace = "builtin",
-							widget_id        = "assetLinkEditor",
-						},
-						{
-							field_id         = "blurb",
-							widget_namespace = "builtin",
-							widget_id        = "richTextEditor",
-						}
-					]
-
-					sidebar = [{
-						widget_namespace = "app"
-						widget_id        = "1WkQ2J9LERPtbMTdUfSHka"
-						settings = jsonencode({
-							bar = "baz"
-						})
-					}]
-				}
-				`,
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionUpdate),
@@ -214,36 +170,8 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 				},
 			},
 			{
-				Config: `
-				resource "contentful_editor_interface" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "author"
-
-					controls = [
-						{
-							field_id         = "name",
-							widget_namespace = "builtin",
-							widget_id        = "singleLine",
-						},
-						{
-							field_id         = "avatar",
-							widget_namespace = "builtin",
-							widget_id        = "assetLinkEditor",
-						},
-						{
-							field_id         = "blurb",
-							widget_namespace = "builtin",
-							widget_id        = "richTextEditor",
-						}
-					]
-
-					sidebar = [{
-						widget_namespace = "app"
-						widget_id        = "1WkQ2J9LERPtbMTdUfSHka"
-					}]
-				}
-				`,
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionUpdate),
@@ -251,89 +179,8 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 				},
 			},
 			{
-				Config: `
-				resource "contentful_editor_interface" "test" {
-					space_id = "0p38pssr0fi3"
-					environment_id = "test"
-					content_type_id = "author"
-
-					editor_layout = [{
-						group_id = "content"
-						name     = "Content"
-						items = [
-							jsonencode(
-								{
-									groupId = "name"
-									name    = "name"
-									items = [
-										{
-											fieldId = "name"
-										},
-									]
-								}
-							),
-							jsonencode(
-								{
-									groupId = "bio"
-									name    = "Bio"
-									items = [
-										{
-											fieldId = "avatar"
-										},
-										{
-											fieldId = "blurb"
-										},
-									]
-								}
-							),
-						]
-					}]
-
-					controls = [
-						{
-							field_id         = "name",
-							widget_namespace = "builtin",
-							widget_id        = "singleLine",
-						},
-						{
-							field_id         = "avatar",
-							widget_namespace = "builtin",
-							widget_id        = "assetLinkEditor",
-						},
-						{
-							field_id         = "blurb",
-							widget_namespace = "builtin",
-							widget_id        = "richTextEditor",
-						}
-					]
-
-					group_controls = [
-						{
-							group_id         = "content"
-							widget_namespace = "builtin"
-							widget_id        = "topLevelTab"
-						},
-						{
-							group_id         = "name"
-							widget_namespace = "builtin"
-							widget_id        = "fieldset"
-							settings = jsonencode({
-								collapsedByDefault = false
-								helpText           = ""
-							})
-						},
-						{
-							group_id         = "bio"
-							widget_namespace = "builtin"
-							widget_id        = "fieldset"
-							settings = jsonencode({
-								collapsedByDefault = false
-								helpText           = ""
-							})
-						},
-					]
-				}
-				`,
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionUpdate),
