@@ -13,7 +13,7 @@ func (ts *ContentfulManagementTestServer) HandleContentType(spaceID string, envi
 
 	contentTypeID := contentType.Sys.ID
 
-	ts.ServeMux.Handle(fmt.Sprintf("/spaces/%s/environments/%s/content_types/%s", spaceID, environmentID, contentTypeID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/environments/%s/content_types/%s", spaceID, environmentID, contentTypeID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, contentType)
@@ -26,7 +26,7 @@ func (ts *ContentfulManagementTestServer) HandleContentType(spaceID string, envi
 		}
 	}))
 
-	ts.ServeMux.Handle(fmt.Sprintf("/spaces/%s/environments/%s/content_types/%s/published", spaceID, environmentID, contentTypeID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/environments/%s/content_types/%s/published", spaceID, environmentID, contentTypeID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPut:
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, contentType)
@@ -37,7 +37,7 @@ func (ts *ContentfulManagementTestServer) HandleContentType(spaceID string, envi
 		}
 	}))
 
-	ts.ServeMux.Handle(fmt.Sprintf("/spaces/%s/environments/%s/content_types/%s/editor_interface", spaceID, environmentID, contentTypeID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/environments/%s/content_types/%s/editor_interface", spaceID, environmentID, contentTypeID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, editorInterface)

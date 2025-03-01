@@ -12,7 +12,7 @@ func (ts *ContentfulManagementTestServer) HandleAPIKeyCreation(spaceID string, a
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.ServeMux.Handle(fmt.Sprintf("/spaces/%s/api_keys", spaceID), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/api_keys", spaceID), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			_ = WriteContentfulManagementResponse(w, http.StatusCreated, apiKey)
@@ -28,7 +28,7 @@ func (ts *ContentfulManagementTestServer) HandleAPIKey(spaceID string, apiKey *c
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.ServeMux.Handle(fmt.Sprintf("/spaces/%s/api_keys/%s", spaceID, apiKeyID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/api_keys/%s", spaceID, apiKeyID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, apiKey)

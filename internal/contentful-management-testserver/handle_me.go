@@ -2,18 +2,24 @@ package contentfulmanagementtestserver
 
 import (
 	"net/http"
-
-	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func (ts *ContentfulManagementTestServer) HandleUser(user *cm.User) {
+func (ts *ContentfulManagementTestServer) setupUserHandler() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.ServeMux.Handle("/users/me", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle("/users/me", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
 		switch r.Method {
 		case http.MethodGet:
-			_ = WriteContentfulManagementResponse(w, http.StatusOK, user)
+			switch ts.me {
+			case nil:
+				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+			default:
+				_ = WriteContentfulManagementResponse(w, http.StatusOK, ts.me)
+			}
 		default:
 			_ = WriteContentfulManagementErrorNotFoundResponse(w)
 		}

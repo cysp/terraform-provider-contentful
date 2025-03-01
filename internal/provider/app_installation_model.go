@@ -61,10 +61,10 @@ func (model *AppInstallationModel) ToAppInstallationFields() (cm.AppInstallation
 		diags.AddAttributeWarning(path.Root("parameters"), "Failed to update app installation parameters", "Parameters are unknown")
 	case model.Parameters.IsNull():
 	default:
-		req.Parameters = []byte(model.Parameters.ValueString())
+		fields.Parameters = []byte(model.Parameters.ValueString())
 	}
 
-	return req, diags
+	return fields, diags
 }
 
 func (model *AppInstallationModel) ReadFromResponse(appInstallation *cm.AppInstallation) diag.Diagnostics {

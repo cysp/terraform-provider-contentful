@@ -4,7 +4,6 @@ import (
 	"regexp"
 	"testing"
 
-	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -66,22 +65,9 @@ func TestAccRoleResourceImportNotFound(t *testing.T) {
 //nolint:paralleltest
 func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server.Close()
+	defer testserver.Server().Close()
 
-	role := cm.Role{
-		Sys: cm.RoleSys{
-			Type: cm.RoleSysTypeRole,
-			ID:   "abcdef",
-		},
-		Name:        "Test",
-		Permissions: cm.RolePermissions{},
-		Policies:    []cm.RolePoliciesItem{},
-	}
-
-	testserver.HandleRoleCreation("0p38pssr0fi3", &role)
-	testserver.HandleRole("0p38pssr0fi3", &role)
-
-	ContentfulProviderMockedResourceTest(t, testserver.Server, resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -94,9 +80,6 @@ func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 					`,
 			},
 			{
-				PreConfig: func() {
-					role.Permissions["foo"] = cm.RolePermissionsItem{Type: cm.StringArrayRolePermissionsItem, StringArray: []string{"bar"}}
-				},
 				Config: `
 					resource "contentful_role" "test" {
 						space_id = "0p38pssr0fi3"

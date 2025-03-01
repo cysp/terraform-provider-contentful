@@ -11,7 +11,7 @@ func (ts *ContentfulManagementTestServer) HandleAppInstallation(spaceID string, 
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.ServeMux.Handle(fmt.Sprintf("/spaces/%s/environments/%s/app_installations/%s", spaceID, environmentID, appDefinitionID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/environments/%s/app_installations/%s", spaceID, environmentID, appDefinitionID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, appInstallation)

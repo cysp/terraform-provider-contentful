@@ -13,7 +13,7 @@ func (ts *ContentfulManagementTestServer) HandlePreviewAPIKey(spaceID string, pr
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.ServeMux.Handle(fmt.Sprintf("/spaces/%s/preview_api_keys/%s", spaceID, previewAPIKeyID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/preview_api_keys/%s", spaceID, previewAPIKeyID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, previewAPIKey)

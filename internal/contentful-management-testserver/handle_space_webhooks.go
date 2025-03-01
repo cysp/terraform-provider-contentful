@@ -12,7 +12,7 @@ func (ts *ContentfulManagementTestServer) HandleWebhookDefinitionCreation(spaceI
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.ServeMux.Handle(fmt.Sprintf("/spaces/%s/webhook_definitions", spaceID), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/webhook_definitions", spaceID), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			_ = WriteContentfulManagementResponse(w, http.StatusCreated, webhookDefinition)
@@ -28,7 +28,7 @@ func (ts *ContentfulManagementTestServer) HandleWebhookDefinition(spaceID string
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.ServeMux.Handle(fmt.Sprintf("/spaces/%s/webhook_definitions/%s", spaceID, webhookDefinitionID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/webhook_definitions/%s", spaceID, webhookDefinitionID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, webhookDefinition)

@@ -1,48 +1,67 @@
 package contentfulmanagementtestserver
 
 import (
-	"fmt"
 	"net/http"
+	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func (ts *ContentfulManagementTestServer) HandlePersonalAccessTokenCreation(personalAccessToken *cm.PersonalAccessToken) {
+func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.ServeMux.Handle("/users/me/access_tokens", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts.personalAccessTokenIDsToCreate = make([]string, 0)
+	ts.personalAccessTokens = make(map[string]*cm.PersonalAccessToken)
+
+	ts.serveMux.Handle("/users/me/access_tokens", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
 		switch r.Method {
 		case http.MethodPost:
-			_ = WriteContentfulManagementResponse(w, http.StatusCreated, personalAccessToken)
+			var personalAccessToken cm.PersonalAccessToken
+			_ = ReadContentfulManagementRequest(r, &personalAccessToken)
+
+			ts.personalAccessTokens[personalAccessToken.Sys.ID] = &personalAccessToken
+
+			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &personalAccessToken)
 		default:
 			_ = WriteContentfulManagementErrorNotFoundResponse(w)
 		}
 	}))
-}
 
-func (ts *ContentfulManagementTestServer) HandlePersonalAccessToken(personalAccessToken *cm.PersonalAccessToken) {
-	personalAccessTokenID := personalAccessToken.Sys.ID
+	ts.serveMux.Handle("/users/me/access_tokens/{id}", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
 
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
-	//nolint:perfsprint
-	ts.ServeMux.Handle(fmt.Sprintf("/users/me/access_tokens/%s", personalAccessTokenID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+		//nolint:gocritic
 		switch r.Method {
 		case http.MethodGet:
-			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, personalAccessToken)
-		default:
-			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+			if personalAccessToken, exists := ts.personalAccessTokens[id]; exists {
+				_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, personalAccessToken)
+
+				return
+			}
 		}
+
+		_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 	}))
 
-	ts.ServeMux.Handle(fmt.Sprintf("/users/me/access_tokens/%s/revoked", personalAccessTokenID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle("/users/me/access_tokens/{id}/revoked", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+
+		//nolint:gocritic
 		switch r.Method {
 		case http.MethodPut:
-			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, personalAccessToken)
-		default:
-			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+			if personalAccessToken, exists := ts.personalAccessTokens[id]; exists {
+				personalAccessToken.RevokedAt = cm.NewOptNilDateTime(time.Now())
+
+				_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, personalAccessToken)
+
+				return
+			}
 		}
+
+		_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 	}))
 }
