@@ -8,20 +8,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *RoleModel) ToUpdateRoleReq(ctx context.Context) (cm.UpdateRoleReq, diag.Diagnostics) {
+func (model *RoleModel) ToRoleFields(ctx context.Context) (cm.RoleFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	request := cm.UpdateRoleReq{
+	request := cm.RoleFields{
 		Name:        model.Name.ValueString(),
 		Description: cm.NewOptNilPointerString(model.Description.ValueStringPointer()),
 	}
 
-	permissions, permissionsDiags := ToUpdateRoleReqPermissions(ctx, path.Root("permissions"), model.Permissions)
+	permissions, permissionsDiags := ToRoleFieldsPermissions(ctx, path.Root("permissions"), model.Permissions)
 	diags.Append(permissionsDiags...)
 
 	request.Permissions = permissions
 
-	policies, policiesDiags := ToUpdateRoleReqPolicies(ctx, path.Root("policies"), model.Policies)
+	policies, policiesDiags := ToRoleFieldsPolicies(ctx, path.Root("policies"), model.Policies)
 	diags.Append(policiesDiags...)
 
 	request.Policies = policies

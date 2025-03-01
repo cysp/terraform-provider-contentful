@@ -22,10 +22,10 @@ func NewControlsValueKnown() ControlsValue {
 	}
 }
 
-func (model *ControlsValue) ToPutEditorInterfaceReqControlsItem(_ context.Context, _ path.Path) (cm.PutEditorInterfaceReqControlsItem, diag.Diagnostics) {
+func (model *ControlsValue) ToEditorInterfaceFieldsControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.PutEditorInterfaceReqControlsItem{
+	item := cm.EditorInterfaceFieldsControlsItem{
 		FieldId:         model.FieldId.ValueString(),
 		WidgetNamespace: util.StringValueToOptString(model.WidgetNamespace),
 		WidgetId:        util.StringValueToOptString(model.WidgetId),

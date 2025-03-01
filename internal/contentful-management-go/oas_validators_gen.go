@@ -151,6 +151,43 @@ func (s ApiKeyPreviewAPIKeySysType) Validate() error {
 	}
 }
 
+func (s *ApiKeyRequestFields) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		var failures []validate.FieldError
+		for i, elem := range s.Environments {
+			if err := func() error {
+				if err := elem.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				failures = append(failures, validate.FieldError{
+					Name:  fmt.Sprintf("[%d]", i),
+					Error: err,
+				})
+			}
+		}
+		if len(failures) > 0 {
+			return &validate.Error{Fields: failures}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "environments",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
 func (s *ApiKeySys) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -272,6 +309,29 @@ func (s *ContentType) Validate() error {
 	return nil
 }
 
+func (s *ContentTypeRequestFields) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if s.Fields == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "fields",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
 func (s *ContentTypeSys) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -304,250 +364,6 @@ func (s ContentTypeSysType) Validate() error {
 	}
 }
 
-func (s *CreateDeliveryApiKeyReq) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		var failures []validate.FieldError
-		for i, elem := range s.Environments {
-			if err := func() error {
-				if err := elem.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				failures = append(failures, validate.FieldError{
-					Name:  fmt.Sprintf("[%d]", i),
-					Error: err,
-				})
-			}
-		}
-		if len(failures) > 0 {
-			return &validate.Error{Fields: failures}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "environments",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s *CreatePersonalAccessTokenReq) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if s.Scopes == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "scopes",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s *CreateRoleReq) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Permissions.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "permissions",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		var failures []validate.FieldError
-		for i, elem := range s.Policies {
-			if err := func() error {
-				if err := elem.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				failures = append(failures, validate.FieldError{
-					Name:  fmt.Sprintf("[%d]", i),
-					Error: err,
-				})
-			}
-		}
-		if len(failures) > 0 {
-			return &validate.Error{Fields: failures}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "policies",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s CreateRoleReqPermissions) Validate() error {
-	var failures []validate.FieldError
-	for key, elem := range s {
-		if err := func() error {
-			if err := elem.Validate(); err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			failures = append(failures, validate.FieldError{
-				Name:  key,
-				Error: err,
-			})
-		}
-	}
-
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s CreateRoleReqPermissionsItem) Validate() error {
-	switch s.Type {
-	case StringCreateRoleReqPermissionsItem:
-		return nil // no validation needed
-	case StringArrayCreateRoleReqPermissionsItem:
-		if s.StringArray == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	default:
-		return errors.Errorf("invalid type %q", s.Type)
-	}
-}
-
-func (s *CreateRoleReqPoliciesItem) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Effect.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "effect",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if err := s.Actions.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "actions",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s CreateRoleReqPoliciesItemActions) Validate() error {
-	switch s.Type {
-	case StringCreateRoleReqPoliciesItemActions:
-		return nil // no validation needed
-	case StringArrayCreateRoleReqPoliciesItemActions:
-		if s.StringArray == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	default:
-		return errors.Errorf("invalid type %q", s.Type)
-	}
-}
-
-func (s CreateRoleReqPoliciesItemEffect) Validate() error {
-	switch s {
-	case "allow":
-		return nil
-	case "deny":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
-func (s *CreateWebhookDefinitionReq) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if s.Topics == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "topics",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if value, ok := s.Filters.Get(); ok {
-			if err := func() error {
-				if value == nil {
-					return errors.New("nil is invalid value")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "filters",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
 func (s *EditorInterface) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -565,6 +381,90 @@ func (s *EditorInterface) Validate() error {
 			Error: err,
 		})
 	}
+	if err := func() error {
+		if value, ok := s.EditorLayout.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "editorLayout",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Controls.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "controls",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.GroupControls.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "groupControls",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Sidebar.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "sidebar",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *EditorInterfaceFields) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
 	if err := func() error {
 		if value, ok := s.EditorLayout.Get(); ok {
 			if err := func() error {
@@ -862,6 +762,29 @@ func (s *PersonalAccessToken) Validate() error {
 	return nil
 }
 
+func (s *PersonalAccessTokenRequestFields) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if s.Scopes == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "scopes",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
 func (s *PersonalAccessTokenSys) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -990,113 +913,6 @@ func (s *PutContentTypeOK) Validate() error {
 	return nil
 }
 
-func (s *PutContentTypeReq) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if s.Fields == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "fields",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s *PutEditorInterfaceReq) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if value, ok := s.EditorLayout.Get(); ok {
-			if err := func() error {
-				if value == nil {
-					return errors.New("nil is invalid value")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "editorLayout",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if value, ok := s.Controls.Get(); ok {
-			if err := func() error {
-				if value == nil {
-					return errors.New("nil is invalid value")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "controls",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if value, ok := s.GroupControls.Get(); ok {
-			if err := func() error {
-				if value == nil {
-					return errors.New("nil is invalid value")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "groupControls",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if value, ok := s.Sidebar.Get(); ok {
-			if err := func() error {
-				if value == nil {
-					return errors.New("nil is invalid value")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "sidebar",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
 func (s *Role) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -1154,6 +970,149 @@ func (s *Role) Validate() error {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
+}
+
+func (s *RoleFields) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Permissions.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "permissions",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		var failures []validate.FieldError
+		for i, elem := range s.Policies {
+			if err := func() error {
+				if err := elem.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				failures = append(failures, validate.FieldError{
+					Name:  fmt.Sprintf("[%d]", i),
+					Error: err,
+				})
+			}
+		}
+		if len(failures) > 0 {
+			return &validate.Error{Fields: failures}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "policies",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s RoleFieldsPermissions) Validate() error {
+	var failures []validate.FieldError
+	for key, elem := range s {
+		if err := func() error {
+			if err := elem.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			failures = append(failures, validate.FieldError{
+				Name:  key,
+				Error: err,
+			})
+		}
+	}
+
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s RoleFieldsPermissionsItem) Validate() error {
+	switch s.Type {
+	case StringRoleFieldsPermissionsItem:
+		return nil // no validation needed
+	case StringArrayRoleFieldsPermissionsItem:
+		if s.StringArray == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
+func (s *RoleFieldsPoliciesItem) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Effect.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "effect",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Actions.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "actions",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s RoleFieldsPoliciesItemActions) Validate() error {
+	switch s.Type {
+	case StringRoleFieldsPoliciesItemActions:
+		return nil // no validation needed
+	case StringArrayRoleFieldsPoliciesItemActions:
+		if s.StringArray == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
+func (s RoleFieldsPoliciesItemEffect) Validate() error {
+	switch s {
+	case "allow":
+		return nil
+	case "deny":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
 }
 
 func (s RolePermissions) Validate() error {
@@ -1283,227 +1242,6 @@ func (s RoleSysType) Validate() error {
 	}
 }
 
-func (s *UpdateDeliveryApiKeyReq) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		var failures []validate.FieldError
-		for i, elem := range s.Environments {
-			if err := func() error {
-				if err := elem.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				failures = append(failures, validate.FieldError{
-					Name:  fmt.Sprintf("[%d]", i),
-					Error: err,
-				})
-			}
-		}
-		if len(failures) > 0 {
-			return &validate.Error{Fields: failures}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "environments",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s *UpdateRoleReq) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Permissions.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "permissions",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		var failures []validate.FieldError
-		for i, elem := range s.Policies {
-			if err := func() error {
-				if err := elem.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				failures = append(failures, validate.FieldError{
-					Name:  fmt.Sprintf("[%d]", i),
-					Error: err,
-				})
-			}
-		}
-		if len(failures) > 0 {
-			return &validate.Error{Fields: failures}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "policies",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s UpdateRoleReqPermissions) Validate() error {
-	var failures []validate.FieldError
-	for key, elem := range s {
-		if err := func() error {
-			if err := elem.Validate(); err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			failures = append(failures, validate.FieldError{
-				Name:  key,
-				Error: err,
-			})
-		}
-	}
-
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s UpdateRoleReqPermissionsItem) Validate() error {
-	switch s.Type {
-	case StringUpdateRoleReqPermissionsItem:
-		return nil // no validation needed
-	case StringArrayUpdateRoleReqPermissionsItem:
-		if s.StringArray == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	default:
-		return errors.Errorf("invalid type %q", s.Type)
-	}
-}
-
-func (s *UpdateRoleReqPoliciesItem) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Effect.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "effect",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if err := s.Actions.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "actions",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s UpdateRoleReqPoliciesItemActions) Validate() error {
-	switch s.Type {
-	case StringUpdateRoleReqPoliciesItemActions:
-		return nil // no validation needed
-	case StringArrayUpdateRoleReqPoliciesItemActions:
-		if s.StringArray == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	default:
-		return errors.Errorf("invalid type %q", s.Type)
-	}
-}
-
-func (s UpdateRoleReqPoliciesItemEffect) Validate() error {
-	switch s {
-	case "allow":
-		return nil
-	case "deny":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
-func (s *UpdateWebhookDefinitionReq) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if s.Topics == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "topics",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if value, ok := s.Filters.Get(); ok {
-			if err := func() error {
-				if value == nil {
-					return errors.New("nil is invalid value")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "filters",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
 func (s *User) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -1576,6 +1314,47 @@ func (s *WebhookDefinition) Validate() error {
 			Error: err,
 		})
 	}
+	if err := func() error {
+		if s.Topics == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "topics",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Filters.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "filters",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *WebhookDefinitionFields) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
 	if err := func() error {
 		if s.Topics == nil {
 			return errors.New("nil is invalid value")

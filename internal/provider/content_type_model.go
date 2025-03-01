@@ -11,16 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *ContentTypeModel) ToPutContentTypeReq(ctx context.Context) (cm.PutContentTypeReq, diag.Diagnostics) {
+func (m *ContentTypeModel) ToContentTypeRequestFields(ctx context.Context) (cm.ContentTypeRequestFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	request := cm.PutContentTypeReq{
+	request := cm.ContentTypeRequestFields{
 		Name:         m.Name.ValueString(),
 		Description:  m.Description.ValueString(),
 		DisplayField: m.DisplayField.ValueString(),
 	}
 
-	fields, fieldsDiags := FieldsListToPutContentTypeReqFields(ctx, path.Root("fields"), m.Fields)
+	fields, fieldsDiags := FieldsListToContentTypeRequestFieldsFields(ctx, path.Root("fields"), m.Fields)
 	diags.Append(fieldsDiags...)
 
 	request.Fields = fields
@@ -28,17 +28,17 @@ func (m *ContentTypeModel) ToPutContentTypeReq(ctx context.Context) (cm.PutConte
 	return request, diags
 }
 
-func FieldsListToPutContentTypeReqFields(ctx context.Context, path path.Path, fieldsList types.List) ([]cm.PutContentTypeReqFieldsItem, diag.Diagnostics) {
+func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.Path, fieldsList types.List) ([]cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsValues := make([]FieldsValue, len(fieldsList.Elements()))
 	diags.Append(fieldsList.ElementsAs(ctx, &fieldsValues, false)...)
 
-	fieldsItems := make([]cm.PutContentTypeReqFieldsItem, len(fieldsValues))
+	fieldsItems := make([]cm.ContentTypeRequestFieldsFieldsItem, len(fieldsValues))
 
 	for index, fieldsValue := range fieldsValues {
 		path := path.AtListIndex(index)
-		fieldsItem, fieldsItemDiags := fieldsValue.ToPutContentTypeReqFieldsItem(ctx, path)
+		fieldsItem, fieldsItemDiags := fieldsValue.ToContentTypeRequestFieldsFieldsItem(ctx, path)
 		diags.Append(fieldsItemDiags...)
 
 		fieldsItems[index] = fieldsItem
@@ -47,16 +47,16 @@ func FieldsListToPutContentTypeReqFields(ctx context.Context, path path.Path, fi
 	return fieldsItems, diags
 }
 
-func (model *FieldsValue) ToPutContentTypeReqFieldsItem(ctx context.Context, path path.Path) (cm.PutContentTypeReqFieldsItem, diag.Diagnostics) {
+func (model *FieldsValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptPutContentTypeReqFieldsItemItems(ctx, path.AtName("items"), model.Items)
+	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx, path.AtName("items"), model.Items)
 	diags.Append(fieldsItemItemsDiags...)
 
-	fieldsItemValidations, fieldsItemValidationsDiags := ValidationsListToPutContentTypeReqValidations(ctx, path.AtName("validations"), model.Validations)
+	fieldsItemValidations, fieldsItemValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), model.Validations)
 	diags.Append(fieldsItemValidationsDiags...)
 
-	fieldsItem := cm.PutContentTypeReqFieldsItem{
+	fieldsItem := cm.ContentTypeRequestFieldsFieldsItem{
 		ID:          model.Id.ValueString(),
 		Name:        model.Name.ValueString(),
 		Type:        model.FieldsType.ValueString(),
@@ -77,17 +77,17 @@ func (model *FieldsValue) ToPutContentTypeReqFieldsItem(ctx context.Context, pat
 	return fieldsItem, diags
 }
 
-func ItemsObjectToOptPutContentTypeReqFieldsItemItems(ctx context.Context, path path.Path, itemsObject types.Object) (cm.OptPutContentTypeReqFieldsItemItems, diag.Diagnostics) {
+func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path, itemsObject types.Object) (cm.OptContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldsItemItems := cm.OptPutContentTypeReqFieldsItemItems{}
+	fieldsItemItems := cm.OptContentTypeRequestFieldsFieldsItemItems{}
 
 	if !itemsObject.IsNull() && !itemsObject.IsUnknown() {
 		modelItemsObjectValue, modelItemsObjectValueDiags := ItemsType{}.ValueFromObject(ctx, itemsObject)
 		diags.Append(modelItemsObjectValueDiags...)
 
 		if modelItemsValue, ok := modelItemsObjectValue.(ItemsValue); ok {
-			items, itemsDiags := modelItemsValue.ToPutContentTypeReqFieldsItemItems(ctx, path)
+			items, itemsDiags := modelItemsValue.ToContentTypeRequestFieldsFieldsItemItems(ctx, path)
 			diags.Append(itemsDiags...)
 
 			fieldsItemItems.SetTo(items)
@@ -99,13 +99,13 @@ func ItemsObjectToOptPutContentTypeReqFieldsItemItems(ctx context.Context, path 
 	return fieldsItemItems, diags
 }
 
-func (model *ItemsValue) ToPutContentTypeReqFieldsItemItems(ctx context.Context, path path.Path) (cm.PutContentTypeReqFieldsItemItems, diag.Diagnostics) {
+func (model *ItemsValue) ToContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	itemsValidations, itemsValidationsDiags := ValidationsListToPutContentTypeReqValidations(ctx, path.AtName("validations"), model.Validations)
+	itemsValidations, itemsValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), model.Validations)
 	diags.Append(itemsValidationsDiags...)
 
-	items := cm.PutContentTypeReqFieldsItemItems{
+	items := cm.ContentTypeRequestFieldsFieldsItemItems{
 		Type:        util.StringValueToOptString(model.ItemsType),
 		LinkType:    util.StringValueToOptString(model.LinkType),
 		Validations: itemsValidations,
@@ -114,7 +114,7 @@ func (model *ItemsValue) ToPutContentTypeReqFieldsItemItems(ctx context.Context,
 	return items, diags
 }
 
-func ValidationsListToPutContentTypeReqValidations(ctx context.Context, _ path.Path, validationsList types.List) ([]jx.Raw, diag.Diagnostics) {
+func ValidationsListToContentTypeRequestFieldsFieldValidations(ctx context.Context, _ path.Path, validationsList types.List) ([]jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	validationsStrings := []string{}

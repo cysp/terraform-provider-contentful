@@ -22,10 +22,10 @@ func NewEditorLayoutValueKnown() EditorLayoutValue {
 	}
 }
 
-func (model *EditorLayoutValue) ToPutEditorInterfaceReqEditorLayoutItem(ctx context.Context, _ path.Path) (cm.PutEditorInterfaceReqEditorLayoutItem, diag.Diagnostics) {
+func (model *EditorLayoutValue) ToEditorInterfaceFieldsEditorLayoutItem(ctx context.Context, _ path.Path) (cm.EditorInterfaceFieldsEditorLayoutItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.PutEditorInterfaceReqEditorLayoutItem{
+	item := cm.EditorInterfaceFieldsEditorLayoutItem{
 		GroupId: model.GroupId.ValueString(),
 		Name:    model.Name.ValueString(),
 	}

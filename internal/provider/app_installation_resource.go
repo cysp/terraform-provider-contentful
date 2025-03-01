@@ -66,7 +66,7 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		XContentfulMarketplace: xContentfulMarketplace,
 	}
 
-	request, requestDiags := data.ToPutAppInstallationReq()
+	request, requestDiags := data.ToAppInstallationFields()
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -164,7 +164,7 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 		XContentfulMarketplace: xContentfulMarketplace,
 	}
 
-	request, requestDiags := data.ToPutAppInstallationReq()
+	request, requestDiags := data.ToAppInstallationFields()
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

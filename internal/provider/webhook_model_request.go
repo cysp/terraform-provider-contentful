@@ -1,4 +1,3 @@
-//nolint:dupl
 package provider
 
 import (
@@ -10,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *WebhookModel) ToUpdateWebhookDefinitionReq(ctx context.Context, path path.Path) (cm.UpdateWebhookDefinitionReq, diag.Diagnostics) {
+func (model *WebhookModel) ToWebhookDefinitionFields(ctx context.Context, path path.Path) (cm.WebhookDefinitionFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.UpdateWebhookDefinitionReq{
+	req := cm.WebhookDefinitionFields{
 		Name:              model.Name.ValueString(),
 		URL:               model.URL.ValueString(),
 		Active:            util.BoolValueToOptBool(model.Active),
@@ -57,7 +56,7 @@ func (model *WebhookModel) ToUpdateWebhookDefinitionReq(ctx context.Context, pat
 
 	req.Headers = headersList
 
-	transformation, transformationDiags := ToOptNilUpdateWebhookDefinitionReqTransformation(ctx, path.AtName("transformation"), model.Transformation)
+	transformation, transformationDiags := ToOptNilWebhookDefinitionFieldsTransformation(ctx, path.AtName("transformation"), model.Transformation)
 	diags.Append(transformationDiags...)
 
 	req.Transformation = transformation

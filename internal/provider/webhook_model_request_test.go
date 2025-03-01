@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
+func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -21,7 +21,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 
 	testcases := map[string]struct {
 		model     provider.WebhookModel
-		expected  cm.CreateWebhookDefinitionReq
+		expected  cm.WebhookDefinitionFields
 		expectErr bool
 	}{
 		"basic": {
@@ -36,7 +36,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					types.StringValue("Entry.delete"),
 				}),
 			},
-			expected: cm.CreateWebhookDefinitionReq{
+			expected: cm.WebhookDefinitionFields{
 				Name:              "test-webhook",
 				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
@@ -44,7 +44,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				HttpBasicPassword: cm.NewOptNilStringNull(),
 				Topics:            []string{"Entry.create", "Entry.delete"},
 				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation:    cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
+				Transformation:    cm.OptNilWebhookDefinitionFieldsTransformation{Set: true, Null: true},
 			},
 			expectErr: false,
 		},
@@ -59,7 +59,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					types.StringValue("Entry.*"),
 				}),
 			},
-			expected: cm.CreateWebhookDefinitionReq{
+			expected: cm.WebhookDefinitionFields{
 				Name:              "auth-webhook",
 				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
@@ -67,7 +67,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				HttpBasicPassword: cm.NewOptNilString("pass"),
 				Topics:            []string{"Entry.*"},
 				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation:    cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
+				Transformation:    cm.OptNilWebhookDefinitionFieldsTransformation{Set: true, Null: true},
 			},
 			expectErr: false,
 		},
@@ -83,7 +83,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					}),
 				}),
 			},
-			expected: cm.CreateWebhookDefinitionReq{
+			expected: cm.WebhookDefinitionFields{
 				Name:              "headers-webhook",
 				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
@@ -97,7 +97,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					},
 				},
 				Filters:        cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation: cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
+				Transformation: cm.OptNilWebhookDefinitionFieldsTransformation{Set: true, Null: true},
 			},
 		},
 		"with transformation": {
@@ -112,14 +112,14 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					"body":                   jsontypes.NewNormalizedNull(),
 				}),
 			},
-			expected: cm.CreateWebhookDefinitionReq{
+			expected: cm.WebhookDefinitionFields{
 				Name:              "headers-webhook",
 				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
 				HttpBasicUsername: cm.NewOptNilStringNull(),
 				HttpBasicPassword: cm.NewOptNilStringNull(),
 				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation: cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Value: cm.CreateWebhookDefinitionReqTransformation{
+				Transformation: cm.OptNilWebhookDefinitionFieldsTransformation{Set: true, Value: cm.WebhookDefinitionFieldsTransformation{
 					Method:               cm.NewOptString("POST"),
 					ContentType:          cm.NewOptString("application/json"),
 					IncludeContentLength: cm.NewOptBool(true),
@@ -138,14 +138,14 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 					"body":                   jsontypes.NewNormalizedValue("{\"key\":\"value\"}"),
 				}),
 			},
-			expected: cm.CreateWebhookDefinitionReq{
+			expected: cm.WebhookDefinitionFields{
 				Name:              "headers-webhook",
 				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
 				HttpBasicUsername: cm.NewOptNilStringNull(),
 				HttpBasicPassword: cm.NewOptNilStringNull(),
 				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation: cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Value: cm.CreateWebhookDefinitionReqTransformation{
+				Transformation: cm.OptNilWebhookDefinitionFieldsTransformation{Set: true, Value: cm.WebhookDefinitionFieldsTransformation{
 					Method:               cm.NewOptString("POST"),
 					ContentType:          cm.NewOptString("application/json"),
 					IncludeContentLength: cm.NewOptBool(true),
@@ -162,7 +162,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 				HTTPBasicPassword: types.StringNull(),
 				Filters:           filters,
 			},
-			expected: cm.CreateWebhookDefinitionReq{
+			expected: cm.WebhookDefinitionFields{
 				Name:              "filters-webhook",
 				Active:            cm.NewOptBool(true),
 				URL:               "https://example.com/webhook",
@@ -194,7 +194,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 						}),
 					},
 				}),
-				Transformation: cm.OptNilCreateWebhookDefinitionReqTransformation{Set: true, Null: true},
+				Transformation: cm.OptNilWebhookDefinitionFieldsTransformation{Set: true, Null: true},
 			},
 			expectErr: false,
 		},
@@ -204,7 +204,7 @@ func TestWebhookModelToCreateWebhookDefinitionReq(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, diags := testcase.model.ToCreateWebhookDefinitionReq(ctx, path.Empty())
+			got, diags := testcase.model.ToWebhookDefinitionFields(ctx, path.Empty())
 
 			if testcase.expectErr {
 				assert.True(t, diags.HasError())

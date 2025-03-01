@@ -736,8 +736,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/PersonalAccessTokenRequestFields'
+              $ref: '#/components/schemas/PersonalAccessTokenRequestFields'
       responses:
         201:
           description: A personal access token
@@ -794,8 +793,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/ApiKeyRequestFields'
+              $ref: '#/components/schemas/ApiKeyRequestFields'
       responses:
         201:
           description: A delivery api key
@@ -837,8 +835,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/ApiKeyRequestFields'
+              $ref: '#/components/schemas/ApiKeyRequestFields'
       responses:
         200:
           description: A delivery api key
@@ -913,8 +910,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/AppInstallationFields'
+              $ref: '#/components/schemas/AppInstallationFields'
       responses:
         200:
           description: An app installation
@@ -968,8 +964,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/ContentTypeRequestFields'
+              $ref: '#/components/schemas/ContentTypeRequestFields'
       responses:
         200:
           description: A content type
@@ -1069,8 +1064,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/EditorInterfaceFields'
+              $ref: '#/components/schemas/EditorInterfaceFields'
       responses:
         200:
           description: An editor interface
@@ -1093,8 +1087,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/RoleFields'
+                $ref: '#/components/schemas/RoleFields'
       responses:
         201:
           description: A role
@@ -1136,8 +1129,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/RoleFields'
+              $ref: '#/components/schemas/RoleFields'
       responses:
         200:
           description: A role
@@ -1174,8 +1166,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/WebhookDefinitionFields'
+              $ref: '#/components/schemas/WebhookDefinitionFields'
       responses:
         201:
           description: A webhook definition
@@ -1237,8 +1228,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/WebhookDefinitionFields'
+              $ref: '#/components/schemas/WebhookDefinitionFields'
       responses:
         200:
           description: A webhook definition
