@@ -1,4 +1,4 @@
-package testserver
+package contentfulmanagementtestserver
 
 import (
 	"fmt"
