@@ -62,7 +62,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 		SpaceID: data.SpaceId.ValueString(),
 	}
 
-	request, requestDiags := data.ToCreateDeliveryAPIKeyReq(ctx)
+	request, requestDiags := data.ToAPIKeyRequestFields(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -165,7 +165,7 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToUpdateDeliveryAPIKeyReq(ctx)
+	request, requestDiags := data.ToAPIKeyRequestFields(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

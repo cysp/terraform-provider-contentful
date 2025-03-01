@@ -1,4 +1,3 @@
-//nolint:dupl
 package provider
 
 import (
@@ -11,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToCreateRoleReqPermissions(ctx context.Context, path path.Path, permissions types.Map) (cm.CreateRoleReqPermissions, diag.Diagnostics) {
+func ToRoleFieldsPermissions(ctx context.Context, path path.Path, permissions types.Map) (cm.RoleFieldsPermissions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if permissions.IsUnknown() {
@@ -21,12 +20,12 @@ func ToCreateRoleReqPermissions(ctx context.Context, path path.Path, permissions
 	permissionsValues := make(map[string]types.List, len(permissions.Elements()))
 	diags.Append(permissions.ElementsAs(ctx, &permissionsValues, false)...)
 
-	rolePermissionsItems := make(cm.CreateRoleReqPermissions, len(permissions.Elements()))
+	rolePermissionsItems := make(cm.RoleFieldsPermissions, len(permissions.Elements()))
 
 	for key, permissionsValueElement := range permissionsValues {
 		path := path.AtMapKey(key)
 
-		permissionsItem, permissionsItemDiags := ToCreateRoleReqPermissionsItem(ctx, path, permissionsValueElement)
+		permissionsItem, permissionsItemDiags := ToRoleFieldsPermissionsItem(ctx, path, permissionsValueElement)
 		diags.Append(permissionsItemDiags...)
 
 		rolePermissionsItems[key] = permissionsItem
@@ -35,21 +34,21 @@ func ToCreateRoleReqPermissions(ctx context.Context, path path.Path, permissions
 	return rolePermissionsItems, diags
 }
 
-func ToCreateRoleReqPermissionsItem(ctx context.Context, _ path.Path, value types.List) (cm.CreateRoleReqPermissionsItem, diag.Diagnostics) {
+func ToRoleFieldsPermissionsItem(ctx context.Context, _ path.Path, value types.List) (cm.RoleFieldsPermissionsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	actionStrings := make([]string, len(value.Elements()))
 	diags.Append(value.ElementsAs(ctx, &actionStrings, false)...)
 
 	if slices.Contains(actionStrings, "all") {
-		return cm.CreateRoleReqPermissionsItem{
-			Type:   cm.StringCreateRoleReqPermissionsItem,
+		return cm.RoleFieldsPermissionsItem{
+			Type:   cm.StringRoleFieldsPermissionsItem,
 			String: "all",
 		}, diags
 	}
 
-	return cm.CreateRoleReqPermissionsItem{
-		Type:        cm.StringArrayCreateRoleReqPermissionsItem,
+	return cm.RoleFieldsPermissionsItem{
+		Type:        cm.StringArrayRoleFieldsPermissionsItem,
 		StringArray: actionStrings,
 	}, diags
 }

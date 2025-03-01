@@ -17,10 +17,10 @@ func NewSidebarValueKnown() SidebarValue {
 	}
 }
 
-func (model *SidebarValue) ToPutEditorInterfaceReqSidebarItem(_ context.Context, _ path.Path) (cm.PutEditorInterfaceReqSidebarItem, diag.Diagnostics) {
+func (model *SidebarValue) ToEditorInterfaceFieldsSidebarItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.PutEditorInterfaceReqSidebarItem{
+	item := cm.EditorInterfaceFieldsSidebarItem{
 		WidgetNamespace: model.WidgetNamespace.ValueString(),
 		WidgetId:        model.WidgetId.ValueString(),
 	}

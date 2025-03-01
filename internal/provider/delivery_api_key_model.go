@@ -10,26 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *DeliveryApiKeyModel) ToCreateDeliveryAPIKeyReq(ctx context.Context) (cm.CreateDeliveryApiKeyReq, diag.Diagnostics) {
+func (model *DeliveryApiKeyModel) ToAPIKeyRequestFields(ctx context.Context) (cm.ApiKeyRequestFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.CreateDeliveryApiKeyReq{
-		Name:        model.Name.ValueString(),
-		Description: util.StringValueToOptNilString(model.Description),
-	}
-
-	environments, environmentsDiags := ToEnvironmentLinks(ctx, path.Root("environments"), model.Environments)
-	diags.Append(environmentsDiags...)
-
-	req.Environments = environments
-
-	return req, diags
-}
-
-func (model *DeliveryApiKeyModel) ToUpdateDeliveryAPIKeyReq(ctx context.Context) (cm.UpdateDeliveryApiKeyReq, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	req := cm.UpdateDeliveryApiKeyReq{
+	req := cm.ApiKeyRequestFields{
 		Name:        model.Name.ValueString(),
 		Description: util.StringValueToOptNilString(model.Description),
 	}

@@ -1,4 +1,3 @@
-//nolint:dupl
 package provider_test
 
 import (
@@ -9,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRoleModelRoundTripToUpdateRoleReq(t *testing.T) {
+func TestRoleModelRoundTripToRoleFields(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -47,30 +46,30 @@ func TestRoleModelRoundTripToUpdateRoleReq(t *testing.T) {
 	assert.Equal(t, "Read access to content", model.Description.ValueString())
 	assert.Equal(t, "abcdef", model.RoleId.ValueString())
 
-	req, diags := model.ToUpdateRoleReq(ctx)
+	req, diags := model.ToRoleFields(ctx)
 
 	assert.Equal(t, "Reader", req.Name)
 	assert.True(t, req.Description.Set)
 	assert.Equal(t, "Read access to content", req.Description.Value)
 
 	assert.Len(t, req.Permissions, 2)
-	assert.Equal(t, cm.NewStringUpdateRoleReqPermissionsItem("all"), req.Permissions["ContentDelivery"])
-	assert.Equal(t, cm.NewStringArrayUpdateRoleReqPermissionsItem([]string{"read"}), req.Permissions["ContentManagement"])
+	assert.Equal(t, cm.NewStringRoleFieldsPermissionsItem("all"), req.Permissions["ContentDelivery"])
+	assert.Equal(t, cm.NewStringArrayRoleFieldsPermissionsItem([]string{"read"}), req.Permissions["ContentManagement"])
 
 	assert.Len(t, req.Policies, 3)
-	assert.Equal(t, cm.UpdateRoleReqPoliciesItem{
+	assert.Equal(t, cm.RoleFieldsPoliciesItem{
 		Effect:     "allow",
-		Actions:    cm.NewStringUpdateRoleReqPoliciesItemActions("all"),
+		Actions:    cm.NewStringRoleFieldsPoliciesItemActions("all"),
 		Constraint: []byte("{\"sys.type\":\"Entry\"}"),
 	}, req.Policies[0])
-	assert.Equal(t, cm.UpdateRoleReqPoliciesItem{
+	assert.Equal(t, cm.RoleFieldsPoliciesItem{
 		Effect:     "deny",
-		Actions:    cm.NewStringArrayUpdateRoleReqPoliciesItemActions([]string{"delete"}),
+		Actions:    cm.NewStringArrayRoleFieldsPoliciesItemActions([]string{"delete"}),
 		Constraint: []byte("{\"sys.type\":\"Entry\"}"),
 	}, req.Policies[1])
-	assert.Equal(t, cm.UpdateRoleReqPoliciesItem{
+	assert.Equal(t, cm.RoleFieldsPoliciesItem{
 		Effect:  "allow",
-		Actions: cm.NewStringUpdateRoleReqPoliciesItemActions("all"),
+		Actions: cm.NewStringRoleFieldsPoliciesItemActions("all"),
 	}, req.Policies[2])
 
 	assert.Empty(t, diags)

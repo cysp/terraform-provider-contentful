@@ -1,4 +1,3 @@
-//nolint:dupl
 package provider
 
 import (
@@ -9,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func ToOptNilUpdateWebhookDefinitionReqTransformation(_ context.Context, _ path.Path, value WebhookTransformationValue) (cm.OptNilUpdateWebhookDefinitionReqTransformation, diag.Diagnostics) {
+func ToOptNilWebhookDefinitionFieldsTransformation(_ context.Context, _ path.Path, value WebhookTransformationValue) (cm.OptNilWebhookDefinitionFieldsTransformation, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	optNilTransformation := cm.OptNilUpdateWebhookDefinitionReqTransformation{}
+	optNilTransformation := cm.OptNilWebhookDefinitionFieldsTransformation{}
 
 	switch {
 	case value.IsUnknown():
@@ -20,7 +19,7 @@ func ToOptNilUpdateWebhookDefinitionReqTransformation(_ context.Context, _ path.
 	case value.IsNull():
 		optNilTransformation.SetToNull()
 	default:
-		transformation := cm.UpdateWebhookDefinitionReqTransformation{}
+		transformation := cm.WebhookDefinitionFieldsTransformation{}
 
 		transformation.Method = cm.NewOptPointerString(value.Method.ValueStringPointer())
 		transformation.ContentType = cm.NewOptPointerString(value.ContentType.ValueStringPointer())

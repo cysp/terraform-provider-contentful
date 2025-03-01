@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
+func TestRoundTripToEditorInterfaceFields(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -53,12 +53,12 @@ func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
 	model := provider.EditorInterfaceModel{}
 	assert.Empty(t, model.ReadFromResponse(ctx, &editorInterface))
 
-	req, diags := model.ToPutEditorInterfaceReq(ctx)
+	req, diags := model.ToEditorInterfaceFields(ctx)
 	assert.Empty(t, diags)
 
 	assert.True(t, req.EditorLayout.Set)
 	assert.Len(t, req.EditorLayout.Value, 1)
-	assert.Equal(t, cm.PutEditorInterfaceReqEditorLayoutItem{
+	assert.Equal(t, cm.EditorInterfaceFieldsEditorLayoutItem{
 		GroupId: "group_id",
 		Name:    "name",
 		Items:   []jx.Raw{jx.Raw(`{"foo":"bar"}`)},
@@ -66,7 +66,7 @@ func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
 
 	assert.True(t, req.Controls.Set)
 	assert.Len(t, req.Controls.Value, 1)
-	assert.Equal(t, cm.PutEditorInterfaceReqControlsItem{
+	assert.Equal(t, cm.EditorInterfaceFieldsControlsItem{
 		FieldId:         "field_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
 		WidgetId:        cm.NewOptString("widget_id"),
@@ -75,7 +75,7 @@ func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
 
 	assert.True(t, req.GroupControls.Set)
 	assert.Len(t, req.GroupControls.Value, 1)
-	assert.Equal(t, cm.PutEditorInterfaceReqGroupControlsItem{
+	assert.Equal(t, cm.EditorInterfaceFieldsGroupControlsItem{
 		GroupId:         "group_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
 		WidgetId:        cm.NewOptString("widget_id"),
@@ -84,14 +84,14 @@ func TestRoundTripToPutEditorInterfaceReq(t *testing.T) {
 
 	assert.True(t, req.Sidebar.Set)
 	assert.Len(t, req.Sidebar.Value, 1)
-	assert.Equal(t, cm.PutEditorInterfaceReqSidebarItem{
+	assert.Equal(t, cm.EditorInterfaceFieldsSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
 		Settings:        []byte(`{"foo":"bar"}`),
 	}, req.Sidebar.Value[0])
 }
 
-func TestToPutEditorInterfaceReq(t *testing.T) {
+func TestToEditorInterfaceFields(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -128,12 +128,12 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 		Sidebar:  sidebar,
 	}
 
-	req, diags := model.ToPutEditorInterfaceReq(ctx)
+	req, diags := model.ToEditorInterfaceFields(ctx)
 
 	assert.Empty(t, diags)
 
-	assert.EqualValues(t, cm.PutEditorInterfaceReq{
-		Controls: cm.NewOptNilPutEditorInterfaceReqControlsItemArray([]cm.PutEditorInterfaceReqControlsItem{
+	assert.EqualValues(t, cm.EditorInterfaceFields{
+		Controls: cm.NewOptNilEditorInterfaceFieldsControlsItemArray([]cm.EditorInterfaceFieldsControlsItem{
 			{
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
@@ -141,7 +141,7 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
-		Sidebar: cm.NewOptNilPutEditorInterfaceReqSidebarItemArray([]cm.PutEditorInterfaceReqSidebarItem{
+		Sidebar: cm.NewOptNilEditorInterfaceFieldsSidebarItemArray([]cm.EditorInterfaceFieldsSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
@@ -151,7 +151,7 @@ func TestToPutEditorInterfaceReq(t *testing.T) {
 	}, req)
 }
 
-func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
+func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -214,10 +214,10 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 		Sidebar:  sidebar,
 	}
 
-	req, diags := model.ToPutEditorInterfaceReq(ctx)
+	req, diags := model.ToEditorInterfaceFields(ctx)
 
-	assert.EqualValues(t, cm.PutEditorInterfaceReq{
-		Controls: cm.NewOptNilPutEditorInterfaceReqControlsItemArray([]cm.PutEditorInterfaceReqControlsItem{
+	assert.EqualValues(t, cm.EditorInterfaceFields{
+		Controls: cm.NewOptNilEditorInterfaceFieldsControlsItemArray([]cm.EditorInterfaceFieldsControlsItem{
 			{
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
@@ -236,7 +236,7 @@ func TestToPutEditorInterfaceReqErrorHandling(t *testing.T) {
 				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
-		Sidebar: cm.NewOptNilPutEditorInterfaceReqSidebarItemArray([]cm.PutEditorInterfaceReqSidebarItem{
+		Sidebar: cm.NewOptNilEditorInterfaceFieldsSidebarItemArray([]cm.EditorInterfaceFieldsSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",

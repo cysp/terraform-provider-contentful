@@ -51,10 +51,10 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(c
 	return marketplaceStrings, diags
 }
 
-func (model *AppInstallationModel) ToPutAppInstallationReq() (cm.PutAppInstallationReq, diag.Diagnostics) {
+func (model *AppInstallationModel) ToAppInstallationFields() (cm.AppInstallationFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.PutAppInstallationReq{}
+	req := cm.AppInstallationFields{}
 
 	switch {
 	case model.Parameters.IsUnknown():

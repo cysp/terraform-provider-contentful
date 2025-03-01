@@ -221,6 +221,43 @@ func (s *ApiKeyPreviewAPIKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/ApiKeyRequestFields
+type ApiKeyRequestFields struct {
+	Name         string            `json:"name"`
+	Description  OptNilString      `json:"description"`
+	Environments []EnvironmentLink `json:"environments"`
+}
+
+// GetName returns the value of Name.
+func (s *ApiKeyRequestFields) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *ApiKeyRequestFields) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetEnvironments returns the value of Environments.
+func (s *ApiKeyRequestFields) GetEnvironments() []EnvironmentLink {
+	return s.Environments
+}
+
+// SetName sets the value of Name.
+func (s *ApiKeyRequestFields) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *ApiKeyRequestFields) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetEnvironments sets the value of Environments.
+func (s *ApiKeyRequestFields) SetEnvironments(val []EnvironmentLink) {
+	s.Environments = val
+}
+
 // Merged schema.
 // Ref: #/components/schemas/ApiKeySys
 type ApiKeySys struct {
@@ -346,6 +383,21 @@ func (s *AppInstallation) SetParameters(val jx.Raw) {
 
 func (*AppInstallation) getAppInstallationRes() {}
 func (*AppInstallation) putAppInstallationRes() {}
+
+// Ref: #/components/schemas/AppInstallationFields
+type AppInstallationFields struct {
+	Parameters jx.Raw `json:"parameters"`
+}
+
+// GetParameters returns the value of Parameters.
+func (s *AppInstallationFields) GetParameters() jx.Raw {
+	return s.Parameters
+}
+
+// SetParameters sets the value of Parameters.
+func (s *AppInstallationFields) SetParameters(val jx.Raw) {
+	s.Parameters = val
+}
 
 // Merged schema.
 // Ref: #/components/schemas/AppInstallationSys
@@ -625,6 +677,214 @@ func (s *ContentTypeFieldsItemItems) SetValidations(val []jx.Raw) {
 	s.Validations = val
 }
 
+// Ref: #/components/schemas/ContentTypeRequestFields
+type ContentTypeRequestFields struct {
+	Name         string                               `json:"name"`
+	Description  string                               `json:"description"`
+	DisplayField string                               `json:"displayField"`
+	Fields       []ContentTypeRequestFieldsFieldsItem `json:"fields"`
+}
+
+// GetName returns the value of Name.
+func (s *ContentTypeRequestFields) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *ContentTypeRequestFields) GetDescription() string {
+	return s.Description
+}
+
+// GetDisplayField returns the value of DisplayField.
+func (s *ContentTypeRequestFields) GetDisplayField() string {
+	return s.DisplayField
+}
+
+// GetFields returns the value of Fields.
+func (s *ContentTypeRequestFields) GetFields() []ContentTypeRequestFieldsFieldsItem {
+	return s.Fields
+}
+
+// SetName sets the value of Name.
+func (s *ContentTypeRequestFields) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *ContentTypeRequestFields) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetDisplayField sets the value of DisplayField.
+func (s *ContentTypeRequestFields) SetDisplayField(val string) {
+	s.DisplayField = val
+}
+
+// SetFields sets the value of Fields.
+func (s *ContentTypeRequestFields) SetFields(val []ContentTypeRequestFieldsFieldsItem) {
+	s.Fields = val
+}
+
+type ContentTypeRequestFieldsFieldsItem struct {
+	ID           string                                     `json:"id"`
+	Name         string                                     `json:"name"`
+	Type         string                                     `json:"type"`
+	LinkType     OptString                                  `json:"linkType"`
+	Items        OptContentTypeRequestFieldsFieldsItemItems `json:"items"`
+	Localized    OptBool                                    `json:"localized"`
+	Omitted      OptBool                                    `json:"omitted"`
+	Required     OptBool                                    `json:"required"`
+	Disabled     OptBool                                    `json:"disabled"`
+	DefaultValue jx.Raw                                     `json:"defaultValue"`
+	Validations  []jx.Raw                                   `json:"validations"`
+}
+
+// GetID returns the value of ID.
+func (s *ContentTypeRequestFieldsFieldsItem) GetID() string {
+	return s.ID
+}
+
+// GetName returns the value of Name.
+func (s *ContentTypeRequestFieldsFieldsItem) GetName() string {
+	return s.Name
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeRequestFieldsFieldsItem) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ContentTypeRequestFieldsFieldsItem) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetItems returns the value of Items.
+func (s *ContentTypeRequestFieldsFieldsItem) GetItems() OptContentTypeRequestFieldsFieldsItemItems {
+	return s.Items
+}
+
+// GetLocalized returns the value of Localized.
+func (s *ContentTypeRequestFieldsFieldsItem) GetLocalized() OptBool {
+	return s.Localized
+}
+
+// GetOmitted returns the value of Omitted.
+func (s *ContentTypeRequestFieldsFieldsItem) GetOmitted() OptBool {
+	return s.Omitted
+}
+
+// GetRequired returns the value of Required.
+func (s *ContentTypeRequestFieldsFieldsItem) GetRequired() OptBool {
+	return s.Required
+}
+
+// GetDisabled returns the value of Disabled.
+func (s *ContentTypeRequestFieldsFieldsItem) GetDisabled() OptBool {
+	return s.Disabled
+}
+
+// GetDefaultValue returns the value of DefaultValue.
+func (s *ContentTypeRequestFieldsFieldsItem) GetDefaultValue() jx.Raw {
+	return s.DefaultValue
+}
+
+// GetValidations returns the value of Validations.
+func (s *ContentTypeRequestFieldsFieldsItem) GetValidations() []jx.Raw {
+	return s.Validations
+}
+
+// SetID sets the value of ID.
+func (s *ContentTypeRequestFieldsFieldsItem) SetID(val string) {
+	s.ID = val
+}
+
+// SetName sets the value of Name.
+func (s *ContentTypeRequestFieldsFieldsItem) SetName(val string) {
+	s.Name = val
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeRequestFieldsFieldsItem) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ContentTypeRequestFieldsFieldsItem) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetItems sets the value of Items.
+func (s *ContentTypeRequestFieldsFieldsItem) SetItems(val OptContentTypeRequestFieldsFieldsItemItems) {
+	s.Items = val
+}
+
+// SetLocalized sets the value of Localized.
+func (s *ContentTypeRequestFieldsFieldsItem) SetLocalized(val OptBool) {
+	s.Localized = val
+}
+
+// SetOmitted sets the value of Omitted.
+func (s *ContentTypeRequestFieldsFieldsItem) SetOmitted(val OptBool) {
+	s.Omitted = val
+}
+
+// SetRequired sets the value of Required.
+func (s *ContentTypeRequestFieldsFieldsItem) SetRequired(val OptBool) {
+	s.Required = val
+}
+
+// SetDisabled sets the value of Disabled.
+func (s *ContentTypeRequestFieldsFieldsItem) SetDisabled(val OptBool) {
+	s.Disabled = val
+}
+
+// SetDefaultValue sets the value of DefaultValue.
+func (s *ContentTypeRequestFieldsFieldsItem) SetDefaultValue(val jx.Raw) {
+	s.DefaultValue = val
+}
+
+// SetValidations sets the value of Validations.
+func (s *ContentTypeRequestFieldsFieldsItem) SetValidations(val []jx.Raw) {
+	s.Validations = val
+}
+
+type ContentTypeRequestFieldsFieldsItemItems struct {
+	Type        OptString `json:"type"`
+	LinkType    OptString `json:"linkType"`
+	Validations []jx.Raw  `json:"validations"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeRequestFieldsFieldsItemItems) GetType() OptString {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ContentTypeRequestFieldsFieldsItemItems) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetValidations returns the value of Validations.
+func (s *ContentTypeRequestFieldsFieldsItemItems) GetValidations() []jx.Raw {
+	return s.Validations
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeRequestFieldsFieldsItemItems) SetType(val OptString) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ContentTypeRequestFieldsFieldsItemItems) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetValidations sets the value of Validations.
+func (s *ContentTypeRequestFieldsFieldsItemItems) SetValidations(val []jx.Raw) {
+	s.Validations = val
+}
+
 // Merged schema.
 // Ref: #/components/schemas/ContentTypeSys
 type ContentTypeSys struct {
@@ -741,498 +1001,6 @@ func (s *ContentTypeSysType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
-}
-
-type CreateDeliveryApiKeyReq struct {
-	Name         string            `json:"name"`
-	Description  OptNilString      `json:"description"`
-	Environments []EnvironmentLink `json:"environments"`
-}
-
-// GetName returns the value of Name.
-func (s *CreateDeliveryApiKeyReq) GetName() string {
-	return s.Name
-}
-
-// GetDescription returns the value of Description.
-func (s *CreateDeliveryApiKeyReq) GetDescription() OptNilString {
-	return s.Description
-}
-
-// GetEnvironments returns the value of Environments.
-func (s *CreateDeliveryApiKeyReq) GetEnvironments() []EnvironmentLink {
-	return s.Environments
-}
-
-// SetName sets the value of Name.
-func (s *CreateDeliveryApiKeyReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetDescription sets the value of Description.
-func (s *CreateDeliveryApiKeyReq) SetDescription(val OptNilString) {
-	s.Description = val
-}
-
-// SetEnvironments sets the value of Environments.
-func (s *CreateDeliveryApiKeyReq) SetEnvironments(val []EnvironmentLink) {
-	s.Environments = val
-}
-
-type CreatePersonalAccessTokenReq struct {
-	Name      string    `json:"name"`
-	Scopes    []string  `json:"scopes"`
-	ExpiresIn OptNilInt `json:"expiresIn"`
-}
-
-// GetName returns the value of Name.
-func (s *CreatePersonalAccessTokenReq) GetName() string {
-	return s.Name
-}
-
-// GetScopes returns the value of Scopes.
-func (s *CreatePersonalAccessTokenReq) GetScopes() []string {
-	return s.Scopes
-}
-
-// GetExpiresIn returns the value of ExpiresIn.
-func (s *CreatePersonalAccessTokenReq) GetExpiresIn() OptNilInt {
-	return s.ExpiresIn
-}
-
-// SetName sets the value of Name.
-func (s *CreatePersonalAccessTokenReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetScopes sets the value of Scopes.
-func (s *CreatePersonalAccessTokenReq) SetScopes(val []string) {
-	s.Scopes = val
-}
-
-// SetExpiresIn sets the value of ExpiresIn.
-func (s *CreatePersonalAccessTokenReq) SetExpiresIn(val OptNilInt) {
-	s.ExpiresIn = val
-}
-
-type CreateRoleReq struct {
-	Name        string                      `json:"name"`
-	Description OptNilString                `json:"description"`
-	Permissions CreateRoleReqPermissions    `json:"permissions"`
-	Policies    []CreateRoleReqPoliciesItem `json:"policies"`
-}
-
-// GetName returns the value of Name.
-func (s *CreateRoleReq) GetName() string {
-	return s.Name
-}
-
-// GetDescription returns the value of Description.
-func (s *CreateRoleReq) GetDescription() OptNilString {
-	return s.Description
-}
-
-// GetPermissions returns the value of Permissions.
-func (s *CreateRoleReq) GetPermissions() CreateRoleReqPermissions {
-	return s.Permissions
-}
-
-// GetPolicies returns the value of Policies.
-func (s *CreateRoleReq) GetPolicies() []CreateRoleReqPoliciesItem {
-	return s.Policies
-}
-
-// SetName sets the value of Name.
-func (s *CreateRoleReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetDescription sets the value of Description.
-func (s *CreateRoleReq) SetDescription(val OptNilString) {
-	s.Description = val
-}
-
-// SetPermissions sets the value of Permissions.
-func (s *CreateRoleReq) SetPermissions(val CreateRoleReqPermissions) {
-	s.Permissions = val
-}
-
-// SetPolicies sets the value of Policies.
-func (s *CreateRoleReq) SetPolicies(val []CreateRoleReqPoliciesItem) {
-	s.Policies = val
-}
-
-type CreateRoleReqPermissions map[string]CreateRoleReqPermissionsItem
-
-func (s *CreateRoleReqPermissions) init() CreateRoleReqPermissions {
-	m := *s
-	if m == nil {
-		m = map[string]CreateRoleReqPermissionsItem{}
-		*s = m
-	}
-	return m
-}
-
-// CreateRoleReqPermissionsItem represents sum type.
-type CreateRoleReqPermissionsItem struct {
-	Type        CreateRoleReqPermissionsItemType // switch on this field
-	String      string
-	StringArray []string
-}
-
-// CreateRoleReqPermissionsItemType is oneOf type of CreateRoleReqPermissionsItem.
-type CreateRoleReqPermissionsItemType string
-
-// Possible values for CreateRoleReqPermissionsItemType.
-const (
-	StringCreateRoleReqPermissionsItem      CreateRoleReqPermissionsItemType = "string"
-	StringArrayCreateRoleReqPermissionsItem CreateRoleReqPermissionsItemType = "[]string"
-)
-
-// IsString reports whether CreateRoleReqPermissionsItem is string.
-func (s CreateRoleReqPermissionsItem) IsString() bool {
-	return s.Type == StringCreateRoleReqPermissionsItem
-}
-
-// IsStringArray reports whether CreateRoleReqPermissionsItem is []string.
-func (s CreateRoleReqPermissionsItem) IsStringArray() bool {
-	return s.Type == StringArrayCreateRoleReqPermissionsItem
-}
-
-// SetString sets CreateRoleReqPermissionsItem to string.
-func (s *CreateRoleReqPermissionsItem) SetString(v string) {
-	s.Type = StringCreateRoleReqPermissionsItem
-	s.String = v
-}
-
-// GetString returns string and true boolean if CreateRoleReqPermissionsItem is string.
-func (s CreateRoleReqPermissionsItem) GetString() (v string, ok bool) {
-	if !s.IsString() {
-		return v, false
-	}
-	return s.String, true
-}
-
-// NewStringCreateRoleReqPermissionsItem returns new CreateRoleReqPermissionsItem from string.
-func NewStringCreateRoleReqPermissionsItem(v string) CreateRoleReqPermissionsItem {
-	var s CreateRoleReqPermissionsItem
-	s.SetString(v)
-	return s
-}
-
-// SetStringArray sets CreateRoleReqPermissionsItem to []string.
-func (s *CreateRoleReqPermissionsItem) SetStringArray(v []string) {
-	s.Type = StringArrayCreateRoleReqPermissionsItem
-	s.StringArray = v
-}
-
-// GetStringArray returns []string and true boolean if CreateRoleReqPermissionsItem is []string.
-func (s CreateRoleReqPermissionsItem) GetStringArray() (v []string, ok bool) {
-	if !s.IsStringArray() {
-		return v, false
-	}
-	return s.StringArray, true
-}
-
-// NewStringArrayCreateRoleReqPermissionsItem returns new CreateRoleReqPermissionsItem from []string.
-func NewStringArrayCreateRoleReqPermissionsItem(v []string) CreateRoleReqPermissionsItem {
-	var s CreateRoleReqPermissionsItem
-	s.SetStringArray(v)
-	return s
-}
-
-type CreateRoleReqPoliciesItem struct {
-	Effect     CreateRoleReqPoliciesItemEffect  `json:"effect"`
-	Actions    CreateRoleReqPoliciesItemActions `json:"actions"`
-	Constraint jx.Raw                           `json:"constraint"`
-}
-
-// GetEffect returns the value of Effect.
-func (s *CreateRoleReqPoliciesItem) GetEffect() CreateRoleReqPoliciesItemEffect {
-	return s.Effect
-}
-
-// GetActions returns the value of Actions.
-func (s *CreateRoleReqPoliciesItem) GetActions() CreateRoleReqPoliciesItemActions {
-	return s.Actions
-}
-
-// GetConstraint returns the value of Constraint.
-func (s *CreateRoleReqPoliciesItem) GetConstraint() jx.Raw {
-	return s.Constraint
-}
-
-// SetEffect sets the value of Effect.
-func (s *CreateRoleReqPoliciesItem) SetEffect(val CreateRoleReqPoliciesItemEffect) {
-	s.Effect = val
-}
-
-// SetActions sets the value of Actions.
-func (s *CreateRoleReqPoliciesItem) SetActions(val CreateRoleReqPoliciesItemActions) {
-	s.Actions = val
-}
-
-// SetConstraint sets the value of Constraint.
-func (s *CreateRoleReqPoliciesItem) SetConstraint(val jx.Raw) {
-	s.Constraint = val
-}
-
-// CreateRoleReqPoliciesItemActions represents sum type.
-type CreateRoleReqPoliciesItemActions struct {
-	Type        CreateRoleReqPoliciesItemActionsType // switch on this field
-	String      string
-	StringArray []string
-}
-
-// CreateRoleReqPoliciesItemActionsType is oneOf type of CreateRoleReqPoliciesItemActions.
-type CreateRoleReqPoliciesItemActionsType string
-
-// Possible values for CreateRoleReqPoliciesItemActionsType.
-const (
-	StringCreateRoleReqPoliciesItemActions      CreateRoleReqPoliciesItemActionsType = "string"
-	StringArrayCreateRoleReqPoliciesItemActions CreateRoleReqPoliciesItemActionsType = "[]string"
-)
-
-// IsString reports whether CreateRoleReqPoliciesItemActions is string.
-func (s CreateRoleReqPoliciesItemActions) IsString() bool {
-	return s.Type == StringCreateRoleReqPoliciesItemActions
-}
-
-// IsStringArray reports whether CreateRoleReqPoliciesItemActions is []string.
-func (s CreateRoleReqPoliciesItemActions) IsStringArray() bool {
-	return s.Type == StringArrayCreateRoleReqPoliciesItemActions
-}
-
-// SetString sets CreateRoleReqPoliciesItemActions to string.
-func (s *CreateRoleReqPoliciesItemActions) SetString(v string) {
-	s.Type = StringCreateRoleReqPoliciesItemActions
-	s.String = v
-}
-
-// GetString returns string and true boolean if CreateRoleReqPoliciesItemActions is string.
-func (s CreateRoleReqPoliciesItemActions) GetString() (v string, ok bool) {
-	if !s.IsString() {
-		return v, false
-	}
-	return s.String, true
-}
-
-// NewStringCreateRoleReqPoliciesItemActions returns new CreateRoleReqPoliciesItemActions from string.
-func NewStringCreateRoleReqPoliciesItemActions(v string) CreateRoleReqPoliciesItemActions {
-	var s CreateRoleReqPoliciesItemActions
-	s.SetString(v)
-	return s
-}
-
-// SetStringArray sets CreateRoleReqPoliciesItemActions to []string.
-func (s *CreateRoleReqPoliciesItemActions) SetStringArray(v []string) {
-	s.Type = StringArrayCreateRoleReqPoliciesItemActions
-	s.StringArray = v
-}
-
-// GetStringArray returns []string and true boolean if CreateRoleReqPoliciesItemActions is []string.
-func (s CreateRoleReqPoliciesItemActions) GetStringArray() (v []string, ok bool) {
-	if !s.IsStringArray() {
-		return v, false
-	}
-	return s.StringArray, true
-}
-
-// NewStringArrayCreateRoleReqPoliciesItemActions returns new CreateRoleReqPoliciesItemActions from []string.
-func NewStringArrayCreateRoleReqPoliciesItemActions(v []string) CreateRoleReqPoliciesItemActions {
-	var s CreateRoleReqPoliciesItemActions
-	s.SetStringArray(v)
-	return s
-}
-
-type CreateRoleReqPoliciesItemEffect string
-
-const (
-	CreateRoleReqPoliciesItemEffectAllow CreateRoleReqPoliciesItemEffect = "allow"
-	CreateRoleReqPoliciesItemEffectDeny  CreateRoleReqPoliciesItemEffect = "deny"
-)
-
-// AllValues returns all CreateRoleReqPoliciesItemEffect values.
-func (CreateRoleReqPoliciesItemEffect) AllValues() []CreateRoleReqPoliciesItemEffect {
-	return []CreateRoleReqPoliciesItemEffect{
-		CreateRoleReqPoliciesItemEffectAllow,
-		CreateRoleReqPoliciesItemEffectDeny,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s CreateRoleReqPoliciesItemEffect) MarshalText() ([]byte, error) {
-	switch s {
-	case CreateRoleReqPoliciesItemEffectAllow:
-		return []byte(s), nil
-	case CreateRoleReqPoliciesItemEffectDeny:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *CreateRoleReqPoliciesItemEffect) UnmarshalText(data []byte) error {
-	switch CreateRoleReqPoliciesItemEffect(data) {
-	case CreateRoleReqPoliciesItemEffectAllow:
-		*s = CreateRoleReqPoliciesItemEffectAllow
-		return nil
-	case CreateRoleReqPoliciesItemEffectDeny:
-		*s = CreateRoleReqPoliciesItemEffectDeny
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-type CreateWebhookDefinitionReq struct {
-	Name              string                                         `json:"name"`
-	URL               string                                         `json:"url"`
-	Topics            []string                                       `json:"topics"`
-	Filters           OptNilWebhookDefinitionFilterArray             `json:"filters"`
-	HttpBasicUsername OptNilString                                   `json:"httpBasicUsername"`
-	HttpBasicPassword OptNilString                                   `json:"httpBasicPassword"`
-	Headers           WebhookDefinitionHeaders                       `json:"headers"`
-	Transformation    OptNilCreateWebhookDefinitionReqTransformation `json:"transformation"`
-	Active            OptBool                                        `json:"active"`
-}
-
-// GetName returns the value of Name.
-func (s *CreateWebhookDefinitionReq) GetName() string {
-	return s.Name
-}
-
-// GetURL returns the value of URL.
-func (s *CreateWebhookDefinitionReq) GetURL() string {
-	return s.URL
-}
-
-// GetTopics returns the value of Topics.
-func (s *CreateWebhookDefinitionReq) GetTopics() []string {
-	return s.Topics
-}
-
-// GetFilters returns the value of Filters.
-func (s *CreateWebhookDefinitionReq) GetFilters() OptNilWebhookDefinitionFilterArray {
-	return s.Filters
-}
-
-// GetHttpBasicUsername returns the value of HttpBasicUsername.
-func (s *CreateWebhookDefinitionReq) GetHttpBasicUsername() OptNilString {
-	return s.HttpBasicUsername
-}
-
-// GetHttpBasicPassword returns the value of HttpBasicPassword.
-func (s *CreateWebhookDefinitionReq) GetHttpBasicPassword() OptNilString {
-	return s.HttpBasicPassword
-}
-
-// GetHeaders returns the value of Headers.
-func (s *CreateWebhookDefinitionReq) GetHeaders() WebhookDefinitionHeaders {
-	return s.Headers
-}
-
-// GetTransformation returns the value of Transformation.
-func (s *CreateWebhookDefinitionReq) GetTransformation() OptNilCreateWebhookDefinitionReqTransformation {
-	return s.Transformation
-}
-
-// GetActive returns the value of Active.
-func (s *CreateWebhookDefinitionReq) GetActive() OptBool {
-	return s.Active
-}
-
-// SetName sets the value of Name.
-func (s *CreateWebhookDefinitionReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetURL sets the value of URL.
-func (s *CreateWebhookDefinitionReq) SetURL(val string) {
-	s.URL = val
-}
-
-// SetTopics sets the value of Topics.
-func (s *CreateWebhookDefinitionReq) SetTopics(val []string) {
-	s.Topics = val
-}
-
-// SetFilters sets the value of Filters.
-func (s *CreateWebhookDefinitionReq) SetFilters(val OptNilWebhookDefinitionFilterArray) {
-	s.Filters = val
-}
-
-// SetHttpBasicUsername sets the value of HttpBasicUsername.
-func (s *CreateWebhookDefinitionReq) SetHttpBasicUsername(val OptNilString) {
-	s.HttpBasicUsername = val
-}
-
-// SetHttpBasicPassword sets the value of HttpBasicPassword.
-func (s *CreateWebhookDefinitionReq) SetHttpBasicPassword(val OptNilString) {
-	s.HttpBasicPassword = val
-}
-
-// SetHeaders sets the value of Headers.
-func (s *CreateWebhookDefinitionReq) SetHeaders(val WebhookDefinitionHeaders) {
-	s.Headers = val
-}
-
-// SetTransformation sets the value of Transformation.
-func (s *CreateWebhookDefinitionReq) SetTransformation(val OptNilCreateWebhookDefinitionReqTransformation) {
-	s.Transformation = val
-}
-
-// SetActive sets the value of Active.
-func (s *CreateWebhookDefinitionReq) SetActive(val OptBool) {
-	s.Active = val
-}
-
-type CreateWebhookDefinitionReqTransformation struct {
-	Method               OptString `json:"method"`
-	ContentType          OptString `json:"contentType"`
-	IncludeContentLength OptBool   `json:"includeContentLength"`
-	Body                 jx.Raw    `json:"body"`
-}
-
-// GetMethod returns the value of Method.
-func (s *CreateWebhookDefinitionReqTransformation) GetMethod() OptString {
-	return s.Method
-}
-
-// GetContentType returns the value of ContentType.
-func (s *CreateWebhookDefinitionReqTransformation) GetContentType() OptString {
-	return s.ContentType
-}
-
-// GetIncludeContentLength returns the value of IncludeContentLength.
-func (s *CreateWebhookDefinitionReqTransformation) GetIncludeContentLength() OptBool {
-	return s.IncludeContentLength
-}
-
-// GetBody returns the value of Body.
-func (s *CreateWebhookDefinitionReqTransformation) GetBody() jx.Raw {
-	return s.Body
-}
-
-// SetMethod sets the value of Method.
-func (s *CreateWebhookDefinitionReqTransformation) SetMethod(val OptString) {
-	s.Method = val
-}
-
-// SetContentType sets the value of ContentType.
-func (s *CreateWebhookDefinitionReqTransformation) SetContentType(val OptString) {
-	s.ContentType = val
-}
-
-// SetIncludeContentLength sets the value of IncludeContentLength.
-func (s *CreateWebhookDefinitionReqTransformation) SetIncludeContentLength(val OptBool) {
-	s.IncludeContentLength = val
-}
-
-// SetBody sets the value of Body.
-func (s *CreateWebhookDefinitionReqTransformation) SetBody(val jx.Raw) {
-	s.Body = val
 }
 
 // Merged schema.
@@ -1379,6 +1147,231 @@ func (s *EditorInterfaceEditorLayoutItem) SetName(val string) {
 // SetItems sets the value of Items.
 func (s *EditorInterfaceEditorLayoutItem) SetItems(val []jx.Raw) {
 	s.Items = val
+}
+
+// Ref: #/components/schemas/EditorInterfaceFields
+type EditorInterfaceFields struct {
+	EditorLayout  OptNilEditorInterfaceFieldsEditorLayoutItemArray  `json:"editorLayout"`
+	Controls      OptNilEditorInterfaceFieldsControlsItemArray      `json:"controls"`
+	GroupControls OptNilEditorInterfaceFieldsGroupControlsItemArray `json:"groupControls"`
+	Sidebar       OptNilEditorInterfaceFieldsSidebarItemArray       `json:"sidebar"`
+}
+
+// GetEditorLayout returns the value of EditorLayout.
+func (s *EditorInterfaceFields) GetEditorLayout() OptNilEditorInterfaceFieldsEditorLayoutItemArray {
+	return s.EditorLayout
+}
+
+// GetControls returns the value of Controls.
+func (s *EditorInterfaceFields) GetControls() OptNilEditorInterfaceFieldsControlsItemArray {
+	return s.Controls
+}
+
+// GetGroupControls returns the value of GroupControls.
+func (s *EditorInterfaceFields) GetGroupControls() OptNilEditorInterfaceFieldsGroupControlsItemArray {
+	return s.GroupControls
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *EditorInterfaceFields) GetSidebar() OptNilEditorInterfaceFieldsSidebarItemArray {
+	return s.Sidebar
+}
+
+// SetEditorLayout sets the value of EditorLayout.
+func (s *EditorInterfaceFields) SetEditorLayout(val OptNilEditorInterfaceFieldsEditorLayoutItemArray) {
+	s.EditorLayout = val
+}
+
+// SetControls sets the value of Controls.
+func (s *EditorInterfaceFields) SetControls(val OptNilEditorInterfaceFieldsControlsItemArray) {
+	s.Controls = val
+}
+
+// SetGroupControls sets the value of GroupControls.
+func (s *EditorInterfaceFields) SetGroupControls(val OptNilEditorInterfaceFieldsGroupControlsItemArray) {
+	s.GroupControls = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *EditorInterfaceFields) SetSidebar(val OptNilEditorInterfaceFieldsSidebarItemArray) {
+	s.Sidebar = val
+}
+
+type EditorInterfaceFieldsControlsItem struct {
+	FieldId         string    `json:"fieldId"`
+	WidgetNamespace OptString `json:"widgetNamespace"`
+	WidgetId        OptString `json:"widgetId"`
+	Settings        jx.Raw    `json:"settings"`
+}
+
+// GetFieldId returns the value of FieldId.
+func (s *EditorInterfaceFieldsControlsItem) GetFieldId() string {
+	return s.FieldId
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *EditorInterfaceFieldsControlsItem) GetWidgetNamespace() OptString {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *EditorInterfaceFieldsControlsItem) GetWidgetId() OptString {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *EditorInterfaceFieldsControlsItem) GetSettings() jx.Raw {
+	return s.Settings
+}
+
+// SetFieldId sets the value of FieldId.
+func (s *EditorInterfaceFieldsControlsItem) SetFieldId(val string) {
+	s.FieldId = val
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *EditorInterfaceFieldsControlsItem) SetWidgetNamespace(val OptString) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *EditorInterfaceFieldsControlsItem) SetWidgetId(val OptString) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *EditorInterfaceFieldsControlsItem) SetSettings(val jx.Raw) {
+	s.Settings = val
+}
+
+type EditorInterfaceFieldsEditorLayoutItem struct {
+	GroupId string   `json:"groupId"`
+	Name    string   `json:"name"`
+	Items   []jx.Raw `json:"items"`
+}
+
+// GetGroupId returns the value of GroupId.
+func (s *EditorInterfaceFieldsEditorLayoutItem) GetGroupId() string {
+	return s.GroupId
+}
+
+// GetName returns the value of Name.
+func (s *EditorInterfaceFieldsEditorLayoutItem) GetName() string {
+	return s.Name
+}
+
+// GetItems returns the value of Items.
+func (s *EditorInterfaceFieldsEditorLayoutItem) GetItems() []jx.Raw {
+	return s.Items
+}
+
+// SetGroupId sets the value of GroupId.
+func (s *EditorInterfaceFieldsEditorLayoutItem) SetGroupId(val string) {
+	s.GroupId = val
+}
+
+// SetName sets the value of Name.
+func (s *EditorInterfaceFieldsEditorLayoutItem) SetName(val string) {
+	s.Name = val
+}
+
+// SetItems sets the value of Items.
+func (s *EditorInterfaceFieldsEditorLayoutItem) SetItems(val []jx.Raw) {
+	s.Items = val
+}
+
+type EditorInterfaceFieldsGroupControlsItem struct {
+	GroupId         string    `json:"groupId"`
+	WidgetNamespace OptString `json:"widgetNamespace"`
+	WidgetId        OptString `json:"widgetId"`
+	Settings        jx.Raw    `json:"settings"`
+}
+
+// GetGroupId returns the value of GroupId.
+func (s *EditorInterfaceFieldsGroupControlsItem) GetGroupId() string {
+	return s.GroupId
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *EditorInterfaceFieldsGroupControlsItem) GetWidgetNamespace() OptString {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *EditorInterfaceFieldsGroupControlsItem) GetWidgetId() OptString {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *EditorInterfaceFieldsGroupControlsItem) GetSettings() jx.Raw {
+	return s.Settings
+}
+
+// SetGroupId sets the value of GroupId.
+func (s *EditorInterfaceFieldsGroupControlsItem) SetGroupId(val string) {
+	s.GroupId = val
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *EditorInterfaceFieldsGroupControlsItem) SetWidgetNamespace(val OptString) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *EditorInterfaceFieldsGroupControlsItem) SetWidgetId(val OptString) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *EditorInterfaceFieldsGroupControlsItem) SetSettings(val jx.Raw) {
+	s.Settings = val
+}
+
+type EditorInterfaceFieldsSidebarItem struct {
+	WidgetNamespace string  `json:"widgetNamespace"`
+	WidgetId        string  `json:"widgetId"`
+	Settings        jx.Raw  `json:"settings"`
+	Disabled        OptBool `json:"disabled"`
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *EditorInterfaceFieldsSidebarItem) GetWidgetNamespace() string {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *EditorInterfaceFieldsSidebarItem) GetWidgetId() string {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *EditorInterfaceFieldsSidebarItem) GetSettings() jx.Raw {
+	return s.Settings
+}
+
+// GetDisabled returns the value of Disabled.
+func (s *EditorInterfaceFieldsSidebarItem) GetDisabled() OptBool {
+	return s.Disabled
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *EditorInterfaceFieldsSidebarItem) SetWidgetNamespace(val string) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *EditorInterfaceFieldsSidebarItem) SetWidgetId(val string) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *EditorInterfaceFieldsSidebarItem) SetSettings(val jx.Raw) {
+	s.Settings = val
+}
+
+// SetDisabled sets the value of Disabled.
+func (s *EditorInterfaceFieldsSidebarItem) SetDisabled(val OptBool) {
+	s.Disabled = val
 }
 
 type EditorInterfaceGroupControlsItem struct {
@@ -2068,6 +2061,52 @@ func (o OptContentTypeFieldsItemItems) Or(d ContentTypeFieldsItemItems) ContentT
 	return d
 }
 
+// NewOptContentTypeRequestFieldsFieldsItemItems returns new OptContentTypeRequestFieldsFieldsItemItems with value set to v.
+func NewOptContentTypeRequestFieldsFieldsItemItems(v ContentTypeRequestFieldsFieldsItemItems) OptContentTypeRequestFieldsFieldsItemItems {
+	return OptContentTypeRequestFieldsFieldsItemItems{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptContentTypeRequestFieldsFieldsItemItems is optional ContentTypeRequestFieldsFieldsItemItems.
+type OptContentTypeRequestFieldsFieldsItemItems struct {
+	Value ContentTypeRequestFieldsFieldsItemItems
+	Set   bool
+}
+
+// IsSet returns true if OptContentTypeRequestFieldsFieldsItemItems was set.
+func (o OptContentTypeRequestFieldsFieldsItemItems) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptContentTypeRequestFieldsFieldsItemItems) Reset() {
+	var v ContentTypeRequestFieldsFieldsItemItems
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptContentTypeRequestFieldsFieldsItemItems) SetTo(v ContentTypeRequestFieldsFieldsItemItems) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptContentTypeRequestFieldsFieldsItemItems) Get() (v ContentTypeRequestFieldsFieldsItemItems, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptContentTypeRequestFieldsFieldsItemItems) Or(d ContentTypeRequestFieldsFieldsItemItems) ContentTypeRequestFieldsFieldsItemItems {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptDateTime returns new OptDateTime with value set to v.
 func NewOptDateTime(v time.Time) OptDateTime {
 	return OptDateTime{
@@ -2154,69 +2193,6 @@ func (o OptInt) Get() (v int, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptInt) Or(d int) int {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilCreateWebhookDefinitionReqTransformation returns new OptNilCreateWebhookDefinitionReqTransformation with value set to v.
-func NewOptNilCreateWebhookDefinitionReqTransformation(v CreateWebhookDefinitionReqTransformation) OptNilCreateWebhookDefinitionReqTransformation {
-	return OptNilCreateWebhookDefinitionReqTransformation{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilCreateWebhookDefinitionReqTransformation is optional nullable CreateWebhookDefinitionReqTransformation.
-type OptNilCreateWebhookDefinitionReqTransformation struct {
-	Value CreateWebhookDefinitionReqTransformation
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilCreateWebhookDefinitionReqTransformation was set.
-func (o OptNilCreateWebhookDefinitionReqTransformation) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilCreateWebhookDefinitionReqTransformation) Reset() {
-	var v CreateWebhookDefinitionReqTransformation
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilCreateWebhookDefinitionReqTransformation) SetTo(v CreateWebhookDefinitionReqTransformation) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsSet returns true if value is Null.
-func (o OptNilCreateWebhookDefinitionReqTransformation) IsNull() bool { return o.Null }
-
-// SetNull sets value to null.
-func (o *OptNilCreateWebhookDefinitionReqTransformation) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v CreateWebhookDefinitionReqTransformation
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilCreateWebhookDefinitionReqTransformation) Get() (v CreateWebhookDefinitionReqTransformation, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilCreateWebhookDefinitionReqTransformation) Or(d CreateWebhookDefinitionReqTransformation) CreateWebhookDefinitionReqTransformation {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -2412,6 +2388,258 @@ func (o OptNilEditorInterfaceEditorLayoutItemArray) Or(d []EditorInterfaceEditor
 	return d
 }
 
+// NewOptNilEditorInterfaceFieldsControlsItemArray returns new OptNilEditorInterfaceFieldsControlsItemArray with value set to v.
+func NewOptNilEditorInterfaceFieldsControlsItemArray(v []EditorInterfaceFieldsControlsItem) OptNilEditorInterfaceFieldsControlsItemArray {
+	return OptNilEditorInterfaceFieldsControlsItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceFieldsControlsItemArray is optional nullable []EditorInterfaceFieldsControlsItem.
+type OptNilEditorInterfaceFieldsControlsItemArray struct {
+	Value []EditorInterfaceFieldsControlsItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceFieldsControlsItemArray was set.
+func (o OptNilEditorInterfaceFieldsControlsItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceFieldsControlsItemArray) Reset() {
+	var v []EditorInterfaceFieldsControlsItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceFieldsControlsItemArray) SetTo(v []EditorInterfaceFieldsControlsItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilEditorInterfaceFieldsControlsItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilEditorInterfaceFieldsControlsItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceFieldsControlsItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceFieldsControlsItemArray) Get() (v []EditorInterfaceFieldsControlsItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceFieldsControlsItemArray) Or(d []EditorInterfaceFieldsControlsItem) []EditorInterfaceFieldsControlsItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilEditorInterfaceFieldsEditorLayoutItemArray returns new OptNilEditorInterfaceFieldsEditorLayoutItemArray with value set to v.
+func NewOptNilEditorInterfaceFieldsEditorLayoutItemArray(v []EditorInterfaceFieldsEditorLayoutItem) OptNilEditorInterfaceFieldsEditorLayoutItemArray {
+	return OptNilEditorInterfaceFieldsEditorLayoutItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceFieldsEditorLayoutItemArray is optional nullable []EditorInterfaceFieldsEditorLayoutItem.
+type OptNilEditorInterfaceFieldsEditorLayoutItemArray struct {
+	Value []EditorInterfaceFieldsEditorLayoutItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceFieldsEditorLayoutItemArray was set.
+func (o OptNilEditorInterfaceFieldsEditorLayoutItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceFieldsEditorLayoutItemArray) Reset() {
+	var v []EditorInterfaceFieldsEditorLayoutItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceFieldsEditorLayoutItemArray) SetTo(v []EditorInterfaceFieldsEditorLayoutItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilEditorInterfaceFieldsEditorLayoutItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilEditorInterfaceFieldsEditorLayoutItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceFieldsEditorLayoutItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceFieldsEditorLayoutItemArray) Get() (v []EditorInterfaceFieldsEditorLayoutItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceFieldsEditorLayoutItemArray) Or(d []EditorInterfaceFieldsEditorLayoutItem) []EditorInterfaceFieldsEditorLayoutItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilEditorInterfaceFieldsGroupControlsItemArray returns new OptNilEditorInterfaceFieldsGroupControlsItemArray with value set to v.
+func NewOptNilEditorInterfaceFieldsGroupControlsItemArray(v []EditorInterfaceFieldsGroupControlsItem) OptNilEditorInterfaceFieldsGroupControlsItemArray {
+	return OptNilEditorInterfaceFieldsGroupControlsItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceFieldsGroupControlsItemArray is optional nullable []EditorInterfaceFieldsGroupControlsItem.
+type OptNilEditorInterfaceFieldsGroupControlsItemArray struct {
+	Value []EditorInterfaceFieldsGroupControlsItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceFieldsGroupControlsItemArray was set.
+func (o OptNilEditorInterfaceFieldsGroupControlsItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceFieldsGroupControlsItemArray) Reset() {
+	var v []EditorInterfaceFieldsGroupControlsItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceFieldsGroupControlsItemArray) SetTo(v []EditorInterfaceFieldsGroupControlsItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilEditorInterfaceFieldsGroupControlsItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilEditorInterfaceFieldsGroupControlsItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceFieldsGroupControlsItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceFieldsGroupControlsItemArray) Get() (v []EditorInterfaceFieldsGroupControlsItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceFieldsGroupControlsItemArray) Or(d []EditorInterfaceFieldsGroupControlsItem) []EditorInterfaceFieldsGroupControlsItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilEditorInterfaceFieldsSidebarItemArray returns new OptNilEditorInterfaceFieldsSidebarItemArray with value set to v.
+func NewOptNilEditorInterfaceFieldsSidebarItemArray(v []EditorInterfaceFieldsSidebarItem) OptNilEditorInterfaceFieldsSidebarItemArray {
+	return OptNilEditorInterfaceFieldsSidebarItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceFieldsSidebarItemArray is optional nullable []EditorInterfaceFieldsSidebarItem.
+type OptNilEditorInterfaceFieldsSidebarItemArray struct {
+	Value []EditorInterfaceFieldsSidebarItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceFieldsSidebarItemArray was set.
+func (o OptNilEditorInterfaceFieldsSidebarItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceFieldsSidebarItemArray) Reset() {
+	var v []EditorInterfaceFieldsSidebarItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceFieldsSidebarItemArray) SetTo(v []EditorInterfaceFieldsSidebarItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsSet returns true if value is Null.
+func (o OptNilEditorInterfaceFieldsSidebarItemArray) IsNull() bool { return o.Null }
+
+// SetNull sets value to null.
+func (o *OptNilEditorInterfaceFieldsSidebarItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceFieldsSidebarItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceFieldsSidebarItemArray) Get() (v []EditorInterfaceFieldsSidebarItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceFieldsSidebarItemArray) Or(d []EditorInterfaceFieldsSidebarItem) []EditorInterfaceFieldsSidebarItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilEditorInterfaceGroupControlsItemArray returns new OptNilEditorInterfaceGroupControlsItemArray with value set to v.
 func NewOptNilEditorInterfaceGroupControlsItemArray(v []EditorInterfaceGroupControlsItem) OptNilEditorInterfaceGroupControlsItemArray {
 	return OptNilEditorInterfaceGroupControlsItemArray{
@@ -2601,258 +2829,6 @@ func (o OptNilInt) Or(d int) int {
 	return d
 }
 
-// NewOptNilPutEditorInterfaceReqControlsItemArray returns new OptNilPutEditorInterfaceReqControlsItemArray with value set to v.
-func NewOptNilPutEditorInterfaceReqControlsItemArray(v []PutEditorInterfaceReqControlsItem) OptNilPutEditorInterfaceReqControlsItemArray {
-	return OptNilPutEditorInterfaceReqControlsItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilPutEditorInterfaceReqControlsItemArray is optional nullable []PutEditorInterfaceReqControlsItem.
-type OptNilPutEditorInterfaceReqControlsItemArray struct {
-	Value []PutEditorInterfaceReqControlsItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilPutEditorInterfaceReqControlsItemArray was set.
-func (o OptNilPutEditorInterfaceReqControlsItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilPutEditorInterfaceReqControlsItemArray) Reset() {
-	var v []PutEditorInterfaceReqControlsItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilPutEditorInterfaceReqControlsItemArray) SetTo(v []PutEditorInterfaceReqControlsItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsSet returns true if value is Null.
-func (o OptNilPutEditorInterfaceReqControlsItemArray) IsNull() bool { return o.Null }
-
-// SetNull sets value to null.
-func (o *OptNilPutEditorInterfaceReqControlsItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []PutEditorInterfaceReqControlsItem
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilPutEditorInterfaceReqControlsItemArray) Get() (v []PutEditorInterfaceReqControlsItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilPutEditorInterfaceReqControlsItemArray) Or(d []PutEditorInterfaceReqControlsItem) []PutEditorInterfaceReqControlsItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilPutEditorInterfaceReqEditorLayoutItemArray returns new OptNilPutEditorInterfaceReqEditorLayoutItemArray with value set to v.
-func NewOptNilPutEditorInterfaceReqEditorLayoutItemArray(v []PutEditorInterfaceReqEditorLayoutItem) OptNilPutEditorInterfaceReqEditorLayoutItemArray {
-	return OptNilPutEditorInterfaceReqEditorLayoutItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilPutEditorInterfaceReqEditorLayoutItemArray is optional nullable []PutEditorInterfaceReqEditorLayoutItem.
-type OptNilPutEditorInterfaceReqEditorLayoutItemArray struct {
-	Value []PutEditorInterfaceReqEditorLayoutItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilPutEditorInterfaceReqEditorLayoutItemArray was set.
-func (o OptNilPutEditorInterfaceReqEditorLayoutItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilPutEditorInterfaceReqEditorLayoutItemArray) Reset() {
-	var v []PutEditorInterfaceReqEditorLayoutItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilPutEditorInterfaceReqEditorLayoutItemArray) SetTo(v []PutEditorInterfaceReqEditorLayoutItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsSet returns true if value is Null.
-func (o OptNilPutEditorInterfaceReqEditorLayoutItemArray) IsNull() bool { return o.Null }
-
-// SetNull sets value to null.
-func (o *OptNilPutEditorInterfaceReqEditorLayoutItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []PutEditorInterfaceReqEditorLayoutItem
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilPutEditorInterfaceReqEditorLayoutItemArray) Get() (v []PutEditorInterfaceReqEditorLayoutItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilPutEditorInterfaceReqEditorLayoutItemArray) Or(d []PutEditorInterfaceReqEditorLayoutItem) []PutEditorInterfaceReqEditorLayoutItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilPutEditorInterfaceReqGroupControlsItemArray returns new OptNilPutEditorInterfaceReqGroupControlsItemArray with value set to v.
-func NewOptNilPutEditorInterfaceReqGroupControlsItemArray(v []PutEditorInterfaceReqGroupControlsItem) OptNilPutEditorInterfaceReqGroupControlsItemArray {
-	return OptNilPutEditorInterfaceReqGroupControlsItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilPutEditorInterfaceReqGroupControlsItemArray is optional nullable []PutEditorInterfaceReqGroupControlsItem.
-type OptNilPutEditorInterfaceReqGroupControlsItemArray struct {
-	Value []PutEditorInterfaceReqGroupControlsItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilPutEditorInterfaceReqGroupControlsItemArray was set.
-func (o OptNilPutEditorInterfaceReqGroupControlsItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilPutEditorInterfaceReqGroupControlsItemArray) Reset() {
-	var v []PutEditorInterfaceReqGroupControlsItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilPutEditorInterfaceReqGroupControlsItemArray) SetTo(v []PutEditorInterfaceReqGroupControlsItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsSet returns true if value is Null.
-func (o OptNilPutEditorInterfaceReqGroupControlsItemArray) IsNull() bool { return o.Null }
-
-// SetNull sets value to null.
-func (o *OptNilPutEditorInterfaceReqGroupControlsItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []PutEditorInterfaceReqGroupControlsItem
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilPutEditorInterfaceReqGroupControlsItemArray) Get() (v []PutEditorInterfaceReqGroupControlsItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilPutEditorInterfaceReqGroupControlsItemArray) Or(d []PutEditorInterfaceReqGroupControlsItem) []PutEditorInterfaceReqGroupControlsItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilPutEditorInterfaceReqSidebarItemArray returns new OptNilPutEditorInterfaceReqSidebarItemArray with value set to v.
-func NewOptNilPutEditorInterfaceReqSidebarItemArray(v []PutEditorInterfaceReqSidebarItem) OptNilPutEditorInterfaceReqSidebarItemArray {
-	return OptNilPutEditorInterfaceReqSidebarItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilPutEditorInterfaceReqSidebarItemArray is optional nullable []PutEditorInterfaceReqSidebarItem.
-type OptNilPutEditorInterfaceReqSidebarItemArray struct {
-	Value []PutEditorInterfaceReqSidebarItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilPutEditorInterfaceReqSidebarItemArray was set.
-func (o OptNilPutEditorInterfaceReqSidebarItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilPutEditorInterfaceReqSidebarItemArray) Reset() {
-	var v []PutEditorInterfaceReqSidebarItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilPutEditorInterfaceReqSidebarItemArray) SetTo(v []PutEditorInterfaceReqSidebarItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsSet returns true if value is Null.
-func (o OptNilPutEditorInterfaceReqSidebarItemArray) IsNull() bool { return o.Null }
-
-// SetNull sets value to null.
-func (o *OptNilPutEditorInterfaceReqSidebarItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []PutEditorInterfaceReqSidebarItem
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilPutEditorInterfaceReqSidebarItemArray) Get() (v []PutEditorInterfaceReqSidebarItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilPutEditorInterfaceReqSidebarItemArray) Or(d []PutEditorInterfaceReqSidebarItem) []PutEditorInterfaceReqSidebarItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptNilString returns new OptNilString with value set to v.
 func NewOptNilString(v string) OptNilString {
 	return OptNilString{
@@ -2916,52 +2892,52 @@ func (o OptNilString) Or(d string) string {
 	return d
 }
 
-// NewOptNilUpdateWebhookDefinitionReqTransformation returns new OptNilUpdateWebhookDefinitionReqTransformation with value set to v.
-func NewOptNilUpdateWebhookDefinitionReqTransformation(v UpdateWebhookDefinitionReqTransformation) OptNilUpdateWebhookDefinitionReqTransformation {
-	return OptNilUpdateWebhookDefinitionReqTransformation{
+// NewOptNilWebhookDefinitionFieldsTransformation returns new OptNilWebhookDefinitionFieldsTransformation with value set to v.
+func NewOptNilWebhookDefinitionFieldsTransformation(v WebhookDefinitionFieldsTransformation) OptNilWebhookDefinitionFieldsTransformation {
+	return OptNilWebhookDefinitionFieldsTransformation{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptNilUpdateWebhookDefinitionReqTransformation is optional nullable UpdateWebhookDefinitionReqTransformation.
-type OptNilUpdateWebhookDefinitionReqTransformation struct {
-	Value UpdateWebhookDefinitionReqTransformation
+// OptNilWebhookDefinitionFieldsTransformation is optional nullable WebhookDefinitionFieldsTransformation.
+type OptNilWebhookDefinitionFieldsTransformation struct {
+	Value WebhookDefinitionFieldsTransformation
 	Set   bool
 	Null  bool
 }
 
-// IsSet returns true if OptNilUpdateWebhookDefinitionReqTransformation was set.
-func (o OptNilUpdateWebhookDefinitionReqTransformation) IsSet() bool { return o.Set }
+// IsSet returns true if OptNilWebhookDefinitionFieldsTransformation was set.
+func (o OptNilWebhookDefinitionFieldsTransformation) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptNilUpdateWebhookDefinitionReqTransformation) Reset() {
-	var v UpdateWebhookDefinitionReqTransformation
+func (o *OptNilWebhookDefinitionFieldsTransformation) Reset() {
+	var v WebhookDefinitionFieldsTransformation
 	o.Value = v
 	o.Set = false
 	o.Null = false
 }
 
 // SetTo sets value to v.
-func (o *OptNilUpdateWebhookDefinitionReqTransformation) SetTo(v UpdateWebhookDefinitionReqTransformation) {
+func (o *OptNilWebhookDefinitionFieldsTransformation) SetTo(v WebhookDefinitionFieldsTransformation) {
 	o.Set = true
 	o.Null = false
 	o.Value = v
 }
 
 // IsSet returns true if value is Null.
-func (o OptNilUpdateWebhookDefinitionReqTransformation) IsNull() bool { return o.Null }
+func (o OptNilWebhookDefinitionFieldsTransformation) IsNull() bool { return o.Null }
 
 // SetNull sets value to null.
-func (o *OptNilUpdateWebhookDefinitionReqTransformation) SetToNull() {
+func (o *OptNilWebhookDefinitionFieldsTransformation) SetToNull() {
 	o.Set = true
 	o.Null = true
-	var v UpdateWebhookDefinitionReqTransformation
+	var v WebhookDefinitionFieldsTransformation
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptNilUpdateWebhookDefinitionReqTransformation) Get() (v UpdateWebhookDefinitionReqTransformation, ok bool) {
+func (o OptNilWebhookDefinitionFieldsTransformation) Get() (v WebhookDefinitionFieldsTransformation, ok bool) {
 	if o.Null {
 		return v, false
 	}
@@ -2972,7 +2948,7 @@ func (o OptNilUpdateWebhookDefinitionReqTransformation) Get() (v UpdateWebhookDe
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptNilUpdateWebhookDefinitionReqTransformation) Or(d UpdateWebhookDefinitionReqTransformation) UpdateWebhookDefinitionReqTransformation {
+func (o OptNilWebhookDefinitionFieldsTransformation) Or(d WebhookDefinitionFieldsTransformation) WebhookDefinitionFieldsTransformation {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -3099,52 +3075,6 @@ func (o OptNilWebhookDefinitionTransformation) Get() (v WebhookDefinitionTransfo
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilWebhookDefinitionTransformation) Or(d WebhookDefinitionTransformation) WebhookDefinitionTransformation {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptPutContentTypeReqFieldsItemItems returns new OptPutContentTypeReqFieldsItemItems with value set to v.
-func NewOptPutContentTypeReqFieldsItemItems(v PutContentTypeReqFieldsItemItems) OptPutContentTypeReqFieldsItemItems {
-	return OptPutContentTypeReqFieldsItemItems{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptPutContentTypeReqFieldsItemItems is optional PutContentTypeReqFieldsItemItems.
-type OptPutContentTypeReqFieldsItemItems struct {
-	Value PutContentTypeReqFieldsItemItems
-	Set   bool
-}
-
-// IsSet returns true if OptPutContentTypeReqFieldsItemItems was set.
-func (o OptPutContentTypeReqFieldsItemItems) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptPutContentTypeReqFieldsItemItems) Reset() {
-	var v PutContentTypeReqFieldsItemItems
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptPutContentTypeReqFieldsItemItems) SetTo(v PutContentTypeReqFieldsItemItems) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptPutContentTypeReqFieldsItemItems) Get() (v PutContentTypeReqFieldsItemItems, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptPutContentTypeReqFieldsItemItems) Or(d PutContentTypeReqFieldsItemItems) PutContentTypeReqFieldsItemItems {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -3306,6 +3236,43 @@ func (s *PersonalAccessToken) SetRevokedAt(val OptNilDateTime) {
 func (*PersonalAccessToken) createPersonalAccessTokenRes() {}
 func (*PersonalAccessToken) getPersonalAccessTokenRes()    {}
 func (*PersonalAccessToken) revokePersonalAccessTokenRes() {}
+
+// Ref: #/components/schemas/PersonalAccessTokenRequestFields
+type PersonalAccessTokenRequestFields struct {
+	Name      string    `json:"name"`
+	Scopes    []string  `json:"scopes"`
+	ExpiresIn OptNilInt `json:"expiresIn"`
+}
+
+// GetName returns the value of Name.
+func (s *PersonalAccessTokenRequestFields) GetName() string {
+	return s.Name
+}
+
+// GetScopes returns the value of Scopes.
+func (s *PersonalAccessTokenRequestFields) GetScopes() []string {
+	return s.Scopes
+}
+
+// GetExpiresIn returns the value of ExpiresIn.
+func (s *PersonalAccessTokenRequestFields) GetExpiresIn() OptNilInt {
+	return s.ExpiresIn
+}
+
+// SetName sets the value of Name.
+func (s *PersonalAccessTokenRequestFields) SetName(val string) {
+	s.Name = val
+}
+
+// SetScopes sets the value of Scopes.
+func (s *PersonalAccessTokenRequestFields) SetScopes(val []string) {
+	s.Scopes = val
+}
+
+// SetExpiresIn sets the value of ExpiresIn.
+func (s *PersonalAccessTokenRequestFields) SetExpiresIn(val OptNilInt) {
+	s.ExpiresIn = val
+}
 
 // Merged schema.
 // Ref: #/components/schemas/PersonalAccessTokenSys
@@ -3561,20 +3528,6 @@ func (s *PreviewApiKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
-type PutAppInstallationReq struct {
-	Parameters jx.Raw `json:"parameters"`
-}
-
-// GetParameters returns the value of Parameters.
-func (s *PutAppInstallationReq) GetParameters() jx.Raw {
-	return s.Parameters
-}
-
-// SetParameters sets the value of Parameters.
-func (s *PutAppInstallationReq) SetParameters(val jx.Raw) {
-	s.Parameters = val
-}
-
 type PutContentTypeCreated ContentType
 
 func (*PutContentTypeCreated) putContentTypeRes() {}
@@ -3582,437 +3535,6 @@ func (*PutContentTypeCreated) putContentTypeRes() {}
 type PutContentTypeOK ContentType
 
 func (*PutContentTypeOK) putContentTypeRes() {}
-
-type PutContentTypeReq struct {
-	Name         string                        `json:"name"`
-	Description  string                        `json:"description"`
-	DisplayField string                        `json:"displayField"`
-	Fields       []PutContentTypeReqFieldsItem `json:"fields"`
-}
-
-// GetName returns the value of Name.
-func (s *PutContentTypeReq) GetName() string {
-	return s.Name
-}
-
-// GetDescription returns the value of Description.
-func (s *PutContentTypeReq) GetDescription() string {
-	return s.Description
-}
-
-// GetDisplayField returns the value of DisplayField.
-func (s *PutContentTypeReq) GetDisplayField() string {
-	return s.DisplayField
-}
-
-// GetFields returns the value of Fields.
-func (s *PutContentTypeReq) GetFields() []PutContentTypeReqFieldsItem {
-	return s.Fields
-}
-
-// SetName sets the value of Name.
-func (s *PutContentTypeReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetDescription sets the value of Description.
-func (s *PutContentTypeReq) SetDescription(val string) {
-	s.Description = val
-}
-
-// SetDisplayField sets the value of DisplayField.
-func (s *PutContentTypeReq) SetDisplayField(val string) {
-	s.DisplayField = val
-}
-
-// SetFields sets the value of Fields.
-func (s *PutContentTypeReq) SetFields(val []PutContentTypeReqFieldsItem) {
-	s.Fields = val
-}
-
-type PutContentTypeReqFieldsItem struct {
-	ID           string                              `json:"id"`
-	Name         string                              `json:"name"`
-	Type         string                              `json:"type"`
-	LinkType     OptString                           `json:"linkType"`
-	Items        OptPutContentTypeReqFieldsItemItems `json:"items"`
-	Localized    OptBool                             `json:"localized"`
-	Omitted      OptBool                             `json:"omitted"`
-	Required     OptBool                             `json:"required"`
-	Disabled     OptBool                             `json:"disabled"`
-	DefaultValue jx.Raw                              `json:"defaultValue"`
-	Validations  []jx.Raw                            `json:"validations"`
-}
-
-// GetID returns the value of ID.
-func (s *PutContentTypeReqFieldsItem) GetID() string {
-	return s.ID
-}
-
-// GetName returns the value of Name.
-func (s *PutContentTypeReqFieldsItem) GetName() string {
-	return s.Name
-}
-
-// GetType returns the value of Type.
-func (s *PutContentTypeReqFieldsItem) GetType() string {
-	return s.Type
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *PutContentTypeReqFieldsItem) GetLinkType() OptString {
-	return s.LinkType
-}
-
-// GetItems returns the value of Items.
-func (s *PutContentTypeReqFieldsItem) GetItems() OptPutContentTypeReqFieldsItemItems {
-	return s.Items
-}
-
-// GetLocalized returns the value of Localized.
-func (s *PutContentTypeReqFieldsItem) GetLocalized() OptBool {
-	return s.Localized
-}
-
-// GetOmitted returns the value of Omitted.
-func (s *PutContentTypeReqFieldsItem) GetOmitted() OptBool {
-	return s.Omitted
-}
-
-// GetRequired returns the value of Required.
-func (s *PutContentTypeReqFieldsItem) GetRequired() OptBool {
-	return s.Required
-}
-
-// GetDisabled returns the value of Disabled.
-func (s *PutContentTypeReqFieldsItem) GetDisabled() OptBool {
-	return s.Disabled
-}
-
-// GetDefaultValue returns the value of DefaultValue.
-func (s *PutContentTypeReqFieldsItem) GetDefaultValue() jx.Raw {
-	return s.DefaultValue
-}
-
-// GetValidations returns the value of Validations.
-func (s *PutContentTypeReqFieldsItem) GetValidations() []jx.Raw {
-	return s.Validations
-}
-
-// SetID sets the value of ID.
-func (s *PutContentTypeReqFieldsItem) SetID(val string) {
-	s.ID = val
-}
-
-// SetName sets the value of Name.
-func (s *PutContentTypeReqFieldsItem) SetName(val string) {
-	s.Name = val
-}
-
-// SetType sets the value of Type.
-func (s *PutContentTypeReqFieldsItem) SetType(val string) {
-	s.Type = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *PutContentTypeReqFieldsItem) SetLinkType(val OptString) {
-	s.LinkType = val
-}
-
-// SetItems sets the value of Items.
-func (s *PutContentTypeReqFieldsItem) SetItems(val OptPutContentTypeReqFieldsItemItems) {
-	s.Items = val
-}
-
-// SetLocalized sets the value of Localized.
-func (s *PutContentTypeReqFieldsItem) SetLocalized(val OptBool) {
-	s.Localized = val
-}
-
-// SetOmitted sets the value of Omitted.
-func (s *PutContentTypeReqFieldsItem) SetOmitted(val OptBool) {
-	s.Omitted = val
-}
-
-// SetRequired sets the value of Required.
-func (s *PutContentTypeReqFieldsItem) SetRequired(val OptBool) {
-	s.Required = val
-}
-
-// SetDisabled sets the value of Disabled.
-func (s *PutContentTypeReqFieldsItem) SetDisabled(val OptBool) {
-	s.Disabled = val
-}
-
-// SetDefaultValue sets the value of DefaultValue.
-func (s *PutContentTypeReqFieldsItem) SetDefaultValue(val jx.Raw) {
-	s.DefaultValue = val
-}
-
-// SetValidations sets the value of Validations.
-func (s *PutContentTypeReqFieldsItem) SetValidations(val []jx.Raw) {
-	s.Validations = val
-}
-
-type PutContentTypeReqFieldsItemItems struct {
-	Type        OptString `json:"type"`
-	LinkType    OptString `json:"linkType"`
-	Validations []jx.Raw  `json:"validations"`
-}
-
-// GetType returns the value of Type.
-func (s *PutContentTypeReqFieldsItemItems) GetType() OptString {
-	return s.Type
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *PutContentTypeReqFieldsItemItems) GetLinkType() OptString {
-	return s.LinkType
-}
-
-// GetValidations returns the value of Validations.
-func (s *PutContentTypeReqFieldsItemItems) GetValidations() []jx.Raw {
-	return s.Validations
-}
-
-// SetType sets the value of Type.
-func (s *PutContentTypeReqFieldsItemItems) SetType(val OptString) {
-	s.Type = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *PutContentTypeReqFieldsItemItems) SetLinkType(val OptString) {
-	s.LinkType = val
-}
-
-// SetValidations sets the value of Validations.
-func (s *PutContentTypeReqFieldsItemItems) SetValidations(val []jx.Raw) {
-	s.Validations = val
-}
-
-type PutEditorInterfaceReq struct {
-	EditorLayout  OptNilPutEditorInterfaceReqEditorLayoutItemArray  `json:"editorLayout"`
-	Controls      OptNilPutEditorInterfaceReqControlsItemArray      `json:"controls"`
-	GroupControls OptNilPutEditorInterfaceReqGroupControlsItemArray `json:"groupControls"`
-	Sidebar       OptNilPutEditorInterfaceReqSidebarItemArray       `json:"sidebar"`
-}
-
-// GetEditorLayout returns the value of EditorLayout.
-func (s *PutEditorInterfaceReq) GetEditorLayout() OptNilPutEditorInterfaceReqEditorLayoutItemArray {
-	return s.EditorLayout
-}
-
-// GetControls returns the value of Controls.
-func (s *PutEditorInterfaceReq) GetControls() OptNilPutEditorInterfaceReqControlsItemArray {
-	return s.Controls
-}
-
-// GetGroupControls returns the value of GroupControls.
-func (s *PutEditorInterfaceReq) GetGroupControls() OptNilPutEditorInterfaceReqGroupControlsItemArray {
-	return s.GroupControls
-}
-
-// GetSidebar returns the value of Sidebar.
-func (s *PutEditorInterfaceReq) GetSidebar() OptNilPutEditorInterfaceReqSidebarItemArray {
-	return s.Sidebar
-}
-
-// SetEditorLayout sets the value of EditorLayout.
-func (s *PutEditorInterfaceReq) SetEditorLayout(val OptNilPutEditorInterfaceReqEditorLayoutItemArray) {
-	s.EditorLayout = val
-}
-
-// SetControls sets the value of Controls.
-func (s *PutEditorInterfaceReq) SetControls(val OptNilPutEditorInterfaceReqControlsItemArray) {
-	s.Controls = val
-}
-
-// SetGroupControls sets the value of GroupControls.
-func (s *PutEditorInterfaceReq) SetGroupControls(val OptNilPutEditorInterfaceReqGroupControlsItemArray) {
-	s.GroupControls = val
-}
-
-// SetSidebar sets the value of Sidebar.
-func (s *PutEditorInterfaceReq) SetSidebar(val OptNilPutEditorInterfaceReqSidebarItemArray) {
-	s.Sidebar = val
-}
-
-type PutEditorInterfaceReqControlsItem struct {
-	FieldId         string    `json:"fieldId"`
-	WidgetNamespace OptString `json:"widgetNamespace"`
-	WidgetId        OptString `json:"widgetId"`
-	Settings        jx.Raw    `json:"settings"`
-}
-
-// GetFieldId returns the value of FieldId.
-func (s *PutEditorInterfaceReqControlsItem) GetFieldId() string {
-	return s.FieldId
-}
-
-// GetWidgetNamespace returns the value of WidgetNamespace.
-func (s *PutEditorInterfaceReqControlsItem) GetWidgetNamespace() OptString {
-	return s.WidgetNamespace
-}
-
-// GetWidgetId returns the value of WidgetId.
-func (s *PutEditorInterfaceReqControlsItem) GetWidgetId() OptString {
-	return s.WidgetId
-}
-
-// GetSettings returns the value of Settings.
-func (s *PutEditorInterfaceReqControlsItem) GetSettings() jx.Raw {
-	return s.Settings
-}
-
-// SetFieldId sets the value of FieldId.
-func (s *PutEditorInterfaceReqControlsItem) SetFieldId(val string) {
-	s.FieldId = val
-}
-
-// SetWidgetNamespace sets the value of WidgetNamespace.
-func (s *PutEditorInterfaceReqControlsItem) SetWidgetNamespace(val OptString) {
-	s.WidgetNamespace = val
-}
-
-// SetWidgetId sets the value of WidgetId.
-func (s *PutEditorInterfaceReqControlsItem) SetWidgetId(val OptString) {
-	s.WidgetId = val
-}
-
-// SetSettings sets the value of Settings.
-func (s *PutEditorInterfaceReqControlsItem) SetSettings(val jx.Raw) {
-	s.Settings = val
-}
-
-type PutEditorInterfaceReqEditorLayoutItem struct {
-	GroupId string   `json:"groupId"`
-	Name    string   `json:"name"`
-	Items   []jx.Raw `json:"items"`
-}
-
-// GetGroupId returns the value of GroupId.
-func (s *PutEditorInterfaceReqEditorLayoutItem) GetGroupId() string {
-	return s.GroupId
-}
-
-// GetName returns the value of Name.
-func (s *PutEditorInterfaceReqEditorLayoutItem) GetName() string {
-	return s.Name
-}
-
-// GetItems returns the value of Items.
-func (s *PutEditorInterfaceReqEditorLayoutItem) GetItems() []jx.Raw {
-	return s.Items
-}
-
-// SetGroupId sets the value of GroupId.
-func (s *PutEditorInterfaceReqEditorLayoutItem) SetGroupId(val string) {
-	s.GroupId = val
-}
-
-// SetName sets the value of Name.
-func (s *PutEditorInterfaceReqEditorLayoutItem) SetName(val string) {
-	s.Name = val
-}
-
-// SetItems sets the value of Items.
-func (s *PutEditorInterfaceReqEditorLayoutItem) SetItems(val []jx.Raw) {
-	s.Items = val
-}
-
-type PutEditorInterfaceReqGroupControlsItem struct {
-	GroupId         string    `json:"groupId"`
-	WidgetNamespace OptString `json:"widgetNamespace"`
-	WidgetId        OptString `json:"widgetId"`
-	Settings        jx.Raw    `json:"settings"`
-}
-
-// GetGroupId returns the value of GroupId.
-func (s *PutEditorInterfaceReqGroupControlsItem) GetGroupId() string {
-	return s.GroupId
-}
-
-// GetWidgetNamespace returns the value of WidgetNamespace.
-func (s *PutEditorInterfaceReqGroupControlsItem) GetWidgetNamespace() OptString {
-	return s.WidgetNamespace
-}
-
-// GetWidgetId returns the value of WidgetId.
-func (s *PutEditorInterfaceReqGroupControlsItem) GetWidgetId() OptString {
-	return s.WidgetId
-}
-
-// GetSettings returns the value of Settings.
-func (s *PutEditorInterfaceReqGroupControlsItem) GetSettings() jx.Raw {
-	return s.Settings
-}
-
-// SetGroupId sets the value of GroupId.
-func (s *PutEditorInterfaceReqGroupControlsItem) SetGroupId(val string) {
-	s.GroupId = val
-}
-
-// SetWidgetNamespace sets the value of WidgetNamespace.
-func (s *PutEditorInterfaceReqGroupControlsItem) SetWidgetNamespace(val OptString) {
-	s.WidgetNamespace = val
-}
-
-// SetWidgetId sets the value of WidgetId.
-func (s *PutEditorInterfaceReqGroupControlsItem) SetWidgetId(val OptString) {
-	s.WidgetId = val
-}
-
-// SetSettings sets the value of Settings.
-func (s *PutEditorInterfaceReqGroupControlsItem) SetSettings(val jx.Raw) {
-	s.Settings = val
-}
-
-type PutEditorInterfaceReqSidebarItem struct {
-	WidgetNamespace string  `json:"widgetNamespace"`
-	WidgetId        string  `json:"widgetId"`
-	Settings        jx.Raw  `json:"settings"`
-	Disabled        OptBool `json:"disabled"`
-}
-
-// GetWidgetNamespace returns the value of WidgetNamespace.
-func (s *PutEditorInterfaceReqSidebarItem) GetWidgetNamespace() string {
-	return s.WidgetNamespace
-}
-
-// GetWidgetId returns the value of WidgetId.
-func (s *PutEditorInterfaceReqSidebarItem) GetWidgetId() string {
-	return s.WidgetId
-}
-
-// GetSettings returns the value of Settings.
-func (s *PutEditorInterfaceReqSidebarItem) GetSettings() jx.Raw {
-	return s.Settings
-}
-
-// GetDisabled returns the value of Disabled.
-func (s *PutEditorInterfaceReqSidebarItem) GetDisabled() OptBool {
-	return s.Disabled
-}
-
-// SetWidgetNamespace sets the value of WidgetNamespace.
-func (s *PutEditorInterfaceReqSidebarItem) SetWidgetNamespace(val string) {
-	s.WidgetNamespace = val
-}
-
-// SetWidgetId sets the value of WidgetId.
-func (s *PutEditorInterfaceReqSidebarItem) SetWidgetId(val string) {
-	s.WidgetId = val
-}
-
-// SetSettings sets the value of Settings.
-func (s *PutEditorInterfaceReqSidebarItem) SetSettings(val jx.Raw) {
-	s.Settings = val
-}
-
-// SetDisabled sets the value of Disabled.
-func (s *PutEditorInterfaceReqSidebarItem) SetDisabled(val OptBool) {
-	s.Disabled = val
-}
 
 // Merged schema.
 // Ref: #/components/schemas/Role
@@ -4077,6 +3599,276 @@ func (s *Role) SetPolicies(val []RolePoliciesItem) {
 func (*Role) createRoleRes() {}
 func (*Role) getRoleRes()    {}
 func (*Role) updateRoleRes() {}
+
+// Ref: #/components/schemas/RoleFields
+type RoleFields struct {
+	Name        string                   `json:"name"`
+	Description OptNilString             `json:"description"`
+	Permissions RoleFieldsPermissions    `json:"permissions"`
+	Policies    []RoleFieldsPoliciesItem `json:"policies"`
+}
+
+// GetName returns the value of Name.
+func (s *RoleFields) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *RoleFields) GetDescription() OptNilString {
+	return s.Description
+}
+
+// GetPermissions returns the value of Permissions.
+func (s *RoleFields) GetPermissions() RoleFieldsPermissions {
+	return s.Permissions
+}
+
+// GetPolicies returns the value of Policies.
+func (s *RoleFields) GetPolicies() []RoleFieldsPoliciesItem {
+	return s.Policies
+}
+
+// SetName sets the value of Name.
+func (s *RoleFields) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *RoleFields) SetDescription(val OptNilString) {
+	s.Description = val
+}
+
+// SetPermissions sets the value of Permissions.
+func (s *RoleFields) SetPermissions(val RoleFieldsPermissions) {
+	s.Permissions = val
+}
+
+// SetPolicies sets the value of Policies.
+func (s *RoleFields) SetPolicies(val []RoleFieldsPoliciesItem) {
+	s.Policies = val
+}
+
+type RoleFieldsPermissions map[string]RoleFieldsPermissionsItem
+
+func (s *RoleFieldsPermissions) init() RoleFieldsPermissions {
+	m := *s
+	if m == nil {
+		m = map[string]RoleFieldsPermissionsItem{}
+		*s = m
+	}
+	return m
+}
+
+// RoleFieldsPermissionsItem represents sum type.
+type RoleFieldsPermissionsItem struct {
+	Type        RoleFieldsPermissionsItemType // switch on this field
+	String      string
+	StringArray []string
+}
+
+// RoleFieldsPermissionsItemType is oneOf type of RoleFieldsPermissionsItem.
+type RoleFieldsPermissionsItemType string
+
+// Possible values for RoleFieldsPermissionsItemType.
+const (
+	StringRoleFieldsPermissionsItem      RoleFieldsPermissionsItemType = "string"
+	StringArrayRoleFieldsPermissionsItem RoleFieldsPermissionsItemType = "[]string"
+)
+
+// IsString reports whether RoleFieldsPermissionsItem is string.
+func (s RoleFieldsPermissionsItem) IsString() bool { return s.Type == StringRoleFieldsPermissionsItem }
+
+// IsStringArray reports whether RoleFieldsPermissionsItem is []string.
+func (s RoleFieldsPermissionsItem) IsStringArray() bool {
+	return s.Type == StringArrayRoleFieldsPermissionsItem
+}
+
+// SetString sets RoleFieldsPermissionsItem to string.
+func (s *RoleFieldsPermissionsItem) SetString(v string) {
+	s.Type = StringRoleFieldsPermissionsItem
+	s.String = v
+}
+
+// GetString returns string and true boolean if RoleFieldsPermissionsItem is string.
+func (s RoleFieldsPermissionsItem) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringRoleFieldsPermissionsItem returns new RoleFieldsPermissionsItem from string.
+func NewStringRoleFieldsPermissionsItem(v string) RoleFieldsPermissionsItem {
+	var s RoleFieldsPermissionsItem
+	s.SetString(v)
+	return s
+}
+
+// SetStringArray sets RoleFieldsPermissionsItem to []string.
+func (s *RoleFieldsPermissionsItem) SetStringArray(v []string) {
+	s.Type = StringArrayRoleFieldsPermissionsItem
+	s.StringArray = v
+}
+
+// GetStringArray returns []string and true boolean if RoleFieldsPermissionsItem is []string.
+func (s RoleFieldsPermissionsItem) GetStringArray() (v []string, ok bool) {
+	if !s.IsStringArray() {
+		return v, false
+	}
+	return s.StringArray, true
+}
+
+// NewStringArrayRoleFieldsPermissionsItem returns new RoleFieldsPermissionsItem from []string.
+func NewStringArrayRoleFieldsPermissionsItem(v []string) RoleFieldsPermissionsItem {
+	var s RoleFieldsPermissionsItem
+	s.SetStringArray(v)
+	return s
+}
+
+type RoleFieldsPoliciesItem struct {
+	Effect     RoleFieldsPoliciesItemEffect  `json:"effect"`
+	Actions    RoleFieldsPoliciesItemActions `json:"actions"`
+	Constraint jx.Raw                        `json:"constraint"`
+}
+
+// GetEffect returns the value of Effect.
+func (s *RoleFieldsPoliciesItem) GetEffect() RoleFieldsPoliciesItemEffect {
+	return s.Effect
+}
+
+// GetActions returns the value of Actions.
+func (s *RoleFieldsPoliciesItem) GetActions() RoleFieldsPoliciesItemActions {
+	return s.Actions
+}
+
+// GetConstraint returns the value of Constraint.
+func (s *RoleFieldsPoliciesItem) GetConstraint() jx.Raw {
+	return s.Constraint
+}
+
+// SetEffect sets the value of Effect.
+func (s *RoleFieldsPoliciesItem) SetEffect(val RoleFieldsPoliciesItemEffect) {
+	s.Effect = val
+}
+
+// SetActions sets the value of Actions.
+func (s *RoleFieldsPoliciesItem) SetActions(val RoleFieldsPoliciesItemActions) {
+	s.Actions = val
+}
+
+// SetConstraint sets the value of Constraint.
+func (s *RoleFieldsPoliciesItem) SetConstraint(val jx.Raw) {
+	s.Constraint = val
+}
+
+// RoleFieldsPoliciesItemActions represents sum type.
+type RoleFieldsPoliciesItemActions struct {
+	Type        RoleFieldsPoliciesItemActionsType // switch on this field
+	String      string
+	StringArray []string
+}
+
+// RoleFieldsPoliciesItemActionsType is oneOf type of RoleFieldsPoliciesItemActions.
+type RoleFieldsPoliciesItemActionsType string
+
+// Possible values for RoleFieldsPoliciesItemActionsType.
+const (
+	StringRoleFieldsPoliciesItemActions      RoleFieldsPoliciesItemActionsType = "string"
+	StringArrayRoleFieldsPoliciesItemActions RoleFieldsPoliciesItemActionsType = "[]string"
+)
+
+// IsString reports whether RoleFieldsPoliciesItemActions is string.
+func (s RoleFieldsPoliciesItemActions) IsString() bool {
+	return s.Type == StringRoleFieldsPoliciesItemActions
+}
+
+// IsStringArray reports whether RoleFieldsPoliciesItemActions is []string.
+func (s RoleFieldsPoliciesItemActions) IsStringArray() bool {
+	return s.Type == StringArrayRoleFieldsPoliciesItemActions
+}
+
+// SetString sets RoleFieldsPoliciesItemActions to string.
+func (s *RoleFieldsPoliciesItemActions) SetString(v string) {
+	s.Type = StringRoleFieldsPoliciesItemActions
+	s.String = v
+}
+
+// GetString returns string and true boolean if RoleFieldsPoliciesItemActions is string.
+func (s RoleFieldsPoliciesItemActions) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringRoleFieldsPoliciesItemActions returns new RoleFieldsPoliciesItemActions from string.
+func NewStringRoleFieldsPoliciesItemActions(v string) RoleFieldsPoliciesItemActions {
+	var s RoleFieldsPoliciesItemActions
+	s.SetString(v)
+	return s
+}
+
+// SetStringArray sets RoleFieldsPoliciesItemActions to []string.
+func (s *RoleFieldsPoliciesItemActions) SetStringArray(v []string) {
+	s.Type = StringArrayRoleFieldsPoliciesItemActions
+	s.StringArray = v
+}
+
+// GetStringArray returns []string and true boolean if RoleFieldsPoliciesItemActions is []string.
+func (s RoleFieldsPoliciesItemActions) GetStringArray() (v []string, ok bool) {
+	if !s.IsStringArray() {
+		return v, false
+	}
+	return s.StringArray, true
+}
+
+// NewStringArrayRoleFieldsPoliciesItemActions returns new RoleFieldsPoliciesItemActions from []string.
+func NewStringArrayRoleFieldsPoliciesItemActions(v []string) RoleFieldsPoliciesItemActions {
+	var s RoleFieldsPoliciesItemActions
+	s.SetStringArray(v)
+	return s
+}
+
+type RoleFieldsPoliciesItemEffect string
+
+const (
+	RoleFieldsPoliciesItemEffectAllow RoleFieldsPoliciesItemEffect = "allow"
+	RoleFieldsPoliciesItemEffectDeny  RoleFieldsPoliciesItemEffect = "deny"
+)
+
+// AllValues returns all RoleFieldsPoliciesItemEffect values.
+func (RoleFieldsPoliciesItemEffect) AllValues() []RoleFieldsPoliciesItemEffect {
+	return []RoleFieldsPoliciesItemEffect{
+		RoleFieldsPoliciesItemEffectAllow,
+		RoleFieldsPoliciesItemEffectDeny,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s RoleFieldsPoliciesItemEffect) MarshalText() ([]byte, error) {
+	switch s {
+	case RoleFieldsPoliciesItemEffectAllow:
+		return []byte(s), nil
+	case RoleFieldsPoliciesItemEffectDeny:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *RoleFieldsPoliciesItemEffect) UnmarshalText(data []byte) error {
+	switch RoleFieldsPoliciesItemEffect(data) {
+	case RoleFieldsPoliciesItemEffectAllow:
+		*s = RoleFieldsPoliciesItemEffectAllow
+		return nil
+	case RoleFieldsPoliciesItemEffectDeny:
+		*s = RoleFieldsPoliciesItemEffectDeny
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
 
 type RolePermissions map[string]RolePermissionsItem
 
@@ -4392,462 +4184,6 @@ func (s *RoleSysType) UnmarshalText(data []byte) error {
 	}
 }
 
-type UpdateDeliveryApiKeyReq struct {
-	Name         string            `json:"name"`
-	Description  OptNilString      `json:"description"`
-	Environments []EnvironmentLink `json:"environments"`
-}
-
-// GetName returns the value of Name.
-func (s *UpdateDeliveryApiKeyReq) GetName() string {
-	return s.Name
-}
-
-// GetDescription returns the value of Description.
-func (s *UpdateDeliveryApiKeyReq) GetDescription() OptNilString {
-	return s.Description
-}
-
-// GetEnvironments returns the value of Environments.
-func (s *UpdateDeliveryApiKeyReq) GetEnvironments() []EnvironmentLink {
-	return s.Environments
-}
-
-// SetName sets the value of Name.
-func (s *UpdateDeliveryApiKeyReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetDescription sets the value of Description.
-func (s *UpdateDeliveryApiKeyReq) SetDescription(val OptNilString) {
-	s.Description = val
-}
-
-// SetEnvironments sets the value of Environments.
-func (s *UpdateDeliveryApiKeyReq) SetEnvironments(val []EnvironmentLink) {
-	s.Environments = val
-}
-
-type UpdateRoleReq struct {
-	Name        string                      `json:"name"`
-	Description OptNilString                `json:"description"`
-	Permissions UpdateRoleReqPermissions    `json:"permissions"`
-	Policies    []UpdateRoleReqPoliciesItem `json:"policies"`
-}
-
-// GetName returns the value of Name.
-func (s *UpdateRoleReq) GetName() string {
-	return s.Name
-}
-
-// GetDescription returns the value of Description.
-func (s *UpdateRoleReq) GetDescription() OptNilString {
-	return s.Description
-}
-
-// GetPermissions returns the value of Permissions.
-func (s *UpdateRoleReq) GetPermissions() UpdateRoleReqPermissions {
-	return s.Permissions
-}
-
-// GetPolicies returns the value of Policies.
-func (s *UpdateRoleReq) GetPolicies() []UpdateRoleReqPoliciesItem {
-	return s.Policies
-}
-
-// SetName sets the value of Name.
-func (s *UpdateRoleReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetDescription sets the value of Description.
-func (s *UpdateRoleReq) SetDescription(val OptNilString) {
-	s.Description = val
-}
-
-// SetPermissions sets the value of Permissions.
-func (s *UpdateRoleReq) SetPermissions(val UpdateRoleReqPermissions) {
-	s.Permissions = val
-}
-
-// SetPolicies sets the value of Policies.
-func (s *UpdateRoleReq) SetPolicies(val []UpdateRoleReqPoliciesItem) {
-	s.Policies = val
-}
-
-type UpdateRoleReqPermissions map[string]UpdateRoleReqPermissionsItem
-
-func (s *UpdateRoleReqPermissions) init() UpdateRoleReqPermissions {
-	m := *s
-	if m == nil {
-		m = map[string]UpdateRoleReqPermissionsItem{}
-		*s = m
-	}
-	return m
-}
-
-// UpdateRoleReqPermissionsItem represents sum type.
-type UpdateRoleReqPermissionsItem struct {
-	Type        UpdateRoleReqPermissionsItemType // switch on this field
-	String      string
-	StringArray []string
-}
-
-// UpdateRoleReqPermissionsItemType is oneOf type of UpdateRoleReqPermissionsItem.
-type UpdateRoleReqPermissionsItemType string
-
-// Possible values for UpdateRoleReqPermissionsItemType.
-const (
-	StringUpdateRoleReqPermissionsItem      UpdateRoleReqPermissionsItemType = "string"
-	StringArrayUpdateRoleReqPermissionsItem UpdateRoleReqPermissionsItemType = "[]string"
-)
-
-// IsString reports whether UpdateRoleReqPermissionsItem is string.
-func (s UpdateRoleReqPermissionsItem) IsString() bool {
-	return s.Type == StringUpdateRoleReqPermissionsItem
-}
-
-// IsStringArray reports whether UpdateRoleReqPermissionsItem is []string.
-func (s UpdateRoleReqPermissionsItem) IsStringArray() bool {
-	return s.Type == StringArrayUpdateRoleReqPermissionsItem
-}
-
-// SetString sets UpdateRoleReqPermissionsItem to string.
-func (s *UpdateRoleReqPermissionsItem) SetString(v string) {
-	s.Type = StringUpdateRoleReqPermissionsItem
-	s.String = v
-}
-
-// GetString returns string and true boolean if UpdateRoleReqPermissionsItem is string.
-func (s UpdateRoleReqPermissionsItem) GetString() (v string, ok bool) {
-	if !s.IsString() {
-		return v, false
-	}
-	return s.String, true
-}
-
-// NewStringUpdateRoleReqPermissionsItem returns new UpdateRoleReqPermissionsItem from string.
-func NewStringUpdateRoleReqPermissionsItem(v string) UpdateRoleReqPermissionsItem {
-	var s UpdateRoleReqPermissionsItem
-	s.SetString(v)
-	return s
-}
-
-// SetStringArray sets UpdateRoleReqPermissionsItem to []string.
-func (s *UpdateRoleReqPermissionsItem) SetStringArray(v []string) {
-	s.Type = StringArrayUpdateRoleReqPermissionsItem
-	s.StringArray = v
-}
-
-// GetStringArray returns []string and true boolean if UpdateRoleReqPermissionsItem is []string.
-func (s UpdateRoleReqPermissionsItem) GetStringArray() (v []string, ok bool) {
-	if !s.IsStringArray() {
-		return v, false
-	}
-	return s.StringArray, true
-}
-
-// NewStringArrayUpdateRoleReqPermissionsItem returns new UpdateRoleReqPermissionsItem from []string.
-func NewStringArrayUpdateRoleReqPermissionsItem(v []string) UpdateRoleReqPermissionsItem {
-	var s UpdateRoleReqPermissionsItem
-	s.SetStringArray(v)
-	return s
-}
-
-type UpdateRoleReqPoliciesItem struct {
-	Effect     UpdateRoleReqPoliciesItemEffect  `json:"effect"`
-	Actions    UpdateRoleReqPoliciesItemActions `json:"actions"`
-	Constraint jx.Raw                           `json:"constraint"`
-}
-
-// GetEffect returns the value of Effect.
-func (s *UpdateRoleReqPoliciesItem) GetEffect() UpdateRoleReqPoliciesItemEffect {
-	return s.Effect
-}
-
-// GetActions returns the value of Actions.
-func (s *UpdateRoleReqPoliciesItem) GetActions() UpdateRoleReqPoliciesItemActions {
-	return s.Actions
-}
-
-// GetConstraint returns the value of Constraint.
-func (s *UpdateRoleReqPoliciesItem) GetConstraint() jx.Raw {
-	return s.Constraint
-}
-
-// SetEffect sets the value of Effect.
-func (s *UpdateRoleReqPoliciesItem) SetEffect(val UpdateRoleReqPoliciesItemEffect) {
-	s.Effect = val
-}
-
-// SetActions sets the value of Actions.
-func (s *UpdateRoleReqPoliciesItem) SetActions(val UpdateRoleReqPoliciesItemActions) {
-	s.Actions = val
-}
-
-// SetConstraint sets the value of Constraint.
-func (s *UpdateRoleReqPoliciesItem) SetConstraint(val jx.Raw) {
-	s.Constraint = val
-}
-
-// UpdateRoleReqPoliciesItemActions represents sum type.
-type UpdateRoleReqPoliciesItemActions struct {
-	Type        UpdateRoleReqPoliciesItemActionsType // switch on this field
-	String      string
-	StringArray []string
-}
-
-// UpdateRoleReqPoliciesItemActionsType is oneOf type of UpdateRoleReqPoliciesItemActions.
-type UpdateRoleReqPoliciesItemActionsType string
-
-// Possible values for UpdateRoleReqPoliciesItemActionsType.
-const (
-	StringUpdateRoleReqPoliciesItemActions      UpdateRoleReqPoliciesItemActionsType = "string"
-	StringArrayUpdateRoleReqPoliciesItemActions UpdateRoleReqPoliciesItemActionsType = "[]string"
-)
-
-// IsString reports whether UpdateRoleReqPoliciesItemActions is string.
-func (s UpdateRoleReqPoliciesItemActions) IsString() bool {
-	return s.Type == StringUpdateRoleReqPoliciesItemActions
-}
-
-// IsStringArray reports whether UpdateRoleReqPoliciesItemActions is []string.
-func (s UpdateRoleReqPoliciesItemActions) IsStringArray() bool {
-	return s.Type == StringArrayUpdateRoleReqPoliciesItemActions
-}
-
-// SetString sets UpdateRoleReqPoliciesItemActions to string.
-func (s *UpdateRoleReqPoliciesItemActions) SetString(v string) {
-	s.Type = StringUpdateRoleReqPoliciesItemActions
-	s.String = v
-}
-
-// GetString returns string and true boolean if UpdateRoleReqPoliciesItemActions is string.
-func (s UpdateRoleReqPoliciesItemActions) GetString() (v string, ok bool) {
-	if !s.IsString() {
-		return v, false
-	}
-	return s.String, true
-}
-
-// NewStringUpdateRoleReqPoliciesItemActions returns new UpdateRoleReqPoliciesItemActions from string.
-func NewStringUpdateRoleReqPoliciesItemActions(v string) UpdateRoleReqPoliciesItemActions {
-	var s UpdateRoleReqPoliciesItemActions
-	s.SetString(v)
-	return s
-}
-
-// SetStringArray sets UpdateRoleReqPoliciesItemActions to []string.
-func (s *UpdateRoleReqPoliciesItemActions) SetStringArray(v []string) {
-	s.Type = StringArrayUpdateRoleReqPoliciesItemActions
-	s.StringArray = v
-}
-
-// GetStringArray returns []string and true boolean if UpdateRoleReqPoliciesItemActions is []string.
-func (s UpdateRoleReqPoliciesItemActions) GetStringArray() (v []string, ok bool) {
-	if !s.IsStringArray() {
-		return v, false
-	}
-	return s.StringArray, true
-}
-
-// NewStringArrayUpdateRoleReqPoliciesItemActions returns new UpdateRoleReqPoliciesItemActions from []string.
-func NewStringArrayUpdateRoleReqPoliciesItemActions(v []string) UpdateRoleReqPoliciesItemActions {
-	var s UpdateRoleReqPoliciesItemActions
-	s.SetStringArray(v)
-	return s
-}
-
-type UpdateRoleReqPoliciesItemEffect string
-
-const (
-	UpdateRoleReqPoliciesItemEffectAllow UpdateRoleReqPoliciesItemEffect = "allow"
-	UpdateRoleReqPoliciesItemEffectDeny  UpdateRoleReqPoliciesItemEffect = "deny"
-)
-
-// AllValues returns all UpdateRoleReqPoliciesItemEffect values.
-func (UpdateRoleReqPoliciesItemEffect) AllValues() []UpdateRoleReqPoliciesItemEffect {
-	return []UpdateRoleReqPoliciesItemEffect{
-		UpdateRoleReqPoliciesItemEffectAllow,
-		UpdateRoleReqPoliciesItemEffectDeny,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s UpdateRoleReqPoliciesItemEffect) MarshalText() ([]byte, error) {
-	switch s {
-	case UpdateRoleReqPoliciesItemEffectAllow:
-		return []byte(s), nil
-	case UpdateRoleReqPoliciesItemEffectDeny:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *UpdateRoleReqPoliciesItemEffect) UnmarshalText(data []byte) error {
-	switch UpdateRoleReqPoliciesItemEffect(data) {
-	case UpdateRoleReqPoliciesItemEffectAllow:
-		*s = UpdateRoleReqPoliciesItemEffectAllow
-		return nil
-	case UpdateRoleReqPoliciesItemEffectDeny:
-		*s = UpdateRoleReqPoliciesItemEffectDeny
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-type UpdateWebhookDefinitionReq struct {
-	Name              string                                         `json:"name"`
-	URL               string                                         `json:"url"`
-	Topics            []string                                       `json:"topics"`
-	Filters           OptNilWebhookDefinitionFilterArray             `json:"filters"`
-	HttpBasicUsername OptNilString                                   `json:"httpBasicUsername"`
-	HttpBasicPassword OptNilString                                   `json:"httpBasicPassword"`
-	Headers           WebhookDefinitionHeaders                       `json:"headers"`
-	Transformation    OptNilUpdateWebhookDefinitionReqTransformation `json:"transformation"`
-	Active            OptBool                                        `json:"active"`
-}
-
-// GetName returns the value of Name.
-func (s *UpdateWebhookDefinitionReq) GetName() string {
-	return s.Name
-}
-
-// GetURL returns the value of URL.
-func (s *UpdateWebhookDefinitionReq) GetURL() string {
-	return s.URL
-}
-
-// GetTopics returns the value of Topics.
-func (s *UpdateWebhookDefinitionReq) GetTopics() []string {
-	return s.Topics
-}
-
-// GetFilters returns the value of Filters.
-func (s *UpdateWebhookDefinitionReq) GetFilters() OptNilWebhookDefinitionFilterArray {
-	return s.Filters
-}
-
-// GetHttpBasicUsername returns the value of HttpBasicUsername.
-func (s *UpdateWebhookDefinitionReq) GetHttpBasicUsername() OptNilString {
-	return s.HttpBasicUsername
-}
-
-// GetHttpBasicPassword returns the value of HttpBasicPassword.
-func (s *UpdateWebhookDefinitionReq) GetHttpBasicPassword() OptNilString {
-	return s.HttpBasicPassword
-}
-
-// GetHeaders returns the value of Headers.
-func (s *UpdateWebhookDefinitionReq) GetHeaders() WebhookDefinitionHeaders {
-	return s.Headers
-}
-
-// GetTransformation returns the value of Transformation.
-func (s *UpdateWebhookDefinitionReq) GetTransformation() OptNilUpdateWebhookDefinitionReqTransformation {
-	return s.Transformation
-}
-
-// GetActive returns the value of Active.
-func (s *UpdateWebhookDefinitionReq) GetActive() OptBool {
-	return s.Active
-}
-
-// SetName sets the value of Name.
-func (s *UpdateWebhookDefinitionReq) SetName(val string) {
-	s.Name = val
-}
-
-// SetURL sets the value of URL.
-func (s *UpdateWebhookDefinitionReq) SetURL(val string) {
-	s.URL = val
-}
-
-// SetTopics sets the value of Topics.
-func (s *UpdateWebhookDefinitionReq) SetTopics(val []string) {
-	s.Topics = val
-}
-
-// SetFilters sets the value of Filters.
-func (s *UpdateWebhookDefinitionReq) SetFilters(val OptNilWebhookDefinitionFilterArray) {
-	s.Filters = val
-}
-
-// SetHttpBasicUsername sets the value of HttpBasicUsername.
-func (s *UpdateWebhookDefinitionReq) SetHttpBasicUsername(val OptNilString) {
-	s.HttpBasicUsername = val
-}
-
-// SetHttpBasicPassword sets the value of HttpBasicPassword.
-func (s *UpdateWebhookDefinitionReq) SetHttpBasicPassword(val OptNilString) {
-	s.HttpBasicPassword = val
-}
-
-// SetHeaders sets the value of Headers.
-func (s *UpdateWebhookDefinitionReq) SetHeaders(val WebhookDefinitionHeaders) {
-	s.Headers = val
-}
-
-// SetTransformation sets the value of Transformation.
-func (s *UpdateWebhookDefinitionReq) SetTransformation(val OptNilUpdateWebhookDefinitionReqTransformation) {
-	s.Transformation = val
-}
-
-// SetActive sets the value of Active.
-func (s *UpdateWebhookDefinitionReq) SetActive(val OptBool) {
-	s.Active = val
-}
-
-type UpdateWebhookDefinitionReqTransformation struct {
-	Method               OptString `json:"method"`
-	ContentType          OptString `json:"contentType"`
-	IncludeContentLength OptBool   `json:"includeContentLength"`
-	Body                 jx.Raw    `json:"body"`
-}
-
-// GetMethod returns the value of Method.
-func (s *UpdateWebhookDefinitionReqTransformation) GetMethod() OptString {
-	return s.Method
-}
-
-// GetContentType returns the value of ContentType.
-func (s *UpdateWebhookDefinitionReqTransformation) GetContentType() OptString {
-	return s.ContentType
-}
-
-// GetIncludeContentLength returns the value of IncludeContentLength.
-func (s *UpdateWebhookDefinitionReqTransformation) GetIncludeContentLength() OptBool {
-	return s.IncludeContentLength
-}
-
-// GetBody returns the value of Body.
-func (s *UpdateWebhookDefinitionReqTransformation) GetBody() jx.Raw {
-	return s.Body
-}
-
-// SetMethod sets the value of Method.
-func (s *UpdateWebhookDefinitionReqTransformation) SetMethod(val OptString) {
-	s.Method = val
-}
-
-// SetContentType sets the value of ContentType.
-func (s *UpdateWebhookDefinitionReqTransformation) SetContentType(val OptString) {
-	s.ContentType = val
-}
-
-// SetIncludeContentLength sets the value of IncludeContentLength.
-func (s *UpdateWebhookDefinitionReqTransformation) SetIncludeContentLength(val OptBool) {
-	s.IncludeContentLength = val
-}
-
-// SetBody sets the value of Body.
-func (s *UpdateWebhookDefinitionReqTransformation) SetBody(val jx.Raw) {
-	s.Body = val
-}
-
 // Merged schema.
 // Ref: #/components/schemas/User
 type User struct {
@@ -5113,6 +4449,156 @@ func (s *WebhookDefinition) SetActive(val OptBool) {
 func (*WebhookDefinition) createWebhookDefinitionRes() {}
 func (*WebhookDefinition) getWebhookDefinitionRes()    {}
 func (*WebhookDefinition) updateWebhookDefinitionRes() {}
+
+// Ref: #/components/schemas/WebhookDefinitionFields
+type WebhookDefinitionFields struct {
+	Name              string                                      `json:"name"`
+	URL               string                                      `json:"url"`
+	Topics            []string                                    `json:"topics"`
+	Filters           OptNilWebhookDefinitionFilterArray          `json:"filters"`
+	HttpBasicUsername OptNilString                                `json:"httpBasicUsername"`
+	HttpBasicPassword OptNilString                                `json:"httpBasicPassword"`
+	Headers           WebhookDefinitionHeaders                    `json:"headers"`
+	Transformation    OptNilWebhookDefinitionFieldsTransformation `json:"transformation"`
+	Active            OptBool                                     `json:"active"`
+}
+
+// GetName returns the value of Name.
+func (s *WebhookDefinitionFields) GetName() string {
+	return s.Name
+}
+
+// GetURL returns the value of URL.
+func (s *WebhookDefinitionFields) GetURL() string {
+	return s.URL
+}
+
+// GetTopics returns the value of Topics.
+func (s *WebhookDefinitionFields) GetTopics() []string {
+	return s.Topics
+}
+
+// GetFilters returns the value of Filters.
+func (s *WebhookDefinitionFields) GetFilters() OptNilWebhookDefinitionFilterArray {
+	return s.Filters
+}
+
+// GetHttpBasicUsername returns the value of HttpBasicUsername.
+func (s *WebhookDefinitionFields) GetHttpBasicUsername() OptNilString {
+	return s.HttpBasicUsername
+}
+
+// GetHttpBasicPassword returns the value of HttpBasicPassword.
+func (s *WebhookDefinitionFields) GetHttpBasicPassword() OptNilString {
+	return s.HttpBasicPassword
+}
+
+// GetHeaders returns the value of Headers.
+func (s *WebhookDefinitionFields) GetHeaders() WebhookDefinitionHeaders {
+	return s.Headers
+}
+
+// GetTransformation returns the value of Transformation.
+func (s *WebhookDefinitionFields) GetTransformation() OptNilWebhookDefinitionFieldsTransformation {
+	return s.Transformation
+}
+
+// GetActive returns the value of Active.
+func (s *WebhookDefinitionFields) GetActive() OptBool {
+	return s.Active
+}
+
+// SetName sets the value of Name.
+func (s *WebhookDefinitionFields) SetName(val string) {
+	s.Name = val
+}
+
+// SetURL sets the value of URL.
+func (s *WebhookDefinitionFields) SetURL(val string) {
+	s.URL = val
+}
+
+// SetTopics sets the value of Topics.
+func (s *WebhookDefinitionFields) SetTopics(val []string) {
+	s.Topics = val
+}
+
+// SetFilters sets the value of Filters.
+func (s *WebhookDefinitionFields) SetFilters(val OptNilWebhookDefinitionFilterArray) {
+	s.Filters = val
+}
+
+// SetHttpBasicUsername sets the value of HttpBasicUsername.
+func (s *WebhookDefinitionFields) SetHttpBasicUsername(val OptNilString) {
+	s.HttpBasicUsername = val
+}
+
+// SetHttpBasicPassword sets the value of HttpBasicPassword.
+func (s *WebhookDefinitionFields) SetHttpBasicPassword(val OptNilString) {
+	s.HttpBasicPassword = val
+}
+
+// SetHeaders sets the value of Headers.
+func (s *WebhookDefinitionFields) SetHeaders(val WebhookDefinitionHeaders) {
+	s.Headers = val
+}
+
+// SetTransformation sets the value of Transformation.
+func (s *WebhookDefinitionFields) SetTransformation(val OptNilWebhookDefinitionFieldsTransformation) {
+	s.Transformation = val
+}
+
+// SetActive sets the value of Active.
+func (s *WebhookDefinitionFields) SetActive(val OptBool) {
+	s.Active = val
+}
+
+type WebhookDefinitionFieldsTransformation struct {
+	Method               OptString `json:"method"`
+	ContentType          OptString `json:"contentType"`
+	IncludeContentLength OptBool   `json:"includeContentLength"`
+	Body                 jx.Raw    `json:"body"`
+}
+
+// GetMethod returns the value of Method.
+func (s *WebhookDefinitionFieldsTransformation) GetMethod() OptString {
+	return s.Method
+}
+
+// GetContentType returns the value of ContentType.
+func (s *WebhookDefinitionFieldsTransformation) GetContentType() OptString {
+	return s.ContentType
+}
+
+// GetIncludeContentLength returns the value of IncludeContentLength.
+func (s *WebhookDefinitionFieldsTransformation) GetIncludeContentLength() OptBool {
+	return s.IncludeContentLength
+}
+
+// GetBody returns the value of Body.
+func (s *WebhookDefinitionFieldsTransformation) GetBody() jx.Raw {
+	return s.Body
+}
+
+// SetMethod sets the value of Method.
+func (s *WebhookDefinitionFieldsTransformation) SetMethod(val OptString) {
+	s.Method = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *WebhookDefinitionFieldsTransformation) SetContentType(val OptString) {
+	s.ContentType = val
+}
+
+// SetIncludeContentLength sets the value of IncludeContentLength.
+func (s *WebhookDefinitionFieldsTransformation) SetIncludeContentLength(val OptBool) {
+	s.IncludeContentLength = val
+}
+
+// SetBody sets the value of Body.
+func (s *WebhookDefinitionFieldsTransformation) SetBody(val jx.Raw) {
+	s.Body = val
+}
 
 // Ref: #/components/schemas/WebhookDefinitionFilter
 type WebhookDefinitionFilter struct {

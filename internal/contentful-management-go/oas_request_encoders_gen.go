@@ -12,7 +12,7 @@ import (
 )
 
 func encodeCreateDeliveryApiKeyRequest(
-	req *CreateDeliveryApiKeyReq,
+	req *ApiKeyRequestFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -26,7 +26,7 @@ func encodeCreateDeliveryApiKeyRequest(
 }
 
 func encodeCreatePersonalAccessTokenRequest(
-	req *CreatePersonalAccessTokenReq,
+	req *PersonalAccessTokenRequestFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -40,7 +40,7 @@ func encodeCreatePersonalAccessTokenRequest(
 }
 
 func encodeCreateRoleRequest(
-	req *CreateRoleReq,
+	req *RoleFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -54,7 +54,7 @@ func encodeCreateRoleRequest(
 }
 
 func encodeCreateWebhookDefinitionRequest(
-	req *CreateWebhookDefinitionReq,
+	req *WebhookDefinitionFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -68,7 +68,7 @@ func encodeCreateWebhookDefinitionRequest(
 }
 
 func encodePutAppInstallationRequest(
-	req *PutAppInstallationReq,
+	req *AppInstallationFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -82,7 +82,7 @@ func encodePutAppInstallationRequest(
 }
 
 func encodePutContentTypeRequest(
-	req *PutContentTypeReq,
+	req *ContentTypeRequestFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -96,7 +96,7 @@ func encodePutContentTypeRequest(
 }
 
 func encodePutEditorInterfaceRequest(
-	req *PutEditorInterfaceReq,
+	req *EditorInterfaceFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -110,7 +110,7 @@ func encodePutEditorInterfaceRequest(
 }
 
 func encodeUpdateDeliveryApiKeyRequest(
-	req *UpdateDeliveryApiKeyReq,
+	req *ApiKeyRequestFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -124,7 +124,7 @@ func encodeUpdateDeliveryApiKeyRequest(
 }
 
 func encodeUpdateRoleRequest(
-	req *UpdateRoleReq,
+	req *RoleFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -138,7 +138,7 @@ func encodeUpdateRoleRequest(
 }
 
 func encodeUpdateWebhookDefinitionRequest(
-	req *UpdateWebhookDefinitionReq,
+	req *WebhookDefinitionFields,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

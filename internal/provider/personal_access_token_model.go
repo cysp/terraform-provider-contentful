@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *PersonalAccessTokenModel) ToCreatePersonalAccessTokenReq(ctx context.Context) (cm.CreatePersonalAccessTokenReq, diag.Diagnostics) {
+func (model *PersonalAccessTokenModel) ToPersonalAccessTokenRequestFields(ctx context.Context) (cm.PersonalAccessTokenRequestFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.CreatePersonalAccessTokenReq{
+	req := cm.PersonalAccessTokenRequestFields{
 		Name: model.Name.ValueString(),
 	}
 

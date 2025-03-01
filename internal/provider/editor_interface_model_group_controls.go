@@ -22,10 +22,10 @@ func NewGroupControlsValueKnown() GroupControlsValue {
 	}
 }
 
-func (model *GroupControlsValue) ToPutEditorInterfaceReqGroupControlsItem(_ context.Context, _ path.Path) (cm.PutEditorInterfaceReqGroupControlsItem, diag.Diagnostics) {
+func (model *GroupControlsValue) ToEditorInterfaceFieldsGroupControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsGroupControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.PutEditorInterfaceReqGroupControlsItem{
+	item := cm.EditorInterfaceFieldsGroupControlsItem{
 		GroupId:         model.GroupId.ValueString(),
 		WidgetNamespace: util.StringValueToOptString(model.WidgetNamespace),
 		WidgetId:        util.StringValueToOptString(model.WidgetId),

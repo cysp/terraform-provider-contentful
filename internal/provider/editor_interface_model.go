@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) (cm.PutEditorInterfaceReq, diag.Diagnostics) {
+func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) (cm.EditorInterfaceFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	request := cm.PutEditorInterfaceReq{}
+	request := cm.EditorInterfaceFields{}
 
 	if model.EditorLayout.IsNull() || model.EditorLayout.IsUnknown() {
 		request.EditorLayout.Reset()
@@ -21,12 +21,12 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		editorLayoutElementValues := []EditorLayoutValue{}
 		diags.Append(model.EditorLayout.ElementsAs(ctx, &editorLayoutElementValues, false)...)
 
-		requestEditorLayoutItems := make([]cm.PutEditorInterfaceReqEditorLayoutItem, len(editorLayoutElementValues))
+		requestEditorLayoutItems := make([]cm.EditorInterfaceFieldsEditorLayoutItem, len(editorLayoutElementValues))
 
 		for index, editorLayoutElement := range editorLayoutElementValues {
 			path := editorLayoutPath.AtListIndex(index)
 
-			requestEditorLayoutItem, requestEditorLayoutItemDiags := editorLayoutElement.ToPutEditorInterfaceReqEditorLayoutItem(ctx, path)
+			requestEditorLayoutItem, requestEditorLayoutItemDiags := editorLayoutElement.ToEditorInterfaceFieldsEditorLayoutItem(ctx, path)
 			diags.Append(requestEditorLayoutItemDiags...)
 
 			requestEditorLayoutItems[index] = requestEditorLayoutItem
@@ -43,12 +43,12 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		controlsElementValues := []ControlsValue{}
 		diags.Append(model.Controls.ElementsAs(ctx, &controlsElementValues, false)...)
 
-		requestControlsItems := make([]cm.PutEditorInterfaceReqControlsItem, len(controlsElementValues))
+		requestControlsItems := make([]cm.EditorInterfaceFieldsControlsItem, len(controlsElementValues))
 
 		for index, controlsElement := range controlsElementValues {
 			path := controlsPath.AtListIndex(index)
 
-			requestControlsItem, requestControlsItemDiags := controlsElement.ToPutEditorInterfaceReqControlsItem(ctx, path)
+			requestControlsItem, requestControlsItemDiags := controlsElement.ToEditorInterfaceFieldsControlsItem(ctx, path)
 			diags.Append(requestControlsItemDiags...)
 
 			requestControlsItems[index] = requestControlsItem
@@ -65,12 +65,12 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		groupControlsElementValues := []GroupControlsValue{}
 		diags.Append(model.GroupControls.ElementsAs(ctx, &groupControlsElementValues, false)...)
 
-		requestGroupControlsItems := make([]cm.PutEditorInterfaceReqGroupControlsItem, len(groupControlsElementValues))
+		requestGroupControlsItems := make([]cm.EditorInterfaceFieldsGroupControlsItem, len(groupControlsElementValues))
 
 		for index, groupControlsElement := range groupControlsElementValues {
 			path := controlsPath.AtListIndex(index)
 
-			requestGroupControlsItem, requestGroupControlsItemDiags := groupControlsElement.ToPutEditorInterfaceReqGroupControlsItem(ctx, path)
+			requestGroupControlsItem, requestGroupControlsItemDiags := groupControlsElement.ToEditorInterfaceFieldsGroupControlsItem(ctx, path)
 			diags.Append(requestGroupControlsItemDiags...)
 
 			requestGroupControlsItems[index] = requestGroupControlsItem
@@ -87,12 +87,12 @@ func (model *EditorInterfaceModel) ToPutEditorInterfaceReq(ctx context.Context) 
 		sidebarElementValues := []SidebarValue{}
 		diags.Append(model.Sidebar.ElementsAs(ctx, &sidebarElementValues, false)...)
 
-		requestSidebarItems := make([]cm.PutEditorInterfaceReqSidebarItem, len(sidebarElementValues))
+		requestSidebarItems := make([]cm.EditorInterfaceFieldsSidebarItem, len(sidebarElementValues))
 
 		for index, sidebarElement := range sidebarElementValues {
 			path := sidebarPath.AtListIndex(index)
 
-			requestSidebarItem, requestSidebarItemDiags := sidebarElement.ToPutEditorInterfaceReqSidebarItem(ctx, path)
+			requestSidebarItem, requestSidebarItemDiags := sidebarElement.ToEditorInterfaceFieldsSidebarItem(ctx, path)
 			diags.Append(requestSidebarItemDiags...)
 
 			requestSidebarItems[index] = requestSidebarItem
