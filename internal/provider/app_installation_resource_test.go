@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -14,13 +15,18 @@ import (
 
 //nolint:paralleltest
 func TestAccAppInstallationResource(t *testing.T) {
+	ts := cmts.NewContentfulManagementTestServer()
+	defer ts.Server().Close()
+
+	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
 		"environment_id":         config.StringVariable("master"),
 		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -49,13 +55,18 @@ func TestAccAppInstallationResource(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceImport(t *testing.T) {
+	ts := cmts.NewContentfulManagementTestServer()
+	defer ts.Server().Close()
+
+	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
 		"environment_id":         config.StringVariable("master"),
 		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -98,6 +109,9 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
+	ts := cmts.NewContentfulManagementTestServer()
+	defer ts.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
 		"environment_id":         config.StringVariable("test"),
@@ -126,13 +140,18 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
+	ts := cmts.NewContentfulManagementTestServer()
+	defer ts.Server().Close()
+
+	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
 		"environment_id":         config.StringVariable("master"),
 		"test_app_definition_id": config.StringVariable("12345"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -145,13 +164,18 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceUpdate(t *testing.T) {
+	ts := cmts.NewContentfulManagementTestServer()
+	defer ts.Server().Close()
+
+	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
 		"environment_id":         config.StringVariable("master"),
 		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -181,13 +205,18 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceDeleted(t *testing.T) {
+	ts := cmts.NewContentfulManagementTestServer()
+	defer ts.Server().Close()
+
+	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
 		"environment_id":         config.StringVariable("master"),
 		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),

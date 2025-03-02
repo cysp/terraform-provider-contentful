@@ -20,16 +20,21 @@ type ContentfulManagementTestServer struct {
 	personalAccessTokenIDsToCreate []string
 	personalAccessTokens           map[string]*cm.PersonalAccessToken
 
-	roleIdsToCreate []string
-	roles           SpacedMap[*cm.Role]
+	knownAppDefinitionIDs map[string]struct{}
+	appInstallations      SpaceEnvironmentMap[*cm.AppInstallation]
+
+	// roleIDsToCreate []string
+	roles SpaceMap[*cm.Role]
 }
 
 func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 	testserver := &ContentfulManagementTestServer{
-		mu:                   &sync.Mutex{},
-		personalAccessTokens: make(map[string]*cm.PersonalAccessToken),
-		roleIdsToCreate:      make([]string, 0),
-		roles:                NewSpacedMap[*cm.Role](),
+		mu:                    &sync.Mutex{},
+		personalAccessTokens:  make(map[string]*cm.PersonalAccessToken),
+		knownAppDefinitionIDs: make(map[string]struct{}),
+		appInstallations:      NewSpaceEnvironmentMap[*cm.AppInstallation](),
+		// roleIDsToCreate:      make([]string, 0),
+		roles: NewSpaceMap[*cm.Role](),
 	}
 
 	testserver.serveMux = http.NewServeMux()
@@ -37,6 +42,7 @@ func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 
 	testserver.setupUserHandler()
 	testserver.setupPersonalAccessTokenHandlers()
+	testserver.SetupSpaceEnvironmentAppInstallationHandlers()
 	testserver.setupSpaceRoleHandlers()
 
 	return testserver
@@ -44,6 +50,13 @@ func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 
 func (ts *ContentfulManagementTestServer) Server() *httptest.Server {
 	return ts.httpTestServer
+}
+
+func (td *ContentfulManagementTestServer) AddKnownAppDefinitionID(appDefinitionID string) {
+	td.mu.Lock()
+	defer td.mu.Unlock()
+
+	td.knownAppDefinitionIDs[appDefinitionID] = struct{}{}
 }
 
 func (ts *ContentfulManagementTestServer) Reset() {

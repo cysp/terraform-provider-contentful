@@ -1,16 +1,16 @@
 package contentfulmanagementtestserver
 
-type SpacedMap[Value any] struct {
+type SpaceMap[Value any] struct {
 	m map[string]map[string]Value
 }
 
-func NewSpacedMap[Value any]() SpacedMap[Value] {
-	return SpacedMap[Value]{
+func NewSpaceMap[Value any]() SpaceMap[Value] {
+	return SpaceMap[Value]{
 		m: make(map[string]map[string]Value),
 	}
 }
 
-func (sm *SpacedMap[Value]) List(spaceID string) map[string]Value {
+func (sm *SpaceMap[Value]) List(spaceID string) map[string]Value {
 	spaceValues, exists := sm.m[spaceID]
 	if !exists {
 		return nil
@@ -20,7 +20,7 @@ func (sm *SpacedMap[Value]) List(spaceID string) map[string]Value {
 }
 
 //nolint:ireturn
-func (sm *SpacedMap[Value]) Get(spaceID string, key string) (Value, bool) {
+func (sm *SpaceMap[Value]) Get(spaceID string, key string) (Value, bool) {
 	spaceValues, exists := sm.m[spaceID]
 	if !exists {
 		var zeroValue Value
@@ -38,7 +38,7 @@ func (sm *SpacedMap[Value]) Get(spaceID string, key string) (Value, bool) {
 	return value, true
 }
 
-func (sm *SpacedMap[Value]) Set(spaceID string, key string, value Value) {
+func (sm *SpaceMap[Value]) Set(spaceID string, key string, value Value) {
 	if sm.m[spaceID] == nil {
 		sm.m[spaceID] = make(map[string]Value)
 	}
@@ -46,7 +46,7 @@ func (sm *SpacedMap[Value]) Set(spaceID string, key string, value Value) {
 	sm.m[spaceID][key] = value
 }
 
-func (sm *SpacedMap[Value]) Delete(spaceID string, key string) {
+func (sm *SpaceMap[Value]) Delete(spaceID string, key string) {
 	spaceValues, exists := sm.m[spaceID]
 	if !exists {
 		return
@@ -55,10 +55,10 @@ func (sm *SpacedMap[Value]) Delete(spaceID string, key string) {
 	delete(spaceValues, key)
 }
 
-func (sm *SpacedMap[Value]) DeleteSpace(spaceID string) {
+func (sm *SpaceMap[Value]) DeleteSpace(spaceID string) {
 	delete(sm.m, spaceID)
 }
 
-func (sm *SpacedMap[Value]) Clear() {
+func (sm *SpaceMap[Value]) Clear() {
 	sm.m = make(map[string]map[string]Value)
 }

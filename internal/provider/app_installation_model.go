@@ -54,7 +54,7 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(c
 func (model *AppInstallationModel) ToAppInstallationFields() (cm.AppInstallationFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.AppInstallationFields{}
+	fields := cm.AppInstallationFields{}
 
 	switch {
 	case model.Parameters.IsUnknown():
