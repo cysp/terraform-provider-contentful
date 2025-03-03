@@ -54,17 +54,17 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(c
 func (model *AppInstallationModel) ToAppInstallationFields() (cm.AppInstallationFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.AppInstallationFields{}
+	fields := cm.AppInstallationFields{}
 
 	switch {
 	case model.Parameters.IsUnknown():
 		diags.AddAttributeWarning(path.Root("parameters"), "Failed to update app installation parameters", "Parameters are unknown")
 	case model.Parameters.IsNull():
 	default:
-		req.Parameters = []byte(model.Parameters.ValueString())
+		fields.Parameters = []byte(model.Parameters.ValueString())
 	}
 
-	return req, diags
+	return fields, diags
 }
 
 func (model *AppInstallationModel) ReadFromResponse(appInstallation *cm.AppInstallation) diag.Diagnostics {

@@ -22,6 +22,16 @@ component_management:
       name: contentful-management-go
       paths:
         - internal/contentful-management-go/**
+      statuses:
+        - type: project
+          informational: true
+    - component_id: contentful-management-testserver
+      name: contentful-management-testserver
+      paths:
+        - internal/contentful-management-testserver/**
+      statuses:
+        - type: project
+          informational: true
     - component_id: provider
       name: provider
       paths:
