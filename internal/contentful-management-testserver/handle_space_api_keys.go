@@ -2,42 +2,68 @@
 package contentfulmanagementtestserver
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func (ts *ContentfulManagementTestServer) HandleAPIKeyCreation(spaceID string, apiKey *cm.ApiKey) {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
+func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
+	ts.serveMux.Handle("/spaces/{spaceID}/api_keys", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		spaceID := r.PathValue("spaceID")
 
-	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/api_keys", spaceID), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
-			_ = WriteContentfulManagementResponse(w, http.StatusCreated, apiKey)
+			var apiKey cm.ApiKey
+			_ = ReadContentfulManagementRequest(r, &apiKey)
+
+			apiKey.Sys = cm.ApiKeySys{
+				Type: cm.ApiKeySysTypeApiKey,
+				ID:   ts.generateResourceID(),
+			}
+
+			ts.apiKeys.Set(spaceID, apiKey.Sys.ID, &apiKey)
+
+			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &apiKey)
+
 		default:
 			_ = WriteContentfulManagementErrorNotFoundResponse(w)
 		}
 	}))
-}
 
-func (ts *ContentfulManagementTestServer) HandleAPIKey(spaceID string, apiKey *cm.ApiKey) {
-	apiKeyID := apiKey.Sys.ID
+	ts.serveMux.Handle("/spaces/{spaceID}/api_keys/{apiKeyID}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		spaceID := r.PathValue("spaceID")
+		apiKeyID := r.PathValue("apiKeyID")
 
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
-	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/api_keys/%s", spaceID, apiKeyID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, apiKey)
+			apiKey, found := ts.apiKeys.Get(spaceID, apiKeyID)
+			if !found {
+				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+				return
+			}
+
+			_ = WriteContentfulManagementResponse(w, http.StatusOK, apiKey)
+
 		case http.MethodPut:
-			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, apiKey)
+			var apiKey cm.ApiKey
+			if err := json.NewDecoder(r.Body).Decode(&apiKey); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponse(w)
+
+				return
+			}
+
+			ts.apiKeys.Set(spaceID, apiKeyID, &apiKey)
+
+			_ = WriteContentfulManagementResponse(w, http.StatusOK, &apiKey)
+
 		case http.MethodDelete:
-			responseWriter.WriteHeader(http.StatusNoContent)
+			ts.apiKeys.Delete(spaceID, apiKeyID)
+			w.WriteHeader(http.StatusNoContent)
+
 		default:
-			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
 		}
 	}))
 }

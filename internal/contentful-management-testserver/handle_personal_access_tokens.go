@@ -11,7 +11,7 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.personalAccessTokenIDsToCreate = make([]string, 0)
+	// ts.personalAccessTokenIDsToCreate = make([]string, 0)
 	ts.personalAccessTokens = make(map[string]*cm.PersonalAccessToken)
 
 	ts.serveMux.Handle("/users/me/access_tokens", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -23,9 +23,15 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 			var personalAccessToken cm.PersonalAccessToken
 			_ = ReadContentfulManagementRequest(r, &personalAccessToken)
 
+			personalAccessToken.Sys = cm.PersonalAccessTokenSys{
+				Type: cm.PersonalAccessTokenSysTypePersonalAccessToken,
+				ID:   ts.generateResourceID(),
+			}
+
 			ts.personalAccessTokens[personalAccessToken.Sys.ID] = &personalAccessToken
 
 			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &personalAccessToken)
+
 		default:
 			_ = WriteContentfulManagementErrorNotFoundResponse(w)
 		}

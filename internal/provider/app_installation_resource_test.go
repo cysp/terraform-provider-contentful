@@ -18,7 +18,7 @@ func TestAccAppInstallationResource(t *testing.T) {
 	ts := cmts.NewContentfulManagementTestServer()
 	defer ts.Server().Close()
 
-	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+	// ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
 
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
@@ -58,7 +58,7 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 	ts := cmts.NewContentfulManagementTestServer()
 	defer ts.Server().Close()
 
-	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+	// ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
 
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
@@ -118,7 +118,7 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 		"test_app_definition_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -143,12 +143,12 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 	ts := cmts.NewContentfulManagementTestServer()
 	defer ts.Server().Close()
 
-	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+	// ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
 
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
 		"environment_id":         config.StringVariable("master"),
-		"test_app_definition_id": config.StringVariable("12345"),
+		"test_app_definition_id": config.StringVariable("nonexistent"),
 	}
 
 	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
@@ -167,7 +167,7 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 	ts := cmts.NewContentfulManagementTestServer()
 	defer ts.Server().Close()
 
-	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+	// ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
 
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),
@@ -208,7 +208,7 @@ func TestAccAppInstallationResourceDeleted(t *testing.T) {
 	ts := cmts.NewContentfulManagementTestServer()
 	defer ts.Server().Close()
 
-	ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+	// ts.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
 
 	configVariables := config.Variables{
 		"space_id":               config.StringVariable("0p38pssr0fi3"),

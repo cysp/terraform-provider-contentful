@@ -1,43 +1,65 @@
-//nolint:dupl
 package contentfulmanagementtestserver
 
 import (
-	"fmt"
 	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func (ts *ContentfulManagementTestServer) HandleWebhookDefinitionCreation(spaceID string, webhookDefinition *cm.WebhookDefinition) {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
+func (ts *ContentfulManagementTestServer) setupSpaceWebhookDefinitionHandlers() {
+	ts.serveMux.Handle("/spaces/{spaceID}/webhook_definitions", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		spaceID := r.PathValue("spaceID")
 
-	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/webhook_definitions", spaceID), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
-			_ = WriteContentfulManagementResponse(w, http.StatusCreated, webhookDefinition)
+			var webhookDefinition cm.WebhookDefinition
+			_ = ReadContentfulManagementRequest(r, &webhookDefinition)
+
+			webhookDefinition.Sys = cm.WebhookDefinitionSys{
+				Type: cm.WebhookDefinitionSysTypeWebhookDefinition,
+				ID:   ts.generateResourceID(),
+			}
+
+			ts.webhookDefinitions.Set(spaceID, webhookDefinition.Sys.ID, &webhookDefinition)
+
+			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &webhookDefinition)
+
 		default:
 			_ = WriteContentfulManagementErrorNotFoundResponse(w)
 		}
 	}))
-}
 
-func (ts *ContentfulManagementTestServer) HandleWebhookDefinition(spaceID string, webhookDefinition *cm.WebhookDefinition) {
-	webhookDefinitionID := webhookDefinition.Sys.ID
+	ts.serveMux.Handle("/spaces/{spaceID}/webhook_definitions/{webhookDefinitionID}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		spaceID := r.PathValue("spaceID")
+		webhookDefinitionID := r.PathValue("webhookDefinitionID")
 
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
-	ts.serveMux.Handle(fmt.Sprintf("/spaces/%s/webhook_definitions/%s", spaceID, webhookDefinitionID), http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, webhookDefinition)
+			webhookDefinition, exists := ts.webhookDefinitions.Get(spaceID, webhookDefinitionID)
+			if !exists {
+				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+				return
+			}
+			_ = WriteContentfulManagementResponse(w, http.StatusOK, webhookDefinition)
+
 		case http.MethodPut:
-			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, webhookDefinition)
+			var webhookDefinition cm.WebhookDefinition
+			_ = ReadContentfulManagementRequest(r, &webhookDefinition)
+
+			webhookDefinition.Sys = cm.WebhookDefinitionSys{
+				Type: cm.WebhookDefinitionSysTypeWebhookDefinition,
+				ID:   webhookDefinitionID,
+			}
+
+			ts.webhookDefinitions.Set(spaceID, webhookDefinition.Sys.ID, &webhookDefinition)
+			_ = WriteContentfulManagementResponse(w, http.StatusOK, &webhookDefinition)
+
 		case http.MethodDelete:
-			responseWriter.WriteHeader(http.StatusNoContent)
+			ts.webhookDefinitions.Delete(spaceID, webhookDefinitionID)
+			w.WriteHeader(http.StatusNoContent)
+
 		default:
-			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
 		}
 	}))
 }

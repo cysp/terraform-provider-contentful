@@ -11,11 +11,14 @@ import (
 
 //nolint:paralleltest
 func TestAccRoleResourceImport(t *testing.T) {
+	ts := cmts.NewContentfulManagementTestServer()
+	defer ts.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -38,11 +41,14 @@ func TestAccRoleResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccRoleResourceImportNotFound(t *testing.T) {
+	ts := cmts.NewContentfulManagementTestServer()
+	defer ts.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),

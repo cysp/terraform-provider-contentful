@@ -21,14 +21,12 @@ func (ts *ContentfulManagementTestServer) setupSpaceRoleHandlers() {
 			var role cm.Role
 			_ = ReadContentfulManagementRequest(r, &role)
 
-			id := ts.generateResourceID()
-
 			role.Sys = cm.RoleSys{
-				ID:   id,
+				ID:   ts.generateResourceID(),
 				Type: cm.RoleSysTypeRole,
 			}
 
-			ts.roles.Set(spaceID, id, &role)
+			ts.roles.Set(spaceID, role.Sys.ID, &role)
 
 			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &role)
 
@@ -64,7 +62,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceRoleHandlers() {
 				Type: cm.RoleSysTypeRole,
 			}
 
-			ts.roles.Set(spaceID, roleID, &updatedRole)
+			ts.roles.Set(spaceID, updatedRole.Sys.ID, &updatedRole)
 
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, &updatedRole)
 
