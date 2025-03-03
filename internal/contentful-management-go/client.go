@@ -13,7 +13,3 @@ const (
 const (
 	ErrorSysIDNotFound = "NotFound"
 )
-
-var (
-	PersonalAccessTokenScopeValues = []string{"content_management_manage", "content_management_read"}
-)

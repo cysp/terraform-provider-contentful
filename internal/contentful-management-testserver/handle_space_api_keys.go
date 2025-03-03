@@ -116,6 +116,6 @@ func (ts *ContentfulManagementTestServer) SetAPIKey(spaceID string, apiKey *cm.A
 	ts.previewAPIKeys.Set(spaceID, previewAPIKeyID, &previewAPIKey)
 }
 
-func (ts *ContentfulManagementTestServer) DeleteApiKey(spaceID, apiKeyID string) {
+func (ts *ContentfulManagementTestServer) DeleteAPIKey(spaceID, apiKeyID string) {
 	ts.apiKeys.Delete(spaceID, apiKeyID)
 }

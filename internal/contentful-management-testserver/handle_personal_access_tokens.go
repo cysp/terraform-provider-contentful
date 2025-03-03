@@ -98,13 +98,15 @@ func (ts *ContentfulManagementTestServer) validatePersonalAccessToken(pat *cm.Pe
 		}
 	}
 
+	personalAccessTokenScopeValues := []string{"content_management_manage", "content_management_read"}
+
 	for _, scope := range pat.Scopes {
 		if scope == "" {
 			return personalAccessTokenValidationError{
 				field:       "scopes",
 				description: "Scope must not be empty",
 			}
-		} else if !slices.Contains(cm.PersonalAccessTokenScopeValues, scope) {
+		} else if !slices.Contains(personalAccessTokenScopeValues, scope) {
 			return personalAccessTokenValidationError{
 				field:       "scopes",
 				description: "Scope is not valid",
