@@ -12,8 +12,8 @@ import (
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImport(t *testing.T) {
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -21,7 +21,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -67,8 +67,8 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -76,7 +76,7 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -98,8 +98,8 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -107,7 +107,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -120,8 +120,8 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -129,7 +129,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -142,8 +142,8 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -151,7 +151,7 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestStepDirectory(),

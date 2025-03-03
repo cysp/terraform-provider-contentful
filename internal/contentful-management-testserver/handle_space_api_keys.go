@@ -1,7 +1,6 @@
 package contentfulmanagementtestserver
 
 import (
-	"encoding/json"
 	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -16,12 +15,16 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 			var apiKey cm.ApiKey
 			_ = ReadContentfulManagementRequest(r, &apiKey)
 
+			apiKeyID := ts.generateResourceID()
+
 			apiKey.Sys = cm.ApiKeySys{
 				Type: cm.ApiKeySysTypeApiKey,
-				ID:   ts.generateResourceID(),
+				ID:   apiKeyID,
 			}
 
-			ts.apiKeys.Set(spaceID, apiKey.Sys.ID, &apiKey)
+			apiKey.AccessToken = apiKeyID
+
+			ts.SetAPIKey(spaceID, &apiKey)
 
 			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &apiKey)
 
@@ -47,15 +50,26 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 
 		case http.MethodPut:
 			var apiKey cm.ApiKey
-			if err := json.NewDecoder(r.Body).Decode(&apiKey); err != nil {
-				_ = WriteContentfulManagementErrorBadRequestResponse(w)
+			_ = ReadContentfulManagementRequest(r, &apiKey)
 
-				return
+			if existingAPIKey, found := ts.apiKeys.Get(spaceID, apiKeyID); found {
+				existingAPIKey.Name = apiKey.Name
+				existingAPIKey.Description = apiKey.Description
+				existingAPIKey.Environments = apiKey.Environments
+
+				_ = WriteContentfulManagementResponse(w, http.StatusOK, existingAPIKey)
+			} else {
+				apiKey.Sys = cm.ApiKeySys{
+					Type: cm.ApiKeySysTypeApiKey,
+					ID:   apiKeyID,
+				}
+
+				apiKey.AccessToken = apiKeyID
+
+				ts.apiKeys.Set(spaceID, apiKeyID, &apiKey)
+
+				_ = WriteContentfulManagementResponse(w, http.StatusCreated, &apiKey)
 			}
-
-			ts.apiKeys.Set(spaceID, apiKeyID, &apiKey)
-
-			_ = WriteContentfulManagementResponse(w, http.StatusOK, &apiKey)
 
 		case http.MethodDelete:
 			ts.apiKeys.Delete(spaceID, apiKeyID)
@@ -65,4 +79,43 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 			_ = WriteContentfulManagementErrorNotFoundResponse(w)
 		}
 	}))
+}
+
+func (ts *ContentfulManagementTestServer) GetAPIKey(spaceID, apiKeyID string) (*cm.ApiKey, bool) {
+	return ts.apiKeys.Get(spaceID, apiKeyID)
+}
+
+func (ts *ContentfulManagementTestServer) SetAPIKey(spaceID string, apiKey *cm.ApiKey) {
+	var previewAPIKeyID string
+	if previewAPIKey, ok := apiKey.PreviewAPIKey.Get(); ok {
+		previewAPIKeyID = previewAPIKey.Sys.ID
+	}
+
+	if previewAPIKeyID == "" {
+		previewAPIKeyID = ts.generateResourceID()
+	}
+
+	ts.apiKeys.Set(spaceID, apiKey.Sys.ID, apiKey)
+
+	previewAPIKey := cm.PreviewApiKey{
+		Sys: cm.PreviewApiKeySys{
+			Type: cm.PreviewApiKeySysTypePreviewApiKey,
+			ID:   previewAPIKeyID,
+		},
+		AccessToken: previewAPIKeyID,
+	}
+
+	apiKey.PreviewAPIKey.SetTo(cm.ApiKeyPreviewAPIKey{
+		Sys: cm.ApiKeyPreviewAPIKeySys{
+			Type:     cm.ApiKeyPreviewAPIKeySysTypeLink,
+			LinkType: cm.ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey,
+			ID:       previewAPIKeyID,
+		},
+	})
+
+	ts.previewAPIKeys.Set(spaceID, previewAPIKeyID, &previewAPIKey)
+}
+
+func (ts *ContentfulManagementTestServer) DeleteApiKey(spaceID, apiKeyID string) {
+	ts.apiKeys.Delete(spaceID, apiKeyID)
 }

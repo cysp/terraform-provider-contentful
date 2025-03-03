@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -13,14 +14,23 @@ import (
 
 //nolint:paralleltest
 func TestAccWebhookResourceImport(t *testing.T) {
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	testserver.SetWebhookDefinition("0p38pssr0fi3", &cm.WebhookDefinition{
+		Sys: cm.WebhookDefinitionSys{
+			Type: cm.WebhookDefinitionSysTypeWebhookDefinition,
+			ID:   "4HJlhYqVjoWwxFmvOj5r1Q",
+		},
+		Name: "test",
+		URL:  "https://example.com",
+	})
+
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -43,14 +53,14 @@ func TestAccWebhookResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccWebhookResourceImportNotFound(t *testing.T) {
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -73,8 +83,8 @@ func TestAccWebhookResourceImportNotFound(t *testing.T) {
 func TestAccWebhookResourceCreate(t *testing.T) {
 	t.Parallel()
 
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	webhookID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -83,7 +93,7 @@ func TestAccWebhookResourceCreate(t *testing.T) {
 		"webhook_id": config.StringVariable(webhookID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -96,8 +106,8 @@ func TestAccWebhookResourceCreate(t *testing.T) {
 func TestAccWebhookResourceUpdate(t *testing.T) {
 	t.Parallel()
 
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	webhookID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -106,7 +116,7 @@ func TestAccWebhookResourceUpdate(t *testing.T) {
 		"webhook_id": config.StringVariable(webhookID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),

@@ -48,8 +48,9 @@ func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 		contentTypes:     NewSpaceEnvironmentMap[*cm.ContentType](),
 		editorInterfaces: NewSpaceEnvironmentMap[*cm.EditorInterface](),
 		// roleIDsToCreate:      make([]string, 0),
-		roles:          NewSpaceMap[*cm.Role](),
-		previewAPIKeys: NewSpaceMap[*cm.PreviewApiKey](),
+		roles:              NewSpaceMap[*cm.Role](),
+		previewAPIKeys:     NewSpaceMap[*cm.PreviewApiKey](),
+		webhookDefinitions: NewSpaceMap[*cm.WebhookDefinition](),
 	}
 
 	testserver.serveMux = http.NewServeMux()
@@ -57,6 +58,7 @@ func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 
 	testserver.setupUserHandler()
 	testserver.setupPersonalAccessTokenHandlers()
+	testserver.setupSpaceAPIKeyHandlers()
 	testserver.SetupSpaceEnvironmentAppInstallationHandlers()
 	testserver.setupSpaceEnvironmentContentTypeHandlers()
 	testserver.setupSpacePreviewAPIKeyHandlers()
@@ -85,8 +87,13 @@ func (ts *ContentfulManagementTestServer) Reset() {
 
 	// ts.personalAccessTokenIDsToCreate = nil
 	ts.personalAccessTokens = make(map[string]*cm.PersonalAccessToken)
-
+	ts.apiKeys.Clear()
+	ts.appInstallations.Clear()
+	ts.contentTypes.Clear()
+	ts.editorInterfaces.Clear()
 	ts.roles.Clear()
+	ts.previewAPIKeys.Clear()
+	ts.webhookDefinitions.Clear()
 }
 
 func (ts *ContentfulManagementTestServer) generateResourceID() string {

@@ -7,7 +7,7 @@ import (
 )
 
 func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandlers() {
-	ts.serveMux.Handle("/spaces/{spaceID}/environments//content_types/{contentTypeID}", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle("/spaces/{spaceID}/environments/{environmentID}/content_types/{contentTypeID}", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		spaceID := r.PathValue("spaceID")
 		environmentID := r.PathValue("environmentID")
 		contentTypeID := r.PathValue("contentTypeID")
@@ -100,4 +100,29 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 		}
 	}))
+}
+
+func (ts *ContentfulManagementTestServer) GetContentType(spaceID, environmentID, contentTypeID string) (*cm.ContentType, bool) {
+	return ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
+}
+
+func (ts *ContentfulManagementTestServer) GetEditorInterface(spaceID, environmentID, contentTypeID string) (*cm.EditorInterface, bool) {
+	return ts.editorInterfaces.Get(spaceID, environmentID, contentTypeID)
+}
+
+func (ts *ContentfulManagementTestServer) SetContentType(spaceID, environmentID string, contentType *cm.ContentType) {
+	ts.contentTypes.Set(spaceID, environmentID, contentType.Sys.ID, contentType)
+}
+
+func (ts *ContentfulManagementTestServer) SetEditorInterface(spaceID, environmentID, contentTypeID string, editorInterface *cm.EditorInterface) {
+	ts.editorInterfaces.Set(spaceID, environmentID, contentTypeID, editorInterface)
+}
+
+func (ts *ContentfulManagementTestServer) DeleteContentType(spaceID, environmentID, contentTypeID string) {
+	ts.contentTypes.Delete(spaceID, environmentID, contentTypeID)
+	ts.DeleteEditorInterface(spaceID, environmentID, contentTypeID)
+}
+
+func (ts *ContentfulManagementTestServer) DeleteEditorInterface(spaceID, environmentID, contentTypeID string) {
+	ts.editorInterfaces.Delete(spaceID, environmentID, contentTypeID)
 }

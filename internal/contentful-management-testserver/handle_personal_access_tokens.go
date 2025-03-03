@@ -2,6 +2,7 @@ package contentfulmanagementtestserver
 
 import (
 	"net/http"
+	"slices"
 	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -23,9 +24,17 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 			var personalAccessToken cm.PersonalAccessToken
 			_ = ReadContentfulManagementRequest(r, &personalAccessToken)
 
+			personalAccessTokenID := ts.generateResourceID()
+
 			personalAccessToken.Sys = cm.PersonalAccessTokenSys{
 				Type: cm.PersonalAccessTokenSysTypePersonalAccessToken,
-				ID:   ts.generateResourceID(),
+				ID:   personalAccessTokenID,
+			}
+
+			personalAccessToken.Token.SetTo(personalAccessTokenID)
+
+			if err := ts.validatePersonalAccessToken(&personalAccessToken); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponse(w)
 			}
 
 			ts.personalAccessTokens[personalAccessToken.Sys.ID] = &personalAccessToken
@@ -70,4 +79,38 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 
 		_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 	}))
+}
+
+type personalAccessTokenValidationError struct {
+	field       string
+	description string
+}
+
+func (e personalAccessTokenValidationError) Error() string {
+	return e.field + ": " + e.description
+}
+
+func (ts *ContentfulManagementTestServer) validatePersonalAccessToken(pat *cm.PersonalAccessToken) error {
+	if pat.Name == "" {
+		return personalAccessTokenValidationError{
+			field:       "name",
+			description: "Name is required",
+		}
+	}
+
+	for _, scope := range pat.Scopes {
+		if scope == "" {
+			return personalAccessTokenValidationError{
+				field:       "scopes",
+				description: "Scope must not be empty",
+			}
+		} else if !slices.Contains(cm.PersonalAccessTokenScopeValues, scope) {
+			return personalAccessTokenValidationError{
+				field:       "scopes",
+				description: "Scope is not valid",
+			}
+		}
+	}
+
+	return nil
 }

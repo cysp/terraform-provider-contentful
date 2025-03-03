@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func ReadContentfulManagementRequest(r *http.Request, v interface{}) error {
+func ReadContentfulManagementRequest(r *http.Request, v any) error {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %w", err)

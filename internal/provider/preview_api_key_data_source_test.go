@@ -12,15 +12,15 @@ import (
 func TestAccPreviewApiKeyDataSourceNotFound(t *testing.T) {
 	t.Parallel()
 
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
 		"space_id":           config.StringVariable("0p38pssr0fi3"),
 		"preview_api_key_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

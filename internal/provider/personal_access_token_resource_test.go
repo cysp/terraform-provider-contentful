@@ -13,8 +13,8 @@ import (
 func TestAccPersonalAccessTokenResource(t *testing.T) {
 	t.Parallel()
 
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -22,7 +22,7 @@ func TestAccPersonalAccessTokenResource(t *testing.T) {
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -43,8 +43,8 @@ func TestAccPersonalAccessTokenResource(t *testing.T) {
 func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 	t.Parallel()
 
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -52,7 +52,7 @@ func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -66,8 +66,8 @@ func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 func TestAccPersonalAccessTokenResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
-	ts := cmts.NewContentfulManagementTestServer()
-	defer ts.Server().Close()
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
 
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -75,7 +75,7 @@ func TestAccPersonalAccessTokenResourceImportNotFound(t *testing.T) {
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, ts.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

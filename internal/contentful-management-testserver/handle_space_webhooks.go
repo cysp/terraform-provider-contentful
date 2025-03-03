@@ -65,3 +65,15 @@ func (ts *ContentfulManagementTestServer) setupSpaceWebhookDefinitionHandlers() 
 		}
 	}))
 }
+
+func (ts *ContentfulManagementTestServer) GetWebhookDefinition(spaceID, webhookDefinitionID string) (*cm.WebhookDefinition, bool) {
+	return ts.webhookDefinitions.Get(spaceID, webhookDefinitionID)
+}
+
+func (ts *ContentfulManagementTestServer) SetWebhookDefinition(spaceID string, webhookDefinition *cm.WebhookDefinition) {
+	ts.webhookDefinitions.Set(spaceID, webhookDefinition.Sys.ID, webhookDefinition)
+}
+
+func (ts *ContentfulManagementTestServer) DeleteWebhookDefinition(spaceID, webhookDefinitionID string) {
+	ts.webhookDefinitions.Delete(spaceID, webhookDefinitionID)
+}
