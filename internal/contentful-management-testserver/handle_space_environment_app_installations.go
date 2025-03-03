@@ -7,7 +7,6 @@ import (
 )
 
 func (ts *ContentfulManagementTestServer) SetupSpaceEnvironmentAppInstallationHandlers() {
-
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

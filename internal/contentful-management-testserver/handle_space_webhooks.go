@@ -38,8 +38,10 @@ func (ts *ContentfulManagementTestServer) setupSpaceWebhookDefinitionHandlers() 
 			webhookDefinition, exists := ts.webhookDefinitions.Get(spaceID, webhookDefinitionID)
 			if !exists {
 				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
 				return
 			}
+
 			_ = WriteContentfulManagementResponse(w, http.StatusOK, webhookDefinition)
 
 		case http.MethodPut:
