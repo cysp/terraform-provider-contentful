@@ -1167,8 +1167,10 @@ func (s *ContentType) encodeFields(e *jx.Encoder) {
 		e.Str(s.Name)
 	}
 	{
-		e.FieldStart("description")
-		s.Description.Encode(e)
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
 	}
 	{
 		e.FieldStart("displayField")
@@ -1224,8 +1226,8 @@ func (s *ContentType) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
 		case "description":
-			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
+				s.Description.Reset()
 				if err := s.Description.Decode(d); err != nil {
 					return err
 				}
@@ -1271,7 +1273,7 @@ func (s *ContentType) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00011111,
+		0b00011011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -1726,8 +1728,10 @@ func (s *ContentTypeRequestFields) encodeFields(e *jx.Encoder) {
 		e.Str(s.Name)
 	}
 	{
-		e.FieldStart("description")
-		e.Str(s.Description)
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
 	}
 	{
 		e.FieldStart("displayField")
@@ -1772,11 +1776,9 @@ func (s *ContentTypeRequestFields) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
 		case "description":
-			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				v, err := d.Str()
-				s.Description = string(v)
-				if err != nil {
+				s.Description.Reset()
+				if err := s.Description.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -1823,7 +1825,7 @@ func (s *ContentTypeRequestFields) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00001111,
+		0b00001101,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

@@ -16,7 +16,7 @@ func (m *ContentTypeModel) ToContentTypeRequestFields(ctx context.Context) (cm.C
 
 	request := cm.ContentTypeRequestFields{
 		Name:         m.Name.ValueString(),
-		Description:  m.Description.ValueString(),
+		Description:  cm.NewOptNilPointerString(m.Description.ValueStringPointer()),
 		DisplayField: m.DisplayField.ValueString(),
 	}
 

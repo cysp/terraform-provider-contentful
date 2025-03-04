@@ -11,7 +11,7 @@ import (
 )
 
 func TestAccPersonalAccessTokenResource(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 
 	testserver := cmts.NewContentfulManagementTestServer()
 	defer testserver.Server().Close()

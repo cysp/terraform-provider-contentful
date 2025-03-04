@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -20,6 +21,13 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 	}
+
+	testserver.SetEditorInterface("0p38pssr0fi3", "test", &cm.EditorInterface{
+		Sys: cm.EditorInterfaceSys{
+			Type: cm.EditorInterfaceSysTypeEditorInterface,
+			ID:   "author",
+		},
+	})
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
@@ -150,6 +158,21 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 	}
+
+	testserver.SetContentType("0p38pssr0fi3", "test", &cm.ContentType{
+		Sys: cm.ContentTypeSys{
+			Type: cm.ContentTypeSysTypeContentType,
+			ID:   "author",
+		},
+		Name: "Author",
+	})
+
+	testserver.SetEditorInterface("0p38pssr0fi3", "test", &cm.EditorInterface{
+		Sys: cm.EditorInterfaceSys{
+			Type: cm.EditorInterfaceSysTypeEditorInterface,
+			ID:   "author",
+		},
+	})
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{

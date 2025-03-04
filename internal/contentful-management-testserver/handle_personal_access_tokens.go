@@ -21,20 +21,28 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 
 		switch r.Method {
 		case http.MethodPost:
-			var personalAccessToken cm.PersonalAccessToken
-			_ = ReadContentfulManagementRequest(r, &personalAccessToken)
+			var personalAccessTokenRequestFields cm.PersonalAccessTokenRequestFields
+			if err := ReadContentfulManagementRequest(r, &personalAccessTokenRequestFields); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
+
+				return
+			}
 
 			personalAccessTokenID := ts.generateResourceID()
 
-			personalAccessToken.Sys = cm.PersonalAccessTokenSys{
-				Type: cm.PersonalAccessTokenSysTypePersonalAccessToken,
-				ID:   personalAccessTokenID,
+			personalAccessToken := cm.PersonalAccessToken{
+				Sys: cm.PersonalAccessTokenSys{
+					Type: cm.PersonalAccessTokenSysTypePersonalAccessToken,
+					ID:   personalAccessTokenID,
+				},
+				Name:   personalAccessTokenRequestFields.Name,
+				Scopes: personalAccessTokenRequestFields.Scopes,
 			}
 
 			personalAccessToken.Token.SetTo(personalAccessTokenID)
 
 			if err := ts.validatePersonalAccessToken(&personalAccessToken); err != nil {
-				_ = WriteContentfulManagementErrorBadRequestResponse(w)
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 			}
 
 			ts.personalAccessTokens[personalAccessToken.Sys.ID] = &personalAccessToken

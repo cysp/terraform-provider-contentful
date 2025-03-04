@@ -23,17 +23,78 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, contentType)
 		case http.MethodPut:
-			var contentType cm.ContentType
-			_ = ReadContentfulManagementRequest(r, &contentType)
+			if environmentID == "nonexistent" {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
-			contentType.Sys = cm.ContentTypeSys{
-				Type: cm.ContentTypeSysTypeContentType,
-				ID:   contentTypeID,
+				return
 			}
 
-			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, &contentType)
+			_, exists := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
+
+			var contentTypeRequestFields cm.ContentTypeRequestFields
+			if err := ReadContentfulManagementRequest(r, &contentTypeRequestFields); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(responseWriter, err)
+
+				return
+			}
+
+			contentTypeFields := make([]cm.ContentTypeFieldsItem, len(contentTypeRequestFields.Fields))
+
+			for fieldIndex, field := range contentTypeRequestFields.Fields {
+				contentTypeFieldItems := cm.OptContentTypeFieldsItemItems{}
+
+				if fieldItems, fieldItemsOk := field.Items.Get(); fieldItemsOk {
+					contentTypeFieldItemItems := cm.ContentTypeFieldsItemItems{}
+
+					contentTypeFieldItemItems.Type = fieldItems.Type
+					contentTypeFieldItemItems.LinkType = fieldItems.LinkType
+					contentTypeFieldItemItems.Validations = fieldItems.Validations
+
+					contentTypeFieldItems.SetTo(contentTypeFieldItemItems)
+				}
+
+				contentTypeFields[fieldIndex] = cm.ContentTypeFieldsItem{
+					ID:           field.ID,
+					Name:         field.Name,
+					Type:         field.Type,
+					LinkType:     field.LinkType,
+					Items:        contentTypeFieldItems,
+					Localized:    field.Localized,
+					Required:     field.Required,
+					Validations:  field.Validations,
+					Omitted:      field.Omitted,
+					Disabled:     field.Disabled,
+					DefaultValue: field.DefaultValue,
+				}
+			}
+
+			contentType := cm.ContentType{
+				Sys: cm.ContentTypeSys{
+					Type: cm.ContentTypeSysTypeContentType,
+					ID:   contentTypeID,
+				},
+				Name:         contentTypeRequestFields.Name,
+				Description:  contentTypeRequestFields.Description,
+				Fields:       contentTypeFields,
+				DisplayField: cm.NewNilString(contentTypeRequestFields.DisplayField),
+			}
+
+			ts.contentTypes.Set(spaceID, environmentID, contentTypeID, &contentType)
+
+			statusCode := http.StatusCreated
+			if exists {
+				statusCode = http.StatusOK
+			}
+
+			_ = WriteContentfulManagementResponse(responseWriter, statusCode, &contentType)
 
 		case http.MethodDelete:
+			if environmentID == "nonexistent" {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+				return
+			}
+
 			ts.contentTypes.Delete(spaceID, environmentID, contentTypeID)
 
 			responseWriter.WriteHeader(http.StatusNoContent)
@@ -50,6 +111,12 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 
 		switch r.Method {
 		case http.MethodPut:
+			if environmentID == "nonexistent" {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+				return
+			}
+
 			contentType, exists := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
 			if !exists {
 				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
@@ -84,12 +151,90 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, editorInterface)
 
 		case http.MethodPut:
-			editorInterface := cm.EditorInterface{}
-			_ = ReadContentfulManagementRequest(r, &editorInterface)
+			if environmentID == "nonexistent" {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
-			editorInterface.Sys = cm.EditorInterfaceSys{
-				Type: cm.EditorInterfaceSysTypeEditorInterface,
-				ID:   contentTypeID,
+				return
+			}
+
+			_, exists := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
+			if !exists {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+				return
+			}
+
+			editorInterfaceFields := cm.EditorInterfaceFields{}
+			_ = ReadContentfulManagementRequest(r, &editorInterfaceFields)
+
+			editorInterface := cm.EditorInterface{
+				Sys: cm.EditorInterfaceSys{
+					Type: cm.EditorInterfaceSysTypeEditorInterface,
+					ID:   contentTypeID,
+				},
+				// EditorLayout:  editorInterfaceFields.EditorLayout,
+				// Controls:      editorInterfaceFields.Controls,
+				// GroupControls: editorInterfaceFields.GroupControls,
+				// Sidebar:       editorInterfaceFields.Sidebar,
+			}
+
+			if editorLayout, ok := editorInterfaceFields.EditorLayout.Get(); ok {
+				editorLayoutItemArray := make([]cm.EditorInterfaceEditorLayoutItem, len(editorLayout))
+
+				for index, editorLayoutItem := range editorLayout {
+					editorLayoutItemArray[index] = cm.EditorInterfaceEditorLayoutItem{
+						Name:    editorLayoutItem.Name,
+						GroupId: editorLayoutItem.GroupId,
+						Items:   editorLayoutItem.Items,
+					}
+				}
+
+				editorInterface.EditorLayout = cm.NewOptNilEditorInterfaceEditorLayoutItemArray(editorLayoutItemArray)
+			}
+
+			if controls, ok := editorInterfaceFields.Controls.Get(); ok {
+				controlsArray := make([]cm.EditorInterfaceControlsItem, len(controls))
+
+				for index, control := range controls {
+					controlsArray[index] = cm.EditorInterfaceControlsItem{
+						FieldId:         control.FieldId,
+						WidgetNamespace: control.WidgetNamespace,
+						WidgetId:        control.WidgetId,
+						Settings:        control.Settings,
+					}
+				}
+
+				editorInterface.Controls = cm.NewOptNilEditorInterfaceControlsItemArray(controlsArray)
+			}
+
+			if groupControls, ok := editorInterfaceFields.GroupControls.Get(); ok {
+				groupControlsArray := make([]cm.EditorInterfaceGroupControlsItem, len(groupControls))
+
+				for index, groupControl := range groupControls {
+					groupControlsArray[index] = cm.EditorInterfaceGroupControlsItem{
+						GroupId:         groupControl.GroupId,
+						WidgetNamespace: groupControl.WidgetNamespace,
+						WidgetId:        groupControl.WidgetId,
+						Settings:        groupControl.Settings,
+					}
+				}
+
+				editorInterface.GroupControls = cm.NewOptNilEditorInterfaceGroupControlsItemArray(groupControlsArray)
+			}
+
+			if sidebar, ok := editorInterfaceFields.Sidebar.Get(); ok {
+				sidebarArray := make([]cm.EditorInterfaceSidebarItem, len(sidebar))
+
+				for index, sidebarItem := range sidebar {
+					sidebarArray[index] = cm.EditorInterfaceSidebarItem{
+						WidgetNamespace: sidebarItem.WidgetNamespace,
+						WidgetId:        sidebarItem.WidgetId,
+						Settings:        sidebarItem.Settings,
+						Disabled:        sidebarItem.Disabled,
+					}
+				}
+
+				editorInterface.Sidebar = cm.NewOptNilEditorInterfaceSidebarItemArray(sidebarArray)
 			}
 
 			ts.editorInterfaces.Set(spaceID, environmentID, contentTypeID, &editorInterface)
@@ -114,8 +259,8 @@ func (ts *ContentfulManagementTestServer) SetContentType(spaceID, environmentID 
 	ts.contentTypes.Set(spaceID, environmentID, contentType.Sys.ID, contentType)
 }
 
-func (ts *ContentfulManagementTestServer) SetEditorInterface(spaceID, environmentID, contentTypeID string, editorInterface *cm.EditorInterface) {
-	ts.editorInterfaces.Set(spaceID, environmentID, contentTypeID, editorInterface)
+func (ts *ContentfulManagementTestServer) SetEditorInterface(spaceID, environmentID string, editorInterface *cm.EditorInterface) {
+	ts.editorInterfaces.Set(spaceID, environmentID, editorInterface.Sys.ID, editorInterface)
 }
 
 func (ts *ContentfulManagementTestServer) DeleteContentType(spaceID, environmentID, contentTypeID string) {
