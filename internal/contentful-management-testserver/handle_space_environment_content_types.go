@@ -6,7 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-//nolint:gocognit
+//nolint:cyclop,gocognit,maintidx
 func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandlers() {
 	ts.serveMux.Handle("/spaces/{spaceID}/environments/{environmentID}/content_types/{contentTypeID}", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		spaceID := r.PathValue("spaceID")
