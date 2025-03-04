@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
+//nolint:gocognit
 func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandlers() {
 	ts.serveMux.Handle("/spaces/{spaceID}/environments/{environmentID}/content_types/{contentTypeID}", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		spaceID := r.PathValue("spaceID")
@@ -23,7 +24,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, contentType)
 		case http.MethodPut:
-			if environmentID == "nonexistent" {
+			if environmentID == NonexistentID {
 				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
 				return
@@ -89,7 +90,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			_ = WriteContentfulManagementResponse(responseWriter, statusCode, &contentType)
 
 		case http.MethodDelete:
-			if environmentID == "nonexistent" {
+			if environmentID == NonexistentID {
 				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
 				return
@@ -111,7 +112,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 
 		switch r.Method {
 		case http.MethodPut:
-			if environmentID == "nonexistent" {
+			if environmentID == NonexistentID {
 				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
 				return
@@ -151,7 +152,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, editorInterface)
 
 		case http.MethodPut:
-			if environmentID == "nonexistent" {
+			if environmentID == NonexistentID {
 				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
 				return
@@ -182,11 +183,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 				editorLayoutItemArray := make([]cm.EditorInterfaceEditorLayoutItem, len(editorLayout))
 
 				for index, editorLayoutItem := range editorLayout {
-					editorLayoutItemArray[index] = cm.EditorInterfaceEditorLayoutItem{
-						Name:    editorLayoutItem.Name,
-						GroupId: editorLayoutItem.GroupId,
-						Items:   editorLayoutItem.Items,
-					}
+					editorLayoutItemArray[index] = cm.EditorInterfaceEditorLayoutItem(editorLayoutItem)
 				}
 
 				editorInterface.EditorLayout = cm.NewOptNilEditorInterfaceEditorLayoutItemArray(editorLayoutItemArray)
@@ -196,12 +193,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 				controlsArray := make([]cm.EditorInterfaceControlsItem, len(controls))
 
 				for index, control := range controls {
-					controlsArray[index] = cm.EditorInterfaceControlsItem{
-						FieldId:         control.FieldId,
-						WidgetNamespace: control.WidgetNamespace,
-						WidgetId:        control.WidgetId,
-						Settings:        control.Settings,
-					}
+					controlsArray[index] = cm.EditorInterfaceControlsItem(control)
 				}
 
 				editorInterface.Controls = cm.NewOptNilEditorInterfaceControlsItemArray(controlsArray)
@@ -211,12 +203,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 				groupControlsArray := make([]cm.EditorInterfaceGroupControlsItem, len(groupControls))
 
 				for index, groupControl := range groupControls {
-					groupControlsArray[index] = cm.EditorInterfaceGroupControlsItem{
-						GroupId:         groupControl.GroupId,
-						WidgetNamespace: groupControl.WidgetNamespace,
-						WidgetId:        groupControl.WidgetId,
-						Settings:        groupControl.Settings,
-					}
+					groupControlsArray[index] = cm.EditorInterfaceGroupControlsItem(groupControl)
 				}
 
 				editorInterface.GroupControls = cm.NewOptNilEditorInterfaceGroupControlsItemArray(groupControlsArray)
@@ -226,12 +213,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 				sidebarArray := make([]cm.EditorInterfaceSidebarItem, len(sidebar))
 
 				for index, sidebarItem := range sidebar {
-					sidebarArray[index] = cm.EditorInterfaceSidebarItem{
-						WidgetNamespace: sidebarItem.WidgetNamespace,
-						WidgetId:        sidebarItem.WidgetId,
-						Settings:        sidebarItem.Settings,
-						Disabled:        sidebarItem.Disabled,
-					}
+					sidebarArray[index] = cm.EditorInterfaceSidebarItem(sidebarItem)
 				}
 
 				editorInterface.Sidebar = cm.NewOptNilEditorInterfaceSidebarItemArray(sidebarArray)

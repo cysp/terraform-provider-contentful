@@ -29,7 +29,7 @@ func (ts *ContentfulManagementTestServer) SetupSpaceEnvironmentAppInstallationHa
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, appInstallation)
 
 		case http.MethodPut:
-			if appDefinitionID == "nonexistent" {
+			if appDefinitionID == NonexistentID {
 				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
 				return

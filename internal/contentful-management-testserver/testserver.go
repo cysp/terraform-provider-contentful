@@ -9,6 +9,10 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
+const (
+	NonexistentID = "nonexistent"
+)
+
 type ContentfulManagementTestServer struct {
 	mu *sync.Mutex
 
