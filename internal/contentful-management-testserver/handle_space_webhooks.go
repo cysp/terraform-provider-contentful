@@ -111,11 +111,13 @@ func (ts *ContentfulManagementTestServer) GetWebhookDefinition(spaceID, webhookD
 	return ts.webhookDefinitions.Get(spaceID, webhookDefinitionID)
 }
 
-func (ts *ContentfulManagementTestServer) SetWebhookDefinition(spaceID string, webhookDefinition *cm.WebhookDefinition) {
+func (ts *ContentfulManagementTestServer) SetWebhookDefinition(spaceID, webhookDefinitionID string, webhookDefinitionFields cm.WebhookDefinitionFields) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.webhookDefinitions.Set(spaceID, webhookDefinition.Sys.ID, webhookDefinition)
+	webhookDefinition := NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID, webhookDefinitionFields)
+
+	ts.webhookDefinitions.Set(spaceID, webhookDefinition.Sys.ID, &webhookDefinition)
 }
 
 func (ts *ContentfulManagementTestServer) DeleteWebhookDefinition(spaceID, webhookDefinitionID string) {

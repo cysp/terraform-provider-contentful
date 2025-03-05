@@ -31,6 +31,11 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 			apiKeyID := ts.generateResourceID()
 			apiKey := NewAPIKeyFromRequestFields(spaceID, apiKeyID, apiKeyRequestFields)
 
+			previewAPIKey := cm.PreviewApiKey{
+				Sys:         NewPreviewAPIKeySys(spaceID, apiKeyID),
+				AccessToken: apiKeyID,
+			}
+
 			apiKey.PreviewAPIKey.SetTo(cm.ApiKeyPreviewAPIKey{
 				Sys: cm.ApiKeyPreviewAPIKeySys{
 					Type:     cm.ApiKeyPreviewAPIKeySysTypeLink,
@@ -43,13 +48,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 
 			ts.apiKeys.Set(spaceID, apiKeyID, &apiKey)
 
-			ts.previewAPIKeys.Set(spaceID, apiKeyID, &cm.PreviewApiKey{
-				Sys: cm.PreviewApiKeySys{
-					Type: cm.PreviewApiKeySysTypePreviewApiKey,
-					ID:   apiKeyID,
-				},
-				AccessToken: apiKeyID,
-			})
+			ts.previewAPIKeys.Set(spaceID, apiKeyID, &previewAPIKey)
 
 			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &apiKey)
 
