@@ -7277,6 +7277,10 @@ func (s *PreviewApiKeySys) encodeFields(e *jx.Encoder) {
 		s.Type.Encode(e)
 	}
 	{
+		e.FieldStart("space")
+		s.Space.Encode(e)
+	}
+	{
 		e.FieldStart("id")
 		e.Str(s.ID)
 	}
@@ -7298,12 +7302,13 @@ func (s *PreviewApiKeySys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfPreviewApiKeySys = [5]string{
+var jsonFieldsNameOfPreviewApiKeySys = [6]string{
 	0: "type",
-	1: "id",
-	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
+	1: "space",
+	2: "id",
+	3: "version",
+	4: "createdAt",
+	5: "updatedAt",
 }
 
 // Decode decodes PreviewApiKeySys from json.
@@ -7325,8 +7330,18 @@ func (s *PreviewApiKeySys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
-		case "id":
+		case "space":
 			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Space.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.ID = string(v)
@@ -7338,7 +7353,7 @@ func (s *PreviewApiKeySys) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -7379,7 +7394,7 @@ func (s *PreviewApiKeySys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00001111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -10611,6 +10626,10 @@ func (s *WebhookDefinitionSys) encodeFields(e *jx.Encoder) {
 		s.Type.Encode(e)
 	}
 	{
+		e.FieldStart("space")
+		s.Space.Encode(e)
+	}
+	{
 		e.FieldStart("id")
 		e.Str(s.ID)
 	}
@@ -10632,12 +10651,13 @@ func (s *WebhookDefinitionSys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfWebhookDefinitionSys = [5]string{
+var jsonFieldsNameOfWebhookDefinitionSys = [6]string{
 	0: "type",
-	1: "id",
-	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
+	1: "space",
+	2: "id",
+	3: "version",
+	4: "createdAt",
+	5: "updatedAt",
 }
 
 // Decode decodes WebhookDefinitionSys from json.
@@ -10659,8 +10679,18 @@ func (s *WebhookDefinitionSys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
-		case "id":
+		case "space":
 			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Space.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.ID = string(v)
@@ -10672,7 +10702,7 @@ func (s *WebhookDefinitionSys) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -10713,7 +10743,7 @@ func (s *WebhookDefinitionSys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00001111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

@@ -573,6 +573,7 @@ components:
         - $ref: '#/components/schemas/PersonalAccessTokenFields'
     PreviewApiKeySys:
       allOf:
+        - $ref: '#/components/schemas/BaseSysWithSpace'
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
         - type: object
           properties:
@@ -666,6 +667,7 @@ components:
         - $ref: '#/components/schemas/RoleFields'
     WebhookDefinitionSys:
       allOf:
+        - $ref: '#/components/schemas/BaseSysWithSpace'
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
         - type: object
           properties:

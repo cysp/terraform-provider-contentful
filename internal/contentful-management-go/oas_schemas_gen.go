@@ -3784,6 +3784,7 @@ func (*PreviewApiKey) getPreviewApiKeyRes() {}
 type PreviewApiKeySys struct {
 	// Merged property.
 	Type      PreviewApiKeySysType `json:"type"`
+	Space     SpaceLink            `json:"space"`
 	ID        string               `json:"id"`
 	Version   int                  `json:"version"`
 	CreatedAt OptDateTime          `json:"createdAt"`
@@ -3793,6 +3794,11 @@ type PreviewApiKeySys struct {
 // GetType returns the value of Type.
 func (s *PreviewApiKeySys) GetType() PreviewApiKeySysType {
 	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *PreviewApiKeySys) GetSpace() SpaceLink {
+	return s.Space
 }
 
 // GetID returns the value of ID.
@@ -3818,6 +3824,11 @@ func (s *PreviewApiKeySys) GetUpdatedAt() OptDateTime {
 // SetType sets the value of Type.
 func (s *PreviewApiKeySys) SetType(val PreviewApiKeySysType) {
 	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *PreviewApiKeySys) SetSpace(val SpaceLink) {
+	s.Space = val
 }
 
 // SetID sets the value of ID.
@@ -5217,6 +5228,7 @@ type WebhookDefinitionHeaders []WebhookDefinitionHeader
 type WebhookDefinitionSys struct {
 	// Merged property.
 	Type      WebhookDefinitionSysType `json:"type"`
+	Space     SpaceLink                `json:"space"`
 	ID        string                   `json:"id"`
 	Version   int                      `json:"version"`
 	CreatedAt OptDateTime              `json:"createdAt"`
@@ -5226,6 +5238,11 @@ type WebhookDefinitionSys struct {
 // GetType returns the value of Type.
 func (s *WebhookDefinitionSys) GetType() WebhookDefinitionSysType {
 	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *WebhookDefinitionSys) GetSpace() SpaceLink {
+	return s.Space
 }
 
 // GetID returns the value of ID.
@@ -5251,6 +5268,11 @@ func (s *WebhookDefinitionSys) GetUpdatedAt() OptDateTime {
 // SetType sets the value of Type.
 func (s *WebhookDefinitionSys) SetType(val WebhookDefinitionSysType) {
 	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *WebhookDefinitionSys) SetSpace(val SpaceLink) {
+	s.Space = val
 }
 
 // SetID sets the value of ID.

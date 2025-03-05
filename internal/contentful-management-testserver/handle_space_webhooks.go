@@ -7,18 +7,31 @@ import (
 )
 
 func (ts *ContentfulManagementTestServer) setupSpaceWebhookDefinitionHandlers() {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
 	ts.serveMux.Handle("/spaces/{spaceID}/webhook_definitions", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		spaceID := r.PathValue("spaceID")
 
+		if spaceID == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+			return
+		}
+
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
 		switch r.Method {
 		case http.MethodPost:
-			var webhookDefinition cm.WebhookDefinition
-			_ = ReadContentfulManagementRequest(r, &webhookDefinition)
+			var webhookDefinitionFields cm.WebhookDefinitionFields
+			if err := ReadContentfulManagementRequest(r, &webhookDefinitionFields); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
-			webhookDefinition.Sys = cm.WebhookDefinitionSys{
-				Type: cm.WebhookDefinitionSysTypeWebhookDefinition,
-				ID:   ts.generateResourceID(),
+				return
 			}
+
+			webhookDefinition := NewWebhookDefinitionFromFields(spaceID, ts.generateResourceID(), webhookDefinitionFields)
 
 			ts.webhookDefinitions.Set(spaceID, webhookDefinition.Sys.ID, &webhookDefinition)
 
@@ -29,51 +42,85 @@ func (ts *ContentfulManagementTestServer) setupSpaceWebhookDefinitionHandlers() 
 		}
 	}))
 
-	ts.serveMux.Handle("/spaces/{spaceID}/webhook_definitions/{webhookDefinitionID}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts.serveMux.Handle("/spaces/{spaceID}/webhook_definitions/{webhookDefinitionID}", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
 		spaceID := r.PathValue("spaceID")
 		webhookDefinitionID := r.PathValue("webhookDefinitionID")
 
+		if spaceID == NonexistentID || webhookDefinitionID == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+			return
+		}
+
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
+		webhookDefinition, exists := ts.webhookDefinitions.Get(spaceID, webhookDefinitionID)
+
 		switch r.Method {
 		case http.MethodGet:
-			webhookDefinition, exists := ts.webhookDefinitions.Get(spaceID, webhookDefinitionID)
 			if !exists {
-				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
 				return
 			}
 
-			_ = WriteContentfulManagementResponse(w, http.StatusOK, webhookDefinition)
+			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, webhookDefinition)
 
 		case http.MethodPut:
-			var webhookDefinition cm.WebhookDefinition
-			_ = ReadContentfulManagementRequest(r, &webhookDefinition)
+			var webhookDefinitionFields cm.WebhookDefinitionFields
+			if err := ReadContentfulManagementRequest(r, &webhookDefinitionFields); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(responseWriter, err)
 
-			webhookDefinition.Sys = cm.WebhookDefinitionSys{
-				Type: cm.WebhookDefinitionSysTypeWebhookDefinition,
-				ID:   webhookDefinitionID,
+				return
 			}
 
-			ts.webhookDefinitions.Set(spaceID, webhookDefinition.Sys.ID, &webhookDefinition)
-			_ = WriteContentfulManagementResponse(w, http.StatusOK, &webhookDefinition)
+			if exists {
+				UpdateWebhookDefinitionFromFields(webhookDefinition, webhookDefinitionFields)
+
+				_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, webhookDefinition)
+			} else {
+				webhookDefinition := NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID, webhookDefinitionFields)
+
+				ts.webhookDefinitions.Set(spaceID, webhookDefinition.Sys.ID, &webhookDefinition)
+
+				_ = WriteContentfulManagementResponse(responseWriter, http.StatusCreated, &webhookDefinition)
+			}
 
 		case http.MethodDelete:
+			if !exists {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+				return
+			}
+
 			ts.webhookDefinitions.Delete(spaceID, webhookDefinitionID)
-			w.WriteHeader(http.StatusNoContent)
+
+			responseWriter.WriteHeader(http.StatusNoContent)
 
 		default:
-			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 		}
 	}))
 }
 
 func (ts *ContentfulManagementTestServer) GetWebhookDefinition(spaceID, webhookDefinitionID string) (*cm.WebhookDefinition, bool) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
 	return ts.webhookDefinitions.Get(spaceID, webhookDefinitionID)
 }
 
 func (ts *ContentfulManagementTestServer) SetWebhookDefinition(spaceID string, webhookDefinition *cm.WebhookDefinition) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
 	ts.webhookDefinitions.Set(spaceID, webhookDefinition.Sys.ID, webhookDefinition)
 }
 
 func (ts *ContentfulManagementTestServer) DeleteWebhookDefinition(spaceID, webhookDefinitionID string) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
 	ts.webhookDefinitions.Delete(spaceID, webhookDefinitionID)
 }

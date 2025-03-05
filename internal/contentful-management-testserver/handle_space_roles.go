@@ -69,7 +69,11 @@ func (ts *ContentfulManagementTestServer) setupSpaceRoleHandlers() {
 
 		case http.MethodPut:
 			var roleFields cm.RoleFields
-			_ = ReadContentfulManagementRequest(r, &roleFields)
+			if err := ReadContentfulManagementRequest(r, &roleFields); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(responseWriter, err)
+
+				return
+			}
 
 			if exists {
 				UpdateRoleFromFields(role, roleFields)
