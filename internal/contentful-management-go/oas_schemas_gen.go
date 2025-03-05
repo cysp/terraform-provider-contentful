@@ -263,6 +263,7 @@ func (s *ApiKeyRequestFields) SetEnvironments(val []EnvironmentLink) {
 type ApiKeySys struct {
 	// Merged property.
 	Type      ApiKeySysType `json:"type"`
+	Space     SpaceLink     `json:"space"`
 	ID        string        `json:"id"`
 	Version   int           `json:"version"`
 	CreatedAt OptDateTime   `json:"createdAt"`
@@ -272,6 +273,11 @@ type ApiKeySys struct {
 // GetType returns the value of Type.
 func (s *ApiKeySys) GetType() ApiKeySysType {
 	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *ApiKeySys) GetSpace() SpaceLink {
+	return s.Space
 }
 
 // GetID returns the value of ID.
@@ -297,6 +303,11 @@ func (s *ApiKeySys) GetUpdatedAt() OptDateTime {
 // SetType sets the value of Type.
 func (s *ApiKeySys) SetType(val ApiKeySysType) {
 	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *ApiKeySys) SetSpace(val SpaceLink) {
+	s.Space = val
 }
 
 // SetID sets the value of ID.
@@ -354,6 +365,130 @@ func (s *ApiKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/AppDefinitionLink
+type AppDefinitionLink struct {
+	Sys AppDefinitionLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppDefinitionLink) GetSys() AppDefinitionLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *AppDefinitionLink) SetSys(val AppDefinitionLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type AppDefinitionLinkSys struct {
+	// Merged property.
+	Type AppDefinitionLinkSysType `json:"type"`
+	ID   string                   `json:"id"`
+	// Merged property.
+	LinkType AppDefinitionLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionLinkSys) GetType() AppDefinitionLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *AppDefinitionLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *AppDefinitionLinkSys) GetLinkType() AppDefinitionLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionLinkSys) SetType(val AppDefinitionLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *AppDefinitionLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *AppDefinitionLinkSys) SetLinkType(val AppDefinitionLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type AppDefinitionLinkSysLinkType string
+
+const (
+	AppDefinitionLinkSysLinkTypeAppDefinition AppDefinitionLinkSysLinkType = "AppDefinition"
+)
+
+// AllValues returns all AppDefinitionLinkSysLinkType values.
+func (AppDefinitionLinkSysLinkType) AllValues() []AppDefinitionLinkSysLinkType {
+	return []AppDefinitionLinkSysLinkType{
+		AppDefinitionLinkSysLinkTypeAppDefinition,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppDefinitionLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppDefinitionLinkSysLinkTypeAppDefinition:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppDefinitionLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch AppDefinitionLinkSysLinkType(data) {
+	case AppDefinitionLinkSysLinkTypeAppDefinition:
+		*s = AppDefinitionLinkSysLinkTypeAppDefinition
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type AppDefinitionLinkSysType string
+
+const (
+	AppDefinitionLinkSysTypeLink AppDefinitionLinkSysType = "Link"
+)
+
+// AllValues returns all AppDefinitionLinkSysType values.
+func (AppDefinitionLinkSysType) AllValues() []AppDefinitionLinkSysType {
+	return []AppDefinitionLinkSysType{
+		AppDefinitionLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppDefinitionLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppDefinitionLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppDefinitionLinkSysType) UnmarshalText(data []byte) error {
+	switch AppDefinitionLinkSysType(data) {
+	case AppDefinitionLinkSysTypeLink:
+		*s = AppDefinitionLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Merged schema.
 // Ref: #/components/schemas/AppInstallation
 type AppInstallation struct {
@@ -403,7 +538,10 @@ func (s *AppInstallationFields) SetParameters(val jx.Raw) {
 // Ref: #/components/schemas/AppInstallationSys
 type AppInstallationSys struct {
 	// Merged property.
-	Type AppInstallationSysType `json:"type"`
+	Type          AppInstallationSysType `json:"type"`
+	Space         SpaceLink              `json:"space"`
+	Environment   EnvironmentLink        `json:"environment"`
+	AppDefinition AppDefinitionLink      `json:"appDefinition"`
 }
 
 // GetType returns the value of Type.
@@ -411,9 +549,39 @@ func (s *AppInstallationSys) GetType() AppInstallationSysType {
 	return s.Type
 }
 
+// GetSpace returns the value of Space.
+func (s *AppInstallationSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *AppInstallationSys) GetEnvironment() EnvironmentLink {
+	return s.Environment
+}
+
+// GetAppDefinition returns the value of AppDefinition.
+func (s *AppInstallationSys) GetAppDefinition() AppDefinitionLink {
+	return s.AppDefinition
+}
+
 // SetType sets the value of Type.
 func (s *AppInstallationSys) SetType(val AppInstallationSysType) {
 	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *AppInstallationSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *AppInstallationSys) SetEnvironment(val EnvironmentLink) {
+	s.Environment = val
+}
+
+// SetAppDefinition sets the value of AppDefinition.
+func (s *AppInstallationSys) SetAppDefinition(val AppDefinitionLink) {
+	s.AppDefinition = val
 }
 
 // Merged schema.
@@ -457,7 +625,7 @@ type ContentType struct {
 	Sys  ContentTypeSys `json:"sys"`
 	Name string         `json:"name"`
 	// Merged property.
-	Description NilString `json:"description"`
+	Description OptNilString `json:"description"`
 	// Merged property.
 	DisplayField NilString               `json:"displayField"`
 	Fields       []ContentTypeFieldsItem `json:"fields"`
@@ -474,7 +642,7 @@ func (s *ContentType) GetName() string {
 }
 
 // GetDescription returns the value of Description.
-func (s *ContentType) GetDescription() NilString {
+func (s *ContentType) GetDescription() OptNilString {
 	return s.Description
 }
 
@@ -499,7 +667,7 @@ func (s *ContentType) SetName(val string) {
 }
 
 // SetDescription sets the value of Description.
-func (s *ContentType) SetDescription(val NilString) {
+func (s *ContentType) SetDescription(val OptNilString) {
 	s.Description = val
 }
 
@@ -677,10 +845,134 @@ func (s *ContentTypeFieldsItemItems) SetValidations(val []jx.Raw) {
 	s.Validations = val
 }
 
+// Ref: #/components/schemas/ContentTypeLink
+type ContentTypeLink struct {
+	Sys ContentTypeLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ContentTypeLink) GetSys() ContentTypeLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *ContentTypeLink) SetSys(val ContentTypeLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type ContentTypeLinkSys struct {
+	// Merged property.
+	Type ContentTypeLinkSysType `json:"type"`
+	ID   string                 `json:"id"`
+	// Merged property.
+	LinkType ContentTypeLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeLinkSys) GetType() ContentTypeLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ContentTypeLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ContentTypeLinkSys) GetLinkType() ContentTypeLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeLinkSys) SetType(val ContentTypeLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ContentTypeLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ContentTypeLinkSys) SetLinkType(val ContentTypeLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type ContentTypeLinkSysLinkType string
+
+const (
+	ContentTypeLinkSysLinkTypeContentType ContentTypeLinkSysLinkType = "ContentType"
+)
+
+// AllValues returns all ContentTypeLinkSysLinkType values.
+func (ContentTypeLinkSysLinkType) AllValues() []ContentTypeLinkSysLinkType {
+	return []ContentTypeLinkSysLinkType{
+		ContentTypeLinkSysLinkTypeContentType,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentTypeLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentTypeLinkSysLinkTypeContentType:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentTypeLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch ContentTypeLinkSysLinkType(data) {
+	case ContentTypeLinkSysLinkTypeContentType:
+		*s = ContentTypeLinkSysLinkTypeContentType
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type ContentTypeLinkSysType string
+
+const (
+	ContentTypeLinkSysTypeLink ContentTypeLinkSysType = "Link"
+)
+
+// AllValues returns all ContentTypeLinkSysType values.
+func (ContentTypeLinkSysType) AllValues() []ContentTypeLinkSysType {
+	return []ContentTypeLinkSysType{
+		ContentTypeLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentTypeLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentTypeLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentTypeLinkSysType) UnmarshalText(data []byte) error {
+	switch ContentTypeLinkSysType(data) {
+	case ContentTypeLinkSysTypeLink:
+		*s = ContentTypeLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/components/schemas/ContentTypeRequestFields
 type ContentTypeRequestFields struct {
 	Name         string                               `json:"name"`
-	Description  string                               `json:"description"`
+	Description  OptNilString                         `json:"description"`
 	DisplayField string                               `json:"displayField"`
 	Fields       []ContentTypeRequestFieldsFieldsItem `json:"fields"`
 }
@@ -691,7 +983,7 @@ func (s *ContentTypeRequestFields) GetName() string {
 }
 
 // GetDescription returns the value of Description.
-func (s *ContentTypeRequestFields) GetDescription() string {
+func (s *ContentTypeRequestFields) GetDescription() OptNilString {
 	return s.Description
 }
 
@@ -711,7 +1003,7 @@ func (s *ContentTypeRequestFields) SetName(val string) {
 }
 
 // SetDescription sets the value of Description.
-func (s *ContentTypeRequestFields) SetDescription(val string) {
+func (s *ContentTypeRequestFields) SetDescription(val OptNilString) {
 	s.Description = val
 }
 
@@ -890,6 +1182,8 @@ func (s *ContentTypeRequestFieldsFieldsItemItems) SetValidations(val []jx.Raw) {
 type ContentTypeSys struct {
 	// Merged property.
 	Type             ContentTypeSysType `json:"type"`
+	Space            SpaceLink          `json:"space"`
+	Environment      EnvironmentLink    `json:"environment"`
 	ID               string             `json:"id"`
 	Version          int                `json:"version"`
 	CreatedAt        OptDateTime        `json:"createdAt"`
@@ -901,6 +1195,16 @@ type ContentTypeSys struct {
 // GetType returns the value of Type.
 func (s *ContentTypeSys) GetType() ContentTypeSysType {
 	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *ContentTypeSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *ContentTypeSys) GetEnvironment() EnvironmentLink {
+	return s.Environment
 }
 
 // GetID returns the value of ID.
@@ -936,6 +1240,16 @@ func (s *ContentTypeSys) GetPublishedAt() OptDateTime {
 // SetType sets the value of Type.
 func (s *ContentTypeSys) SetType(val ContentTypeSysType) {
 	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *ContentTypeSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *ContentTypeSys) SetEnvironment(val EnvironmentLink) {
+	s.Environment = val
 }
 
 // SetID sets the value of ID.
@@ -1472,16 +1786,29 @@ func (s *EditorInterfaceSidebarItem) SetDisabled(val OptBool) {
 // Ref: #/components/schemas/EditorInterfaceSys
 type EditorInterfaceSys struct {
 	// Merged property.
-	Type      EditorInterfaceSysType `json:"type"`
-	ID        string                 `json:"id"`
-	Version   int                    `json:"version"`
-	CreatedAt OptDateTime            `json:"createdAt"`
-	UpdatedAt OptDateTime            `json:"updatedAt"`
+	Type        EditorInterfaceSysType `json:"type"`
+	Space       SpaceLink              `json:"space"`
+	Environment EnvironmentLink        `json:"environment"`
+	ID          string                 `json:"id"`
+	Version     int                    `json:"version"`
+	CreatedAt   OptDateTime            `json:"createdAt"`
+	UpdatedAt   OptDateTime            `json:"updatedAt"`
+	ContentType ContentTypeLink        `json:"contentType"`
 }
 
 // GetType returns the value of Type.
 func (s *EditorInterfaceSys) GetType() EditorInterfaceSysType {
 	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *EditorInterfaceSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *EditorInterfaceSys) GetEnvironment() EnvironmentLink {
+	return s.Environment
 }
 
 // GetID returns the value of ID.
@@ -1504,9 +1831,24 @@ func (s *EditorInterfaceSys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
+// GetContentType returns the value of ContentType.
+func (s *EditorInterfaceSys) GetContentType() ContentTypeLink {
+	return s.ContentType
+}
+
 // SetType sets the value of Type.
 func (s *EditorInterfaceSys) SetType(val EditorInterfaceSysType) {
 	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *EditorInterfaceSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *EditorInterfaceSys) SetEnvironment(val EnvironmentLink) {
+	s.Environment = val
 }
 
 // SetID sets the value of ID.
@@ -1527,6 +1869,11 @@ func (s *EditorInterfaceSys) SetCreatedAt(val OptDateTime) {
 // SetUpdatedAt sets the value of UpdatedAt.
 func (s *EditorInterfaceSys) SetUpdatedAt(val OptDateTime) {
 	s.UpdatedAt = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *EditorInterfaceSys) SetContentType(val ContentTypeLink) {
+	s.ContentType = val
 }
 
 // Merged schema.
@@ -3437,6 +3784,7 @@ func (*PreviewApiKey) getPreviewApiKeyRes() {}
 type PreviewApiKeySys struct {
 	// Merged property.
 	Type      PreviewApiKeySysType `json:"type"`
+	Space     SpaceLink            `json:"space"`
 	ID        string               `json:"id"`
 	Version   int                  `json:"version"`
 	CreatedAt OptDateTime          `json:"createdAt"`
@@ -3446,6 +3794,11 @@ type PreviewApiKeySys struct {
 // GetType returns the value of Type.
 func (s *PreviewApiKeySys) GetType() PreviewApiKeySysType {
 	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *PreviewApiKeySys) GetSpace() SpaceLink {
+	return s.Space
 }
 
 // GetID returns the value of ID.
@@ -3471,6 +3824,11 @@ func (s *PreviewApiKeySys) GetUpdatedAt() OptDateTime {
 // SetType sets the value of Type.
 func (s *PreviewApiKeySys) SetType(val PreviewApiKeySysType) {
 	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *PreviewApiKeySys) SetSpace(val SpaceLink) {
+	s.Space = val
 }
 
 // SetID sets the value of ID.
@@ -4093,6 +4451,7 @@ func (s *RolePoliciesItemEffect) UnmarshalText(data []byte) error {
 type RoleSys struct {
 	// Merged property.
 	Type      RoleSysType `json:"type"`
+	Space     SpaceLink   `json:"space"`
 	ID        string      `json:"id"`
 	Version   int         `json:"version"`
 	CreatedAt OptDateTime `json:"createdAt"`
@@ -4102,6 +4461,11 @@ type RoleSys struct {
 // GetType returns the value of Type.
 func (s *RoleSys) GetType() RoleSysType {
 	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *RoleSys) GetSpace() SpaceLink {
+	return s.Space
 }
 
 // GetID returns the value of ID.
@@ -4127,6 +4491,11 @@ func (s *RoleSys) GetUpdatedAt() OptDateTime {
 // SetType sets the value of Type.
 func (s *RoleSys) SetType(val RoleSysType) {
 	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *RoleSys) SetSpace(val SpaceLink) {
+	s.Space = val
 }
 
 // SetID sets the value of ID.
@@ -4178,6 +4547,130 @@ func (s *RoleSysType) UnmarshalText(data []byte) error {
 	switch RoleSysType(data) {
 	case RoleSysTypeRole:
 		*s = RoleSysTypeRole
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/SpaceLink
+type SpaceLink struct {
+	Sys SpaceLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *SpaceLink) GetSys() SpaceLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *SpaceLink) SetSys(val SpaceLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type SpaceLinkSys struct {
+	// Merged property.
+	Type SpaceLinkSysType `json:"type"`
+	ID   string           `json:"id"`
+	// Merged property.
+	LinkType SpaceLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *SpaceLinkSys) GetType() SpaceLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *SpaceLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *SpaceLinkSys) GetLinkType() SpaceLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *SpaceLinkSys) SetType(val SpaceLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *SpaceLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *SpaceLinkSys) SetLinkType(val SpaceLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type SpaceLinkSysLinkType string
+
+const (
+	SpaceLinkSysLinkTypeSpace SpaceLinkSysLinkType = "Space"
+)
+
+// AllValues returns all SpaceLinkSysLinkType values.
+func (SpaceLinkSysLinkType) AllValues() []SpaceLinkSysLinkType {
+	return []SpaceLinkSysLinkType{
+		SpaceLinkSysLinkTypeSpace,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s SpaceLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case SpaceLinkSysLinkTypeSpace:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *SpaceLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch SpaceLinkSysLinkType(data) {
+	case SpaceLinkSysLinkTypeSpace:
+		*s = SpaceLinkSysLinkTypeSpace
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type SpaceLinkSysType string
+
+const (
+	SpaceLinkSysTypeLink SpaceLinkSysType = "Link"
+)
+
+// AllValues returns all SpaceLinkSysType values.
+func (SpaceLinkSysType) AllValues() []SpaceLinkSysType {
+	return []SpaceLinkSysType{
+		SpaceLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s SpaceLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case SpaceLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *SpaceLinkSysType) UnmarshalText(data []byte) error {
+	switch SpaceLinkSysType(data) {
+	case SpaceLinkSysTypeLink:
+		*s = SpaceLinkSysTypeLink
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -4735,6 +5228,7 @@ type WebhookDefinitionHeaders []WebhookDefinitionHeader
 type WebhookDefinitionSys struct {
 	// Merged property.
 	Type      WebhookDefinitionSysType `json:"type"`
+	Space     SpaceLink                `json:"space"`
 	ID        string                   `json:"id"`
 	Version   int                      `json:"version"`
 	CreatedAt OptDateTime              `json:"createdAt"`
@@ -4744,6 +5238,11 @@ type WebhookDefinitionSys struct {
 // GetType returns the value of Type.
 func (s *WebhookDefinitionSys) GetType() WebhookDefinitionSysType {
 	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *WebhookDefinitionSys) GetSpace() SpaceLink {
+	return s.Space
 }
 
 // GetID returns the value of ID.
@@ -4769,6 +5268,11 @@ func (s *WebhookDefinitionSys) GetUpdatedAt() OptDateTime {
 // SetType sets the value of Type.
 func (s *WebhookDefinitionSys) SetType(val WebhookDefinitionSysType) {
 	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *WebhookDefinitionSys) SetSpace(val SpaceLink) {
+	s.Space = val
 }
 
 // SetID sets the value of ID.

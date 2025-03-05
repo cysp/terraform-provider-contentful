@@ -99,16 +99,36 @@ components:
           type: string
       required:
         - type
+    BaseSysWithSpace:
+      allOf:
+        - $ref: '#/components/schemas/BaseSys'
+        - type: object
+          properties:
+            space:
+              $ref: '#/components/schemas/SpaceLink'
+          required:
+            - space
+    BaseSysWithSpaceEnvironment:
+      allOf:
+        - $ref: '#/components/schemas/BaseSys'
+        - type: object
+          properties:
+            space:
+              $ref: '#/components/schemas/SpaceLink'
+            environment:
+              $ref: '#/components/schemas/EnvironmentLink'
+          required:
+            - space
+            - environment
     BaseSysWithId:
-      type: object
-      properties:
-        type:
-          type: string
-        id:
-          type: string
-      required:
-        - type
-        - id
+      allOf:
+        - $ref: '#/components/schemas/BaseSys'
+        - type: object
+          properties:
+            id:
+              type: string
+          required:
+            - id
     BaseSysWithIdAndVersion:
       allOf:
         - $ref: '#/components/schemas/BaseSysWithId'
@@ -167,6 +187,7 @@ components:
         - $ref: '#/components/schemas/UserFields'
     ApiKeySys:
       allOf:
+        - $ref: '#/components/schemas/BaseSysWithSpace'
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
         - type: object
           properties:
@@ -222,13 +243,17 @@ components:
         - $ref: '#/components/schemas/ApiKeyFields'
     AppInstallationSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSys'
+        - $ref: '#/components/schemas/BaseSysWithSpaceEnvironment'
         - type: object
           properties:
             type:
               type: string
               enum:
                 - AppInstallation
+            appDefinition:
+              $ref: '#/components/schemas/AppDefinitionLink'
+          required:
+            - appDefinition
     AppInstallationFields:
       type: object
       properties:
@@ -244,6 +269,7 @@ components:
         - $ref: '#/components/schemas/AppInstallationFields'
     ContentTypeSys:
       allOf:
+        - $ref: '#/components/schemas/BaseSysWithSpaceEnvironment'
         - $ref: '#/components/schemas/BaseSysWithIdAndVersionAndPublishedVersion'
         - type: object
           properties:
@@ -269,6 +295,7 @@ components:
           type: string
         description:
           type: string
+          nullable: true
         displayField:
           type: string
         fields:
@@ -312,7 +339,7 @@ components:
               - type
       required:
         - name
-        - description
+        # - description
         - displayField
         - fields
     ContentType:
@@ -326,6 +353,7 @@ components:
         - $ref: '#/components/schemas/ContentTypeFields'
     EditorInterfaceSys:
       allOf:
+        - $ref: '#/components/schemas/BaseSysWithSpaceEnvironment'
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
         - type: object
           properties:
@@ -333,6 +361,10 @@ components:
               type: string
               enum:
                 - EditorInterface
+            contentType:
+              $ref : '#/components/schemas/ContentTypeLink'
+          required:
+            - contentType
     EditorInterfaceFields:
       type: object
       properties:
@@ -420,6 +452,20 @@ components:
               type: string
           required:
             - linkType
+    SpaceLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: '#/components/schemas/LinkSys'
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - Space
+      required:
+        - sys
     EnvironmentLink:
       type: object
       properties:
@@ -432,6 +478,34 @@ components:
                   type: string
                   enum:
                     - Environment
+      required:
+        - sys
+    AppDefinitionLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: '#/components/schemas/LinkSys'
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - AppDefinition
+      required:
+        - sys
+    ContentTypeLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: '#/components/schemas/LinkSys'
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - ContentType
       required:
         - sys
     PersonalAccessTokenSys:
@@ -499,6 +573,7 @@ components:
         - $ref: '#/components/schemas/PersonalAccessTokenFields'
     PreviewApiKeySys:
       allOf:
+        - $ref: '#/components/schemas/BaseSysWithSpace'
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
         - type: object
           properties:
@@ -534,6 +609,7 @@ components:
         - $ref: '#/components/schemas/PreviewApiKeyFields'
     RoleSys:
       allOf:
+        - $ref: '#/components/schemas/BaseSysWithSpace'
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
         - type: object
           properties:
@@ -591,6 +667,7 @@ components:
         - $ref: '#/components/schemas/RoleFields'
     WebhookDefinitionSys:
       allOf:
+        - $ref: '#/components/schemas/BaseSysWithSpace'
         - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
         - type: object
           properties:

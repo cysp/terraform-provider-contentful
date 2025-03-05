@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -11,14 +13,22 @@ import (
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImport(t *testing.T) {
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	testserver.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
+		Name: "Author",
+	})
+
+	testserver.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceFields{})
+
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -64,14 +74,16 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -93,14 +105,16 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
 		"environment_id":  config.StringVariable("nonexistent"),
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -113,14 +127,16 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -133,14 +149,22 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+	testserver.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
+		Name: "Author",
+	})
+
+	testserver.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceFields{})
+
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestStepDirectory(),
