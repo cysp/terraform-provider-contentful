@@ -22,12 +22,11 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	testserver.SetEditorInterface("0p38pssr0fi3", "test", &cm.EditorInterface{
-		Sys: cm.EditorInterfaceSys{
-			Type: cm.EditorInterfaceSysTypeEditorInterface,
-			ID:   "author",
-		},
+	testserver.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
+		Name: "Author",
 	})
+
+	testserver.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceFields{})
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
@@ -159,20 +158,11 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	testserver.SetContentType("0p38pssr0fi3", "test", &cm.ContentType{
-		Sys: cm.ContentTypeSys{
-			Type: cm.ContentTypeSysTypeContentType,
-			ID:   "author",
-		},
+	testserver.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
 		Name: "Author",
 	})
 
-	testserver.SetEditorInterface("0p38pssr0fi3", "test", &cm.EditorInterface{
-		Sys: cm.EditorInterfaceSys{
-			Type: cm.EditorInterfaceSysTypeEditorInterface,
-			ID:   "author",
-		},
-	})
+	testserver.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceFields{})
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{

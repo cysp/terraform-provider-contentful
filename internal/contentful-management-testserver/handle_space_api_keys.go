@@ -10,21 +10,46 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 	ts.serveMux.Handle("/spaces/{spaceID}/api_keys", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		spaceID := r.PathValue("spaceID")
 
+		if spaceID == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+			return
+		}
+
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
 		switch r.Method {
 		case http.MethodPost:
-			var apiKey cm.ApiKey
-			_ = ReadContentfulManagementRequest(r, &apiKey)
+			var apiKeyRequestFields cm.ApiKeyRequestFields
+			if err := ReadContentfulManagementRequest(r, &apiKeyRequestFields); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
+
+				return
+			}
 
 			apiKeyID := ts.generateResourceID()
+			apiKey := NewAPIKeyFromRequestFields(spaceID, apiKeyID, apiKeyRequestFields)
 
-			apiKey.Sys = cm.ApiKeySys{
-				Type: cm.ApiKeySysTypeApiKey,
-				ID:   apiKeyID,
-			}
+			apiKey.PreviewAPIKey.SetTo(cm.ApiKeyPreviewAPIKey{
+				Sys: cm.ApiKeyPreviewAPIKeySys{
+					Type:     cm.ApiKeyPreviewAPIKeySysTypeLink,
+					LinkType: cm.ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey,
+					ID:       apiKeyID,
+				},
+			})
 
 			apiKey.AccessToken = apiKeyID
 
-			ts.SetAPIKey(spaceID, &apiKey)
+			ts.apiKeys.Set(spaceID, apiKeyID, &apiKey)
+
+			ts.previewAPIKeys.Set(spaceID, apiKeyID, &cm.PreviewApiKey{
+				Sys: cm.PreviewApiKeySys{
+					Type: cm.PreviewApiKeySysTypePreviewApiKey,
+					ID:   apiKeyID,
+				},
+				AccessToken: apiKeyID,
+			})
 
 			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &apiKey)
 
@@ -37,42 +62,49 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 		spaceID := r.PathValue("spaceID")
 		apiKeyID := r.PathValue("apiKeyID")
 
+		if spaceID == NonexistentID || apiKeyID == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+			return
+		}
+
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
+		apiKey, exists := ts.apiKeys.Get(spaceID, apiKeyID)
+		if !exists {
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+			return
+		}
+
 		switch r.Method {
 		case http.MethodGet:
-			apiKey, found := ts.apiKeys.Get(spaceID, apiKeyID)
-			if !found {
-				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+			_ = WriteContentfulManagementResponse(w, http.StatusOK, apiKey)
+
+		case http.MethodPut:
+			var apiKeyRequestFields cm.ApiKeyRequestFields
+			if err := ReadContentfulManagementRequest(r, &apiKeyRequestFields); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return
 			}
 
-			_ = WriteContentfulManagementResponse(w, http.StatusOK, apiKey)
-
-		case http.MethodPut:
-			var apiKey cm.ApiKey
-			_ = ReadContentfulManagementRequest(r, &apiKey)
-
-			if existingAPIKey, found := ts.apiKeys.Get(spaceID, apiKeyID); found {
-				existingAPIKey.Name = apiKey.Name
-				existingAPIKey.Description = apiKey.Description
-				existingAPIKey.Environments = apiKey.Environments
-
-				_ = WriteContentfulManagementResponse(w, http.StatusOK, existingAPIKey)
-			} else {
-				apiKey.Sys = cm.ApiKeySys{
-					Type: cm.ApiKeySysTypeApiKey,
-					ID:   apiKeyID,
-				}
-
-				apiKey.AccessToken = apiKeyID
+			if apiKey == nil {
+				apiKey := NewAPIKeyFromRequestFields(spaceID, apiKeyID, apiKeyRequestFields)
 
 				ts.apiKeys.Set(spaceID, apiKeyID, &apiKey)
 
 				_ = WriteContentfulManagementResponse(w, http.StatusCreated, &apiKey)
+			} else {
+				UpdateAPIKeyFromRequestFields(apiKey, apiKeyRequestFields)
+
+				_ = WriteContentfulManagementResponse(w, http.StatusOK, apiKey)
 			}
 
 		case http.MethodDelete:
 			ts.apiKeys.Delete(spaceID, apiKeyID)
+
 			w.WriteHeader(http.StatusNoContent)
 
 		default:
@@ -81,9 +113,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 	}))
 }
 
-func (ts *ContentfulManagementTestServer) GetAPIKey(spaceID, apiKeyID string) (*cm.ApiKey, bool) {
-	return ts.apiKeys.Get(spaceID, apiKeyID)
-}
+// func (ts *ContentfulManagementTestServer) GetAPIKey(spaceID, apiKeyID string) (*cm.ApiKey, bool) {
+// 	return ts.apiKeys.Get(spaceID, apiKeyID)
+// }
 
 func (ts *ContentfulManagementTestServer) SetAPIKey(spaceID string, apiKey *cm.ApiKey) {
 	var previewAPIKeyID string

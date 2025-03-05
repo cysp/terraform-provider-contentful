@@ -11,20 +11,27 @@ func (ts *ContentfulManagementTestServer) setupSpaceRoleHandlers() {
 	defer ts.mu.Unlock()
 
 	ts.serveMux.Handle("/spaces/{spaceID}/roles", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		spaceID := r.PathValue("spaceID")
+
+		if spaceID == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+			return
+		}
+
 		ts.mu.Lock()
 		defer ts.mu.Unlock()
 
-		spaceID := r.PathValue("spaceID")
-
 		switch r.Method {
 		case http.MethodPost:
-			var role cm.Role
-			_ = ReadContentfulManagementRequest(r, &role)
+			var roleFields cm.RoleFields
+			if err := ReadContentfulManagementRequest(r, &roleFields); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
-			role.Sys = cm.RoleSys{
-				ID:   ts.generateResourceID(),
-				Type: cm.RoleSysTypeRole,
+				return
 			}
+
+			role := NewRoleFromFields(spaceID, ts.generateResourceID(), roleFields)
 
 			ts.roles.Set(spaceID, role.Sys.ID, &role)
 
@@ -36,38 +43,55 @@ func (ts *ContentfulManagementTestServer) setupSpaceRoleHandlers() {
 	}))
 
 	ts.serveMux.Handle("/spaces/{spaceID}/roles/{roleID}", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
-
 		spaceID := r.PathValue("spaceID")
 		roleID := r.PathValue("roleID")
 
-		role, exists := ts.roles.Get(spaceID, roleID)
-		if !exists {
+		if spaceID == NonexistentID || roleID == NonexistentID {
 			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
 			return
 		}
 
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
+		role, exists := ts.roles.Get(spaceID, roleID)
+
 		switch r.Method {
 		case http.MethodGet:
+			if !exists {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+				return
+			}
+
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, role)
 
 		case http.MethodPut:
-			var updatedRole cm.Role
-			_ = ReadContentfulManagementRequest(r, &updatedRole)
+			var roleFields cm.RoleFields
+			_ = ReadContentfulManagementRequest(r, &roleFields)
 
-			updatedRole.Sys = cm.RoleSys{
-				ID:   roleID,
-				Type: cm.RoleSysTypeRole,
+			if exists {
+				UpdateRoleFromFields(role, roleFields)
+
+				_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, role)
+			} else {
+				role := NewRoleFromFields(spaceID, roleID, roleFields)
+
+				ts.roles.Set(spaceID, role.Sys.ID, &role)
+
+				_ = WriteContentfulManagementResponse(responseWriter, http.StatusCreated, &role)
 			}
 
-			ts.roles.Set(spaceID, updatedRole.Sys.ID, &updatedRole)
-
-			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, &updatedRole)
-
 		case http.MethodDelete:
+			if !exists {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+				return
+			}
+
 			ts.roles.Delete(spaceID, roleID)
+
 			responseWriter.WriteHeader(http.StatusNoContent)
 
 		default:
@@ -83,11 +107,13 @@ func (ts *ContentfulManagementTestServer) GetRole(spaceID, roleID string) (*cm.R
 	return ts.roles.Get(spaceID, roleID)
 }
 
-func (ts *ContentfulManagementTestServer) SetRole(spaceID string, role *cm.Role) {
+func (ts *ContentfulManagementTestServer) SetRole(spaceID, roleID string, roleFields cm.RoleFields) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.roles.Set(spaceID, role.Sys.ID, role)
+	role := NewRoleFromFields(spaceID, roleID, roleFields)
+
+	ts.roles.Set(spaceID, role.Sys.ID, &role)
 }
 
 func (ts *ContentfulManagementTestServer) DeleteRole(spaceID, roleID string) {

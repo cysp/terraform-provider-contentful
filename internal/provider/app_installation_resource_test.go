@@ -26,6 +26,8 @@ func TestAccAppInstallationResource(t *testing.T) {
 		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
+	testserver.AddKnownAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{

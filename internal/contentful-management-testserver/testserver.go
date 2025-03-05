@@ -27,8 +27,8 @@ type ContentfulManagementTestServer struct {
 	// knownAppDefinitionIDs map[string]struct{}
 	apiKeys SpaceMap[*cm.ApiKey]
 
-	// knownAppDefinitionIDs map[string]struct{}
-	appInstallations SpaceEnvironmentMap[*cm.AppInstallation]
+	knownAppDefinitionIDs map[string]struct{}
+	appInstallations      SpaceEnvironmentMap[*cm.AppInstallation]
 
 	// knownAppDefinitionIDs map[string]struct{}
 	contentTypes     SpaceEnvironmentMap[*cm.ContentType]
@@ -44,13 +44,13 @@ type ContentfulManagementTestServer struct {
 
 func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 	testserver := &ContentfulManagementTestServer{
-		mu:                   &sync.Mutex{},
-		personalAccessTokens: make(map[string]*cm.PersonalAccessToken),
-		apiKeys:              NewSpaceMap[*cm.ApiKey](),
-		// knownAppDefinitionIDs: make(map[string]struct{}),
-		appInstallations: NewSpaceEnvironmentMap[*cm.AppInstallation](),
-		contentTypes:     NewSpaceEnvironmentMap[*cm.ContentType](),
-		editorInterfaces: NewSpaceEnvironmentMap[*cm.EditorInterface](),
+		mu:                    &sync.Mutex{},
+		personalAccessTokens:  make(map[string]*cm.PersonalAccessToken),
+		apiKeys:               NewSpaceMap[*cm.ApiKey](),
+		knownAppDefinitionIDs: make(map[string]struct{}),
+		appInstallations:      NewSpaceEnvironmentMap[*cm.AppInstallation](),
+		contentTypes:          NewSpaceEnvironmentMap[*cm.ContentType](),
+		editorInterfaces:      NewSpaceEnvironmentMap[*cm.EditorInterface](),
 		// roleIDsToCreate:      make([]string, 0),
 		roles:              NewSpaceMap[*cm.Role](),
 		previewAPIKeys:     NewSpaceMap[*cm.PreviewApiKey](),
@@ -76,12 +76,12 @@ func (ts *ContentfulManagementTestServer) Server() *httptest.Server {
 	return ts.httpTestServer
 }
 
-// func (td *ContentfulManagementTestServer) AddKnownAppDefinitionID(appDefinitionID string) {
-// 	td.mu.Lock()
-// 	defer td.mu.Unlock()
+func (td *ContentfulManagementTestServer) AddKnownAppDefinitionID(appDefinitionID string) {
+	td.mu.Lock()
+	defer td.mu.Unlock()
 
-// 	td.knownAppDefinitionIDs[appDefinitionID] = struct{}{}
-// }
+	td.knownAppDefinitionIDs[appDefinitionID] = struct{}{}
+}
 
 func (ts *ContentfulManagementTestServer) Reset() {
 	ts.mu.Lock()

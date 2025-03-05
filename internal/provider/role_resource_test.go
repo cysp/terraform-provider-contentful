@@ -19,11 +19,7 @@ func TestAccRoleResourceImport(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	testserver.SetRole("0p38pssr0fi3", &cm.Role{
-		Sys: cm.RoleSys{
-			Type: cm.RoleSysTypeRole,
-			ID:   "2EZrF9oDqi4AnsLNy21n6z",
-		},
+	testserver.SetRole("0p38pssr0fi3", "2EZrF9oDqi4AnsLNy21n6z", cm.RoleFields{
 		Name: "author",
 	})
 

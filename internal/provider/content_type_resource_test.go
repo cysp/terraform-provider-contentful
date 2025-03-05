@@ -23,11 +23,7 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 		"environment_id": config.StringVariable("test"),
 	}
 
-	testserver.SetContentType("0p38pssr0fi3", "test", &cm.ContentType{
-		Sys: cm.ContentTypeSys{
-			Type: cm.ContentTypeSysTypeContentType,
-			ID:   "author",
-		},
+	testserver.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
 		Name: "Author",
 	})
 

@@ -29,16 +29,7 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 			}
 
 			personalAccessTokenID := ts.generateResourceID()
-
-			personalAccessToken := cm.PersonalAccessToken{
-				Sys: cm.PersonalAccessTokenSys{
-					Type: cm.PersonalAccessTokenSysTypePersonalAccessToken,
-					ID:   personalAccessTokenID,
-				},
-				Name:   personalAccessTokenRequestFields.Name,
-				Scopes: personalAccessTokenRequestFields.Scopes,
-			}
-
+			personalAccessToken := NewPersonalAccessTokenFromRequestFields(personalAccessTokenID, personalAccessTokenRequestFields)
 			personalAccessToken.Token.SetTo(personalAccessTokenID)
 
 			if err := ts.validatePersonalAccessToken(&personalAccessToken); err != nil {
@@ -55,37 +46,60 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 	}))
 
 	ts.serveMux.Handle("/users/me/access_tokens/{id}", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
+		id := r.PathValue("id") //nolint:varnamelen
 
-		//nolint:gocritic
-		switch r.Method {
-		case http.MethodGet:
-			if personalAccessToken, exists := ts.personalAccessTokens[id]; exists {
-				_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, personalAccessToken)
+		if id == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
-				return
-			}
+			return
 		}
 
-		_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
+		personalAccessToken, exists := ts.personalAccessTokens[id]
+		if !exists {
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, personalAccessToken)
+
+		default:
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+		}
 	}))
 
 	ts.serveMux.Handle("/users/me/access_tokens/{id}/revoked", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
+		id := r.PathValue("id") //nolint:varnamelen
 
-		//nolint:gocritic
-		switch r.Method {
-		case http.MethodPut:
-			if personalAccessToken, exists := ts.personalAccessTokens[id]; exists {
-				personalAccessToken.RevokedAt = cm.NewOptNilDateTime(time.Now())
+		if id == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
-				_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, personalAccessToken)
-
-				return
-			}
+			return
 		}
 
-		_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
+		personalAccessToken, exists := ts.personalAccessTokens[id]
+		if !exists {
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+			return
+		}
+
+		switch r.Method {
+		case http.MethodPut:
+			personalAccessToken.RevokedAt.SetTo(time.Now())
+			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, personalAccessToken)
+
+		default:
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+		}
 	}))
 }
 

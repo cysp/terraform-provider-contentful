@@ -9,15 +9,24 @@ func (ts *ContentfulManagementTestServer) setupSpacePreviewAPIKeyHandlers() {
 		spaceID := r.PathValue("spaceID")
 		previewAPIKeyID := r.PathValue("previewAPIKeyID")
 
+		if spaceID == NonexistentID || previewAPIKeyID == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+			return
+		}
+
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
+		previewAPIKey, found := ts.previewAPIKeys.Get(spaceID, previewAPIKeyID)
+		if !found {
+			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+			return
+		}
+
 		switch r.Method {
 		case http.MethodGet:
-			previewAPIKey, found := ts.previewAPIKeys.Get(spaceID, previewAPIKeyID)
-			if !found {
-				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
-
-				return
-			}
-
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, previewAPIKey)
 
 		default:
