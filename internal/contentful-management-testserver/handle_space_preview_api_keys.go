@@ -18,15 +18,16 @@ func (ts *ContentfulManagementTestServer) setupSpacePreviewAPIKeyHandlers() {
 		ts.mu.Lock()
 		defer ts.mu.Unlock()
 
-		previewAPIKey, found := ts.previewAPIKeys.Get(spaceID, previewAPIKeyID)
-		if !found {
-			_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
-
-			return
-		}
+		previewAPIKey, exists := ts.previewAPIKeys.Get(spaceID, previewAPIKeyID)
 
 		switch r.Method {
 		case http.MethodGet:
+			if !exists {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+				return
+			}
+
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, previewAPIKey)
 
 		default:

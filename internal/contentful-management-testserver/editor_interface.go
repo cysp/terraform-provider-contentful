@@ -9,29 +9,7 @@ func NewEditorInterfaceFromFields(spaceID, environmentID, contentTypeID string, 
 		Sys: NewEditorInterfaceSys(spaceID, environmentID, contentTypeID),
 	}
 
-	convertOptNil(&editorInterface.EditorLayout, &editorInterfaceFields.EditorLayout, func(editorLayout []cm.EditorInterfaceFieldsEditorLayoutItem) []cm.EditorInterfaceEditorLayoutItem {
-		return convertSlice(editorLayout, func(editorLayoutItem cm.EditorInterfaceFieldsEditorLayoutItem) cm.EditorInterfaceEditorLayoutItem {
-			return cm.EditorInterfaceEditorLayoutItem(editorLayoutItem)
-		})
-	})
-
-	convertOptNil(&editorInterface.Controls, &editorInterfaceFields.Controls, func(controls []cm.EditorInterfaceFieldsControlsItem) []cm.EditorInterfaceControlsItem {
-		return convertSlice(controls, func(control cm.EditorInterfaceFieldsControlsItem) cm.EditorInterfaceControlsItem {
-			return cm.EditorInterfaceControlsItem(control)
-		})
-	})
-
-	convertOptNil(&editorInterface.GroupControls, &editorInterfaceFields.GroupControls, func(groupControl []cm.EditorInterfaceFieldsGroupControlsItem) []cm.EditorInterfaceGroupControlsItem {
-		return convertSlice(groupControl, func(groupControlItem cm.EditorInterfaceFieldsGroupControlsItem) cm.EditorInterfaceGroupControlsItem {
-			return cm.EditorInterfaceGroupControlsItem(groupControlItem)
-		})
-	})
-
-	convertOptNil(&editorInterface.Sidebar, &editorInterfaceFields.Sidebar, func(sidebar []cm.EditorInterfaceFieldsSidebarItem) []cm.EditorInterfaceSidebarItem {
-		return convertSlice(sidebar, func(sidebarItem cm.EditorInterfaceFieldsSidebarItem) cm.EditorInterfaceSidebarItem {
-			return cm.EditorInterfaceSidebarItem(sidebarItem)
-		})
-	})
+	UpdateEditorInterfaceFromFields(&editorInterface, editorInterfaceFields)
 
 	return editorInterface
 }
@@ -62,4 +40,30 @@ func NewEditorInterfaceSys(spaceID, environmentID, contentTypeID string) cm.Edit
 			},
 		},
 	}
+}
+
+func UpdateEditorInterfaceFromFields(editorInterface *cm.EditorInterface, editorInterfaceFields cm.EditorInterfaceFields) {
+	convertOptNil(&editorInterface.EditorLayout, &editorInterfaceFields.EditorLayout, func(editorLayout []cm.EditorInterfaceFieldsEditorLayoutItem) []cm.EditorInterfaceEditorLayoutItem {
+		return convertSlice(editorLayout, func(editorLayoutItem cm.EditorInterfaceFieldsEditorLayoutItem) cm.EditorInterfaceEditorLayoutItem {
+			return cm.EditorInterfaceEditorLayoutItem(editorLayoutItem)
+		})
+	})
+
+	convertOptNil(&editorInterface.Controls, &editorInterfaceFields.Controls, func(controls []cm.EditorInterfaceFieldsControlsItem) []cm.EditorInterfaceControlsItem {
+		return convertSlice(controls, func(control cm.EditorInterfaceFieldsControlsItem) cm.EditorInterfaceControlsItem {
+			return cm.EditorInterfaceControlsItem(control)
+		})
+	})
+
+	convertOptNil(&editorInterface.GroupControls, &editorInterfaceFields.GroupControls, func(groupControl []cm.EditorInterfaceFieldsGroupControlsItem) []cm.EditorInterfaceGroupControlsItem {
+		return convertSlice(groupControl, func(groupControlItem cm.EditorInterfaceFieldsGroupControlsItem) cm.EditorInterfaceGroupControlsItem {
+			return cm.EditorInterfaceGroupControlsItem(groupControlItem)
+		})
+	})
+
+	convertOptNil(&editorInterface.Sidebar, &editorInterfaceFields.Sidebar, func(sidebar []cm.EditorInterfaceFieldsSidebarItem) []cm.EditorInterfaceSidebarItem {
+		return convertSlice(sidebar, func(sidebarItem cm.EditorInterfaceFieldsSidebarItem) cm.EditorInterfaceSidebarItem {
+			return cm.EditorInterfaceSidebarItem(sidebarItem)
+		})
+	})
 }

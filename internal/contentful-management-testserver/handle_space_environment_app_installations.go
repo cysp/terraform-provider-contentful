@@ -39,7 +39,7 @@ func (ts *ContentfulManagementTestServer) SetupSpaceEnvironmentAppInstallationHa
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, appInstallation)
 
 		case http.MethodPut:
-			appInstallationFields := cm.AppInstallationFields{}
+			var appInstallationFields cm.AppInstallationFields
 			if err := ReadContentfulManagementRequest(r, &appInstallationFields); err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(responseWriter, err)
 

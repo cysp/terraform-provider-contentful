@@ -5,32 +5,13 @@ import (
 )
 
 func NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID string, contentTypeFields cm.ContentTypeRequestFields) cm.ContentType {
-	return cm.ContentType{
-		Sys:         NewContentTypeSys(spaceID, environmentID, contentTypeID),
-		Name:        contentTypeFields.Name,
-		Description: contentTypeFields.Description,
-		Fields: convertSlice(contentTypeFields.Fields, func(field cm.ContentTypeRequestFieldsFieldsItem) cm.ContentTypeFieldsItem {
-			contentTypeFieldItems := cm.OptContentTypeFieldsItemItems{}
-			convertOptNil(&contentTypeFieldItems, &field.Items, func(fieldItems cm.ContentTypeRequestFieldsFieldsItemItems) cm.ContentTypeFieldsItemItems {
-				return cm.ContentTypeFieldsItemItems(fieldItems)
-			})
-
-			return cm.ContentTypeFieldsItem{
-				ID:           field.ID,
-				Name:         field.Name,
-				Type:         field.Type,
-				LinkType:     field.LinkType,
-				Items:        contentTypeFieldItems,
-				Localized:    field.Localized,
-				Required:     field.Required,
-				Validations:  field.Validations,
-				Omitted:      field.Omitted,
-				Disabled:     field.Disabled,
-				DefaultValue: field.DefaultValue,
-			}
-		}),
-		DisplayField: cm.NewNilString(contentTypeFields.DisplayField),
+	contentType := cm.ContentType{
+		Sys: NewContentTypeSys(spaceID, environmentID, contentTypeID),
 	}
+
+	UpdateContentTypeFromRequestFields(&contentType, contentTypeFields)
+
+	return contentType
 }
 
 func NewContentTypeSys(spaceID, environmentID, contentTypeID string) cm.ContentTypeSys {
@@ -53,4 +34,33 @@ func NewContentTypeSys(spaceID, environmentID, contentTypeID string) cm.ContentT
 		ID:      contentTypeID,
 		Version: 1,
 	}
+}
+
+func UpdateContentTypeFromRequestFields(contentType *cm.ContentType, contentTypeFields cm.ContentTypeRequestFields) {
+	contentType.Name = contentTypeFields.Name
+
+	contentType.Description = contentTypeFields.Description
+
+	contentType.Fields = convertSlice(contentTypeFields.Fields, func(field cm.ContentTypeRequestFieldsFieldsItem) cm.ContentTypeFieldsItem {
+		contentTypeFieldItems := cm.OptContentTypeFieldsItemItems{}
+		convertOptNil(&contentTypeFieldItems, &field.Items, func(fieldItems cm.ContentTypeRequestFieldsFieldsItemItems) cm.ContentTypeFieldsItemItems {
+			return cm.ContentTypeFieldsItemItems(fieldItems)
+		})
+
+		return cm.ContentTypeFieldsItem{
+			ID:           field.ID,
+			Name:         field.Name,
+			Type:         field.Type,
+			LinkType:     field.LinkType,
+			Items:        contentTypeFieldItems,
+			Localized:    field.Localized,
+			Required:     field.Required,
+			Validations:  field.Validations,
+			Omitted:      field.Omitted,
+			Disabled:     field.Disabled,
+			DefaultValue: field.DefaultValue,
+		}
+	})
+
+	contentType.DisplayField = cm.NewNilString(contentTypeFields.DisplayField)
 }

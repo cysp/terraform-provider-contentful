@@ -6,35 +6,6 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-type ConstraintOptNil[T any] interface {
-	Get() (T, bool)
-	SetTo(value T)
-}
-
-func convertOptNil[I any, O any](o ConstraintOptNil[O], i ConstraintOptNil[I], f func(I) O) {
-	if value, ok := i.Get(); ok {
-		o.SetTo(f(value))
-	}
-}
-
-func convertSlice[I any, O any](i []I, f func(I) O) []O {
-	o := make([]O, len(i))
-	for index, item := range i {
-		o[index] = f(item)
-	}
-
-	return o
-}
-func convertMap[I any, O any](i map[string]I, f func(I) O) map[string]O {
-	o := make(map[string]O, len(i))
-
-	for key, item := range i {
-		o[key] = f(item)
-	}
-
-	return o
-}
-
 //nolint:cyclop,gocognit
 func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandlers() {
 	ts.serveMux.Handle("/spaces/{spaceID}/environments/{environmentID}/content_types/{contentTypeID}", http.HandlerFunc(func(responseWriter http.ResponseWriter, r *http.Request) {
@@ -51,9 +22,10 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 		ts.mu.Lock()
 		defer ts.mu.Unlock()
 
+		contentType, exists := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
+
 		switch r.Method {
 		case http.MethodGet:
-			contentType, exists := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
 			if !exists {
 				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
@@ -62,8 +34,6 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, contentType)
 		case http.MethodPut:
-			_, exists := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
-
 			var contentTypeRequestFields cm.ContentTypeRequestFields
 			if err := ReadContentfulManagementRequest(r, &contentTypeRequestFields); err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(responseWriter, err)
@@ -71,18 +41,25 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 				return
 			}
 
-			contentType := NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID, contentTypeRequestFields)
-
-			ts.contentTypes.Set(spaceID, environmentID, contentTypeID, &contentType)
-
-			statusCode := http.StatusCreated
 			if exists {
-				statusCode = http.StatusOK
+				UpdateContentTypeFromRequestFields(contentType, contentTypeRequestFields)
+
+				_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, contentType)
+			} else {
+				contentType := NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID, contentTypeRequestFields)
+
+				ts.contentTypes.Set(spaceID, environmentID, contentTypeID, &contentType)
+
+				_ = WriteContentfulManagementResponse(responseWriter, http.StatusCreated, &contentType)
 			}
 
-			_ = WriteContentfulManagementResponse(responseWriter, statusCode, &contentType)
-
 		case http.MethodDelete:
+			if !exists {
+				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
+
+				return
+			}
+
 			ts.contentTypes.Delete(spaceID, environmentID, contentTypeID)
 
 			responseWriter.WriteHeader(http.StatusNoContent)
@@ -106,9 +83,10 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 		ts.mu.Lock()
 		defer ts.mu.Unlock()
 
+		contentType, exists := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
+
 		switch r.Method {
 		case http.MethodPut:
-			contentType, exists := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
 			if !exists {
 				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
@@ -122,7 +100,6 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			_ = WriteContentfulManagementResponse(responseWriter, http.StatusOK, contentType)
 
 		case http.MethodDelete:
-			contentType, exists := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
 			if !exists {
 				_ = WriteContentfulManagementErrorNotFoundResponse(responseWriter)
 
