@@ -457,7 +457,7 @@ type ContentType struct {
 	Sys  ContentTypeSys `json:"sys"`
 	Name string         `json:"name"`
 	// Merged property.
-	Description NilString `json:"description"`
+	Description OptNilString `json:"description"`
 	// Merged property.
 	DisplayField NilString               `json:"displayField"`
 	Fields       []ContentTypeFieldsItem `json:"fields"`
@@ -474,7 +474,7 @@ func (s *ContentType) GetName() string {
 }
 
 // GetDescription returns the value of Description.
-func (s *ContentType) GetDescription() NilString {
+func (s *ContentType) GetDescription() OptNilString {
 	return s.Description
 }
 
@@ -499,7 +499,7 @@ func (s *ContentType) SetName(val string) {
 }
 
 // SetDescription sets the value of Description.
-func (s *ContentType) SetDescription(val NilString) {
+func (s *ContentType) SetDescription(val OptNilString) {
 	s.Description = val
 }
 
@@ -680,7 +680,7 @@ func (s *ContentTypeFieldsItemItems) SetValidations(val []jx.Raw) {
 // Ref: #/components/schemas/ContentTypeRequestFields
 type ContentTypeRequestFields struct {
 	Name         string                               `json:"name"`
-	Description  string                               `json:"description"`
+	Description  OptNilString                         `json:"description"`
 	DisplayField string                               `json:"displayField"`
 	Fields       []ContentTypeRequestFieldsFieldsItem `json:"fields"`
 }
@@ -691,7 +691,7 @@ func (s *ContentTypeRequestFields) GetName() string {
 }
 
 // GetDescription returns the value of Description.
-func (s *ContentTypeRequestFields) GetDescription() string {
+func (s *ContentTypeRequestFields) GetDescription() OptNilString {
 	return s.Description
 }
 
@@ -711,7 +711,7 @@ func (s *ContentTypeRequestFields) SetName(val string) {
 }
 
 // SetDescription sets the value of Description.
-func (s *ContentTypeRequestFields) SetDescription(val string) {
+func (s *ContentTypeRequestFields) SetDescription(val OptNilString) {
 	s.Description = val
 }
 
