@@ -356,6 +356,10 @@ components:
               type: string
               enum:
                 - EditorInterface
+            contentType:
+              $ref : '#/components/schemas/ContentTypeLink'
+          required:
+            - contentType
     EditorInterfaceFields:
       type: object
       properties:
@@ -469,6 +473,20 @@ components:
                   type: string
                   enum:
                     - Environment
+      required:
+        - sys
+    ContentTypeLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: '#/components/schemas/LinkSys'
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - ContentType
       required:
         - sys
     PersonalAccessTokenSys:
