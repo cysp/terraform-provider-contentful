@@ -655,6 +655,10 @@ func (s *ApiKeySys) encodeFields(e *jx.Encoder) {
 		s.Type.Encode(e)
 	}
 	{
+		e.FieldStart("space")
+		s.Space.Encode(e)
+	}
+	{
 		e.FieldStart("id")
 		e.Str(s.ID)
 	}
@@ -676,12 +680,13 @@ func (s *ApiKeySys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfApiKeySys = [5]string{
+var jsonFieldsNameOfApiKeySys = [6]string{
 	0: "type",
-	1: "id",
-	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
+	1: "space",
+	2: "id",
+	3: "version",
+	4: "createdAt",
+	5: "updatedAt",
 }
 
 // Decode decodes ApiKeySys from json.
@@ -703,8 +708,18 @@ func (s *ApiKeySys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
-		case "id":
+		case "space":
 			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Space.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.ID = string(v)
@@ -716,7 +731,7 @@ func (s *ApiKeySys) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -757,7 +772,7 @@ func (s *ApiKeySys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00001111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -1030,10 +1045,20 @@ func (s *AppInstallationSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("type")
 		s.Type.Encode(e)
 	}
+	{
+		e.FieldStart("space")
+		s.Space.Encode(e)
+	}
+	{
+		e.FieldStart("environment")
+		s.Environment.Encode(e)
+	}
 }
 
-var jsonFieldsNameOfAppInstallationSys = [1]string{
+var jsonFieldsNameOfAppInstallationSys = [3]string{
 	0: "type",
+	1: "space",
+	2: "environment",
 }
 
 // Decode decodes AppInstallationSys from json.
@@ -1055,6 +1080,26 @@ func (s *AppInstallationSys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
+		case "space":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Space.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "environment":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.Environment.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"environment\"")
+			}
 		default:
 			return d.Skip()
 		}
@@ -1065,7 +1110,7 @@ func (s *AppInstallationSys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -2280,6 +2325,14 @@ func (s *ContentTypeSys) encodeFields(e *jx.Encoder) {
 		s.Type.Encode(e)
 	}
 	{
+		e.FieldStart("space")
+		s.Space.Encode(e)
+	}
+	{
+		e.FieldStart("environment")
+		s.Environment.Encode(e)
+	}
+	{
 		e.FieldStart("id")
 		e.Str(s.ID)
 	}
@@ -2313,14 +2366,16 @@ func (s *ContentTypeSys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfContentTypeSys = [7]string{
+var jsonFieldsNameOfContentTypeSys = [9]string{
 	0: "type",
-	1: "id",
-	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
-	5: "publishedVersion",
-	6: "publishedAt",
+	1: "space",
+	2: "environment",
+	3: "id",
+	4: "version",
+	5: "createdAt",
+	6: "updatedAt",
+	7: "publishedVersion",
+	8: "publishedAt",
 }
 
 // Decode decodes ContentTypeSys from json.
@@ -2328,7 +2383,7 @@ func (s *ContentTypeSys) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode ContentTypeSys to nil")
 	}
-	var requiredBitSet [1]uint8
+	var requiredBitSet [2]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -2342,8 +2397,28 @@ func (s *ContentTypeSys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
-		case "id":
+		case "space":
 			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Space.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "environment":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.Environment.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"environment\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Str()
 				s.ID = string(v)
@@ -2355,7 +2430,7 @@ func (s *ContentTypeSys) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 4
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -2415,8 +2490,9 @@ func (s *ContentTypeSys) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [1]uint8{
-		0b00000111,
+	for i, mask := range [2]uint8{
+		0b00011111,
+		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -3968,6 +4044,14 @@ func (s *EditorInterfaceSys) encodeFields(e *jx.Encoder) {
 		s.Type.Encode(e)
 	}
 	{
+		e.FieldStart("space")
+		s.Space.Encode(e)
+	}
+	{
+		e.FieldStart("environment")
+		s.Environment.Encode(e)
+	}
+	{
 		e.FieldStart("id")
 		e.Str(s.ID)
 	}
@@ -3989,12 +4073,14 @@ func (s *EditorInterfaceSys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfEditorInterfaceSys = [5]string{
+var jsonFieldsNameOfEditorInterfaceSys = [7]string{
 	0: "type",
-	1: "id",
-	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
+	1: "space",
+	2: "environment",
+	3: "id",
+	4: "version",
+	5: "createdAt",
+	6: "updatedAt",
 }
 
 // Decode decodes EditorInterfaceSys from json.
@@ -4016,8 +4102,28 @@ func (s *EditorInterfaceSys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
-		case "id":
+		case "space":
 			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Space.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "environment":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.Environment.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"environment\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Str()
 				s.ID = string(v)
@@ -4029,7 +4135,7 @@ func (s *EditorInterfaceSys) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 4
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -4070,7 +4176,7 @@ func (s *EditorInterfaceSys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00011111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -6549,6 +6655,10 @@ func (s *PreviewApiKeySys) encodeFields(e *jx.Encoder) {
 		s.Type.Encode(e)
 	}
 	{
+		e.FieldStart("space")
+		s.Space.Encode(e)
+	}
+	{
 		e.FieldStart("id")
 		e.Str(s.ID)
 	}
@@ -6570,12 +6680,13 @@ func (s *PreviewApiKeySys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfPreviewApiKeySys = [5]string{
+var jsonFieldsNameOfPreviewApiKeySys = [6]string{
 	0: "type",
-	1: "id",
-	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
+	1: "space",
+	2: "id",
+	3: "version",
+	4: "createdAt",
+	5: "updatedAt",
 }
 
 // Decode decodes PreviewApiKeySys from json.
@@ -6597,8 +6708,18 @@ func (s *PreviewApiKeySys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
-		case "id":
+		case "space":
 			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Space.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.ID = string(v)
@@ -6610,7 +6731,7 @@ func (s *PreviewApiKeySys) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -6651,7 +6772,7 @@ func (s *PreviewApiKeySys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00001111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -7842,6 +7963,10 @@ func (s *RoleSys) encodeFields(e *jx.Encoder) {
 		s.Type.Encode(e)
 	}
 	{
+		e.FieldStart("space")
+		s.Space.Encode(e)
+	}
+	{
 		e.FieldStart("id")
 		e.Str(s.ID)
 	}
@@ -7863,12 +7988,13 @@ func (s *RoleSys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfRoleSys = [5]string{
+var jsonFieldsNameOfRoleSys = [6]string{
 	0: "type",
-	1: "id",
-	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
+	1: "space",
+	2: "id",
+	3: "version",
+	4: "createdAt",
+	5: "updatedAt",
 }
 
 // Decode decodes RoleSys from json.
@@ -7890,8 +8016,18 @@ func (s *RoleSys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
-		case "id":
+		case "space":
 			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Space.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.ID = string(v)
@@ -7903,7 +8039,7 @@ func (s *RoleSys) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -7944,7 +8080,7 @@ func (s *RoleSys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00001111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -8024,6 +8160,302 @@ func (s RoleSysType) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *RoleSysType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *SpaceLink) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *SpaceLink) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("sys")
+		s.Sys.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfSpaceLink = [1]string{
+	0: "sys",
+}
+
+// Decode decodes SpaceLink from json.
+func (s *SpaceLink) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode SpaceLink to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "sys":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Sys.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sys\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode SpaceLink")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfSpaceLink) {
+					name = jsonFieldsNameOfSpaceLink[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *SpaceLink) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *SpaceLink) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *SpaceLinkSys) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *SpaceLinkSys) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		e.FieldStart("id")
+		e.Str(s.ID)
+	}
+	{
+		e.FieldStart("linkType")
+		s.LinkType.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfSpaceLinkSys = [3]string{
+	0: "type",
+	1: "id",
+	2: "linkType",
+}
+
+// Decode decodes SpaceLinkSys from json.
+func (s *SpaceLinkSys) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode SpaceLinkSys to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.ID = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "linkType":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.LinkType.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"linkType\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode SpaceLinkSys")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfSpaceLinkSys) {
+					name = jsonFieldsNameOfSpaceLinkSys[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *SpaceLinkSys) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *SpaceLinkSys) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes SpaceLinkSysLinkType as json.
+func (s SpaceLinkSysLinkType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes SpaceLinkSysLinkType from json.
+func (s *SpaceLinkSysLinkType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode SpaceLinkSysLinkType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch SpaceLinkSysLinkType(v) {
+	case SpaceLinkSysLinkTypeSpace:
+		*s = SpaceLinkSysLinkTypeSpace
+	default:
+		*s = SpaceLinkSysLinkType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s SpaceLinkSysLinkType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *SpaceLinkSysLinkType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes SpaceLinkSysType as json.
+func (s SpaceLinkSysType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes SpaceLinkSysType from json.
+func (s *SpaceLinkSysType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode SpaceLinkSysType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch SpaceLinkSysType(v) {
+	case SpaceLinkSysTypeLink:
+		*s = SpaceLinkSysTypeLink
+	default:
+		*s = SpaceLinkSysType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s SpaceLinkSysType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *SpaceLinkSysType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -9572,6 +10004,10 @@ func (s *WebhookDefinitionSys) encodeFields(e *jx.Encoder) {
 		s.Type.Encode(e)
 	}
 	{
+		e.FieldStart("space")
+		s.Space.Encode(e)
+	}
+	{
 		e.FieldStart("id")
 		e.Str(s.ID)
 	}
@@ -9593,12 +10029,13 @@ func (s *WebhookDefinitionSys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfWebhookDefinitionSys = [5]string{
+var jsonFieldsNameOfWebhookDefinitionSys = [6]string{
 	0: "type",
-	1: "id",
-	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
+	1: "space",
+	2: "id",
+	3: "version",
+	4: "createdAt",
+	5: "updatedAt",
 }
 
 // Decode decodes WebhookDefinitionSys from json.
@@ -9620,8 +10057,18 @@ func (s *WebhookDefinitionSys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
-		case "id":
+		case "space":
 			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Space.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.ID = string(v)
@@ -9633,7 +10080,7 @@ func (s *WebhookDefinitionSys) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -9674,7 +10121,7 @@ func (s *WebhookDefinitionSys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00001111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
