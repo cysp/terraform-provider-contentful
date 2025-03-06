@@ -365,6 +365,130 @@ func (s *ApiKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/AppDefinitionLink
+type AppDefinitionLink struct {
+	Sys AppDefinitionLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppDefinitionLink) GetSys() AppDefinitionLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *AppDefinitionLink) SetSys(val AppDefinitionLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type AppDefinitionLinkSys struct {
+	// Merged property.
+	Type AppDefinitionLinkSysType `json:"type"`
+	ID   string                   `json:"id"`
+	// Merged property.
+	LinkType AppDefinitionLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionLinkSys) GetType() AppDefinitionLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *AppDefinitionLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *AppDefinitionLinkSys) GetLinkType() AppDefinitionLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionLinkSys) SetType(val AppDefinitionLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *AppDefinitionLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *AppDefinitionLinkSys) SetLinkType(val AppDefinitionLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type AppDefinitionLinkSysLinkType string
+
+const (
+	AppDefinitionLinkSysLinkTypeAppDefinition AppDefinitionLinkSysLinkType = "AppDefinition"
+)
+
+// AllValues returns all AppDefinitionLinkSysLinkType values.
+func (AppDefinitionLinkSysLinkType) AllValues() []AppDefinitionLinkSysLinkType {
+	return []AppDefinitionLinkSysLinkType{
+		AppDefinitionLinkSysLinkTypeAppDefinition,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppDefinitionLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppDefinitionLinkSysLinkTypeAppDefinition:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppDefinitionLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch AppDefinitionLinkSysLinkType(data) {
+	case AppDefinitionLinkSysLinkTypeAppDefinition:
+		*s = AppDefinitionLinkSysLinkTypeAppDefinition
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type AppDefinitionLinkSysType string
+
+const (
+	AppDefinitionLinkSysTypeLink AppDefinitionLinkSysType = "Link"
+)
+
+// AllValues returns all AppDefinitionLinkSysType values.
+func (AppDefinitionLinkSysType) AllValues() []AppDefinitionLinkSysType {
+	return []AppDefinitionLinkSysType{
+		AppDefinitionLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppDefinitionLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppDefinitionLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppDefinitionLinkSysType) UnmarshalText(data []byte) error {
+	switch AppDefinitionLinkSysType(data) {
+	case AppDefinitionLinkSysTypeLink:
+		*s = AppDefinitionLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Merged schema.
 // Ref: #/components/schemas/AppInstallation
 type AppInstallation struct {
@@ -414,9 +538,10 @@ func (s *AppInstallationFields) SetParameters(val jx.Raw) {
 // Ref: #/components/schemas/AppInstallationSys
 type AppInstallationSys struct {
 	// Merged property.
-	Type        AppInstallationSysType `json:"type"`
-	Space       SpaceLink              `json:"space"`
-	Environment EnvironmentLink        `json:"environment"`
+	Type          AppInstallationSysType `json:"type"`
+	Space         SpaceLink              `json:"space"`
+	Environment   EnvironmentLink        `json:"environment"`
+	AppDefinition AppDefinitionLink      `json:"appDefinition"`
 }
 
 // GetType returns the value of Type.
@@ -434,6 +559,11 @@ func (s *AppInstallationSys) GetEnvironment() EnvironmentLink {
 	return s.Environment
 }
 
+// GetAppDefinition returns the value of AppDefinition.
+func (s *AppInstallationSys) GetAppDefinition() AppDefinitionLink {
+	return s.AppDefinition
+}
+
 // SetType sets the value of Type.
 func (s *AppInstallationSys) SetType(val AppInstallationSysType) {
 	s.Type = val
@@ -447,6 +577,11 @@ func (s *AppInstallationSys) SetSpace(val SpaceLink) {
 // SetEnvironment sets the value of Environment.
 func (s *AppInstallationSys) SetEnvironment(val EnvironmentLink) {
 	s.Environment = val
+}
+
+// SetAppDefinition sets the value of AppDefinition.
+func (s *AppInstallationSys) SetAppDefinition(val AppDefinitionLink) {
+	s.AppDefinition = val
 }
 
 // Merged schema.

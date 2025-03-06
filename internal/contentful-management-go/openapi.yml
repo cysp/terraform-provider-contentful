@@ -250,6 +250,10 @@ components:
               type: string
               enum:
                 - AppInstallation
+            appDefinition:
+              $ref: '#/components/schemas/AppDefinitionLink'
+          required:
+            - appDefinition
     AppInstallationFields:
       type: object
       properties:
@@ -473,6 +477,20 @@ components:
                   type: string
                   enum:
                     - Environment
+      required:
+        - sys
+    AppDefinitionLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: '#/components/schemas/LinkSys'
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - AppDefinition
       required:
         - sys
     ContentTypeLink:
