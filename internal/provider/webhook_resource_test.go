@@ -30,7 +30,7 @@ func TestAccWebhookResourceImport(t *testing.T) {
 				ConfigVariables:    configVariables,
 				ResourceName:       "contentful_webhook.test",
 				ImportState:        true,
-				ImportStateId:      "0p38pssr0fi3/4HJlhYqVjoWwxFmvOj5r1Q",
+				ImportStateId:      "0p38pssr0fi3/6umfVRwmSpcSRdc1jSW6qQ",
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
