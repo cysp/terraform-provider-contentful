@@ -269,6 +269,7 @@ components:
           type: string
         description:
           type: string
+          nullable: true
         displayField:
           type: string
         fields:
@@ -312,7 +313,6 @@ components:
               - type
       required:
         - name
-        - description
         - displayField
         - fields
     ContentType:
