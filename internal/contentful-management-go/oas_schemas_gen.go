@@ -710,6 +710,130 @@ func (s *ContentTypeFieldsItemItems) SetValidations(val []jx.Raw) {
 	s.Validations = val
 }
 
+// Ref: #/components/schemas/ContentTypeLink
+type ContentTypeLink struct {
+	Sys ContentTypeLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ContentTypeLink) GetSys() ContentTypeLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *ContentTypeLink) SetSys(val ContentTypeLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type ContentTypeLinkSys struct {
+	// Merged property.
+	Type ContentTypeLinkSysType `json:"type"`
+	ID   string                 `json:"id"`
+	// Merged property.
+	LinkType ContentTypeLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeLinkSys) GetType() ContentTypeLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ContentTypeLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ContentTypeLinkSys) GetLinkType() ContentTypeLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeLinkSys) SetType(val ContentTypeLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ContentTypeLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ContentTypeLinkSys) SetLinkType(val ContentTypeLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type ContentTypeLinkSysLinkType string
+
+const (
+	ContentTypeLinkSysLinkTypeContentType ContentTypeLinkSysLinkType = "ContentType"
+)
+
+// AllValues returns all ContentTypeLinkSysLinkType values.
+func (ContentTypeLinkSysLinkType) AllValues() []ContentTypeLinkSysLinkType {
+	return []ContentTypeLinkSysLinkType{
+		ContentTypeLinkSysLinkTypeContentType,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentTypeLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentTypeLinkSysLinkTypeContentType:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentTypeLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch ContentTypeLinkSysLinkType(data) {
+	case ContentTypeLinkSysLinkTypeContentType:
+		*s = ContentTypeLinkSysLinkTypeContentType
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type ContentTypeLinkSysType string
+
+const (
+	ContentTypeLinkSysTypeLink ContentTypeLinkSysType = "Link"
+)
+
+// AllValues returns all ContentTypeLinkSysType values.
+func (ContentTypeLinkSysType) AllValues() []ContentTypeLinkSysType {
+	return []ContentTypeLinkSysType{
+		ContentTypeLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentTypeLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentTypeLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentTypeLinkSysType) UnmarshalText(data []byte) error {
+	switch ContentTypeLinkSysType(data) {
+	case ContentTypeLinkSysTypeLink:
+		*s = ContentTypeLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/components/schemas/ContentTypeRequestFields
 type ContentTypeRequestFields struct {
 	Name         string                               `json:"name"`
@@ -1534,6 +1658,7 @@ type EditorInterfaceSys struct {
 	Version     int                    `json:"version"`
 	CreatedAt   OptDateTime            `json:"createdAt"`
 	UpdatedAt   OptDateTime            `json:"updatedAt"`
+	ContentType ContentTypeLink        `json:"contentType"`
 }
 
 // GetType returns the value of Type.
@@ -1571,6 +1696,11 @@ func (s *EditorInterfaceSys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
+// GetContentType returns the value of ContentType.
+func (s *EditorInterfaceSys) GetContentType() ContentTypeLink {
+	return s.ContentType
+}
+
 // SetType sets the value of Type.
 func (s *EditorInterfaceSys) SetType(val EditorInterfaceSysType) {
 	s.Type = val
@@ -1604,6 +1734,11 @@ func (s *EditorInterfaceSys) SetCreatedAt(val OptDateTime) {
 // SetUpdatedAt sets the value of UpdatedAt.
 func (s *EditorInterfaceSys) SetUpdatedAt(val OptDateTime) {
 	s.UpdatedAt = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *EditorInterfaceSys) SetContentType(val ContentTypeLink) {
+	s.ContentType = val
 }
 
 // Merged schema.
