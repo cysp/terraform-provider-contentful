@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -13,12 +15,19 @@ import (
 func TestAccContentTypeResourceImport(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
 		"environment_id": config.StringVariable("test"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	testserver.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
+		Name: "Author",
+	})
+
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -65,12 +74,15 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
 		"environment_id": config.StringVariable("test"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -93,12 +105,15 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
 		"environment_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -112,6 +127,9 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 func TestAccContentTypeResourceCreate(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -120,7 +138,7 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -133,6 +151,9 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 func TestAccContentTypeResourceUpdate(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -141,7 +162,7 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -190,6 +211,9 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 func TestAccContentTypeResourceDeleted(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -198,7 +222,7 @@ func TestAccContentTypeResourceDeleted(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),

@@ -4,5 +4,6 @@ resource "contentful_role" "test" {
   name = "Test"
 
   permissions = {}
-  policies    = []
+
+  policies = []
 }

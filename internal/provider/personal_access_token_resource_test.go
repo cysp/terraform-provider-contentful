@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,13 +13,16 @@ import (
 func TestAccPersonalAccessTokenResource(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -39,13 +43,16 @@ func TestAccPersonalAccessTokenResource(t *testing.T) {
 func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -59,13 +66,16 @@ func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 func TestAccPersonalAccessTokenResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

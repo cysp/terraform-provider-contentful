@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"testing"
 
+	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -14,6 +15,9 @@ import (
 func TestAccDeliveryApiKeyResource(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	apiKeyName := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -22,7 +26,7 @@ func TestAccDeliveryApiKeyResource(t *testing.T) {
 		"test_delivery_api_key_name": config.StringVariable(apiKeyName),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -63,6 +67,9 @@ func TestAccDeliveryApiKeyResource(t *testing.T) {
 func TestAccDeliveryApiKeyResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
 	apiKeyName := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -71,7 +78,7 @@ func TestAccDeliveryApiKeyResourceImportNotFound(t *testing.T) {
 		"test_delivery_api_key_name": config.StringVariable(apiKeyName),
 	}
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
