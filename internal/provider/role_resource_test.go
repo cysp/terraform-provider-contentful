@@ -8,6 +8,7 @@ import (
 	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 //nolint:paralleltest
@@ -91,6 +92,43 @@ func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+			},
+		},
+	})
+}
+
+//nolint:paralleltest
+func TestAccRoleResourceDeleted(t *testing.T) {
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
+	configVariables := config.Variables{
+		"space_id": config.StringVariable("0p38pssr0fi3"),
+	}
+
+	testserver.SetRole("0p38pssr0fi3", "test", cm.RoleFields{
+		Name: "Test",
+	})
+
+	ContentfulProviderMockedResourceTest(t, testserver.Server(), resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
+			},
+			{
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
+			},
+			{
+				ConfigDirectory:    config.TestStepDirectory(),
+				ConfigVariables:    configVariables,
+				ExpectNonEmptyPlan: true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_role.test", plancheck.ResourceActionCreate),
+					},
+				},
 			},
 		},
 	})

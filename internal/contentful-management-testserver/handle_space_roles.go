@@ -105,3 +105,10 @@ func (ts *ContentfulManagementTestServer) SetRole(spaceID, roleID string, roleFi
 
 	ts.roles.Set(spaceID, role.Sys.ID, &role)
 }
+
+func (ts *ContentfulManagementTestServer) DeleteRole(spaceID, roleID string) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	ts.roles.Delete(spaceID, roleID)
+}
