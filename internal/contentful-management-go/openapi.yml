@@ -110,15 +110,12 @@ components:
             - space
     BaseSysWithSpaceEnvironment:
       allOf:
-        - $ref: '#/components/schemas/BaseSys'
+        - $ref: '#/components/schemas/BaseSysWithSpace'
         - type: object
           properties:
-            space:
-              $ref: '#/components/schemas/SpaceLink'
             environment:
               $ref: '#/components/schemas/EnvironmentLink'
           required:
-            - space
             - environment
     BaseSysWithId:
       allOf:
