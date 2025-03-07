@@ -44,7 +44,7 @@ func TestRoleModelRoundTripToRoleFields(t *testing.T) {
 
 	assert.Equal(t, "Reader", model.Name.ValueString())
 	assert.Equal(t, "Read access to content", model.Description.ValueString())
-	assert.Equal(t, "abcdef", model.RoleId.ValueString())
+	assert.Equal(t, "abcdef", model.RoleID.ValueString())
 
 	req, diags := model.ToRoleFields(ctx)
 

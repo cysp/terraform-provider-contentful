@@ -58,7 +58,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	currentVersion := 1
 
 	params := cm.CreateRoleParams{
-		SpaceID: data.SpaceId.ValueString(),
+		SpaceID: data.SpaceID.ValueString(),
 	}
 
 	request, requestDiags := data.ToRoleFields(ctx)
@@ -105,8 +105,8 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	params := cm.GetRoleParams{
-		SpaceID: data.SpaceId.ValueString(),
-		RoleID:  data.RoleId.ValueString(),
+		SpaceID: data.SpaceID.ValueString(),
+		RoleID:  data.RoleID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetRole(ctx, params)
@@ -159,8 +159,8 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.UpdateRoleParams{
-		SpaceID:            data.SpaceId.ValueString(),
-		RoleID:             data.RoleId.ValueString(),
+		SpaceID:            data.SpaceID.ValueString(),
+		RoleID:             data.RoleID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
@@ -207,8 +207,8 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	params := cm.DeleteRoleParams{
-		SpaceID: data.SpaceId.ValueString(),
-		RoleID:  data.RoleId.ValueString(),
+		SpaceID: data.SpaceID.ValueString(),
+		RoleID:  data.RoleID.ValueString(),
 	}
 
 	if resp.Diagnostics.HasError() {

@@ -6,6 +6,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -18,7 +19,7 @@ func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies types.Li
 		return nil, diags
 	}
 
-	policiesValues := make([]PoliciesValue, len(policies.Elements()))
+	policiesValues := make([]RolePolicyValue, len(policies.Elements()))
 	diags.Append(policies.ElementsAs(ctx, &policiesValues, false)...)
 
 	rolePoliciesItems := make([]cm.RoleFieldsPoliciesItem, len(policies.Elements()))
@@ -26,7 +27,7 @@ func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies types.Li
 	for index, policiesValueElement := range policiesValues {
 		path := path.AtListIndex(index)
 
-		policiesItem, policiesItemDiags := policiesValueElement.ToRoleFieldsPoliciesItem(ctx, path)
+		policiesItem, policiesItemDiags := ToRoleFieldsPoliciesItem(ctx, path, policiesValueElement)
 		diags.Append(policiesItemDiags...)
 
 		rolePoliciesItems[index] = policiesItem
@@ -35,15 +36,15 @@ func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies types.Li
 	return rolePoliciesItems, diags
 }
 
-func (m *PoliciesValue) ToRoleFieldsPoliciesItem(ctx context.Context, path path.Path) (cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
+func ToRoleFieldsPoliciesItem(ctx context.Context, path path.Path, policy RolePolicyValue) (cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	effect := m.Effect.ValueString()
+	effect := policy.Effect.ValueString()
 
-	actions, actionsDiags := ToRoleFieldsPoliciesItemActions(ctx, path.AtName("actions"), m.Actions)
+	actions, actionsDiags := ToRoleFieldsPoliciesItemActions(ctx, path.AtName("actions"), policy.Actions)
 	diags.Append(actionsDiags...)
 
-	constraint, constraintDiags := ToOptRoleFieldsPoliciesItemConstraint(ctx, path.AtName("constraint"), m.Constraint)
+	constraint, constraintDiags := ToOptRoleFieldsPoliciesItemConstraint(ctx, path.AtName("constraint"), policy.Constraint)
 	diags.Append(constraintDiags...)
 
 	return cm.RoleFieldsPoliciesItem{
@@ -72,7 +73,7 @@ func ToRoleFieldsPoliciesItemActions(ctx context.Context, _ path.Path, actions t
 	}, diags
 }
 
-func ToOptRoleFieldsPoliciesItemConstraint(_ context.Context, _ path.Path, constraint types.String) (jx.Raw, diag.Diagnostics) {
+func ToOptRoleFieldsPoliciesItemConstraint(_ context.Context, _ path.Path, constraint jsontypes.Normalized) (jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if constraint.IsNull() {
