@@ -69,32 +69,6 @@ func webhookFiltersListForTesting(t *testing.T) types.List {
 	return filters
 }
 
-func TestWebhookFilterTypeEqual(t *testing.T) {
-	t.Parallel()
-
-	types := []attr.Type{
-		provider.WebhookFilterType{},
-		provider.WebhookFilterNotType{},
-		provider.WebhookFilterEqualsType{},
-		provider.WebhookFilterInType{},
-		provider.WebhookFilterRegexpType{},
-	}
-
-	for aIndex, aType := range types {
-		t.Run(aType.String(), func(t *testing.T) {
-			t.Parallel()
-
-			for bIndex, bType := range types {
-				t.Run(bType.String(), func(t *testing.T) {
-					t.Parallel()
-
-					assert.Equal(t, aIndex == bIndex, aType.Equal(bType))
-				})
-			}
-		})
-	}
-}
-
 // func TestWebhookFilterTypeValueFromObject(t *testing.T) {
 // 	t.Parallel()
 

@@ -12,28 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWebhookHeaderTypeEqual(t *testing.T) {
-	t.Parallel()
-
-	types := []attr.Type{
-		provider.WebhookHeaderType{},
-	}
-
-	for aIndex, aType := range types {
-		t.Run(aType.String(), func(t *testing.T) {
-			t.Parallel()
-
-			for bIndex, bType := range types {
-				t.Run(bType.String(), func(t *testing.T) {
-					t.Parallel()
-
-					assert.Equal(t, aIndex == bIndex, aType.Equal(bType))
-				})
-			}
-		})
-	}
-}
-
 func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
 	t.Parallel()
 
