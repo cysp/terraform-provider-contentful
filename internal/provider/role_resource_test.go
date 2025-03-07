@@ -72,3 +72,26 @@ func TestAccRoleResourceImportNotFound(t *testing.T) {
 		},
 	})
 }
+
+//nolint:paralleltest
+func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
+	configVariables := config.Variables{
+		"space_id": config.StringVariable("0p38pssr0fi3"),
+	}
+
+	ContentfulProviderMockedResourceTest(t, testserver.Server(), resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
+			},
+			{
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
+			},
+		},
+	})
+}
