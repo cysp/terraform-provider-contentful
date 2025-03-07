@@ -147,6 +147,7 @@ func (v WebhookFilterNotValue) String() string {
 	return ""
 }
 
+//nolint:dupl
 func (v WebhookFilterNotValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	tft := WebhookFilterNotType{}.TerraformType(ctx)
 

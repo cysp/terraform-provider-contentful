@@ -14,7 +14,7 @@ func (model *RoleModel) ReadFromResponse(ctx context.Context, role *cm.Role) dia
 
 	// SpaceId is already known
 
-	model.RoleId = types.StringValue(role.Sys.ID)
+	model.RoleID = types.StringValue(role.Sys.ID)
 
 	model.Name = types.StringValue(role.Name)
 	model.Description = types.StringPointerValue(role.Description.ValueStringPointer())

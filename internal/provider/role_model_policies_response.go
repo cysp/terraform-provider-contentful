@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,7 +16,7 @@ import (
 func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) (basetypes.ListValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	policiesValues := make([]PoliciesValue, len(policies))
+	policiesValues := make([]RolePolicyValue, len(policies))
 
 	for index, item := range policies {
 		path := path.AtListIndex(index)
@@ -26,13 +27,13 @@ func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, polic
 		policiesValues[index] = policiesValue
 	}
 
-	policiesListValue, policiesListValueDiags := basetypes.NewListValueFrom(ctx, PoliciesValue{}.Type(ctx), policiesValues)
+	policiesListValue, policiesListValueDiags := basetypes.NewListValueFrom(ctx, RolePolicyValue{}.Type(ctx), policiesValues)
 	diags.Append(policiesListValueDiags...)
 
 	return policiesListValue, diags
 }
 
-func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.RolePoliciesItem) (PoliciesValue, diag.Diagnostics) {
+func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.RolePoliciesItem) (RolePolicyValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	effect, err := item.Effect.MarshalText()
@@ -40,7 +41,7 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 		diags.AddAttributeError(path.AtName("effect"), "Failed to read policy effect", err.Error())
 	}
 
-	value := PoliciesValue{
+	value := RolePolicyValue{
 		Effect: types.StringValue(string(effect)),
 		state:  attr.ValueStateKnown,
 	}
@@ -56,9 +57,9 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 			diags.AddAttributeError(path.AtName("constraint"), "Failed to read policy constraint", err.Error())
 		}
 
-		value.Constraint = types.StringValue(string(constraint))
+		value.Constraint = jsontypes.NewNormalizedValue(string(constraint))
 	} else {
-		value.Constraint = types.StringNull()
+		value.Constraint = jsontypes.NewNormalizedNull()
 	}
 
 	return value, diags
