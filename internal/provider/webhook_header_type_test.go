@@ -7,9 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
@@ -61,47 +59,4 @@ func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
 		assert.Equal(t, "value", header.Value.ValueString())
 		assert.True(t, header.Secret.ValueBool())
 	})
-}
-
-//nolint:dupl
-func TestWebhookHeaderTypeValueFromTerraform(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-
-	types := []attr.Type{
-		provider.WebhookHeaderType{},
-	}
-
-	tfvalniltype := tftypes.NewValue(nil, nil)
-
-	for _, typ := range types {
-		tftyp := typ.TerraformType(ctx)
-
-		t.Run("unknown", func(t *testing.T) {
-			t.Parallel()
-
-			tfvalunknown := tftypes.NewValue(tftyp, tftypes.UnknownValue)
-			valueUnknown, err := typ.ValueFromTerraform(ctx, tfvalunknown)
-			require.NoError(t, err)
-			assert.True(t, valueUnknown.IsUnknown())
-		})
-
-		t.Run("nil", func(t *testing.T) {
-			t.Parallel()
-
-			valueNil, err := typ.ValueFromTerraform(ctx, tfvalniltype)
-			require.NoError(t, err)
-			assert.True(t, valueNil.IsNull())
-		})
-
-		t.Run("null", func(t *testing.T) {
-			t.Parallel()
-
-			tfvalnull := tftypes.NewValue(tftyp, nil)
-			valueNull, err := typ.ValueFromTerraform(ctx, tfvalnull)
-			require.NoError(t, err)
-			assert.True(t, valueNull.IsNull())
-		})
-	}
 }

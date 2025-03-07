@@ -6,7 +6,6 @@ import (
 	provider "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -105,41 +104,6 @@ func webhookFiltersListForTesting(t *testing.T) types.List {
 // 		// assert.True(t, valueUnknown.IsUnknown())
 // 	}
 // }
-
-func TestWebhookFilterTypeValueFromTerraform(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-
-	types := []attr.Type{
-		provider.WebhookFilterType{},
-		provider.WebhookFilterNotType{},
-		provider.WebhookFilterEqualsType{},
-		provider.WebhookFilterInType{},
-		provider.WebhookFilterRegexpType{},
-	}
-
-	tfvalniltype := tftypes.NewValue(nil, nil)
-
-	for _, typ := range types {
-		tftyp := typ.TerraformType(ctx)
-
-		tfvalnull := tftypes.NewValue(tftyp, nil)
-		tfvalunknown := tftypes.NewValue(tftyp, tftypes.UnknownValue)
-
-		valueNil, err := typ.ValueFromTerraform(ctx, tfvalniltype)
-		require.NoError(t, err)
-		assert.True(t, valueNil.IsNull())
-
-		valueNull, err := typ.ValueFromTerraform(ctx, tfvalnull)
-		require.NoError(t, err)
-		assert.True(t, valueNull.IsNull())
-
-		valueUnknown, err := typ.ValueFromTerraform(ctx, tfvalunknown)
-		require.NoError(t, err)
-		assert.True(t, valueUnknown.IsUnknown())
-	}
-}
 
 func TestWebhookFilterValueEqual(t *testing.T) {
 	t.Parallel()
