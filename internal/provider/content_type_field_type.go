@@ -10,6 +10,53 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
+type FieldsType struct {
+	basetypes.ObjectType
+}
+
+var _ basetypes.ObjectTypable = FieldsType{}
+
+func (t FieldsType) Equal(o attr.Type) bool {
+	other, ok := o.(FieldsType)
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+//nolint:ireturn
+func (t FieldsType) ValueType(_ context.Context) attr.Value {
+	return FieldsValue{}
+}
+
+func (t FieldsType) String() string {
+	return "FieldsType"
+}
+
+//nolint:ireturn
+func (t FieldsType) TerraformType(ctx context.Context) tftypes.Type {
+	return tftypes.Object{
+		AttributeTypes: t.TerraformAttributeTypes(ctx),
+	}
+}
+
+func (t FieldsType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+	return map[string]tftypes.Type{
+		"id":            tftypes.String,
+		"name":          tftypes.String,
+		"type":          tftypes.String,
+		"disabled":      tftypes.Bool,
+		"omitted":       tftypes.Bool,
+		"required":      tftypes.Bool,
+		"default_value": tftypes.String,
+		"items":         ItemsType{}.TerraformType(ctx),
+		"link_type":     tftypes.String,
+		"localized":     tftypes.Bool,
+		"validations":   tftypes.List{ElementType: tftypes.String},
+	}
+}
+
 func (t FieldsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	if in.Type() == nil {
 		return NewFieldsValueNull(), nil
@@ -48,30 +95,6 @@ func (t FieldsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (a
 	}
 
 	return NewFieldsValueMust(FieldsValue{}.AttributeTypes(ctx), attributes), nil
-}
-
-func (t FieldsType) ValueType(ctx context.Context) attr.Value {
-	return FieldsValue{}
-}
-
-var _ basetypes.ObjectTypable = FieldsType{}
-
-type FieldsType struct {
-	basetypes.ObjectType
-}
-
-func (t FieldsType) Equal(o attr.Type) bool {
-	other, ok := o.(FieldsType)
-
-	if !ok {
-		return false
-	}
-
-	return t.ObjectType.Equal(other.ObjectType)
-}
-
-func (t FieldsType) String() string {
-	return "FieldsType"
 }
 
 func (t FieldsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {

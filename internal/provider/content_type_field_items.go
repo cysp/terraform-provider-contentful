@@ -473,3 +473,27 @@ func (v ItemsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		},
 	}
 }
+
+
+//nolint:ireturn
+func (t ItemsType) TerraformType(ctx context.Context) tftypes.Type {
+	return tftypes.Object{
+		AttributeTypes: t.TerraformAttributeTypes(ctx),
+	}
+}
+
+func (t ItemsType) TerraformAttributeTypes(_ context.Context) map[string]tftypes.Type {
+	return map[string]tftypes.Type{
+		"default_value": tftypes.String,
+		"disabled":      tftypes.Bool,
+		"id":            tftypes.String,
+		"items":         tftypes.Object{},
+		"link_type":     tftypes.String,
+		"localized":     tftypes.Bool,
+		"name":          tftypes.String,
+		"omitted":       tftypes.Bool,
+		"required":      tftypes.Bool,
+		"type":          tftypes.String,
+		"validations":   tftypes.List{ElementType: tftypes.String},
+	}
+}

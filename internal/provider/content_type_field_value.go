@@ -3,26 +3,30 @@ package provider
 import (
 	"context"
 	"fmt"
-	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 type FieldsValue struct {
-	DefaultValue basetypes.StringValue `tfsdk:"default_value"`
-	Disabled     basetypes.BoolValue   `tfsdk:"disabled"`
 	Id           basetypes.StringValue `tfsdk:"id"`
-	Items        basetypes.ObjectValue `tfsdk:"items"`
-	LinkType     basetypes.StringValue `tfsdk:"link_type"`
-	Localized    basetypes.BoolValue   `tfsdk:"localized"`
 	Name         basetypes.StringValue `tfsdk:"name"`
+	FieldsType   basetypes.StringValue `tfsdk:"type"`
+	LinkType     basetypes.StringValue `tfsdk:"link_type"`
+	Disabled     basetypes.BoolValue   `tfsdk:"disabled"`
 	Omitted      basetypes.BoolValue   `tfsdk:"omitted"`
 	Required     basetypes.BoolValue   `tfsdk:"required"`
-	FieldsType   basetypes.StringValue `tfsdk:"type"`
+	DefaultValue basetypes.StringValue `tfsdk:"default_value"`
+	Items        basetypes.ObjectValue `tfsdk:"items"`
+	Localized    basetypes.BoolValue   `tfsdk:"localized"`
 	Validations  basetypes.ListValue   `tfsdk:"validations"`
 	state        attr.ValueState
 }
@@ -41,294 +45,107 @@ func NewFieldsValueUnknown() FieldsValue {
 	}
 }
 
-func NewFieldsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (FieldsValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
-	ctx := context.Background()
-
-	for name, attributeType := range attributeTypes {
-		attribute, ok := attributes[name]
-
-		if !ok {
-			diags.AddError(
-				"Missing FieldsValue Attribute Value",
-				"While creating a FieldsValue value, a missing attribute value was detected. "+
-					"A FieldsValue must contain values for all attributes, even if null or unknown. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("FieldsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
-			)
-
-			continue
-		}
-
-		if !attributeType.Equal(attribute.Type(ctx)) {
-			diags.AddError(
-				"Invalid FieldsValue Attribute Type",
-				"While creating a FieldsValue value, an invalid attribute value was detected. "+
-					"A FieldsValue must use a matching attribute type for the value. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("FieldsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("FieldsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
-			)
-		}
+func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Required: true,
+		},
+		"name": schema.StringAttribute{
+			Required: true,
+		},
+		"type": schema.StringAttribute{
+			Required: true,
+		},
+		"link_type": schema.StringAttribute{
+			Optional: true,
+		},
+		"disabled": schema.BoolAttribute{
+			Optional: true,
+			Computed: true,
+			Default:  booldefault.StaticBool(false),
+		},
+		"omitted": schema.BoolAttribute{
+			Optional: true,
+			Computed: true,
+			Default:  booldefault.StaticBool(false),
+		},
+		"required": schema.BoolAttribute{
+			Required: true,
+		},
+		"default_value": schema.StringAttribute{
+			CustomType: jsontypes.NormalizedType{},
+			Optional:   true,
+			Computed:   true,
+			Default:    stringdefault.StaticString(""),
+		},
+		"items": schema.SingleNestedAttribute{
+			Attributes: map[string]schema.Attribute{
+				"type": schema.StringAttribute{
+					Required: true,
+				},
+				"link_type": schema.StringAttribute{
+					Optional: true,
+				},
+				"validations": schema.ListAttribute{
+					ElementType: jsontypes.NormalizedType{},
+					Optional:    true,
+					Computed:    true,
+					Default:     listdefault.StaticValue(NewEmptyListMust(jsontypes.NormalizedType{})),
+				},
+			},
+			CustomType: ItemsType{
+				ObjectType: types.ObjectType{
+					AttrTypes: ItemsValue{}.AttributeTypes(ctx),
+				},
+			},
+			Optional: true,
+		},
+		"localized": schema.BoolAttribute{
+			Required: true,
+		},
+		"validations": schema.ListAttribute{
+			ElementType: jsontypes.NormalizedType{},
+			Optional:    true,
+			Computed:    true,
+			Default:     listdefault.StaticValue(NewEmptyListMust(jsontypes.NormalizedType{})),
+		},
 	}
-
-	for name := range attributes {
-		_, ok := attributeTypes[name]
-
-		if !ok {
-			diags.AddError(
-				"Extra FieldsValue Attribute Value",
-				"While creating a FieldsValue value, an extra attribute value was detected. "+
-					"A FieldsValue must not contain values beyond the expected attribute types. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra FieldsValue Attribute Name: %s", name),
-			)
-		}
-	}
-
-	if diags.HasError() {
-		return NewFieldsValueUnknown(), diags
-	}
-
-	defaultValueAttribute, ok := attributes["default_value"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`default_value is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	defaultValueVal, ok := defaultValueAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`default_value expected to be basetypes.StringValue, was: %T`, defaultValueAttribute))
-	}
-
-	disabledAttribute, ok := attributes["disabled"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`disabled is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	disabledVal, ok := disabledAttribute.(basetypes.BoolValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`disabled expected to be basetypes.BoolValue, was: %T`, disabledAttribute))
-	}
-
-	idAttribute, ok := attributes["id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`id is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	idVal, ok := idAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.StringValue, was: %T`, idAttribute))
-	}
-
-	itemsAttribute, ok := attributes["items"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`items is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	itemsVal, ok := itemsAttribute.(basetypes.ObjectValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`items expected to be basetypes.ObjectValue, was: %T`, itemsAttribute))
-	}
-
-	linkTypeAttribute, ok := attributes["link_type"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`link_type is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	linkTypeVal, ok := linkTypeAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`link_type expected to be basetypes.StringValue, was: %T`, linkTypeAttribute))
-	}
-
-	localizedAttribute, ok := attributes["localized"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`localized is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	localizedVal, ok := localizedAttribute.(basetypes.BoolValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`localized expected to be basetypes.BoolValue, was: %T`, localizedAttribute))
-	}
-
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
-	omittedAttribute, ok := attributes["omitted"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`omitted is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	omittedVal, ok := omittedAttribute.(basetypes.BoolValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`omitted expected to be basetypes.BoolValue, was: %T`, omittedAttribute))
-	}
-
-	requiredAttribute, ok := attributes["required"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`required is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	requiredVal, ok := requiredAttribute.(basetypes.BoolValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`required expected to be basetypes.BoolValue, was: %T`, requiredAttribute))
-	}
-
-	typeAttribute, ok := attributes["type"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`type is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	typeVal, ok := typeAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`type expected to be basetypes.StringValue, was: %T`, typeAttribute))
-	}
-
-	validationsAttribute, ok := attributes["validations"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`validations is missing from object`)
-
-		return NewFieldsValueUnknown(), diags
-	}
-
-	validationsVal, ok := validationsAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`validations expected to be basetypes.ListValue, was: %T`, validationsAttribute))
-	}
-
-	if diags.HasError() {
-		return NewFieldsValueUnknown(), diags
-	}
-
-	return FieldsValue{
-		DefaultValue: defaultValueVal,
-		Disabled:     disabledVal,
-		Id:           idVal,
-		Items:        itemsVal,
-		LinkType:     linkTypeVal,
-		Localized:    localizedVal,
-		Name:         nameVal,
-		Omitted:      omittedVal,
-		Required:     requiredVal,
-		FieldsType:   typeVal,
-		Validations:  validationsVal,
-		state:        attr.ValueStateKnown,
-	}, diags
 }
 
-func NewFieldsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) FieldsValue {
-	object, diags := NewFieldsValue(attributeTypes, attributes)
-
-	if diags.HasError() {
-		// This could potentially be added to the diag package.
-		diagsStrings := make([]string, 0, len(diags))
-
-		for _, diagnostic := range diags {
-			diagsStrings = append(diagsStrings, fmt.Sprintf(
-				"%s | %s | %s",
-				diagnostic.Severity(),
-				diagnostic.Summary(),
-				diagnostic.Detail()))
-		}
-
-		panic("NewFieldsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+func (v FieldsValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
+	return FieldsType{
+		v.ObjectType(ctx),
 	}
+}
 
-	return object
+func (v FieldsValue) Type(ctx context.Context) attr.Type {
+	return FieldsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v FieldsValue) ObjectType(ctx context.Context) basetypes.ObjectType {
+	return basetypes.ObjectType{
+		AttrTypes: v.ObjectAttrTypes(ctx),
+	}
+}
+
+func (v FieldsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":            basetypes.StringType{},
+		"name":          basetypes.StringType{},
+		"type":          basetypes.StringType{},
+		"disabled":      basetypes.BoolType{},
+		"omitted":       basetypes.BoolType{},
+		"required":      basetypes.BoolType{},
+		"default_value": basetypes.StringType{},
+		"items":         basetypes.ObjectType{AttrTypes: ItemsValue{}.AttributeTypes(ctx)},
+		"link_type":     basetypes.StringType{},
+		"localized":     basetypes.BoolType{},
+		"validations":   basetypes.ListType{ElemType: types.StringType},
+	}
 }
 
 func (v FieldsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
@@ -636,19 +453,11 @@ func (v FieldsValue) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v FieldsValue) Type(ctx context.Context) attr.Type {
-	return FieldsType{
-		basetypes.ObjectType{
-			AttrTypes: v.AttributeTypes(ctx),
-		},
-	}
-}
-
 func (v FieldsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
+		"id":            basetypes.StringType{},
 		"default_value": basetypes.StringType{},
 		"disabled":      basetypes.BoolType{},
-		"id":            basetypes.StringType{},
 		"items": basetypes.ObjectType{
 			AttrTypes: ItemsValue{}.AttributeTypes(ctx),
 		},
