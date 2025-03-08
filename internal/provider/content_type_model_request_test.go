@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -21,6 +22,11 @@ func TestToOptContentTypeFieldsItemItemsErrorHandling(t *testing.T) {
 	assert.NotEmpty(t, itemsDiags)
 
 	assert.EqualValues(t, cm.OptContentTypeRequestFieldsFieldsItemItems{
-		Set: false,
+		Value: cm.ContentTypeRequestFieldsFieldsItemItems{
+			Validations: []jx.Raw{},
+		},
+		Set: true,
 	}, items)
+
+	assert.NotEmpty(t, itemsDiags.Errors())
 }

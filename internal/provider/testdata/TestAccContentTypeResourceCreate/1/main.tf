@@ -15,6 +15,16 @@ resource "contentful_content_type" "test" {
       type      = "Symbol"
       required  = true
       localized = false
-    }
+    },
+    {
+      id   = "flags"
+      name = "Flags"
+      type = "Array"
+      items = {
+        type = "Symbol"
+      }
+      required  = false
+      localized = false
+    },
   ]
 }
