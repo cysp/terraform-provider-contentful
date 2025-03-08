@@ -6,12 +6,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func (model *AppInstallationModel) ReadFromResponse(appInstallation *cm.AppInstallation) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	// SpaceId, EnvironmentId and AppDefinitionId are all already known
+	model.SpaceID = types.StringValue(appInstallation.Sys.Space.Sys.ID)
+	model.EnvironmentID = types.StringValue(appInstallation.Sys.Environment.Sys.ID)
+	model.AppDefinitionID = types.StringValue(appInstallation.Sys.AppDefinition.Sys.ID)
 
 	if appInstallation.Parameters != nil {
 		constraint, err := util.JxNormalizeOpaqueBytes(appInstallation.Parameters, util.JxEncodeOpaqueOptions{EscapeStrings: true})

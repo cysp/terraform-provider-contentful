@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,14 +19,21 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 	}{
 		"null": {
 			appInstallation: cm.AppInstallation{},
-			expectedModel:   provider.AppInstallationModel{},
+			expectedModel: provider.AppInstallationModel{
+				SpaceID:         types.StringValue(""),
+				EnvironmentID:   types.StringValue(""),
+				AppDefinitionID: types.StringValue(""),
+			},
 		},
 		"empty": {
 			appInstallation: cm.AppInstallation{
 				Parameters: []byte("{}"),
 			},
 			expectedModel: provider.AppInstallationModel{
-				Parameters: jsontypes.NewNormalizedValue("{}"),
+				SpaceID:         types.StringValue(""),
+				EnvironmentID:   types.StringValue(""),
+				AppDefinitionID: types.StringValue(""),
+				Parameters:      jsontypes.NewNormalizedValue("{}"),
 			},
 		},
 		"foo=bar": {
@@ -33,7 +41,10 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				Parameters: []byte("{\"foo\":\"bar\"}"),
 			},
 			expectedModel: provider.AppInstallationModel{
-				Parameters: jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
+				SpaceID:         types.StringValue(""),
+				EnvironmentID:   types.StringValue(""),
+				AppDefinitionID: types.StringValue(""),
+				Parameters:      jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
 			},
 		},
 	}
