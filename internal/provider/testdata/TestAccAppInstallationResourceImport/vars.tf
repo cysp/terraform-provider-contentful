@@ -7,6 +7,6 @@ variable "environment_id" {
   default = "master"
 }
 
-variable "test_app_definition_id" {
+variable "app_definition_id" {
   type = string
 }
