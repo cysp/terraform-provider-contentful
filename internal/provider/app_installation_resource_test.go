@@ -19,9 +19,9 @@ func TestAccAppInstallationResource(t *testing.T) {
 	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
-		"space_id":               config.StringVariable("0p38pssr0fi3"),
-		"environment_id":         config.StringVariable("master"),
-		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
+		"space_id":          config.StringVariable("0p38pssr0fi3"),
+		"environment_id":    config.StringVariable("master"),
+		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
 	testserver.AddAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
@@ -59,9 +59,9 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
-		"space_id":               config.StringVariable("0p38pssr0fi3"),
-		"environment_id":         config.StringVariable("master"),
-		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
+		"space_id":          config.StringVariable("0p38pssr0fi3"),
+		"environment_id":    config.StringVariable("master"),
+		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
@@ -111,9 +111,9 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
-		"space_id":               config.StringVariable("0p38pssr0fi3"),
-		"environment_id":         config.StringVariable("test"),
-		"test_app_definition_id": config.StringVariable("nonexistent"),
+		"space_id":          config.StringVariable("0p38pssr0fi3"),
+		"environment_id":    config.StringVariable("test"),
+		"app_definition_id": config.StringVariable("nonexistent"),
 	}
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
@@ -142,9 +142,9 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
-		"space_id":               config.StringVariable("0p38pssr0fi3"),
-		"environment_id":         config.StringVariable("master"),
-		"test_app_definition_id": config.StringVariable("nonexistent"),
+		"space_id":          config.StringVariable("0p38pssr0fi3"),
+		"environment_id":    config.StringVariable("master"),
+		"app_definition_id": config.StringVariable("nonexistent"),
 	}
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
@@ -164,9 +164,9 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
-		"space_id":               config.StringVariable("0p38pssr0fi3"),
-		"environment_id":         config.StringVariable("master"),
-		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
+		"space_id":          config.StringVariable("0p38pssr0fi3"),
+		"environment_id":    config.StringVariable("master"),
+		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
@@ -203,9 +203,9 @@ func TestAccAppInstallationResourceDeleted(t *testing.T) {
 	defer testserver.Server().Close()
 
 	configVariables := config.Variables{
-		"space_id":               config.StringVariable("0p38pssr0fi3"),
-		"environment_id":         config.StringVariable("master"),
-		"test_app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
+		"space_id":          config.StringVariable("0p38pssr0fi3"),
+		"environment_id":    config.StringVariable("master"),
+		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
