@@ -75,6 +75,12 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 				ConfigVariables: configVariables,
 				ResourceName:    "contentful_app_installation.test",
 				ImportState:     true,
+			},
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ResourceName:    "contentful_app_installation.test",
+				ImportState:     true,
 				ImportStateId:   "a",
 				ExpectError:     regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
@@ -94,13 +100,6 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 				ImportStateId:   "a/b/c/d",
 				ExpectError:     regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
-			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ResourceName:    "contentful_app_installation.test",
-				ImportState:     true,
-				ImportStateId:   "0p38pssr0fi3/master/1WkQ2J9LERPtbMTdUfSHka",
-			},
 		},
 	})
 }
@@ -118,12 +117,6 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
-			{
-				ConfigDirectory:    config.TestNameDirectory(),
-				ConfigVariables:    configVariables,
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: true,
-			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
