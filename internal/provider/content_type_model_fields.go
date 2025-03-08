@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -26,26 +27,31 @@ func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.C
 		listElementValues[index] = listElementValue
 	}
 
-	listValue, listValueDiags := types.ListValue(FieldsValue{}.Type(ctx), listElementValues)
+	listValue, listValueDiags := types.ListValue(ContentTypeFieldValue{}.Type(ctx), listElementValues)
 	diags.Append(listValueDiags...)
 
 	return listValue, diags
 }
 
-func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.ContentTypeFieldsItem) (FieldsValue, diag.Diagnostics) {
+func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.ContentTypeFieldsItem) (ContentTypeFieldValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := FieldsValue{
-		Id:           types.StringValue(item.ID),
+	defaultValueValue := jsontypes.NewNormalizedNull()
+	if item.DefaultValue != nil {
+		defaultValueValue = jsontypes.NewNormalizedValue(item.DefaultValue.String())
+	}
+
+	value := ContentTypeFieldValue{
+		ID:           types.StringValue(item.ID),
 		Name:         types.StringValue(item.Name),
-		FieldsType:   types.StringValue(item.Type),
+		FieldType:    types.StringValue(item.Type),
 		LinkType:     util.OptStringToStringValue(item.LinkType),
+		DefaultValue: defaultValueValue,
 		Localized:    util.OptBoolToBoolValue(item.Localized),
 		Disabled:     util.OptBoolToBoolValue(item.Disabled),
 		Omitted:      util.OptBoolToBoolValue(item.Omitted),
 		Required:     util.OptBoolToBoolValue(item.Required),
-		Validations:  types.ListNull(types.StringType),
-		DefaultValue: types.StringValue(item.DefaultValue.String()),
+		Validations:  types.ListNull(jsontypes.NormalizedType{}),
 		state:        attr.ValueStateKnown,
 	}
 
@@ -65,18 +71,18 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 	return value, diags
 }
 
-func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptContentTypeFieldsItemItems) (ItemsValue, diag.Diagnostics) {
+func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptContentTypeFieldsItemItems) (ContentTypeFieldItemsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := ItemsValue{
+	value := ContentTypeFieldItemsValue{
 		state: attr.ValueStateNull,
 	}
 
 	if itemItems, ok := item.Get(); ok {
-		value = ItemsValue{
+		value = ContentTypeFieldItemsValue{
 			ItemsType:   util.OptStringToStringValue(itemItems.Type),
 			LinkType:    util.OptStringToStringValue(itemItems.LinkType),
-			Validations: types.ListNull(types.StringType),
+			Validations: types.ListNull(jsontypes.NormalizedType{}),
 			state:       attr.ValueStateKnown,
 		}
 
@@ -97,10 +103,10 @@ func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations 
 	for i, validation := range validations {
 		encoder := jx.Encoder{}
 		encoder.Raw(validation)
-		validationElements[i] = types.StringValue(encoder.String())
+		validationElements[i] = jsontypes.NewNormalizedValue(encoder.String())
 	}
 
-	list, listDiags := types.ListValue(types.StringType, validationElements)
+	list, listDiags := types.ListValue(jsontypes.NormalizedType{}, validationElements)
 	diags.Append(listDiags...)
 
 	return list, diags
