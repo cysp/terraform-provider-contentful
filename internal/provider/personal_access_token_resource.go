@@ -91,7 +91,7 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 	}
 
 	params := cm.GetPersonalAccessTokenParams{
-		AccessTokenID: data.Id.ValueString(),
+		AccessTokenID: data.ID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetPersonalAccessToken(ctx, params)
@@ -140,7 +140,7 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 	}
 
 	params := cm.RevokePersonalAccessTokenParams{
-		AccessTokenID: data.Id.ValueString(),
+		AccessTokenID: data.ID.ValueString(),
 	}
 
 	response, err := r.providerData.client.RevokePersonalAccessToken(ctx, params)
