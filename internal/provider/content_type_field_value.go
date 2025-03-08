@@ -26,7 +26,7 @@ type FieldsValue struct {
 	Disabled     basetypes.BoolValue   `tfsdk:"disabled"`
 	Omitted      basetypes.BoolValue   `tfsdk:"omitted"`
 	Required     basetypes.BoolValue   `tfsdk:"required"`
-	DefaultValue basetypes.StringValue `tfsdk:"default_value"`
+	DefaultValue jsontypes.Normalized  `tfsdk:"default_value"`
 	Items        basetypes.ObjectValue `tfsdk:"items"`
 	Localized    basetypes.BoolValue   `tfsdk:"localized"`
 	Validations  basetypes.ListValue   `tfsdk:"validations"`
@@ -75,7 +75,7 @@ func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes m
 		diags.AddAttributeError(path.Root("items"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["items"]))
 	}
 
-	defaultValueValue, defaultValueOk := attributes["default_value"].(types.String)
+	defaultValueValue, defaultValueOk := attributes["default_value"].(jsontypes.Normalized)
 	if !defaultValueOk {
 		diags.AddAttributeError(path.Root("default_value"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["default_value"]))
 	}
@@ -215,12 +215,12 @@ func (v FieldsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
 		"type":          basetypes.StringType{},
 		"link_type":     basetypes.StringType{},
 		"items":         basetypes.ObjectType{AttrTypes: ItemsValue{}.AttributeTypes(ctx)},
-		"default_value": basetypes.StringType{},
+		"default_value": jsontypes.NormalizedType{},
 		"localized":     basetypes.BoolType{},
 		"disabled":      basetypes.BoolType{},
 		"omitted":       basetypes.BoolType{},
 		"required":      basetypes.BoolType{},
-		"validations":   basetypes.ListType{ElemType: types.StringType},
+		"validations":   basetypes.ListType{ElemType: jsontypes.NormalizedType{}},
 	}
 }
 

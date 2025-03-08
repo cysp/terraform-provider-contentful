@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -50,10 +51,10 @@ func (t FieldsType) TerraformAttributeTypes(ctx context.Context) map[string]tfty
 		"disabled":      tftypes.Bool,
 		"omitted":       tftypes.Bool,
 		"required":      tftypes.Bool,
-		"default_value": tftypes.String,
+		"default_value": jsontypes.NormalizedType{}.TerraformType(ctx),
 		"items":         ItemsType{}.TerraformType(ctx),
 		"localized":     tftypes.Bool,
-		"validations":   tftypes.List{ElementType: tftypes.String},
+		"validations":   tftypes.List{ElementType: jsontypes.NormalizedType{}.TerraformType(ctx)},
 	}
 }
 
