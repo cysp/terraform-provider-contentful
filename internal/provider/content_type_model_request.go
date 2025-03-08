@@ -57,7 +57,7 @@ func (model *FieldsValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Conte
 	diags.Append(fieldsItemValidationsDiags...)
 
 	fieldsItem := cm.ContentTypeRequestFieldsFieldsItem{
-		ID:          model.Id.ValueString(),
+		ID:          model.ID.ValueString(),
 		Name:        model.Name.ValueString(),
 		Type:        model.FieldsType.ValueString(),
 		LinkType:    util.StringValueToOptString(model.LinkType),

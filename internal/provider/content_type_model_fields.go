@@ -36,7 +36,7 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 	diags := diag.Diagnostics{}
 
 	value := FieldsValue{
-		Id:           types.StringValue(item.ID),
+		ID:           types.StringValue(item.ID),
 		Name:         types.StringValue(item.Name),
 		FieldsType:   types.StringValue(item.Type),
 		LinkType:     util.OptStringToStringValue(item.LinkType),

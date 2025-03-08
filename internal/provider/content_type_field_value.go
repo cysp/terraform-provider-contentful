@@ -19,7 +19,7 @@ import (
 )
 
 type FieldsValue struct {
-	Id           basetypes.StringValue `tfsdk:"id"`
+	ID           basetypes.StringValue `tfsdk:"id"`
 	Name         basetypes.StringValue `tfsdk:"name"`
 	FieldsType   basetypes.StringValue `tfsdk:"type"`
 	LinkType     basetypes.StringValue `tfsdk:"link_type"`
@@ -47,35 +47,77 @@ func NewFieldsValueNull() FieldsValue {
 	}
 }
 
-func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookFilterValue, diag.Diagnostics) {
+func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (FieldsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	notValue, notOk := attributes["not"].(WebhookFilterNotValue)
-	if !notOk {
-		diags.AddAttributeError(path.Root("not"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterNotValue, got %T", attributes["not"]))
+	idValue, idOk := attributes["id"].(types.String)
+	if !idOk {
+		diags.AddAttributeError(path.Root("id"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["id"]))
 	}
 
-	equalsValue, equalsOk := attributes["equals"].(WebhookFilterEqualsValue)
-	if !equalsOk {
-		diags.AddAttributeError(path.Root("equals"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterEqualsValue, got %T", attributes["equals"]))
+	nameValue, nameOk := attributes["name"].(types.String)
+	if !nameOk {
+		diags.AddAttributeError(path.Root("name"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["name"]))
 	}
 
-	inValue, inOk := attributes["in"].(WebhookFilterInValue)
-	if !inOk {
-		diags.AddAttributeError(path.Root("in"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterInValue, got %T", attributes["in"]))
+	fieldsTypeValue, fieldsTypeOk := attributes["type"].(types.String)
+	if !fieldsTypeOk {
+		diags.AddAttributeError(path.Root("type"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["type"]))
 	}
 
-	regexpValue, regexpOk := attributes["regexp"].(WebhookFilterRegexpValue)
-	if !regexpOk {
-		diags.AddAttributeError(path.Root("regexp"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterRegexpValue, got %T", attributes["regexp"]))
+	linkTypeValue, linkTypeOk := attributes["link_type"].(types.String)
+	if !linkTypeOk {
+		diags.AddAttributeError(path.Root("link_type"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["link_type"]))
 	}
 
-	return WebhookFilterValue{
-		Not:    notValue,
-		Equals: equalsValue,
-		In:     inValue,
-		Regexp: regexpValue,
-		state:  attr.ValueStateKnown,
+	itemsValue, itemsOk := attributes["items"].(types.Object)
+	if !itemsOk {
+		diags.AddAttributeError(path.Root("items"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["items"]))
+	}
+
+	defaultValueValue, defaultValueOk := attributes["default_value"].(types.String)
+	if !defaultValueOk {
+		diags.AddAttributeError(path.Root("default_value"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["default_value"]))
+	}
+
+	localizedValue, localizedOk := attributes["localized"].(types.Bool)
+	if !localizedOk {
+		diags.AddAttributeError(path.Root("localized"), "invalid data", fmt.Sprintf("expected object of type types.Bool, got %T", attributes["localized"]))
+	}
+
+	disabledValue, disabledOk := attributes["disabled"].(types.Bool)
+	if !disabledOk {
+		diags.AddAttributeError(path.Root("disabled"), "invalid data", fmt.Sprintf("expected object of type types.Bool, got %T", attributes["disabled"]))
+	}
+
+	omittedValue, omittedOk := attributes["omitted"].(types.Bool)
+	if !omittedOk {
+		diags.AddAttributeError(path.Root("omitted"), "invalid data", fmt.Sprintf("expected object of type types.Bool, got %T", attributes["omitted"]))
+	}
+
+	requiredValue, requiredOk := attributes["required"].(types.Bool)
+	if !requiredOk {
+		diags.AddAttributeError(path.Root("required"), "invalid data", fmt.Sprintf("expected object of type types.Bool, got %T", attributes["required"]))
+	}
+
+	validationsValue, validationsOk := attributes["validations"].(types.List)
+	if !validationsOk {
+		diags.AddAttributeError(path.Root("validations"), "invalid data", fmt.Sprintf("expected object of type types.List, got %T", attributes["validations"]))
+	}
+
+	return FieldsValue{
+		ID:           idValue,
+		Name:         nameValue,
+		FieldsType:   fieldsTypeValue,
+		LinkType:     linkTypeValue,
+		Items:        itemsValue,
+		DefaultValue: defaultValueValue,
+		Localized:    localizedValue,
+		Disabled:     disabledValue,
+		Omitted:      omittedValue,
+		Required:     requiredValue,
+		Validations:  validationsValue,
+		state:        attr.ValueStateKnown,
 	}, diags
 }
 
@@ -92,25 +134,6 @@ func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Att
 		},
 		"link_type": schema.StringAttribute{
 			Optional: true,
-		},
-		"disabled": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
-		},
-		"omitted": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
-		},
-		"required": schema.BoolAttribute{
-			Required: true,
-		},
-		"default_value": schema.StringAttribute{
-			CustomType: jsontypes.NormalizedType{},
-			Optional:   true,
-			Computed:   true,
-			Default:    stringdefault.StaticString(""),
 		},
 		"items": schema.SingleNestedAttribute{
 			Attributes: map[string]schema.Attribute{
@@ -134,7 +157,26 @@ func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Att
 			},
 			Optional: true,
 		},
+		"default_value": schema.StringAttribute{
+			CustomType: jsontypes.NormalizedType{},
+			Optional:   true,
+			Computed:   true,
+			Default:    stringdefault.StaticString(""),
+		},
 		"localized": schema.BoolAttribute{
+			Required: true,
+		},
+		"disabled": schema.BoolAttribute{
+			Optional: true,
+			Computed: true,
+			Default:  booldefault.StaticBool(false),
+		},
+		"omitted": schema.BoolAttribute{
+			Optional: true,
+			Computed: true,
+			Default:  booldefault.StaticBool(false),
+		},
+		"required": schema.BoolAttribute{
 			Required: true,
 		},
 		"validations": schema.ListAttribute{
@@ -193,7 +235,7 @@ func (v FieldsValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.Id.Equal(other.Id) &&
+		return v.ID.Equal(other.ID) &&
 			v.Name.Equal(other.Name) &&
 			v.FieldsType.Equal(other.FieldsType) &&
 			v.LinkType.Equal(other.LinkType) &&
@@ -239,7 +281,7 @@ func (v FieldsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 	val := make(map[string]tftypes.Value, 11)
 
 	var idErr error
-	val["id"], idErr = v.Id.ToTerraformValue(ctx)
+	val["id"], idErr = v.ID.ToTerraformValue(ctx)
 
 	var nameErr error
 	val["name"], nameErr = v.Name.ToTerraformValue(ctx)
@@ -292,7 +334,7 @@ func (v FieldsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 	}
 
 	attributes := map[string]attr.Value{
-		"id":            v.Id,
+		"id":            v.ID,
 		"name":          v.Name,
 		"type":          v.FieldsType,
 		"link_type":     v.LinkType,
