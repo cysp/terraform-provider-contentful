@@ -129,20 +129,3 @@ func ValidationsListToContentTypeRequestFieldsFieldValidations(ctx context.Conte
 
 	return validations, diags
 }
-
-func (m *ContentTypeModel) ReadFromResponse(ctx context.Context, contentType *cm.ContentType) diag.Diagnostics {
-	diags := diag.Diagnostics{}
-
-	// SpaceId, EnvironmentId and ContentTypeId are all already known
-
-	m.Name = types.StringValue(contentType.Name)
-	m.Description = types.StringValue(contentType.Description.Or(""))
-	m.DisplayField = types.StringValue(contentType.DisplayField.Or(""))
-
-	fieldsList, fieldsListDiags := NewFieldsListFromResponse(ctx, path.Root("fields"), contentType.Fields)
-	diags.Append(fieldsListDiags...)
-
-	m.Fields = fieldsList
-
-	return diags
-}
