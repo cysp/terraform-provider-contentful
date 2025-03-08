@@ -13,6 +13,7 @@ import (
 func (model *DeliveryAPIKeyModel) ReadFromResponse(ctx context.Context, apiKey *cm.ApiKey) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
+	model.SpaceID = types.StringValue(apiKey.Sys.Space.Sys.ID)
 	model.APIKeyID = types.StringValue(apiKey.Sys.ID)
 
 	model.Name = types.StringValue(apiKey.Name)
