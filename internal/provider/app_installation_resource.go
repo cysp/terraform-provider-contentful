@@ -60,9 +60,9 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
 
 	params := cm.PutAppInstallationParams{
-		SpaceID:                data.SpaceId.ValueString(),
-		EnvironmentID:          data.EnvironmentId.ValueString(),
-		AppDefinitionID:        data.AppDefinitionId.ValueString(),
+		SpaceID:                data.SpaceID.ValueString(),
+		EnvironmentID:          data.EnvironmentID.ValueString(),
+		AppDefinitionID:        data.AppDefinitionID.ValueString(),
 		XContentfulMarketplace: xContentfulMarketplace,
 	}
 
@@ -107,9 +107,9 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	params := cm.GetAppInstallationParams{
-		SpaceID:         data.SpaceId.ValueString(),
-		EnvironmentID:   data.EnvironmentId.ValueString(),
-		AppDefinitionID: data.AppDefinitionId.ValueString(),
+		SpaceID:         data.SpaceID.ValueString(),
+		EnvironmentID:   data.EnvironmentID.ValueString(),
+		AppDefinitionID: data.AppDefinitionID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetAppInstallation(ctx, params)
@@ -158,9 +158,9 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
 
 	params := cm.PutAppInstallationParams{
-		SpaceID:                data.SpaceId.ValueString(),
-		EnvironmentID:          data.EnvironmentId.ValueString(),
-		AppDefinitionID:        data.AppDefinitionId.ValueString(),
+		SpaceID:                data.SpaceID.ValueString(),
+		EnvironmentID:          data.EnvironmentID.ValueString(),
+		AppDefinitionID:        data.AppDefinitionID.ValueString(),
 		XContentfulMarketplace: xContentfulMarketplace,
 	}
 
@@ -205,9 +205,9 @@ func (r *appInstallationResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	params := cm.DeleteAppInstallationParams{
-		SpaceID:         data.SpaceId.ValueString(),
-		EnvironmentID:   data.EnvironmentId.ValueString(),
-		AppDefinitionID: data.AppDefinitionId.ValueString(),
+		SpaceID:         data.SpaceID.ValueString(),
+		EnvironmentID:   data.EnvironmentID.ValueString(),
+		AppDefinitionID: data.AppDefinitionID.ValueString(),
 	}
 
 	response, err := r.providerData.client.DeleteAppInstallation(ctx, params)
