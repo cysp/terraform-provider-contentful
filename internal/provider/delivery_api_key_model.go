@@ -5,6 +5,7 @@ import (
 )
 
 type DeliveryAPIKeyModel struct {
+	ID              types.String `tfsdk:"id"`
 	SpaceID         types.String `tfsdk:"space_id"`
 	APIKeyID        types.String `tfsdk:"api_key_id"`
 	Name            types.String `tfsdk:"name"`

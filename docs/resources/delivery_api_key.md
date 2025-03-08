@@ -37,6 +37,7 @@ resource "contentful_delivery_api_key" "this" {
 
 - `access_token` (String, Sensitive)
 - `api_key_id` (String)
+- `id` (String) The ID of this resource.
 - `preview_api_key_id` (String)
 
 ## Import

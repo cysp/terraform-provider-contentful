@@ -13,6 +13,9 @@ import (
 func DeliveryAPIKeyResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed: true,
+			},
 			"space_id": schema.StringAttribute{
 				Required: true,
 				PlanModifiers: []planmodifier.String{
