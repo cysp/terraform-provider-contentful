@@ -2,11 +2,13 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
@@ -33,16 +35,48 @@ type FieldsValue struct {
 
 var _ basetypes.ObjectValuable = FieldsValue{}
 
+func NewFieldsValueUnknown() FieldsValue {
+	return FieldsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
 func NewFieldsValueNull() FieldsValue {
 	return FieldsValue{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewFieldsValueUnknown() FieldsValue {
-	return FieldsValue{
-		state: attr.ValueStateUnknown,
+func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookFilterValue, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	notValue, notOk := attributes["not"].(WebhookFilterNotValue)
+	if !notOk {
+		diags.AddAttributeError(path.Root("not"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterNotValue, got %T", attributes["not"]))
 	}
+
+	equalsValue, equalsOk := attributes["equals"].(WebhookFilterEqualsValue)
+	if !equalsOk {
+		diags.AddAttributeError(path.Root("equals"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterEqualsValue, got %T", attributes["equals"]))
+	}
+
+	inValue, inOk := attributes["in"].(WebhookFilterInValue)
+	if !inOk {
+		diags.AddAttributeError(path.Root("in"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterInValue, got %T", attributes["in"]))
+	}
+
+	regexpValue, regexpOk := attributes["regexp"].(WebhookFilterRegexpValue)
+	if !regexpOk {
+		diags.AddAttributeError(path.Root("regexp"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterRegexpValue, got %T", attributes["regexp"]))
+	}
+
+	return WebhookFilterValue{
+		Not:    notValue,
+		Equals: equalsValue,
+		In:     inValue,
+		Regexp: regexpValue,
+		state:  attr.ValueStateKnown,
+	}, diags
 }
 
 func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
@@ -112,17 +146,17 @@ func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Att
 	}
 }
 
+//nolint:ireturn
 func (v FieldsValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
 	return FieldsType{
 		v.ObjectType(ctx),
 	}
 }
 
+//nolint:ireturn
 func (v FieldsValue) Type(ctx context.Context) attr.Type {
 	return FieldsType{
-		basetypes.ObjectType{
-			AttrTypes: v.AttributeTypes(ctx),
-		},
+		ObjectType: v.ObjectType(ctx),
 	}
 }
 
@@ -137,145 +171,42 @@ func (v FieldsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
 		"id":            basetypes.StringType{},
 		"name":          basetypes.StringType{},
 		"type":          basetypes.StringType{},
+		"link_type":     basetypes.StringType{},
+		"items":         basetypes.ObjectType{AttrTypes: ItemsValue{}.AttributeTypes(ctx)},
+		"default_value": basetypes.StringType{},
+		"localized":     basetypes.BoolType{},
 		"disabled":      basetypes.BoolType{},
 		"omitted":       basetypes.BoolType{},
 		"required":      basetypes.BoolType{},
-		"default_value": basetypes.StringType{},
-		"items":         basetypes.ObjectType{AttrTypes: ItemsValue{}.AttributeTypes(ctx)},
-		"link_type":     basetypes.StringType{},
-		"localized":     basetypes.BoolType{},
 		"validations":   basetypes.ListType{ElemType: types.StringType},
 	}
 }
 
-func (v FieldsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 11)
-
-	var val tftypes.Value
-	var err error
-
-	attrTypes["default_value"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["disabled"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["id"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["items"] = basetypes.ObjectType{
-		AttrTypes: ItemsValue{}.AttributeTypes(ctx),
-	}.TerraformType(ctx)
-	attrTypes["link_type"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["localized"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["omitted"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["required"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["type"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["validations"] = basetypes.ListType{
-		ElemType: types.StringType,
-	}.TerraformType(ctx)
-
-	objectType := tftypes.Object{AttributeTypes: attrTypes}
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 11)
-
-		val, err = v.DefaultValue.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["default_value"] = val
-
-		val, err = v.Disabled.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["disabled"] = val
-
-		val, err = v.Id.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["id"] = val
-
-		val, err = v.Items.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["items"] = val
-
-		val, err = v.LinkType.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["link_type"] = val
-
-		val, err = v.Localized.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["localized"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
-
-		val, err = v.Omitted.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["omitted"] = val
-
-		val, err = v.Required.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["required"] = val
-
-		val, err = v.FieldsType.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["type"] = val
-
-		val, err = v.Validations.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["validations"] = val
-
-		if err := tftypes.ValidateValue(objectType, vals); err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		return tftypes.NewValue(objectType, vals), nil
-	case attr.ValueStateNull:
-		return tftypes.NewValue(objectType, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+func (v FieldsValue) Equal(o attr.Value) bool {
+	other, ok := o.(FieldsValue)
+	if !ok {
+		return false
 	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state == attr.ValueStateKnown {
+		return v.Id.Equal(other.Id) &&
+			v.Name.Equal(other.Name) &&
+			v.FieldsType.Equal(other.FieldsType) &&
+			v.LinkType.Equal(other.LinkType) &&
+			v.Items.Equal(other.Items) &&
+			v.DefaultValue.Equal(other.DefaultValue) &&
+			v.Localized.Equal(other.Localized) &&
+			v.Disabled.Equal(other.Disabled) &&
+			v.Omitted.Equal(other.Omitted) &&
+			v.Required.Equal(other.Required) &&
+			v.Validations.Equal(other.Validations)
+	}
+
+	return true
 }
 
 func (v FieldsValue) IsNull() bool {
@@ -290,185 +221,89 @@ func (v FieldsValue) String() string {
 	return "FieldsValue"
 }
 
-func (v FieldsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
+func (v FieldsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	tft := FieldsType{}.TerraformType(ctx)
 
-	var items basetypes.ObjectValue
-
-	if v.Items.IsNull() {
-		items = types.ObjectNull(
-			ItemsValue{}.AttributeTypes(ctx),
-		)
-	}
-
-	if v.Items.IsUnknown() {
-		items = types.ObjectUnknown(
-			ItemsValue{}.AttributeTypes(ctx),
-		)
-	}
-
-	if !v.Items.IsNull() && !v.Items.IsUnknown() {
-		items = types.ObjectValueMust(
-			ItemsValue{}.AttributeTypes(ctx),
-			v.Items.Attributes(),
-		)
-	}
-
-	var validationsVal basetypes.ListValue
-	switch {
-	case v.Validations.IsUnknown():
-		validationsVal = types.ListUnknown(types.StringType)
-	case v.Validations.IsNull():
-		validationsVal = types.ListNull(types.StringType)
+	switch v.state {
+	case attr.ValueStateKnown:
+		break
+	case attr.ValueStateNull:
+		return tftypes.NewValue(tft, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
 	default:
-		var d diag.Diagnostics
-		validationsVal, d = types.ListValue(types.StringType, v.Validations.Elements())
-		diags.Append(d...)
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
 	}
 
-	if diags.HasError() {
-		return types.ObjectUnknown(map[string]attr.Type{
-			"default_value": basetypes.StringType{},
-			"disabled":      basetypes.BoolType{},
-			"id":            basetypes.StringType{},
-			"items": basetypes.ObjectType{
-				AttrTypes: ItemsValue{}.AttributeTypes(ctx),
-			},
-			"link_type": basetypes.StringType{},
-			"localized": basetypes.BoolType{},
-			"name":      basetypes.StringType{},
-			"omitted":   basetypes.BoolType{},
-			"required":  basetypes.BoolType{},
-			"type":      basetypes.StringType{},
-			"validations": basetypes.ListType{
-				ElemType: types.StringType,
-			},
-		}), diags
+	//nolint:gomnd,mnd
+	val := make(map[string]tftypes.Value, 11)
+
+	var idErr error
+	val["id"], idErr = v.Id.ToTerraformValue(ctx)
+
+	var nameErr error
+	val["name"], nameErr = v.Name.ToTerraformValue(ctx)
+
+	var typeErr error
+	val["type"], typeErr = v.FieldsType.ToTerraformValue(ctx)
+
+	var linkTypeErr error
+	val["link_type"], linkTypeErr = v.LinkType.ToTerraformValue(ctx)
+
+	var itemsErr error
+	val["items"], itemsErr = v.Items.ToTerraformValue(ctx)
+
+	var defaultValueErr error
+	val["default_value"], defaultValueErr = v.DefaultValue.ToTerraformValue(ctx)
+
+	var localizedErr error
+	val["localized"], localizedErr = v.Localized.ToTerraformValue(ctx)
+
+	var disabledErr error
+	val["disabled"], disabledErr = v.Disabled.ToTerraformValue(ctx)
+
+	var omittedErr error
+	val["omitted"], omittedErr = v.Omitted.ToTerraformValue(ctx)
+
+	var requiredErr error
+	val["required"], requiredErr = v.Required.ToTerraformValue(ctx)
+
+	var validationsErr error
+	val["validations"], validationsErr = v.Validations.ToTerraformValue(ctx)
+
+	validateErr := tftypes.ValidateValue(tft, val)
+
+	err := errors.Join(idErr, nameErr, typeErr, linkTypeErr, itemsErr, defaultValueErr, localizedErr, disabledErr, omittedErr, requiredErr, validationsErr, validateErr)
+	if err != nil {
+		return tftypes.NewValue(tft, tftypes.UnknownValue), err
 	}
 
-	attributeTypes := map[string]attr.Type{
-		"default_value": basetypes.StringType{},
-		"disabled":      basetypes.BoolType{},
-		"id":            basetypes.StringType{},
-		"items": basetypes.ObjectType{
-			AttrTypes: ItemsValue{}.AttributeTypes(ctx),
-		},
-		"link_type": basetypes.StringType{},
-		"localized": basetypes.BoolType{},
-		"name":      basetypes.StringType{},
-		"omitted":   basetypes.BoolType{},
-		"required":  basetypes.BoolType{},
-		"type":      basetypes.StringType{},
-		"validations": basetypes.ListType{
-			ElemType: types.StringType,
-		},
-	}
-
-	if v.IsNull() {
-		return types.ObjectNull(attributeTypes), diags
-	}
-
-	if v.IsUnknown() {
-		return types.ObjectUnknown(attributeTypes), diags
-	}
-
-	objVal, diags := types.ObjectValue(
-		attributeTypes,
-		map[string]attr.Value{
-			"default_value": v.DefaultValue,
-			"disabled":      v.Disabled,
-			"id":            v.Id,
-			"items":         items,
-			"link_type":     v.LinkType,
-			"localized":     v.Localized,
-			"name":          v.Name,
-			"omitted":       v.Omitted,
-			"required":      v.Required,
-			"type":          v.FieldsType,
-			"validations":   validationsVal,
-		})
-
-	return objVal, diags
+	return tftypes.NewValue(tft, val), nil
 }
 
-func (v FieldsValue) Equal(o attr.Value) bool {
-	other, ok := o.(FieldsValue)
+func (v FieldsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	attributeTypes := v.ObjectAttrTypes(ctx)
 
-	if !ok {
-		return false
+	switch {
+	case v.IsNull():
+		return types.ObjectNull(attributeTypes), nil
+	case v.IsUnknown():
+		return types.ObjectUnknown(attributeTypes), nil
 	}
 
-	if v.state != other.state {
-		return false
+	attributes := map[string]attr.Value{
+		"id":            v.Id,
+		"name":          v.Name,
+		"type":          v.FieldsType,
+		"link_type":     v.LinkType,
+		"items":         v.Items,
+		"default_value": v.DefaultValue,
+		"localized":     v.Localized,
+		"disabled":      v.Disabled,
+		"omitted":       v.Omitted,
+		"required":      v.Required,
+		"validations":   v.Validations,
 	}
 
-	if v.state != attr.ValueStateKnown {
-		return true
-	}
-
-	if !v.DefaultValue.Equal(other.DefaultValue) {
-		return false
-	}
-
-	if !v.Disabled.Equal(other.Disabled) {
-		return false
-	}
-
-	if !v.Id.Equal(other.Id) {
-		return false
-	}
-
-	if !v.Items.Equal(other.Items) {
-		return false
-	}
-
-	if !v.LinkType.Equal(other.LinkType) {
-		return false
-	}
-
-	if !v.Localized.Equal(other.Localized) {
-		return false
-	}
-
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
-	if !v.Omitted.Equal(other.Omitted) {
-		return false
-	}
-
-	if !v.Required.Equal(other.Required) {
-		return false
-	}
-
-	if !v.FieldsType.Equal(other.FieldsType) {
-		return false
-	}
-
-	if !v.Validations.Equal(other.Validations) {
-		return false
-	}
-
-	return true
-}
-
-func (v FieldsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"id":            basetypes.StringType{},
-		"default_value": basetypes.StringType{},
-		"disabled":      basetypes.BoolType{},
-		"items": basetypes.ObjectType{
-			AttrTypes: ItemsValue{}.AttributeTypes(ctx),
-		},
-		"link_type": basetypes.StringType{},
-		"localized": basetypes.BoolType{},
-		"name":      basetypes.StringType{},
-		"omitted":   basetypes.BoolType{},
-		"required":  basetypes.BoolType{},
-		"type":      basetypes.StringType{},
-		"validations": basetypes.ListType{
-			ElemType: types.StringType,
-		},
-	}
+	return types.ObjectValue(attributeTypes, attributes)
 }
