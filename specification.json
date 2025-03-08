@@ -488,53 +488,5 @@
             }
         }
     ],
-    "datasources": [
-        {
-            "name": "preview_api_key",
-            "schema": {
-                "attributes": [
-                    {
-                        "name": "space_id",
-                        "string": {
-                            "computed_optional_required": "required"
-                        }
-                    },
-                    {
-                        "name": "preview_api_key_id",
-                        "string": {
-                            "computed_optional_required": "required"
-                        }
-                    },
-                    {
-                        "name": "name",
-                        "string": {
-                            "computed_optional_required": "computed"
-                        }
-                    },
-                    {
-                        "name": "description",
-                        "string": {
-                            "computed_optional_required": "computed"
-                        }
-                    },
-                    {
-                        "name": "environments",
-                        "list": {
-                            "computed_optional_required": "computed",
-                            "element_type": {
-                                "string": {}
-                            }
-                        }
-                    },
-                    {
-                        "name": "access_token",
-                        "string": {
-                            "computed_optional_required": "computed",
-                            "sensitive": true
-                        }
-                    }
-                ]
-            }
-        }
-    ]
+    "datasources": []
 }

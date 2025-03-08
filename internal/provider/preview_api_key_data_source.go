@@ -30,7 +30,7 @@ func (d *previewApiKeyDataSource) Metadata(_ context.Context, req datasource.Met
 }
 
 func (d *previewApiKeyDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = PreviewApiKeyDataSourceSchema(ctx)
+	resp.Schema = PreviewAPIKeyDataSourceSchema(ctx)
 }
 
 func (d *previewApiKeyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -38,7 +38,7 @@ func (d *previewApiKeyDataSource) Configure(_ context.Context, req datasource.Co
 }
 
 func (d *previewApiKeyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data PreviewApiKeyModel
+	var data PreviewAPIKeyModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -47,8 +47,8 @@ func (d *previewApiKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	params := cm.GetPreviewApiKeyParams{
-		SpaceID:         data.SpaceId.ValueString(),
-		PreviewAPIKeyID: data.PreviewApiKeyId.ValueString(),
+		SpaceID:         data.SpaceID.ValueString(),
+		PreviewAPIKeyID: data.PreviewAPIKeyID.ValueString(),
 	}
 
 	response, err := d.providerData.client.GetPreviewApiKey(ctx, params)
