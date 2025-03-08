@@ -48,6 +48,10 @@ resource "contentful_app_installation" "cool_marketplace_app" {
 - `marketplace` (Set of String)
 - `parameters` (String)
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 ## Import
 
 Import is supported using the following syntax:

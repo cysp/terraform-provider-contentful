@@ -20,6 +20,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		"null": {
 			appInstallation: cm.AppInstallation{},
 			expectedModel: provider.AppInstallationModel{
+				ID:              types.StringValue("//"),
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
 				AppDefinitionID: types.StringValue(""),
@@ -30,6 +31,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				Parameters: []byte("{}"),
 			},
 			expectedModel: provider.AppInstallationModel{
+				ID:              types.StringValue("//"),
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
 				AppDefinitionID: types.StringValue(""),
@@ -41,6 +43,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				Parameters: []byte("{\"foo\":\"bar\"}"),
 			},
 			expectedModel: provider.AppInstallationModel{
+				ID:              types.StringValue("//"),
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
 				AppDefinitionID: types.StringValue(""),
