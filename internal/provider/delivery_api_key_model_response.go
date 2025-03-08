@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -13,8 +14,12 @@ import (
 func (model *DeliveryAPIKeyModel) ReadFromResponse(ctx context.Context, apiKey *cm.ApiKey) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	model.SpaceID = types.StringValue(apiKey.Sys.Space.Sys.ID)
-	model.APIKeyID = types.StringValue(apiKey.Sys.ID)
+	spaceID := apiKey.Sys.Space.Sys.ID
+	apiKeyID := apiKey.Sys.ID
+
+	model.ID = types.StringValue(strings.Join([]string{spaceID, apiKeyID}, "/"))
+	model.SpaceID = types.StringValue(spaceID)
+	model.APIKeyID = types.StringValue(apiKeyID)
 
 	model.Name = types.StringValue(apiKey.Name)
 	model.Description = util.OptNilStringToStringValue(apiKey.Description)
