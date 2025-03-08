@@ -32,7 +32,7 @@ func (r *deliveryApiKeyResource) Metadata(_ context.Context, req resource.Metada
 }
 
 func (r *deliveryApiKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = DeliveryApiKeyResourceSchema(ctx)
+	resp.Schema = DeliveryAPIKeyResourceSchema(ctx)
 }
 
 func (r *deliveryApiKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -48,7 +48,7 @@ func (r *deliveryApiKeyResource) ImportState(ctx context.Context, req resource.I
 
 //nolint:dupl
 func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data DeliveryApiKeyModel
+	var data DeliveryAPIKeyModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -59,7 +59,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 	currentVersion := 1
 
 	params := cm.CreateDeliveryApiKeyParams{
-		SpaceID: data.SpaceId.ValueString(),
+		SpaceID: data.SpaceID.ValueString(),
 	}
 
 	request, requestDiags := data.ToAPIKeyRequestFields(ctx)
@@ -97,7 +97,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 
 //nolint:dupl
 func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data DeliveryApiKeyModel
+	var data DeliveryAPIKeyModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -106,8 +106,8 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	params := cm.GetDeliveryApiKeyParams{
-		SpaceID:  data.SpaceId.ValueString(),
-		APIKeyID: data.ApiKeyId.ValueString(),
+		SpaceID:  data.SpaceID.ValueString(),
+		APIKeyID: data.APIKeyID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetDeliveryApiKey(ctx, params)
@@ -147,7 +147,7 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 }
 
 func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data DeliveryApiKeyModel
+	var data DeliveryAPIKeyModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -160,8 +160,8 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.UpdateDeliveryApiKeyParams{
-		SpaceID:            data.SpaceId.ValueString(),
-		APIKeyID:           data.ApiKeyId.ValueString(),
+		SpaceID:            data.SpaceID.ValueString(),
+		APIKeyID:           data.APIKeyID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
@@ -199,7 +199,7 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 }
 
 func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data DeliveryApiKeyModel
+	var data DeliveryAPIKeyModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -208,8 +208,8 @@ func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	params := cm.DeleteDeliveryApiKeyParams{
-		SpaceID:  data.SpaceId.ValueString(),
-		APIKeyID: data.ApiKeyId.ValueString(),
+		SpaceID:  data.SpaceID.ValueString(),
+		APIKeyID: data.APIKeyID.ValueString(),
 	}
 
 	response, err := r.providerData.client.DeleteDeliveryApiKey(ctx, params)
