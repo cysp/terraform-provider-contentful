@@ -72,10 +72,10 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 
 	types := []attr.Type{
 		provider.ControlsType{},
-		provider.EditorLayoutType{},
-		provider.ContentTypeFieldType{},
-		provider.GroupControlsType{},
 		provider.ContentTypeFieldItemsType{},
+		provider.ContentTypeFieldType{},
+		provider.EditorLayoutType{},
+		provider.GroupControlsType{},
 		provider.SidebarType{},
 		provider.RolePolicyType{},
 		provider.WebhookFilterEqualsType{},

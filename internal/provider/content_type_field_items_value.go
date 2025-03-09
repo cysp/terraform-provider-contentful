@@ -38,6 +38,15 @@ func NewContentTypeFieldItemsValueNull() ContentTypeFieldItemsValue {
 	}
 }
 
+func NewContentTypeFieldItemsValueKnownFromAttributesMust(ctx context.Context, attributes map[string]attr.Value) ContentTypeFieldItemsValue {
+	value, diags := NewContentTypeFieldItemsValueKnownFromAttributes(ctx, attributes)
+	if diags.HasError() {
+		panic(diags)
+	}
+
+	return value
+}
+
 func NewContentTypeFieldItemsValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (ContentTypeFieldItemsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -120,19 +129,7 @@ func (v ContentTypeFieldItemsValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.ItemsType.Equal(other.ItemsType)
-	}
-
-	if !v.ItemsType.Equal(other.ItemsType) {
-		return false
-	}
-
-	if !v.LinkType.Equal(other.LinkType) {
-		return false
-	}
-
-	if !v.Validations.Equal(other.Validations) {
-		return false
+		return v.ItemsType.Equal(other.ItemsType) && v.LinkType.Equal(other.LinkType) && v.Validations.Equal(other.Validations)
 	}
 
 	return true
@@ -185,6 +182,15 @@ func (v ContentTypeFieldItemsValue) ToTerraformValue(ctx context.Context) (tftyp
 	}
 
 	return tftypes.NewValue(tft, val), nil
+}
+
+func (v ContentTypeFieldItemsValue) ToObjectValueMust(ctx context.Context) basetypes.ObjectValue {
+	value, diags := v.ToObjectValue(ctx)
+	if diags.HasError() {
+		panic(diags)
+	}
+
+	return value
 }
 
 func (v ContentTypeFieldItemsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {

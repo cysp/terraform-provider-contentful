@@ -61,7 +61,7 @@ func (t ContentTypeFieldType) TerraformAttributeTypes(ctx context.Context) map[s
 //nolint:ireturn
 func (t ContentTypeFieldType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
 	if value.Type() == nil {
-		return NewFieldsValueNull(), nil
+		return NewContentTypeFieldValueNull(), nil
 	}
 
 	if !value.Type().Equal(t.TerraformType(ctx)) {
@@ -69,11 +69,11 @@ func (t ContentTypeFieldType) ValueFromTerraform(ctx context.Context, value tfty
 	}
 
 	if value.IsNull() {
-		return NewFieldsValueNull(), nil
+		return NewContentTypeFieldValueNull(), nil
 	}
 
 	if !value.IsKnown() {
-		return NewFieldsValueUnknown(), nil
+		return NewContentTypeFieldValueUnknown(), nil
 	}
 
 	attributes, err := AttributesFromTerraformValue(ctx, t.AttrTypes, value)
@@ -90,9 +90,9 @@ func (t ContentTypeFieldType) ValueFromTerraform(ctx context.Context, value tfty
 func (t ContentTypeFieldType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	switch {
 	case value.IsNull():
-		return NewFieldsValueNull(), nil
+		return NewContentTypeFieldValueNull(), nil
 	case value.IsUnknown():
-		return NewFieldsValueUnknown(), nil
+		return NewContentTypeFieldValueUnknown(), nil
 	}
 
 	return NewContentTypeFieldValueKnownFromAttributes(ctx, value.Attributes())

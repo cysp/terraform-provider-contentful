@@ -35,16 +35,25 @@ type ContentTypeFieldValue struct {
 
 var _ basetypes.ObjectValuable = ContentTypeFieldValue{}
 
-func NewFieldsValueUnknown() ContentTypeFieldValue {
+func NewContentTypeFieldValueUnknown() ContentTypeFieldValue {
 	return ContentTypeFieldValue{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewFieldsValueNull() ContentTypeFieldValue {
+func NewContentTypeFieldValueNull() ContentTypeFieldValue {
 	return ContentTypeFieldValue{
 		state: attr.ValueStateNull,
 	}
+}
+
+func NewContentTypeFieldValueKnownFromAttributesMust(ctx context.Context, attributes map[string]attr.Value) ContentTypeFieldValue {
+	value, diags := NewContentTypeFieldValueKnownFromAttributes(ctx, attributes)
+	if diags.HasError() {
+		panic(diags)
+	}
+
+	return value
 }
 
 func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (ContentTypeFieldValue, diag.Diagnostics) {
