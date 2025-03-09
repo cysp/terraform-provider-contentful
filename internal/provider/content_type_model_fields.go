@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -40,12 +41,12 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 		Name:         types.StringValue(item.Name),
 		FieldsType:   types.StringValue(item.Type),
 		LinkType:     util.OptStringToStringValue(item.LinkType),
+		DefaultValue: jsontypes.NewNormalizedValue(item.DefaultValue.String()),
 		Localized:    util.OptBoolToBoolValue(item.Localized),
 		Disabled:     util.OptBoolToBoolValue(item.Disabled),
 		Omitted:      util.OptBoolToBoolValue(item.Omitted),
 		Required:     util.OptBoolToBoolValue(item.Required),
-		Validations:  types.ListNull(types.StringType),
-		DefaultValue: types.StringValue(item.DefaultValue.String()),
+		Validations:  types.ListNull(jsontypes.NormalizedType{}),
 		state:        attr.ValueStateKnown,
 	}
 
@@ -76,7 +77,7 @@ func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptC
 		value = ItemsValue{
 			ItemsType:   util.OptStringToStringValue(itemItems.Type),
 			LinkType:    util.OptStringToStringValue(itemItems.LinkType),
-			Validations: types.ListNull(types.StringType),
+			Validations: types.ListNull(jsontypes.NormalizedType{}),
 			state:       attr.ValueStateKnown,
 		}
 
@@ -100,7 +101,7 @@ func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations 
 		validationElements[i] = types.StringValue(encoder.String())
 	}
 
-	list, listDiags := types.ListValue(types.StringType, validationElements)
+	list, listDiags := types.ListValue(jsontypes.NormalizedType{}, validationElements)
 	diags.Append(listDiags...)
 
 	return list, diags

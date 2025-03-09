@@ -136,26 +136,9 @@ func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Att
 			Optional: true,
 		},
 		"items": schema.SingleNestedAttribute{
-			Attributes: map[string]schema.Attribute{
-				"type": schema.StringAttribute{
-					Required: true,
-				},
-				"link_type": schema.StringAttribute{
-					Optional: true,
-				},
-				"validations": schema.ListAttribute{
-					ElementType: jsontypes.NormalizedType{},
-					Optional:    true,
-					Computed:    true,
-					Default:     listdefault.StaticValue(NewEmptyListMust(jsontypes.NormalizedType{})),
-				},
-			},
-			CustomType: ItemsType{
-				ObjectType: types.ObjectType{
-					AttrTypes: ItemsValue{}.AttributeTypes(ctx),
-				},
-			},
-			Optional: true,
+			Attributes: ItemsValue{}.SchemaAttributes(ctx),
+			CustomType: ItemsValue{}.CustomType(ctx),
+			Optional:   true,
 		},
 		"default_value": schema.StringAttribute{
 			CustomType: jsontypes.NormalizedType{},
@@ -214,7 +197,7 @@ func (v FieldsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
 		"name":          basetypes.StringType{},
 		"type":          basetypes.StringType{},
 		"link_type":     basetypes.StringType{},
-		"items":         basetypes.ObjectType{AttrTypes: ItemsValue{}.AttributeTypes(ctx)},
+		"items":         ItemsValue{}.ObjectType(ctx),
 		"default_value": jsontypes.NormalizedType{},
 		"localized":     basetypes.BoolType{},
 		"disabled":      basetypes.BoolType{},
