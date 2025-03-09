@@ -71,15 +71,15 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 	return value, diags
 }
 
-func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptContentTypeFieldsItemItems) (ItemsValue, diag.Diagnostics) {
+func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptContentTypeFieldsItemItems) (ContentTypeFieldItemsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := ItemsValue{
+	value := ContentTypeFieldItemsValue{
 		state: attr.ValueStateNull,
 	}
 
 	if itemItems, ok := item.Get(); ok {
-		value = ItemsValue{
+		value = ContentTypeFieldItemsValue{
 			ItemsType:   util.OptStringToStringValue(itemItems.Type),
 			LinkType:    util.OptStringToStringValue(itemItems.LinkType),
 			Validations: types.ListNull(jsontypes.NormalizedType{}),

@@ -52,7 +52,7 @@ func (t FieldsType) TerraformAttributeTypes(ctx context.Context) map[string]tfty
 		"omitted":       tftypes.Bool,
 		"required":      tftypes.Bool,
 		"default_value": jsontypes.NormalizedType{}.TerraformType(ctx),
-		"items":         ItemsType{}.TerraformType(ctx),
+		"items":         ContentTypeFieldItemsType{}.TerraformType(ctx),
 		"localized":     tftypes.Bool,
 		"validations":   tftypes.List{ElementType: jsontypes.NormalizedType{}.TerraformType(ctx)},
 	}

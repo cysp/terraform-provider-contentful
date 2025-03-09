@@ -11,14 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-type ItemsType struct {
+type ContentTypeFieldItemsType struct {
 	basetypes.ObjectType
 }
 
-var _ basetypes.ObjectTypable = ItemsType{}
+var _ basetypes.ObjectTypable = ContentTypeFieldItemsType{}
 
-func (t ItemsType) Equal(o attr.Type) bool {
-	other, ok := o.(ItemsType)
+func (t ContentTypeFieldItemsType) Equal(o attr.Type) bool {
+	other, ok := o.(ContentTypeFieldItemsType)
 	if !ok {
 		return false
 	}
@@ -27,22 +27,22 @@ func (t ItemsType) Equal(o attr.Type) bool {
 }
 
 //nolint:ireturn
-func (t ItemsType) ValueType(_ context.Context) attr.Value {
-	return ItemsValue{}
+func (t ContentTypeFieldItemsType) ValueType(_ context.Context) attr.Value {
+	return ContentTypeFieldItemsValue{}
 }
 
-func (t ItemsType) String() string {
-	return "ItemsType"
+func (t ContentTypeFieldItemsType) String() string {
+	return "ContentTypeFieldItemsType"
 }
 
 //nolint:ireturn
-func (t ItemsType) TerraformType(ctx context.Context) tftypes.Type {
+func (t ContentTypeFieldItemsType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
 		AttributeTypes: t.TerraformAttributeTypes(ctx),
 	}
 }
 
-func (t ItemsType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+func (t ContentTypeFieldItemsType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
 	return map[string]tftypes.Type{
 		"type":        tftypes.String,
 		"link_type":   tftypes.String,
@@ -51,9 +51,9 @@ func (t ItemsType) TerraformAttributeTypes(ctx context.Context) map[string]tftyp
 }
 
 //nolint:ireturn
-func (t ItemsType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
+func (t ContentTypeFieldItemsType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
 	if value.Type() == nil {
-		return NewItemsValueNull(), nil
+		return NewContentTypeFieldItemsValueNull(), nil
 	}
 
 	if !value.Type().Equal(t.TerraformType(ctx)) {
@@ -61,31 +61,31 @@ func (t ItemsType) ValueFromTerraform(ctx context.Context, value tftypes.Value) 
 	}
 
 	if value.IsNull() {
-		return NewItemsValueNull(), nil
+		return NewContentTypeFieldItemsValueNull(), nil
 	}
 
 	if !value.IsKnown() {
-		return NewItemsValueUnknown(), nil
+		return NewContentTypeFieldItemsValueUnknown(), nil
 	}
 
 	attributes, err := AttributesFromTerraformValue(ctx, t.AttrTypes, value)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create ItemsValue from Terraform: %w", err)
+		return nil, fmt.Errorf("failed to create ContentTypeFieldItemsValue from Terraform: %w", err)
 	}
 
-	v, diags := NewItemsValueKnownFromAttributes(ctx, attributes)
+	v, diags := NewContentTypeFieldItemsValueKnownFromAttributes(ctx, attributes)
 
 	return v, ErrorFromDiags(diags)
 }
 
 //nolint:ireturn
-func (t ItemsType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t ContentTypeFieldItemsType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	switch {
 	case value.IsNull():
-		return NewItemsValueNull(), nil
+		return NewContentTypeFieldItemsValueNull(), nil
 	case value.IsUnknown():
-		return NewItemsValueUnknown(), nil
+		return NewContentTypeFieldItemsValueUnknown(), nil
 	}
 
-	return NewItemsValueKnownFromAttributes(ctx, value.Attributes())
+	return NewContentTypeFieldItemsValueKnownFromAttributes(ctx, value.Attributes())
 }

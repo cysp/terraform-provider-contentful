@@ -136,8 +136,8 @@ func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Att
 			Optional: true,
 		},
 		"items": schema.SingleNestedAttribute{
-			Attributes: ItemsValue{}.SchemaAttributes(ctx),
-			CustomType: ItemsValue{}.CustomType(ctx),
+			Attributes: ContentTypeFieldItemsValue{}.SchemaAttributes(ctx),
+			CustomType: ContentTypeFieldItemsValue{}.CustomType(ctx),
 			Optional:   true,
 		},
 		"default_value": schema.StringAttribute{
@@ -196,7 +196,7 @@ func (v FieldsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
 		"name":          basetypes.StringType{},
 		"type":          basetypes.StringType{},
 		"link_type":     basetypes.StringType{},
-		"items":         ItemsValue{}.ObjectType(ctx),
+		"items":         ContentTypeFieldItemsValue{}.ObjectType(ctx),
 		"default_value": jsontypes.NormalizedType{},
 		"localized":     basetypes.BoolType{},
 		"disabled":      basetypes.BoolType{},

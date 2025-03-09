@@ -83,23 +83,23 @@ func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context
 	fieldsItemItems := cm.OptContentTypeRequestFieldsFieldsItemItems{}
 
 	if !itemsObject.IsNull() && !itemsObject.IsUnknown() {
-		modelItemsObjectValue, modelItemsObjectValueDiags := ItemsType{}.ValueFromObject(ctx, itemsObject)
+		modelItemsObjectValue, modelItemsObjectValueDiags := ContentTypeFieldItemsType{}.ValueFromObject(ctx, itemsObject)
 		diags.Append(modelItemsObjectValueDiags...)
 
-		if modelItemsValue, ok := modelItemsObjectValue.(ItemsValue); ok {
+		if modelItemsValue, ok := modelItemsObjectValue.(ContentTypeFieldItemsValue); ok {
 			items, itemsDiags := modelItemsValue.ToContentTypeRequestFieldsFieldsItemItems(ctx, path)
 			diags.Append(itemsDiags...)
 
 			fieldsItemItems.SetTo(items)
 		} else {
-			diags.AddAttributeError(path, "Failed to convert to ItemsValue", "Failed to convert to ItemsValue")
+			diags.AddAttributeError(path, "Failed to convert to ContentTypeFieldItemsValue", "Failed to convert to ContentTypeFieldItemsValue")
 		}
 	}
 
 	return fieldsItemItems, diags
 }
 
-func (v *ItemsValue) ToContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
+func (v *ContentTypeFieldItemsValue) ToContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	itemsValidations, itemsValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), v.Validations)

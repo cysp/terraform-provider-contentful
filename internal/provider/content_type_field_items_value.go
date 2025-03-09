@@ -17,28 +17,28 @@ import (
 )
 
 //nolint:recvcheck
-type ItemsValue struct {
-	LinkType    basetypes.StringValue `tfsdk:"link_type"`
+type ContentTypeFieldItemsValue struct {
 	ItemsType   basetypes.StringValue `tfsdk:"type"`
+	LinkType    basetypes.StringValue `tfsdk:"link_type"`
 	Validations basetypes.ListValue   `tfsdk:"validations"`
 	state       attr.ValueState
 }
 
-var _ basetypes.ObjectValuable = ItemsValue{}
+var _ basetypes.ObjectValuable = ContentTypeFieldItemsValue{}
 
-func NewItemsValueUnknown() ItemsValue {
-	return ItemsValue{
+func NewContentTypeFieldItemsValueUnknown() ContentTypeFieldItemsValue {
+	return ContentTypeFieldItemsValue{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewItemsValueNull() ItemsValue {
-	return ItemsValue{
+func NewContentTypeFieldItemsValueNull() ContentTypeFieldItemsValue {
+	return ContentTypeFieldItemsValue{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewItemsValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (ItemsValue, diag.Diagnostics) {
+func NewContentTypeFieldItemsValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (ContentTypeFieldItemsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	typeValue, typeOk := attributes["type"].(basetypes.StringValue)
@@ -56,7 +56,7 @@ func NewItemsValueKnownFromAttributes(_ context.Context, attributes map[string]a
 		diags.AddAttributeError(path.Root("validations"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["validations"]))
 	}
 
-	return ItemsValue{
+	return ContentTypeFieldItemsValue{
 		ItemsType:   typeValue,
 		LinkType:    linkTypeValue,
 		Validations: validationsValue,
@@ -64,7 +64,7 @@ func NewItemsValueKnownFromAttributes(_ context.Context, attributes map[string]a
 	}, diags
 }
 
-func (v ItemsValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
+func (v ContentTypeFieldItemsValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"type": schema.StringAttribute{
 			Required: true,
@@ -82,35 +82,35 @@ func (v ItemsValue) SchemaAttributes(_ context.Context) map[string]schema.Attrib
 }
 
 //nolint:ireturn
-func (v ItemsValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return ItemsType{
+func (v ContentTypeFieldItemsValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
+	return ContentTypeFieldItemsType{
 		v.ObjectType(ctx),
 	}
 }
 
 //nolint:ireturn
-func (v ItemsValue) Type(ctx context.Context) attr.Type {
-	return ItemsType{
+func (v ContentTypeFieldItemsValue) Type(ctx context.Context) attr.Type {
+	return ContentTypeFieldItemsType{
 		ObjectType: v.ObjectType(ctx),
 	}
 }
 
-func (v ItemsValue) ObjectType(ctx context.Context) basetypes.ObjectType {
+func (v ContentTypeFieldItemsValue) ObjectType(ctx context.Context) basetypes.ObjectType {
 	return basetypes.ObjectType{
 		AttrTypes: v.ObjectAttrTypes(ctx),
 	}
 }
 
-func (v ItemsValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
+func (v ContentTypeFieldItemsValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"link_type":   basetypes.StringType{},
 		"type":        basetypes.StringType{},
+		"link_type":   basetypes.StringType{},
 		"validations": basetypes.ListType{ElemType: jsontypes.NormalizedType{}},
 	}
 }
 
-func (v ItemsValue) Equal(o attr.Value) bool {
-	other, ok := o.(ItemsValue)
+func (v ContentTypeFieldItemsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ContentTypeFieldItemsValue)
 	if !ok {
 		return false
 	}
@@ -123,11 +123,11 @@ func (v ItemsValue) Equal(o attr.Value) bool {
 		return v.ItemsType.Equal(other.ItemsType)
 	}
 
-	if !v.LinkType.Equal(other.LinkType) {
+	if !v.ItemsType.Equal(other.ItemsType) {
 		return false
 	}
 
-	if !v.ItemsType.Equal(other.ItemsType) {
+	if !v.LinkType.Equal(other.LinkType) {
 		return false
 	}
 
@@ -138,20 +138,20 @@ func (v ItemsValue) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v ItemsValue) IsNull() bool {
+func (v ContentTypeFieldItemsValue) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v ItemsValue) IsUnknown() bool {
+func (v ContentTypeFieldItemsValue) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v ItemsValue) String() string {
-	return "ItemsValue"
+func (v ContentTypeFieldItemsValue) String() string {
+	return "ContentTypeFieldItemsValue"
 }
 
-func (v ItemsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := ItemsType{}.TerraformType(ctx)
+func (v ContentTypeFieldItemsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	tft := ContentTypeFieldItemsType{}.TerraformType(ctx)
 
 	switch v.state {
 	case attr.ValueStateKnown:
@@ -167,11 +167,11 @@ func (v ItemsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 	//nolint:gomnd,mnd
 	val := make(map[string]tftypes.Value, 3)
 
+	var itemsErr error
+	val["type"], itemsErr = v.ItemsType.ToTerraformValue(ctx)
+
 	var linkTypeErr error
 	val["link_type"], linkTypeErr = v.LinkType.ToTerraformValue(ctx)
-
-	var itemsErr error
-	val["items"], itemsErr = v.ItemsType.ToTerraformValue(ctx)
 
 	var validationsErr error
 	val["validations"], validationsErr = v.Validations.ToTerraformValue(ctx)
@@ -186,7 +186,7 @@ func (v ItemsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 	return tftypes.NewValue(tft, val), nil
 }
 
-func (v ItemsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ContentTypeFieldItemsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	attributeTypes := v.ObjectAttrTypes(ctx)
 
 	switch {
@@ -197,8 +197,8 @@ func (v ItemsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, d
 	}
 
 	attributes := map[string]attr.Value{
-		"link_type":   v.LinkType,
 		"type":        v.ItemsType,
+		"link_type":   v.LinkType,
 		"validations": v.Validations,
 	}
 
