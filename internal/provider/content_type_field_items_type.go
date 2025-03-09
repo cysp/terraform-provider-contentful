@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -26,7 +27,7 @@ func (t ItemsType) Equal(o attr.Type) bool {
 }
 
 //nolint:ireturn
-func (t ItemsType) ValueType(ctx context.Context) attr.Value {
+func (t ItemsType) ValueType(_ context.Context) attr.Value {
 	return ItemsValue{}
 }
 
@@ -41,19 +42,11 @@ func (t ItemsType) TerraformType(ctx context.Context) tftypes.Type {
 	}
 }
 
-func (t ItemsType) TerraformAttributeTypes(_ context.Context) map[string]tftypes.Type {
+func (t ItemsType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
 	return map[string]tftypes.Type{
-		"default_value": tftypes.String,
-		"disabled":      tftypes.Bool,
-		"id":            tftypes.String,
-		"items":         tftypes.Object{},
-		"link_type":     tftypes.String,
-		"localized":     tftypes.Bool,
-		"name":          tftypes.String,
-		"omitted":       tftypes.Bool,
-		"required":      tftypes.Bool,
-		"type":          tftypes.String,
-		"validations":   tftypes.List{ElementType: tftypes.String},
+		"type":        tftypes.String,
+		"link_type":   tftypes.String,
+		"validations": tftypes.List{ElementType: jsontypes.NormalizedType{}.TerraformType(ctx)},
 	}
 }
 

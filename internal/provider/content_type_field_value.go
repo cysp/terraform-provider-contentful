@@ -12,12 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
+//nolint:recvcheck
 type FieldsValue struct {
 	ID           basetypes.StringValue `tfsdk:"id"`
 	Name         basetypes.StringValue `tfsdk:"name"`
@@ -144,7 +144,6 @@ func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Att
 			CustomType: jsontypes.NormalizedType{},
 			Optional:   true,
 			Computed:   true,
-			Default:    stringdefault.StaticString(""),
 		},
 		"localized": schema.BoolAttribute{
 			Required: true,

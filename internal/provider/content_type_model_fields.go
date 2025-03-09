@@ -36,12 +36,17 @@ func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.C
 func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.ContentTypeFieldsItem) (FieldsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
+	defaultValueValue := jsontypes.NewNormalizedNull()
+	if item.DefaultValue != nil {
+		defaultValueValue = jsontypes.NewNormalizedValue(item.DefaultValue.String())
+	}
+
 	value := FieldsValue{
 		ID:           types.StringValue(item.ID),
 		Name:         types.StringValue(item.Name),
 		FieldsType:   types.StringValue(item.Type),
 		LinkType:     util.OptStringToStringValue(item.LinkType),
-		DefaultValue: jsontypes.NewNormalizedValue(item.DefaultValue.String()),
+		DefaultValue: defaultValueValue,
 		Localized:    util.OptBoolToBoolValue(item.Localized),
 		Disabled:     util.OptBoolToBoolValue(item.Disabled),
 		Omitted:      util.OptBoolToBoolValue(item.Omitted),
@@ -98,7 +103,7 @@ func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations 
 	for i, validation := range validations {
 		encoder := jx.Encoder{}
 		encoder.Raw(validation)
-		validationElements[i] = types.StringValue(encoder.String())
+		validationElements[i] = jsontypes.NewNormalizedValue(encoder.String())
 	}
 
 	list, listDiags := types.ListValue(jsontypes.NormalizedType{}, validationElements)

@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
+//nolint:recvcheck
 type ItemsValue struct {
 	LinkType    basetypes.StringValue `tfsdk:"link_type"`
 	ItemsType   basetypes.StringValue `tfsdk:"type"`
@@ -40,9 +41,9 @@ func NewItemsValueNull() ItemsValue {
 func NewItemsValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (ItemsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	itemsValue, itemsOk := attributes["items"].(basetypes.StringValue)
-	if !itemsOk {
-		diags.AddAttributeError(path.Root("items"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["items"]))
+	typeValue, typeOk := attributes["type"].(basetypes.StringValue)
+	if !typeOk {
+		diags.AddAttributeError(path.Root("type"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["type"]))
 	}
 
 	linkTypeValue, linkTypeOk := attributes["link_type"].(basetypes.StringValue)
@@ -56,7 +57,7 @@ func NewItemsValueKnownFromAttributes(_ context.Context, attributes map[string]a
 	}
 
 	return ItemsValue{
-		ItemsType:   itemsValue,
+		ItemsType:   typeValue,
 		LinkType:    linkTypeValue,
 		Validations: validationsValue,
 		state:       attr.ValueStateKnown,
@@ -100,11 +101,11 @@ func (v ItemsValue) ObjectType(ctx context.Context) basetypes.ObjectType {
 	}
 }
 
-func (v ItemsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+func (v ItemsValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"link_type":   basetypes.StringType{},
 		"type":        basetypes.StringType{},
-		"validations": basetypes.ListType{ElemType: types.StringType},
+		"validations": basetypes.ListType{ElemType: jsontypes.NormalizedType{}},
 	}
 }
 
@@ -150,7 +151,7 @@ func (v ItemsValue) String() string {
 }
 
 func (v ItemsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := FieldsType{}.TerraformType(ctx)
+	tft := ItemsType{}.TerraformType(ctx)
 
 	switch v.state {
 	case attr.ValueStateKnown:

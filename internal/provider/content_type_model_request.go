@@ -47,29 +47,29 @@ func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.P
 	return fieldsItems, diags
 }
 
-func (model *FieldsValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
+func (v *FieldsValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx, path.AtName("items"), model.Items)
+	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx, path.AtName("items"), v.Items)
 	diags.Append(fieldsItemItemsDiags...)
 
-	fieldsItemValidations, fieldsItemValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), model.Validations)
+	fieldsItemValidations, fieldsItemValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), v.Validations)
 	diags.Append(fieldsItemValidationsDiags...)
 
 	fieldsItem := cm.ContentTypeRequestFieldsFieldsItem{
-		ID:          model.ID.ValueString(),
-		Name:        model.Name.ValueString(),
-		Type:        model.FieldsType.ValueString(),
-		LinkType:    util.StringValueToOptString(model.LinkType),
+		ID:          v.ID.ValueString(),
+		Name:        v.Name.ValueString(),
+		Type:        v.FieldsType.ValueString(),
+		LinkType:    util.StringValueToOptString(v.LinkType),
 		Items:       fieldsItemItems,
 		Validations: fieldsItemValidations,
-		Disabled:    util.BoolValueToOptBool(model.Disabled),
-		Omitted:     util.BoolValueToOptBool(model.Omitted),
-		Required:    util.BoolValueToOptBool(model.Required),
-		Localized:   util.BoolValueToOptBool(model.Localized),
+		Disabled:    util.BoolValueToOptBool(v.Disabled),
+		Omitted:     util.BoolValueToOptBool(v.Omitted),
+		Required:    util.BoolValueToOptBool(v.Required),
+		Localized:   util.BoolValueToOptBool(v.Localized),
 	}
 
-	modelDefaultValueValue := model.DefaultValue.ValueString()
+	modelDefaultValueValue := v.DefaultValue.ValueString()
 	if modelDefaultValueValue != "" {
 		fieldsItem.DefaultValue = []byte(modelDefaultValueValue)
 	}
@@ -99,15 +99,15 @@ func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context
 	return fieldsItemItems, diags
 }
 
-func (model *ItemsValue) ToContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
+func (v *ItemsValue) ToContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	itemsValidations, itemsValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), model.Validations)
+	itemsValidations, itemsValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), v.Validations)
 	diags.Append(itemsValidationsDiags...)
 
 	items := cm.ContentTypeRequestFieldsFieldsItemItems{
-		Type:        util.StringValueToOptString(model.ItemsType),
-		LinkType:    util.StringValueToOptString(model.LinkType),
+		Type:        util.StringValueToOptString(v.ItemsType),
+		LinkType:    util.StringValueToOptString(v.LinkType),
 		Validations: itemsValidations,
 	}
 
