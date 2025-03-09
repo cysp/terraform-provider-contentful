@@ -31,7 +31,7 @@ func (m *ContentTypeModel) ToContentTypeRequestFields(ctx context.Context) (cm.C
 func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.Path, fieldsList types.List) ([]cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldsValues := make([]FieldsValue, len(fieldsList.Elements()))
+	fieldsValues := make([]ContentTypeFieldValue, len(fieldsList.Elements()))
 	diags.Append(fieldsList.ElementsAs(ctx, &fieldsValues, false)...)
 
 	fieldsItems := make([]cm.ContentTypeRequestFieldsFieldsItem, len(fieldsValues))
@@ -47,7 +47,7 @@ func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.P
 	return fieldsItems, diags
 }
 
-func (v *FieldsValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
+func (v *ContentTypeFieldValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx, path.AtName("items"), v.Items)
@@ -59,7 +59,7 @@ func (v *FieldsValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Context, 
 	fieldsItem := cm.ContentTypeRequestFieldsFieldsItem{
 		ID:          v.ID.ValueString(),
 		Name:        v.Name.ValueString(),
-		Type:        v.FieldsType.ValueString(),
+		Type:        v.FieldType.ValueString(),
 		LinkType:    util.StringValueToOptString(v.LinkType),
 		Items:       fieldsItemItems,
 		Validations: fieldsItemValidations,

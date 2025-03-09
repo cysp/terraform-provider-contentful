@@ -40,8 +40,8 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"fields": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: FieldsValue{}.SchemaAttributes(ctx),
-					CustomType: FieldsValue{}.CustomType(ctx),
+					Attributes: ContentTypeFieldValue{}.SchemaAttributes(ctx),
+					CustomType: ContentTypeFieldValue{}.CustomType(ctx),
 				},
 				Required: true,
 			},

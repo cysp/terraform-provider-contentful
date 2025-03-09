@@ -18,10 +18,10 @@ import (
 )
 
 //nolint:recvcheck
-type FieldsValue struct {
+type ContentTypeFieldValue struct {
 	ID           basetypes.StringValue `tfsdk:"id"`
 	Name         basetypes.StringValue `tfsdk:"name"`
-	FieldsType   basetypes.StringValue `tfsdk:"type"`
+	FieldType    basetypes.StringValue `tfsdk:"type"`
 	LinkType     basetypes.StringValue `tfsdk:"link_type"`
 	Disabled     basetypes.BoolValue   `tfsdk:"disabled"`
 	Omitted      basetypes.BoolValue   `tfsdk:"omitted"`
@@ -33,21 +33,21 @@ type FieldsValue struct {
 	state        attr.ValueState
 }
 
-var _ basetypes.ObjectValuable = FieldsValue{}
+var _ basetypes.ObjectValuable = ContentTypeFieldValue{}
 
-func NewFieldsValueUnknown() FieldsValue {
-	return FieldsValue{
+func NewFieldsValueUnknown() ContentTypeFieldValue {
+	return ContentTypeFieldValue{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewFieldsValueNull() FieldsValue {
-	return FieldsValue{
+func NewFieldsValueNull() ContentTypeFieldValue {
+	return ContentTypeFieldValue{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (FieldsValue, diag.Diagnostics) {
+func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (ContentTypeFieldValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	idValue, idOk := attributes["id"].(types.String)
@@ -105,10 +105,10 @@ func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes m
 		diags.AddAttributeError(path.Root("validations"), "invalid data", fmt.Sprintf("expected object of type types.List, got %T", attributes["validations"]))
 	}
 
-	return FieldsValue{
+	return ContentTypeFieldValue{
 		ID:           idValue,
 		Name:         nameValue,
-		FieldsType:   fieldsTypeValue,
+		FieldType:    fieldsTypeValue,
 		LinkType:     linkTypeValue,
 		Items:        itemsValue,
 		DefaultValue: defaultValueValue,
@@ -121,7 +121,7 @@ func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes m
 	}, diags
 }
 
-func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Required: true,
@@ -171,26 +171,26 @@ func (v FieldsValue) SchemaAttributes(ctx context.Context) map[string]schema.Att
 }
 
 //nolint:ireturn
-func (v FieldsValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return FieldsType{
+func (v ContentTypeFieldValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
+	return ContentTypeFieldType{
 		v.ObjectType(ctx),
 	}
 }
 
 //nolint:ireturn
-func (v FieldsValue) Type(ctx context.Context) attr.Type {
-	return FieldsType{
+func (v ContentTypeFieldValue) Type(ctx context.Context) attr.Type {
+	return ContentTypeFieldType{
 		ObjectType: v.ObjectType(ctx),
 	}
 }
 
-func (v FieldsValue) ObjectType(ctx context.Context) basetypes.ObjectType {
+func (v ContentTypeFieldValue) ObjectType(ctx context.Context) basetypes.ObjectType {
 	return basetypes.ObjectType{
 		AttrTypes: v.ObjectAttrTypes(ctx),
 	}
 }
 
-func (v FieldsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+func (v ContentTypeFieldValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":            basetypes.StringType{},
 		"name":          basetypes.StringType{},
@@ -206,8 +206,8 @@ func (v FieldsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
 	}
 }
 
-func (v FieldsValue) Equal(o attr.Value) bool {
-	other, ok := o.(FieldsValue)
+func (v ContentTypeFieldValue) Equal(o attr.Value) bool {
+	other, ok := o.(ContentTypeFieldValue)
 	if !ok {
 		return false
 	}
@@ -219,7 +219,7 @@ func (v FieldsValue) Equal(o attr.Value) bool {
 	if v.state == attr.ValueStateKnown {
 		return v.ID.Equal(other.ID) &&
 			v.Name.Equal(other.Name) &&
-			v.FieldsType.Equal(other.FieldsType) &&
+			v.FieldType.Equal(other.FieldType) &&
 			v.LinkType.Equal(other.LinkType) &&
 			v.Items.Equal(other.Items) &&
 			v.DefaultValue.Equal(other.DefaultValue) &&
@@ -233,20 +233,20 @@ func (v FieldsValue) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v FieldsValue) IsNull() bool {
+func (v ContentTypeFieldValue) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v FieldsValue) IsUnknown() bool {
+func (v ContentTypeFieldValue) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v FieldsValue) String() string {
-	return "FieldsValue"
+func (v ContentTypeFieldValue) String() string {
+	return "ContentTypeFieldValue"
 }
 
-func (v FieldsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := FieldsType{}.TerraformType(ctx)
+func (v ContentTypeFieldValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	tft := ContentTypeFieldType{}.TerraformType(ctx)
 
 	switch v.state {
 	case attr.ValueStateKnown:
@@ -269,7 +269,7 @@ func (v FieldsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 	val["name"], nameErr = v.Name.ToTerraformValue(ctx)
 
 	var typeErr error
-	val["type"], typeErr = v.FieldsType.ToTerraformValue(ctx)
+	val["type"], typeErr = v.FieldType.ToTerraformValue(ctx)
 
 	var linkTypeErr error
 	val["link_type"], linkTypeErr = v.LinkType.ToTerraformValue(ctx)
@@ -305,7 +305,7 @@ func (v FieldsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 	return tftypes.NewValue(tft, val), nil
 }
 
-func (v FieldsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ContentTypeFieldValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	attributeTypes := v.ObjectAttrTypes(ctx)
 
 	switch {
@@ -318,7 +318,7 @@ func (v FieldsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 	attributes := map[string]attr.Value{
 		"id":            v.ID,
 		"name":          v.Name,
-		"type":          v.FieldsType,
+		"type":          v.FieldType,
 		"link_type":     v.LinkType,
 		"items":         v.Items,
 		"default_value": v.DefaultValue,

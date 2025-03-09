@@ -27,13 +27,13 @@ func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.C
 		listElementValues[index] = listElementValue
 	}
 
-	listValue, listValueDiags := types.ListValue(FieldsValue{}.Type(ctx), listElementValues)
+	listValue, listValueDiags := types.ListValue(ContentTypeFieldValue{}.Type(ctx), listElementValues)
 	diags.Append(listValueDiags...)
 
 	return listValue, diags
 }
 
-func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.ContentTypeFieldsItem) (FieldsValue, diag.Diagnostics) {
+func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.ContentTypeFieldsItem) (ContentTypeFieldValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	defaultValueValue := jsontypes.NewNormalizedNull()
@@ -41,10 +41,10 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 		defaultValueValue = jsontypes.NewNormalizedValue(item.DefaultValue.String())
 	}
 
-	value := FieldsValue{
+	value := ContentTypeFieldValue{
 		ID:           types.StringValue(item.ID),
 		Name:         types.StringValue(item.Name),
-		FieldsType:   types.StringValue(item.Type),
+		FieldType:    types.StringValue(item.Type),
 		LinkType:     util.OptStringToStringValue(item.LinkType),
 		DefaultValue: defaultValueValue,
 		Localized:    util.OptBoolToBoolValue(item.Localized),

@@ -11,14 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-type FieldsType struct {
+type ContentTypeFieldType struct {
 	basetypes.ObjectType
 }
 
-var _ basetypes.ObjectTypable = FieldsType{}
+var _ basetypes.ObjectTypable = ContentTypeFieldType{}
 
-func (t FieldsType) Equal(o attr.Type) bool {
-	other, ok := o.(FieldsType)
+func (t ContentTypeFieldType) Equal(o attr.Type) bool {
+	other, ok := o.(ContentTypeFieldType)
 	if !ok {
 		return false
 	}
@@ -27,22 +27,22 @@ func (t FieldsType) Equal(o attr.Type) bool {
 }
 
 //nolint:ireturn
-func (t FieldsType) ValueType(_ context.Context) attr.Value {
-	return FieldsValue{}
+func (t ContentTypeFieldType) ValueType(_ context.Context) attr.Value {
+	return ContentTypeFieldValue{}
 }
 
-func (t FieldsType) String() string {
-	return "FieldsType"
+func (t ContentTypeFieldType) String() string {
+	return "ContentTypeFieldType"
 }
 
 //nolint:ireturn
-func (t FieldsType) TerraformType(ctx context.Context) tftypes.Type {
+func (t ContentTypeFieldType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
 		AttributeTypes: t.TerraformAttributeTypes(ctx),
 	}
 }
 
-func (t FieldsType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
+func (t ContentTypeFieldType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
 	return map[string]tftypes.Type{
 		"id":            tftypes.String,
 		"name":          tftypes.String,
@@ -59,7 +59,7 @@ func (t FieldsType) TerraformAttributeTypes(ctx context.Context) map[string]tfty
 }
 
 //nolint:ireturn
-func (t FieldsType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
+func (t ContentTypeFieldType) ValueFromTerraform(ctx context.Context, value tftypes.Value) (attr.Value, error) {
 	if value.Type() == nil {
 		return NewFieldsValueNull(), nil
 	}
@@ -78,7 +78,7 @@ func (t FieldsType) ValueFromTerraform(ctx context.Context, value tftypes.Value)
 
 	attributes, err := AttributesFromTerraformValue(ctx, t.AttrTypes, value)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create FieldsValue from Terraform: %w", err)
+		return nil, fmt.Errorf("failed to create ContentTypeFieldValue from Terraform: %w", err)
 	}
 
 	v, diags := NewContentTypeFieldValueKnownFromAttributes(ctx, attributes)
@@ -87,7 +87,7 @@ func (t FieldsType) ValueFromTerraform(ctx context.Context, value tftypes.Value)
 }
 
 //nolint:ireturn
-func (t FieldsType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t ContentTypeFieldType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	switch {
 	case value.IsNull():
 		return NewFieldsValueNull(), nil

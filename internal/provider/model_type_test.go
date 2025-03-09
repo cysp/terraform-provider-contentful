@@ -20,7 +20,7 @@ func TestModelTypeEqual(t *testing.T) {
 	types := []attr.Type{
 		provider.ControlsType{},
 		provider.EditorLayoutType{},
-		provider.FieldsType{},
+		provider.ContentTypeFieldType{},
 		provider.GroupControlsType{},
 		provider.ContentTypeFieldItemsType{},
 		provider.SidebarType{},
@@ -73,7 +73,7 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 	types := []attr.Type{
 		provider.ControlsType{},
 		provider.EditorLayoutType{},
-		provider.FieldsType{},
+		provider.ContentTypeFieldType{},
 		provider.GroupControlsType{},
 		provider.ContentTypeFieldItemsType{},
 		provider.SidebarType{},
