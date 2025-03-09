@@ -67,45 +67,32 @@ func (t ItemsType) ValueFromTerraform(ctx context.Context, value tftypes.Value) 
 		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), value.Type())
 	}
 
-	if !value.IsKnown() {
-		return NewItemsValueUnknown(), nil
-	}
-
 	if value.IsNull() {
 		return NewItemsValueNull(), nil
 	}
 
-	attributes := map[string]attr.Value{}
+	if !value.IsKnown() {
+		return NewItemsValueUnknown(), nil
+	}
 
-	val := map[string]tftypes.Value{}
-
-	err := value.As(&val)
-
+	attributes, err := AttributesFromTerraformValue(ctx, t.AttrTypes, value)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create ItemsValue from Terraform: %w", err)
 	}
 
-	for k, v := range val {
-		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+	v, diags := NewItemsValueKnownFromAttributes(ctx, attributes)
 
-		if err != nil {
-			return nil, err
-		}
-
-		attributes[k] = a
-	}
-
-	return NewItemsValueMust(ItemsValue{}.AttributeTypes(ctx), attributes), nil
+	return v, ErrorFromDiags(diags)
 }
 
 //nolint:ireturn
 func (t ItemsType) ValueFromObject(ctx context.Context, value basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	switch {
 	case value.IsNull():
-		return NewFieldsValueNull(), nil
+		return NewItemsValueNull(), nil
 	case value.IsUnknown():
-		return NewFieldsValueUnknown(), nil
+		return NewItemsValueUnknown(), nil
 	}
 
-	return NewContentTypeFieldItemsValueKnownFromAttributes(ctx, value.Attributes())
+	return NewItemsValueKnownFromAttributes(ctx, value.Attributes())
 }
