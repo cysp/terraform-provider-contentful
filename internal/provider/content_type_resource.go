@@ -58,9 +58,9 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	currentVersion := 1
 
 	params := cm.PutContentTypeParams{
-		SpaceID:            data.SpaceId.ValueString(),
-		EnvironmentID:      data.EnvironmentId.ValueString(),
-		ContentTypeID:      data.ContentTypeId.ValueString(),
+		SpaceID:            data.SpaceID.ValueString(),
+		EnvironmentID:      data.EnvironmentID.ValueString(),
+		ContentTypeID:      data.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
@@ -94,9 +94,9 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	activateContentTypeParams := cm.ActivateContentTypeParams{
-		SpaceID:            data.SpaceId.ValueString(),
-		EnvironmentID:      data.EnvironmentId.ValueString(),
-		ContentTypeID:      data.ContentTypeId.ValueString(),
+		SpaceID:            data.SpaceID.ValueString(),
+		EnvironmentID:      data.EnvironmentID.ValueString(),
+		ContentTypeID:      data.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
@@ -134,9 +134,9 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	params := cm.GetContentTypeParams{
-		SpaceID:       data.SpaceId.ValueString(),
-		EnvironmentID: data.EnvironmentId.ValueString(),
-		ContentTypeID: data.ContentTypeId.ValueString(),
+		SpaceID:       data.SpaceID.ValueString(),
+		EnvironmentID: data.EnvironmentID.ValueString(),
+		ContentTypeID: data.ContentTypeID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetContentType(ctx, params)
@@ -189,9 +189,9 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	putContentTypeParams := cm.PutContentTypeParams{
-		SpaceID:            data.SpaceId.ValueString(),
-		EnvironmentID:      data.EnvironmentId.ValueString(),
-		ContentTypeID:      data.ContentTypeId.ValueString(),
+		SpaceID:            data.SpaceID.ValueString(),
+		EnvironmentID:      data.EnvironmentID.ValueString(),
+		ContentTypeID:      data.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
@@ -225,9 +225,9 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	activateContentTypeParams := cm.ActivateContentTypeParams{
-		SpaceID:            data.SpaceId.ValueString(),
-		EnvironmentID:      data.EnvironmentId.ValueString(),
-		ContentTypeID:      data.ContentTypeId.ValueString(),
+		SpaceID:            data.SpaceID.ValueString(),
+		EnvironmentID:      data.EnvironmentID.ValueString(),
+		ContentTypeID:      data.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
@@ -254,7 +254,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
-	r.providerData.editorInterfaceVersionOffset.Increment(data.ContentTypeId.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Increment(data.ContentTypeID.ValueString())
 }
 
 func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -267,9 +267,9 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	deactivateContentTypeParams := cm.DeactivateContentTypeParams{
-		SpaceID:       data.SpaceId.ValueString(),
-		EnvironmentID: data.EnvironmentId.ValueString(),
-		ContentTypeID: data.ContentTypeId.ValueString(),
+		SpaceID:       data.SpaceID.ValueString(),
+		EnvironmentID: data.EnvironmentID.ValueString(),
+		ContentTypeID: data.ContentTypeID.ValueString(),
 	}
 
 	deactivateContentTypeResponse, err := r.providerData.client.DeactivateContentType(ctx, deactivateContentTypeParams)
@@ -305,9 +305,9 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	deleteContentTypeParams := cm.DeleteContentTypeParams{
-		SpaceID:       data.SpaceId.ValueString(),
-		EnvironmentID: data.EnvironmentId.ValueString(),
-		ContentTypeID: data.ContentTypeId.ValueString(),
+		SpaceID:       data.SpaceID.ValueString(),
+		EnvironmentID: data.EnvironmentID.ValueString(),
+		ContentTypeID: data.ContentTypeID.ValueString(),
 	}
 	deleteContentTypeResponse, err := r.providerData.client.DeleteContentType(ctx, deleteContentTypeParams)
 
