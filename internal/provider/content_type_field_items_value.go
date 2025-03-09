@@ -150,6 +150,7 @@ func (v ContentTypeFieldItemsValue) String() string {
 	return "ContentTypeFieldItemsValue"
 }
 
+//nolint:dupl
 func (v ContentTypeFieldItemsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	tft := ContentTypeFieldItemsType{}.TerraformType(ctx)
 

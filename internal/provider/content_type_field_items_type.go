@@ -57,7 +57,7 @@ func (t ContentTypeFieldItemsType) ValueFromTerraform(ctx context.Context, value
 	}
 
 	if !value.Type().Equal(t.TerraformType(ctx)) {
-		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), value.Type())
+		return nil, UnexpectedTerraformTypeError{Expected: t.TerraformType(ctx), Actual: value.Type()}
 	}
 
 	if value.IsNull() {
