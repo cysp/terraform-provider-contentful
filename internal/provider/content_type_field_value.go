@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -185,28 +184,5 @@ func (v ContentTypeFieldValue) ToTerraformValue(ctx context.Context) (tftypes.Va
 }
 
 func (v ContentTypeFieldValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	attributeTypes := v.ObjectAttrTypes(ctx)
-
-	switch {
-	case v.IsNull():
-		return types.ObjectNull(attributeTypes), nil
-	case v.IsUnknown():
-		return types.ObjectUnknown(attributeTypes), nil
-	}
-
-	attributes := map[string]attr.Value{
-		"id":            v.ID,
-		"name":          v.Name,
-		"type":          v.FieldType,
-		"link_type":     v.LinkType,
-		"items":         v.Items,
-		"default_value": v.DefaultValue,
-		"localized":     v.Localized,
-		"disabled":      v.Disabled,
-		"omitted":       v.Omitted,
-		"required":      v.Required,
-		"validations":   v.Validations,
-	}
-
-	return types.ObjectValue(attributeTypes, attributes)
+	return ReflectToObjectValue(ctx, v)
 }

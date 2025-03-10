@@ -190,6 +190,50 @@ func ReflectToTerraformValue(ctx context.Context, value attr.Value, state attr.V
 	return tftypes.NewValue(tft, tfval), nil
 }
 
+func ReflectToObjectValue(ctx context.Context, value AttrValueWithObjectAttrTypes) (basetypes.ObjectValue, diag.Diagnostics) {
+	attributeTypes := value.ObjectAttrTypes(ctx)
+
+	switch {
+	case value.IsNull():
+		return types.ObjectNull(attributeTypes), nil
+	case value.IsUnknown():
+		return types.ObjectUnknown(attributeTypes), nil
+	}
+
+	typ := reflect.TypeOf(value).Elem()
+
+	numAttributes := 0
+
+	for i := range typ.NumField() {
+		field := typ.Field(i)
+		if field.Tag.Get("tfsdk") != "" {
+			numAttributes++
+		}
+	}
+
+	attributes := map[string]attr.Value{}
+
+	for i := range typ.NumField() {
+		field := typ.Field(i)
+
+		tag := field.Tag.Get("tfsdk")
+		if tag == "" {
+			continue
+		}
+
+		fieldTypeInterface := reflect.New(field.Type).Interface()
+
+		fieldTypeValue, fieldTypeValueOk := fieldTypeInterface.(attr.Value)
+		if !fieldTypeValueOk {
+			continue
+		}
+
+		attributes[tag] = fieldTypeValue
+	}
+
+	return types.ObjectValue(attributeTypes, attributes)
+}
+
 type UnexpectedTerraformTypeError struct {
 	Expected tftypes.Type
 	Actual   tftypes.Type

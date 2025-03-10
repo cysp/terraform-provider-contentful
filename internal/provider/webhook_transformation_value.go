@@ -143,21 +143,5 @@ func (v WebhookTransformationValue) ToTerraformValue(ctx context.Context) (tftyp
 }
 
 func (v WebhookTransformationValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	attributeTypes := v.ObjectAttrTypes(ctx)
-
-	switch {
-	case v.IsNull():
-		return types.ObjectNull(attributeTypes), nil
-	case v.IsUnknown():
-		return types.ObjectUnknown(attributeTypes), nil
-	}
-
-	attributes := map[string]attr.Value{
-		"method":                 v.Method,
-		"content_type":           v.ContentType,
-		"include_content_length": v.IncludeContentLength,
-		"body":                   v.Body,
-	}
-
-	return types.ObjectValue(attributeTypes, attributes)
+	return ReflectToObjectValue(ctx, v)
 }
