@@ -102,8 +102,8 @@ func (v WebhookFilterRegexpValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if v.state != attr.ValueStateKnown {
-		return v.Doc.Equal(other.Doc) && v.Pattern.Equal(other.Pattern)
+	if v.state == attr.ValueStateKnown {
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true

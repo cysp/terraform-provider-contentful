@@ -115,7 +115,7 @@ func (v ContentTypeFieldItemsValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.ItemsType.Equal(other.ItemsType) && v.LinkType.Equal(other.LinkType) && v.Validations.Equal(other.Validations)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true

@@ -106,7 +106,7 @@ func (v WebhookFilterInValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.Doc.Equal(other.Doc) && v.Values.Equal(other.Values)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true

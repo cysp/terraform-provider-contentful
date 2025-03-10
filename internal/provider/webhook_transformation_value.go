@@ -122,7 +122,7 @@ func (v WebhookTransformationValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.Method.Equal(other.Method) && v.ContentType.Equal(other.ContentType) && v.IncludeContentLength.Equal(other.IncludeContentLength) && v.Body.Equal(other.Body)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true

@@ -115,7 +115,7 @@ func (v WebhookFilterNotValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.Equals.Equal(other.Equals) && v.In.Equal(other.In) && v.Regexp.Equal(other.Regexp)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true
