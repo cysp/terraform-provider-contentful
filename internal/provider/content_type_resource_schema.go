@@ -11,6 +11,9 @@ import (
 func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed: true,
+			},
 			"space_id": schema.StringAttribute{
 				Required: true,
 				PlanModifiers: []planmodifier.String{

@@ -61,6 +61,10 @@ resource "contentful_content_type" "author" {
 - `name` (String)
 - `space_id` (String)
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--fields"></a>
 ### Nested Schema for `fields`
 
