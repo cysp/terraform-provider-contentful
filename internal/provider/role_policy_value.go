@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -121,41 +119,8 @@ func (v RolePolicyValue) String() string {
 	return ""
 }
 
-//nolint:dupl
 func (v RolePolicyValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := RolePolicyType{}.TerraformType(ctx)
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		break
-	case attr.ValueStateNull:
-		return tftypes.NewValue(tft, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-
-	//nolint:gomnd,mnd
-	val := make(map[string]tftypes.Value, 3)
-
-	var actionsErr error
-	val["actions"], actionsErr = v.Actions.ToTerraformValue(ctx)
-
-	var constraintErr error
-	val["constraint"], constraintErr = v.Constraint.ToTerraformValue(ctx)
-
-	var effectErr error
-	val["effect"], effectErr = v.Effect.ToTerraformValue(ctx)
-
-	validateErr := tftypes.ValidateValue(tft, val)
-
-	err := errors.Join(actionsErr, constraintErr, effectErr, validateErr)
-	if err != nil {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(tft, val), nil
+	return ReflectToTerraformValue(ctx, v, v.state)
 }
 
 func (v RolePolicyValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {

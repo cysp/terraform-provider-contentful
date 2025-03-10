@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -183,63 +181,7 @@ func (v ContentTypeFieldValue) String() string {
 }
 
 func (v ContentTypeFieldValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := ContentTypeFieldType{}.TerraformType(ctx)
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		break
-	case attr.ValueStateNull:
-		return tftypes.NewValue(tft, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-
-	//nolint:gomnd,mnd
-	val := make(map[string]tftypes.Value, 11)
-
-	var idErr error
-	val["id"], idErr = v.ID.ToTerraformValue(ctx)
-
-	var nameErr error
-	val["name"], nameErr = v.Name.ToTerraformValue(ctx)
-
-	var typeErr error
-	val["type"], typeErr = v.FieldType.ToTerraformValue(ctx)
-
-	var linkTypeErr error
-	val["link_type"], linkTypeErr = v.LinkType.ToTerraformValue(ctx)
-
-	var itemsErr error
-	val["items"], itemsErr = v.Items.ToTerraformValue(ctx)
-
-	var defaultValueErr error
-	val["default_value"], defaultValueErr = v.DefaultValue.ToTerraformValue(ctx)
-
-	var localizedErr error
-	val["localized"], localizedErr = v.Localized.ToTerraformValue(ctx)
-
-	var disabledErr error
-	val["disabled"], disabledErr = v.Disabled.ToTerraformValue(ctx)
-
-	var omittedErr error
-	val["omitted"], omittedErr = v.Omitted.ToTerraformValue(ctx)
-
-	var requiredErr error
-	val["required"], requiredErr = v.Required.ToTerraformValue(ctx)
-
-	var validationsErr error
-	val["validations"], validationsErr = v.Validations.ToTerraformValue(ctx)
-
-	validateErr := tftypes.ValidateValue(tft, val)
-
-	err := errors.Join(idErr, nameErr, typeErr, linkTypeErr, itemsErr, defaultValueErr, localizedErr, disabledErr, omittedErr, requiredErr, validationsErr, validateErr)
-	if err != nil {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(tft, val), nil
+	return ReflectToTerraformValue(ctx, v, v.state)
 }
 
 func (v ContentTypeFieldValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
