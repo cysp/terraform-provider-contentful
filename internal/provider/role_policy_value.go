@@ -103,7 +103,7 @@ func (v RolePolicyValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.Actions.Equal(other.Actions) && v.Constraint.Equal(other.Constraint) && v.Effect.Equal(other.Effect)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true

@@ -164,17 +164,7 @@ func (v ContentTypeFieldValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.ID.Equal(other.ID) &&
-			v.Name.Equal(other.Name) &&
-			v.FieldType.Equal(other.FieldType) &&
-			v.LinkType.Equal(other.LinkType) &&
-			v.Items.Equal(other.Items) &&
-			v.DefaultValue.Equal(other.DefaultValue) &&
-			v.Localized.Equal(other.Localized) &&
-			v.Disabled.Equal(other.Disabled) &&
-			v.Omitted.Equal(other.Omitted) &&
-			v.Required.Equal(other.Required) &&
-			v.Validations.Equal(other.Validations)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true

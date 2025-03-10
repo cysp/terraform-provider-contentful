@@ -119,7 +119,7 @@ func (v WebhookHeaderValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.Value.Equal(other.Value) && v.Secret.Equal(other.Secret)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true
