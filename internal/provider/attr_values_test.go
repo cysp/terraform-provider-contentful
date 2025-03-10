@@ -1,17 +1,27 @@
 package provider_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 )
 
+type InvalidAttrType struct {
+	attr.Type
+}
+
+type InvalidAttrValue struct {
+	attr.Value
+}
+
+//nolint:ireturn
+func (v InvalidAttrValue) Type(_ context.Context) attr.Type {
+	return InvalidAttrType{}
+}
+
 func GenerateInvalidValueFromAttributesTestcases(t *testing.T, attributes map[string]attr.Value) map[string]map[string]attr.Value {
 	t.Helper()
-
-	type InvalidAttrValue struct {
-		attr.Value
-	}
 
 	testcases := map[string]map[string]attr.Value{
 		"empty": {},
