@@ -27,24 +27,17 @@ func NewWebhookFilterEqualsValueKnown() WebhookFilterEqualsValue {
 	}
 }
 
-func NewWebhookFilterEqualsValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookFilterEqualsValue, diag.Diagnostics) {
+func NewWebhookFilterEqualsValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (WebhookFilterEqualsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	docValue, docOk := attributes["doc"].(basetypes.StringValue)
-	if !docOk {
-		diags.AddError("Invalid data", fmt.Sprintf("expected doc to be of type String, got %T", attributes["doc"]))
-	}
-
-	valueValue, valueOk := attributes["value"].(basetypes.StringValue)
-	if !valueOk {
-		diags.AddError("Invalid data", fmt.Sprintf("expected value to be of type String, got %T", attributes["doc"]))
-	}
-
-	return WebhookFilterEqualsValue{
-		Doc:   docValue,
-		Value: valueValue,
+	value := WebhookFilterEqualsValue{
 		state: attr.ValueStateKnown,
-	}, diags
+	}
+
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
+
+	return value, diags
 }
 
 func NewWebhookFilterEqualsValueNull() WebhookFilterEqualsValue {
