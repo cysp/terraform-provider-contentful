@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -30,24 +29,17 @@ func NewWebhookHeaderValueKnown() WebhookHeaderValue {
 	}
 }
 
-func NewWebhookHeaderValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookHeaderValue, diag.Diagnostics) {
+func NewWebhookHeaderValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (WebhookHeaderValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	valueValue, valueOk := attributes["value"].(types.String)
-	if !valueOk {
-		diags.AddAttributeError(path.Root("value"), "invalid data", fmt.Sprintf("expected string, got %T", attributes["value"]))
+	value := WebhookHeaderValue{
+		state: attr.ValueStateKnown,
 	}
 
-	secretValue, secretOk := attributes["secret"].(types.Bool)
-	if !secretOk {
-		diags.AddAttributeError(path.Root("secret"), "invalid data", fmt.Sprintf("expected bool, got %T", attributes["secret"]))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	return WebhookHeaderValue{
-		Value:  valueValue,
-		Secret: secretValue,
-		state:  attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func NewWebhookHeaderValueKnownFromAttributesMust(ctx context.Context, attributes map[string]attr.Value) WebhookHeaderValue {

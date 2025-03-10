@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -29,36 +28,17 @@ func NewWebhookTransformationValueKnown() WebhookTransformationValue {
 	}
 }
 
-func NewWebhookTransformationValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookTransformationValue, diag.Diagnostics) {
+func NewWebhookTransformationValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (WebhookTransformationValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	methodValue, methodOk := attributes["method"].(types.String)
-	if !methodOk {
-		diags.AddAttributeError(path.Root("method"), "invalid data", fmt.Sprintf("expected string, got %T", attributes["method"]))
+	value := WebhookTransformationValue{
+		state: attr.ValueStateKnown,
 	}
 
-	contentTypeValue, contentTypeOk := attributes["content_type"].(types.String)
-	if !contentTypeOk {
-		diags.AddAttributeError(path.Root("content_type"), "invalid data", fmt.Sprintf("expected string, got %T", attributes["content_type"]))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	includeContentLengthValue, includeContentLengthOk := attributes["include_content_length"].(types.Bool)
-	if !includeContentLengthOk {
-		diags.AddAttributeError(path.Root("include_content_length"), "invalid data", fmt.Sprintf("expected bool, got %T", attributes["include_content_length"]))
-	}
-
-	bodyValue, contentTypeOk := attributes["body"].(jsontypes.Normalized)
-	if !contentTypeOk {
-		diags.AddAttributeError(path.Root("body"), "invalid data", fmt.Sprintf("expected json string, got %T", attributes["body"]))
-	}
-
-	return WebhookTransformationValue{
-		Method:               methodValue,
-		ContentType:          contentTypeValue,
-		IncludeContentLength: includeContentLengthValue,
-		Body:                 bodyValue,
-		state:                attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func NewWebhookTransformationValueKnownFromAttributesMust(ctx context.Context, attributes map[string]attr.Value) WebhookTransformationValue {

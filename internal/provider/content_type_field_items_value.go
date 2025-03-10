@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,30 +46,17 @@ func NewContentTypeFieldItemsValueKnownFromAttributesMust(ctx context.Context, a
 	return value
 }
 
-func NewContentTypeFieldItemsValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (ContentTypeFieldItemsValue, diag.Diagnostics) {
+func NewContentTypeFieldItemsValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (ContentTypeFieldItemsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	typeValue, typeOk := attributes["type"].(basetypes.StringValue)
-	if !typeOk {
-		diags.AddAttributeError(path.Root("type"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["type"]))
+	value := ContentTypeFieldItemsValue{
+		state: attr.ValueStateKnown,
 	}
 
-	linkTypeValue, linkTypeOk := attributes["link_type"].(basetypes.StringValue)
-	if !linkTypeOk {
-		diags.AddAttributeError(path.Root("link_type"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["link_type"]))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	validationsValue, validationsOk := attributes["validations"].(basetypes.ListValue)
-	if !validationsOk {
-		diags.AddAttributeError(path.Root("validations"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["validations"]))
-	}
-
-	return ContentTypeFieldItemsValue{
-		ItemsType:   typeValue,
-		LinkType:    linkTypeValue,
-		Validations: validationsValue,
-		state:       attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func (v ContentTypeFieldItemsValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
