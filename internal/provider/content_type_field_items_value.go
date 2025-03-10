@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -133,41 +131,8 @@ func (v ContentTypeFieldItemsValue) String() string {
 	return "ContentTypeFieldItemsValue"
 }
 
-//nolint:dupl
 func (v ContentTypeFieldItemsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := ContentTypeFieldItemsType{}.TerraformType(ctx)
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		break
-	case attr.ValueStateNull:
-		return tftypes.NewValue(tft, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-
-	//nolint:gomnd,mnd
-	val := make(map[string]tftypes.Value, 3)
-
-	var itemsErr error
-	val["type"], itemsErr = v.ItemsType.ToTerraformValue(ctx)
-
-	var linkTypeErr error
-	val["link_type"], linkTypeErr = v.LinkType.ToTerraformValue(ctx)
-
-	var validationsErr error
-	val["validations"], validationsErr = v.Validations.ToTerraformValue(ctx)
-
-	validateErr := tftypes.ValidateValue(tft, val)
-
-	err := errors.Join(itemsErr, linkTypeErr, validationsErr, validateErr)
-	if err != nil {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(tft, val), nil
+	return ReflectToTerraformValue(ctx, v, v.state)
 }
 
 func (v ContentTypeFieldItemsValue) ToObjectValueMust(ctx context.Context) basetypes.ObjectValue {

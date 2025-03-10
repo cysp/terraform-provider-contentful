@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -123,6 +124,70 @@ func AttributesFromTerraformValue(ctx context.Context, attrTypes map[string]attr
 	}
 
 	return attributes, nil
+}
+
+func ReflectToTerraformValue(ctx context.Context, value attr.Value, state attr.ValueState) (tftypes.Value, error) {
+	tft := value.Type(ctx).TerraformType(ctx)
+
+	switch state {
+	case attr.ValueStateKnown:
+		break
+	case attr.ValueStateNull:
+		return tftypes.NewValue(tft, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", state))
+	}
+
+	typ := reflect.TypeOf(value).Elem()
+
+	numAttributes := 0
+
+	for i := range typ.NumField() {
+		field := typ.Field(i)
+		if field.Tag.Get("tfsdk") != "" {
+			numAttributes++
+		}
+	}
+
+	tfval := make(map[string]tftypes.Value, numAttributes)
+
+	errs := []error{}
+
+	for i := range typ.NumField() {
+		field := typ.Field(i)
+
+		tag := field.Tag.Get("tfsdk")
+		if tag == "" {
+			continue
+		}
+
+		fieldTypeInterface := reflect.New(field.Type).Interface()
+
+		fieldTypeValue, fieldTypeValueOk := fieldTypeInterface.(attr.Value)
+		if !fieldTypeValueOk {
+			continue
+		}
+
+		var err error
+		tfval[tag], err = fieldTypeValue.ToTerraformValue(ctx)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	validateErr := tftypes.ValidateValue(tft, tfval)
+	if validateErr != nil {
+		errs = append(errs, validateErr)
+	}
+
+	err := errors.Join(errs...)
+	if err != nil {
+		return tftypes.NewValue(tft, tftypes.UnknownValue), err
+	}
+
+	return tftypes.NewValue(tft, tfval), nil
 }
 
 type UnexpectedTerraformTypeError struct {

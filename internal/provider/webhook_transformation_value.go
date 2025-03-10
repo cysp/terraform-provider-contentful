@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -140,44 +138,8 @@ func (v WebhookTransformationValue) String() string {
 	return "WebhookTransformationValue"
 }
 
-//nolint:dupl
 func (v WebhookTransformationValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := WebhookTransformationType{}.TerraformType(ctx)
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		break
-	case attr.ValueStateNull:
-		return tftypes.NewValue(tft, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-
-	//nolint:gomnd,mnd
-	val := make(map[string]tftypes.Value, 4)
-
-	var methodErr error
-	val["method"], methodErr = v.Method.ToTerraformValue(ctx)
-
-	var contentTypeErr error
-	val["content_type"], contentTypeErr = v.ContentType.ToTerraformValue(ctx)
-
-	var includeContentLengthErr error
-	val["include_content_length"], includeContentLengthErr = v.IncludeContentLength.ToTerraformValue(ctx)
-
-	var bodyErr error
-	val["body"], bodyErr = v.Body.ToTerraformValue(ctx)
-
-	validateErr := tftypes.ValidateValue(tft, val)
-
-	err := errors.Join(methodErr, contentTypeErr, includeContentLengthErr, bodyErr, validateErr)
-	if err != nil {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(tft, val), nil
+	return ReflectToTerraformValue(ctx, v, v.state)
 }
 
 func (v WebhookTransformationValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
