@@ -2,12 +2,9 @@ package provider
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -30,24 +27,17 @@ func NewWebhookHeaderValueKnown() WebhookHeaderValue {
 	}
 }
 
-func NewWebhookHeaderValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookHeaderValue, diag.Diagnostics) {
+func NewWebhookHeaderValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (WebhookHeaderValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	valueValue, valueOk := attributes["value"].(types.String)
-	if !valueOk {
-		diags.AddAttributeError(path.Root("value"), "invalid data", fmt.Sprintf("expected string, got %T", attributes["value"]))
+	value := WebhookHeaderValue{
+		state: attr.ValueStateKnown,
 	}
 
-	secretValue, secretOk := attributes["secret"].(types.Bool)
-	if !secretOk {
-		diags.AddAttributeError(path.Root("secret"), "invalid data", fmt.Sprintf("expected bool, got %T", attributes["secret"]))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	return WebhookHeaderValue{
-		Value:  valueValue,
-		Secret: secretValue,
-		state:  attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func NewWebhookHeaderValueKnownFromAttributesMust(ctx context.Context, attributes map[string]attr.Value) WebhookHeaderValue {
@@ -127,7 +117,7 @@ func (v WebhookHeaderValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.Value.Equal(other.Value) && v.Secret.Equal(other.Secret)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true
@@ -145,54 +135,10 @@ func (v WebhookHeaderValue) String() string {
 	return "WebhookHeaderValue"
 }
 
-//nolint:dupl
 func (v WebhookHeaderValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := WebhookHeaderType{}.TerraformType(ctx)
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		break
-	case attr.ValueStateNull:
-		return tftypes.NewValue(tft, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-
-	//nolint:gomnd,mnd
-	val := make(map[string]tftypes.Value, 4)
-
-	var valueErr error
-	val["value"], valueErr = v.Value.ToTerraformValue(ctx)
-
-	var secretErr error
-	val["secret"], secretErr = v.Secret.ToTerraformValue(ctx)
-
-	validateErr := tftypes.ValidateValue(tft, val)
-
-	err := errors.Join(valueErr, secretErr, validateErr)
-	if err != nil {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(tft, val), nil
+	return ReflectToTerraformValue(ctx, v, v.state)
 }
 
 func (v WebhookHeaderValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	attributeTypes := v.ObjectAttrTypes(ctx)
-
-	switch {
-	case v.IsNull():
-		return types.ObjectNull(attributeTypes), nil
-	case v.IsUnknown():
-		return types.ObjectUnknown(attributeTypes), nil
-	}
-
-	attributes := map[string]attr.Value{
-		"value":  v.Value,
-		"secret": v.Secret,
-	}
-
-	return types.ObjectValue(attributeTypes, attributes)
+	return ReflectToObjectValue(ctx, v)
 }

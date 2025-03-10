@@ -2,13 +2,10 @@ package provider
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -25,32 +22,14 @@ type RolePolicyValue struct {
 func NewRolePolicyValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (RolePolicyValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	actionsValue, actionsOk := attributes["actions"].(types.List)
-	if !actionsOk {
-		diags.AddAttributeError(path.Root("actions"), "invalid data", fmt.Sprintf("expected object of type List, got %T", attributes["actions"]))
+	value := RolePolicyValue{
+		state: attr.ValueStateKnown,
 	}
 
-	actionsElementType := actionsValue.ElementType(ctx)
-	if actionsElementType != types.StringType {
-		diags.AddAttributeError(path.Root("actions"), "invalid data", fmt.Sprintf("expected element type to be String, got %s", actionsElementType))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	constraintValue, constraintOk := attributes["constraint"].(jsontypes.Normalized)
-	if !constraintOk {
-		diags.AddAttributeError(path.Root("constraint"), "invalid data", fmt.Sprintf("expected object of type jsontypes.Normalized, got %T", attributes["constraint"]))
-	}
-
-	effectValue, effectOk := attributes["effect"].(types.String)
-	if !effectOk {
-		diags.AddAttributeError(path.Root("effect"), "invalid data", fmt.Sprintf("expected object of type String, got %T", attributes["effect"]))
-	}
-
-	return RolePolicyValue{
-		Actions:    actionsValue,
-		Constraint: constraintValue,
-		Effect:     effectValue,
-		state:      attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func NewRolePolicyValueNull() RolePolicyValue {
@@ -122,7 +101,7 @@ func (v RolePolicyValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.Actions.Equal(other.Actions) && v.Constraint.Equal(other.Constraint) && v.Effect.Equal(other.Effect)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true
@@ -140,58 +119,10 @@ func (v RolePolicyValue) String() string {
 	return ""
 }
 
-//nolint:dupl
 func (v RolePolicyValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := RolePolicyType{}.TerraformType(ctx)
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		break
-	case attr.ValueStateNull:
-		return tftypes.NewValue(tft, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-
-	//nolint:gomnd,mnd
-	val := make(map[string]tftypes.Value, 3)
-
-	var actionsErr error
-	val["actions"], actionsErr = v.Actions.ToTerraformValue(ctx)
-
-	var constraintErr error
-	val["constraint"], constraintErr = v.Constraint.ToTerraformValue(ctx)
-
-	var effectErr error
-	val["effect"], effectErr = v.Effect.ToTerraformValue(ctx)
-
-	validateErr := tftypes.ValidateValue(tft, val)
-
-	err := errors.Join(actionsErr, constraintErr, effectErr, validateErr)
-	if err != nil {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(tft, val), nil
+	return ReflectToTerraformValue(ctx, v, v.state)
 }
 
 func (v RolePolicyValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	attributeTypes := v.ObjectAttrTypes(ctx)
-
-	switch {
-	case v.IsNull():
-		return types.ObjectNull(attributeTypes), nil
-	case v.IsUnknown():
-		return types.ObjectUnknown(attributeTypes), nil
-	}
-
-	attributes := map[string]attr.Value{
-		"actions":    v.Actions,
-		"constraint": v.Constraint,
-		"effect":     v.Effect,
-	}
-
-	return types.ObjectValue(attributeTypes, attributes)
+	return ReflectToObjectValue(ctx, v)
 }

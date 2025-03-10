@@ -19,3 +19,9 @@ type AttrValueWithToObjectValue interface {
 
 	ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics)
 }
+
+type AttrValueWithObjectAttrTypes interface {
+	attr.Value
+
+	ObjectAttrTypes(ctx context.Context) map[string]attr.Type
+}

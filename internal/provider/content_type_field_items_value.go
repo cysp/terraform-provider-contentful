@@ -2,16 +2,12 @@ package provider
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -47,30 +43,17 @@ func NewContentTypeFieldItemsValueKnownFromAttributesMust(ctx context.Context, a
 	return value
 }
 
-func NewContentTypeFieldItemsValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (ContentTypeFieldItemsValue, diag.Diagnostics) {
+func NewContentTypeFieldItemsValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (ContentTypeFieldItemsValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	typeValue, typeOk := attributes["type"].(basetypes.StringValue)
-	if !typeOk {
-		diags.AddAttributeError(path.Root("type"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["type"]))
+	value := ContentTypeFieldItemsValue{
+		state: attr.ValueStateKnown,
 	}
 
-	linkTypeValue, linkTypeOk := attributes["link_type"].(basetypes.StringValue)
-	if !linkTypeOk {
-		diags.AddAttributeError(path.Root("link_type"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["link_type"]))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	validationsValue, validationsOk := attributes["validations"].(basetypes.ListValue)
-	if !validationsOk {
-		diags.AddAttributeError(path.Root("validations"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["validations"]))
-	}
-
-	return ContentTypeFieldItemsValue{
-		ItemsType:   typeValue,
-		LinkType:    linkTypeValue,
-		Validations: validationsValue,
-		state:       attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func (v ContentTypeFieldItemsValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
@@ -129,7 +112,7 @@ func (v ContentTypeFieldItemsValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return v.ItemsType.Equal(other.ItemsType) && v.LinkType.Equal(other.LinkType) && v.Validations.Equal(other.Validations)
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true
@@ -147,41 +130,8 @@ func (v ContentTypeFieldItemsValue) String() string {
 	return "ContentTypeFieldItemsValue"
 }
 
-//nolint:dupl
 func (v ContentTypeFieldItemsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := ContentTypeFieldItemsType{}.TerraformType(ctx)
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		break
-	case attr.ValueStateNull:
-		return tftypes.NewValue(tft, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-
-	//nolint:gomnd,mnd
-	val := make(map[string]tftypes.Value, 3)
-
-	var itemsErr error
-	val["type"], itemsErr = v.ItemsType.ToTerraformValue(ctx)
-
-	var linkTypeErr error
-	val["link_type"], linkTypeErr = v.LinkType.ToTerraformValue(ctx)
-
-	var validationsErr error
-	val["validations"], validationsErr = v.Validations.ToTerraformValue(ctx)
-
-	validateErr := tftypes.ValidateValue(tft, val)
-
-	err := errors.Join(itemsErr, linkTypeErr, validationsErr, validateErr)
-	if err != nil {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(tft, val), nil
+	return ReflectToTerraformValue(ctx, v, v.state)
 }
 
 func (v ContentTypeFieldItemsValue) ToObjectValueMust(ctx context.Context) basetypes.ObjectValue {
@@ -194,20 +144,5 @@ func (v ContentTypeFieldItemsValue) ToObjectValueMust(ctx context.Context) baset
 }
 
 func (v ContentTypeFieldItemsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	attributeTypes := v.ObjectAttrTypes(ctx)
-
-	switch {
-	case v.IsNull():
-		return types.ObjectNull(attributeTypes), nil
-	case v.IsUnknown():
-		return types.ObjectUnknown(attributeTypes), nil
-	}
-
-	attributes := map[string]attr.Value{
-		"type":        v.ItemsType,
-		"link_type":   v.LinkType,
-		"validations": v.Validations,
-	}
-
-	return types.ObjectValue(attributeTypes, attributes)
+	return ReflectToObjectValue(ctx, v)
 }

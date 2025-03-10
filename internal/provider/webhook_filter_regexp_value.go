@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -27,24 +25,17 @@ func NewWebhookFilterRegexpValueKnown() WebhookFilterRegexpValue {
 	}
 }
 
-func NewWebhookFilterRegexpValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookFilterRegexpValue, diag.Diagnostics) {
+func NewWebhookFilterRegexpValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (WebhookFilterRegexpValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	docValue, docOk := attributes["doc"].(basetypes.StringValue)
-	if !docOk {
-		diags.AddError("Invalid data", fmt.Sprintf("expected doc to be of type String, got %T", attributes["doc"]))
+	value := WebhookFilterRegexpValue{
+		state: attr.ValueStateKnown,
 	}
 
-	patternValue, patternOk := attributes["pattern"].(basetypes.StringValue)
-	if !patternOk {
-		diags.AddError("Invalid data", fmt.Sprintf("expected value to be of type String, got %T", attributes["doc"]))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	return WebhookFilterRegexpValue{
-		Doc:     docValue,
-		Pattern: patternValue,
-		state:   attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func NewWebhookFilterRegexpValueNull() WebhookFilterRegexpValue {
@@ -109,8 +100,8 @@ func (v WebhookFilterRegexpValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if v.state != attr.ValueStateKnown {
-		return v.Doc.Equal(other.Doc) && v.Pattern.Equal(other.Pattern)
+	if v.state == attr.ValueStateKnown {
+		return compareTFSDKAttributesEqual(v, other)
 	}
 
 	return true
@@ -128,54 +119,10 @@ func (v WebhookFilterRegexpValue) String() string {
 	panic("unimplemented")
 }
 
-//nolint:dupl
 func (v WebhookFilterRegexpValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := WebhookFilterRegexpType{}.TerraformType(ctx)
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		break
-	case attr.ValueStateNull:
-		return tftypes.NewValue(tft, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-
-	//nolint:gomnd,mnd
-	val := make(map[string]tftypes.Value, 2)
-
-	var docErr error
-	val["doc"], docErr = v.Doc.ToTerraformValue(ctx)
-
-	var patternErr error
-	val["pattern"], patternErr = v.Pattern.ToTerraformValue(ctx)
-
-	validateErr := tftypes.ValidateValue(tft, val)
-
-	err := errors.Join(docErr, patternErr, validateErr)
-	if err != nil {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), err
-	}
-
-	return tftypes.NewValue(tft, val), nil
+	return ReflectToTerraformValue(ctx, v, v.state)
 }
 
 func (v WebhookFilterRegexpValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	attributeTypes := v.ObjectAttrTypes(ctx)
-
-	switch {
-	case v.IsNull():
-		return types.ObjectNull(attributeTypes), nil
-	case v.IsUnknown():
-		return types.ObjectUnknown(attributeTypes), nil
-	}
-
-	attributes := map[string]attr.Value{
-		"doc":     v.Doc,
-		"pattern": v.Pattern,
-	}
-
-	return types.ObjectValue(attributeTypes, attributes)
+	return ReflectToObjectValue(ctx, v)
 }
