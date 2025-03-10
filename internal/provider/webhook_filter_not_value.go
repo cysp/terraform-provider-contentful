@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -30,30 +29,17 @@ func NewWebhookFilterNotValueKnown() WebhookFilterNotValue {
 	}
 }
 
-func NewWebhookFilterNotValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookFilterNotValue, diag.Diagnostics) {
+func NewWebhookFilterNotValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (WebhookFilterNotValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	equalsValue, equalsOk := attributes["equals"].(WebhookFilterEqualsValue)
-	if !equalsOk {
-		diags.AddAttributeError(path.Root("equals"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterEqualsValue, got %T", attributes["equals"]))
+	value := WebhookFilterNotValue{
+		state: attr.ValueStateKnown,
 	}
 
-	inValue, inOk := attributes["in"].(WebhookFilterInValue)
-	if !inOk {
-		diags.AddAttributeError(path.Root("in"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterInValue, got %T", attributes["in"]))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	regexpValue, regexpOk := attributes["regexp"].(WebhookFilterRegexpValue)
-	if !regexpOk {
-		diags.AddAttributeError(path.Root("regexp"), "invalid data", fmt.Sprintf("expected object of type WebhookFilterRegexpValue, got %T", attributes["regexp"]))
-	}
-
-	return WebhookFilterNotValue{
-		Equals: equalsValue,
-		In:     inValue,
-		Regexp: regexpValue,
-		state:  attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func NewWebhookFilterNotValueNull() WebhookFilterNotValue {

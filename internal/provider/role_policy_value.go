@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -25,32 +24,14 @@ type RolePolicyValue struct {
 func NewRolePolicyValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (RolePolicyValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	actionsValue, actionsOk := attributes["actions"].(types.List)
-	if !actionsOk {
-		diags.AddAttributeError(path.Root("actions"), "invalid data", fmt.Sprintf("expected object of type List, got %T", attributes["actions"]))
+	value := RolePolicyValue{
+		state: attr.ValueStateKnown,
 	}
 
-	actionsElementType := actionsValue.ElementType(ctx)
-	if actionsElementType != types.StringType {
-		diags.AddAttributeError(path.Root("actions"), "invalid data", fmt.Sprintf("expected element type to be String, got %s", actionsElementType))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	constraintValue, constraintOk := attributes["constraint"].(jsontypes.Normalized)
-	if !constraintOk {
-		diags.AddAttributeError(path.Root("constraint"), "invalid data", fmt.Sprintf("expected object of type jsontypes.Normalized, got %T", attributes["constraint"]))
-	}
-
-	effectValue, effectOk := attributes["effect"].(types.String)
-	if !effectOk {
-		diags.AddAttributeError(path.Root("effect"), "invalid data", fmt.Sprintf("expected object of type String, got %T", attributes["effect"]))
-	}
-
-	return RolePolicyValue{
-		Actions:    actionsValue,
-		Constraint: constraintValue,
-		Effect:     effectValue,
-		state:      attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func NewRolePolicyValueNull() RolePolicyValue {

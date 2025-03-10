@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
@@ -56,78 +55,17 @@ func NewContentTypeFieldValueKnownFromAttributesMust(ctx context.Context, attrib
 	return value
 }
 
-func NewContentTypeFieldValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (ContentTypeFieldValue, diag.Diagnostics) {
+func NewContentTypeFieldValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (ContentTypeFieldValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	idValue, idOk := attributes["id"].(types.String)
-	if !idOk {
-		diags.AddAttributeError(path.Root("id"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["id"]))
+	value := ContentTypeFieldValue{
+		state: attr.ValueStateKnown,
 	}
 
-	nameValue, nameOk := attributes["name"].(types.String)
-	if !nameOk {
-		diags.AddAttributeError(path.Root("name"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["name"]))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	fieldsTypeValue, fieldsTypeOk := attributes["type"].(types.String)
-	if !fieldsTypeOk {
-		diags.AddAttributeError(path.Root("type"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["type"]))
-	}
-
-	linkTypeValue, linkTypeOk := attributes["link_type"].(types.String)
-	if !linkTypeOk {
-		diags.AddAttributeError(path.Root("link_type"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["link_type"]))
-	}
-
-	itemsValue, itemsOk := attributes["items"].(types.Object)
-	if !itemsOk {
-		diags.AddAttributeError(path.Root("items"), "invalid data", fmt.Sprintf("expected object of type types.Object, got %T", attributes["items"]))
-	}
-
-	defaultValueValue, defaultValueOk := attributes["default_value"].(jsontypes.Normalized)
-	if !defaultValueOk {
-		diags.AddAttributeError(path.Root("default_value"), "invalid data", fmt.Sprintf("expected object of type types.String, got %T", attributes["default_value"]))
-	}
-
-	localizedValue, localizedOk := attributes["localized"].(types.Bool)
-	if !localizedOk {
-		diags.AddAttributeError(path.Root("localized"), "invalid data", fmt.Sprintf("expected object of type types.Bool, got %T", attributes["localized"]))
-	}
-
-	disabledValue, disabledOk := attributes["disabled"].(types.Bool)
-	if !disabledOk {
-		diags.AddAttributeError(path.Root("disabled"), "invalid data", fmt.Sprintf("expected object of type types.Bool, got %T", attributes["disabled"]))
-	}
-
-	omittedValue, omittedOk := attributes["omitted"].(types.Bool)
-	if !omittedOk {
-		diags.AddAttributeError(path.Root("omitted"), "invalid data", fmt.Sprintf("expected object of type types.Bool, got %T", attributes["omitted"]))
-	}
-
-	requiredValue, requiredOk := attributes["required"].(types.Bool)
-	if !requiredOk {
-		diags.AddAttributeError(path.Root("required"), "invalid data", fmt.Sprintf("expected object of type types.Bool, got %T", attributes["required"]))
-	}
-
-	validationsValue, validationsOk := attributes["validations"].(types.List)
-	if !validationsOk {
-		diags.AddAttributeError(path.Root("validations"), "invalid data", fmt.Sprintf("expected object of type types.List, got %T", attributes["validations"]))
-	}
-
-	return ContentTypeFieldValue{
-		ID:           idValue,
-		Name:         nameValue,
-		FieldType:    fieldsTypeValue,
-		LinkType:     linkTypeValue,
-		Items:        itemsValue,
-		DefaultValue: defaultValueValue,
-		Localized:    localizedValue,
-		Disabled:     disabledValue,
-		Omitted:      omittedValue,
-		Required:     requiredValue,
-		Validations:  validationsValue,
-		state:        attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {

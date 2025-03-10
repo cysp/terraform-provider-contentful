@@ -27,24 +27,17 @@ func NewWebhookFilterRegexpValueKnown() WebhookFilterRegexpValue {
 	}
 }
 
-func NewWebhookFilterRegexpValueKnownFromAttributes(_ context.Context, attributes map[string]attr.Value) (WebhookFilterRegexpValue, diag.Diagnostics) {
+func NewWebhookFilterRegexpValueKnownFromAttributes(ctx context.Context, attributes map[string]attr.Value) (WebhookFilterRegexpValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	docValue, docOk := attributes["doc"].(basetypes.StringValue)
-	if !docOk {
-		diags.AddError("Invalid data", fmt.Sprintf("expected doc to be of type String, got %T", attributes["doc"]))
+	value := WebhookFilterRegexpValue{
+		state: attr.ValueStateKnown,
 	}
 
-	patternValue, patternOk := attributes["pattern"].(basetypes.StringValue)
-	if !patternOk {
-		diags.AddError("Invalid data", fmt.Sprintf("expected value to be of type String, got %T", attributes["doc"]))
-	}
+	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	diags = append(diags, setAttributesDiags...)
 
-	return WebhookFilterRegexpValue{
-		Doc:     docValue,
-		Pattern: patternValue,
-		state:   attr.ValueStateKnown,
-	}, diags
+	return value, diags
 }
 
 func NewWebhookFilterRegexpValueNull() WebhookFilterRegexpValue {
