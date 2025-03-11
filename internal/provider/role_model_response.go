@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -12,9 +13,12 @@ import (
 func (model *RoleModel) ReadFromResponse(ctx context.Context, role *cm.Role) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	// SpaceId is already known
+	spaceID := role.Sys.Space.Sys.ID
+	roleID := role.Sys.ID
 
-	model.RoleID = types.StringValue(role.Sys.ID)
+	model.ID = types.StringValue(strings.Join([]string{spaceID, roleID}, "/"))
+	model.SpaceID = types.StringValue(spaceID)
+	model.RoleID = types.StringValue(roleID)
 
 	model.Name = types.StringValue(role.Name)
 	model.Description = types.StringPointerValue(role.Description.ValueStringPointer())

@@ -12,11 +12,23 @@ import (
 func RoleResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"description": schema.StringAttribute{
-				Optional: true,
+			"id": schema.StringAttribute{
+				Computed: true,
+			},
+			"space_id": schema.StringAttribute{
+				Required: true,
+			},
+			"role_id": schema.StringAttribute{
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required: true,
+			},
+			"description": schema.StringAttribute{
+				Optional: true,
 			},
 			"permissions": schema.MapAttribute{
 				ElementType: types.ListType{
@@ -29,15 +41,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					Attributes: RolePolicyValue{}.SchemaAttributes(ctx),
 					CustomType: RolePolicyValue{}.CustomType(ctx),
 				},
-				Required: true,
-			},
-			"role_id": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"space_id": schema.StringAttribute{
 				Required: true,
 			},
 		},
