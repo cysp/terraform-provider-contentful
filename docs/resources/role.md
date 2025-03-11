@@ -67,6 +67,7 @@ resource "contentful_role" "editor" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `role_id` (String)
 
 <a id="nestedatt--policies"></a>
