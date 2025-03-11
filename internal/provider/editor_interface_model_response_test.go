@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReadFromResponse(t *testing.T) {
+func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -17,8 +17,31 @@ func TestReadFromResponse(t *testing.T) {
 		expectedModel   provider.EditorInterfaceModel
 	}{
 		"null": {
-			editorInterface: cm.EditorInterface{},
+			editorInterface: cm.EditorInterface{
+				Sys: cm.EditorInterfaceSys{
+					Space: cm.SpaceLink{
+						Sys: cm.SpaceLinkSys{
+							ID: "space",
+						},
+					},
+					Environment: cm.EnvironmentLink{
+						Sys: cm.EnvironmentLinkSys{
+							ID: "environment",
+						},
+					},
+					ContentType: cm.ContentTypeLink{
+						Sys: cm.ContentTypeLinkSys{
+							ID: "content_type",
+						},
+					},
+					ID: "null",
+				},
+			},
 			expectedModel: provider.EditorInterfaceModel{
+				ID:            types.StringValue("space/environment/content_type"),
+				SpaceID:       types.StringValue("space"),
+				EnvironmentID: types.StringValue("environment"),
+				ContentTypeID: types.StringValue("content_type"),
 				EditorLayout:  types.ListNull(provider.EditorInterfaceEditorLayoutValue{}.Type(t.Context())),
 				Controls:      types.ListNull(provider.EditorInterfaceControlValue{}.Type(t.Context())),
 				GroupControls: types.ListNull(provider.EditorInterfaceGroupControlValue{}.Type(t.Context())),
@@ -27,12 +50,34 @@ func TestReadFromResponse(t *testing.T) {
 		},
 		"empty": {
 			editorInterface: cm.EditorInterface{
+				Sys: cm.EditorInterfaceSys{
+					Space: cm.SpaceLink{
+						Sys: cm.SpaceLinkSys{
+							ID: "space",
+						},
+					},
+					Environment: cm.EnvironmentLink{
+						Sys: cm.EnvironmentLinkSys{
+							ID: "environment",
+						},
+					},
+					ContentType: cm.ContentTypeLink{
+						Sys: cm.ContentTypeLinkSys{
+							ID: "content_type",
+						},
+					},
+					ID: "empty",
+				},
 				EditorLayout:  cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{}),
 				Controls:      cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{}),
 				GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray([]cm.EditorInterfaceGroupControlsItem{}),
 				Sidebar:       cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{}),
 			},
 			expectedModel: provider.EditorInterfaceModel{
+				ID:            types.StringValue("space/environment/content_type"),
+				SpaceID:       types.StringValue("space"),
+				EnvironmentID: types.StringValue("environment"),
+				ContentTypeID: types.StringValue("content_type"),
 				EditorLayout:  provider.NewEmptyListMust(provider.EditorInterfaceEditorLayoutValue{}.Type(t.Context())),
 				Controls:      provider.NewEmptyListMust(provider.EditorInterfaceControlValue{}.Type(t.Context())),
 				GroupControls: provider.NewEmptyListMust(provider.EditorInterfaceGroupControlValue{}.Type(t.Context())),

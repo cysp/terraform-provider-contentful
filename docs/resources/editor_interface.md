@@ -83,6 +83,10 @@ resource "contentful_editor_interface" "author" {
 - `group_controls` (Attributes List) (see [below for nested schema](#nestedatt--group_controls))
 - `sidebar` (Attributes List) (see [below for nested schema](#nestedatt--sidebar))
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--controls"></a>
 ### Nested Schema for `controls`
 

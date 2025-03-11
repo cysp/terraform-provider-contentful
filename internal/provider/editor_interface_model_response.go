@@ -2,16 +2,25 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func (model *EditorInterfaceModel) ReadFromResponse(ctx context.Context, editorInterface *cm.EditorInterface) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	// SpaceId, EnvironmentId and ContentTypeId are all already known
+	spaceID := editorInterface.Sys.Space.Sys.ID
+	environmentID := editorInterface.Sys.Environment.Sys.ID
+	contentTypeID := editorInterface.Sys.ContentType.Sys.ID
+
+	model.ID = types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/"))
+	model.SpaceID = types.StringValue(spaceID)
+	model.EnvironmentID = types.StringValue(environmentID)
+	model.ContentTypeID = types.StringValue(contentTypeID)
 
 	if editorInterfaceEditorLayout, ok := editorInterface.EditorLayout.Get(); ok {
 		editorLayout, editorLayoutDiags := NewEditorInterfaceEditorLayoutListValueFromResponse(ctx, path.Root("editor_layout"), editorInterfaceEditorLayout)
