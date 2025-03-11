@@ -12,7 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func Factory(version string, options ...Option) func() provider.Provider {
@@ -44,6 +46,11 @@ type ContentfulProvider struct {
 	accessToken   string
 }
 
+type ContentfulProviderModel struct {
+	URL         types.String `tfsdk:"url"`
+	AccessToken types.String `tfsdk:"access_token"`
+}
+
 var _ provider.Provider = (*ContentfulProvider)(nil)
 
 type Option func(*ContentfulProvider)
@@ -66,13 +73,23 @@ func WithAccessToken(accessToken string) Option {
 	}
 }
 
-func (p *ContentfulProvider) Schema(ctx context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
-	resp.Schema = ContentfulProviderSchema(ctx)
-	resp.Schema.Description = "Manage Contentful space configuration."
+func (p *ContentfulProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Description: "Manage Contentful space configuration.",
+		Attributes: map[string]schema.Attribute{
+			"url": schema.StringAttribute{
+				Optional: true,
+			},
+			"access_token": schema.StringAttribute{
+				Optional:  true,
+				Sensitive: true,
+			},
+		},
+	}
 }
 
 func (p *ContentfulProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ContentfulModel
+	var data ContentfulProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -81,8 +98,8 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	}
 
 	var contentfulURL string
-	if !data.Url.IsNull() {
-		contentfulURL = data.Url.ValueString()
+	if !data.URL.IsNull() {
+		contentfulURL = data.URL.ValueString()
 	} else if contentfulURLFromEnv, found := os.LookupEnv("CONTENTFUL_URL"); found {
 		contentfulURL = contentfulURLFromEnv
 	}
