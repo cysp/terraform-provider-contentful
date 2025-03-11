@@ -18,12 +18,12 @@ func TestModelTypeEqual(t *testing.T) {
 	}
 
 	types := []attr.Type{
-		provider.ControlsType{},
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
-		provider.EditorLayoutType{},
-		provider.GroupControlsType{},
-		provider.SidebarType{},
+		provider.EditorInterfaceControlType{},
+		provider.EditorInterfaceEditorLayoutType{},
+		provider.EditorInterfaceGroupControlType{},
+		provider.EditorInterfaceSidebarType{},
 		provider.RolePolicyType{},
 		provider.WebhookFilterEqualsType{},
 		provider.WebhookFilterInType{},
@@ -71,12 +71,12 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 	ctx := t.Context()
 
 	types := []attr.Type{
-		provider.ControlsType{},
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
-		provider.EditorLayoutType{},
-		provider.GroupControlsType{},
-		provider.SidebarType{},
+		provider.EditorInterfaceControlType{},
+		provider.EditorInterfaceEditorLayoutType{},
+		provider.EditorInterfaceGroupControlType{},
+		provider.EditorInterfaceSidebarType{},
 		provider.RolePolicyType{},
 		provider.WebhookFilterEqualsType{},
 		provider.WebhookFilterInType{},

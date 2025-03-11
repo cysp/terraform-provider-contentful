@@ -5,32 +5,33 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewSidebarValueKnown() SidebarValue {
-	return SidebarValue{
+func NewEditorInterfaceSidebarValueKnown() EditorInterfaceSidebarValue {
+	return EditorInterfaceSidebarValue{
 		state: attr.ValueStateKnown,
 	}
 }
 
-func (model *SidebarValue) ToEditorInterfaceFieldsSidebarItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsSidebarItem, diag.Diagnostics) {
+func (v *EditorInterfaceSidebarValue) ToEditorInterfaceFieldsSidebarItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := cm.EditorInterfaceFieldsSidebarItem{
-		WidgetNamespace: model.WidgetNamespace.ValueString(),
-		WidgetId:        model.WidgetId.ValueString(),
+		WidgetNamespace: v.WidgetNamespace.ValueString(),
+		WidgetId:        v.WidgetID.ValueString(),
 	}
 
-	modelDisabled := model.Disabled.ValueBoolPointer()
+	modelDisabled := v.Disabled.ValueBoolPointer()
 	if modelDisabled != nil {
 		item.Disabled.SetTo(*modelDisabled)
 	}
 
-	modelSettingsString := model.Settings.ValueString()
+	modelSettingsString := v.Settings.ValueString()
 	if modelSettingsString != "" {
 		item.Settings = []byte(modelSettingsString)
 	}
@@ -38,14 +39,14 @@ func (model *SidebarValue) ToEditorInterfaceFieldsSidebarItem(_ context.Context,
 	return item, diags
 }
 
-func NewSidebarValueFromResponse(path path.Path, item cm.EditorInterfaceSidebarItem) (SidebarValue, diag.Diagnostics) {
+func NewEditorInterfaceSidebarValueFromResponse(path path.Path, item cm.EditorInterfaceSidebarItem) (EditorInterfaceSidebarValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := SidebarValue{
+	value := EditorInterfaceSidebarValue{
 		WidgetNamespace: types.StringValue(item.WidgetNamespace),
-		WidgetId:        types.StringValue(item.WidgetId),
+		WidgetID:        types.StringValue(item.WidgetId),
 		Disabled:        types.BoolNull(),
-		Settings:        types.StringNull(),
+		Settings:        jsontypes.NewNormalizedNull(),
 		state:           attr.ValueStateKnown,
 	}
 
@@ -59,29 +60,29 @@ func NewSidebarValueFromResponse(path path.Path, item cm.EditorInterfaceSidebarI
 			diags.AddAttributeError(path.AtName("settings"), "Failed to read settings", settingsErr.Error())
 		}
 
-		value.Settings = types.StringValue(string(settings))
+		value.Settings = jsontypes.NewNormalizedValue(string(settings))
 	}
 
 	return value, diags
 }
 
-func NewSidebarListValueNull(ctx context.Context) types.List {
-	return types.ListNull(SidebarValue{}.Type(ctx))
+func NewEditorInterfaceSidebarListValueNull(ctx context.Context) types.List {
+	return types.ListNull(EditorInterfaceSidebarValue{}.Type(ctx))
 }
 
-func NewSidebarListValueFromResponse(ctx context.Context, path path.Path, sidebarItems []cm.EditorInterfaceSidebarItem) (types.List, diag.Diagnostics) {
+func NewEditorInterfaceSidebarListValueFromResponse(ctx context.Context, path path.Path, sidebarItems []cm.EditorInterfaceSidebarItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(sidebarItems))
 
 	for index, item := range sidebarItems {
-		sidebarValue, sidebarValueDiags := NewSidebarValueFromResponse(path.AtListIndex(index), item)
+		sidebarValue, sidebarValueDiags := NewEditorInterfaceSidebarValueFromResponse(path.AtListIndex(index), item)
 		diags.Append(sidebarValueDiags...)
 
 		listElementValues[index] = sidebarValue
 	}
 
-	list, listDiags := types.ListValue(SidebarValue{}.Type(ctx), listElementValues)
+	list, listDiags := types.ListValue(EditorInterfaceSidebarValue{}.Type(ctx), listElementValues)
 	diags.Append(listDiags...)
 
 	return list, diags

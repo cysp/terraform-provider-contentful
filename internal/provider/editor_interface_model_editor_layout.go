@@ -12,28 +12,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorLayoutListValueNull(ctx context.Context) types.List {
-	return types.ListNull(EditorLayoutValue{}.Type(ctx))
+func NewEditorInterfaceEditorLayoutListValueNull(ctx context.Context) types.List {
+	return types.ListNull(EditorInterfaceEditorLayoutValue{}.Type(ctx))
 }
 
-func NewEditorLayoutValueKnown() EditorLayoutValue {
-	return EditorLayoutValue{
+func NewEditorInterfaceEditorLayoutValueKnown() EditorInterfaceEditorLayoutValue {
+	return EditorInterfaceEditorLayoutValue{
 		state: attr.ValueStateKnown,
 	}
 }
 
-func (model *EditorLayoutValue) ToEditorInterfaceFieldsEditorLayoutItem(ctx context.Context, _ path.Path) (cm.EditorInterfaceFieldsEditorLayoutItem, diag.Diagnostics) {
+func (v *EditorInterfaceEditorLayoutValue) ToEditorInterfaceFieldsEditorLayoutItem(ctx context.Context, _ path.Path) (cm.EditorInterfaceFieldsEditorLayoutItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := cm.EditorInterfaceFieldsEditorLayoutItem{
-		GroupId: model.GroupId.ValueString(),
-		Name:    model.Name.ValueString(),
+		GroupId: v.GroupID.ValueString(),
+		Name:    v.Name.ValueString(),
 	}
 
-	if !model.Items.IsNull() && !model.Items.IsUnknown() {
+	if !v.Items.IsNull() && !v.Items.IsUnknown() {
 		var itemItemsStrings []string
 
-		diags.Append(model.Items.ElementsAs(ctx, &itemItemsStrings, false)...)
+		diags.Append(v.Items.ElementsAs(ctx, &itemItemsStrings, false)...)
 
 		itemItems := make([]jx.Raw, len(itemItemsStrings))
 
@@ -47,31 +47,31 @@ func (model *EditorLayoutValue) ToEditorInterfaceFieldsEditorLayoutItem(ctx cont
 	return item, diags
 }
 
-func NewEditorLayoutListValueFromResponse(ctx context.Context, path path.Path, controlsItems []cm.EditorInterfaceEditorLayoutItem) (types.List, diag.Diagnostics) {
+func NewEditorInterfaceEditorLayoutListValueFromResponse(ctx context.Context, path path.Path, editorLayoutItems []cm.EditorInterfaceEditorLayoutItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]attr.Value, len(controlsItems))
+	listElementValues := make([]attr.Value, len(editorLayoutItems))
 
-	for index, item := range controlsItems {
+	for index, item := range editorLayoutItems {
 		path := path.AtListIndex(index)
 
-		EditorLayoutValue, EditorLayoutValueDiags := NewEditorLayoutValueFromResponse(path, item)
-		diags.Append(EditorLayoutValueDiags...)
+		editorLayoutValue, editorLayoutValueDiags := NewEditorInterfaceEditorLayoutValueFromResponse(path, item)
+		diags.Append(editorLayoutValueDiags...)
 
-		listElementValues[index] = EditorLayoutValue
+		listElementValues[index] = editorLayoutValue
 	}
 
-	list, listDiags := types.ListValue(EditorLayoutValue{}.Type(ctx), listElementValues)
+	list, listDiags := types.ListValue(EditorInterfaceEditorLayoutValue{}.Type(ctx), listElementValues)
 	diags.Append(listDiags...)
 
 	return list, diags
 }
 
-func NewEditorLayoutValueFromResponse(path path.Path, item cm.EditorInterfaceEditorLayoutItem) (EditorLayoutValue, diag.Diagnostics) {
+func NewEditorInterfaceEditorLayoutValueFromResponse(path path.Path, item cm.EditorInterfaceEditorLayoutItem) (EditorInterfaceEditorLayoutValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := EditorLayoutValue{
-		GroupId: types.StringValue(item.GroupId),
+	value := EditorInterfaceEditorLayoutValue{
+		GroupID: types.StringValue(item.GroupId),
 		Name:    types.StringValue(item.Name),
 		state:   attr.ValueStateKnown,
 	}

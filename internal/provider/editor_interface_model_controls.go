@@ -6,32 +6,33 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewControlsListValueNull(ctx context.Context) types.List {
-	return types.ListNull(ControlsValue{}.Type(ctx))
+func NewEditorInterfaceControlListValueNull(ctx context.Context) types.List {
+	return types.ListNull(EditorInterfaceControlValue{}.Type(ctx))
 }
 
-func NewControlsValueKnown() ControlsValue {
-	return ControlsValue{
+func NewEditorInterfaceControlValueKnown() EditorInterfaceControlValue {
+	return EditorInterfaceControlValue{
 		state: attr.ValueStateKnown,
 	}
 }
 
-func (model *ControlsValue) ToEditorInterfaceFieldsControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsControlsItem, diag.Diagnostics) {
+func (v *EditorInterfaceControlValue) ToEditorInterfaceFieldsControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := cm.EditorInterfaceFieldsControlsItem{
-		FieldId:         model.FieldId.ValueString(),
-		WidgetNamespace: util.StringValueToOptString(model.WidgetNamespace),
-		WidgetId:        util.StringValueToOptString(model.WidgetId),
+		FieldId:         v.FieldID.ValueString(),
+		WidgetNamespace: util.StringValueToOptString(v.WidgetNamespace),
+		WidgetId:        util.StringValueToOptString(v.WidgetID),
 	}
 
-	modelSettingsString := model.Settings.ValueString()
+	modelSettingsString := v.Settings.ValueString()
 	if modelSettingsString != "" {
 		item.Settings = []byte(modelSettingsString)
 	}
@@ -39,7 +40,7 @@ func (model *ControlsValue) ToEditorInterfaceFieldsControlsItem(_ context.Contex
 	return item, diags
 }
 
-func NewControlsListValueFromResponse(ctx context.Context, path path.Path, controlsItems []cm.EditorInterfaceControlsItem) (types.List, diag.Diagnostics) {
+func NewEditorInterfaceControlListValueFromResponse(ctx context.Context, path path.Path, controlsItems []cm.EditorInterfaceControlsItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(controlsItems))
@@ -47,26 +48,26 @@ func NewControlsListValueFromResponse(ctx context.Context, path path.Path, contr
 	for index, item := range controlsItems {
 		path := path.AtListIndex(index)
 
-		controlsValue, controlsValueDiags := NewControlsValueFromResponse(path, item)
-		diags.Append(controlsValueDiags...)
+		controlValue, controlValueDiags := NewEditorInterfaceControlValueFromResponse(path, item)
+		diags.Append(controlValueDiags...)
 
-		listElementValues[index] = controlsValue
+		listElementValues[index] = controlValue
 	}
 
-	list, listDiags := types.ListValue(ControlsValue{}.Type(ctx), listElementValues)
+	list, listDiags := types.ListValue(EditorInterfaceControlValue{}.Type(ctx), listElementValues)
 	diags.Append(listDiags...)
 
 	return list, diags
 }
 
-func NewControlsValueFromResponse(path path.Path, item cm.EditorInterfaceControlsItem) (ControlsValue, diag.Diagnostics) {
+func NewEditorInterfaceControlValueFromResponse(path path.Path, item cm.EditorInterfaceControlsItem) (EditorInterfaceControlValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := ControlsValue{
-		FieldId:         types.StringValue(item.FieldId),
+	value := EditorInterfaceControlValue{
+		FieldID:         types.StringValue(item.FieldId),
 		WidgetNamespace: util.OptStringToStringValue(item.WidgetNamespace),
-		WidgetId:        util.OptStringToStringValue(item.WidgetId),
-		Settings:        types.StringNull(),
+		WidgetID:        util.OptStringToStringValue(item.WidgetId),
+		Settings:        jsontypes.NewNormalizedNull(),
 		state:           attr.ValueStateKnown,
 	}
 
@@ -76,7 +77,7 @@ func NewControlsValueFromResponse(path path.Path, item cm.EditorInterfaceControl
 			diags.AddAttributeError(path.AtName("settings"), "Failed to read settings", settingsErr.Error())
 		}
 
-		value.Settings = types.StringValue(string(settings))
+		value.Settings = jsontypes.NewNormalizedValue(string(settings))
 	}
 
 	return value, diags
