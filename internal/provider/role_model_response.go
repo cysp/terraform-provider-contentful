@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *RoleModel) ReadFromResponse(ctx context.Context, role *cm.Role) diag.Diagnostics {
+func (model *RoleResourceModel) ReadFromResponse(ctx context.Context, role *cm.Role) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	spaceID := role.Sys.Space.Sys.ID

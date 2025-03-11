@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *DeliveryAPIKeyModel) ReadFromResponse(ctx context.Context, apiKey *cm.ApiKey) diag.Diagnostics {
+func (model *DeliveryAPIKeyResourceModel) ReadFromResponse(ctx context.Context, apiKey *cm.ApiKey) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	spaceID := apiKey.Sys.Space.Sys.ID

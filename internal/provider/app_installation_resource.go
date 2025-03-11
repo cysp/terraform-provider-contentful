@@ -48,7 +48,7 @@ func (r *appInstallationResource) ImportState(ctx context.Context, req resource.
 
 //nolint:dupl
 func (r *appInstallationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data AppInstallationModel
+	var data AppInstallationResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -98,7 +98,7 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data AppInstallationModel
+	var data AppInstallationResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -146,7 +146,7 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 
 //nolint:dupl
 func (r *appInstallationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data AppInstallationModel
+	var data AppInstallationResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -196,7 +196,7 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 }
 
 func (r *appInstallationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data AppInstallationModel
+	var data AppInstallationResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 

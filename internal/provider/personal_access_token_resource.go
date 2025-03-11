@@ -43,7 +43,7 @@ func (r *personalAccessTokenResource) ImportState(ctx context.Context, req resou
 }
 
 func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data PersonalAccessTokenModel
+	var data PersonalAccessTokenResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -82,7 +82,7 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 }
 
 func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data PersonalAccessTokenModel
+	var data PersonalAccessTokenResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -131,7 +131,7 @@ func (r *personalAccessTokenResource) Update(_ context.Context, _ resource.Updat
 }
 
 func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data PersonalAccessTokenModel
+	var data PersonalAccessTokenResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 

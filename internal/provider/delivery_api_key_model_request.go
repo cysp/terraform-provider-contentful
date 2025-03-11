@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *DeliveryAPIKeyModel) ToAPIKeyRequestFields(ctx context.Context) (cm.ApiKeyRequestFields, diag.Diagnostics) {
+func (model *DeliveryAPIKeyResourceModel) ToAPIKeyRequestFields(ctx context.Context) (cm.ApiKeyRequestFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	req := cm.ApiKeyRequestFields{

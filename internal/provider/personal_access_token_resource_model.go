@@ -12,6 +12,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type PersonalAccessTokenResourceModel struct {
+	ID        types.String      `tfsdk:"id"`
+	Name      types.String      `tfsdk:"name"`
+	ExpiresIn types.Int64       `tfsdk:"expires_in"`
+	ExpiresAt timetypes.RFC3339 `tfsdk:"expires_at"`
+	RevokedAt timetypes.RFC3339 `tfsdk:"revoked_at"`
+	Scopes    types.List        `tfsdk:"scopes"`
+	Token     types.String      `tfsdk:"token"`
+}
+
 func PersonalAccessTokenResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{

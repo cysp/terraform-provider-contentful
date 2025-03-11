@@ -6,7 +6,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+type EditorInterfaceResourceModel struct {
+	ID            types.String `tfsdk:"id"`
+	SpaceID       types.String `tfsdk:"space_id"`
+	EnvironmentID types.String `tfsdk:"environment_id"`
+	ContentTypeID types.String `tfsdk:"content_type_id"`
+	EditorLayout  types.List   `tfsdk:"editor_layout"`
+	Controls      types.List   `tfsdk:"controls"`
+	GroupControls types.List   `tfsdk:"group_controls"`
+	Sidebar       types.List   `tfsdk:"sidebar"`
+}
 
 func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
