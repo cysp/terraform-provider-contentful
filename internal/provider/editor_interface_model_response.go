@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *EditorInterfaceModel) ReadFromResponse(ctx context.Context, editorInterface *cm.EditorInterface) diag.Diagnostics {
+func (model *EditorInterfaceResourceModel) ReadFromResponse(ctx context.Context, editorInterface *cm.EditorInterface) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	spaceID := editorInterface.Sys.Space.Sys.ID

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
-func (model *PersonalAccessTokenModel) ToPersonalAccessTokenRequestFields(ctx context.Context) (cm.PersonalAccessTokenRequestFields, diag.Diagnostics) {
+func (model *PersonalAccessTokenResourceModel) ToPersonalAccessTokenRequestFields(ctx context.Context) (cm.PersonalAccessTokenRequestFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	req := cm.PersonalAccessTokenRequestFields{

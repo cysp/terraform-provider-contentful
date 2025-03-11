@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *AppInstallationModel) ReadFromResponse(appInstallation *cm.AppInstallation) diag.Diagnostics {
+func (model *AppInstallationResourceModel) ReadFromResponse(appInstallation *cm.AppInstallation) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	spaceID := appInstallation.Sys.Space.Sys.ID

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *RoleModel) ToRoleFields(ctx context.Context) (cm.RoleFields, diag.Diagnostics) {
+func (model *RoleResourceModel) ToRoleFields(ctx context.Context) (cm.RoleFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	request := cm.RoleFields{

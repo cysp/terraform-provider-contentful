@@ -13,7 +13,7 @@ func TestRoleModelRoundTripToRoleFields(t *testing.T) {
 
 	ctx := t.Context()
 
-	model := provider.RoleModel{}
+	model := provider.RoleResourceModel{}
 	model.ReadFromResponse(ctx, &cm.Role{
 		Sys: cm.RoleSys{
 			ID: "abcdef",

@@ -47,7 +47,7 @@ func (r *contentTypeResource) ImportState(ctx context.Context, req resource.Impo
 }
 
 func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ContentTypeModel
+	var data ContentTypeResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -125,7 +125,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data ContentTypeModel
+	var data ContentTypeResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -176,7 +176,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ContentTypeModel
+	var data ContentTypeResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -258,7 +258,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 }
 
 func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data ContentTypeModel
+	var data ContentTypeResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 

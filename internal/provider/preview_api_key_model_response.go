@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *PreviewAPIKeyModel) ReadFromResponse(ctx context.Context, previewAPIKey *cm.PreviewApiKey) diag.Diagnostics {
+func (model *PreviewAPIKeyDataSourceModel) ReadFromResponse(ctx context.Context, previewAPIKey *cm.PreviewApiKey) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	model.SpaceID = types.StringValue(previewAPIKey.Sys.Space.Sys.ID)

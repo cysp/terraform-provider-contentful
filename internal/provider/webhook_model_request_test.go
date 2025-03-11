@@ -20,12 +20,12 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 	filters := webhookFiltersListForTesting(t)
 
 	testcases := map[string]struct {
-		model     provider.WebhookModel
+		model     provider.WebhookResourceModel
 		expected  cm.WebhookDefinitionFields
 		expectErr bool
 	}{
 		"basic": {
-			model: provider.WebhookModel{
+			model: provider.WebhookResourceModel{
 				Name:              types.StringValue("test-webhook"),
 				Active:            types.BoolValue(true),
 				URL:               types.StringValue("https://example.com/webhook"),
@@ -49,7 +49,7 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			expectErr: false,
 		},
 		"with auth": {
-			model: provider.WebhookModel{
+			model: provider.WebhookResourceModel{
 				Name:              types.StringValue("auth-webhook"),
 				Active:            types.BoolValue(true),
 				URL:               types.StringValue("https://example.com/webhook"),
@@ -72,7 +72,7 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			expectErr: false,
 		},
 		"with headers": {
-			model: provider.WebhookModel{
+			model: provider.WebhookResourceModel{
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
@@ -101,7 +101,7 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			},
 		},
 		"with transformation": {
-			model: provider.WebhookModel{
+			model: provider.WebhookResourceModel{
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
@@ -127,7 +127,7 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			},
 		},
 		"with transformation body": {
-			model: provider.WebhookModel{
+			model: provider.WebhookResourceModel{
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
@@ -154,7 +154,7 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			},
 		},
 		"with filters": {
-			model: provider.WebhookModel{
+			model: provider.WebhookResourceModel{
 				Name:              types.StringValue("filters-webhook"),
 				Active:            types.BoolValue(true),
 				URL:               types.StringValue("https://example.com/webhook"),

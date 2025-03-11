@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *PersonalAccessTokenModel) ReadFromResponse(ctx context.Context, personalAccessToken *cm.PersonalAccessToken) diag.Diagnostics {
+func (model *PersonalAccessTokenResourceModel) ReadFromResponse(ctx context.Context, personalAccessToken *cm.PersonalAccessToken) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	model.ID = types.StringValue(personalAccessToken.Sys.ID)

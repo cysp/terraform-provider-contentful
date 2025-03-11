@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *ContentTypeModel) ToContentTypeRequestFields(ctx context.Context) (cm.ContentTypeRequestFields, diag.Diagnostics) {
+func (m *ContentTypeResourceModel) ToContentTypeRequestFields(ctx context.Context) (cm.ContentTypeRequestFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	request := cm.ContentTypeRequestFields{

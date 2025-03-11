@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *ContentTypeModel) ReadFromResponse(ctx context.Context, contentType *cm.ContentType) diag.Diagnostics {
+func (m *ContentTypeResourceModel) ReadFromResponse(ctx context.Context, contentType *cm.ContentType) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	spaceID := contentType.Sys.Space.Sys.ID

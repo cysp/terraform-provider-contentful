@@ -14,7 +14,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 
 	tests := map[string]struct {
 		editorInterface cm.EditorInterface
-		expectedModel   provider.EditorInterfaceModel
+		expectedModel   provider.EditorInterfaceResourceModel
 	}{
 		"null": {
 			editorInterface: cm.EditorInterface{
@@ -37,7 +37,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 					ID: "null",
 				},
 			},
-			expectedModel: provider.EditorInterfaceModel{
+			expectedModel: provider.EditorInterfaceResourceModel{
 				ID:            types.StringValue("space/environment/content_type"),
 				SpaceID:       types.StringValue("space"),
 				EnvironmentID: types.StringValue("environment"),
@@ -73,7 +73,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray([]cm.EditorInterfaceGroupControlsItem{}),
 				Sidebar:       cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{}),
 			},
-			expectedModel: provider.EditorInterfaceModel{
+			expectedModel: provider.EditorInterfaceResourceModel{
 				ID:            types.StringValue("space/environment/content_type"),
 				SpaceID:       types.StringValue("space"),
 				EnvironmentID: types.StringValue("environment"),
@@ -89,7 +89,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model := provider.EditorInterfaceModel{}
+			model := provider.EditorInterfaceResourceModel{}
 
 			diags := model.ReadFromResponse(t.Context(), &test.editorInterface)
 
