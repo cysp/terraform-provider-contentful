@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -38,14 +37,7 @@ func (t WebhookHeaderType) String() string {
 //nolint:ireturn
 func (t WebhookHeaderType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
-		AttributeTypes: t.TerraformAttributeTypes(ctx),
-	}
-}
-
-func (t WebhookHeaderType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
-	return map[string]tftypes.Type{
-		"value":  types.String{}.Type(ctx).TerraformType(ctx),
-		"secret": types.Bool{}.Type(ctx).TerraformType(ctx),
+		AttributeTypes: ObjectAttrTypesToTerraformTypes(ctx, WebhookHeaderValue{}.ObjectAttrTypes(ctx)),
 	}
 }
 

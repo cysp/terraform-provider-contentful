@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -39,15 +37,7 @@ func (t RolePolicyType) String() string {
 //nolint:ireturn
 func (t RolePolicyType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
-		AttributeTypes: t.TerraformAttributeTypes(ctx),
-	}
-}
-
-func (t RolePolicyType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
-	return map[string]tftypes.Type{
-		"actions":    types.ListType{ElemType: types.StringType}.TerraformType(ctx),
-		"constraint": jsontypes.NormalizedType{}.TerraformType(ctx),
-		"effect":     types.StringType.TerraformType(ctx),
+		AttributeTypes: ObjectAttrTypesToTerraformTypes(ctx, RolePolicyValue{}.ObjectAttrTypes(ctx)),
 	}
 }
 

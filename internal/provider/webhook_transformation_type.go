@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -39,16 +37,7 @@ func (t WebhookTransformationType) String() string {
 //nolint:ireturn
 func (t WebhookTransformationType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
-		AttributeTypes: t.TerraformAttributeTypes(ctx),
-	}
-}
-
-func (t WebhookTransformationType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
-	return map[string]tftypes.Type{
-		"method":                 types.String{}.Type(ctx).TerraformType(ctx),
-		"content_type":           types.String{}.Type(ctx).TerraformType(ctx),
-		"include_content_length": types.Bool{}.Type(ctx).TerraformType(ctx),
-		"body":                   jsontypes.Normalized{}.Type(ctx).TerraformType(ctx),
+		AttributeTypes: ObjectAttrTypesToTerraformTypes(ctx, WebhookTransformationValue{}.ObjectAttrTypes(ctx)),
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -38,23 +37,7 @@ func (t ContentTypeFieldType) String() string {
 //nolint:ireturn
 func (t ContentTypeFieldType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
-		AttributeTypes: t.TerraformAttributeTypes(ctx),
-	}
-}
-
-func (t ContentTypeFieldType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
-	return map[string]tftypes.Type{
-		"id":            tftypes.String,
-		"name":          tftypes.String,
-		"type":          tftypes.String,
-		"link_type":     tftypes.String,
-		"disabled":      tftypes.Bool,
-		"omitted":       tftypes.Bool,
-		"required":      tftypes.Bool,
-		"default_value": jsontypes.NormalizedType{}.TerraformType(ctx),
-		"items":         ContentTypeFieldItemsType{}.TerraformType(ctx),
-		"localized":     tftypes.Bool,
-		"validations":   tftypes.List{ElementType: jsontypes.NormalizedType{}.TerraformType(ctx)},
+		AttributeTypes: ObjectAttrTypesToTerraformTypes(ctx, ContentTypeFieldValue{}.ObjectAttrTypes(ctx)),
 	}
 }
 
