@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
@@ -9,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccDeliveryApiKeyResource(t *testing.T) {
@@ -37,21 +35,11 @@ func TestAccDeliveryApiKeyResource(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ResourceName:    "contentful_delivery_api_key.test",
-				ImportState:     true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					apiKey := s.RootModule().Resources["contentful_delivery_api_key.test"]
-					if apiKey == nil {
-						//nolint:err113,perfsprint
-						return "", fmt.Errorf("resource not found")
-					}
-
-					return apiKey.Primary.Attributes["space_id"] + "/" + apiKey.Primary.Attributes["api_key_id"], nil
-				},
-				ImportStateVerifyIdentifierAttribute: "api_key_id",
-				ImportStateVerify:                    true,
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables,
+				ResourceName:      "contentful_delivery_api_key.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
