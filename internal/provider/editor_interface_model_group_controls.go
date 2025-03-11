@@ -6,32 +6,33 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewGroupControlsListValueNull(ctx context.Context) types.List {
-	return types.ListNull(GroupControlsValue{}.Type(ctx))
+func NewEditorInterfaceGroupControlListValueNull(ctx context.Context) types.List {
+	return types.ListNull(EditorInterfaceGroupControlValue{}.Type(ctx))
 }
 
-func NewGroupControlsValueKnown() GroupControlsValue {
-	return GroupControlsValue{
+func NewEditorInterfaceGroupControlValueKnown() EditorInterfaceGroupControlValue {
+	return EditorInterfaceGroupControlValue{
 		state: attr.ValueStateKnown,
 	}
 }
 
-func (model *GroupControlsValue) ToEditorInterfaceFieldsGroupControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsGroupControlsItem, diag.Diagnostics) {
+func (v *EditorInterfaceGroupControlValue) ToEditorInterfaceFieldsGroupControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsGroupControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := cm.EditorInterfaceFieldsGroupControlsItem{
-		GroupId:         model.GroupId.ValueString(),
-		WidgetNamespace: util.StringValueToOptString(model.WidgetNamespace),
-		WidgetId:        util.StringValueToOptString(model.WidgetId),
+		GroupId:         v.GroupID.ValueString(),
+		WidgetNamespace: util.StringValueToOptString(v.WidgetNamespace),
+		WidgetId:        util.StringValueToOptString(v.WidgetID),
 	}
 
-	modelSettingsString := model.Settings.ValueString()
+	modelSettingsString := v.Settings.ValueString()
 	if modelSettingsString != "" {
 		item.Settings = []byte(modelSettingsString)
 	}
@@ -39,7 +40,7 @@ func (model *GroupControlsValue) ToEditorInterfaceFieldsGroupControlsItem(_ cont
 	return item, diags
 }
 
-func NewGroupControlsListValueFromResponse(ctx context.Context, path path.Path, groupControlsItems []cm.EditorInterfaceGroupControlsItem) (types.List, diag.Diagnostics) {
+func NewEditorInterfaceGroupControlListValueFromResponse(ctx context.Context, path path.Path, groupControlsItems []cm.EditorInterfaceGroupControlsItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]attr.Value, len(groupControlsItems))
@@ -47,26 +48,26 @@ func NewGroupControlsListValueFromResponse(ctx context.Context, path path.Path, 
 	for index, item := range groupControlsItems {
 		path := path.AtListIndex(index)
 
-		groupControlsValue, groupControlsValueDiags := NewGroupControlsValueFromResponse(path, item)
-		diags.Append(groupControlsValueDiags...)
+		groupControlValue, groupControlValueDiags := NewEditorInterfaceGroupControlValueFromResponse(path, item)
+		diags.Append(groupControlValueDiags...)
 
-		listElementValues[index] = groupControlsValue
+		listElementValues[index] = groupControlValue
 	}
 
-	list, listDiags := types.ListValue(GroupControlsValue{}.Type(ctx), listElementValues)
+	list, listDiags := types.ListValue(EditorInterfaceGroupControlValue{}.Type(ctx), listElementValues)
 	diags.Append(listDiags...)
 
 	return list, diags
 }
 
-func NewGroupControlsValueFromResponse(path path.Path, item cm.EditorInterfaceGroupControlsItem) (GroupControlsValue, diag.Diagnostics) {
+func NewEditorInterfaceGroupControlValueFromResponse(path path.Path, item cm.EditorInterfaceGroupControlsItem) (EditorInterfaceGroupControlValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := GroupControlsValue{
-		GroupId:         types.StringValue(item.GroupId),
+	value := EditorInterfaceGroupControlValue{
+		GroupID:         types.StringValue(item.GroupId),
 		WidgetNamespace: util.OptStringToStringValue(item.WidgetNamespace),
-		WidgetId:        util.OptStringToStringValue(item.WidgetId),
-		Settings:        types.StringNull(),
+		WidgetID:        util.OptStringToStringValue(item.WidgetId),
+		Settings:        jsontypes.NewNormalizedNull(),
 		state:           attr.ValueStateKnown,
 	}
 
@@ -76,7 +77,7 @@ func NewGroupControlsValueFromResponse(path path.Path, item cm.EditorInterfaceGr
 			diags.AddAttributeError(path.AtName("settings"), "Failed to read settings", settingsErr.Error())
 		}
 
-		value.Settings = types.StringValue(string(settings))
+		value.Settings = jsontypes.NewNormalizedValue(string(settings))
 	}
 
 	return value, diags

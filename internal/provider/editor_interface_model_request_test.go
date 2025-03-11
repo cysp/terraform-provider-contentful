@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -96,33 +97,33 @@ func TestToEditorInterfaceFields(t *testing.T) {
 
 	ctx := t.Context()
 
-	controlsValue1 := provider.NewControlsValueKnown()
-	controlsValue1.FieldId = types.StringValue("field_id")
-	controlsValue1.WidgetNamespace = types.StringValue("widget_namespace")
-	controlsValue1.WidgetId = types.StringValue("widget_id")
-	controlsValue1.Settings = types.StringValue(`{"foo":"bar"}`)
+	controlValue1 := provider.NewEditorInterfaceControlValueKnown()
+	controlValue1.FieldID = types.StringValue("field_id")
+	controlValue1.WidgetNamespace = types.StringValue("widget_namespace")
+	controlValue1.WidgetID = types.StringValue("widget_id")
+	controlValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	controls, controlsDiags := types.ListValue(provider.ControlsValue{}.Type(ctx), []attr.Value{
-		controlsValue1,
+	controls, controlsDiags := types.ListValue(provider.EditorInterfaceControlValue{}.Type(ctx), []attr.Value{
+		controlValue1,
 	})
 
 	require.Empty(t, controlsDiags)
 
-	sidebarValue1 := provider.NewSidebarValueKnown()
+	sidebarValue1 := provider.NewEditorInterfaceSidebarValueKnown()
 	sidebarValue1.WidgetNamespace = types.StringValue("widget_namespace")
-	sidebarValue1.WidgetId = types.StringValue("widget_id")
-	sidebarValue1.Settings = types.StringValue(`{"foo":"bar"}`)
+	sidebarValue1.WidgetID = types.StringValue("widget_id")
+	sidebarValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	sidebar, sidebarDiags := types.ListValue(provider.SidebarValue{}.Type(ctx), []attr.Value{
+	sidebar, sidebarDiags := types.ListValue(provider.EditorInterfaceSidebarValue{}.Type(ctx), []attr.Value{
 		sidebarValue1,
 	})
 
 	require.Empty(t, sidebarDiags)
 
 	model := provider.EditorInterfaceModel{
-		SpaceId:       types.StringValue("space_id"),
-		EnvironmentId: types.StringValue("environment_id"),
-		ContentTypeId: types.StringValue("content_type_id"),
+		SpaceID:       types.StringValue("space_id"),
+		EnvironmentID: types.StringValue("environment_id"),
+		ContentTypeID: types.StringValue("content_type_id"),
 
 		Controls: controls,
 		Sidebar:  sidebar,
@@ -156,48 +157,48 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 
 	ctx := t.Context()
 
-	controlsValue1 := provider.NewControlsValueKnown()
-	controlsValue1.FieldId = types.StringValue("field_id")
-	controlsValue1.WidgetNamespace = types.StringValue("widget_namespace")
-	controlsValue1.WidgetId = types.StringValue("widget_id")
-	controlsValue1.Settings = types.StringNull()
+	controlValue1 := provider.NewEditorInterfaceControlValueKnown()
+	controlValue1.FieldID = types.StringValue("field_id")
+	controlValue1.WidgetNamespace = types.StringValue("widget_namespace")
+	controlValue1.WidgetID = types.StringValue("widget_id")
+	controlValue1.Settings = jsontypes.NewNormalizedNull()
 
-	controlsValue2 := provider.NewControlsValueKnown()
-	controlsValue2.FieldId = types.StringValue("field_id")
-	controlsValue2.WidgetNamespace = types.StringValue("widget_namespace")
-	controlsValue2.WidgetId = types.StringValue("widget_id")
-	controlsValue2.Settings = types.StringValue(`invalid json`)
+	controlValue2 := provider.NewEditorInterfaceControlValueKnown()
+	controlValue2.FieldID = types.StringValue("field_id")
+	controlValue2.WidgetNamespace = types.StringValue("widget_namespace")
+	controlValue2.WidgetID = types.StringValue("widget_id")
+	controlValue2.Settings = jsontypes.NewNormalizedValue(`invalid json`)
 
-	controlsValue3 := provider.NewControlsValueKnown()
-	controlsValue3.FieldId = types.StringValue("field_id")
-	controlsValue3.WidgetNamespace = types.StringValue("widget_namespace")
-	controlsValue3.WidgetId = types.StringValue("widget_id")
-	controlsValue3.Settings = types.StringValue(`{"foo":"bar"}`)
+	controlValue3 := provider.NewEditorInterfaceControlValueKnown()
+	controlValue3.FieldID = types.StringValue("field_id")
+	controlValue3.WidgetNamespace = types.StringValue("widget_namespace")
+	controlValue3.WidgetID = types.StringValue("widget_id")
+	controlValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	controls, controlsDiags := types.ListValue(provider.ControlsValue{}.Type(ctx), []attr.Value{
-		controlsValue1,
-		controlsValue2,
-		controlsValue3,
+	controls, controlsDiags := types.ListValue(provider.EditorInterfaceControlValue{}.Type(ctx), []attr.Value{
+		controlValue1,
+		controlValue2,
+		controlValue3,
 	})
 
 	require.Empty(t, controlsDiags)
 
-	sidebarValue1 := provider.NewSidebarValueKnown()
+	sidebarValue1 := provider.NewEditorInterfaceSidebarValueKnown()
 	sidebarValue1.WidgetNamespace = types.StringValue("widget_namespace")
-	sidebarValue1.WidgetId = types.StringValue("widget_id")
-	sidebarValue1.Settings = types.StringNull()
+	sidebarValue1.WidgetID = types.StringValue("widget_id")
+	sidebarValue1.Settings = jsontypes.NewNormalizedNull()
 
-	sidebarValue2 := provider.NewSidebarValueKnown()
+	sidebarValue2 := provider.NewEditorInterfaceSidebarValueKnown()
 	sidebarValue2.WidgetNamespace = types.StringValue("widget_namespace")
-	sidebarValue2.WidgetId = types.StringValue("widget_id")
-	sidebarValue2.Settings = types.StringValue(`invalid json`)
+	sidebarValue2.WidgetID = types.StringValue("widget_id")
+	sidebarValue2.Settings = jsontypes.NewNormalizedValue(`invalid json`)
 
-	sidebarValue3 := provider.NewSidebarValueKnown()
+	sidebarValue3 := provider.NewEditorInterfaceSidebarValueKnown()
 	sidebarValue3.WidgetNamespace = types.StringValue("widget_namespace")
-	sidebarValue3.WidgetId = types.StringValue("widget_id")
-	sidebarValue3.Settings = types.StringValue(`{"foo":"bar"}`)
+	sidebarValue3.WidgetID = types.StringValue("widget_id")
+	sidebarValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	sidebar, sidebarDiags := types.ListValue(provider.SidebarValue{}.Type(ctx), []attr.Value{
+	sidebar, sidebarDiags := types.ListValue(provider.EditorInterfaceSidebarValue{}.Type(ctx), []attr.Value{
 		sidebarValue1,
 		sidebarValue2,
 		sidebarValue3,
@@ -206,9 +207,9 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 	require.Empty(t, sidebarDiags)
 
 	model := provider.EditorInterfaceModel{
-		SpaceId:       types.StringValue("space_id"),
-		EnvironmentId: types.StringValue("environment_id"),
-		ContentTypeId: types.StringValue("content_type_id"),
+		SpaceID:       types.StringValue("space_id"),
+		EnvironmentID: types.StringValue("environment_id"),
+		ContentTypeID: types.StringValue("content_type_id"),
 
 		Controls: controls,
 		Sidebar:  sidebar,
@@ -255,49 +256,4 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 	}, req)
 
 	assert.Empty(t, diags)
-}
-
-func TestReadFromResponse(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		editorInterface cm.EditorInterface
-		expectedModel   provider.EditorInterfaceModel
-	}{
-		"null": {
-			editorInterface: cm.EditorInterface{},
-			expectedModel: provider.EditorInterfaceModel{
-				EditorLayout:  types.ListNull(provider.EditorLayoutValue{}.Type(t.Context())),
-				Controls:      types.ListNull(provider.ControlsValue{}.Type(t.Context())),
-				GroupControls: types.ListNull(provider.GroupControlsValue{}.Type(t.Context())),
-				Sidebar:       types.ListNull(provider.SidebarValue{}.Type(t.Context())),
-			},
-		},
-		"empty": {
-			editorInterface: cm.EditorInterface{
-				EditorLayout:  cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{}),
-				Controls:      cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{}),
-				GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray([]cm.EditorInterfaceGroupControlsItem{}),
-				Sidebar:       cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{}),
-			},
-			expectedModel: provider.EditorInterfaceModel{
-				EditorLayout:  provider.NewEmptyListMust(provider.EditorLayoutValue{}.Type(t.Context())),
-				Controls:      provider.NewEmptyListMust(provider.ControlsValue{}.Type(t.Context())),
-				GroupControls: provider.NewEmptyListMust(provider.GroupControlsValue{}.Type(t.Context())),
-				Sidebar:       provider.NewEmptyListMust(provider.SidebarValue{}.Type(t.Context())),
-			},
-		},
-	}
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			model := provider.EditorInterfaceModel{}
-
-			diags := model.ReadFromResponse(t.Context(), &test.editorInterface)
-
-			assert.EqualValues(t, test.expectedModel, model)
-			assert.Empty(t, diags)
-		})
-	}
 }
