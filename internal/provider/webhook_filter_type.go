@@ -37,16 +37,7 @@ func (t WebhookFilterType) String() string {
 //nolint:ireturn
 func (t WebhookFilterType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
-		AttributeTypes: t.TerraformAttributeTypes(ctx),
-	}
-}
-
-func (t WebhookFilterType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
-	return map[string]tftypes.Type{
-		"not":    WebhookFilterNotType{}.TerraformType(ctx),
-		"equals": WebhookFilterEqualsType{}.TerraformType(ctx),
-		"in":     WebhookFilterInType{}.TerraformType(ctx),
-		"regexp": WebhookFilterRegexpType{}.TerraformType(ctx),
+		AttributeTypes: ObjectAttrTypesToTerraformTypes(ctx, WebhookFilterValue{}.ObjectAttrTypes(ctx)),
 	}
 }
 

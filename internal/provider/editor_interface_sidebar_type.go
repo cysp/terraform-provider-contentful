@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -39,16 +37,7 @@ func (t EditorInterfaceSidebarType) String() string {
 //nolint:ireturn
 func (t EditorInterfaceSidebarType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
-		AttributeTypes: t.TerraformAttributeTypes(ctx),
-	}
-}
-
-func (t EditorInterfaceSidebarType) TerraformAttributeTypes(ctx context.Context) map[string]tftypes.Type {
-	return map[string]tftypes.Type{
-		"widget_namespace": types.StringType.TerraformType(ctx),
-		"widget_id":        types.StringType.TerraformType(ctx),
-		"settings":         jsontypes.NormalizedType{}.TerraformType(ctx),
-		"disabled":         types.BoolType.TerraformType(ctx),
+		AttributeTypes: ObjectAttrTypesToTerraformTypes(ctx, EditorInterfaceSidebarValue{}.ObjectAttrTypes(ctx)),
 	}
 }
 
