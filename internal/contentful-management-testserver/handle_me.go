@@ -2,6 +2,8 @@ package contentfulmanagementtestserver
 
 import (
 	"net/http"
+
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
 func (ts *ContentfulManagementTestServer) setupUserHandler() {
@@ -21,4 +23,11 @@ func (ts *ContentfulManagementTestServer) setupUserHandler() {
 			_ = WriteContentfulManagementErrorNotFoundResponse(w)
 		}
 	}))
+}
+
+func (ts *ContentfulManagementTestServer) SetMe(me *cm.User) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	ts.me = me
 }
