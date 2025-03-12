@@ -2234,10 +2234,10 @@ func (o *NilString) SetTo(v string) {
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o NilString) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *NilString) SetToNull() {
 	o.Null = true
 	var v string
@@ -2579,10 +2579,10 @@ func (o *OptNilDateTime) SetTo(v time.Time) {
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilDateTime) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilDateTime) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -2642,10 +2642,10 @@ func (o *OptNilEditorInterfaceControlsItemArray) SetTo(v []EditorInterfaceContro
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilEditorInterfaceControlsItemArray) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilEditorInterfaceControlsItemArray) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -2705,10 +2705,10 @@ func (o *OptNilEditorInterfaceEditorLayoutItemArray) SetTo(v []EditorInterfaceEd
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilEditorInterfaceEditorLayoutItemArray) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilEditorInterfaceEditorLayoutItemArray) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -2768,10 +2768,10 @@ func (o *OptNilEditorInterfaceFieldsControlsItemArray) SetTo(v []EditorInterface
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilEditorInterfaceFieldsControlsItemArray) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilEditorInterfaceFieldsControlsItemArray) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -2831,10 +2831,10 @@ func (o *OptNilEditorInterfaceFieldsEditorLayoutItemArray) SetTo(v []EditorInter
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilEditorInterfaceFieldsEditorLayoutItemArray) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilEditorInterfaceFieldsEditorLayoutItemArray) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -2894,10 +2894,10 @@ func (o *OptNilEditorInterfaceFieldsGroupControlsItemArray) SetTo(v []EditorInte
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilEditorInterfaceFieldsGroupControlsItemArray) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilEditorInterfaceFieldsGroupControlsItemArray) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -2957,10 +2957,10 @@ func (o *OptNilEditorInterfaceFieldsSidebarItemArray) SetTo(v []EditorInterfaceF
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilEditorInterfaceFieldsSidebarItemArray) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilEditorInterfaceFieldsSidebarItemArray) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -3020,10 +3020,10 @@ func (o *OptNilEditorInterfaceGroupControlsItemArray) SetTo(v []EditorInterfaceG
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilEditorInterfaceGroupControlsItemArray) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilEditorInterfaceGroupControlsItemArray) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -3083,10 +3083,10 @@ func (o *OptNilEditorInterfaceSidebarItemArray) SetTo(v []EditorInterfaceSidebar
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilEditorInterfaceSidebarItemArray) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilEditorInterfaceSidebarItemArray) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -3146,10 +3146,10 @@ func (o *OptNilInt) SetTo(v int) {
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilInt) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilInt) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -3209,10 +3209,10 @@ func (o *OptNilString) SetTo(v string) {
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilString) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilString) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -3272,10 +3272,10 @@ func (o *OptNilWebhookDefinitionFieldsTransformation) SetTo(v WebhookDefinitionF
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilWebhookDefinitionFieldsTransformation) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilWebhookDefinitionFieldsTransformation) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -3335,10 +3335,10 @@ func (o *OptNilWebhookDefinitionFilterArray) SetTo(v []WebhookDefinitionFilter) 
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilWebhookDefinitionFilterArray) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilWebhookDefinitionFilterArray) SetToNull() {
 	o.Set = true
 	o.Null = true
@@ -3398,10 +3398,10 @@ func (o *OptNilWebhookDefinitionTransformation) SetTo(v WebhookDefinitionTransfo
 	o.Value = v
 }
 
-// IsSet returns true if value is Null.
+// IsNull returns true if value is Null.
 func (o OptNilWebhookDefinitionTransformation) IsNull() bool { return o.Null }
 
-// SetNull sets value to null.
+// SetToNull sets value to null.
 func (o *OptNilWebhookDefinitionTransformation) SetToNull() {
 	o.Set = true
 	o.Null = true
