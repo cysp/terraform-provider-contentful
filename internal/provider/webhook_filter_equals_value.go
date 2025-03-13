@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -77,11 +76,8 @@ func (v WebhookFilterEqualsValue) ObjectType(ctx context.Context) basetypes.Obje
 	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
-func (v WebhookFilterEqualsValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"doc":   types.StringType,
-		"value": types.StringType,
-	}
+func (v WebhookFilterEqualsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v WebhookFilterEqualsValue) Equal(o attr.Value) bool {

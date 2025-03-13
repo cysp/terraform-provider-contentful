@@ -78,13 +78,8 @@ func (v WebhookFilterInValue) ObjectType(ctx context.Context) basetypes.ObjectTy
 	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
-func (v WebhookFilterInValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"doc": types.StringType,
-		"values": types.ListType{
-			ElemType: types.StringType,
-		},
-	}
+func (v WebhookFilterInValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v WebhookFilterInValue) Equal(o attr.Value) bool {

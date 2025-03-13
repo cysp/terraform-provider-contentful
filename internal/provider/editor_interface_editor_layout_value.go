@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -76,12 +75,8 @@ func (v EditorInterfaceEditorLayoutValue) ObjectType(ctx context.Context) basety
 	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
-func (v EditorInterfaceEditorLayoutValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"group_id": types.StringType,
-		"name":     types.StringType,
-		"items":    types.ListType{ElemType: jsontypes.NormalizedType{}},
-	}
+func (v EditorInterfaceEditorLayoutValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v EditorInterfaceEditorLayoutValue) Equal(o attr.Value) bool {

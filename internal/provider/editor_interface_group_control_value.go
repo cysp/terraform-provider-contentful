@@ -80,13 +80,8 @@ func (v EditorInterfaceGroupControlValue) ObjectType(ctx context.Context) basety
 	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
-func (v EditorInterfaceGroupControlValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"group_id":         types.StringType,
-		"widget_namespace": types.StringType,
-		"widget_id":        types.StringType,
-		"settings":         jsontypes.NormalizedType{},
-	}
+func (v EditorInterfaceGroupControlValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v EditorInterfaceGroupControlValue) Equal(o attr.Value) bool {

@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -94,10 +93,7 @@ func (v WebhookHeaderValue) ObjectType(ctx context.Context) basetypes.ObjectType
 }
 
 func (v WebhookHeaderValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"value":  types.String{}.Type(ctx),
-		"secret": types.Bool{}.Type(ctx),
-	}
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v WebhookHeaderValue) Equal(o attr.Value) bool {
