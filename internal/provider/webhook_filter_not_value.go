@@ -88,11 +88,7 @@ func (v WebhookFilterNotValue) ObjectType(ctx context.Context) basetypes.ObjectT
 }
 
 func (v WebhookFilterNotValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"equals": WebhookFilterEqualsValue{}.CustomType(ctx),
-		"in":     WebhookFilterInValue{}.CustomType(ctx),
-		"regexp": WebhookFilterRegexpValue{}.CustomType(ctx),
-	}
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v WebhookFilterNotValue) Equal(o attr.Value) bool {

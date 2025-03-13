@@ -83,13 +83,8 @@ func (v EditorInterfaceSidebarValue) ObjectType(ctx context.Context) basetypes.O
 	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
-func (v EditorInterfaceSidebarValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"widget_namespace": types.StringType,
-		"widget_id":        types.StringType,
-		"settings":         jsontypes.NormalizedType{},
-		"disabled":         types.BoolType,
-	}
+func (v EditorInterfaceSidebarValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v EditorInterfaceSidebarValue) Equal(o attr.Value) bool {

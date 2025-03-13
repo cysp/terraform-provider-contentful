@@ -129,19 +129,7 @@ func (v ContentTypeFieldValue) ObjectType(ctx context.Context) basetypes.ObjectT
 }
 
 func (v ContentTypeFieldValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"id":            basetypes.StringType{},
-		"name":          basetypes.StringType{},
-		"type":          basetypes.StringType{},
-		"link_type":     basetypes.StringType{},
-		"items":         ContentTypeFieldItemsValue{}.CustomType(ctx),
-		"default_value": jsontypes.NormalizedType{},
-		"localized":     basetypes.BoolType{},
-		"disabled":      basetypes.BoolType{},
-		"omitted":       basetypes.BoolType{},
-		"required":      basetypes.BoolType{},
-		"validations":   basetypes.ListType{ElemType: jsontypes.NormalizedType{}},
-	}
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v ContentTypeFieldValue) Equal(o attr.Value) bool {
