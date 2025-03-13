@@ -116,20 +116,38 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 
 //nolint:ireturn
 func (v ContentTypeFieldValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return ContentTypeFieldType{ObjectType: v.ObjectType(ctx)}
+	return ContentTypeFieldType{
+		v.ObjectType(ctx),
+	}
 }
 
 //nolint:ireturn
 func (v ContentTypeFieldValue) Type(ctx context.Context) attr.Type {
-	return ContentTypeFieldType{ObjectType: v.ObjectType(ctx)}
+	return ContentTypeFieldType{
+		ObjectType: v.ObjectType(ctx),
+	}
 }
 
 func (v ContentTypeFieldValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+	return basetypes.ObjectType{
+		AttrTypes: v.ObjectAttrTypes(ctx),
+	}
 }
 
 func (v ContentTypeFieldValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
-	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
+	return map[string]attr.Type{
+		"id":            basetypes.StringType{},
+		"name":          basetypes.StringType{},
+		"type":          basetypes.StringType{},
+		"link_type":     basetypes.StringType{},
+		"items":         ContentTypeFieldItemsValue{}.ObjectType(ctx),
+		"default_value": jsontypes.NormalizedType{},
+		"localized":     basetypes.BoolType{},
+		"disabled":      basetypes.BoolType{},
+		"omitted":       basetypes.BoolType{},
+		"required":      basetypes.BoolType{},
+		"validations":   basetypes.ListType{ElemType: jsontypes.NormalizedType{}},
+	}
 }
 
 func (v ContentTypeFieldValue) Equal(o attr.Value) bool {
