@@ -82,12 +82,8 @@ func (v RolePolicyValue) ObjectType(ctx context.Context) basetypes.ObjectType {
 	}
 }
 
-func (v RolePolicyValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"actions":    types.ListType{ElemType: types.StringType},
-		"constraint": jsontypes.NormalizedType{},
-		"effect":     types.StringType,
-	}
+func (v RolePolicyValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v RolePolicyValue) Equal(o attr.Value) bool {
