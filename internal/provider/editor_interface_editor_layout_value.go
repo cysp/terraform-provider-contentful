@@ -62,24 +62,18 @@ func (v EditorInterfaceEditorLayoutValue) SchemaAttributes(_ context.Context) ma
 
 //nolint:ireturn
 func (v EditorInterfaceEditorLayoutValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return EditorInterfaceEditorLayoutType{
-		v.ObjectType(ctx),
-	}
+	return EditorInterfaceEditorLayoutType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = EditorInterfaceEditorLayoutValue{}
 
 //nolint:ireturn
 func (v EditorInterfaceEditorLayoutValue) Type(ctx context.Context) attr.Type {
-	return EditorInterfaceEditorLayoutType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return EditorInterfaceEditorLayoutType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v EditorInterfaceEditorLayoutValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v EditorInterfaceEditorLayoutValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {

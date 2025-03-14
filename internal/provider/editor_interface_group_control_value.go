@@ -66,24 +66,18 @@ func (v EditorInterfaceGroupControlValue) SchemaAttributes(_ context.Context) ma
 
 //nolint:ireturn
 func (v EditorInterfaceGroupControlValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return EditorInterfaceGroupControlType{
-		v.ObjectType(ctx),
-	}
+	return EditorInterfaceGroupControlType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = EditorInterfaceGroupControlValue{}
 
 //nolint:ireturn
 func (v EditorInterfaceGroupControlValue) Type(ctx context.Context) attr.Type {
-	return EditorInterfaceGroupControlType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return EditorInterfaceGroupControlType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v EditorInterfaceGroupControlValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v EditorInterfaceGroupControlValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {

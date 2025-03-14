@@ -79,24 +79,18 @@ func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schem
 
 //nolint:ireturn
 func (v WebhookHeaderValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return WebhookHeaderType{
-		v.ObjectType(ctx),
-	}
+	return WebhookHeaderType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = WebhookHeaderValue{}
 
 //nolint:ireturn
 func (v WebhookHeaderValue) Type(ctx context.Context) attr.Type {
-	return WebhookHeaderType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return WebhookHeaderType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v WebhookHeaderValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookHeaderValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {

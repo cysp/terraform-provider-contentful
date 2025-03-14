@@ -116,22 +116,16 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 
 //nolint:ireturn
 func (v ContentTypeFieldValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return ContentTypeFieldType{
-		v.ObjectType(ctx),
-	}
+	return ContentTypeFieldType{ObjectType: v.ObjectType(ctx)}
 }
 
 //nolint:ireturn
 func (v ContentTypeFieldValue) Type(ctx context.Context) attr.Type {
-	return ContentTypeFieldType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return ContentTypeFieldType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v ContentTypeFieldValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v ContentTypeFieldValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
