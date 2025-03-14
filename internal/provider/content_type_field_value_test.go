@@ -50,7 +50,7 @@ func TestContentTypeFieldValueToTerraformValueRoundtrip(t *testing.T) {
 					"type":        types.StringValue("Link"),
 					"link_type":   types.StringValue("Entry"),
 					"validations": types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{}),
-				}).ToObjectValueMust(ctx),
+				}),
 				"default_value": jsontypes.NewNormalizedNull(),
 				"localized":     types.BoolValue(true),
 				"disabled":      types.BoolValue(false),
