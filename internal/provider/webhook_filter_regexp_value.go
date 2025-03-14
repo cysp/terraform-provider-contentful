@@ -63,24 +63,18 @@ func (v WebhookFilterRegexpValue) SchemaAttributes(_ context.Context) map[string
 
 //nolint:ireturn
 func (v WebhookFilterRegexpValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return WebhookFilterRegexpType{
-		v.ObjectType(ctx),
-	}
+	return WebhookFilterRegexpType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = WebhookFilterRegexpValue{}
 
 //nolint:ireturn
 func (v WebhookFilterRegexpValue) Type(ctx context.Context) attr.Type {
-	return WebhookFilterRegexpType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return WebhookFilterRegexpType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v WebhookFilterRegexpValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookFilterRegexpValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {

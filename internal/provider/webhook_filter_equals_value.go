@@ -63,24 +63,18 @@ func (v WebhookFilterEqualsValue) SchemaAttributes(_ context.Context) map[string
 
 //nolint:ireturn
 func (v WebhookFilterEqualsValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return WebhookFilterEqualsType{
-		v.ObjectType(ctx),
-	}
+	return WebhookFilterEqualsType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = WebhookFilterEqualsValue{}
 
 //nolint:ireturn
 func (v WebhookFilterEqualsValue) Type(ctx context.Context) attr.Type {
-	return WebhookFilterEqualsType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return WebhookFilterEqualsType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v WebhookFilterEqualsValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookFilterEqualsValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {

@@ -80,24 +80,18 @@ func (v WebhookTransformationValue) SchemaAttributes(_ context.Context) map[stri
 
 //nolint:ireturn
 func (v WebhookTransformationValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return WebhookTransformationType{
-		v.ObjectType(ctx),
-	}
+	return WebhookTransformationType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = WebhookTransformationValue{}
 
 //nolint:ireturn
 func (v WebhookTransformationValue) Type(ctx context.Context) attr.Type {
-	return WebhookTransformationType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return WebhookTransformationType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v WebhookTransformationValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookTransformationValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {

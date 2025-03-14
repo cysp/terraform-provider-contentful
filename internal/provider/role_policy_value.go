@@ -62,24 +62,18 @@ func (v RolePolicyValue) SchemaAttributes(_ context.Context) map[string]schema.A
 
 //nolint:ireturn
 func (v RolePolicyValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return RolePolicyType{
-		v.ObjectType(ctx),
-	}
+	return RolePolicyType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = RolePolicyValue{}
 
 //nolint:ireturn
 func (v RolePolicyValue) Type(ctx context.Context) attr.Type {
-	return RolePolicyType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return RolePolicyType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v RolePolicyValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v RolePolicyValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
