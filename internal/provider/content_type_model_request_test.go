@@ -8,14 +8,18 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestToOptContentTypeFieldsItemItemsErrorHandling(t *testing.T) {
 	t.Parallel()
 
-	itemsObject, itemsObjectDiags := basetypes.NewObjectValue(map[string]attr.Type{}, map[string]attr.Value{})
+	itemsObject, itemsObjectDiags := provider.NewContentTypeFieldItemsValueKnownFromAttributes(t.Context(), map[string]attr.Value{
+		"type":        types.StringNull(),
+		"link_type":   types.StringNull(),
+		"validations": types.ListValueMust(types.BoolType, []attr.Value{types.BoolNull()}),
+	})
 	assert.Empty(t, itemsObjectDiags)
 
 	items, itemsDiags := provider.ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(t.Context(), path.Root("items"), itemsObject)

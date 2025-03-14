@@ -15,17 +15,17 @@ import (
 
 //nolint:recvcheck
 type ContentTypeFieldValue struct {
-	ID           basetypes.StringValue `tfsdk:"id"`
-	Name         basetypes.StringValue `tfsdk:"name"`
-	FieldType    basetypes.StringValue `tfsdk:"type"`
-	LinkType     basetypes.StringValue `tfsdk:"link_type"`
-	Disabled     basetypes.BoolValue   `tfsdk:"disabled"`
-	Omitted      basetypes.BoolValue   `tfsdk:"omitted"`
-	Required     basetypes.BoolValue   `tfsdk:"required"`
-	DefaultValue jsontypes.Normalized  `tfsdk:"default_value"`
-	Items        basetypes.ObjectValue `tfsdk:"items"`
-	Localized    basetypes.BoolValue   `tfsdk:"localized"`
-	Validations  basetypes.ListValue   `tfsdk:"validations"`
+	ID           basetypes.StringValue      `tfsdk:"id"`
+	Name         basetypes.StringValue      `tfsdk:"name"`
+	FieldType    basetypes.StringValue      `tfsdk:"type"`
+	LinkType     basetypes.StringValue      `tfsdk:"link_type"`
+	Disabled     basetypes.BoolValue        `tfsdk:"disabled"`
+	Omitted      basetypes.BoolValue        `tfsdk:"omitted"`
+	Required     basetypes.BoolValue        `tfsdk:"required"`
+	DefaultValue jsontypes.Normalized       `tfsdk:"default_value"`
+	Items        ContentTypeFieldItemsValue `tfsdk:"items"`
+	Localized    basetypes.BoolValue        `tfsdk:"localized"`
+	Validations  basetypes.ListValue        `tfsdk:"validations"`
 	state        attr.ValueState
 }
 
