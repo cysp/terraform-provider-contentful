@@ -15,17 +15,17 @@ import (
 
 //nolint:recvcheck
 type ContentTypeFieldValue struct {
-	ID           basetypes.StringValue `tfsdk:"id"`
-	Name         basetypes.StringValue `tfsdk:"name"`
-	FieldType    basetypes.StringValue `tfsdk:"type"`
-	LinkType     basetypes.StringValue `tfsdk:"link_type"`
-	Disabled     basetypes.BoolValue   `tfsdk:"disabled"`
-	Omitted      basetypes.BoolValue   `tfsdk:"omitted"`
-	Required     basetypes.BoolValue   `tfsdk:"required"`
-	DefaultValue jsontypes.Normalized  `tfsdk:"default_value"`
-	Items        basetypes.ObjectValue `tfsdk:"items"`
-	Localized    basetypes.BoolValue   `tfsdk:"localized"`
-	Validations  basetypes.ListValue   `tfsdk:"validations"`
+	ID           basetypes.StringValue      `tfsdk:"id"`
+	Name         basetypes.StringValue      `tfsdk:"name"`
+	FieldType    basetypes.StringValue      `tfsdk:"type"`
+	LinkType     basetypes.StringValue      `tfsdk:"link_type"`
+	Disabled     basetypes.BoolValue        `tfsdk:"disabled"`
+	Omitted      basetypes.BoolValue        `tfsdk:"omitted"`
+	Required     basetypes.BoolValue        `tfsdk:"required"`
+	DefaultValue jsontypes.Normalized       `tfsdk:"default_value"`
+	Items        ContentTypeFieldItemsValue `tfsdk:"items"`
+	Localized    basetypes.BoolValue        `tfsdk:"localized"`
+	Validations  basetypes.ListValue        `tfsdk:"validations"`
 	state        attr.ValueState
 }
 
@@ -116,38 +116,20 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 
 //nolint:ireturn
 func (v ContentTypeFieldValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return ContentTypeFieldType{
-		v.ObjectType(ctx),
-	}
+	return ContentTypeFieldType{ObjectType: v.ObjectType(ctx)}
 }
 
 //nolint:ireturn
 func (v ContentTypeFieldValue) Type(ctx context.Context) attr.Type {
-	return ContentTypeFieldType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return ContentTypeFieldType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v ContentTypeFieldValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v ContentTypeFieldValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"id":            basetypes.StringType{},
-		"name":          basetypes.StringType{},
-		"type":          basetypes.StringType{},
-		"link_type":     basetypes.StringType{},
-		"items":         ContentTypeFieldItemsValue{}.ObjectType(ctx),
-		"default_value": jsontypes.NormalizedType{},
-		"localized":     basetypes.BoolType{},
-		"disabled":      basetypes.BoolType{},
-		"omitted":       basetypes.BoolType{},
-		"required":      basetypes.BoolType{},
-		"validations":   basetypes.ListType{ElemType: jsontypes.NormalizedType{}},
-	}
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v ContentTypeFieldValue) Equal(o attr.Value) bool {

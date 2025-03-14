@@ -66,33 +66,22 @@ func (v EditorInterfaceControlValue) SchemaAttributes(_ context.Context) map[str
 
 //nolint:ireturn
 func (v EditorInterfaceControlValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return EditorInterfaceControlType{
-		v.ObjectType(ctx),
-	}
+	return EditorInterfaceControlType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = EditorInterfaceControlValue{}
 
 //nolint:ireturn
 func (v EditorInterfaceControlValue) Type(ctx context.Context) attr.Type {
-	return EditorInterfaceControlType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return EditorInterfaceControlType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v EditorInterfaceControlValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
-func (v EditorInterfaceControlValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"field_id":         types.StringType,
-		"widget_namespace": types.StringType,
-		"widget_id":        types.StringType,
-		"settings":         jsontypes.NormalizedType{},
-	}
+func (v EditorInterfaceControlValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v EditorInterfaceControlValue) Equal(o attr.Value) bool {

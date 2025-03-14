@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -80,33 +79,22 @@ func (v WebhookTransformationValue) SchemaAttributes(_ context.Context) map[stri
 
 //nolint:ireturn
 func (v WebhookTransformationValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return WebhookTransformationType{
-		v.ObjectType(ctx),
-	}
+	return WebhookTransformationType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = WebhookTransformationValue{}
 
 //nolint:ireturn
 func (v WebhookTransformationValue) Type(ctx context.Context) attr.Type {
-	return WebhookTransformationType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return WebhookTransformationType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v WebhookTransformationValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookTransformationValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"method":                 types.String{}.Type(ctx),
-		"content_type":           types.String{}.Type(ctx),
-		"include_content_length": types.Bool{}.Type(ctx),
-		"body":                   jsontypes.Normalized{}.Type(ctx),
-	}
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v WebhookTransformationValue) Equal(o attr.Value) bool {

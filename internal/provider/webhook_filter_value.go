@@ -67,12 +67,12 @@ func (v WebhookFilterValue) SchemaAttributes(ctx context.Context) map[string]sch
 		},
 		"in": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterInValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterInValue{}.ObjectType(ctx),
+			CustomType: WebhookFilterInValue{}.CustomType(ctx),
 			Optional:   true,
 		},
 		"regexp": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterRegexpValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterRegexpValue{}.ObjectType(ctx),
+			CustomType: WebhookFilterRegexpValue{}.CustomType(ctx),
 			Optional:   true,
 		},
 	}
@@ -80,33 +80,22 @@ func (v WebhookFilterValue) SchemaAttributes(ctx context.Context) map[string]sch
 
 //nolint:ireturn
 func (v WebhookFilterValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return WebhookFilterType{
-		v.ObjectType(ctx),
-	}
+	return WebhookFilterType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = WebhookFilterValue{}
 
 //nolint:ireturn
 func (v WebhookFilterValue) Type(ctx context.Context) attr.Type {
-	return WebhookFilterType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return WebhookFilterType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v WebhookFilterValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookFilterValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"not":    WebhookFilterNotValue{}.CustomType(ctx),
-		"equals": WebhookFilterEqualsValue{}.CustomType(ctx),
-		"in":     WebhookFilterInValue{}.CustomType(ctx),
-		"regexp": WebhookFilterRegexpValue{}.CustomType(ctx),
-	}
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v WebhookFilterValue) Equal(o attr.Value) bool {

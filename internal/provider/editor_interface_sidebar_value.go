@@ -69,33 +69,22 @@ func (v EditorInterfaceSidebarValue) SchemaAttributes(_ context.Context) map[str
 
 //nolint:ireturn
 func (v EditorInterfaceSidebarValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return EditorInterfaceSidebarType{
-		v.ObjectType(ctx),
-	}
+	return EditorInterfaceSidebarType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = EditorInterfaceSidebarValue{}
 
 //nolint:ireturn
 func (v EditorInterfaceSidebarValue) Type(ctx context.Context) attr.Type {
-	return EditorInterfaceSidebarType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return EditorInterfaceSidebarType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v EditorInterfaceSidebarValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
-func (v EditorInterfaceSidebarValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"widget_namespace": types.StringType,
-		"widget_id":        types.StringType,
-		"settings":         jsontypes.NormalizedType{},
-		"disabled":         types.BoolType,
-	}
+func (v EditorInterfaceSidebarValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v EditorInterfaceSidebarValue) Equal(o attr.Value) bool {

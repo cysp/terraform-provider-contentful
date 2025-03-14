@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -79,31 +78,22 @@ func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schem
 
 //nolint:ireturn
 func (v WebhookHeaderValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return WebhookHeaderType{
-		v.ObjectType(ctx),
-	}
+	return WebhookHeaderType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = WebhookHeaderValue{}
 
 //nolint:ireturn
 func (v WebhookHeaderValue) Type(ctx context.Context) attr.Type {
-	return WebhookHeaderType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return WebhookHeaderType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v WebhookHeaderValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookHeaderValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"value":  types.String{}.Type(ctx),
-		"secret": types.Bool{}.Type(ctx),
-	}
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v WebhookHeaderValue) Equal(o attr.Value) bool {

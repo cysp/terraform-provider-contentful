@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -63,31 +62,22 @@ func (v WebhookFilterRegexpValue) SchemaAttributes(_ context.Context) map[string
 
 //nolint:ireturn
 func (v WebhookFilterRegexpValue) CustomType(ctx context.Context) basetypes.ObjectTypable {
-	return WebhookFilterRegexpType{
-		v.ObjectType(ctx),
-	}
+	return WebhookFilterRegexpType{ObjectType: v.ObjectType(ctx)}
 }
 
 var _ basetypes.ObjectValuable = WebhookFilterRegexpValue{}
 
 //nolint:ireturn
 func (v WebhookFilterRegexpValue) Type(ctx context.Context) attr.Type {
-	return WebhookFilterRegexpType{
-		ObjectType: v.ObjectType(ctx),
-	}
+	return WebhookFilterRegexpType{ObjectType: v.ObjectType(ctx)}
 }
 
 func (v WebhookFilterRegexpValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{
-		AttrTypes: v.ObjectAttrTypes(ctx),
-	}
+	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
-func (v WebhookFilterRegexpValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"doc":     types.StringType,
-		"pattern": types.StringType,
-	}
+func (v WebhookFilterRegexpValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v WebhookFilterRegexpValue) Equal(o attr.Value) bool {
