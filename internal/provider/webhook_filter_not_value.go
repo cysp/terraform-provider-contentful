@@ -60,12 +60,12 @@ func (v WebhookFilterNotValue) SchemaAttributes(ctx context.Context) map[string]
 		},
 		"in": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterInValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterInValue{}.ObjectType(ctx),
+			CustomType: WebhookFilterInValue{}.CustomType(ctx),
 			Optional:   true,
 		},
 		"regexp": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterRegexpValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterRegexpValue{}.ObjectType(ctx),
+			CustomType: WebhookFilterRegexpValue{}.CustomType(ctx),
 			Optional:   true,
 		},
 	}
