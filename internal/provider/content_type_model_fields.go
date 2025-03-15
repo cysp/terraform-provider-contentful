@@ -58,10 +58,7 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 	itemsValue, itemsValueDiags := NewItemsValueFromResponse(ctx, path.AtName("items"), item.Items)
 	diags.Append(itemsValueDiags...)
 
-	itemsObjectValue, itemsObjectValueDiags := itemsValue.ToObjectValue(ctx)
-	diags.Append(itemsObjectValueDiags...)
-
-	value.Items = itemsObjectValue
+	value.Items = itemsValue
 
 	validationsList, validationsListDiags := NewValidationsListFromResponse(ctx, path.AtName("validations"), item.Validations)
 	diags.Append(validationsListDiags...)
