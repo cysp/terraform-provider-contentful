@@ -77,23 +77,16 @@ func (v *ContentTypeFieldValue) ToContentTypeRequestFieldsFieldsItem(ctx context
 	return fieldsItem, diags
 }
 
-func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path, itemsObject types.Object) (cm.OptContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
+func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path, itemsObject ContentTypeFieldItemsValue) (cm.OptContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsItemItems := cm.OptContentTypeRequestFieldsFieldsItemItems{}
 
 	if !itemsObject.IsNull() && !itemsObject.IsUnknown() {
-		modelItemsObjectValue, modelItemsObjectValueDiags := ContentTypeFieldItemsType{}.ValueFromObject(ctx, itemsObject)
-		diags.Append(modelItemsObjectValueDiags...)
+		items, itemsDiags := itemsObject.ToContentTypeRequestFieldsFieldsItemItems(ctx, path)
+		diags.Append(itemsDiags...)
 
-		if modelItemsValue, ok := modelItemsObjectValue.(ContentTypeFieldItemsValue); ok {
-			items, itemsDiags := modelItemsValue.ToContentTypeRequestFieldsFieldsItemItems(ctx, path)
-			diags.Append(itemsDiags...)
-
-			fieldsItemItems.SetTo(items)
-		} else {
-			diags.AddAttributeError(path, "Failed to convert to ContentTypeFieldItemsValue", "Failed to convert to ContentTypeFieldItemsValue")
-		}
+		fieldsItemItems.SetTo(items)
 	}
 
 	return fieldsItemItems, diags

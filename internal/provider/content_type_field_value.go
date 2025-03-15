@@ -15,17 +15,17 @@ import (
 
 //nolint:recvcheck
 type ContentTypeFieldValue struct {
-	ID           basetypes.StringValue `tfsdk:"id"`
-	Name         basetypes.StringValue `tfsdk:"name"`
-	FieldType    basetypes.StringValue `tfsdk:"type"`
-	LinkType     basetypes.StringValue `tfsdk:"link_type"`
-	Disabled     basetypes.BoolValue   `tfsdk:"disabled"`
-	Omitted      basetypes.BoolValue   `tfsdk:"omitted"`
-	Required     basetypes.BoolValue   `tfsdk:"required"`
-	DefaultValue jsontypes.Normalized  `tfsdk:"default_value"`
-	Items        basetypes.ObjectValue `tfsdk:"items"`
-	Localized    basetypes.BoolValue   `tfsdk:"localized"`
-	Validations  basetypes.ListValue   `tfsdk:"validations"`
+	ID           basetypes.StringValue      `tfsdk:"id"`
+	Name         basetypes.StringValue      `tfsdk:"name"`
+	FieldType    basetypes.StringValue      `tfsdk:"type"`
+	LinkType     basetypes.StringValue      `tfsdk:"link_type"`
+	Disabled     basetypes.BoolValue        `tfsdk:"disabled"`
+	Omitted      basetypes.BoolValue        `tfsdk:"omitted"`
+	Required     basetypes.BoolValue        `tfsdk:"required"`
+	DefaultValue jsontypes.Normalized       `tfsdk:"default_value"`
+	Items        ContentTypeFieldItemsValue `tfsdk:"items"`
+	Localized    basetypes.BoolValue        `tfsdk:"localized"`
+	Validations  basetypes.ListValue        `tfsdk:"validations"`
 	state        attr.ValueState
 }
 
@@ -134,7 +134,7 @@ func (v ContentTypeFieldValue) ObjectAttrTypes(ctx context.Context) map[string]a
 		"name":          basetypes.StringType{},
 		"type":          basetypes.StringType{},
 		"link_type":     basetypes.StringType{},
-		"items":         ContentTypeFieldItemsValue{}.ObjectType(ctx),
+		"items":         ContentTypeFieldItemsValue{}.CustomType(ctx),
 		"default_value": jsontypes.NormalizedType{},
 		"localized":     basetypes.BoolType{},
 		"disabled":      basetypes.BoolType{},
