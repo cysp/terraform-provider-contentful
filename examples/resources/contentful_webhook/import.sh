@@ -1,0 +1,1 @@
+terraform import contentful_webhook.this $CONTENTFUL_SPACE_ID/abcdef
