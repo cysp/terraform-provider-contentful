@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 
+	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -29,7 +30,7 @@ func NewEditorInterfaceSidebarValueKnownFromAttributes(ctx context.Context, attr
 		state: attr.ValueStateKnown,
 	}
 
-	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	setAttributesDiags := tpfr.SetAttributesInValue(ctx, &value, attributes)
 	diags = append(diags, setAttributesDiags...)
 
 	return value, diags

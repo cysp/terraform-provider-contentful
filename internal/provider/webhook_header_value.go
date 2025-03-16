@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 
+	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -33,7 +34,7 @@ func NewWebhookHeaderValueKnownFromAttributes(ctx context.Context, attributes ma
 		state: attr.ValueStateKnown,
 	}
 
-	setAttributesDiags := setTFSDKAttributesInValue(ctx, &value, attributes)
+	setAttributesDiags := tpfr.SetAttributesInValue(ctx, &value, attributes)
 	diags = append(diags, setAttributesDiags...)
 
 	return value, diags
