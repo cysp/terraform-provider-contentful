@@ -119,5 +119,5 @@ func (v EditorInterfaceGroupControlValue) ToTerraformValue(ctx context.Context) 
 }
 
 func (v EditorInterfaceGroupControlValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	return ReflectToObjectValue(ctx, v)
+	return tpfr.ValueToObjectValue(ctx, v)
 }

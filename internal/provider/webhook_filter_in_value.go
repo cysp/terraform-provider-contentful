@@ -117,5 +117,5 @@ func (v WebhookFilterInValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 }
 
 func (v WebhookFilterInValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	return ReflectToObjectValue(ctx, v)
+	return tpfr.ValueToObjectValue(ctx, v)
 }
