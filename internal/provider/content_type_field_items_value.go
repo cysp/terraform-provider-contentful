@@ -87,12 +87,8 @@ func (v ContentTypeFieldItemsValue) ObjectType(ctx context.Context) basetypes.Ob
 	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
-func (v ContentTypeFieldItemsValue) ObjectAttrTypes(_ context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"type":        basetypes.StringType{},
-		"link_type":   basetypes.StringType{},
-		"validations": basetypes.ListType{ElemType: jsontypes.NormalizedType{}},
-	}
+func (v ContentTypeFieldItemsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
+	return ObjectAttrTypesFromSchemaAttributes(ctx, v.SchemaAttributes(ctx))
 }
 
 func (v ContentTypeFieldItemsValue) Equal(o attr.Value) bool {
