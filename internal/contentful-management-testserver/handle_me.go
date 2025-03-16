@@ -8,8 +8,8 @@ import (
 
 func (ts *ContentfulManagementTestServer) setupUserHandler() {
 	ts.serveMux.Handle("/users/me", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		switch r.Method {
 		case http.MethodGet:

@@ -15,8 +15,8 @@ func (ts *ContentfulManagementTestServer) setupSpacePreviewAPIKeyHandlers() {
 			return
 		}
 
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		previewAPIKey := ts.previewAPIKeys.Get(spaceID, previewAPIKeyID)
 

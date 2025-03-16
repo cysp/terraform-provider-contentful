@@ -19,8 +19,8 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			return
 		}
 
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		contentType := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
 
@@ -75,8 +75,8 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			return
 		}
 
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		contentType := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
 
@@ -115,8 +115,8 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			return
 		}
 
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		contentType := ts.contentTypes.Get(spaceID, environmentID, contentTypeID)
 		editorInterface := ts.editorInterfaces.Get(spaceID, environmentID, contentTypeID)

@@ -18,8 +18,8 @@ func (ts *ContentfulManagementTestServer) SetupSpaceEnvironmentAppInstallationHa
 			return
 		}
 
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		appInstallation := ts.appInstallations.Get(spaceID, environmentID, appDefinitionID)
 

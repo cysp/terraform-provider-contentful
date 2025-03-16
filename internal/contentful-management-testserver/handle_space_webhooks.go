@@ -17,8 +17,8 @@ func (ts *ContentfulManagementTestServer) setupSpaceWebhookDefinitionHandlers() 
 			return
 		}
 
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		switch r.Method {
 		case http.MethodPost:
@@ -50,8 +50,8 @@ func (ts *ContentfulManagementTestServer) setupSpaceWebhookDefinitionHandlers() 
 			return
 		}
 
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		webhookDefinition := ts.webhookDefinitions.Get(spaceID, webhookDefinitionID)
 

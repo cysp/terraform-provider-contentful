@@ -13,7 +13,7 @@ const (
 )
 
 type ContentfulManagementTestServer struct {
-	mu *sync.Mutex
+	mu *sync.RWMutex
 
 	httpTestServer *httptest.Server
 	serveMux       *http.ServeMux
@@ -38,7 +38,7 @@ type ContentfulManagementTestServer struct {
 
 func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 	testserver := &ContentfulManagementTestServer{
-		mu:                   &sync.Mutex{},
+		mu:                   &sync.RWMutex{},
 		personalAccessTokens: make(map[string]*cm.PersonalAccessToken),
 		apiKeys:              NewSpaceMap[*cm.ApiKey](),
 		previewAPIKeys:       NewSpaceMap[*cm.PreviewApiKey](),

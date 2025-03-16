@@ -9,8 +9,8 @@ import (
 
 func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 	ts.serveMux.Handle("/users/me/access_tokens", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		switch r.Method {
 		case http.MethodPost:
@@ -43,8 +43,8 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 			return
 		}
 
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		personalAccessToken := ts.personalAccessTokens[id]
 
@@ -72,8 +72,8 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 			return
 		}
 
-		ts.mu.Lock()
-		defer ts.mu.Unlock()
+		ts.mu.RLock()
+		defer ts.mu.RUnlock()
 
 		personalAccessToken := ts.personalAccessTokens[id]
 
