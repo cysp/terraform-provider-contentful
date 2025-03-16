@@ -110,7 +110,8 @@ func (v EditorInterfaceEditorLayoutValue) String() string {
 }
 
 func (v EditorInterfaceEditorLayoutValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	return ReflectToTerraformValue(ctx, v, v.state)
+	//nolint:wrapcheck
+	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
 func (v EditorInterfaceEditorLayoutValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
