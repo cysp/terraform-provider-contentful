@@ -82,20 +82,7 @@ func (v WebhookFilterEqualsValue) ObjectAttrTypes(ctx context.Context) map[strin
 }
 
 func (v WebhookFilterEqualsValue) Equal(o attr.Value) bool {
-	other, ok := o.(WebhookFilterEqualsValue)
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state == attr.ValueStateKnown {
-		return tpfr.ValueAttributesEqual(v, other)
-	}
-
-	return true
+	return tpfr.ValuesEqual[WebhookFilterEqualsValue](v, o)
 }
 
 func (v WebhookFilterEqualsValue) IsNull() bool {

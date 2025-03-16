@@ -82,20 +82,7 @@ func (v RolePolicyValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Ty
 }
 
 func (v RolePolicyValue) Equal(o attr.Value) bool {
-	other, ok := o.(RolePolicyValue)
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state == attr.ValueStateKnown {
-		return tpfr.ValueAttributesEqual(v, other)
-	}
-
-	return true
+	return tpfr.ValuesEqual[RolePolicyValue](v, o)
 }
 
 func (v RolePolicyValue) IsNull() bool {

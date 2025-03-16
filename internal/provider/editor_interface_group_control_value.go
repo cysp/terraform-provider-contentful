@@ -86,20 +86,7 @@ func (v EditorInterfaceGroupControlValue) ObjectAttrTypes(ctx context.Context) m
 }
 
 func (v EditorInterfaceGroupControlValue) Equal(o attr.Value) bool {
-	other, ok := o.(EditorInterfaceGroupControlValue)
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state == attr.ValueStateKnown {
-		return tpfr.ValueAttributesEqual(v, other)
-	}
-
-	return true
+	return tpfr.ValuesEqual[EditorInterfaceGroupControlValue](v, o)
 }
 
 func (v EditorInterfaceGroupControlValue) IsNull() bool {

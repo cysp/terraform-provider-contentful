@@ -99,20 +99,7 @@ func (v WebhookTransformationValue) ObjectAttrTypes(ctx context.Context) map[str
 }
 
 func (v WebhookTransformationValue) Equal(o attr.Value) bool {
-	other, ok := o.(WebhookTransformationValue)
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state == attr.ValueStateKnown {
-		return tpfr.ValueAttributesEqual(v, other)
-	}
-
-	return true
+	return tpfr.ValuesEqual[WebhookTransformationValue](v, o)
 }
 
 func (v WebhookTransformationValue) IsNull() bool {

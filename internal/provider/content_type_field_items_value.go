@@ -93,20 +93,7 @@ func (v ContentTypeFieldItemsValue) ObjectAttrTypes(ctx context.Context) map[str
 }
 
 func (v ContentTypeFieldItemsValue) Equal(o attr.Value) bool {
-	other, ok := o.(ContentTypeFieldItemsValue)
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state == attr.ValueStateKnown {
-		return tpfr.ValueAttributesEqual(v, other)
-	}
-
-	return true
+	return tpfr.ValuesEqual[ContentTypeFieldItemsValue](v, o)
 }
 
 func (v ContentTypeFieldItemsValue) IsNull() bool {

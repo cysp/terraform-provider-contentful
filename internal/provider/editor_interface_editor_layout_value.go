@@ -81,20 +81,7 @@ func (v EditorInterfaceEditorLayoutValue) ObjectAttrTypes(ctx context.Context) m
 }
 
 func (v EditorInterfaceEditorLayoutValue) Equal(o attr.Value) bool {
-	other, ok := o.(EditorInterfaceEditorLayoutValue)
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state == attr.ValueStateKnown {
-		return tpfr.ValueAttributesEqual(v, other)
-	}
-
-	return true
+	return tpfr.ValuesEqual[EditorInterfaceEditorLayoutValue](v, o)
 }
 
 func (v EditorInterfaceEditorLayoutValue) IsNull() bool {
