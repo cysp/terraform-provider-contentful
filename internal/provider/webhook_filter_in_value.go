@@ -96,7 +96,7 @@ func (v WebhookFilterInValue) IsUnknown() bool {
 }
 
 func (v WebhookFilterInValue) String() string {
-	panic("unimplemented")
+	return "WebhookFilterInValue"
 }
 
 func (v WebhookFilterInValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {

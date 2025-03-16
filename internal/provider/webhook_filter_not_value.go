@@ -105,7 +105,7 @@ func (v WebhookFilterNotValue) IsUnknown() bool {
 }
 
 func (v WebhookFilterNotValue) String() string {
-	return ""
+	return "WebhookFilterNotValue"
 }
 
 func (v WebhookFilterNotValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
