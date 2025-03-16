@@ -3,7 +3,6 @@ package terraformpluginframeworkreflection
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -21,7 +20,7 @@ func ValueToTerraformValue(ctx context.Context, value attr.Value, state attr.Val
 	case attr.ValueStateUnknown:
 		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
 	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", state))
+		return tftypes.NewValue(tft, nil), UnexpectedValueStateError{ValueState: state}
 	}
 
 	typ := reflect.TypeOf(value)
