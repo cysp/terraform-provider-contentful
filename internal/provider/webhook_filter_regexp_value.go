@@ -94,7 +94,7 @@ func (v WebhookFilterRegexpValue) IsUnknown() bool {
 }
 
 func (v WebhookFilterRegexpValue) String() string {
-	panic("unimplemented")
+	return "WebhookFilterRegexpValue"
 }
 
 func (v WebhookFilterRegexpValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {

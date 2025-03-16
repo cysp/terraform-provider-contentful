@@ -94,7 +94,7 @@ func (v RolePolicyValue) IsUnknown() bool {
 }
 
 func (v RolePolicyValue) String() string {
-	return ""
+	return "RolePolicyValue"
 }
 
 func (v RolePolicyValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
