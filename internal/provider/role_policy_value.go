@@ -92,7 +92,7 @@ func (v RolePolicyValue) Equal(o attr.Value) bool {
 	}
 
 	if v.state == attr.ValueStateKnown {
-		return compareTFSDKAttributesEqual(v, other)
+		return tpfr.ValueAttributesEqual(v, other)
 	}
 
 	return true
