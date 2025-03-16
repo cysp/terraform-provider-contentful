@@ -131,5 +131,5 @@ func (v WebhookHeaderValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 }
 
 func (v WebhookHeaderValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	return ReflectToObjectValue(ctx, v)
+	return tpfr.ValueToObjectValue(ctx, v)
 }

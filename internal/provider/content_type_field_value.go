@@ -167,5 +167,5 @@ func (v ContentTypeFieldValue) ToTerraformValue(ctx context.Context) (tftypes.Va
 }
 
 func (v ContentTypeFieldValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	return ReflectToObjectValue(ctx, v)
+	return tpfr.ValueToObjectValue(ctx, v)
 }

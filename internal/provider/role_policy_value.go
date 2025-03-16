@@ -115,5 +115,5 @@ func (v RolePolicyValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 }
 
 func (v RolePolicyValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	return ReflectToObjectValue(ctx, v)
+	return tpfr.ValueToObjectValue(ctx, v)
 }
