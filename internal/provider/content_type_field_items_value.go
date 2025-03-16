@@ -128,15 +128,6 @@ func (v ContentTypeFieldItemsValue) ToTerraformValue(ctx context.Context) (tftyp
 	return ReflectToTerraformValue(ctx, v, v.state)
 }
 
-func (v ContentTypeFieldItemsValue) ToObjectValueMust(ctx context.Context) basetypes.ObjectValue {
-	value, diags := v.ToObjectValue(ctx)
-	if diags.HasError() {
-		panic(diags)
-	}
-
-	return value
-}
-
 func (v ContentTypeFieldItemsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	return ReflectToObjectValue(ctx, v)
 }
