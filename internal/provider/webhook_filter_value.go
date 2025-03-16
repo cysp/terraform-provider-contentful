@@ -100,20 +100,7 @@ func (v WebhookFilterValue) ObjectAttrTypes(ctx context.Context) map[string]attr
 }
 
 func (v WebhookFilterValue) Equal(o attr.Value) bool {
-	other, ok := o.(WebhookFilterValue)
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state == attr.ValueStateKnown {
-		return tpfr.ValueAttributesEqual(v, other)
-	}
-
-	return true
+	return tpfr.ValuesEqual[WebhookFilterValue](v, o)
 }
 
 func (v WebhookFilterValue) IsNull() bool {

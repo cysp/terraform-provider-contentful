@@ -98,20 +98,7 @@ func (v WebhookHeaderValue) ObjectAttrTypes(ctx context.Context) map[string]attr
 }
 
 func (v WebhookHeaderValue) Equal(o attr.Value) bool {
-	other, ok := o.(WebhookHeaderValue)
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state == attr.ValueStateKnown {
-		return tpfr.ValueAttributesEqual(v, other)
-	}
-
-	return true
+	return tpfr.ValuesEqual[WebhookHeaderValue](v, o)
 }
 
 func (v WebhookHeaderValue) IsNull() bool {
