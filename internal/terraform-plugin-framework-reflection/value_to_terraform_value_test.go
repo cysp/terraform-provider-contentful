@@ -45,3 +45,18 @@ func TestValueToTerraformValueUnexpectedState(t *testing.T) {
 	require.ErrorAs(t, err, &uvserr)
 	assert.Equal(t, attr.ValueState(0xff), uvserr.ValueState)
 }
+
+func TestValueToTerraformValueInvalid(t *testing.T) {
+	t.Parallel()
+
+	val := testInvalidValue{
+		A:     "test",
+		state: attr.ValueStateKnown,
+	}
+
+	tfval, err := val.ToTerraformValue(t.Context())
+	require.Error(t, err)
+
+	assert.False(t, tfval.IsKnown())
+	assert.False(t, tfval.IsNull())
+}
