@@ -26,11 +26,6 @@ func (t WebhookFilterEqualsType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-//nolint:ireturn
-func (t WebhookFilterEqualsType) ValueType(_ context.Context) attr.Value {
-	return WebhookFilterEqualsValue{}
-}
-
 func (t WebhookFilterEqualsType) String() string {
 	return "WebhookFilterEqualsType"
 }

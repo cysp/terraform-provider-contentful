@@ -26,11 +26,6 @@ func (t WebhookHeaderType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-//nolint:ireturn
-func (t WebhookHeaderType) ValueType(_ context.Context) attr.Value {
-	return WebhookHeaderValue{}
-}
-
 func (t WebhookHeaderType) String() string {
 	return "WebhookHeaderType"
 }

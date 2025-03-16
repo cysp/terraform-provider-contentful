@@ -26,11 +26,6 @@ func (t ContentTypeFieldItemsType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-//nolint:ireturn
-func (t ContentTypeFieldItemsType) ValueType(_ context.Context) attr.Value {
-	return ContentTypeFieldItemsValue{}
-}
-
 func (t ContentTypeFieldItemsType) String() string {
 	return "ContentTypeFieldItemsType"
 }

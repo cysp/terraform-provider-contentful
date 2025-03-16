@@ -26,11 +26,6 @@ func (t RolePolicyType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-//nolint:ireturn
-func (t RolePolicyType) ValueType(_ context.Context) attr.Value {
-	return RolePolicyValue{}
-}
-
 func (t RolePolicyType) String() string {
 	return "RolePolicyType"
 }

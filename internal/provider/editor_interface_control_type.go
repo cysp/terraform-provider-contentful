@@ -26,11 +26,6 @@ func (t EditorInterfaceControlType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-//nolint:ireturn
-func (t EditorInterfaceControlType) ValueType(_ context.Context) attr.Value {
-	return EditorInterfaceControlValue{}
-}
-
 func (t EditorInterfaceControlType) String() string {
 	return "EditorInterfaceControlType"
 }
