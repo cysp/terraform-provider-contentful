@@ -113,7 +113,8 @@ func (v WebhookFilterInValue) String() string {
 }
 
 func (v WebhookFilterInValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	return ReflectToTerraformValue(ctx, v, v.state)
+	//nolint:wrapcheck
+	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
 func (v WebhookFilterInValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {

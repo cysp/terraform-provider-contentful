@@ -115,7 +115,8 @@ func (v EditorInterfaceGroupControlValue) String() string {
 }
 
 func (v EditorInterfaceGroupControlValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	return ReflectToTerraformValue(ctx, v, v.state)
+	//nolint:wrapcheck
+	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
 func (v EditorInterfaceGroupControlValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
