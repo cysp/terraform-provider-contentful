@@ -16,9 +16,7 @@ func (model *AppInstallationResourceModel) ToXContentfulMarketplaceHeaderValue(c
 
 	value := cm.OptString{}
 
-	marketplaceStrings, marketplaceStringDiags := model.ToXContentfulMarketplaceHeaderValueElements(ctx)
-	diags.Append(marketplaceStringDiags...)
-
+	marketplaceStrings := DiagsAppendResult1(diags, model.ToXContentfulMarketplaceHeaderValueElements, ctx)
 	if len(marketplaceStrings) > 0 {
 		slices.Sort(marketplaceStrings)
 
