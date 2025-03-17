@@ -21,14 +21,10 @@ func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.C
 	for index, item := range items {
 		path := path.AtListIndex(index)
 
-		listElementValue, listElementValueDiags := NewFieldsValueFromResponse(ctx, path, item)
-		diags.Append(listElementValueDiags...)
-
-		listElementValues[index] = listElementValue
+		listElementValues[index] = DiagsAppendResult3(diags, NewFieldsValueFromResponse, ctx, path, item)
 	}
 
-	listValue, listValueDiags := types.ListValue(ContentTypeFieldValue{}.Type(ctx), listElementValues)
-	diags.Append(listValueDiags...)
+	listValue := DiagsAppendResult2(diags, types.ListValue, ContentTypeFieldValue{}.Type(ctx), listElementValues)
 
 	return listValue, diags
 }
