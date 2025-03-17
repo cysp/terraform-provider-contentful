@@ -39,15 +39,6 @@ func NewWebhookTransformationValueKnownFromAttributes(ctx context.Context, attri
 	return value, diags
 }
 
-func NewWebhookTransformationValueKnownFromAttributesMust(ctx context.Context, attributes map[string]attr.Value) WebhookTransformationValue {
-	value, diags := NewWebhookTransformationValueKnownFromAttributes(ctx, attributes)
-	if diags.HasError() {
-		panic(diags)
-	}
-
-	return value
-}
-
 func NewWebhookTransformationValueNull() WebhookTransformationValue {
 	return WebhookTransformationValue{
 		state: attr.ValueStateNull,

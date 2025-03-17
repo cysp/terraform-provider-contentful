@@ -40,23 +40,23 @@ func TestContentTypeFieldValueToTerraformValueRoundtrip(t *testing.T) {
 			},
 		},
 		"known": {
-			input: provider.NewContentTypeFieldValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+			input: DiagsNoErrorsMust(provider.NewContentTypeFieldValueKnownFromAttributes(ctx, map[string]attr.Value{
 				"type":        types.StringValue("Link"),
 				"link_type":   types.StringValue("Entry"),
 				"validations": types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{}),
 				"id":          types.StringValue("id"),
 				"name":        types.StringValue("name"),
-				"items": provider.NewContentTypeFieldItemsValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+				"items": DiagsNoErrorsMust(provider.NewContentTypeFieldItemsValueKnownFromAttributes(ctx, map[string]attr.Value{
 					"type":        types.StringValue("Link"),
 					"link_type":   types.StringValue("Entry"),
 					"validations": types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{}),
-				}),
+				})),
 				"default_value": jsontypes.NewNormalizedNull(),
 				"localized":     types.BoolValue(true),
 				"disabled":      types.BoolValue(false),
 				"omitted":       types.BoolValue(false),
 				"required":      types.BoolValue(true),
-			}),
+			})),
 			check: func(t *testing.T, v tftypes.Value) {
 				t.Helper()
 

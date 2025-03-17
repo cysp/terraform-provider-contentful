@@ -96,22 +96,22 @@ func TestWebhookHeaderValueConversion(t *testing.T) {
 
 	values := []provider.AttrValueWithToObjectValue{
 		provider.NewWebhookHeaderValueKnown(),
-		provider.NewWebhookHeaderValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"value":  types.StringUnknown(),
 			"secret": types.BoolUnknown(),
-		}),
-		provider.NewWebhookHeaderValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		})),
+		DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"value":  types.StringNull(),
 			"secret": types.BoolNull(),
-		}),
-		provider.NewWebhookHeaderValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		})),
+		DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"value":  types.StringValue("value"),
 			"secret": types.BoolValue(false),
-		}),
-		provider.NewWebhookHeaderValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		})),
+		DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"value":  types.StringValue("value"),
 			"secret": types.BoolValue(true),
-		}),
+		})),
 	}
 
 	for _, value := range values {

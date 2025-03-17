@@ -25,7 +25,7 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 		permissionsValuesMap[permission] = permissionActionsListValue
 	}
 
-	permissionsMapValue, permissionsListValueDiags := basetypes.NewMapValue(NewEmptyListMust(types.String{}.Type(ctx)).Type(ctx), permissionsValuesMap)
+	permissionsMapValue, permissionsListValueDiags := basetypes.NewMapValue(types.ListType{ElemType: types.StringType}, permissionsValuesMap)
 	diags.Append(permissionsListValueDiags...)
 
 	return permissionsMapValue, diags

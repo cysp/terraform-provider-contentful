@@ -91,24 +91,24 @@ func TestWebhookTransformationValueConversion(t *testing.T) {
 
 	values := []provider.AttrValueWithToObjectValue{
 		provider.NewWebhookTransformationValueKnown(),
-		provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		DiagsNoErrorsMust(provider.NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"method":                 types.StringUnknown(),
 			"content_type":           types.StringUnknown(),
 			"include_content_length": types.BoolUnknown(),
 			"body":                   jsontypes.NewNormalizedUnknown(),
-		}),
-		provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		})),
+		DiagsNoErrorsMust(provider.NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"method":                 types.StringNull(),
 			"content_type":           types.StringNull(),
 			"include_content_length": types.BoolNull(),
 			"body":                   jsontypes.NewNormalizedNull(),
-		}),
-		provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+		})),
+		DiagsNoErrorsMust(provider.NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"method":                 types.StringValue("method"),
 			"content_type":           types.StringValue("content_type"),
 			"include_content_length": types.BoolValue(true),
 			"body":                   jsontypes.NewNormalizedValue("{}"),
-		}),
+		})),
 	}
 
 	for _, value := range values {

@@ -77,10 +77,10 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
 				Headers: types.MapValueMust(provider.WebhookHeaderValue{}.Type(ctx), map[string]attr.Value{
-					"X-Header": provider.NewWebhookHeaderValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+					"X-Header": DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 						"value":  types.StringValue("value"),
 						"secret": types.BoolValue(false),
-					}),
+					})),
 				}),
 			},
 			expected: cm.WebhookDefinitionFields{
@@ -105,12 +105,12 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Transformation: provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+				Transformation: DiagsNoErrorsMust(provider.NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
 					"body":                   jsontypes.NewNormalizedNull(),
-				}),
+				})),
 			},
 			expected: cm.WebhookDefinitionFields{
 				Name:              "headers-webhook",
@@ -131,12 +131,12 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Transformation: provider.NewWebhookTransformationValueKnownFromAttributesMust(ctx, map[string]attr.Value{
+				Transformation: DiagsNoErrorsMust(provider.NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
 					"body":                   jsontypes.NewNormalizedValue("{\"key\":\"value\"}"),
-				}),
+				})),
 			},
 			expected: cm.WebhookDefinitionFields{
 				Name:              "headers-webhook",
