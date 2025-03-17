@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -13,7 +14,12 @@ import (
 func (model *WebhookResourceModel) ReadFromResponse(ctx context.Context, webhookDefinition *cm.WebhookDefinition) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	model.WebhookID = types.StringValue(webhookDefinition.Sys.ID)
+	spaceID := webhookDefinition.Sys.Space.Sys.ID
+	webhookID := webhookDefinition.Sys.ID
+
+	model.ID = types.StringValue(strings.Join([]string{spaceID, webhookID}, "/"))
+	model.SpaceID = types.StringValue(spaceID)
+	model.WebhookID = types.StringValue(webhookID)
 
 	model.Name = types.StringValue(webhookDefinition.Name)
 
