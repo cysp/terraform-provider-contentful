@@ -37,7 +37,7 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 		},
 		"empty": {
 			model: provider.AppInstallationResourceModel{
-				Marketplace: provider.NewEmptySetMust(types.StringType),
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{}),
 			},
 			expected: cm.OptString{},
 		},

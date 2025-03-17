@@ -40,15 +40,6 @@ func NewWebhookHeaderValueKnownFromAttributes(ctx context.Context, attributes ma
 	return value, diags
 }
 
-func NewWebhookHeaderValueKnownFromAttributesMust(ctx context.Context, attributes map[string]attr.Value) WebhookHeaderValue {
-	value, diags := NewWebhookHeaderValueKnownFromAttributes(ctx, attributes)
-	if diags.HasError() {
-		panic(diags)
-	}
-
-	return value
-}
-
 func NewWebhookHeaderValueNull() WebhookHeaderValue {
 	return WebhookHeaderValue{
 		state: attr.ValueStateNull,

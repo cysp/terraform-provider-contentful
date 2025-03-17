@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -78,10 +79,10 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				SpaceID:       types.StringValue("space"),
 				EnvironmentID: types.StringValue("environment"),
 				ContentTypeID: types.StringValue("content_type"),
-				EditorLayout:  provider.NewEmptyListMust(provider.EditorInterfaceEditorLayoutValue{}.Type(t.Context())),
-				Controls:      provider.NewEmptyListMust(provider.EditorInterfaceControlValue{}.Type(t.Context())),
-				GroupControls: provider.NewEmptyListMust(provider.EditorInterfaceGroupControlValue{}.Type(t.Context())),
-				Sidebar:       provider.NewEmptyListMust(provider.EditorInterfaceSidebarValue{}.Type(t.Context())),
+				EditorLayout:  types.ListValueMust(provider.EditorInterfaceEditorLayoutValue{}.Type(t.Context()), []attr.Value{}),
+				Controls:      types.ListValueMust(provider.EditorInterfaceControlValue{}.Type(t.Context()), []attr.Value{}),
+				GroupControls: types.ListValueMust(provider.EditorInterfaceGroupControlValue{}.Type(t.Context()), []attr.Value{}),
+				Sidebar:       types.ListValueMust(provider.EditorInterfaceSidebarValue{}.Type(t.Context()), []attr.Value{}),
 			},
 		},
 	}
