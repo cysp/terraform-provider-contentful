@@ -68,6 +68,7 @@ resource "contentful_webhook" "this" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `webhook_id` (String)
 
 <a id="nestedatt--filters"></a>
