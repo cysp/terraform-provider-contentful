@@ -45,6 +45,14 @@ type DeleteWebhookDefinitionRes interface {
 	deleteWebhookDefinitionRes()
 }
 
+type GetAppDefinitionRes interface {
+	getAppDefinitionRes()
+}
+
+type GetAppDefinitionsRes interface {
+	getAppDefinitionsRes()
+}
+
 type GetAppInstallationRes interface {
 	getAppInstallationRes()
 }
@@ -63,6 +71,10 @@ type GetDeliveryApiKeyRes interface {
 
 type GetEditorInterfaceRes interface {
 	getEditorInterfaceRes()
+}
+
+type GetOrganizationsRes interface {
+	getOrganizationsRes()
 }
 
 type GetPersonalAccessTokenRes interface {

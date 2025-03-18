@@ -11,6 +11,7 @@ generator:
       - 'webhooks/client'
       - 'webhooks/server'
       - 'client/request/validation'
+      - 'client/security/reentrant'
       - 'server/response/validation'
       - 'ogen/otel'
       - 'ogen/unimplemented'

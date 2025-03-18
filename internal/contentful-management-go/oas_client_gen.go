@@ -88,6 +88,18 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams) (DeleteWebhookDefinitionRes, error)
+	// GetAppDefinition invokes getAppDefinition operation.
+	//
+	// Get one app definition.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}
+	GetAppDefinition(ctx context.Context, params GetAppDefinitionParams) (GetAppDefinitionRes, error)
+	// GetAppDefinitions invokes getAppDefinitions operation.
+	//
+	// Get all app definitions.
+	//
+	// GET /organizations/{organization_id}/app_definitions
+	GetAppDefinitions(ctx context.Context, params GetAppDefinitionsParams) (GetAppDefinitionsRes, error)
 	// GetAppInstallation invokes getAppInstallation operation.
 	//
 	// Get one app installation.
@@ -118,6 +130,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
 	GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (GetEditorInterfaceRes, error)
+	// GetOrganizations invokes getOrganizations operation.
+	//
+	// Get all organizations an account has access to.
+	//
+	// GET /organizations
+	GetOrganizations(ctx context.Context) (GetOrganizationsRes, error)
 	// GetPersonalAccessToken invokes getPersonalAccessToken operation.
 	//
 	// Get a single personal access token.
@@ -1405,6 +1423,200 @@ func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteW
 	return result, nil
 }
 
+// GetAppDefinition invokes getAppDefinition operation.
+//
+// Get one app definition.
+//
+// GET /organizations/{organization_id}/app_definitions/{app_definition_id}
+func (c *Client) GetAppDefinition(ctx context.Context, params GetAppDefinitionParams) (GetAppDefinitionRes, error) {
+	res, err := c.sendGetAppDefinition(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetAppDefinition(ctx context.Context, params GetAppDefinitionParams) (res GetAppDefinitionRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetAppDefinitionOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetAppDefinitionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetAppDefinitions invokes getAppDefinitions operation.
+//
+// Get all app definitions.
+//
+// GET /organizations/{organization_id}/app_definitions
+func (c *Client) GetAppDefinitions(ctx context.Context, params GetAppDefinitionsParams) (GetAppDefinitionsRes, error) {
+	res, err := c.sendGetAppDefinitions(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetAppDefinitions(ctx context.Context, params GetAppDefinitionsParams) (res GetAppDefinitionsRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetAppDefinitionsOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetAppDefinitionsResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetAppInstallation invokes getAppInstallation operation.
 //
 // Get one app installation.
@@ -1949,6 +2161,75 @@ func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInt
 	defer resp.Body.Close()
 
 	result, err := decodeGetEditorInterfaceResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetOrganizations invokes getOrganizations operation.
+//
+// Get all organizations an account has access to.
+//
+// GET /organizations
+func (c *Client) GetOrganizations(ctx context.Context) (GetOrganizationsRes, error) {
+	res, err := c.sendGetOrganizations(ctx)
+	return res, err
+}
+
+func (c *Client) sendGetOrganizations(ctx context.Context) (res GetOrganizationsRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/organizations"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetOrganizationsOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetOrganizationsResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
