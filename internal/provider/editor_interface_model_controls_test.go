@@ -25,9 +25,9 @@ func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItem(t *testi
 
 	item, diags := model.ToEditorInterfaceFieldsControlsItem(ctx, path)
 
-	assert.EqualValues(t, "field_id", item.FieldId)
-	assert.EqualValues(t, cm.NewOptString("widget_namespace"), item.WidgetNamespace)
-	assert.EqualValues(t, cm.NewOptString("widget_id"), item.WidgetId)
+	assert.Equal(t, "field_id", item.FieldId)
+	assert.Equal(t, cm.NewOptString("widget_namespace"), item.WidgetNamespace)
+	assert.Equal(t, cm.NewOptString("widget_id"), item.WidgetId)
 	assert.NotEmpty(t, item.Settings)
 
 	assert.Empty(t, diags)
@@ -65,9 +65,9 @@ func TestNewEditorInterfaceControlValueFromResponse(t *testing.T) {
 
 	value, diags := provider.NewEditorInterfaceControlValueFromResponse(path, item)
 
-	assert.EqualValues(t, "field_id", value.FieldID.ValueString())
-	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.EqualValues(t, "widget_id", value.WidgetID.ValueString())
+	assert.Equal(t, "field_id", value.FieldID.ValueString())
+	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
+	assert.Equal(t, "widget_id", value.WidgetID.ValueString())
 	assert.JSONEq(t, `{"foo":"bar"}`, value.Settings.ValueString())
 
 	assert.Empty(t, diags)
@@ -86,9 +86,9 @@ func TestNewEditorInterfaceControlValueFromResponseSettingsNull(t *testing.T) {
 
 	value, diags := provider.NewEditorInterfaceControlValueFromResponse(path, item)
 
-	assert.EqualValues(t, "field_id", value.FieldID.ValueString())
-	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.EqualValues(t, "widget_id", value.WidgetID.ValueString())
+	assert.Equal(t, "field_id", value.FieldID.ValueString())
+	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
+	assert.Equal(t, "widget_id", value.WidgetID.ValueString())
 	assert.True(t, value.Settings.IsNull())
 
 	assert.Empty(t, diags)

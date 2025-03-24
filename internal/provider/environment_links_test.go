@@ -106,7 +106,7 @@ func TestToEnvironmentLinks(t *testing.T) {
 
 			result, diags := provider.ToEnvironmentLinks(ctx, path, test.value)
 
-			assert.EqualValues(t, test.expected, result)
+			assert.Equal(t, test.expected, result)
 
 			if test.expectedDiags {
 				assert.NotEmpty(t, diags)

@@ -25,7 +25,7 @@ func TestToOptContentTypeFieldsItemItemsErrorHandling(t *testing.T) {
 	items, itemsDiags := provider.ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(t.Context(), path.Root("items"), itemsObject)
 	assert.NotEmpty(t, itemsDiags)
 
-	assert.EqualValues(t, cm.OptContentTypeRequestFieldsFieldsItemItems{
+	assert.Equal(t, cm.OptContentTypeRequestFieldsFieldsItemItems{
 		Value: cm.ContentTypeRequestFieldsFieldsItemItems{
 			Validations: []jx.Raw{},
 		},

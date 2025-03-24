@@ -17,12 +17,12 @@ var (
 	_ resource.ResourceWithImportState = (*deliveryApiKeyResource)(nil)
 )
 
-//nolint:ireturn,revive,stylecheck
+//nolint:ireturn,revive
 func NewDeliveryApiKeyResource() resource.Resource {
 	return &deliveryApiKeyResource{}
 }
 
-//nolint:revive,stylecheck
+//nolint:revive
 type deliveryApiKeyResource struct {
 	providerData ContentfulProviderData
 }

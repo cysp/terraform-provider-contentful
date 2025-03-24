@@ -1,24 +1,46 @@
-# Visit https://golangci-lint.run/ for usage documentation
-# and information on other useful linters
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
+version: "2"
 
 linters:
-  enable-all: true
+  default: all
   disable:
     - depguard
     - exhaustruct
     - funlen
     - lll
-    - tenv
+  settings:
+    cyclop:
+      max-complexity: 20
+      package-average: 0
+    varnamelen:
+      ignore-names:
+        - r
+        - v
+        - w
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 
-linters-settings:
-  cyclop:
-    max-complexity: 20
-    package-average: 0
-  varnamelen:
-    ignore-names:
-      - r
-      - v
-      - w
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

@@ -61,7 +61,7 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 
 			value, diags := test.model.ToXContentfulMarketplaceHeaderValue(t.Context())
 
-			assert.EqualValues(t, test.expected, value)
+			assert.Equal(t, test.expected, value)
 
 			if test.expectErrors {
 				assert.NotEmpty(t, diags.Errors())
@@ -122,7 +122,7 @@ func TestToAppInstallationFields(t *testing.T) {
 
 			requestBody, _ := req.MarshalJSON()
 
-			assert.EqualValues(t, test.expectedRequestBody, string(requestBody))
+			assert.Equal(t, test.expectedRequestBody, string(requestBody))
 
 			if test.expectErrors {
 				assert.NotEmpty(t, diags.Errors())

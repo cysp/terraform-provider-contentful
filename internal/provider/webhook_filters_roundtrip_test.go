@@ -19,7 +19,7 @@ func TestWebhookFiltersRoundtrip(t *testing.T) {
 	webhookDefinitionFilterArray, webhookDefinitionFilterArrayDiags := provider.ToOptNilWebhookDefinitionFilterArray(ctx, path.Root("filters"), filters)
 	assert.Empty(t, webhookDefinitionFilterArrayDiags)
 
-	assert.EqualValues(t, webhookDefinitionFilterArray, cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
+	assert.Equal(t, webhookDefinitionFilterArray, cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
 		{
 			Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"abc"`)},
 		},
