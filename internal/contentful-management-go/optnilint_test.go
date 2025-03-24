@@ -34,7 +34,7 @@ func TestNewOptNilPointerInt(t *testing.T) {
 
 			actual := cm.NewOptNilPointerInt(test.input)
 
-			assert.EqualValues(t, test.expected, actual)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }
@@ -66,7 +66,7 @@ func TestNewOptNilPointerInt64(t *testing.T) {
 
 			actual := cm.NewOptNilPointerInt64(test.input)
 
-			assert.EqualValues(t, test.expected, actual)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }

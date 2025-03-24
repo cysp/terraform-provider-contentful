@@ -60,7 +60,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 
 			diags := model.ReadFromResponse(&test.appInstallation)
 
-			assert.EqualValues(t, test.expectedModel, model)
+			assert.Equal(t, test.expectedModel, model)
 
 			assert.Empty(t, diags)
 		})

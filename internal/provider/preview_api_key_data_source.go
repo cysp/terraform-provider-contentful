@@ -15,12 +15,12 @@ var (
 	_ datasource.DataSourceWithConfigure = (*previewApiKeyDataSource)(nil)
 )
 
-//nolint:ireturn,revive,stylecheck
+//nolint:ireturn,revive
 func NewPreviewApiKeyDataSource() datasource.DataSource {
 	return &previewApiKeyDataSource{}
 }
 
-//nolint:revive,stylecheck
+//nolint:revive
 type previewApiKeyDataSource struct {
 	providerData ContentfulProviderData
 }

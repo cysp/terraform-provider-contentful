@@ -54,7 +54,7 @@ func TestGetAuthenticatedUserUnauthorized(t *testing.T) {
 	switch response := response.(type) {
 	case *cm.Error:
 		require.NotNil(t, response)
-		assert.EqualValues(t, "AccessTokenInvalid", response.Sys.ID)
+		assert.Equal(t, "AccessTokenInvalid", response.Sys.ID)
 	default:
 		t.Fatal("unexpected type")
 	}

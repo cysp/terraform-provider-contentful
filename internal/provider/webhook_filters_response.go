@@ -110,7 +110,7 @@ func ReadWebhookFilterEqualsValueFromResponse(ctx context.Context, path path.Pat
 
 	value := WebhookFilterEqualsValue{}
 
-	//nolint:gomnd,mnd
+	//nolint:mnd
 	if len(input) == 2 {
 		value = NewWebhookFilterEqualsValueKnown()
 
@@ -139,7 +139,7 @@ func ReadWebhookFilterInValueFromResponse(ctx context.Context, path path.Path, i
 
 	value := WebhookFilterInValue{}
 
-	//nolint:gomnd,mnd
+	//nolint:mnd
 	if len(input) == 2 {
 		value = NewWebhookFilterInValueKnown()
 
@@ -168,7 +168,7 @@ func ReadWebhookFilterRegexpValueFromResponse(ctx context.Context, path path.Pat
 
 	value := WebhookFilterRegexpValue{}
 
-	//nolint:gomnd,mnd
+	//nolint:mnd
 	if len(input) == 2 {
 		value = NewWebhookFilterRegexpValueKnown()
 

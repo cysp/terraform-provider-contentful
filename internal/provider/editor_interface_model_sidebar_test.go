@@ -25,8 +25,8 @@ func TestSidebarValueToEditorInterfaceFieldsSidebarItem(t *testing.T) {
 
 	item, diags := model.ToEditorInterfaceFieldsSidebarItem(ctx, path)
 
-	assert.EqualValues(t, "widget_namespace", item.WidgetNamespace)
-	assert.EqualValues(t, "widget_id", item.WidgetId)
+	assert.Equal(t, "widget_namespace", item.WidgetNamespace)
+	assert.Equal(t, "widget_id", item.WidgetId)
 	assert.False(t, item.Disabled.Set)
 	assert.NotEmpty(t, item.Settings)
 
@@ -64,8 +64,8 @@ func TestNewEditorInterfaceSidebarValueFromResponse(t *testing.T) {
 
 	value, valueDiags := provider.NewEditorInterfaceSidebarValueFromResponse(path, item)
 
-	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.EqualValues(t, "widget_id", value.WidgetID.ValueString())
+	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
+	assert.Equal(t, "widget_id", value.WidgetID.ValueString())
 	assert.JSONEq(t, `{"foo":"bar"}`, value.Settings.ValueString())
 
 	assert.Empty(t, valueDiags)
@@ -83,8 +83,8 @@ func TestNewEditorInterfaceSidebarValueFromResponseSettingsNull(t *testing.T) {
 
 	value, valueDiags := provider.NewEditorInterfaceSidebarValueFromResponse(path, item)
 
-	assert.EqualValues(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.EqualValues(t, "widget_id", value.WidgetID.ValueString())
+	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
+	assert.Equal(t, "widget_id", value.WidgetID.ValueString())
 	assert.True(t, value.Settings.IsNull())
 
 	assert.Empty(t, valueDiags)

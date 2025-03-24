@@ -133,7 +133,7 @@ func TestToEditorInterfaceFields(t *testing.T) {
 
 	assert.Empty(t, diags)
 
-	assert.EqualValues(t, cm.EditorInterfaceFields{
+	assert.Equal(t, cm.EditorInterfaceFields{
 		Controls: cm.NewOptNilEditorInterfaceFieldsControlsItemArray([]cm.EditorInterfaceFieldsControlsItem{
 			{
 				FieldId:         "field_id",
@@ -217,7 +217,7 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 
 	req, diags := model.ToEditorInterfaceFields(ctx)
 
-	assert.EqualValues(t, cm.EditorInterfaceFields{
+	assert.Equal(t, cm.EditorInterfaceFields{
 		Controls: cm.NewOptNilEditorInterfaceFieldsControlsItemArray([]cm.EditorInterfaceFieldsControlsItem{
 			{
 				FieldId:         "field_id",

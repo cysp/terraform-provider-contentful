@@ -34,7 +34,7 @@ func TestNewOptPointerString(t *testing.T) {
 
 			actual := cm.NewOptPointerString(test.input)
 
-			assert.EqualValues(t, test.expected, actual)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }

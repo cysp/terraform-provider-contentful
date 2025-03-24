@@ -58,7 +58,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 
 			actual := util.ErrorDetailFromContentfulManagementResponse(test.response, test.err)
 
-			assert.EqualValues(t, test.expected, actual)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }
@@ -94,7 +94,7 @@ func TestOptStringToStringValue(t *testing.T) {
 
 			actual := util.OptStringToStringValue(test.input)
 
-			assert.EqualValues(t, test.expected, actual)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }
@@ -130,7 +130,7 @@ func TestStringValueToOptString(t *testing.T) {
 
 			actual := util.StringValueToOptString(test.input)
 
-			assert.EqualValues(t, test.expected, actual)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }
@@ -166,7 +166,7 @@ func TestStringValueToOptNilString(t *testing.T) {
 
 			actual := util.StringValueToOptNilString(test.input)
 
-			assert.EqualValues(t, test.expected, actual)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }

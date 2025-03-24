@@ -94,7 +94,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 
 			diags := model.ReadFromResponse(t.Context(), &test.editorInterface)
 
-			assert.EqualValues(t, test.expectedModel, model)
+			assert.Equal(t, test.expectedModel, model)
 			assert.Empty(t, diags)
 		})
 	}

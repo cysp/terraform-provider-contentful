@@ -34,7 +34,7 @@ func TestNewOptPointerBool(t *testing.T) {
 
 			actual := cm.NewOptPointerBool(test.input)
 
-			assert.EqualValues(t, test.expected, actual)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }
