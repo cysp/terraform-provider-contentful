@@ -42,5 +42,5 @@ component_management:
         - internal/terraform-plugin-framework-reflection/**
 
 ignore:
-  - 'main.go'
-  - 'internal/contentful-management-go/*_gen.go'
+  - "main.go"
+  - "internal/contentful-management-go/*_gen.go"

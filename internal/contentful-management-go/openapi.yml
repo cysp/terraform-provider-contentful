@@ -1,7 +1,7 @@
-openapi: '3.0.3'
+openapi: "3.0.3"
 info:
   title: Contentful Management API
-  version: '0.1'
+  version: "0.1"
 servers:
   - url: https://api.contentful.com
 components:
@@ -88,10 +88,10 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/ErrorSys'
+              $ref: "#/components/schemas/ErrorSys"
           required:
             - sys
-        - $ref: '#/components/schemas/ErrorFields'
+        - $ref: "#/components/schemas/ErrorFields"
     BaseSys:
       type: object
       properties:
@@ -101,25 +101,25 @@ components:
         - type
     BaseSysWithSpace:
       allOf:
-        - $ref: '#/components/schemas/BaseSys'
+        - $ref: "#/components/schemas/BaseSys"
         - type: object
           properties:
             space:
-              $ref: '#/components/schemas/SpaceLink'
+              $ref: "#/components/schemas/SpaceLink"
           required:
             - space
     BaseSysWithSpaceEnvironment:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithSpace'
+        - $ref: "#/components/schemas/BaseSysWithSpace"
         - type: object
           properties:
             environment:
-              $ref: '#/components/schemas/EnvironmentLink'
+              $ref: "#/components/schemas/EnvironmentLink"
           required:
             - environment
     BaseSysWithId:
       allOf:
-        - $ref: '#/components/schemas/BaseSys'
+        - $ref: "#/components/schemas/BaseSys"
         - type: object
           properties:
             id:
@@ -128,7 +128,7 @@ components:
             - id
     BaseSysWithIdAndVersion:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithId'
+        - $ref: "#/components/schemas/BaseSysWithId"
         - type: object
           properties:
             version:
@@ -143,7 +143,7 @@ components:
             - version
     BaseSysWithIdAndVersionAndPublishedVersion:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
         - type: object
           properties:
             publishedVersion:
@@ -153,7 +153,7 @@ components:
               format: date-time
     UserSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
         - type: object
           properties:
             type:
@@ -178,14 +178,14 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/UserSys'
+              $ref: "#/components/schemas/UserSys"
           required:
             - sys
-        - $ref: '#/components/schemas/UserFields'
+        - $ref: "#/components/schemas/UserFields"
     ApiKeySys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithSpace'
-        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - $ref: "#/components/schemas/BaseSysWithSpace"
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
         - type: object
           properties:
             type:
@@ -194,7 +194,7 @@ components:
                 - ApiKey
     ApiKeyFields:
       allOf:
-        - $ref: '#/components/schemas/ApiKeyRequestFields'
+        - $ref: "#/components/schemas/ApiKeyRequestFields"
         - type: object
           properties:
             accessToken:
@@ -204,7 +204,7 @@ components:
               properties:
                 sys:
                   allOf:
-                    - $ref: '#/components/schemas/LinkSys'
+                    - $ref: "#/components/schemas/LinkSys"
                     - type: object
                       properties:
                         linkType:
@@ -226,7 +226,7 @@ components:
         environments:
           type: array
           items:
-            $ref: '#/components/schemas/EnvironmentLink'
+            $ref: "#/components/schemas/EnvironmentLink"
       required:
         - name
     ApiKey:
@@ -234,13 +234,13 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/ApiKeySys'
+              $ref: "#/components/schemas/ApiKeySys"
           required:
             - sys
-        - $ref: '#/components/schemas/ApiKeyFields'
+        - $ref: "#/components/schemas/ApiKeyFields"
     AppInstallationSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithSpaceEnvironment'
+        - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
         - type: object
           properties:
             type:
@@ -248,7 +248,7 @@ components:
               enum:
                 - AppInstallation
             appDefinition:
-              $ref: '#/components/schemas/AppDefinitionLink'
+              $ref: "#/components/schemas/AppDefinitionLink"
           required:
             - appDefinition
     AppInstallationFields:
@@ -260,14 +260,14 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/AppInstallationSys'
+              $ref: "#/components/schemas/AppInstallationSys"
           required:
             - sys
-        - $ref: '#/components/schemas/AppInstallationFields'
+        - $ref: "#/components/schemas/AppInstallationFields"
     ContentTypeSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithSpaceEnvironment'
-        - $ref: '#/components/schemas/BaseSysWithIdAndVersionAndPublishedVersion'
+        - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersionAndPublishedVersion"
         - type: object
           properties:
             type:
@@ -276,7 +276,7 @@ components:
                 - ContentType
     ContentTypeFields:
       allOf:
-        - $ref: '#/components/schemas/ContentTypeRequestFields'
+        - $ref: "#/components/schemas/ContentTypeRequestFields"
         - type: object
           properties:
             description:
@@ -315,7 +315,7 @@ components:
                     type: string
                   linkType:
                     type: string
-                  validations: 
+                  validations:
                     type: array
                     items: {}
               localized:
@@ -327,7 +327,7 @@ components:
               disabled:
                 type: boolean
               defaultValue: {}
-              validations: 
+              validations:
                 type: array
                 items: {}
             required:
@@ -343,14 +343,14 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/ContentTypeSys'
+              $ref: "#/components/schemas/ContentTypeSys"
           required:
             - sys
-        - $ref: '#/components/schemas/ContentTypeFields'
+        - $ref: "#/components/schemas/ContentTypeFields"
     EditorInterfaceSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithSpaceEnvironment'
-        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
         - type: object
           properties:
             type:
@@ -358,7 +358,7 @@ components:
               enum:
                 - EditorInterface
             contentType:
-              $ref : '#/components/schemas/ContentTypeLink'
+              $ref: "#/components/schemas/ContentTypeLink"
           required:
             - contentType
     EditorInterfaceFields:
@@ -431,13 +431,13 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/EditorInterfaceSys'
+              $ref: "#/components/schemas/EditorInterfaceSys"
           required:
             - sys
-        - $ref: '#/components/schemas/EditorInterfaceFields'
+        - $ref: "#/components/schemas/EditorInterfaceFields"
     LinkSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithId'
+        - $ref: "#/components/schemas/BaseSysWithId"
         - type: object
           properties:
             type:
@@ -453,7 +453,7 @@ components:
       properties:
         sys:
           allOf:
-            - $ref: '#/components/schemas/LinkSys'
+            - $ref: "#/components/schemas/LinkSys"
             - type: object
               properties:
                 linkType:
@@ -467,7 +467,7 @@ components:
       properties:
         sys:
           allOf:
-            - $ref: '#/components/schemas/LinkSys'
+            - $ref: "#/components/schemas/LinkSys"
             - type: object
               properties:
                 linkType:
@@ -481,7 +481,7 @@ components:
       properties:
         sys:
           allOf:
-            - $ref: '#/components/schemas/LinkSys'
+            - $ref: "#/components/schemas/LinkSys"
             - type: object
               properties:
                 linkType:
@@ -495,7 +495,7 @@ components:
       properties:
         sys:
           allOf:
-            - $ref: '#/components/schemas/LinkSys'
+            - $ref: "#/components/schemas/LinkSys"
             - type: object
               properties:
                 linkType:
@@ -506,7 +506,7 @@ components:
         - sys
     PersonalAccessTokenSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithId'
+        - $ref: "#/components/schemas/BaseSysWithId"
         - type: object
           properties:
             type:
@@ -563,14 +563,14 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/PersonalAccessTokenSys'
+              $ref: "#/components/schemas/PersonalAccessTokenSys"
           required:
             - sys
-        - $ref: '#/components/schemas/PersonalAccessTokenFields'
+        - $ref: "#/components/schemas/PersonalAccessTokenFields"
     PreviewApiKeySys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithSpace'
-        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - $ref: "#/components/schemas/BaseSysWithSpace"
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
         - type: object
           properties:
             type:
@@ -590,7 +590,7 @@ components:
         environments:
           type: array
           items:
-            $ref: '#/components/schemas/EnvironmentLink'
+            $ref: "#/components/schemas/EnvironmentLink"
       required:
         - name
         - accessToken
@@ -599,14 +599,14 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/PreviewApiKeySys'
+              $ref: "#/components/schemas/PreviewApiKeySys"
           required:
             - sys
-        - $ref: '#/components/schemas/PreviewApiKeyFields'
+        - $ref: "#/components/schemas/PreviewApiKeyFields"
     RoleSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithSpace'
-        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - $ref: "#/components/schemas/BaseSysWithSpace"
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
         - type: object
           properties:
             type:
@@ -657,14 +657,14 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/RoleSys'
+              $ref: "#/components/schemas/RoleSys"
           required:
             - sys
-        - $ref: '#/components/schemas/RoleFields'
+        - $ref: "#/components/schemas/RoleFields"
     WebhookDefinitionSys:
       allOf:
-        - $ref: '#/components/schemas/BaseSysWithSpace'
-        - $ref: '#/components/schemas/BaseSysWithIdAndVersion'
+        - $ref: "#/components/schemas/BaseSysWithSpace"
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
         - type: object
           properties:
             type:
@@ -685,7 +685,7 @@ components:
         filters:
           type: array
           items:
-            $ref: '#/components/schemas/WebhookDefinitionFilter'
+            $ref: "#/components/schemas/WebhookDefinitionFilter"
           nullable: true
         httpBasicUsername:
           type: string
@@ -694,7 +694,7 @@ components:
           type: string
           nullable: true
         headers:
-          $ref: '#/components/schemas/WebhookDefinitionHeaders'
+          $ref: "#/components/schemas/WebhookDefinitionHeaders"
         transformation:
           type: object
           properties:
@@ -715,7 +715,7 @@ components:
     WebhookDefinitionHeaders:
       type: array
       items:
-        $ref: '#/components/schemas/WebhookDefinitionHeader'
+        $ref: "#/components/schemas/WebhookDefinitionHeader"
     WebhookDefinitionHeader:
       type: object
       properties:
@@ -731,22 +731,22 @@ components:
       type: object
       properties:
         not:
-          $ref: '#/components/schemas/WebhookDefinitionFilterNot'
+          $ref: "#/components/schemas/WebhookDefinitionFilterNot"
         equals:
-          $ref: '#/components/schemas/WebhookDefinitionFilterEquals'
+          $ref: "#/components/schemas/WebhookDefinitionFilterEquals"
         in:
-          $ref: '#/components/schemas/WebhookDefinitionFilterIn'
+          $ref: "#/components/schemas/WebhookDefinitionFilterIn"
         regexp:
-          $ref: '#/components/schemas/WebhookDefinitionFilterRegexp'
+          $ref: "#/components/schemas/WebhookDefinitionFilterRegexp"
     WebhookDefinitionFilterNot:
       type: object
       properties:
         equals:
-          $ref: '#/components/schemas/WebhookDefinitionFilterEquals'
+          $ref: "#/components/schemas/WebhookDefinitionFilterEquals"
         in:
-          $ref: '#/components/schemas/WebhookDefinitionFilterIn'
+          $ref: "#/components/schemas/WebhookDefinitionFilterIn"
         regexp:
-          $ref: '#/components/schemas/WebhookDefinitionFilterRegexp'
+          $ref: "#/components/schemas/WebhookDefinitionFilterRegexp"
     WebhookDefinitionFilterEquals:
       type: array
     WebhookDefinitionFilterIn:
@@ -758,10 +758,10 @@ components:
         - type: object
           properties:
             sys:
-              $ref: '#/components/schemas/WebhookDefinitionSys'
+              $ref: "#/components/schemas/WebhookDefinitionSys"
           required:
             - sys
-        - $ref: '#/components/schemas/WebhookDefinitionFields'
+        - $ref: "#/components/schemas/WebhookDefinitionFields"
   securitySchemes:
     accessToken:
       type: http
@@ -775,13 +775,13 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
     error:
       description: An error
       content:
         application/vnd.contentful.management.v1+json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
 security:
   - accessToken: []
 paths:
@@ -795,11 +795,11 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /users/me/access_tokens:
     post:
       operationId: createPersonalAccessToken
@@ -809,21 +809,21 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: '#/components/schemas/PersonalAccessTokenRequestFields'
+              $ref: "#/components/schemas/PersonalAccessTokenRequestFields"
       responses:
         201:
           description: A personal access token
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/PersonalAccessToken'
+                $ref: "#/components/schemas/PersonalAccessToken"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /users/me/access_tokens/{access_token_id}:
     parameters:
-      - $ref: '#/components/parameters/access_token_id'
+      - $ref: "#/components/parameters/access_token_id"
     get:
       operationId: getPersonalAccessToken
       summary: Get a single personal access token
@@ -833,14 +833,14 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/PersonalAccessToken'
+                $ref: "#/components/schemas/PersonalAccessToken"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /users/me/access_tokens/{access_token_id}/revoked:
     parameters:
-      - $ref: '#/components/parameters/access_token_id'
+      - $ref: "#/components/parameters/access_token_id"
     put:
       operationId: revokePersonalAccessToken
       summary: Revoke a personal access token
@@ -850,14 +850,14 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/PersonalAccessToken'
+                $ref: "#/components/schemas/PersonalAccessToken"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/api_keys:
     parameters:
-      - $ref: '#/components/parameters/space_id'
+      - $ref: "#/components/parameters/space_id"
     post:
       operationId: createDeliveryApiKey
       summary: Create a delivery api key
@@ -866,22 +866,22 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: '#/components/schemas/ApiKeyRequestFields'
+              $ref: "#/components/schemas/ApiKeyRequestFields"
       responses:
         201:
           description: A delivery api key
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/ApiKey'
+                $ref: "#/components/schemas/ApiKey"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/api_keys/{api_key_id}:
     parameters:
-      - $ref: '#/components/parameters/space_id'
-      - $ref: '#/components/parameters/api_key_id'
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/api_key_id"
     get:
       operationId: getDeliveryApiKey
       summary: Get a single delivery api key
@@ -891,49 +891,49 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/ApiKey'
+                $ref: "#/components/schemas/ApiKey"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     put:
       operationId: updateDeliveryApiKey
       summary: Update a single delivery api key
       parameters:
-        - $ref: '#/components/parameters/space_id'
-        - $ref: '#/components/parameters/api_key_id'
-        - $ref: '#/components/parameters/x-contentful-version'
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/api_key_id"
+        - $ref: "#/components/parameters/x-contentful-version"
       requestBody:
         required: true
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: '#/components/schemas/ApiKeyRequestFields'
+              $ref: "#/components/schemas/ApiKeyRequestFields"
       responses:
         200:
           description: A delivery api key
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/ApiKey'
+                $ref: "#/components/schemas/ApiKey"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     delete:
       operationId: deleteDeliveryApiKey
       summary: Delete a single delivery api key
       responses:
         204:
-          $ref: '#/components/responses/no-content'
+          $ref: "#/components/responses/no-content"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/preview_api_keys/{preview_api_key_id}:
     parameters:
-      - $ref: '#/components/parameters/space_id'
-      - $ref: '#/components/parameters/preview_api_key_id'
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/preview_api_key_id"
     get:
       operationId: getPreviewApiKey
       summary: Get a single preview api key
@@ -943,16 +943,16 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/PreviewApiKey'
+                $ref: "#/components/schemas/PreviewApiKey"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}:
     parameters:
-      - $ref: '#/components/parameters/space_id'
-      - $ref: '#/components/parameters/environment_id'
-      - $ref: '#/components/parameters/app_definition_id'
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/app_definition_id"
     get:
       operationId: getAppInstallation
       summary: Get one app installation
@@ -962,18 +962,18 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/AppInstallation'
+                $ref: "#/components/schemas/AppInstallation"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     put:
       operationId: putAppInstallation
       summary: Install or update an app
       parameters:
-        - $ref: '#/components/parameters/space_id'
-        - $ref: '#/components/parameters/environment_id'
-        - $ref: '#/components/parameters/app_definition_id'
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/app_definition_id"
         - in: header
           name: X-Contentful-Marketplace
           schema:
@@ -983,33 +983,33 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: '#/components/schemas/AppInstallationFields'
+              $ref: "#/components/schemas/AppInstallationFields"
       responses:
         200:
           description: An app installation
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/AppInstallation'
+                $ref: "#/components/schemas/AppInstallation"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     delete:
       operationId: deleteAppInstallation
       summary: Uninstall an app
       responses:
         204:
-          $ref: '#/components/responses/no-content'
+          $ref: "#/components/responses/no-content"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}:
     parameters:
-      - $ref: '#/components/parameters/space_id'
-      - $ref: '#/components/parameters/environment_id'
-      - $ref: '#/components/parameters/content_type_id'
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/content_type_id"
     get:
       operationId: getContentType
       summary: Get a content type
@@ -1019,76 +1019,76 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/ContentType'
+                $ref: "#/components/schemas/ContentType"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     put:
       operationId: putContentType
       summary: Update a content type
       parameters:
-        - $ref: '#/components/parameters/space_id'
-        - $ref: '#/components/parameters/environment_id'
-        - $ref: '#/components/parameters/content_type_id'
-        - $ref: '#/components/parameters/x-contentful-version'
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/content_type_id"
+        - $ref: "#/components/parameters/x-contentful-version"
       requestBody:
         required: true
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: '#/components/schemas/ContentTypeRequestFields'
+              $ref: "#/components/schemas/ContentTypeRequestFields"
       responses:
         200:
           description: A content type
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/ContentType'
+                $ref: "#/components/schemas/ContentType"
         201:
           description: A content type
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/ContentType'
+                $ref: "#/components/schemas/ContentType"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     delete:
       operationId: deleteContentType
       summary: Delete a content type
       responses:
         204:
-          $ref: '#/components/responses/no-content'
+          $ref: "#/components/responses/no-content"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published:
     parameters:
-      - $ref: '#/components/parameters/space_id'
-      - $ref: '#/components/parameters/environment_id'
-      - $ref: '#/components/parameters/content_type_id'
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/content_type_id"
     put:
       operationId: activateContentType
       summary: Activate a content type
       parameters:
-        - $ref: '#/components/parameters/space_id'
-        - $ref: '#/components/parameters/environment_id'
-        - $ref: '#/components/parameters/content_type_id'
-        - $ref: '#/components/parameters/x-contentful-version'
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/content_type_id"
+        - $ref: "#/components/parameters/x-contentful-version"
       responses:
         200:
           description: A content type
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/ContentType'
+                $ref: "#/components/schemas/ContentType"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     delete:
       operationId: deactivateContentType
       summary: Deactivate a content type
@@ -1098,18 +1098,18 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/ContentType'
+                $ref: "#/components/schemas/ContentType"
         204:
-          $ref: '#/components/responses/no-content'
+          $ref: "#/components/responses/no-content"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface:
     parameters:
-      - $ref: '#/components/parameters/space_id'
-      - $ref: '#/components/parameters/environment_id'
-      - $ref: '#/components/parameters/content_type_id'
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/content_type_id"
     get:
       operationId: getEditorInterface
       summary: Get the editor interface for a content type
@@ -1119,39 +1119,39 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/EditorInterface'
+                $ref: "#/components/schemas/EditorInterface"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     put:
       operationId: putEditorInterface
       summary: Update the editor interface for a content type
       parameters:
-        - $ref: '#/components/parameters/space_id'
-        - $ref: '#/components/parameters/environment_id'
-        - $ref: '#/components/parameters/content_type_id'
-        - $ref: '#/components/parameters/x-contentful-version'
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/content_type_id"
+        - $ref: "#/components/parameters/x-contentful-version"
       requestBody:
         required: true
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: '#/components/schemas/EditorInterfaceFields'
+              $ref: "#/components/schemas/EditorInterfaceFields"
       responses:
         200:
           description: An editor interface
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/EditorInterface'
+                $ref: "#/components/schemas/EditorInterface"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/roles:
     parameters:
-      - $ref: '#/components/parameters/space_id'
+      - $ref: "#/components/parameters/space_id"
     post:
       operationId: createRole
       summary: Create a role
@@ -1160,22 +1160,22 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-                $ref: '#/components/schemas/RoleFields'
+              $ref: "#/components/schemas/RoleFields"
       responses:
         201:
           description: A role
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/Role'
+                $ref: "#/components/schemas/Role"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/roles/{role_id}:
     parameters:
-      - $ref: '#/components/parameters/space_id'
-      - $ref: '#/components/parameters/role_id'
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/role_id"
     get:
       operationId: getRole
       summary: Get a role
@@ -1185,45 +1185,45 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/Role'
+                $ref: "#/components/schemas/Role"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     put:
       operationId: updateRole
       summary: Update a role
       parameters:
-        - $ref: '#/components/parameters/space_id'
-        - $ref: '#/components/parameters/role_id'
-        - $ref: '#/components/parameters/x-contentful-version'
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/role_id"
+        - $ref: "#/components/parameters/x-contentful-version"
       requestBody:
         required: true
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: '#/components/schemas/RoleFields'
+              $ref: "#/components/schemas/RoleFields"
       responses:
         200:
           description: A role
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/Role'
+                $ref: "#/components/schemas/Role"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     delete:
       operationId: deleteRole
       summary: Delete a role
       responses:
         204:
-          $ref: '#/components/responses/no-content'
+          $ref: "#/components/responses/no-content"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/webhook_definitions:
     post:
       operationId: createWebhookDefinition
@@ -1239,18 +1239,18 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: '#/components/schemas/WebhookDefinitionFields'
+              $ref: "#/components/schemas/WebhookDefinitionFields"
       responses:
         201:
           description: A webhook definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/WebhookDefinition'
+                $ref: "#/components/schemas/WebhookDefinition"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/webhook_definitions/{webhook_definition_id}:
     get:
       operationId: getWebhookDefinition
@@ -1272,11 +1272,11 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/WebhookDefinition'
+                $ref: "#/components/schemas/WebhookDefinition"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     put:
       operationId: updateWebhookDefinition
       summary: Update a webhook definition
@@ -1301,18 +1301,18 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: '#/components/schemas/WebhookDefinitionFields'
+              $ref: "#/components/schemas/WebhookDefinitionFields"
       responses:
         200:
           description: A webhook definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: '#/components/schemas/WebhookDefinition'
+                $ref: "#/components/schemas/WebhookDefinition"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
     delete:
       operationId: deleteWebhookDefinition
       summary: Delete a webhook definition
@@ -1329,8 +1329,8 @@ paths:
           required: true
       responses:
         204:
-          $ref: '#/components/responses/no-content'
+          $ref: "#/components/responses/no-content"
         401:
-          $ref: '#/components/responses/unauthorized'
+          $ref: "#/components/responses/unauthorized"
         default:
-          $ref: '#/components/responses/error'
+          $ref: "#/components/responses/error"
