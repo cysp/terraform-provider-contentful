@@ -8,6 +8,7 @@ import (
 
 //nolint:cyclop,gocognit
 func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandlers() {
+	//nolint:dupl
 	ts.serveMux.Handle("/spaces/{spaceID}/environments/{environmentID}/content_types/{contentTypeID}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		spaceID := r.PathValue("spaceID")
 		environmentID := r.PathValue("environmentID")

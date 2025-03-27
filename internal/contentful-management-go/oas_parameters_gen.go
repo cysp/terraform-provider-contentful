@@ -108,6 +108,11 @@ type GetRoleParams struct {
 	RoleID  string
 }
 
+// GetSpaceEnablementsParams is parameters of getSpaceEnablements operation.
+type GetSpaceEnablementsParams struct {
+	SpaceID string
+}
+
 // GetWebhookDefinitionParams is parameters of getWebhookDefinition operation.
 type GetWebhookDefinitionParams struct {
 	SpaceID             string
@@ -135,6 +140,12 @@ type PutEditorInterfaceParams struct {
 	SpaceID            string
 	EnvironmentID      string
 	ContentTypeID      string
+	XContentfulVersion int
+}
+
+// PutSpaceEnablementsParams is parameters of putSpaceEnablements operation.
+type PutSpaceEnablementsParams struct {
+	SpaceID            string
 	XContentfulVersion int
 }
 
