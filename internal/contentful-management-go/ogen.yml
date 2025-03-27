@@ -4,17 +4,17 @@ parser:
 generator:
   features:
     enable:
-      - 'paths/client'
-      - 'client/security/reentrant'
+      - "paths/client"
+      - "client/security/reentrant"
     disable:
-      - 'paths/server'
-      - 'webhooks/client'
-      - 'webhooks/server'
-      - 'client/request/validation'
-      - 'server/response/validation'
-      - 'ogen/otel'
-      - 'ogen/unimplemented'
-      - 'debug/example_tests'
+      - "paths/server"
+      - "webhooks/client"
+      - "webhooks/server"
+      - "client/request/validation"
+      - "server/response/validation"
+      - "ogen/otel"
+      - "ogen/unimplemented"
+      - "debug/example_tests"
   content_type_aliases:
-    'application/vnd.contentful.management.v1+json': 'application/json'
-  convenient_errors: 'off'
+    "application/vnd.contentful.management.v1+json": "application/json"
+  convenient_errors: "off"
