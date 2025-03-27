@@ -126,9 +126,9 @@ components:
               type: string
           required:
             - id
-    BaseSysWithIdAndVersion:
+    BaseSysWithVersion:
       allOf:
-        - $ref: "#/components/schemas/BaseSysWithId"
+        - $ref: "#/components/schemas/BaseSys"
         - type: object
           properties:
             version:
@@ -141,6 +141,10 @@ components:
               format: date-time
           required:
             - version
+    BaseSysWithIdAndVersion:
+      allOf:
+        - $ref: "#/components/schemas/BaseSysWithId"
+        - $ref: "#/components/schemas/BaseSysWithVersion"
     BaseSysWithIdAndVersionAndPublishedVersion:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
@@ -661,6 +665,43 @@ components:
           required:
             - sys
         - $ref: "#/components/schemas/RoleFields"
+    SpaceEnablementSys:
+      allOf:
+        - $ref: "#/components/schemas/BaseSysWithSpace"
+        - $ref: "#/components/schemas/BaseSysWithVersion"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - SpaceEnablement
+    SpaceEnablementField:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+      required:
+        - enabled
+    SpaceEnablementFields:
+      type: object
+      properties:
+        crossSpaceLinks:
+          $ref: "#/components/schemas/SpaceEnablementField"
+        spaceTemplates:
+          $ref: "#/components/schemas/SpaceEnablementField"
+        studioExperiences:
+          $ref: "#/components/schemas/SpaceEnablementField"
+        suggestConcepts:
+          $ref: "#/components/schemas/SpaceEnablementField"
+    SpaceEnablement:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: "#/components/schemas/SpaceEnablementSys"
+          required:
+            - sys
+        - $ref: "#/components/schemas/SpaceEnablementFields"
     WebhookDefinitionSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpace"
@@ -851,6 +892,49 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "#/components/schemas/PersonalAccessToken"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/enablements:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+    get:
+      operationId: getSpaceEnablements
+      summary: Get enablements for a space
+      responses:
+        200:
+          description: Enablements for a space
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpaceEnablement"
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/SpaceEnablement"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putSpaceEnablements
+      summary: Update enablements for a space
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/x-contentful-version"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "#/components/schemas/SpaceEnablementFields"
+      responses:
+        200:
+          description: Enablements for a space
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/SpaceEnablement"
         401:
           $ref: "#/components/responses/unauthorized"
         default:

@@ -2092,10 +2092,12 @@ func (*Error) getEditorInterfaceRes()        {}
 func (*Error) getPersonalAccessTokenRes()    {}
 func (*Error) getPreviewApiKeyRes()          {}
 func (*Error) getRoleRes()                   {}
+func (*Error) getSpaceEnablementsRes()       {}
 func (*Error) getWebhookDefinitionRes()      {}
 func (*Error) putAppInstallationRes()        {}
 func (*Error) putContentTypeRes()            {}
 func (*Error) putEditorInterfaceRes()        {}
+func (*Error) putSpaceEnablementsRes()       {}
 func (*Error) revokePersonalAccessTokenRes() {}
 func (*Error) updateDeliveryApiKeyRes()      {}
 func (*Error) updateRoleRes()                {}
@@ -2146,10 +2148,12 @@ func (*ErrorStatusCode) getEditorInterfaceRes()        {}
 func (*ErrorStatusCode) getPersonalAccessTokenRes()    {}
 func (*ErrorStatusCode) getPreviewApiKeyRes()          {}
 func (*ErrorStatusCode) getRoleRes()                   {}
+func (*ErrorStatusCode) getSpaceEnablementsRes()       {}
 func (*ErrorStatusCode) getWebhookDefinitionRes()      {}
 func (*ErrorStatusCode) putAppInstallationRes()        {}
 func (*ErrorStatusCode) putContentTypeRes()            {}
 func (*ErrorStatusCode) putEditorInterfaceRes()        {}
+func (*ErrorStatusCode) putSpaceEnablementsRes()       {}
 func (*ErrorStatusCode) revokePersonalAccessTokenRes() {}
 func (*ErrorStatusCode) updateDeliveryApiKeyRes()      {}
 func (*ErrorStatusCode) updateRoleRes()                {}
@@ -2214,6 +2218,14 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
+
+type GetSpaceEnablementsApplicationJSONOK SpaceEnablement
+
+func (*GetSpaceEnablementsApplicationJSONOK) getSpaceEnablementsRes() {}
+
+type GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK SpaceEnablement
+
+func (*GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK) getSpaceEnablementsRes() {}
 
 // NewNilString returns new NilString with value set to v.
 func NewNilString(v string) NilString {
@@ -3428,6 +3440,52 @@ func (o OptNilWebhookDefinitionTransformation) Or(d WebhookDefinitionTransformat
 	return d
 }
 
+// NewOptSpaceEnablementField returns new OptSpaceEnablementField with value set to v.
+func NewOptSpaceEnablementField(v SpaceEnablementField) OptSpaceEnablementField {
+	return OptSpaceEnablementField{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptSpaceEnablementField is optional SpaceEnablementField.
+type OptSpaceEnablementField struct {
+	Value SpaceEnablementField
+	Set   bool
+}
+
+// IsSet returns true if OptSpaceEnablementField was set.
+func (o OptSpaceEnablementField) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptSpaceEnablementField) Reset() {
+	var v SpaceEnablementField
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptSpaceEnablementField) SetTo(v SpaceEnablementField) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptSpaceEnablementField) Get() (v SpaceEnablementField, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptSpaceEnablementField) Or(d SpaceEnablementField) SpaceEnablementField {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptString returns new OptString with value set to v.
 func NewOptString(v string) OptString {
 	return OptString{
@@ -4547,6 +4605,227 @@ func (s *RoleSysType) UnmarshalText(data []byte) error {
 	switch RoleSysType(data) {
 	case RoleSysTypeRole:
 		*s = RoleSysTypeRole
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/components/schemas/SpaceEnablement
+type SpaceEnablement struct {
+	Sys               SpaceEnablementSys      `json:"sys"`
+	CrossSpaceLinks   OptSpaceEnablementField `json:"crossSpaceLinks"`
+	SpaceTemplates    OptSpaceEnablementField `json:"spaceTemplates"`
+	StudioExperiences OptSpaceEnablementField `json:"studioExperiences"`
+	SuggestConcepts   OptSpaceEnablementField `json:"suggestConcepts"`
+}
+
+// GetSys returns the value of Sys.
+func (s *SpaceEnablement) GetSys() SpaceEnablementSys {
+	return s.Sys
+}
+
+// GetCrossSpaceLinks returns the value of CrossSpaceLinks.
+func (s *SpaceEnablement) GetCrossSpaceLinks() OptSpaceEnablementField {
+	return s.CrossSpaceLinks
+}
+
+// GetSpaceTemplates returns the value of SpaceTemplates.
+func (s *SpaceEnablement) GetSpaceTemplates() OptSpaceEnablementField {
+	return s.SpaceTemplates
+}
+
+// GetStudioExperiences returns the value of StudioExperiences.
+func (s *SpaceEnablement) GetStudioExperiences() OptSpaceEnablementField {
+	return s.StudioExperiences
+}
+
+// GetSuggestConcepts returns the value of SuggestConcepts.
+func (s *SpaceEnablement) GetSuggestConcepts() OptSpaceEnablementField {
+	return s.SuggestConcepts
+}
+
+// SetSys sets the value of Sys.
+func (s *SpaceEnablement) SetSys(val SpaceEnablementSys) {
+	s.Sys = val
+}
+
+// SetCrossSpaceLinks sets the value of CrossSpaceLinks.
+func (s *SpaceEnablement) SetCrossSpaceLinks(val OptSpaceEnablementField) {
+	s.CrossSpaceLinks = val
+}
+
+// SetSpaceTemplates sets the value of SpaceTemplates.
+func (s *SpaceEnablement) SetSpaceTemplates(val OptSpaceEnablementField) {
+	s.SpaceTemplates = val
+}
+
+// SetStudioExperiences sets the value of StudioExperiences.
+func (s *SpaceEnablement) SetStudioExperiences(val OptSpaceEnablementField) {
+	s.StudioExperiences = val
+}
+
+// SetSuggestConcepts sets the value of SuggestConcepts.
+func (s *SpaceEnablement) SetSuggestConcepts(val OptSpaceEnablementField) {
+	s.SuggestConcepts = val
+}
+
+func (*SpaceEnablement) putSpaceEnablementsRes() {}
+
+// Ref: #/components/schemas/SpaceEnablementField
+type SpaceEnablementField struct {
+	Enabled bool `json:"enabled"`
+}
+
+// GetEnabled returns the value of Enabled.
+func (s *SpaceEnablementField) GetEnabled() bool {
+	return s.Enabled
+}
+
+// SetEnabled sets the value of Enabled.
+func (s *SpaceEnablementField) SetEnabled(val bool) {
+	s.Enabled = val
+}
+
+// Ref: #/components/schemas/SpaceEnablementFields
+type SpaceEnablementFields struct {
+	CrossSpaceLinks   OptSpaceEnablementField `json:"crossSpaceLinks"`
+	SpaceTemplates    OptSpaceEnablementField `json:"spaceTemplates"`
+	StudioExperiences OptSpaceEnablementField `json:"studioExperiences"`
+	SuggestConcepts   OptSpaceEnablementField `json:"suggestConcepts"`
+}
+
+// GetCrossSpaceLinks returns the value of CrossSpaceLinks.
+func (s *SpaceEnablementFields) GetCrossSpaceLinks() OptSpaceEnablementField {
+	return s.CrossSpaceLinks
+}
+
+// GetSpaceTemplates returns the value of SpaceTemplates.
+func (s *SpaceEnablementFields) GetSpaceTemplates() OptSpaceEnablementField {
+	return s.SpaceTemplates
+}
+
+// GetStudioExperiences returns the value of StudioExperiences.
+func (s *SpaceEnablementFields) GetStudioExperiences() OptSpaceEnablementField {
+	return s.StudioExperiences
+}
+
+// GetSuggestConcepts returns the value of SuggestConcepts.
+func (s *SpaceEnablementFields) GetSuggestConcepts() OptSpaceEnablementField {
+	return s.SuggestConcepts
+}
+
+// SetCrossSpaceLinks sets the value of CrossSpaceLinks.
+func (s *SpaceEnablementFields) SetCrossSpaceLinks(val OptSpaceEnablementField) {
+	s.CrossSpaceLinks = val
+}
+
+// SetSpaceTemplates sets the value of SpaceTemplates.
+func (s *SpaceEnablementFields) SetSpaceTemplates(val OptSpaceEnablementField) {
+	s.SpaceTemplates = val
+}
+
+// SetStudioExperiences sets the value of StudioExperiences.
+func (s *SpaceEnablementFields) SetStudioExperiences(val OptSpaceEnablementField) {
+	s.StudioExperiences = val
+}
+
+// SetSuggestConcepts sets the value of SuggestConcepts.
+func (s *SpaceEnablementFields) SetSuggestConcepts(val OptSpaceEnablementField) {
+	s.SuggestConcepts = val
+}
+
+// Merged schema.
+// Ref: #/components/schemas/SpaceEnablementSys
+type SpaceEnablementSys struct {
+	// Merged property.
+	Type      SpaceEnablementSysType `json:"type"`
+	Space     SpaceLink              `json:"space"`
+	Version   int                    `json:"version"`
+	CreatedAt OptDateTime            `json:"createdAt"`
+	UpdatedAt OptDateTime            `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *SpaceEnablementSys) GetType() SpaceEnablementSysType {
+	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *SpaceEnablementSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetVersion returns the value of Version.
+func (s *SpaceEnablementSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *SpaceEnablementSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *SpaceEnablementSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *SpaceEnablementSys) SetType(val SpaceEnablementSysType) {
+	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *SpaceEnablementSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetVersion sets the value of Version.
+func (s *SpaceEnablementSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *SpaceEnablementSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *SpaceEnablementSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type SpaceEnablementSysType string
+
+const (
+	SpaceEnablementSysTypeSpaceEnablement SpaceEnablementSysType = "SpaceEnablement"
+)
+
+// AllValues returns all SpaceEnablementSysType values.
+func (SpaceEnablementSysType) AllValues() []SpaceEnablementSysType {
+	return []SpaceEnablementSysType{
+		SpaceEnablementSysTypeSpaceEnablement,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s SpaceEnablementSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case SpaceEnablementSysTypeSpaceEnablement:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *SpaceEnablementSysType) UnmarshalText(data []byte) error {
+	switch SpaceEnablementSysType(data) {
+	case SpaceEnablementSysTypeSpaceEnablement:
+		*s = SpaceEnablementSysTypeSpaceEnablement
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

@@ -22,6 +22,8 @@ type ContentfulManagementTestServer struct {
 
 	personalAccessTokens map[string]*cm.PersonalAccessToken
 
+	enablements map[string]*cm.SpaceEnablement
+
 	apiKeys        SpaceMap[*cm.ApiKey]
 	previewAPIKeys SpaceMap[*cm.PreviewApiKey]
 
@@ -40,6 +42,7 @@ func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 	testserver := &ContentfulManagementTestServer{
 		mu:                   &sync.Mutex{},
 		personalAccessTokens: make(map[string]*cm.PersonalAccessToken),
+		enablements:          make(map[string]*cm.SpaceEnablement),
 		apiKeys:              NewSpaceMap[*cm.ApiKey](),
 		previewAPIKeys:       NewSpaceMap[*cm.PreviewApiKey](),
 		appDefinitionIDs:     make(map[string]struct{}),
@@ -55,6 +58,7 @@ func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 
 	testserver.setupUserHandler()
 	testserver.setupPersonalAccessTokenHandlers()
+	testserver.setupSpaceEnablementsHandlers()
 	testserver.setupSpaceAPIKeyHandlers()
 	testserver.SetupSpaceEnvironmentAppInstallationHandlers()
 	testserver.setupSpaceEnvironmentContentTypeHandlers()

@@ -977,6 +977,22 @@ func (s ErrorSysType) Validate() error {
 	}
 }
 
+func (s *GetSpaceEnablementsApplicationJSONOK) Validate() error {
+	alias := (*SpaceEnablement)(s)
+	if err := alias.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK) Validate() error {
+	alias := (*SpaceEnablement)(s)
+	if err := alias.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *PersonalAccessToken) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -1507,6 +1523,72 @@ func (s *RoleSys) Validate() error {
 func (s RoleSysType) Validate() error {
 	switch s {
 	case "Role":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *SpaceEnablement) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Sys.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "sys",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *SpaceEnablementSys) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Space.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "space",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s SpaceEnablementSysType) Validate() error {
+	switch s {
+	case "SpaceEnablement":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

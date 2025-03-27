@@ -7,6 +7,7 @@ import (
 )
 
 func (ts *ContentfulManagementTestServer) SetupSpaceEnvironmentAppInstallationHandlers() {
+	//nolint:dupl
 	ts.serveMux.Handle("/spaces/{spaceID}/environments/{environmentID}/app_installations/{appDefinitionID}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		spaceID := r.PathValue("spaceID")
 		environmentID := r.PathValue("environmentID")

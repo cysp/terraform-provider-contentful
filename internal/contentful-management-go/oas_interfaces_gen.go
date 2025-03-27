@@ -77,6 +77,10 @@ type GetRoleRes interface {
 	getRoleRes()
 }
 
+type GetSpaceEnablementsRes interface {
+	getSpaceEnablementsRes()
+}
+
 type GetWebhookDefinitionRes interface {
 	getWebhookDefinitionRes()
 }
@@ -91,6 +95,10 @@ type PutContentTypeRes interface {
 
 type PutEditorInterfaceRes interface {
 	putEditorInterfaceRes()
+}
+
+type PutSpaceEnablementsRes interface {
+	putSpaceEnablementsRes()
 }
 
 type RevokePersonalAccessTokenRes interface {
