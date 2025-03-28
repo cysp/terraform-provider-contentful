@@ -15,7 +15,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		response interface{}
+		response any
 		err      error
 		expected string
 	}{
@@ -38,6 +38,45 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 						ID:   "UnknownError",
 					},
 					Message: cm.NewOptString("Error message"),
+				},
+			},
+			expected: "Error: UnknownError: Error message",
+		},
+		"ErrorStatusCodeWithMessageAndUnsupportedDetails": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
+						ID:   "UnknownError",
+					},
+					Message: cm.NewOptString("Error message"),
+					Details: []byte(`"Detailed reason for error"`),
+				},
+			},
+			expected: "Error: UnknownError: Error message",
+		},
+		"ErrorStatusCodeWithMessageAndReasons": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
+						ID:   "UnknownError",
+					},
+					Message: cm.NewOptString("Error message"),
+					Details: []byte(`{"reasons":"Detailed reason for error"}`),
+				},
+			},
+			expected: "Error: UnknownError: Error message: Detailed reason for error",
+		},
+		"ErrorStatusCodeWithMessageAndUnsupportedReason": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
+						ID:   "UnknownError",
+					},
+					Message: cm.NewOptString("Error message"),
+					Details: []byte(`{"reasons":["Reason 1", "Reason 2"]}`),
 				},
 			},
 			expected: "Error: UnknownError: Error message",
