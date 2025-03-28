@@ -33,7 +33,7 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnablementsHandlers() {
 				return
 			}
 
-			UpdateSpaceEnablementFromFields(enablements, enablementRequestFields)
+			UpdateSpaceEnablementFromRequestFields(enablements, enablementRequestFields)
 
 			_ = WriteContentfulManagementResponse(w, http.StatusOK, enablements)
 
@@ -51,4 +51,13 @@ func (ts *ContentfulManagementTestServer) getOrCreateSpaceEnablements(spaceID st
 	}
 
 	return enablements
+}
+
+func (ts *ContentfulManagementTestServer) SetSpaceEnablements(spaceID string, enablementFields cm.SpaceEnablementFields) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	spaceEnablement := NewSpaceEnablementFromRequestFields(spaceID, enablementFields)
+
+	ts.enablements[spaceID] = &spaceEnablement
 }
