@@ -3,37 +3,29 @@ resource "contentful_editor_interface" "test" {
   environment_id  = var.environment_id
   content_type_id = var.content_type_id
 
-  editor_layout = [{
-    group_id = "content"
-    name     = "Content"
-    items = [
-      jsonencode(
-        {
-          groupId = "name"
-          name    = "name"
-          items = [
-            {
-              fieldId = "name"
-            },
-          ]
-        }
-      ),
-      jsonencode(
-        {
-          groupId = "bio"
-          name    = "Bio"
-          items = [
-            {
-              fieldId = "avatar"
-            },
-            {
-              fieldId = "blurb"
-            },
-          ]
-        }
-      ),
-    ]
-  }]
+  editor_layout = [
+    {
+      group = {
+        group_id = "content"
+        name     = "Content"
+        items = [
+          {
+            field = { field_id = "name" }
+          },
+          {
+            group = {
+              group_id = "bio"
+              name     = "Bio"
+              items = [
+                { field = { field_id = "avatar" } },
+                { field = { field_id = "blurb" } },
+              ]
+            }
+          }
+        ]
+      }
+    },
+  ]
 
   controls = [
     {
@@ -58,15 +50,6 @@ resource "contentful_editor_interface" "test" {
       group_id         = "content"
       widget_namespace = "builtin"
       widget_id        = "topLevelTab"
-    },
-    {
-      group_id         = "name"
-      widget_namespace = "builtin"
-      widget_id        = "fieldset"
-      settings = jsonencode({
-        collapsedByDefault = false
-        helpText           = ""
-      })
     },
     {
       group_id         = "bio"

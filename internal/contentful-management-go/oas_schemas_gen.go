@@ -1427,52 +1427,137 @@ func (s *EditorInterfaceControlsItem) SetSettings(val jx.Raw) {
 	s.Settings = val
 }
 
-type EditorInterfaceEditorLayoutItem struct {
-	GroupId string   `json:"groupId"`
-	Name    string   `json:"name"`
-	Items   []jx.Raw `json:"items"`
+// Ref: #/components/schemas/EditorInterfaceEditorLayoutFieldItem
+type EditorInterfaceEditorLayoutFieldItem struct {
+	FieldId string `json:"fieldId"`
+}
+
+// GetFieldId returns the value of FieldId.
+func (s *EditorInterfaceEditorLayoutFieldItem) GetFieldId() string {
+	return s.FieldId
+}
+
+// SetFieldId sets the value of FieldId.
+func (s *EditorInterfaceEditorLayoutFieldItem) SetFieldId(val string) {
+	s.FieldId = val
+}
+
+// Ref: #/components/schemas/EditorInterfaceEditorLayoutGroupItem
+type EditorInterfaceEditorLayoutGroupItem struct {
+	GroupId string                            `json:"groupId"`
+	Name    string                            `json:"name"`
+	Items   []EditorInterfaceEditorLayoutItem `json:"items"`
 }
 
 // GetGroupId returns the value of GroupId.
-func (s *EditorInterfaceEditorLayoutItem) GetGroupId() string {
+func (s *EditorInterfaceEditorLayoutGroupItem) GetGroupId() string {
 	return s.GroupId
 }
 
 // GetName returns the value of Name.
-func (s *EditorInterfaceEditorLayoutItem) GetName() string {
+func (s *EditorInterfaceEditorLayoutGroupItem) GetName() string {
 	return s.Name
 }
 
 // GetItems returns the value of Items.
-func (s *EditorInterfaceEditorLayoutItem) GetItems() []jx.Raw {
+func (s *EditorInterfaceEditorLayoutGroupItem) GetItems() []EditorInterfaceEditorLayoutItem {
 	return s.Items
 }
 
 // SetGroupId sets the value of GroupId.
-func (s *EditorInterfaceEditorLayoutItem) SetGroupId(val string) {
+func (s *EditorInterfaceEditorLayoutGroupItem) SetGroupId(val string) {
 	s.GroupId = val
 }
 
 // SetName sets the value of Name.
-func (s *EditorInterfaceEditorLayoutItem) SetName(val string) {
+func (s *EditorInterfaceEditorLayoutGroupItem) SetName(val string) {
 	s.Name = val
 }
 
 // SetItems sets the value of Items.
-func (s *EditorInterfaceEditorLayoutItem) SetItems(val []jx.Raw) {
+func (s *EditorInterfaceEditorLayoutGroupItem) SetItems(val []EditorInterfaceEditorLayoutItem) {
 	s.Items = val
+}
+
+// Ref: #/components/schemas/EditorInterfaceEditorLayoutItem
+// EditorInterfaceEditorLayoutItem represents sum type.
+type EditorInterfaceEditorLayoutItem struct {
+	Type                                 EditorInterfaceEditorLayoutItemType // switch on this field
+	EditorInterfaceEditorLayoutGroupItem EditorInterfaceEditorLayoutGroupItem
+	EditorInterfaceEditorLayoutFieldItem EditorInterfaceEditorLayoutFieldItem
+}
+
+// EditorInterfaceEditorLayoutItemType is oneOf type of EditorInterfaceEditorLayoutItem.
+type EditorInterfaceEditorLayoutItemType string
+
+// Possible values for EditorInterfaceEditorLayoutItemType.
+const (
+	EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem EditorInterfaceEditorLayoutItemType = "EditorInterfaceEditorLayoutGroupItem"
+	EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem EditorInterfaceEditorLayoutItemType = "EditorInterfaceEditorLayoutFieldItem"
+)
+
+// IsEditorInterfaceEditorLayoutGroupItem reports whether EditorInterfaceEditorLayoutItem is EditorInterfaceEditorLayoutGroupItem.
+func (s EditorInterfaceEditorLayoutItem) IsEditorInterfaceEditorLayoutGroupItem() bool {
+	return s.Type == EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem
+}
+
+// IsEditorInterfaceEditorLayoutFieldItem reports whether EditorInterfaceEditorLayoutItem is EditorInterfaceEditorLayoutFieldItem.
+func (s EditorInterfaceEditorLayoutItem) IsEditorInterfaceEditorLayoutFieldItem() bool {
+	return s.Type == EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem
+}
+
+// SetEditorInterfaceEditorLayoutGroupItem sets EditorInterfaceEditorLayoutItem to EditorInterfaceEditorLayoutGroupItem.
+func (s *EditorInterfaceEditorLayoutItem) SetEditorInterfaceEditorLayoutGroupItem(v EditorInterfaceEditorLayoutGroupItem) {
+	s.Type = EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem
+	s.EditorInterfaceEditorLayoutGroupItem = v
+}
+
+// GetEditorInterfaceEditorLayoutGroupItem returns EditorInterfaceEditorLayoutGroupItem and true boolean if EditorInterfaceEditorLayoutItem is EditorInterfaceEditorLayoutGroupItem.
+func (s EditorInterfaceEditorLayoutItem) GetEditorInterfaceEditorLayoutGroupItem() (v EditorInterfaceEditorLayoutGroupItem, ok bool) {
+	if !s.IsEditorInterfaceEditorLayoutGroupItem() {
+		return v, false
+	}
+	return s.EditorInterfaceEditorLayoutGroupItem, true
+}
+
+// NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem returns new EditorInterfaceEditorLayoutItem from EditorInterfaceEditorLayoutGroupItem.
+func NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(v EditorInterfaceEditorLayoutGroupItem) EditorInterfaceEditorLayoutItem {
+	var s EditorInterfaceEditorLayoutItem
+	s.SetEditorInterfaceEditorLayoutGroupItem(v)
+	return s
+}
+
+// SetEditorInterfaceEditorLayoutFieldItem sets EditorInterfaceEditorLayoutItem to EditorInterfaceEditorLayoutFieldItem.
+func (s *EditorInterfaceEditorLayoutItem) SetEditorInterfaceEditorLayoutFieldItem(v EditorInterfaceEditorLayoutFieldItem) {
+	s.Type = EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem
+	s.EditorInterfaceEditorLayoutFieldItem = v
+}
+
+// GetEditorInterfaceEditorLayoutFieldItem returns EditorInterfaceEditorLayoutFieldItem and true boolean if EditorInterfaceEditorLayoutItem is EditorInterfaceEditorLayoutFieldItem.
+func (s EditorInterfaceEditorLayoutItem) GetEditorInterfaceEditorLayoutFieldItem() (v EditorInterfaceEditorLayoutFieldItem, ok bool) {
+	if !s.IsEditorInterfaceEditorLayoutFieldItem() {
+		return v, false
+	}
+	return s.EditorInterfaceEditorLayoutFieldItem, true
+}
+
+// NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem returns new EditorInterfaceEditorLayoutItem from EditorInterfaceEditorLayoutFieldItem.
+func NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(v EditorInterfaceEditorLayoutFieldItem) EditorInterfaceEditorLayoutItem {
+	var s EditorInterfaceEditorLayoutItem
+	s.SetEditorInterfaceEditorLayoutFieldItem(v)
+	return s
 }
 
 // Ref: #/components/schemas/EditorInterfaceFields
 type EditorInterfaceFields struct {
-	EditorLayout  OptNilEditorInterfaceFieldsEditorLayoutItemArray  `json:"editorLayout"`
+	EditorLayout  OptNilEditorInterfaceEditorLayoutItemArray        `json:"editorLayout"`
 	Controls      OptNilEditorInterfaceFieldsControlsItemArray      `json:"controls"`
 	GroupControls OptNilEditorInterfaceFieldsGroupControlsItemArray `json:"groupControls"`
 	Sidebar       OptNilEditorInterfaceFieldsSidebarItemArray       `json:"sidebar"`
 }
 
 // GetEditorLayout returns the value of EditorLayout.
-func (s *EditorInterfaceFields) GetEditorLayout() OptNilEditorInterfaceFieldsEditorLayoutItemArray {
+func (s *EditorInterfaceFields) GetEditorLayout() OptNilEditorInterfaceEditorLayoutItemArray {
 	return s.EditorLayout
 }
 
@@ -1492,7 +1577,7 @@ func (s *EditorInterfaceFields) GetSidebar() OptNilEditorInterfaceFieldsSidebarI
 }
 
 // SetEditorLayout sets the value of EditorLayout.
-func (s *EditorInterfaceFields) SetEditorLayout(val OptNilEditorInterfaceFieldsEditorLayoutItemArray) {
+func (s *EditorInterfaceFields) SetEditorLayout(val OptNilEditorInterfaceEditorLayoutItemArray) {
 	s.EditorLayout = val
 }
 
@@ -1556,42 +1641,6 @@ func (s *EditorInterfaceFieldsControlsItem) SetWidgetId(val OptString) {
 // SetSettings sets the value of Settings.
 func (s *EditorInterfaceFieldsControlsItem) SetSettings(val jx.Raw) {
 	s.Settings = val
-}
-
-type EditorInterfaceFieldsEditorLayoutItem struct {
-	GroupId string   `json:"groupId"`
-	Name    string   `json:"name"`
-	Items   []jx.Raw `json:"items"`
-}
-
-// GetGroupId returns the value of GroupId.
-func (s *EditorInterfaceFieldsEditorLayoutItem) GetGroupId() string {
-	return s.GroupId
-}
-
-// GetName returns the value of Name.
-func (s *EditorInterfaceFieldsEditorLayoutItem) GetName() string {
-	return s.Name
-}
-
-// GetItems returns the value of Items.
-func (s *EditorInterfaceFieldsEditorLayoutItem) GetItems() []jx.Raw {
-	return s.Items
-}
-
-// SetGroupId sets the value of GroupId.
-func (s *EditorInterfaceFieldsEditorLayoutItem) SetGroupId(val string) {
-	s.GroupId = val
-}
-
-// SetName sets the value of Name.
-func (s *EditorInterfaceFieldsEditorLayoutItem) SetName(val string) {
-	s.Name = val
-}
-
-// SetItems sets the value of Items.
-func (s *EditorInterfaceFieldsEditorLayoutItem) SetItems(val []jx.Raw) {
-	s.Items = val
 }
 
 type EditorInterfaceFieldsGroupControlsItem struct {
@@ -2804,69 +2853,6 @@ func (o OptNilEditorInterfaceFieldsControlsItemArray) Get() (v []EditorInterface
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilEditorInterfaceFieldsControlsItemArray) Or(d []EditorInterfaceFieldsControlsItem) []EditorInterfaceFieldsControlsItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilEditorInterfaceFieldsEditorLayoutItemArray returns new OptNilEditorInterfaceFieldsEditorLayoutItemArray with value set to v.
-func NewOptNilEditorInterfaceFieldsEditorLayoutItemArray(v []EditorInterfaceFieldsEditorLayoutItem) OptNilEditorInterfaceFieldsEditorLayoutItemArray {
-	return OptNilEditorInterfaceFieldsEditorLayoutItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilEditorInterfaceFieldsEditorLayoutItemArray is optional nullable []EditorInterfaceFieldsEditorLayoutItem.
-type OptNilEditorInterfaceFieldsEditorLayoutItemArray struct {
-	Value []EditorInterfaceFieldsEditorLayoutItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilEditorInterfaceFieldsEditorLayoutItemArray was set.
-func (o OptNilEditorInterfaceFieldsEditorLayoutItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilEditorInterfaceFieldsEditorLayoutItemArray) Reset() {
-	var v []EditorInterfaceFieldsEditorLayoutItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilEditorInterfaceFieldsEditorLayoutItemArray) SetTo(v []EditorInterfaceFieldsEditorLayoutItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilEditorInterfaceFieldsEditorLayoutItemArray) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilEditorInterfaceFieldsEditorLayoutItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []EditorInterfaceFieldsEditorLayoutItem
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilEditorInterfaceFieldsEditorLayoutItemArray) Get() (v []EditorInterfaceFieldsEditorLayoutItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilEditorInterfaceFieldsEditorLayoutItemArray) Or(d []EditorInterfaceFieldsEditorLayoutItem) []EditorInterfaceFieldsEditorLayoutItem {
 	if v, ok := o.Get(); ok {
 		return v
 	}

@@ -20,12 +20,12 @@ func (model *EditorInterfaceResourceModel) ToEditorInterfaceFields(ctx context.C
 
 		editorLayoutElementValues := model.EditorLayout.Elements()
 
-		requestEditorLayoutItems := make([]cm.EditorInterfaceFieldsEditorLayoutItem, len(editorLayoutElementValues))
+		requestEditorLayoutItems := make([]cm.EditorInterfaceEditorLayoutItem, len(editorLayoutElementValues))
 
 		for index, editorLayoutElement := range editorLayoutElementValues {
 			path := editorLayoutPath.AtListIndex(index)
 
-			requestEditorLayoutItem, requestEditorLayoutItemDiags := editorLayoutElement.ToEditorInterfaceFieldsEditorLayoutItem(ctx, path)
+			requestEditorLayoutItem, requestEditorLayoutItemDiags := editorLayoutElement.ToEditorInterfaceEditorLayoutItem(ctx, path)
 			diags.Append(requestEditorLayoutItemDiags...)
 
 			requestEditorLayoutItems[index] = requestEditorLayoutItem
