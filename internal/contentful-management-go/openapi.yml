@@ -372,18 +372,7 @@ components:
           type: array
           nullable: true
           items:
-            type: object
-            properties:
-              groupId:
-                type: string
-              name:
-                type: string
-              items:
-                type: array
-                items: {}
-            required:
-              - groupId
-              - name
+            $ref: "#/components/schemas/EditorInterfaceEditorLayoutItem"
         controls:
           type: array
           nullable: true
@@ -430,6 +419,31 @@ components:
             required:
               - widgetNamespace
               - widgetId
+    EditorInterfaceEditorLayoutItem:
+      oneOf:
+        - $ref: "#/components/schemas/EditorInterfaceEditorLayoutGroupItem"
+        - $ref: "#/components/schemas/EditorInterfaceEditorLayoutFieldItem"
+    EditorInterfaceEditorLayoutGroupItem:
+      type: object
+      properties:
+        groupId:
+          type: string
+        name:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EditorInterfaceEditorLayoutItem"
+      required:
+        - groupId
+        - name
+    EditorInterfaceEditorLayoutFieldItem:
+      type: object
+      properties:
+        fieldId:
+          type: string
+      required:
+        - fieldId
     EditorInterface:
       allOf:
         - type: object

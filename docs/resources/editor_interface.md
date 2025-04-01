@@ -106,12 +106,60 @@ Optional:
 
 Required:
 
+- `group` (Attributes) (see [below for nested schema](#nestedatt--editor_layout--group))
+
+<a id="nestedatt--editor_layout--group"></a>
+### Nested Schema for `editor_layout.group`
+
+Required:
+
 - `group_id` (String)
+- `items` (Attributes List) (see [below for nested schema](#nestedatt--editor_layout--group--items))
 - `name` (String)
+
+<a id="nestedatt--editor_layout--group--items"></a>
+### Nested Schema for `editor_layout.group.items`
 
 Optional:
 
-- `items` (List of String)
+- `field` (Attributes) (see [below for nested schema](#nestedatt--editor_layout--group--items--field))
+- `group` (Attributes) (see [below for nested schema](#nestedatt--editor_layout--group--items--group))
+
+<a id="nestedatt--editor_layout--group--items--field"></a>
+### Nested Schema for `editor_layout.group.items.field`
+
+Required:
+
+- `field_id` (String)
+
+
+<a id="nestedatt--editor_layout--group--items--group"></a>
+### Nested Schema for `editor_layout.group.items.group`
+
+Required:
+
+- `group_id` (String)
+- `items` (Attributes List) (see [below for nested schema](#nestedatt--editor_layout--group--items--group--items))
+- `name` (String)
+
+<a id="nestedatt--editor_layout--group--items--group--items"></a>
+### Nested Schema for `editor_layout.group.items.group.items`
+
+Required:
+
+- `field` (Attributes) (see [below for nested schema](#nestedatt--editor_layout--group--items--group--items--field))
+
+<a id="nestedatt--editor_layout--group--items--group--items--field"></a>
+### Nested Schema for `editor_layout.group.items.group.items.field`
+
+Required:
+
+- `field_id` (String)
+
+
+
+
+
 
 
 <a id="nestedatt--group_controls"></a>

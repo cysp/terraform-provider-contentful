@@ -43,10 +43,8 @@ func NewEditorInterfaceSys(spaceID, environmentID, contentTypeID string) cm.Edit
 }
 
 func UpdateEditorInterfaceFromFields(editorInterface *cm.EditorInterface, editorInterfaceFields cm.EditorInterfaceFields) {
-	convertOptNil(&editorInterface.EditorLayout, &editorInterfaceFields.EditorLayout, func(editorLayout []cm.EditorInterfaceFieldsEditorLayoutItem) []cm.EditorInterfaceEditorLayoutItem {
-		return convertSlice(editorLayout, func(editorLayoutItem cm.EditorInterfaceFieldsEditorLayoutItem) cm.EditorInterfaceEditorLayoutItem {
-			return cm.EditorInterfaceEditorLayoutItem(editorLayoutItem)
-		})
+	convertOptNil(&editorInterface.EditorLayout, &editorInterfaceFields.EditorLayout, func(editorLayout []cm.EditorInterfaceEditorLayoutItem) []cm.EditorInterfaceEditorLayoutItem {
+		return editorLayout
 	})
 
 	convertOptNil(&editorInterface.Controls, &editorInterfaceFields.Controls, func(controls []cm.EditorInterfaceFieldsControlsItem) []cm.EditorInterfaceControlsItem {
