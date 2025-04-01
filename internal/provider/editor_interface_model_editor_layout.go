@@ -13,16 +13,16 @@ import (
 )
 
 func NewEditorInterfaceEditorLayoutListValueNull(ctx context.Context) types.List {
-	return types.ListNull(EditorInterfaceEditorLayoutValue{}.Type(ctx))
+	return types.ListNull(EditorInterfaceEditorLayoutElementValue{}.Type(ctx))
 }
 
-func NewEditorInterfaceEditorLayoutValueKnown() EditorInterfaceEditorLayoutValue {
-	return EditorInterfaceEditorLayoutValue{
+func NewEditorInterfaceEditorLayoutElementValueKnown() EditorInterfaceEditorLayoutElementValue {
+	return EditorInterfaceEditorLayoutElementValue{
 		state: attr.ValueStateKnown,
 	}
 }
 
-func (v *EditorInterfaceEditorLayoutValue) ToEditorInterfaceFieldsEditorLayoutItem(ctx context.Context, _ path.Path) (cm.EditorInterfaceFieldsEditorLayoutItem, diag.Diagnostics) {
+func (v *EditorInterfaceEditorLayoutElementValue) ToEditorInterfaceFieldsEditorLayoutItem(ctx context.Context, _ path.Path) (cm.EditorInterfaceFieldsEditorLayoutItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := cm.EditorInterfaceFieldsEditorLayoutItem{
@@ -55,22 +55,22 @@ func NewEditorInterfaceEditorLayoutListValueFromResponse(ctx context.Context, pa
 	for index, item := range editorLayoutItems {
 		path := path.AtListIndex(index)
 
-		editorLayoutValue, editorLayoutValueDiags := NewEditorInterfaceEditorLayoutValueFromResponse(path, item)
+		editorLayoutValue, editorLayoutValueDiags := NewEditorInterfaceEditorLayoutElementValueFromResponse(path, item)
 		diags.Append(editorLayoutValueDiags...)
 
 		listElementValues[index] = editorLayoutValue
 	}
 
-	list, listDiags := types.ListValue(EditorInterfaceEditorLayoutValue{}.Type(ctx), listElementValues)
+	list, listDiags := types.ListValue(EditorInterfaceEditorLayoutElementValue{}.Type(ctx), listElementValues)
 	diags.Append(listDiags...)
 
 	return list, diags
 }
 
-func NewEditorInterfaceEditorLayoutValueFromResponse(path path.Path, item cm.EditorInterfaceEditorLayoutItem) (EditorInterfaceEditorLayoutValue, diag.Diagnostics) {
+func NewEditorInterfaceEditorLayoutElementValueFromResponse(path path.Path, item cm.EditorInterfaceEditorLayoutItem) (EditorInterfaceEditorLayoutElementValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := EditorInterfaceEditorLayoutValue{
+	value := EditorInterfaceEditorLayoutElementValue{
 		GroupID: types.StringValue(item.GroupId),
 		Name:    types.StringValue(item.Name),
 		state:   attr.ValueStateKnown,
