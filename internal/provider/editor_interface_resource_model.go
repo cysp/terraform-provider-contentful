@@ -46,8 +46,8 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"editor_layout": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: EditorInterfaceEditorLayoutValue{}.SchemaAttributes(ctx),
-					CustomType: EditorInterfaceEditorLayoutValue{}.CustomType(ctx),
+					Attributes: EditorInterfaceEditorLayoutElementValue{}.SchemaAttributes(ctx),
+					CustomType: EditorInterfaceEditorLayoutElementValue{}.CustomType(ctx),
 				},
 				Optional: true,
 			},
