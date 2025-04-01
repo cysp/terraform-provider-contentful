@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -12,9 +13,10 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*editorInterfaceResource)(nil)
-	_ resource.ResourceWithConfigure   = (*editorInterfaceResource)(nil)
-	_ resource.ResourceWithImportState = (*editorInterfaceResource)(nil)
+	_ resource.Resource                 = (*editorInterfaceResource)(nil)
+	_ resource.ResourceWithConfigure    = (*editorInterfaceResource)(nil)
+	_ resource.ResourceWithImportState  = (*editorInterfaceResource)(nil)
+	_ resource.ResourceWithUpgradeState = (*editorInterfaceResource)(nil)
 )
 
 //nolint:ireturn
@@ -44,6 +46,86 @@ func (r *editorInterfaceResource) ImportState(ctx context.Context, req resource.
 		path.Root("environment_id"),
 		path.Root("content_type_id"),
 	}, req, resp)
+}
+
+func (r *editorInterfaceResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	// editorInterfaceResourceSchemaVersion0 := EditorInterfaceResourceSchemaForVersion(ctx, 0)
+
+	return map[int64]resource.StateUpgrader{
+		0: {
+			// PriorSchema: &editorInterfaceResourceSchemaVersion0,
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+
+				var state map[string]any
+				err := json.Unmarshal(req.RawState.JSON, &state)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Invalid Upgrade",
+						"Failed to unmarshal state: "+err.Error(),
+					)
+					return
+				}
+
+				// var state EditorInterfaceResourceModel
+				// resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+				// stateEditorLayout := state.EditorLayout
+
+				// var upgradedState EditorInterfaceResourceModel
+
+				// var editorLayoutList []EditorInterfaceEditorLayoutElementValueV0
+				// resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("editor_layout"), &editorLayoutList)...)
+
+				// for i := 0; i < len(editorLayoutListElementValues); i++ {
+				// 	var editorLayoutListElementValue EditorInterfaceEditorLayoutElementValueV0
+				// 	sss, ok := editorLayoutListElementValues[i].(EditorInterfaceEditorLayoutElementValueV0)
+				// 	if !ok {
+				// 		resp.Diagnostics.AddAttributeError(
+				// 			path.Root("editor_layout").AtListIndex(i),
+				// 			"Invalid Upgrade",
+				// 			"Editor layout element value is not of type EditorInterfaceEditorLayoutElementValueV0",
+				// 		)
+				// 		continue
+				// 	}
+
+				// 	editorLayoutListElementValueItemsElementValues := editorLayoutListElementValue.Items.Elements()
+				// 	for j := 0; j < len(editorLayoutListElementValueItemsElementValues); j++ {
+				// 		var editorLayoutListElementValueItemsElementValue jsontypes.Normalized
+				// 		sss, ok := editorLayoutListElementValueItemsElementValues[j].(jsontypes.Normalized)
+				// 		if !ok {
+				// 			resp.Diagnostics.AddAttributeError(
+				// 				path.Root("editor_layout").AtListIndex(i).AtListIndex(j),
+				// 				"Invalid Upgrade",
+				// 				"Editor layout element value items element value is not of type jsontypes.Normalized",
+				// 			)
+				// 			continue
+				// 		}
+
+				// 		// json.Unmarshal())
+				// 		// var elementValue jsontypes.Normalized
+				// 		// resp.Diagnostics.Append(editorLayoutListElementValueItemsElementValues[j].(ctx, j, &elementValue)...)
+				// 		// if resp.Diagnostics.HasError() {
+				// 		// 	continue
+				// 		// }
+				// 	}
+
+				// 	// var elementValue EditorInterfaceEditorLayoutElementValueV0
+				// 	// resp.Diagnostics.Append(editorLayoutListElementValues[i].(ctx, i, &elementValue)...)
+				// 	// if resp.Diagnostics.HasError() {
+				// 	// 	continue
+				// 	// }
+				// }
+
+				// resp.State.SetAttribute(ctx, path.Root("editor_layout"), editorLayoutList)
+
+				// resp.Diagnostics.AddAttributeError(
+				// 	path.Root("editor_layout"),
+				// 	"Invalid Upgrade",
+				// 	"Editor layout cannot be upgraded from version 0 to 1",
+				// )
+			},
+		},
+	}
 }
 
 func (r *editorInterfaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

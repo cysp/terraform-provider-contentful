@@ -4,7 +4,6 @@ import (
 	"context"
 
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -45,7 +44,7 @@ func NewEditorInterfaceEditorLayoutElementValueUnknown() EditorInterfaceEditorLa
 	}
 }
 
-func (v EditorInterfaceEditorLayoutElementValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
+func (v EditorInterfaceEditorLayoutElementValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"group_id": schema.StringAttribute{
 			Required: true,
@@ -53,9 +52,12 @@ func (v EditorInterfaceEditorLayoutElementValue) SchemaAttributes(_ context.Cont
 		"name": schema.StringAttribute{
 			Required: true,
 		},
-		"items": schema.ListAttribute{
-			ElementType: jsontypes.NormalizedType{},
-			Optional:    true,
+		"items": schema.ListNestedAttribute{
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: EditorInterfaceEditorLayoutElementItemValue{}.SchemaAttributes(ctx),
+				CustomType: EditorInterfaceEditorLayoutElementItemValue{}.CustomType(ctx),
+			},
+			Required: true,
 		},
 	}
 }
