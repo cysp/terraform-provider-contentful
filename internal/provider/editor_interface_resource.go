@@ -50,13 +50,23 @@ func (r *editorInterfaceResource) ImportState(ctx context.Context, req resource.
 
 func (r *editorInterfaceResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	// editorInterfaceResourceSchemaVersion0 := EditorInterfaceResourceSchemaForVersion(ctx, 0)
+	// editorInterfaceResourceSchema := EditorInterfaceResourceSchema(ctx)
 
 	return map[int64]resource.StateUpgrader{
 		0: {
 			// PriorSchema: &editorInterfaceResourceSchemaVersion0,
 			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
 
-				var state map[string]any
+				// type PriorEditorLayout struct {
+				// 	Items []string `json:"items"`
+				// }
+
+				// type PriorState struct {
+				// 	EditorLayout []PriorEditorLayout `json:"editor_layout"`
+				// }
+
+				var state EditorInterfaceResourceModelV0
+
 				err := json.Unmarshal(req.RawState.JSON, &state)
 				if err != nil {
 					resp.Diagnostics.AddError(
@@ -65,6 +75,20 @@ func (r *editorInterfaceResource) UpgradeState(ctx context.Context) map[int64]re
 					)
 					return
 				}
+
+				model, modelDiags := upgradeEditorInterfaceResourceModelV0ToV1(ctx, state)
+				resp.Diagnostics.Append(modelDiags...)
+
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+
+				// resp.Diagnostics.AddError(
+				// 	"Invalid Upgrade",
+				// 	"NO",
+				// )
 
 				// var state EditorInterfaceResourceModel
 				// resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
