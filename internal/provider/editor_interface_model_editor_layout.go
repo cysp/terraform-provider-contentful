@@ -149,8 +149,8 @@ func NewEditorInterfaceEditorLayoutElementValueFromResponse(ctx context.Context,
 	case cm.EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem:
 	}
 
-	diags.AddAttributeError(path, "Failed to read editor layout item", "Expected group item")
-	return EditorInterfaceEditorLayoutElementValue{}, diags
+	// diags.AddAttributeError(path, "Failed to read editor layout item", "Expected group item")
+	return NewEditorInterfaceEditorLayoutElementValueNull(), diags
 }
 
 func NewEditorInterfaceEditorLayoutElementItemValueListFromResponse(ctx context.Context, path path.Path, items []cm.EditorInterfaceEditorLayoutItem) (types.List, diag.Diagnostics) {
