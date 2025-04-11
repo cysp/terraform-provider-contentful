@@ -5,7 +5,6 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -19,13 +18,11 @@ func TestRoundTripToEditorInterfaceFields(t *testing.T) {
 	ctx := t.Context()
 
 	editorInterface := cm.EditorInterface{
-		EditorLayout: cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{
-			{
-				GroupId: "group_id",
-				Name:    "name",
-				Items:   []jx.Raw{jx.Raw(`{"foo":"bar"}`)},
-			},
-		}),
+		EditorLayout: cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(cm.EditorInterfaceEditorLayoutGroupItem{
+			GroupId: "group_id",
+			Name:    "name",
+			Items:   []cm.EditorInterfaceEditorLayoutItem{cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(cm.EditorInterfaceEditorLayoutFieldItem{FieldId: "foo"})},
+		})}),
 		Controls: cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{
 			{
 				FieldId:         "field_id",
@@ -59,10 +56,18 @@ func TestRoundTripToEditorInterfaceFields(t *testing.T) {
 
 	assert.True(t, req.EditorLayout.Set)
 	assert.Len(t, req.EditorLayout.Value, 1)
-	assert.Equal(t, cm.EditorInterfaceFieldsEditorLayoutItem{
-		GroupId: "group_id",
-		Name:    "name",
-		Items:   []jx.Raw{jx.Raw(`{"foo":"bar"}`)},
+	assert.Equal(t, cm.EditorInterfaceEditorLayoutItem{
+		Type: cm.EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem,
+		EditorInterfaceEditorLayoutGroupItem: cm.EditorInterfaceEditorLayoutGroupItem{
+			GroupId: "group_id",
+			Name:    "name",
+			Items: []cm.EditorInterfaceEditorLayoutItem{
+				{
+					Type:                                 cm.EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem,
+					EditorInterfaceEditorLayoutFieldItem: cm.EditorInterfaceEditorLayoutFieldItem{FieldId: "foo"},
+				},
+			},
+		},
 	}, req.EditorLayout.Value[0])
 
 	assert.True(t, req.Controls.Set)
