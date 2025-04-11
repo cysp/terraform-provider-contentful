@@ -28,11 +28,10 @@ func (m *ContentTypeResourceModel) ToContentTypeRequestFields(ctx context.Contex
 	return request, diags
 }
 
-func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.Path, fieldsList types.List) ([]cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
+func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.Path, fieldsList ListOf[ContentTypeFieldValue]) ([]cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldsValues := make([]ContentTypeFieldValue, len(fieldsList.Elements()))
-	diags.Append(fieldsList.ElementsAs(ctx, &fieldsValues, false)...)
+	fieldsValues := fieldsList.Elements()
 
 	fieldsItems := make([]cm.ContentTypeRequestFieldsFieldsItem, len(fieldsValues))
 

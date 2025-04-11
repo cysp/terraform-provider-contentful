@@ -17,7 +17,7 @@ type ContentTypeResourceModel struct {
 	Name          types.String `tfsdk:"name"`
 	Description   types.String `tfsdk:"description"`
 	DisplayField  types.String `tfsdk:"display_field"`
-	Fields        types.List   `tfsdk:"fields"`
+	Fields        ListOf[ContentTypeFieldValue] `tfsdk:"fields"`
 }
 
 func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
