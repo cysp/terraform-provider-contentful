@@ -22,6 +22,7 @@ type EditorInterfaceResourceModel struct {
 
 func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Version: 1,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -46,8 +47,8 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"editor_layout": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: EditorInterfaceEditorLayoutValue{}.SchemaAttributes(ctx),
-					CustomType: EditorInterfaceEditorLayoutValue{}.CustomType(ctx),
+					Attributes: EditorInterfaceEditorLayoutElementValue{}.SchemaAttributes(ctx),
+					CustomType: EditorInterfaceEditorLayoutElementValue{}.CustomType(ctx),
 				},
 				Optional: true,
 			},
