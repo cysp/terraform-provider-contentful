@@ -18,8 +18,7 @@ func (model *EditorInterfaceResourceModel) ToEditorInterfaceFields(ctx context.C
 	} else {
 		editorLayoutPath := path.Root("editor_layout")
 
-		editorLayoutElementValues := []EditorInterfaceEditorLayoutValue{}
-		diags.Append(model.EditorLayout.ElementsAs(ctx, &editorLayoutElementValues, false)...)
+		editorLayoutElementValues := model.EditorLayout.Elements()
 
 		requestEditorLayoutItems := make([]cm.EditorInterfaceFieldsEditorLayoutItem, len(editorLayoutElementValues))
 
@@ -40,8 +39,7 @@ func (model *EditorInterfaceResourceModel) ToEditorInterfaceFields(ctx context.C
 	} else {
 		controlsPath := path.Root("controls")
 
-		controlsElementValues := []EditorInterfaceControlValue{}
-		diags.Append(model.Controls.ElementsAs(ctx, &controlsElementValues, false)...)
+		controlsElementValues := model.Controls.Elements()
 
 		requestControlsItems := make([]cm.EditorInterfaceFieldsControlsItem, len(controlsElementValues))
 
@@ -62,8 +60,7 @@ func (model *EditorInterfaceResourceModel) ToEditorInterfaceFields(ctx context.C
 	} else {
 		controlsPath := path.Root("group_controls")
 
-		groupControlsElementValues := []EditorInterfaceGroupControlValue{}
-		diags.Append(model.GroupControls.ElementsAs(ctx, &groupControlsElementValues, false)...)
+		groupControlsElementValues := model.GroupControls.Elements()
 
 		requestGroupControlsItems := make([]cm.EditorInterfaceFieldsGroupControlsItem, len(groupControlsElementValues))
 
@@ -84,8 +81,7 @@ func (model *EditorInterfaceResourceModel) ToEditorInterfaceFields(ctx context.C
 	} else {
 		sidebarPath := path.Root("sidebar")
 
-		sidebarElementValues := []EditorInterfaceSidebarValue{}
-		diags.Append(model.Sidebar.ElementsAs(ctx, &sidebarElementValues, false)...)
+		sidebarElementValues := model.Sidebar.Elements()
 
 		requestSidebarItems := make([]cm.EditorInterfaceFieldsSidebarItem, len(sidebarElementValues))
 

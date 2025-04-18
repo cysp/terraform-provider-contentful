@@ -6,14 +6,16 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorInterfaceEditorLayoutListValueNull(ctx context.Context) types.List {
-	return types.ListNull(EditorInterfaceEditorLayoutValue{}.Type(ctx))
+func NewEditorInterfaceEditorLayoutListValueNull(ctx context.Context) TypedList[EditorInterfaceEditorLayoutValue] {
+	return NewTypedListNull[EditorInterfaceEditorLayoutValue](ctx)
 }
 
 func NewEditorInterfaceEditorLayoutValueKnown() EditorInterfaceEditorLayoutValue {
@@ -33,7 +35,7 @@ func (v *EditorInterfaceEditorLayoutValue) ToEditorInterfaceFieldsEditorLayoutIt
 	if !v.Items.IsNull() && !v.Items.IsUnknown() {
 		var itemItemsStrings []string
 
-		diags.Append(v.Items.ElementsAs(ctx, &itemItemsStrings, false)...)
+		diags.Append(tfsdk.ValueAs(ctx, &v.Items, &itemItemsStrings)...)
 
 		itemItems := make([]jx.Raw, len(itemItemsStrings))
 
@@ -47,27 +49,27 @@ func (v *EditorInterfaceEditorLayoutValue) ToEditorInterfaceFieldsEditorLayoutIt
 	return item, diags
 }
 
-func NewEditorInterfaceEditorLayoutListValueFromResponse(ctx context.Context, path path.Path, editorLayoutItems []cm.EditorInterfaceEditorLayoutItem) (types.List, diag.Diagnostics) {
+func NewEditorInterfaceEditorLayoutListValueFromResponse(ctx context.Context, path path.Path, editorLayoutItems []cm.EditorInterfaceEditorLayoutItem) (TypedList[EditorInterfaceEditorLayoutValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]attr.Value, len(editorLayoutItems))
+	listElementValues := make([]EditorInterfaceEditorLayoutValue, len(editorLayoutItems))
 
 	for index, item := range editorLayoutItems {
 		path := path.AtListIndex(index)
 
-		editorLayoutValue, editorLayoutValueDiags := NewEditorInterfaceEditorLayoutValueFromResponse(path, item)
+		editorLayoutValue, editorLayoutValueDiags := NewEditorInterfaceEditorLayoutValueFromResponse(ctx, path, item)
 		diags.Append(editorLayoutValueDiags...)
 
 		listElementValues[index] = editorLayoutValue
 	}
 
-	list, listDiags := types.ListValue(EditorInterfaceEditorLayoutValue{}.Type(ctx), listElementValues)
+	list, listDiags := NewTypedList(ctx, listElementValues)
 	diags.Append(listDiags...)
 
 	return list, diags
 }
 
-func NewEditorInterfaceEditorLayoutValueFromResponse(path path.Path, item cm.EditorInterfaceEditorLayoutItem) (EditorInterfaceEditorLayoutValue, diag.Diagnostics) {
+func NewEditorInterfaceEditorLayoutValueFromResponse(ctx context.Context, path path.Path, item cm.EditorInterfaceEditorLayoutItem) (EditorInterfaceEditorLayoutValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := EditorInterfaceEditorLayoutValue{
@@ -76,7 +78,7 @@ func NewEditorInterfaceEditorLayoutValueFromResponse(path path.Path, item cm.Edi
 		state:   attr.ValueStateKnown,
 	}
 
-	valueItemsElements := make([]attr.Value, len(item.Items))
+	valueItemsElements := make([]jsontypes.Normalized, len(item.Items))
 
 	for index, item := range item.Items {
 		itemsElement, itemsElementErr := util.JxNormalizeOpaqueBytes(item, util.JxEncodeOpaqueOptions{EscapeStrings: true})
@@ -85,10 +87,10 @@ func NewEditorInterfaceEditorLayoutValueFromResponse(path path.Path, item cm.Edi
 			diags.AddAttributeError(path.AtListIndex(index), "Failed to read items element", itemsElementErr.Error())
 		}
 
-		valueItemsElements[index] = types.StringValue(string(itemsElement))
+		valueItemsElements[index] = jsontypes.NewNormalizedValue(string(itemsElement))
 	}
 
-	list, listDiags := types.ListValue(types.StringType, valueItemsElements)
+	list, listDiags := NewTypedList(ctx, valueItemsElements)
 	diags.Append(listDiags...)
 
 	value.Items = list
