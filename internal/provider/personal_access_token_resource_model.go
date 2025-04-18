@@ -13,16 +13,16 @@ import (
 )
 
 type PersonalAccessTokenResourceModel struct {
-	ID        types.String      `tfsdk:"id"`
-	Name      types.String      `tfsdk:"name"`
-	ExpiresIn types.Int64       `tfsdk:"expires_in"`
-	ExpiresAt timetypes.RFC3339 `tfsdk:"expires_at"`
-	RevokedAt timetypes.RFC3339 `tfsdk:"revoked_at"`
-	Scopes    types.List        `tfsdk:"scopes"`
-	Token     types.String      `tfsdk:"token"`
+	ID        types.String            `tfsdk:"id"`
+	Name      types.String            `tfsdk:"name"`
+	ExpiresIn types.Int64             `tfsdk:"expires_in"`
+	ExpiresAt timetypes.RFC3339       `tfsdk:"expires_at"`
+	RevokedAt timetypes.RFC3339       `tfsdk:"revoked_at"`
+	Scopes    TypedList[types.String] `tfsdk:"scopes"`
+	Token     types.String            `tfsdk:"token"`
 }
 
-func PersonalAccessTokenResourceSchema(_ context.Context) schema.Schema {
+func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -50,6 +50,7 @@ func PersonalAccessTokenResourceSchema(_ context.Context) schema.Schema {
 			},
 			"scopes": schema.ListAttribute{
 				ElementType: types.StringType,
+				CustomType:  NewTypedListNull[types.String](ctx).CustomType(ctx),
 				Required:    true,
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.RequiresReplace(),

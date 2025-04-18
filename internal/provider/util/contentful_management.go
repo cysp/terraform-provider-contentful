@@ -1,11 +1,9 @@
 package util
 
 import (
-	"context"
 	"fmt"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -63,13 +61,4 @@ func StringValueToOptNilString(value types.String) cm.OptNilString {
 	}
 
 	return ons
-}
-
-func NewStringListValueFromStringSlice(ctx context.Context, slice []string) (types.List, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	list, listDiags := types.ListValueFrom(ctx, types.String{}.Type(ctx), slice)
-	diags.Append(listDiags...)
-
-	return list, diags
 }
