@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) (types.List, diag.Diagnostics) {
+func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) (TypedList[RolePolicyValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	policiesValues := make([]RolePolicyValue, len(policies))
@@ -26,7 +26,7 @@ func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, polic
 		policiesValues[index] = policiesValue
 	}
 
-	policiesListValue, policiesListValueDiags := types.ListValueFrom(ctx, RolePolicyValue{}.Type(ctx), policiesValues)
+	policiesListValue, policiesListValueDiags := NewTypedList(ctx, policiesValues)
 	diags.Append(policiesListValueDiags...)
 
 	return policiesListValue, diags
@@ -64,21 +64,21 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 	return value, diags
 }
 
-func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, actions cm.RolePoliciesItemActions) (types.List, diag.Diagnostics) {
+func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, actions cm.RolePoliciesItemActions) (TypedList[types.String], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	switch actions.Type {
 	case cm.StringRolePoliciesItemActions:
-		actionsValues := make([]attr.Value, 1)
+		actionsValues := make([]types.String, 1)
 		actionsValues[0] = types.StringValue(actions.String)
 
-		actionsListValue, actionsListValueDiags := types.ListValueFrom(ctx, types.String{}.Type(ctx), actionsValues)
+		actionsListValue, actionsListValueDiags := NewTypedList(ctx, actionsValues)
 		diags.Append(actionsListValueDiags...)
 
 		return actionsListValue, diags
 
 	case cm.StringArrayRolePoliciesItemActions:
-		actionsListValue, actionsListValueDiags := types.ListValueFrom(ctx, types.String{}.Type(ctx), actions.StringArray)
+		actionsListValue, actionsListValueDiags := NewTypedListFromStringSlice(ctx, actions.StringArray)
 		diags.Append(actionsListValueDiags...)
 
 		return actionsListValue, diags
@@ -86,5 +86,5 @@ func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, 
 
 	diags.AddAttributeError(path, "unexpected type for policy actions", "")
 
-	return types.List{}, diags
+	return NewTypedListUnknown[types.String](ctx), diags
 }

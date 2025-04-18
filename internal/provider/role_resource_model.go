@@ -10,13 +10,13 @@ import (
 )
 
 type RoleResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	SpaceID     types.String `tfsdk:"space_id"`
-	RoleID      types.String `tfsdk:"role_id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Permissions types.Map    `tfsdk:"permissions"`
-	Policies    types.List   `tfsdk:"policies"`
+	ID          types.String               `tfsdk:"id"`
+	SpaceID     types.String               `tfsdk:"space_id"`
+	RoleID      types.String               `tfsdk:"role_id"`
+	Name        types.String               `tfsdk:"name"`
+	Description types.String               `tfsdk:"description"`
+	Permissions types.Map                  `tfsdk:"permissions"`
+	Policies    TypedList[RolePolicyValue] `tfsdk:"policies"`
 }
 
 func RoleResourceSchema(ctx context.Context) schema.Schema {
@@ -51,7 +51,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					Attributes: RolePolicyValue{}.SchemaAttributes(ctx),
 					CustomType: RolePolicyValue{}.CustomType(ctx),
 				},
-				Required: true,
+				CustomType: TypedList[RolePolicyValue]{}.CustomType(ctx),
+				Required:   true,
 			},
 		},
 	}
