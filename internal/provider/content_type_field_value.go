@@ -17,17 +17,17 @@ import (
 
 //nolint:recvcheck
 type ContentTypeFieldValue struct {
-	ID           basetypes.StringValue      `tfsdk:"id"`
-	Name         basetypes.StringValue      `tfsdk:"name"`
-	FieldType    basetypes.StringValue      `tfsdk:"type"`
-	LinkType     basetypes.StringValue      `tfsdk:"link_type"`
-	Disabled     basetypes.BoolValue        `tfsdk:"disabled"`
-	Omitted      basetypes.BoolValue        `tfsdk:"omitted"`
-	Required     basetypes.BoolValue        `tfsdk:"required"`
+	ID           types.String               `tfsdk:"id"`
+	Name         types.String               `tfsdk:"name"`
+	FieldType    types.String               `tfsdk:"type"`
+	LinkType     types.String               `tfsdk:"link_type"`
+	Disabled     types.Bool                 `tfsdk:"disabled"`
+	Omitted      types.Bool                 `tfsdk:"omitted"`
+	Required     types.Bool                 `tfsdk:"required"`
 	DefaultValue jsontypes.Normalized       `tfsdk:"default_value"`
 	Items        ContentTypeFieldItemsValue `tfsdk:"items"`
-	Localized    basetypes.BoolValue        `tfsdk:"localized"`
-	Validations  basetypes.ListValue        `tfsdk:"validations"`
+	Localized    types.Bool                 `tfsdk:"localized"`
+	Validations  types.List                 `tfsdk:"validations"`
 	state        attr.ValueState
 }
 
@@ -117,8 +117,8 @@ func (v ContentTypeFieldValue) Type(ctx context.Context) attr.Type {
 	return ContentTypeFieldType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v ContentTypeFieldValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v ContentTypeFieldValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v ContentTypeFieldValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -146,6 +146,6 @@ func (v ContentTypeFieldValue) ToTerraformValue(ctx context.Context) (tftypes.Va
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v ContentTypeFieldValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ContentTypeFieldValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

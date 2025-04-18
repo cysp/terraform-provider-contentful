@@ -73,8 +73,8 @@ func (v RolePolicyValue) Type(ctx context.Context) attr.Type {
 	return RolePolicyType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v RolePolicyValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v RolePolicyValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v RolePolicyValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -102,6 +102,6 @@ func (v RolePolicyValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v RolePolicyValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v RolePolicyValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

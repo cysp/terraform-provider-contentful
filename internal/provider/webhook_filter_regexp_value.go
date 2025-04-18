@@ -7,20 +7,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 type WebhookFilterRegexpValue struct {
-	Doc     basetypes.StringValue `tfsdk:"doc"`
-	Pattern basetypes.StringValue `tfsdk:"pattern"`
+	Doc     types.String `tfsdk:"doc"`
+	Pattern types.String `tfsdk:"pattern"`
 	state   attr.ValueState
 }
 
 func NewWebhookFilterRegexpValueKnown() WebhookFilterRegexpValue {
 	return WebhookFilterRegexpValue{
-		Doc:     basetypes.NewStringNull(),
-		Pattern: basetypes.NewStringNull(),
+		Doc:     types.StringNull(),
+		Pattern: types.StringNull(),
 		state:   attr.ValueStateKnown,
 	}
 }
@@ -73,8 +74,8 @@ func (v WebhookFilterRegexpValue) Type(ctx context.Context) attr.Type {
 	return WebhookFilterRegexpType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v WebhookFilterRegexpValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v WebhookFilterRegexpValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookFilterRegexpValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -102,6 +103,6 @@ func (v WebhookFilterRegexpValue) ToTerraformValue(ctx context.Context) (tftypes
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v WebhookFilterRegexpValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v WebhookFilterRegexpValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

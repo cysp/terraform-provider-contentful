@@ -8,15 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 //nolint:recvcheck
 type EditorInterfaceEditorLayoutValue struct {
-	GroupID basetypes.StringValue `tfsdk:"group_id"`
-	Name    basetypes.StringValue `tfsdk:"name"`
-	Items   basetypes.ListValue   `tfsdk:"items"`
+	GroupID types.String `tfsdk:"group_id"`
+	Name    types.String `tfsdk:"name"`
+	Items   types.List   `tfsdk:"items"`
 	state   attr.ValueState
 }
 
@@ -72,8 +73,8 @@ func (v EditorInterfaceEditorLayoutValue) Type(ctx context.Context) attr.Type {
 	return EditorInterfaceEditorLayoutType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v EditorInterfaceEditorLayoutValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v EditorInterfaceEditorLayoutValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v EditorInterfaceEditorLayoutValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -101,6 +102,6 @@ func (v EditorInterfaceEditorLayoutValue) ToTerraformValue(ctx context.Context) 
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v EditorInterfaceEditorLayoutValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v EditorInterfaceEditorLayoutValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

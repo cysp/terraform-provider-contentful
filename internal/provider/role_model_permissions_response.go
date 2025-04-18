@@ -8,10 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, permissions cm.RolePermissions) (basetypes.MapValue, diag.Diagnostics) {
+func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, permissions cm.RolePermissions) (types.Map, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	permissionsValuesMap := make(map[string]attr.Value, len(permissions))
@@ -25,13 +24,13 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 		permissionsValuesMap[permission] = permissionActionsListValue
 	}
 
-	permissionsMapValue, permissionsListValueDiags := basetypes.NewMapValue(types.ListType{ElemType: types.StringType}, permissionsValuesMap)
+	permissionsMapValue, permissionsListValueDiags := types.MapValue(types.ListType{ElemType: types.StringType}, permissionsValuesMap)
 	diags.Append(permissionsListValueDiags...)
 
 	return permissionsMapValue, diags
 }
 
-func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Path, item cm.RolePermissionsItem) (basetypes.ListValue, diag.Diagnostics) {
+func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Path, item cm.RolePermissionsItem) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	switch item.Type {
@@ -39,13 +38,13 @@ func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Pa
 		actionsValues := make([]attr.Value, 1)
 		actionsValues[0] = types.StringValue(item.String)
 
-		actionsListValue, actionsListValueDiags := basetypes.NewListValue(types.String{}.Type(ctx), actionsValues)
+		actionsListValue, actionsListValueDiags := types.ListValue(types.String{}.Type(ctx), actionsValues)
 		diags.Append(actionsListValueDiags...)
 
 		return actionsListValue, diags
 
 	case cm.StringArrayRolePermissionsItem:
-		actionsListValue, actionsListValueDiags := basetypes.NewListValueFrom(ctx, types.String{}.Type(ctx), item.StringArray)
+		actionsListValue, actionsListValueDiags := types.ListValueFrom(ctx, types.String{}.Type(ctx), item.StringArray)
 		diags.Append(actionsListValueDiags...)
 
 		return actionsListValue, diags
@@ -53,5 +52,5 @@ func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Pa
 
 	diags.AddAttributeError(path, "unexpected type for permission actions", "")
 
-	return basetypes.ListValue{}, diags
+	return types.List{}, diags
 }

@@ -77,8 +77,8 @@ func (v EditorInterfaceControlValue) Type(ctx context.Context) attr.Type {
 	return EditorInterfaceControlType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v EditorInterfaceControlValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v EditorInterfaceControlValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v EditorInterfaceControlValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -106,6 +106,6 @@ func (v EditorInterfaceControlValue) ToTerraformValue(ctx context.Context) (tfty
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v EditorInterfaceControlValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v EditorInterfaceControlValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

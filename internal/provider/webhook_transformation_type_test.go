@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,7 +21,7 @@ func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
 	t.Run("unknown", func(t *testing.T) {
 		t.Parallel()
 
-		value := basetypes.NewObjectUnknown(typ.AttrTypes)
+		value := types.ObjectUnknown(typ.AttrTypes)
 
 		object, diags := provider.WebhookTransformationType{}.ValueFromObject(ctx, value)
 
@@ -33,7 +32,7 @@ func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
 	t.Run("null", func(t *testing.T) {
 		t.Parallel()
 
-		value := basetypes.NewObjectNull(typ.AttrTypes)
+		value := types.ObjectNull(typ.AttrTypes)
 
 		object, diags := provider.WebhookTransformationType{}.ValueFromObject(ctx, value)
 
@@ -44,7 +43,7 @@ func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
 	t.Run("value", func(t *testing.T) {
 		t.Parallel()
 
-		value, diags := basetypes.NewObjectValue(typ.AttrTypes, map[string]attr.Value{
+		value, diags := types.ObjectValue(typ.AttrTypes, map[string]attr.Value{
 			"method":                 types.StringValue("method"),
 			"content_type":           types.StringValue("content_type"),
 			"include_content_length": types.BoolValue(true),
