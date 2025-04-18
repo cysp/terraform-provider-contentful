@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.ContentTypeFieldsItem) (types.List, diag.Diagnostics) {
+func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.ContentTypeFieldsItem) (TypedList[ContentTypeFieldValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]attr.Value, len(items))
+	listElementValues := make([]ContentTypeFieldValue, len(items))
 
 	for index, item := range items {
 		path := path.AtListIndex(index)
@@ -27,10 +27,10 @@ func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.C
 		listElementValues[index] = listElementValue
 	}
 
-	listValue, listValueDiags := types.ListValue(ContentTypeFieldValue{}.Type(ctx), listElementValues)
-	diags.Append(listValueDiags...)
+	list, listDiags := NewTypedList(ctx, listElementValues)
+	diags.Append(listDiags...)
 
-	return listValue, diags
+	return list, diags
 }
 
 func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.ContentTypeFieldsItem) (ContentTypeFieldValue, diag.Diagnostics) {
@@ -51,7 +51,7 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 		Disabled:     util.OptBoolToBoolValue(item.Disabled),
 		Omitted:      util.OptBoolToBoolValue(item.Omitted),
 		Required:     util.OptBoolToBoolValue(item.Required),
-		Validations:  types.ListNull(jsontypes.NormalizedType{}),
+		Validations:  NewTypedListNull[jsontypes.Normalized](ctx),
 		state:        attr.ValueStateKnown,
 	}
 
@@ -79,7 +79,7 @@ func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptC
 		value = ContentTypeFieldItemsValue{
 			ItemsType:   util.OptStringToStringValue(itemItems.Type),
 			LinkType:    util.OptStringToStringValue(itemItems.LinkType),
-			Validations: types.ListNull(jsontypes.NormalizedType{}),
+			Validations: NewTypedListNull[jsontypes.Normalized](ctx),
 			state:       attr.ValueStateKnown,
 		}
 
@@ -92,10 +92,10 @@ func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptC
 	return value, diags
 }
 
-func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations []jx.Raw) (types.List, diag.Diagnostics) {
+func NewValidationsListFromResponse(ctx context.Context, _ path.Path, validations []jx.Raw) (TypedList[jsontypes.Normalized], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	validationElements := make([]attr.Value, len(validations))
+	validationElements := make([]jsontypes.Normalized, len(validations))
 
 	for i, validation := range validations {
 		encoder := jx.Encoder{}
@@ -103,7 +103,7 @@ func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations 
 		validationElements[i] = jsontypes.NewNormalizedValue(encoder.String())
 	}
 
-	list, listDiags := types.ListValue(jsontypes.NormalizedType{}, validationElements)
+	list, listDiags := NewTypedList(ctx, validationElements)
 	diags.Append(listDiags...)
 
 	return list, diags

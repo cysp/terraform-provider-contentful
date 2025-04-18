@@ -17,17 +17,17 @@ import (
 
 //nolint:recvcheck
 type ContentTypeFieldValue struct {
-	ID           types.String               `tfsdk:"id"`
-	Name         types.String               `tfsdk:"name"`
-	FieldType    types.String               `tfsdk:"type"`
-	LinkType     types.String               `tfsdk:"link_type"`
-	Disabled     types.Bool                 `tfsdk:"disabled"`
-	Omitted      types.Bool                 `tfsdk:"omitted"`
-	Required     types.Bool                 `tfsdk:"required"`
-	DefaultValue jsontypes.Normalized       `tfsdk:"default_value"`
-	Items        ContentTypeFieldItemsValue `tfsdk:"items"`
-	Localized    types.Bool                 `tfsdk:"localized"`
-	Validations  types.List                 `tfsdk:"validations"`
+	ID           types.String                    `tfsdk:"id"`
+	Name         types.String                    `tfsdk:"name"`
+	FieldType    types.String                    `tfsdk:"type"`
+	LinkType     types.String                    `tfsdk:"link_type"`
+	Disabled     types.Bool                      `tfsdk:"disabled"`
+	Omitted      types.Bool                      `tfsdk:"omitted"`
+	Required     types.Bool                      `tfsdk:"required"`
+	DefaultValue jsontypes.Normalized            `tfsdk:"default_value"`
+	Items        ContentTypeFieldItemsValue      `tfsdk:"items"`
+	Localized    types.Bool                      `tfsdk:"localized"`
+	Validations  TypedList[jsontypes.Normalized] `tfsdk:"validations"`
 	state        attr.ValueState
 }
 
@@ -100,6 +100,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 		},
 		"validations": schema.ListAttribute{
 			ElementType: jsontypes.NormalizedType{},
+			CustomType:  NewTypedListNull[jsontypes.Normalized](ctx).CustomType(ctx),
 			Optional:    true,
 			Computed:    true,
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),

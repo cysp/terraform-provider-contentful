@@ -6,9 +6,10 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 func (m *ContentTypeResourceModel) ToContentTypeRequestFields(ctx context.Context) (cm.ContentTypeRequestFields, diag.Diagnostics) {
@@ -28,11 +29,10 @@ func (m *ContentTypeResourceModel) ToContentTypeRequestFields(ctx context.Contex
 	return request, diags
 }
 
-func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.Path, fieldsList types.List) ([]cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
+func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.Path, fieldsList TypedList[ContentTypeFieldValue]) ([]cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldsValues := make([]ContentTypeFieldValue, len(fieldsList.Elements()))
-	diags.Append(fieldsList.ElementsAs(ctx, &fieldsValues, false)...)
+	fieldsValues := fieldsList.Elements()
 
 	fieldsItems := make([]cm.ContentTypeRequestFieldsFieldsItem, len(fieldsValues))
 
@@ -107,12 +107,12 @@ func (v *ContentTypeFieldItemsValue) ToContentTypeRequestFieldsFieldsItemItems(c
 	return items, diags
 }
 
-func ValidationsListToContentTypeRequestFieldsFieldValidations(ctx context.Context, _ path.Path, validationsList types.List) ([]jx.Raw, diag.Diagnostics) {
+func ValidationsListToContentTypeRequestFieldsFieldValidations(ctx context.Context, _ path.Path, validationsList TypedList[jsontypes.Normalized]) ([]jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	validationsStrings := []string{}
 	if !validationsList.IsNull() && !validationsList.IsUnknown() {
-		diags.Append(validationsList.ElementsAs(ctx, &validationsStrings, false)...)
+		diags.Append(tfsdk.ValueAs(ctx, validationsList, &validationsStrings)...)
 	}
 
 	validations := make([]jx.Raw, len(validationsStrings))
