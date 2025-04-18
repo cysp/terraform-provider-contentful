@@ -7,7 +7,6 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -68,7 +67,7 @@ func TestOptStringToStringValue(t *testing.T) {
 
 	tests := map[string]struct {
 		input    cm.OptString
-		expected basetypes.StringValue
+		expected types.String
 	}{
 		"set": {
 			input:    cm.NewOptString("string"),
@@ -103,7 +102,7 @@ func TestStringValueToOptString(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		input    basetypes.StringValue
+		input    types.String
 		expected cm.OptString
 	}{
 		"set": {
@@ -139,7 +138,7 @@ func TestStringValueToOptNilString(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		input    basetypes.StringValue
+		input    types.String
 		expected cm.OptNilString
 	}{
 		"set": {

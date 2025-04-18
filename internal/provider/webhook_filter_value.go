@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -91,8 +92,8 @@ func (v WebhookFilterValue) Type(ctx context.Context) attr.Type {
 	return WebhookFilterType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v WebhookFilterValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v WebhookFilterValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookFilterValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -120,6 +121,6 @@ func (v WebhookFilterValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v WebhookFilterValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v WebhookFilterValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

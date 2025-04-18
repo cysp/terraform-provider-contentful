@@ -7,10 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func ValueToObjectValue(ctx context.Context, value AttrValueWithObjectAttrTypes) (basetypes.ObjectValue, diag.Diagnostics) {
+func ValueToObjectValue(ctx context.Context, value AttrValueWithObjectAttrTypes) (types.Object, diag.Diagnostics) {
 	attributeTypes := value.ObjectAttrTypes(ctx)
 
 	switch {

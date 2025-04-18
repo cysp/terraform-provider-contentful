@@ -8,15 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 type WebhookTransformationValue struct {
-	Method               basetypes.StringValue `tfsdk:"method"`
-	ContentType          basetypes.StringValue `tfsdk:"content_type"`
-	IncludeContentLength basetypes.BoolValue   `tfsdk:"include_content_length"`
-	Body                 jsontypes.Normalized  `tfsdk:"body"`
+	Method               types.String         `tfsdk:"method"`
+	ContentType          types.String         `tfsdk:"content_type"`
+	IncludeContentLength types.Bool           `tfsdk:"include_content_length"`
+	Body                 jsontypes.Normalized `tfsdk:"body"`
 	state                attr.ValueState
 }
 
@@ -81,8 +82,8 @@ func (v WebhookTransformationValue) Type(ctx context.Context) attr.Type {
 	return WebhookTransformationType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v WebhookTransformationValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v WebhookTransformationValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookTransformationValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -110,6 +111,6 @@ func (v WebhookTransformationValue) ToTerraformValue(ctx context.Context) (tftyp
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v WebhookTransformationValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v WebhookTransformationValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

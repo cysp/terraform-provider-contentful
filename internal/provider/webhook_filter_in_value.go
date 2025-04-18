@@ -57,7 +57,7 @@ func (v WebhookFilterInValue) SchemaAttributes(_ context.Context) map[string]sch
 			Required: true,
 		},
 		"values": schema.ListAttribute{
-			ElementType: basetypes.StringType{},
+			ElementType: types.StringType,
 			Required:    true,
 		},
 	}
@@ -75,8 +75,8 @@ func (v WebhookFilterInValue) Type(ctx context.Context) attr.Type {
 	return WebhookFilterInType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v WebhookFilterInValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v WebhookFilterInValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookFilterInValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -104,6 +104,6 @@ func (v WebhookFilterInValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v WebhookFilterInValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v WebhookFilterInValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

@@ -10,14 +10,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 //nolint:recvcheck
 type WebhookHeaderValue struct {
-	Value  basetypes.StringValue `tfsdk:"value"`
-	Secret basetypes.BoolValue   `tfsdk:"secret"`
+	Value  types.String `tfsdk:"value"`
+	Secret types.Bool   `tfsdk:"secret"`
 	state  attr.ValueState
 }
 
@@ -80,8 +81,8 @@ func (v WebhookHeaderValue) Type(ctx context.Context) attr.Type {
 	return WebhookHeaderType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v WebhookHeaderValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v WebhookHeaderValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookHeaderValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -109,6 +110,6 @@ func (v WebhookHeaderValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v WebhookHeaderValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v WebhookHeaderValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

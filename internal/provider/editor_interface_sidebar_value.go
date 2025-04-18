@@ -80,8 +80,8 @@ func (v EditorInterfaceSidebarValue) Type(ctx context.Context) attr.Type {
 	return EditorInterfaceSidebarType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v EditorInterfaceSidebarValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v EditorInterfaceSidebarValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v EditorInterfaceSidebarValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -109,6 +109,6 @@ func (v EditorInterfaceSidebarValue) ToTerraformValue(ctx context.Context) (tfty
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v EditorInterfaceSidebarValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v EditorInterfaceSidebarValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

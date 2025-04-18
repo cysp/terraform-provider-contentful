@@ -10,13 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path, optNilFilters cm.OptNilWebhookDefinitionFilterArray) (types.List, diag.Diagnostics) {
 	filters, filtersOk := optNilFilters.Get()
 	if !filtersOk {
-		return basetypes.NewListNull(WebhookFilterValue{}.CustomType(ctx)), nil
+		return types.ListNull(WebhookFilterValue{}.CustomType(ctx)), nil
 	}
 
 	diags := diag.Diagnostics{}

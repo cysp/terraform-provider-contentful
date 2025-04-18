@@ -5,6 +5,7 @@ import (
 
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -27,7 +28,7 @@ var (
 func (t testInvalidType) TerraformType(ctx context.Context) tftypes.Type {
 	return tftypes.Object{
 		AttributeTypes: map[string]tftypes.Type{
-			"a": basetypes.StringType{}.TerraformType(ctx),
+			"a": types.StringType.TerraformType(ctx),
 		},
 	}
 }

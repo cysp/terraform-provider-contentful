@@ -7,20 +7,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 type WebhookFilterEqualsValue struct {
-	Doc   basetypes.StringValue `tfsdk:"doc"`
-	Value basetypes.StringValue `tfsdk:"value"`
+	Doc   types.String `tfsdk:"doc"`
+	Value types.String `tfsdk:"value"`
 	state attr.ValueState
 }
 
 func NewWebhookFilterEqualsValueKnown() WebhookFilterEqualsValue {
 	return WebhookFilterEqualsValue{
-		Doc:   basetypes.NewStringNull(),
-		Value: basetypes.NewStringNull(),
+		Doc:   types.StringNull(),
+		Value: types.StringNull(),
 		state: attr.ValueStateKnown,
 	}
 }
@@ -73,8 +74,8 @@ func (v WebhookFilterEqualsValue) Type(ctx context.Context) attr.Type {
 	return WebhookFilterEqualsType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v WebhookFilterEqualsValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v WebhookFilterEqualsValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v WebhookFilterEqualsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -102,6 +103,6 @@ func (v WebhookFilterEqualsValue) ToTerraformValue(ctx context.Context) (tftypes
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v WebhookFilterEqualsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v WebhookFilterEqualsValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

@@ -16,9 +16,9 @@ import (
 
 //nolint:recvcheck
 type ContentTypeFieldItemsValue struct {
-	ItemsType   basetypes.StringValue `tfsdk:"type"`
-	LinkType    basetypes.StringValue `tfsdk:"link_type"`
-	Validations basetypes.ListValue   `tfsdk:"validations"`
+	ItemsType   types.String `tfsdk:"type"`
+	LinkType    types.String `tfsdk:"link_type"`
+	Validations types.List   `tfsdk:"validations"`
 	state       attr.ValueState
 }
 
@@ -76,8 +76,8 @@ func (v ContentTypeFieldItemsValue) Type(ctx context.Context) attr.Type {
 	return ContentTypeFieldItemsType{ObjectType: v.ObjectType(ctx)}
 }
 
-func (v ContentTypeFieldItemsValue) ObjectType(ctx context.Context) basetypes.ObjectType {
-	return basetypes.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
+func (v ContentTypeFieldItemsValue) ObjectType(ctx context.Context) types.ObjectType {
+	return types.ObjectType{AttrTypes: v.ObjectAttrTypes(ctx)}
 }
 
 func (v ContentTypeFieldItemsValue) ObjectAttrTypes(ctx context.Context) map[string]attr.Type {
@@ -105,6 +105,6 @@ func (v ContentTypeFieldItemsValue) ToTerraformValue(ctx context.Context) (tftyp
 	return tpfr.ValueToTerraformValue(ctx, v, v.state)
 }
 
-func (v ContentTypeFieldItemsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ContentTypeFieldItemsValue) ToObjectValue(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return tpfr.ValueToObjectValue(ctx, v)
 }

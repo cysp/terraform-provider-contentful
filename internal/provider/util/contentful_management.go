@@ -7,7 +7,6 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 func ErrorDetailFromContentfulManagementResponse(response interface{}, err error) string {
@@ -32,27 +31,27 @@ func ErrorDetailFromContentfulManagementResponse(response interface{}, err error
 	return fmt.Sprintf("%v", response)
 }
 
-func OptBoolToBoolValue(b cm.OptBool) basetypes.BoolValue {
+func OptBoolToBoolValue(b cm.OptBool) types.Bool {
 	return types.BoolPointerValue(b.ValueBoolPointer())
 }
 
-func BoolValueToOptBool(b basetypes.BoolValue) cm.OptBool {
+func BoolValueToOptBool(b types.Bool) cm.OptBool {
 	return cm.NewOptPointerBool(b.ValueBoolPointer())
 }
 
-func OptStringToStringValue(s cm.OptString) basetypes.StringValue {
+func OptStringToStringValue(s cm.OptString) types.String {
 	return types.StringPointerValue(s.ValueStringPointer())
 }
 
-func OptNilStringToStringValue(s cm.OptNilString) basetypes.StringValue {
+func OptNilStringToStringValue(s cm.OptNilString) types.String {
 	return types.StringPointerValue(s.ValueStringPointer())
 }
 
-func StringValueToOptString(s basetypes.StringValue) cm.OptString {
+func StringValueToOptString(s types.String) cm.OptString {
 	return cm.NewOptPointerString(s.ValueStringPointer())
 }
 
-func StringValueToOptNilString(value basetypes.StringValue) cm.OptNilString {
+func StringValueToOptNilString(value types.String) cm.OptNilString {
 	ons := cm.OptNilString{}
 
 	if !value.IsUnknown() {
@@ -66,7 +65,7 @@ func StringValueToOptNilString(value basetypes.StringValue) cm.OptNilString {
 	return ons
 }
 
-func NewStringListValueFromStringSlice(ctx context.Context, slice []string) (basetypes.ListValue, diag.Diagnostics) {
+func NewStringListValueFromStringSlice(ctx context.Context, slice []string) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	list, listDiags := types.ListValueFrom(ctx, types.String{}.Type(ctx), slice)

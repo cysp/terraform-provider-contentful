@@ -6,7 +6,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +19,7 @@ func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
 	t.Run("unknown", func(t *testing.T) {
 		t.Parallel()
 
-		value := basetypes.NewObjectUnknown(typ.AttrTypes)
+		value := types.ObjectUnknown(typ.AttrTypes)
 
 		object, diags := provider.WebhookHeaderType{}.ValueFromObject(ctx, value)
 
@@ -31,7 +30,7 @@ func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
 	t.Run("null", func(t *testing.T) {
 		t.Parallel()
 
-		value := basetypes.NewObjectNull(typ.AttrTypes)
+		value := types.ObjectNull(typ.AttrTypes)
 
 		object, diags := provider.WebhookHeaderType{}.ValueFromObject(ctx, value)
 
@@ -42,7 +41,7 @@ func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
 	t.Run("value", func(t *testing.T) {
 		t.Parallel()
 
-		value, diags := basetypes.NewObjectValue(typ.AttrTypes, map[string]attr.Value{
+		value, diags := types.ObjectValue(typ.AttrTypes, map[string]attr.Value{
 			"value":  types.StringValue("value"),
 			"secret": types.BoolValue(true),
 		})
