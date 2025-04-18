@@ -7,18 +7,18 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList types.List) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
+func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList TypedList[WebhookFilterValue]) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
 	if filterValuesList.IsNull() || filterValuesList.IsUnknown() {
 		return cm.NewOptNilWebhookDefinitionFilterArrayNull(), nil
 	}
 
 	diags := diag.Diagnostics{}
 
-	filterValues := make([]WebhookFilterValue, len(filterValuesList.Elements()))
-	diags.Append(filterValuesList.ElementsAs(ctx, &filterValues, false)...)
+	filterValues := filterValuesList.Elements()
 
 	filters := make([]cm.WebhookDefinitionFilter, len(filterValues))
 
@@ -196,13 +196,13 @@ func toWebhookDefinitionFilterTermString(_ context.Context, path path.Path, valu
 	return encoder.Bytes(), diags
 }
 
-func toWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.Path, value types.List) (jx.Raw, diag.Diagnostics) {
+func toWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.Path, value TypedList[types.String]) (jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	encoder := jx.Encoder{}
 
 	if encoder.Arr(func(encoder *jx.Encoder) {
 		values := make([]string, len(value.Elements()))
-		diags.Append(value.ElementsAs(ctx, &values, false)...)
+		diags.Append(tfsdk.ValueAs(ctx, value, &values)...)
 
 		for index, v := range values {
 			path := path.AtListIndex(index)
