@@ -6,21 +6,20 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path, optNilFilters cm.OptNilWebhookDefinitionFilterArray) (types.List, diag.Diagnostics) {
+func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path, optNilFilters cm.OptNilWebhookDefinitionFilterArray) (TypedList[WebhookFilterValue], diag.Diagnostics) {
 	filters, filtersOk := optNilFilters.Get()
 	if !filtersOk {
-		return types.ListNull(WebhookFilterValue{}.CustomType(ctx)), nil
+		return NewTypedListNull[WebhookFilterValue](ctx), nil
 	}
 
 	diags := diag.Diagnostics{}
 
-	filtersElements := make([]attr.Value, len(filters))
+	filtersElements := make([]WebhookFilterValue, len(filters))
 
 	for index, filter := range filters {
 		filtersElement, filtersElementDiags := ReadWebhookFilterValueFromResponse(ctx, path.AtListIndex(index), filter)
@@ -29,7 +28,7 @@ func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path
 		filtersElements[index] = filtersElement
 	}
 
-	filtersList, filtersListDiags := types.ListValue(WebhookFilterValue{}.CustomType(ctx), filtersElements)
+	filtersList, filtersListDiags := NewTypedList(ctx, filtersElements)
 	diags.Append(filtersListDiags...)
 
 	return filtersList, diags
@@ -140,7 +139,7 @@ func ReadWebhookFilterInValueFromResponse(ctx context.Context, path path.Path, i
 
 	//nolint:mnd
 	if len(input) == 2 {
-		value = NewWebhookFilterInValueKnown()
+		value = NewWebhookFilterInValueKnown(ctx)
 
 		valueDoc, valueDocDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", input[0])
 		diags.Append(valueDocDiags...)
@@ -201,11 +200,11 @@ func ReadWebhookDefinitionFilterTermString(_ context.Context, path path.Path, in
 	return types.StringValue(valueValue), diags
 }
 
-func ReadWebhookDefinitionFilterTermStringArray(_ context.Context, path path.Path, input jx.Raw) (types.List, diag.Diagnostics) {
+func ReadWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.Path, input jx.Raw) (TypedList[types.String], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	decoder := jx.DecodeBytes(input)
 
-	valueElements := make([]attr.Value, 0)
+	valueElements := make([]types.String, 0)
 
 	arrDecodeErr := decoder.Arr(func(decoder *jx.Decoder) error {
 		valueValue, valueValueErr := decoder.Str()
@@ -222,7 +221,7 @@ func ReadWebhookDefinitionFilterTermStringArray(_ context.Context, path path.Pat
 		diags.AddAttributeError(path, "failed to decode value", "")
 	}
 
-	valueValuesList, valueValuesListDiags := types.ListValue(types.StringType, valueElements)
+	valueValuesList, valueValuesListDiags := NewTypedList(ctx, valueElements)
 	diags.Append(valueValuesListDiags...)
 
 	return valueValuesList, diags

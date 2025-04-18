@@ -13,15 +13,15 @@ import (
 )
 
 type WebhookFilterInValue struct {
-	Doc    types.String `tfsdk:"doc"`
-	Values types.List   `tfsdk:"values"`
+	Doc    types.String            `tfsdk:"doc"`
+	Values TypedList[types.String] `tfsdk:"values"`
 	state  attr.ValueState
 }
 
-func NewWebhookFilterInValueKnown() WebhookFilterInValue {
+func NewWebhookFilterInValueKnown(ctx context.Context) WebhookFilterInValue {
 	return WebhookFilterInValue{
 		Doc:    types.StringNull(),
-		Values: types.ListNull(types.StringType),
+		Values: NewTypedListNull[types.String](ctx),
 		state:  attr.ValueStateKnown,
 	}
 }
@@ -51,13 +51,14 @@ func NewWebhookFilterInValueUnknown() WebhookFilterInValue {
 	}
 }
 
-func (v WebhookFilterInValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
+func (v WebhookFilterInValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"doc": schema.StringAttribute{
 			Required: true,
 		},
 		"values": schema.ListAttribute{
 			ElementType: types.StringType,
+			CustomType:  NewTypedListNull[types.String](ctx).CustomType(ctx),
 			Required:    true,
 		},
 	}

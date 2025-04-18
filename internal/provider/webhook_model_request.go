@@ -7,6 +7,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 func (model *WebhookResourceModel) ToWebhookDefinitionFields(ctx context.Context, path path.Path) (cm.WebhookDefinitionFields, diag.Diagnostics) {
@@ -24,7 +25,7 @@ func (model *WebhookResourceModel) ToWebhookDefinitionFields(ctx context.Context
 		req.Topics = nil
 	} else {
 		topics := make([]string, len(model.Topics.Elements()))
-		diags.Append(model.Topics.ElementsAs(ctx, &topics, false)...)
+		diags.Append(tfsdk.ValueAs(ctx, model.Topics, &topics)...)
 
 		req.Topics = topics
 	}
@@ -35,7 +36,7 @@ func (model *WebhookResourceModel) ToWebhookDefinitionFields(ctx context.Context
 		path := path.AtName("filters")
 
 		modelFilters := make([]WebhookFilterValue, len(model.Filters.Elements()))
-		diags.Append(model.Filters.ElementsAs(ctx, &modelFilters, false)...)
+		diags.Append(tfsdk.ValueAs(ctx, model.Filters, &modelFilters)...)
 
 		filters := make([]cm.WebhookDefinitionFilter, len(modelFilters))
 
