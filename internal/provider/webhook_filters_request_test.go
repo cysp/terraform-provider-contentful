@@ -6,7 +6,6 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,13 +15,13 @@ func TestToOptNilWebhookDefinitionFilterArrayNil(t *testing.T) {
 	ctx := t.Context()
 
 	testcases := map[string]struct {
-		input types.List
+		input provider.TypedList[provider.WebhookFilterValue]
 	}{
 		"null": {
-			input: types.ListNull(types.StringType),
+			input: provider.NewTypedListNull[provider.WebhookFilterValue](ctx),
 		},
 		"unknown": {
-			input: types.ListUnknown(types.StringType),
+			input: provider.NewTypedListUnknown[provider.WebhookFilterValue](ctx),
 		},
 	}
 
