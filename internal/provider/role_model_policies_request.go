@@ -9,20 +9,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies types.List) ([]cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
+func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies TypedList[RolePolicyValue]) ([]cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if policies.IsUnknown() {
 		return nil, diags
 	}
 
-	policiesValues := make([]RolePolicyValue, len(policies.Elements()))
-	diags.Append(policies.ElementsAs(ctx, &policiesValues, false)...)
+	policiesValues := policies.Elements()
 
-	rolePoliciesItems := make([]cm.RoleFieldsPoliciesItem, len(policies.Elements()))
+	rolePoliciesItems := make([]cm.RoleFieldsPoliciesItem, len(policiesValues))
 
 	for index, policiesValueElement := range policiesValues {
 		path := path.AtListIndex(index)
@@ -54,11 +54,11 @@ func ToRoleFieldsPoliciesItem(ctx context.Context, path path.Path, policy RolePo
 	}, diags
 }
 
-func ToRoleFieldsPoliciesItemActions(ctx context.Context, _ path.Path, actions types.List) (cm.RoleFieldsPoliciesItemActions, diag.Diagnostics) {
+func ToRoleFieldsPoliciesItemActions(ctx context.Context, _ path.Path, actions TypedList[types.String]) (cm.RoleFieldsPoliciesItemActions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	actionsStrings := make([]string, len(actions.Elements()))
-	diags.Append(actions.ElementsAs(ctx, &actionsStrings, false)...)
+	diags.Append(tfsdk.ValueAs(ctx, actions, &actionsStrings)...)
 
 	if slices.Contains(actionsStrings, "all") {
 		return cm.RoleFieldsPoliciesItemActions{

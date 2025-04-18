@@ -14,9 +14,9 @@ import (
 )
 
 type RolePolicyValue struct {
-	Actions    types.List           `tfsdk:"actions"`
-	Constraint jsontypes.Normalized `tfsdk:"constraint"`
-	Effect     types.String         `tfsdk:"effect"`
+	Actions    TypedList[types.String] `tfsdk:"actions"`
+	Constraint jsontypes.Normalized    `tfsdk:"constraint"`
+	Effect     types.String            `tfsdk:"effect"`
 	state      attr.ValueState
 }
 
@@ -45,10 +45,11 @@ func NewRolePolicyValueUnknown() RolePolicyValue {
 	}
 }
 
-func (v RolePolicyValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
+func (v RolePolicyValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"actions": schema.ListAttribute{
 			ElementType: types.StringType,
+			CustomType:  TypedList[types.String]{}.CustomType(ctx),
 			Required:    true,
 		},
 		"constraint": schema.StringAttribute{
