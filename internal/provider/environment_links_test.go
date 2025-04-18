@@ -5,7 +5,6 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -18,18 +17,18 @@ func TestToEnvironmentLinks(t *testing.T) {
 	path := path.Root("test")
 
 	tests := map[string]struct {
-		value         types.List
+		value         provider.TypedList[types.String]
 		expected      []cm.EnvironmentLink
 		expectedDiags bool
 	}{
 		"unknown": {
-			value:    types.ListUnknown(types.StringType),
+			value:    provider.NewTypedListUnknown[types.String](ctx),
 			expected: nil,
 		},
 		"unknown element": {
-			value: types.ListValueMust(types.StringType, []attr.Value{
+			value: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
 				types.StringUnknown(),
-			}),
+			})),
 			expected: []cm.EnvironmentLink{
 				{
 					Sys: cm.EnvironmentLinkSys{
@@ -42,17 +41,17 @@ func TestToEnvironmentLinks(t *testing.T) {
 			expectedDiags: true,
 		},
 		"known and unknown elements": {
-			value: types.ListValueMust(types.StringType, []attr.Value{
+			value: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
 				types.StringValue("a"),
 				types.StringUnknown(),
 				types.StringValue("c"),
-			}),
+			})),
 			expected: []cm.EnvironmentLink{
 				{
 					Sys: cm.EnvironmentLinkSys{
 						Type:     cm.EnvironmentLinkSysTypeLink,
 						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-						ID:       "",
+						ID:       "a",
 					},
 				},
 				{
@@ -66,21 +65,21 @@ func TestToEnvironmentLinks(t *testing.T) {
 					Sys: cm.EnvironmentLinkSys{
 						Type:     cm.EnvironmentLinkSysTypeLink,
 						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-						ID:       "",
+						ID:       "c",
 					},
 				},
 			},
 			expectedDiags: true,
 		},
 		"empty": {
-			value:    types.ListValueMust(types.StringType, []attr.Value{}),
+			value:    DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{})),
 			expected: []cm.EnvironmentLink{},
 		},
 		"known elements": {
-			value: types.ListValueMust(types.StringType, []attr.Value{
+			value: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
 				types.StringValue("env1"),
 				types.StringValue("env2"),
-			}),
+			})),
 			expected: []cm.EnvironmentLink{
 				{
 					Sys: cm.EnvironmentLinkSys{
@@ -140,10 +139,10 @@ func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 		},
 	}
 
-	expected := types.ListValueMust(types.StringType, []attr.Value{
+	expected := DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
 		types.StringValue("env1"),
 		types.StringValue("env2"),
-	})
+	}))
 
 	result, diags := provider.NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, path, environmentLinks)
 	assert.Empty(t, diags)
