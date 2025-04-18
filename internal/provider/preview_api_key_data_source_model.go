@@ -8,15 +8,15 @@ import (
 )
 
 type PreviewAPIKeyDataSourceModel struct {
-	SpaceID         types.String `tfsdk:"space_id"`
-	PreviewAPIKeyID types.String `tfsdk:"preview_api_key_id"`
-	Name            types.String `tfsdk:"name"`
-	Description     types.String `tfsdk:"description"`
-	Environments    types.List   `tfsdk:"environments"`
-	AccessToken     types.String `tfsdk:"access_token"`
+	SpaceID         types.String            `tfsdk:"space_id"`
+	PreviewAPIKeyID types.String            `tfsdk:"preview_api_key_id"`
+	Name            types.String            `tfsdk:"name"`
+	Description     types.String            `tfsdk:"description"`
+	Environments    TypedList[types.String] `tfsdk:"environments"`
+	AccessToken     types.String            `tfsdk:"access_token"`
 }
 
-func PreviewAPIKeyDataSourceSchema(_ context.Context) schema.Schema {
+func PreviewAPIKeyDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"space_id": schema.StringAttribute{
@@ -33,6 +33,7 @@ func PreviewAPIKeyDataSourceSchema(_ context.Context) schema.Schema {
 			},
 			"environments": schema.ListAttribute{
 				ElementType: types.StringType,
+				CustomType:  NewTypedListNull[types.String](ctx).CustomType(ctx),
 				Computed:    true,
 			},
 			"access_token": schema.StringAttribute{

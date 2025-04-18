@@ -11,17 +11,17 @@ import (
 )
 
 type DeliveryAPIKeyResourceModel struct {
-	ID              types.String `tfsdk:"id"`
-	SpaceID         types.String `tfsdk:"space_id"`
-	APIKeyID        types.String `tfsdk:"api_key_id"`
-	Name            types.String `tfsdk:"name"`
-	Description     types.String `tfsdk:"description"`
-	Environments    types.List   `tfsdk:"environments"`
-	AccessToken     types.String `tfsdk:"access_token"`
-	PreviewAPIKeyID types.String `tfsdk:"preview_api_key_id"`
+	ID              types.String            `tfsdk:"id"`
+	SpaceID         types.String            `tfsdk:"space_id"`
+	APIKeyID        types.String            `tfsdk:"api_key_id"`
+	Name            types.String            `tfsdk:"name"`
+	Description     types.String            `tfsdk:"description"`
+	Environments    TypedList[types.String] `tfsdk:"environments"`
+	AccessToken     types.String            `tfsdk:"access_token"`
+	PreviewAPIKeyID types.String            `tfsdk:"preview_api_key_id"`
 }
 
-func DeliveryAPIKeyResourceSchema(_ context.Context) schema.Schema {
+func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -47,6 +47,7 @@ func DeliveryAPIKeyResourceSchema(_ context.Context) schema.Schema {
 			},
 			"environments": schema.ListAttribute{
 				ElementType: types.StringType,
+				CustomType:  NewTypedListNull[types.String](ctx).CustomType(ctx),
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.List{
