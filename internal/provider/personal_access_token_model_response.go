@@ -4,7 +4,6 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -17,7 +16,7 @@ func (model *PersonalAccessTokenResourceModel) ReadFromResponse(ctx context.Cont
 
 	model.Name = types.StringValue(personalAccessToken.Name)
 
-	scopesList, scopesListDiags := util.NewStringListValueFromStringSlice(ctx, personalAccessToken.Scopes)
+	scopesList, scopesListDiags := NewTypedListFromStringSlice(ctx, personalAccessToken.Scopes)
 	diags.Append(scopesListDiags...)
 
 	model.Scopes = scopesList

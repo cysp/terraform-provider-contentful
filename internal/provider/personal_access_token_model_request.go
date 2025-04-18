@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 func (model *PersonalAccessTokenResourceModel) ToPersonalAccessTokenRequestFields(ctx context.Context) (cm.PersonalAccessTokenRequestFields, diag.Diagnostics) {
@@ -15,7 +16,7 @@ func (model *PersonalAccessTokenResourceModel) ToPersonalAccessTokenRequestField
 	}
 
 	scopes := make([]string, len(model.Scopes.Elements()))
-	diags.Append(model.Scopes.ElementsAs(ctx, &scopes, false)...)
+	diags.Append(tfsdk.ValueAs(ctx, model.Scopes, &scopes)...)
 
 	req.Scopes = scopes
 
