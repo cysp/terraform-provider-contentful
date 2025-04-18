@@ -15,9 +15,9 @@ import (
 
 //nolint:recvcheck
 type EditorInterfaceEditorLayoutValue struct {
-	GroupID types.String `tfsdk:"group_id"`
-	Name    types.String `tfsdk:"name"`
-	Items   types.List   `tfsdk:"items"`
+	GroupID types.String                    `tfsdk:"group_id"`
+	Name    types.String                    `tfsdk:"name"`
+	Items   TypedList[jsontypes.Normalized] `tfsdk:"items"`
 	state   attr.ValueState
 }
 
@@ -46,7 +46,7 @@ func NewEditorInterfaceEditorLayoutValueUnknown() EditorInterfaceEditorLayoutVal
 	}
 }
 
-func (v EditorInterfaceEditorLayoutValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
+func (v EditorInterfaceEditorLayoutValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"group_id": schema.StringAttribute{
 			Required: true,
@@ -56,6 +56,7 @@ func (v EditorInterfaceEditorLayoutValue) SchemaAttributes(_ context.Context) ma
 		},
 		"items": schema.ListAttribute{
 			ElementType: jsontypes.NormalizedType{},
+			CustomType:  TypedList[jsontypes.Normalized]{}.CustomType(ctx),
 			Optional:    true,
 		},
 	}

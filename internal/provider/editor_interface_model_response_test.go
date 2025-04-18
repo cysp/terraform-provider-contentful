@@ -5,13 +5,14 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 	t.Parallel()
+
+	ctx := t.Context()
 
 	tests := map[string]struct {
 		editorInterface cm.EditorInterface
@@ -43,10 +44,10 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				SpaceID:       types.StringValue("space"),
 				EnvironmentID: types.StringValue("environment"),
 				ContentTypeID: types.StringValue("content_type"),
-				EditorLayout:  types.ListNull(provider.EditorInterfaceEditorLayoutValue{}.Type(t.Context())),
-				Controls:      types.ListNull(provider.EditorInterfaceControlValue{}.Type(t.Context())),
-				GroupControls: types.ListNull(provider.EditorInterfaceGroupControlValue{}.Type(t.Context())),
-				Sidebar:       types.ListNull(provider.EditorInterfaceSidebarValue{}.Type(t.Context())),
+				EditorLayout:  provider.NewTypedListNull[provider.EditorInterfaceEditorLayoutValue](ctx),
+				Controls:      provider.NewTypedListNull[provider.EditorInterfaceControlValue](ctx),
+				GroupControls: provider.NewTypedListNull[provider.EditorInterfaceGroupControlValue](ctx),
+				Sidebar:       provider.NewTypedListNull[provider.EditorInterfaceSidebarValue](ctx),
 			},
 		},
 		"empty": {
@@ -79,10 +80,10 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				SpaceID:       types.StringValue("space"),
 				EnvironmentID: types.StringValue("environment"),
 				ContentTypeID: types.StringValue("content_type"),
-				EditorLayout:  types.ListValueMust(provider.EditorInterfaceEditorLayoutValue{}.Type(t.Context()), []attr.Value{}),
-				Controls:      types.ListValueMust(provider.EditorInterfaceControlValue{}.Type(t.Context()), []attr.Value{}),
-				GroupControls: types.ListValueMust(provider.EditorInterfaceGroupControlValue{}.Type(t.Context()), []attr.Value{}),
-				Sidebar:       types.ListValueMust(provider.EditorInterfaceSidebarValue{}.Type(t.Context()), []attr.Value{}),
+				EditorLayout:  DiagsNoErrorsMust(provider.NewTypedList(ctx, []provider.EditorInterfaceEditorLayoutValue{})),
+				Controls:      DiagsNoErrorsMust(provider.NewTypedList(ctx, []provider.EditorInterfaceControlValue{})),
+				GroupControls: DiagsNoErrorsMust(provider.NewTypedList(ctx, []provider.EditorInterfaceGroupControlValue{})),
+				Sidebar:       DiagsNoErrorsMust(provider.NewTypedList(ctx, []provider.EditorInterfaceSidebarValue{})),
 			},
 		},
 	}
