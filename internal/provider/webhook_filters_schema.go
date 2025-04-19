@@ -13,6 +13,7 @@ func WebhookFiltersSchema(ctx context.Context, optional bool) schema.Attribute {
 			Attributes: WebhookFilterValue{}.SchemaAttributes(ctx),
 			CustomType: WebhookFilterValue{}.CustomType(ctx),
 		},
-		Optional: optional,
+		CustomType: NewTypedListNull[WebhookFilterValue](ctx).CustomType(ctx),
+		Optional:   optional,
 	}
 }

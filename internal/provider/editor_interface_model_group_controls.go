@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorInterfaceGroupControlListValueNull(ctx context.Context) types.List {
-	return types.ListNull(EditorInterfaceGroupControlValue{}.Type(ctx))
+func NewEditorInterfaceGroupControlListValueNull(ctx context.Context) TypedList[EditorInterfaceGroupControlValue] {
+	return NewTypedListNull[EditorInterfaceGroupControlValue](ctx)
 }
 
 func NewEditorInterfaceGroupControlValueKnown() EditorInterfaceGroupControlValue {
@@ -40,10 +40,10 @@ func (v *EditorInterfaceGroupControlValue) ToEditorInterfaceFieldsGroupControlsI
 	return item, diags
 }
 
-func NewEditorInterfaceGroupControlListValueFromResponse(ctx context.Context, path path.Path, groupControlsItems []cm.EditorInterfaceGroupControlsItem) (types.List, diag.Diagnostics) {
+func NewEditorInterfaceGroupControlListValueFromResponse(ctx context.Context, path path.Path, groupControlsItems []cm.EditorInterfaceGroupControlsItem) (TypedList[EditorInterfaceGroupControlValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]attr.Value, len(groupControlsItems))
+	listElementValues := make([]EditorInterfaceGroupControlValue, len(groupControlsItems))
 
 	for index, item := range groupControlsItems {
 		path := path.AtListIndex(index)
@@ -54,7 +54,7 @@ func NewEditorInterfaceGroupControlListValueFromResponse(ctx context.Context, pa
 		listElementValues[index] = groupControlValue
 	}
 
-	list, listDiags := types.ListValue(EditorInterfaceGroupControlValue{}.Type(ctx), listElementValues)
+	list, listDiags := NewTypedList(ctx, listElementValues)
 	diags.Append(listDiags...)
 
 	return list, diags

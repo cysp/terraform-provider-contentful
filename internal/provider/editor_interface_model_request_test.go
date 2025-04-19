@@ -7,7 +7,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -103,7 +102,7 @@ func TestToEditorInterfaceFields(t *testing.T) {
 	controlValue1.WidgetID = types.StringValue("widget_id")
 	controlValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	controls, controlsDiags := types.ListValue(provider.EditorInterfaceControlValue{}.Type(ctx), []attr.Value{
+	controls, controlsDiags := provider.NewTypedList(ctx, []provider.EditorInterfaceControlValue{
 		controlValue1,
 	})
 
@@ -114,7 +113,7 @@ func TestToEditorInterfaceFields(t *testing.T) {
 	sidebarValue1.WidgetID = types.StringValue("widget_id")
 	sidebarValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	sidebar, sidebarDiags := types.ListValue(provider.EditorInterfaceSidebarValue{}.Type(ctx), []attr.Value{
+	sidebar, sidebarDiags := provider.NewTypedList(ctx, []provider.EditorInterfaceSidebarValue{
 		sidebarValue1,
 	})
 
@@ -175,7 +174,7 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 	controlValue3.WidgetID = types.StringValue("widget_id")
 	controlValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	controls, controlsDiags := types.ListValue(provider.EditorInterfaceControlValue{}.Type(ctx), []attr.Value{
+	controls, controlsDiags := provider.NewTypedList(ctx, []provider.EditorInterfaceControlValue{
 		controlValue1,
 		controlValue2,
 		controlValue3,
@@ -198,7 +197,7 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 	sidebarValue3.WidgetID = types.StringValue("widget_id")
 	sidebarValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	sidebar, sidebarDiags := types.ListValue(provider.EditorInterfaceSidebarValue{}.Type(ctx), []attr.Value{
+	sidebar, sidebarDiags := provider.NewTypedList(ctx, []provider.EditorInterfaceSidebarValue{
 		sidebarValue1,
 		sidebarValue2,
 		sidebarValue3,

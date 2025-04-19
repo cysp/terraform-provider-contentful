@@ -5,6 +5,7 @@ import (
 
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -13,11 +14,14 @@ import (
 func TestModelTypeEqual(t *testing.T) {
 	t.Parallel()
 
+	ctx := t.Context()
+
 	type InequalType struct {
 		attr.Type
 	}
 
 	types := []attr.Type{
+		provider.NewTypedListNull[types.String](ctx).Type(ctx),
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
 		provider.EditorInterfaceControlType{},
@@ -71,6 +75,7 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 	ctx := t.Context()
 
 	types := []attr.Type{
+		provider.NewTypedListNull[types.String](ctx).Type(ctx),
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
 		provider.EditorInterfaceControlType{},

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func webhookFiltersListForTesting(t *testing.T) types.List {
+func webhookFiltersListForTesting(t *testing.T) provider.TypedList[provider.WebhookFilterValue] {
 	t.Helper()
 
 	ctx := t.Context()
@@ -19,9 +19,9 @@ func webhookFiltersListForTesting(t *testing.T) types.List {
 	filterEquals.Doc = types.StringValue("sys.type")
 	filterEquals.Value = types.StringValue("abc")
 
-	filterIn := provider.NewWebhookFilterInValueKnown()
+	filterIn := provider.NewWebhookFilterInValueKnown(ctx)
 	filterIn.Doc = types.StringValue("sys.type")
-	filterIn.Values = types.ListValueMust(types.StringType, []attr.Value{types.StringValue("abc"), types.StringValue("def")})
+	filterIn.Values = DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{types.StringValue("abc"), types.StringValue("def")}))
 
 	filterRegexp := provider.NewWebhookFilterRegexpValueKnown()
 	filterRegexp.Doc = types.StringValue("sys.type")
@@ -54,7 +54,7 @@ func webhookFiltersListForTesting(t *testing.T) types.List {
 	filterFilterNotRegexp := provider.NewWebhookFilterValueKnown()
 	filterFilterNotRegexp.Not = filterNotRegexp
 
-	filters, filtersDiags := types.ListValueFrom(ctx, provider.WebhookFilterValue{}.CustomType(ctx), []attr.Value{
+	filters, filtersDiags := provider.NewTypedList(ctx, []provider.WebhookFilterValue{
 		filterFilterEquals,
 		filterFilterIn,
 		filterFilterRegexp,
@@ -146,7 +146,7 @@ func TestWebhookFilterValueToObjectValue(t *testing.T) {
 		provider.NewWebhookFilterValueKnown(),
 		provider.NewWebhookFilterNotValueKnown(),
 		provider.NewWebhookFilterEqualsValueKnown(),
-		provider.NewWebhookFilterInValueKnown(),
+		provider.NewWebhookFilterInValueKnown(ctx),
 		provider.NewWebhookFilterRegexpValueKnown(),
 	}
 

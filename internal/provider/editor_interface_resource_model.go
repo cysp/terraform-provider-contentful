@@ -10,14 +10,14 @@ import (
 )
 
 type EditorInterfaceResourceModel struct {
-	ID            types.String `tfsdk:"id"`
-	SpaceID       types.String `tfsdk:"space_id"`
-	EnvironmentID types.String `tfsdk:"environment_id"`
-	ContentTypeID types.String `tfsdk:"content_type_id"`
-	EditorLayout  types.List   `tfsdk:"editor_layout"`
-	Controls      types.List   `tfsdk:"controls"`
-	GroupControls types.List   `tfsdk:"group_controls"`
-	Sidebar       types.List   `tfsdk:"sidebar"`
+	ID            types.String                                `tfsdk:"id"`
+	SpaceID       types.String                                `tfsdk:"space_id"`
+	EnvironmentID types.String                                `tfsdk:"environment_id"`
+	ContentTypeID types.String                                `tfsdk:"content_type_id"`
+	EditorLayout  TypedList[EditorInterfaceEditorLayoutValue] `tfsdk:"editor_layout"`
+	Controls      TypedList[EditorInterfaceControlValue]      `tfsdk:"controls"`
+	GroupControls TypedList[EditorInterfaceGroupControlValue] `tfsdk:"group_controls"`
+	Sidebar       TypedList[EditorInterfaceSidebarValue]      `tfsdk:"sidebar"`
 }
 
 func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
@@ -49,28 +49,32 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 					Attributes: EditorInterfaceEditorLayoutValue{}.SchemaAttributes(ctx),
 					CustomType: EditorInterfaceEditorLayoutValue{}.CustomType(ctx),
 				},
-				Optional: true,
+				CustomType: TypedList[EditorInterfaceEditorLayoutValue]{}.CustomType(ctx),
+				Optional:   true,
 			},
 			"controls": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceControlValue{}.SchemaAttributes(ctx),
 					CustomType: EditorInterfaceControlValue{}.CustomType(ctx),
 				},
-				Optional: true,
+				CustomType: TypedList[EditorInterfaceControlValue]{}.CustomType(ctx),
+				Optional:   true,
 			},
 			"group_controls": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceGroupControlValue{}.SchemaAttributes(ctx),
 					CustomType: EditorInterfaceGroupControlValue{}.CustomType(ctx),
 				},
-				Optional: true,
+				CustomType: TypedList[EditorInterfaceGroupControlValue]{}.CustomType(ctx),
+				Optional:   true,
 			},
 			"sidebar": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceSidebarValue{}.SchemaAttributes(ctx),
 					CustomType: EditorInterfaceSidebarValue{}.CustomType(ctx),
 				},
-				Optional: true,
+				CustomType: TypedList[EditorInterfaceSidebarValue]{}.CustomType(ctx),
+				Optional:   true,
 			},
 		},
 	}

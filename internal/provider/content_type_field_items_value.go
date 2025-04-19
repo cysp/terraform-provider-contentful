@@ -16,9 +16,9 @@ import (
 
 //nolint:recvcheck
 type ContentTypeFieldItemsValue struct {
-	ItemsType   types.String `tfsdk:"type"`
-	LinkType    types.String `tfsdk:"link_type"`
-	Validations types.List   `tfsdk:"validations"`
+	ItemsType   types.String                    `tfsdk:"type"`
+	LinkType    types.String                    `tfsdk:"link_type"`
+	Validations TypedList[jsontypes.Normalized] `tfsdk:"validations"`
 	state       attr.ValueState
 }
 
@@ -49,7 +49,7 @@ func NewContentTypeFieldItemsValueKnownFromAttributes(ctx context.Context, attri
 	return value, diags
 }
 
-func (v ContentTypeFieldItemsValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
+func (v ContentTypeFieldItemsValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"type": schema.StringAttribute{
 			Required: true,
@@ -59,6 +59,7 @@ func (v ContentTypeFieldItemsValue) SchemaAttributes(_ context.Context) map[stri
 		},
 		"validations": schema.ListAttribute{
 			ElementType: jsontypes.NormalizedType{},
+			CustomType:  NewTypedListNull[jsontypes.Normalized](ctx).CustomType(ctx),
 			Optional:    true,
 			Computed:    true,
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
