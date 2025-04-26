@@ -22,6 +22,7 @@ func TestModelTypeEqual(t *testing.T) {
 
 	types := []attr.Type{
 		provider.NewTypedListNull[types.String](ctx).Type(ctx),
+		provider.NewTypedMapNull[types.String](ctx).Type(ctx),
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
 		provider.EditorInterfaceControlType{},
@@ -76,6 +77,7 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 
 	types := []attr.Type{
 		provider.NewTypedListNull[types.String](ctx).Type(ctx),
+		provider.NewTypedMapNull[types.String](ctx).Type(ctx),
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
 		provider.EditorInterfaceControlType{},
