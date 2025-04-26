@@ -7,18 +7,18 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToRoleFieldsPermissions(ctx context.Context, path path.Path, permissions types.Map) (cm.RoleFieldsPermissions, diag.Diagnostics) {
+func ToRoleFieldsPermissions(ctx context.Context, path path.Path, permissions TypedMap[TypedList[types.String]]) (cm.RoleFieldsPermissions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if permissions.IsUnknown() {
 		return nil, diags
 	}
 
-	permissionsValues := make(map[string]types.List, len(permissions.Elements()))
-	diags.Append(permissions.ElementsAs(ctx, &permissionsValues, false)...)
+	permissionsValues := permissions.Elements()
 
 	rolePermissionsItems := make(cm.RoleFieldsPermissions, len(permissions.Elements()))
 
@@ -34,11 +34,11 @@ func ToRoleFieldsPermissions(ctx context.Context, path path.Path, permissions ty
 	return rolePermissionsItems, diags
 }
 
-func ToRoleFieldsPermissionsItem(ctx context.Context, _ path.Path, value types.List) (cm.RoleFieldsPermissionsItem, diag.Diagnostics) {
+func ToRoleFieldsPermissionsItem(ctx context.Context, _ path.Path, value TypedList[types.String]) (cm.RoleFieldsPermissionsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	actionStrings := make([]string, len(value.Elements()))
-	diags.Append(value.ElementsAs(ctx, &actionStrings, false)...)
+	diags.Append(tfsdk.ValueAs(ctx, value, &actionStrings)...)
 
 	if slices.Contains(actionStrings, "all") {
 		return cm.RoleFieldsPermissionsItem{
