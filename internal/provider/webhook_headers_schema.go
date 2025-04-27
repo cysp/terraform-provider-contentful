@@ -15,8 +15,9 @@ func WebhookHeadersSchema(ctx context.Context, optional bool) schema.Attribute {
 			Attributes: WebhookHeaderValue{}.SchemaAttributes(ctx),
 			CustomType: WebhookHeaderValue{}.CustomType(ctx),
 		},
-		Optional: optional,
-		Computed: true,
+		CustomType: TypedMap[WebhookHeaderValue]{}.CustomType(ctx),
+		Optional:   optional,
+		Computed:   true,
 		PlanModifiers: []planmodifier.Map{
 			mapplanmodifier.UseStateForUnknown(),
 		},

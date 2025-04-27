@@ -20,7 +20,7 @@ type WebhookResourceModel struct {
 	Filters           TypedList[WebhookFilterValue] `tfsdk:"filters"`
 	HTTPBasicPassword types.String                  `tfsdk:"http_basic_password"`
 	HTTPBasicUsername types.String                  `tfsdk:"http_basic_username"`
-	Headers           types.Map                     `tfsdk:"headers"`
+	Headers           TypedMap[WebhookHeaderValue]  `tfsdk:"headers"`
 	Transformation    WebhookTransformationValue    `tfsdk:"transformation"`
 	Active            types.Bool                    `tfsdk:"active"`
 }
