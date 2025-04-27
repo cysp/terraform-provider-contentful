@@ -7,10 +7,9 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model types.Map) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
+func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model TypedMap[WebhookHeaderValue]) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
 	if model.IsNull() || model.IsUnknown() {
 		return nil, nil
 	}
@@ -19,8 +18,7 @@ func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model types
 
 	headers := make(cm.WebhookDefinitionHeaders, len(model.Elements()))
 
-	headersValues := make(map[string]WebhookHeaderValue, len(model.Elements()))
-	diags.Append(model.ElementsAs(ctx, &headersValues, false)...)
+	headersValues := model.Elements()
 
 	headersKeys := make([]string, len(headersValues))
 

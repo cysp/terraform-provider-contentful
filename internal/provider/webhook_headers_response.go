@@ -4,21 +4,16 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ReadHeaderValueMapFromResponse(ctx context.Context, path path.Path, model types.Map, headers []cm.WebhookDefinitionHeader) (types.Map, diag.Diagnostics) {
+func ReadHeaderValueMapFromResponse(ctx context.Context, path path.Path, model TypedMap[WebhookHeaderValue], headers []cm.WebhookDefinitionHeader) (TypedMap[WebhookHeaderValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	existingHeaderValues := make(map[string]WebhookHeaderValue, len(model.Elements()))
-	if !model.IsNull() && !model.IsUnknown() {
-		diags.Append(model.ElementsAs(ctx, &existingHeaderValues, false)...)
-	}
+	existingHeaderValues := model.Elements()
 
-	headersValues := make(map[string]attr.Value, len(headers))
+	headersValues := make(map[string]WebhookHeaderValue, len(headers))
 
 	for _, header := range headers {
 		var value WebhookHeaderValue
@@ -32,7 +27,7 @@ func ReadHeaderValueMapFromResponse(ctx context.Context, path path.Path, model t
 		headersValues[header.Key] = value
 	}
 
-	headersList, headersListDiags := types.MapValue(WebhookHeaderValue{}.Type(ctx), headersValues)
+	headersList, headersListDiags := NewTypedMap(ctx, headersValues)
 	diags.Append(headersListDiags...)
 
 	return headersList, diags
