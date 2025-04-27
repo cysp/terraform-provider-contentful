@@ -138,6 +138,14 @@ func (t TypedListType[T]) ElementTypeWithContext(ctx context.Context) attr.Type 
 
 //nolint:ireturn
 func (t TypedListType[T]) ValueFromList(ctx context.Context, value basetypes.ListValue) (basetypes.ListValuable, diag.Diagnostics) {
+	if value.IsUnknown() {
+		return NewTypedListUnknown[T](ctx), nil
+	}
+
+	if value.IsNull() {
+		return NewTypedListNull[T](ctx), nil
+	}
+
 	var diags diag.Diagnostics
 
 	var elements []T
