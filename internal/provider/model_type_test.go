@@ -6,6 +6,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -66,6 +67,116 @@ func TestModelTypeEqual(t *testing.T) {
 					assert.False(t, aType.Equal(InequalType{aType}))
 				})
 			}
+		})
+	}
+}
+
+func TestModelTypeValueFromObject(t *testing.T) {
+	t.Parallel()
+
+	testcases := map[string]struct {
+		NullValue    attr.Value
+		UnknownValue attr.Value
+	}{
+		"ContentTypeField": {
+			NullValue:    provider.NewContentTypeFieldValueNull(),
+			UnknownValue: provider.NewContentTypeFieldValueUnknown(),
+		},
+		"ContentTypeFieldItems": {
+			NullValue:    provider.NewContentTypeFieldItemsValueNull(),
+			UnknownValue: provider.NewContentTypeFieldItemsValueUnknown(),
+		},
+		"EditorInterfaceControl": {
+			NullValue:    provider.NewEditorInterfaceControlValueNull(),
+			UnknownValue: provider.NewEditorInterfaceControlValueUnknown(),
+		},
+		"EditorInterfaceEditorLayout": {
+			NullValue:    provider.NewEditorInterfaceEditorLayoutValueNull(),
+			UnknownValue: provider.NewEditorInterfaceEditorLayoutValueUnknown(),
+		},
+		"EditorInterfaceGroupControl": {
+			NullValue:    provider.NewEditorInterfaceGroupControlValueNull(),
+			UnknownValue: provider.NewEditorInterfaceGroupControlValueUnknown(),
+		},
+		"EditorInterfaceSidebar": {
+			NullValue:    provider.NewEditorInterfaceSidebarValueNull(),
+			UnknownValue: provider.NewEditorInterfaceSidebarValueUnknown(),
+		},
+		"RolePolicy": {
+			NullValue:    provider.NewRolePolicyValueNull(),
+			UnknownValue: provider.NewRolePolicyValueUnknown(),
+		},
+		"WebhookFilterEquals": {
+			NullValue:    provider.NewWebhookFilterEqualsValueNull(),
+			UnknownValue: provider.NewWebhookFilterEqualsValueUnknown(),
+		},
+		"WebhookFilterIn": {
+			NullValue:    provider.NewWebhookFilterInValueNull(),
+			UnknownValue: provider.NewWebhookFilterInValueUnknown(),
+		},
+		"WebhookFilterNot": {
+			NullValue:    provider.NewWebhookFilterNotValueNull(),
+			UnknownValue: provider.NewWebhookFilterNotValueUnknown(),
+		},
+		"WebhookFilterRegexp": {
+			NullValue:    provider.NewWebhookFilterRegexpValueNull(),
+			UnknownValue: provider.NewWebhookFilterRegexpValueUnknown(),
+		},
+		"WebhookFilter": {
+			NullValue:    provider.NewWebhookFilterValueNull(),
+			UnknownValue: provider.NewWebhookFilterValueUnknown(),
+		},
+		"WebhookHeader": {
+			NullValue:    provider.NewWebhookHeaderValueNull(),
+			UnknownValue: provider.NewWebhookHeaderValueUnknown(),
+		},
+		"WebhookTransformation": {
+			NullValue:    provider.NewWebhookTransformationValueNull(),
+			UnknownValue: provider.NewWebhookTransformationValueUnknown(),
+		},
+	}
+
+	for _, testcase := range testcases {
+		t.Run("unknown", func(t *testing.T) {
+			t.Parallel()
+
+			ctx := t.Context()
+
+			val, valOk := testcase.UnknownValue.(basetypes.ObjectValuable)
+			require.True(t, valOk)
+
+			typ, typOk := testcase.UnknownValue.Type(ctx).(basetypes.ObjectTypable)
+			require.True(t, typOk)
+
+			objval, objvalDiags := val.ToObjectValue(ctx)
+			require.Empty(t, objvalDiags)
+
+			actual, actualDiags := typ.ValueFromObject(ctx, objval)
+			require.Empty(t, actualDiags)
+
+			assert.True(t, actual.IsUnknown())
+			assert.False(t, actual.IsNull())
+		})
+
+		t.Run("null", func(t *testing.T) {
+			t.Parallel()
+
+			ctx := t.Context()
+
+			val, valOk := testcase.NullValue.(basetypes.ObjectValuable)
+			require.True(t, valOk)
+
+			typ, typOk := testcase.NullValue.Type(ctx).(basetypes.ObjectTypable)
+			require.True(t, typOk)
+
+			objval, objvalDiags := val.ToObjectValue(ctx)
+			require.Empty(t, objvalDiags)
+
+			actual, actualDiags := typ.ValueFromObject(ctx, objval)
+			require.Empty(t, actualDiags)
+
+			assert.False(t, actual.IsUnknown())
+			assert.True(t, actual.IsNull())
 		})
 	}
 }
