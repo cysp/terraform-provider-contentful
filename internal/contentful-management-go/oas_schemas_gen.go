@@ -3739,6 +3739,7 @@ type ExtensionExtension struct {
 	Srcdoc     OptString            `json:"srcdoc"`
 	FieldTypes []ExtensionFieldType `json:"fieldTypes"`
 	Sidebar    OptBool              `json:"sidebar"`
+	Parameters jx.Raw               `json:"parameters"`
 }
 
 // GetName returns the value of Name.
@@ -3766,6 +3767,11 @@ func (s *ExtensionExtension) GetSidebar() OptBool {
 	return s.Sidebar
 }
 
+// GetParameters returns the value of Parameters.
+func (s *ExtensionExtension) GetParameters() jx.Raw {
+	return s.Parameters
+}
+
 // SetName sets the value of Name.
 func (s *ExtensionExtension) SetName(val string) {
 	s.Name = val
@@ -3789,6 +3795,11 @@ func (s *ExtensionExtension) SetFieldTypes(val []ExtensionFieldType) {
 // SetSidebar sets the value of Sidebar.
 func (s *ExtensionExtension) SetSidebar(val OptBool) {
 	s.Sidebar = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *ExtensionExtension) SetParameters(val jx.Raw) {
+	s.Parameters = val
 }
 
 // Ref: #/components/schemas/ExtensionFieldType
@@ -4358,6 +4369,7 @@ type ExtensionFieldsExtension struct {
 	Srcdoc     OptString            `json:"srcdoc"`
 	FieldTypes []ExtensionFieldType `json:"fieldTypes"`
 	Sidebar    OptBool              `json:"sidebar"`
+	Parameters jx.Raw               `json:"parameters"`
 }
 
 // GetName returns the value of Name.
@@ -4385,6 +4397,11 @@ func (s *ExtensionFieldsExtension) GetSidebar() OptBool {
 	return s.Sidebar
 }
 
+// GetParameters returns the value of Parameters.
+func (s *ExtensionFieldsExtension) GetParameters() jx.Raw {
+	return s.Parameters
+}
+
 // SetName sets the value of Name.
 func (s *ExtensionFieldsExtension) SetName(val string) {
 	s.Name = val
@@ -4408,6 +4425,11 @@ func (s *ExtensionFieldsExtension) SetFieldTypes(val []ExtensionFieldType) {
 // SetSidebar sets the value of Sidebar.
 func (s *ExtensionFieldsExtension) SetSidebar(val OptBool) {
 	s.Sidebar = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *ExtensionFieldsExtension) SetParameters(val jx.Raw) {
+	s.Parameters = val
 }
 
 // Merged schema.

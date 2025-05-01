@@ -9883,14 +9883,21 @@ func (s *ExtensionExtension) encodeFields(e *jx.Encoder) {
 			s.Sidebar.Encode(e)
 		}
 	}
+	{
+		if len(s.Parameters) != 0 {
+			e.FieldStart("parameters")
+			e.Raw(s.Parameters)
+		}
+	}
 }
 
-var jsonFieldsNameOfExtensionExtension = [5]string{
+var jsonFieldsNameOfExtensionExtension = [6]string{
 	0: "name",
 	1: "src",
 	2: "srcdoc",
 	3: "fieldTypes",
 	4: "sidebar",
+	5: "parameters",
 }
 
 // Decode decodes ExtensionExtension from json.
@@ -9960,6 +9967,17 @@ func (s *ExtensionExtension) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"sidebar\"")
+			}
+		case "parameters":
+			if err := func() error {
+				v, err := d.RawAppend(nil)
+				s.Parameters = jx.Raw(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"parameters\"")
 			}
 		default:
 			return d.Skip()
@@ -11105,14 +11123,21 @@ func (s *ExtensionFieldsExtension) encodeFields(e *jx.Encoder) {
 			s.Sidebar.Encode(e)
 		}
 	}
+	{
+		if len(s.Parameters) != 0 {
+			e.FieldStart("parameters")
+			e.Raw(s.Parameters)
+		}
+	}
 }
 
-var jsonFieldsNameOfExtensionFieldsExtension = [5]string{
+var jsonFieldsNameOfExtensionFieldsExtension = [6]string{
 	0: "name",
 	1: "src",
 	2: "srcdoc",
 	3: "fieldTypes",
 	4: "sidebar",
+	5: "parameters",
 }
 
 // Decode decodes ExtensionFieldsExtension from json.
@@ -11182,6 +11207,17 @@ func (s *ExtensionFieldsExtension) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"sidebar\"")
+			}
+		case "parameters":
+			if err := func() error {
+				v, err := d.RawAppend(nil)
+				s.Parameters = jx.Raw(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"parameters\"")
 			}
 		default:
 			return d.Skip()

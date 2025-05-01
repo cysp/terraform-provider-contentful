@@ -708,6 +708,7 @@ components:
                 $ref: "#/components/schemas/ExtensionFieldType"
             sidebar:
               type: boolean
+            parameters: {}
           required:
             - name
         parameters: {}
