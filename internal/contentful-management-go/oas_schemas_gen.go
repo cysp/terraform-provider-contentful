@@ -686,17 +686,18 @@ func (*ContentType) deactivateContentTypeRes() {}
 func (*ContentType) getContentTypeRes()        {}
 
 type ContentTypeFieldsItem struct {
-	ID           string                        `json:"id"`
-	Name         string                        `json:"name"`
-	Type         string                        `json:"type"`
-	LinkType     OptString                     `json:"linkType"`
-	Items        OptContentTypeFieldsItemItems `json:"items"`
-	Localized    OptBool                       `json:"localized"`
-	Omitted      OptBool                       `json:"omitted"`
-	Required     OptBool                       `json:"required"`
-	Disabled     OptBool                       `json:"disabled"`
-	DefaultValue jx.Raw                        `json:"defaultValue"`
-	Validations  []jx.Raw                      `json:"validations"`
+	ID               string                        `json:"id"`
+	Name             string                        `json:"name"`
+	Type             string                        `json:"type"`
+	LinkType         OptString                     `json:"linkType"`
+	Items            OptContentTypeFieldsItemItems `json:"items"`
+	Localized        OptBool                       `json:"localized"`
+	Omitted          OptBool                       `json:"omitted"`
+	Required         OptBool                       `json:"required"`
+	Disabled         OptBool                       `json:"disabled"`
+	DefaultValue     jx.Raw                        `json:"defaultValue"`
+	Validations      []jx.Raw                      `json:"validations"`
+	AllowedResources OptNilResourceLinkArray       `json:"allowedResources"`
 }
 
 // GetID returns the value of ID.
@@ -754,6 +755,11 @@ func (s *ContentTypeFieldsItem) GetValidations() []jx.Raw {
 	return s.Validations
 }
 
+// GetAllowedResources returns the value of AllowedResources.
+func (s *ContentTypeFieldsItem) GetAllowedResources() OptNilResourceLinkArray {
+	return s.AllowedResources
+}
+
 // SetID sets the value of ID.
 func (s *ContentTypeFieldsItem) SetID(val string) {
 	s.ID = val
@@ -807,6 +813,11 @@ func (s *ContentTypeFieldsItem) SetDefaultValue(val jx.Raw) {
 // SetValidations sets the value of Validations.
 func (s *ContentTypeFieldsItem) SetValidations(val []jx.Raw) {
 	s.Validations = val
+}
+
+// SetAllowedResources sets the value of AllowedResources.
+func (s *ContentTypeFieldsItem) SetAllowedResources(val OptNilResourceLinkArray) {
+	s.AllowedResources = val
 }
 
 type ContentTypeFieldsItemItems struct {
@@ -1018,17 +1029,18 @@ func (s *ContentTypeRequestFields) SetFields(val []ContentTypeRequestFieldsField
 }
 
 type ContentTypeRequestFieldsFieldsItem struct {
-	ID           string                                     `json:"id"`
-	Name         string                                     `json:"name"`
-	Type         string                                     `json:"type"`
-	LinkType     OptString                                  `json:"linkType"`
-	Items        OptContentTypeRequestFieldsFieldsItemItems `json:"items"`
-	Localized    OptBool                                    `json:"localized"`
-	Omitted      OptBool                                    `json:"omitted"`
-	Required     OptBool                                    `json:"required"`
-	Disabled     OptBool                                    `json:"disabled"`
-	DefaultValue jx.Raw                                     `json:"defaultValue"`
-	Validations  []jx.Raw                                   `json:"validations"`
+	ID               string                                     `json:"id"`
+	Name             string                                     `json:"name"`
+	Type             string                                     `json:"type"`
+	LinkType         OptString                                  `json:"linkType"`
+	Items            OptContentTypeRequestFieldsFieldsItemItems `json:"items"`
+	Localized        OptBool                                    `json:"localized"`
+	Omitted          OptBool                                    `json:"omitted"`
+	Required         OptBool                                    `json:"required"`
+	Disabled         OptBool                                    `json:"disabled"`
+	DefaultValue     jx.Raw                                     `json:"defaultValue"`
+	Validations      []jx.Raw                                   `json:"validations"`
+	AllowedResources OptNilResourceLinkArray                    `json:"allowedResources"`
 }
 
 // GetID returns the value of ID.
@@ -1086,6 +1098,11 @@ func (s *ContentTypeRequestFieldsFieldsItem) GetValidations() []jx.Raw {
 	return s.Validations
 }
 
+// GetAllowedResources returns the value of AllowedResources.
+func (s *ContentTypeRequestFieldsFieldsItem) GetAllowedResources() OptNilResourceLinkArray {
+	return s.AllowedResources
+}
+
 // SetID sets the value of ID.
 func (s *ContentTypeRequestFieldsFieldsItem) SetID(val string) {
 	s.ID = val
@@ -1139,6 +1156,11 @@ func (s *ContentTypeRequestFieldsFieldsItem) SetDefaultValue(val jx.Raw) {
 // SetValidations sets the value of Validations.
 func (s *ContentTypeRequestFieldsFieldsItem) SetValidations(val []jx.Raw) {
 	s.Validations = val
+}
+
+// SetAllowedResources sets the value of AllowedResources.
+func (s *ContentTypeRequestFieldsFieldsItem) SetAllowedResources(val OptNilResourceLinkArray) {
+	s.AllowedResources = val
 }
 
 type ContentTypeRequestFieldsFieldsItemItems struct {
@@ -1311,6 +1333,77 @@ func (s *ContentTypeSysType) UnmarshalText(data []byte) error {
 	switch ContentTypeSysType(data) {
 	case ContentTypeSysTypeContentType:
 		*s = ContentTypeSysTypeContentType
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/ContentfulEntryResourceLink
+type ContentfulEntryResourceLink struct {
+	Type         ContentfulEntryResourceLinkType `json:"type"`
+	Source       string                          `json:"source"`
+	ContentTypes []string                        `json:"contentTypes"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentfulEntryResourceLink) GetType() ContentfulEntryResourceLinkType {
+	return s.Type
+}
+
+// GetSource returns the value of Source.
+func (s *ContentfulEntryResourceLink) GetSource() string {
+	return s.Source
+}
+
+// GetContentTypes returns the value of ContentTypes.
+func (s *ContentfulEntryResourceLink) GetContentTypes() []string {
+	return s.ContentTypes
+}
+
+// SetType sets the value of Type.
+func (s *ContentfulEntryResourceLink) SetType(val ContentfulEntryResourceLinkType) {
+	s.Type = val
+}
+
+// SetSource sets the value of Source.
+func (s *ContentfulEntryResourceLink) SetSource(val string) {
+	s.Source = val
+}
+
+// SetContentTypes sets the value of ContentTypes.
+func (s *ContentfulEntryResourceLink) SetContentTypes(val []string) {
+	s.ContentTypes = val
+}
+
+type ContentfulEntryResourceLinkType string
+
+const (
+	ContentfulEntryResourceLinkTypeContentfulEntry ContentfulEntryResourceLinkType = "Contentful:Entry"
+)
+
+// AllValues returns all ContentfulEntryResourceLinkType values.
+func (ContentfulEntryResourceLinkType) AllValues() []ContentfulEntryResourceLinkType {
+	return []ContentfulEntryResourceLinkType{
+		ContentfulEntryResourceLinkTypeContentfulEntry,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentfulEntryResourceLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentfulEntryResourceLinkTypeContentfulEntry:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentfulEntryResourceLinkType) UnmarshalText(data []byte) error {
+	switch ContentfulEntryResourceLinkType(data) {
+	case ContentfulEntryResourceLinkTypeContentfulEntry:
+		*s = ContentfulEntryResourceLinkTypeContentfulEntry
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -2268,6 +2361,21 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/ExternalResourceLink
+type ExternalResourceLink struct {
+	Type string `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *ExternalResourceLink) GetType() string {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *ExternalResourceLink) SetType(val string) {
+	s.Type = val
+}
+
 type GetSpaceEnablementsApplicationJSONOK SpaceEnablement
 
 func (*GetSpaceEnablementsApplicationJSONOK) getSpaceEnablementsRes() {}
@@ -3174,6 +3282,69 @@ func (o OptNilInt) Or(d int) int {
 	return d
 }
 
+// NewOptNilResourceLinkArray returns new OptNilResourceLinkArray with value set to v.
+func NewOptNilResourceLinkArray(v []ResourceLink) OptNilResourceLinkArray {
+	return OptNilResourceLinkArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilResourceLinkArray is optional nullable []ResourceLink.
+type OptNilResourceLinkArray struct {
+	Value []ResourceLink
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilResourceLinkArray was set.
+func (o OptNilResourceLinkArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilResourceLinkArray) Reset() {
+	var v []ResourceLink
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilResourceLinkArray) SetTo(v []ResourceLink) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilResourceLinkArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilResourceLinkArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []ResourceLink
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilResourceLinkArray) Get() (v []ResourceLink, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilResourceLinkArray) Or(d []ResourceLink) []ResourceLink {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilString returns new OptNilString with value set to v.
 func NewOptNilString(v string) OptNilString {
 	return OptNilString{
@@ -3937,6 +4108,75 @@ func (*PutContentTypeCreated) putContentTypeRes() {}
 type PutContentTypeOK ContentType
 
 func (*PutContentTypeOK) putContentTypeRes() {}
+
+// Ref: #/components/schemas/ResourceLink
+// ResourceLink represents sum type.
+type ResourceLink struct {
+	Type                        ResourceLinkType // switch on this field
+	ContentfulEntryResourceLink ContentfulEntryResourceLink
+	ExternalResourceLink        ExternalResourceLink
+}
+
+// ResourceLinkType is oneOf type of ResourceLink.
+type ResourceLinkType string
+
+// Possible values for ResourceLinkType.
+const (
+	ContentfulEntryResourceLinkResourceLink ResourceLinkType = "ContentfulEntryResourceLink"
+	ExternalResourceLinkResourceLink        ResourceLinkType = "ExternalResourceLink"
+)
+
+// IsContentfulEntryResourceLink reports whether ResourceLink is ContentfulEntryResourceLink.
+func (s ResourceLink) IsContentfulEntryResourceLink() bool {
+	return s.Type == ContentfulEntryResourceLinkResourceLink
+}
+
+// IsExternalResourceLink reports whether ResourceLink is ExternalResourceLink.
+func (s ResourceLink) IsExternalResourceLink() bool {
+	return s.Type == ExternalResourceLinkResourceLink
+}
+
+// SetContentfulEntryResourceLink sets ResourceLink to ContentfulEntryResourceLink.
+func (s *ResourceLink) SetContentfulEntryResourceLink(v ContentfulEntryResourceLink) {
+	s.Type = ContentfulEntryResourceLinkResourceLink
+	s.ContentfulEntryResourceLink = v
+}
+
+// GetContentfulEntryResourceLink returns ContentfulEntryResourceLink and true boolean if ResourceLink is ContentfulEntryResourceLink.
+func (s ResourceLink) GetContentfulEntryResourceLink() (v ContentfulEntryResourceLink, ok bool) {
+	if !s.IsContentfulEntryResourceLink() {
+		return v, false
+	}
+	return s.ContentfulEntryResourceLink, true
+}
+
+// NewContentfulEntryResourceLinkResourceLink returns new ResourceLink from ContentfulEntryResourceLink.
+func NewContentfulEntryResourceLinkResourceLink(v ContentfulEntryResourceLink) ResourceLink {
+	var s ResourceLink
+	s.SetContentfulEntryResourceLink(v)
+	return s
+}
+
+// SetExternalResourceLink sets ResourceLink to ExternalResourceLink.
+func (s *ResourceLink) SetExternalResourceLink(v ExternalResourceLink) {
+	s.Type = ExternalResourceLinkResourceLink
+	s.ExternalResourceLink = v
+}
+
+// GetExternalResourceLink returns ExternalResourceLink and true boolean if ResourceLink is ExternalResourceLink.
+func (s ResourceLink) GetExternalResourceLink() (v ExternalResourceLink, ok bool) {
+	if !s.IsExternalResourceLink() {
+		return v, false
+	}
+	return s.ExternalResourceLink, true
+}
+
+// NewExternalResourceLinkResourceLink returns new ResourceLink from ExternalResourceLink.
+func NewExternalResourceLinkResourceLink(v ExternalResourceLink) ResourceLink {
+	var s ResourceLink
+	s.SetExternalResourceLink(v)
+	return s
+}
 
 // Merged schema.
 // Ref: #/components/schemas/Role
