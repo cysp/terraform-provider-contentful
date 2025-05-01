@@ -9729,36 +9729,8 @@ func (s *Extension) encodeFields(e *jx.Encoder) {
 		s.Sys.Encode(e)
 	}
 	{
-		e.FieldStart("name")
-		e.Str(s.Name)
-	}
-	{
-		if s.FieldTypes != nil {
-			e.FieldStart("fieldTypes")
-			e.ArrStart()
-			for _, elem := range s.FieldTypes {
-				elem.Encode(e)
-			}
-			e.ArrEnd()
-		}
-	}
-	{
-		if s.Src.Set {
-			e.FieldStart("src")
-			s.Src.Encode(e)
-		}
-	}
-	{
-		if s.Srcdoc.Set {
-			e.FieldStart("srcdoc")
-			s.Srcdoc.Encode(e)
-		}
-	}
-	{
-		if s.Sidebar.Set {
-			e.FieldStart("sidebar")
-			s.Sidebar.Encode(e)
-		}
+		e.FieldStart("extension")
+		s.Extension.Encode(e)
 	}
 	{
 		if len(s.Parameters) != 0 {
@@ -9768,14 +9740,10 @@ func (s *Extension) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfExtension = [7]string{
+var jsonFieldsNameOfExtension = [3]string{
 	0: "sys",
-	1: "name",
-	2: "fieldTypes",
-	3: "src",
-	4: "srcdoc",
-	5: "sidebar",
-	6: "parameters",
+	1: "extension",
+	2: "parameters",
 }
 
 // Decode decodes Extension from json.
@@ -9797,64 +9765,15 @@ func (s *Extension) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"sys\"")
 			}
-		case "name":
+		case "extension":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				v, err := d.Str()
-				s.Name = string(v)
-				if err != nil {
+				if err := s.Extension.Decode(d); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"name\"")
-			}
-		case "fieldTypes":
-			if err := func() error {
-				s.FieldTypes = make([]ExtensionFieldType, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem ExtensionFieldType
-					if err := elem.Decode(d); err != nil {
-						return err
-					}
-					s.FieldTypes = append(s.FieldTypes, elem)
-					return nil
-				}); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"fieldTypes\"")
-			}
-		case "src":
-			if err := func() error {
-				s.Src.Reset()
-				if err := s.Src.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"src\"")
-			}
-		case "srcdoc":
-			if err := func() error {
-				s.Srcdoc.Reset()
-				if err := s.Srcdoc.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"srcdoc\"")
-			}
-		case "sidebar":
-			if err := func() error {
-				s.Sidebar.Reset()
-				if err := s.Sidebar.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"sidebar\"")
+				return errors.Wrap(err, "decode field \"extension\"")
 			}
 		case "parameters":
 			if err := func() error {
@@ -9919,6 +9838,181 @@ func (s *Extension) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *Extension) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ExtensionExtension) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ExtensionExtension) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		if s.Src.Set {
+			e.FieldStart("src")
+			s.Src.Encode(e)
+		}
+	}
+	{
+		if s.Srcdoc.Set {
+			e.FieldStart("srcdoc")
+			s.Srcdoc.Encode(e)
+		}
+	}
+	{
+		if s.FieldTypes != nil {
+			e.FieldStart("fieldTypes")
+			e.ArrStart()
+			for _, elem := range s.FieldTypes {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.Sidebar.Set {
+			e.FieldStart("sidebar")
+			s.Sidebar.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfExtensionExtension = [5]string{
+	0: "name",
+	1: "src",
+	2: "srcdoc",
+	3: "fieldTypes",
+	4: "sidebar",
+}
+
+// Decode decodes ExtensionExtension from json.
+func (s *ExtensionExtension) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ExtensionExtension to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "name":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "src":
+			if err := func() error {
+				s.Src.Reset()
+				if err := s.Src.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"src\"")
+			}
+		case "srcdoc":
+			if err := func() error {
+				s.Srcdoc.Reset()
+				if err := s.Srcdoc.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"srcdoc\"")
+			}
+		case "fieldTypes":
+			if err := func() error {
+				s.FieldTypes = make([]ExtensionFieldType, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem ExtensionFieldType
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.FieldTypes = append(s.FieldTypes, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"fieldTypes\"")
+			}
+		case "sidebar":
+			if err := func() error {
+				s.Sidebar.Reset()
+				if err := s.Sidebar.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sidebar\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ExtensionExtension")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfExtensionExtension) {
+					name = jsonFieldsNameOfExtensionExtension[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ExtensionExtension) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ExtensionExtension) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -10868,36 +10962,8 @@ func (s *ExtensionFields) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *ExtensionFields) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("name")
-		e.Str(s.Name)
-	}
-	{
-		if s.FieldTypes != nil {
-			e.FieldStart("fieldTypes")
-			e.ArrStart()
-			for _, elem := range s.FieldTypes {
-				elem.Encode(e)
-			}
-			e.ArrEnd()
-		}
-	}
-	{
-		if s.Src.Set {
-			e.FieldStart("src")
-			s.Src.Encode(e)
-		}
-	}
-	{
-		if s.Srcdoc.Set {
-			e.FieldStart("srcdoc")
-			s.Srcdoc.Encode(e)
-		}
-	}
-	{
-		if s.Sidebar.Set {
-			e.FieldStart("sidebar")
-			s.Sidebar.Encode(e)
-		}
+		e.FieldStart("extension")
+		s.Extension.Encode(e)
 	}
 	{
 		if len(s.Parameters) != 0 {
@@ -10907,13 +10973,9 @@ func (s *ExtensionFields) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfExtensionFields = [6]string{
-	0: "name",
-	1: "fieldTypes",
-	2: "src",
-	3: "srcdoc",
-	4: "sidebar",
-	5: "parameters",
+var jsonFieldsNameOfExtensionFields = [2]string{
+	0: "extension",
+	1: "parameters",
 }
 
 // Decode decodes ExtensionFields from json.
@@ -10925,64 +10987,15 @@ func (s *ExtensionFields) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "name":
+		case "extension":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				v, err := d.Str()
-				s.Name = string(v)
-				if err != nil {
+				if err := s.Extension.Decode(d); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"name\"")
-			}
-		case "fieldTypes":
-			if err := func() error {
-				s.FieldTypes = make([]ExtensionFieldType, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem ExtensionFieldType
-					if err := elem.Decode(d); err != nil {
-						return err
-					}
-					s.FieldTypes = append(s.FieldTypes, elem)
-					return nil
-				}); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"fieldTypes\"")
-			}
-		case "src":
-			if err := func() error {
-				s.Src.Reset()
-				if err := s.Src.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"src\"")
-			}
-		case "srcdoc":
-			if err := func() error {
-				s.Srcdoc.Reset()
-				if err := s.Srcdoc.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"srcdoc\"")
-			}
-		case "sidebar":
-			if err := func() error {
-				s.Sidebar.Reset()
-				if err := s.Sidebar.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"sidebar\"")
+				return errors.Wrap(err, "decode field \"extension\"")
 			}
 		case "parameters":
 			if err := func() error {
@@ -11047,6 +11060,181 @@ func (s *ExtensionFields) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ExtensionFields) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ExtensionFieldsExtension) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ExtensionFieldsExtension) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		if s.Src.Set {
+			e.FieldStart("src")
+			s.Src.Encode(e)
+		}
+	}
+	{
+		if s.Srcdoc.Set {
+			e.FieldStart("srcdoc")
+			s.Srcdoc.Encode(e)
+		}
+	}
+	{
+		if s.FieldTypes != nil {
+			e.FieldStart("fieldTypes")
+			e.ArrStart()
+			for _, elem := range s.FieldTypes {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.Sidebar.Set {
+			e.FieldStart("sidebar")
+			s.Sidebar.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfExtensionFieldsExtension = [5]string{
+	0: "name",
+	1: "src",
+	2: "srcdoc",
+	3: "fieldTypes",
+	4: "sidebar",
+}
+
+// Decode decodes ExtensionFieldsExtension from json.
+func (s *ExtensionFieldsExtension) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ExtensionFieldsExtension to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "name":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "src":
+			if err := func() error {
+				s.Src.Reset()
+				if err := s.Src.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"src\"")
+			}
+		case "srcdoc":
+			if err := func() error {
+				s.Srcdoc.Reset()
+				if err := s.Srcdoc.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"srcdoc\"")
+			}
+		case "fieldTypes":
+			if err := func() error {
+				s.FieldTypes = make([]ExtensionFieldType, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem ExtensionFieldType
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.FieldTypes = append(s.FieldTypes, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"fieldTypes\"")
+			}
+		case "sidebar":
+			if err := func() error {
+				s.Sidebar.Reset()
+				if err := s.Sidebar.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sidebar\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ExtensionFieldsExtension")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfExtensionFieldsExtension) {
+					name = jsonFieldsNameOfExtensionFieldsExtension[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ExtensionFieldsExtension) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ExtensionFieldsExtension) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

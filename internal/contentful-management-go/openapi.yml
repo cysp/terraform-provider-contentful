@@ -693,21 +693,26 @@ components:
     ExtensionFields:
       type: object
       properties:
-        name:
-          type: string
-        fieldTypes:
-          type: array
-          items:
-            $ref: "#/components/schemas/ExtensionFieldType"
-        src:
-          type: string
-        srcdoc:
-          type: string
-        sidebar:
-          type: boolean
+        extension:
+          type: object
+          properties:
+            name:
+              type: string
+            src:
+              type: string
+            srcdoc:
+              type: string
+            fieldTypes:
+              type: array
+              items:
+                $ref: "#/components/schemas/ExtensionFieldType"
+            sidebar:
+              type: boolean
+          required:
+            - name
         parameters: {}
       required:
-        - name
+        - extension
     ExtensionFieldType:
       oneOf:
         - type: object

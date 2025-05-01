@@ -42,6 +42,21 @@ func ExtensionResourceSchema(_ context.Context) schema.Schema {
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"src": schema.StringAttribute{
+				Optional: true,
+			},
+			"srcdoc": schema.StringAttribute{
+				Optional: true,
+			},
+			"field_types": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{},
+				},
+					Required: true,
+			},
+			"sidebar": schema.BoolAttribute{
+				Optional: true,
+			},
 			"parameters": schema.StringAttribute{
 				CustomType: jsontypes.NormalizedType{},
 				Optional:   true,

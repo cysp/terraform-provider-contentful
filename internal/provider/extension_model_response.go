@@ -23,8 +23,8 @@ func (model *ExtensionResourceModel) ReadFromResponse(extension *cm.Extension) d
 	model.EnvironmentID = types.StringValue(environmentID)
 	model.ExtensionID = types.StringValue(extensionID)
 
-	if extension.Parameters != nil {
-		constraint, err := util.JxNormalizeOpaqueBytes(extension.Parameters, util.JxEncodeOpaqueOptions{EscapeStrings: true})
+	if extension.Extension.Parameters != nil {
+		constraint, err := util.JxNormalizeOpaqueBytes(extension.Extension.Parameters, util.JxEncodeOpaqueOptions{EscapeStrings: true})
 		if err != nil {
 			diags.AddAttributeError(path.Root("parameters"), "Failed to read parameters", err.Error())
 		}

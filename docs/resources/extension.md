@@ -19,14 +19,21 @@ description: |-
 
 - `environment_id` (String)
 - `extension_id` (String)
+- `field_types` (Attributes List) (see [below for nested schema](#nestedatt--field_types))
 - `space_id` (String)
 
 ### Optional
 
 - `parameters` (String)
+- `sidebar` (Boolean)
+- `src` (String)
+- `srcdoc` (String)
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+<a id="nestedatt--field_types"></a>
+### Nested Schema for `field_types`
 
 

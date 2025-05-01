@@ -2010,6 +2010,29 @@ func (s *Extension) Validate() error {
 		})
 	}
 	if err := func() error {
+		if err := s.Extension.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "extension",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *ExtensionExtension) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
 		var failures []validate.FieldError
 		for i, elem := range s.FieldTypes {
 			if err := func() error {
@@ -2289,6 +2312,29 @@ func (s ExtensionFieldType2Type) Validate() error {
 }
 
 func (s *ExtensionFields) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Extension.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "extension",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *ExtensionFieldsExtension) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}

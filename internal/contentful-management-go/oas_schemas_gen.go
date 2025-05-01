@@ -3695,13 +3695,9 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 // Merged schema.
 // Ref: #/components/schemas/Extension
 type Extension struct {
-	Sys        ExtensionSys         `json:"sys"`
-	Name       string               `json:"name"`
-	FieldTypes []ExtensionFieldType `json:"fieldTypes"`
-	Src        OptString            `json:"src"`
-	Srcdoc     OptString            `json:"srcdoc"`
-	Sidebar    OptBool              `json:"sidebar"`
-	Parameters jx.Raw               `json:"parameters"`
+	Sys        ExtensionSys       `json:"sys"`
+	Extension  ExtensionExtension `json:"extension"`
+	Parameters jx.Raw             `json:"parameters"`
 }
 
 // GetSys returns the value of Sys.
@@ -3709,29 +3705,9 @@ func (s *Extension) GetSys() ExtensionSys {
 	return s.Sys
 }
 
-// GetName returns the value of Name.
-func (s *Extension) GetName() string {
-	return s.Name
-}
-
-// GetFieldTypes returns the value of FieldTypes.
-func (s *Extension) GetFieldTypes() []ExtensionFieldType {
-	return s.FieldTypes
-}
-
-// GetSrc returns the value of Src.
-func (s *Extension) GetSrc() OptString {
-	return s.Src
-}
-
-// GetSrcdoc returns the value of Srcdoc.
-func (s *Extension) GetSrcdoc() OptString {
-	return s.Srcdoc
-}
-
-// GetSidebar returns the value of Sidebar.
-func (s *Extension) GetSidebar() OptBool {
-	return s.Sidebar
+// GetExtension returns the value of Extension.
+func (s *Extension) GetExtension() ExtensionExtension {
+	return s.Extension
 }
 
 // GetParameters returns the value of Parameters.
@@ -3744,29 +3720,9 @@ func (s *Extension) SetSys(val ExtensionSys) {
 	s.Sys = val
 }
 
-// SetName sets the value of Name.
-func (s *Extension) SetName(val string) {
-	s.Name = val
-}
-
-// SetFieldTypes sets the value of FieldTypes.
-func (s *Extension) SetFieldTypes(val []ExtensionFieldType) {
-	s.FieldTypes = val
-}
-
-// SetSrc sets the value of Src.
-func (s *Extension) SetSrc(val OptString) {
-	s.Src = val
-}
-
-// SetSrcdoc sets the value of Srcdoc.
-func (s *Extension) SetSrcdoc(val OptString) {
-	s.Srcdoc = val
-}
-
-// SetSidebar sets the value of Sidebar.
-func (s *Extension) SetSidebar(val OptBool) {
-	s.Sidebar = val
+// SetExtension sets the value of Extension.
+func (s *Extension) SetExtension(val ExtensionExtension) {
+	s.Extension = val
 }
 
 // SetParameters sets the value of Parameters.
@@ -3776,6 +3732,64 @@ func (s *Extension) SetParameters(val jx.Raw) {
 
 func (*Extension) getExtensionRes() {}
 func (*Extension) putExtensionRes() {}
+
+type ExtensionExtension struct {
+	Name       string               `json:"name"`
+	Src        OptString            `json:"src"`
+	Srcdoc     OptString            `json:"srcdoc"`
+	FieldTypes []ExtensionFieldType `json:"fieldTypes"`
+	Sidebar    OptBool              `json:"sidebar"`
+}
+
+// GetName returns the value of Name.
+func (s *ExtensionExtension) GetName() string {
+	return s.Name
+}
+
+// GetSrc returns the value of Src.
+func (s *ExtensionExtension) GetSrc() OptString {
+	return s.Src
+}
+
+// GetSrcdoc returns the value of Srcdoc.
+func (s *ExtensionExtension) GetSrcdoc() OptString {
+	return s.Srcdoc
+}
+
+// GetFieldTypes returns the value of FieldTypes.
+func (s *ExtensionExtension) GetFieldTypes() []ExtensionFieldType {
+	return s.FieldTypes
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *ExtensionExtension) GetSidebar() OptBool {
+	return s.Sidebar
+}
+
+// SetName sets the value of Name.
+func (s *ExtensionExtension) SetName(val string) {
+	s.Name = val
+}
+
+// SetSrc sets the value of Src.
+func (s *ExtensionExtension) SetSrc(val OptString) {
+	s.Src = val
+}
+
+// SetSrcdoc sets the value of Srcdoc.
+func (s *ExtensionExtension) SetSrcdoc(val OptString) {
+	s.Srcdoc = val
+}
+
+// SetFieldTypes sets the value of FieldTypes.
+func (s *ExtensionExtension) SetFieldTypes(val []ExtensionFieldType) {
+	s.FieldTypes = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *ExtensionExtension) SetSidebar(val OptBool) {
+	s.Sidebar = val
+}
 
 // Ref: #/components/schemas/ExtensionFieldType
 // ExtensionFieldType represents sum type.
@@ -4314,37 +4328,13 @@ func (s *ExtensionFieldType2Type) UnmarshalText(data []byte) error {
 
 // Ref: #/components/schemas/ExtensionFields
 type ExtensionFields struct {
-	Name       string               `json:"name"`
-	FieldTypes []ExtensionFieldType `json:"fieldTypes"`
-	Src        OptString            `json:"src"`
-	Srcdoc     OptString            `json:"srcdoc"`
-	Sidebar    OptBool              `json:"sidebar"`
-	Parameters jx.Raw               `json:"parameters"`
+	Extension  ExtensionFieldsExtension `json:"extension"`
+	Parameters jx.Raw                   `json:"parameters"`
 }
 
-// GetName returns the value of Name.
-func (s *ExtensionFields) GetName() string {
-	return s.Name
-}
-
-// GetFieldTypes returns the value of FieldTypes.
-func (s *ExtensionFields) GetFieldTypes() []ExtensionFieldType {
-	return s.FieldTypes
-}
-
-// GetSrc returns the value of Src.
-func (s *ExtensionFields) GetSrc() OptString {
-	return s.Src
-}
-
-// GetSrcdoc returns the value of Srcdoc.
-func (s *ExtensionFields) GetSrcdoc() OptString {
-	return s.Srcdoc
-}
-
-// GetSidebar returns the value of Sidebar.
-func (s *ExtensionFields) GetSidebar() OptBool {
-	return s.Sidebar
+// GetExtension returns the value of Extension.
+func (s *ExtensionFields) GetExtension() ExtensionFieldsExtension {
+	return s.Extension
 }
 
 // GetParameters returns the value of Parameters.
@@ -4352,34 +4342,72 @@ func (s *ExtensionFields) GetParameters() jx.Raw {
 	return s.Parameters
 }
 
-// SetName sets the value of Name.
-func (s *ExtensionFields) SetName(val string) {
-	s.Name = val
-}
-
-// SetFieldTypes sets the value of FieldTypes.
-func (s *ExtensionFields) SetFieldTypes(val []ExtensionFieldType) {
-	s.FieldTypes = val
-}
-
-// SetSrc sets the value of Src.
-func (s *ExtensionFields) SetSrc(val OptString) {
-	s.Src = val
-}
-
-// SetSrcdoc sets the value of Srcdoc.
-func (s *ExtensionFields) SetSrcdoc(val OptString) {
-	s.Srcdoc = val
-}
-
-// SetSidebar sets the value of Sidebar.
-func (s *ExtensionFields) SetSidebar(val OptBool) {
-	s.Sidebar = val
+// SetExtension sets the value of Extension.
+func (s *ExtensionFields) SetExtension(val ExtensionFieldsExtension) {
+	s.Extension = val
 }
 
 // SetParameters sets the value of Parameters.
 func (s *ExtensionFields) SetParameters(val jx.Raw) {
 	s.Parameters = val
+}
+
+type ExtensionFieldsExtension struct {
+	Name       string               `json:"name"`
+	Src        OptString            `json:"src"`
+	Srcdoc     OptString            `json:"srcdoc"`
+	FieldTypes []ExtensionFieldType `json:"fieldTypes"`
+	Sidebar    OptBool              `json:"sidebar"`
+}
+
+// GetName returns the value of Name.
+func (s *ExtensionFieldsExtension) GetName() string {
+	return s.Name
+}
+
+// GetSrc returns the value of Src.
+func (s *ExtensionFieldsExtension) GetSrc() OptString {
+	return s.Src
+}
+
+// GetSrcdoc returns the value of Srcdoc.
+func (s *ExtensionFieldsExtension) GetSrcdoc() OptString {
+	return s.Srcdoc
+}
+
+// GetFieldTypes returns the value of FieldTypes.
+func (s *ExtensionFieldsExtension) GetFieldTypes() []ExtensionFieldType {
+	return s.FieldTypes
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *ExtensionFieldsExtension) GetSidebar() OptBool {
+	return s.Sidebar
+}
+
+// SetName sets the value of Name.
+func (s *ExtensionFieldsExtension) SetName(val string) {
+	s.Name = val
+}
+
+// SetSrc sets the value of Src.
+func (s *ExtensionFieldsExtension) SetSrc(val OptString) {
+	s.Src = val
+}
+
+// SetSrcdoc sets the value of Srcdoc.
+func (s *ExtensionFieldsExtension) SetSrcdoc(val OptString) {
+	s.Srcdoc = val
+}
+
+// SetFieldTypes sets the value of FieldTypes.
+func (s *ExtensionFieldsExtension) SetFieldTypes(val []ExtensionFieldType) {
+	s.FieldTypes = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *ExtensionFieldsExtension) SetSidebar(val OptBool) {
+	s.Sidebar = val
 }
 
 // Merged schema.
