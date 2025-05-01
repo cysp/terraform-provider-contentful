@@ -334,6 +334,11 @@ components:
               validations:
                 type: array
                 items: {}
+              allowedResources:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResourceLink"
+                nullable: true
             required:
               - id
               - name
@@ -522,6 +527,34 @@ components:
                     - ContentType
       required:
         - sys
+    ResourceLink:
+      oneOf:
+        - $ref: "#/components/schemas/ContentfulEntryResourceLink"
+        - $ref: "#/components/schemas/ExternalResourceLink"
+    ContentfulEntryResourceLink:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - "Contentful:Entry"
+        source:
+          type: string
+        contentTypes:
+          type: array
+          items:
+            type: string
+      required:
+        - type
+        - source
+        - contentTypes
+    ExternalResourceLink:
+      type: object
+      properties:
+        type:
+          type: string
+      required:
+        - type
     PersonalAccessTokenSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithId"
