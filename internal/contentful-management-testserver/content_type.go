@@ -49,17 +49,18 @@ func UpdateContentTypeFromRequestFields(contentType *cm.ContentType, contentType
 		})
 
 		return cm.ContentTypeFieldsItem{
-			ID:           field.ID,
-			Name:         field.Name,
-			Type:         field.Type,
-			LinkType:     field.LinkType,
-			Items:        contentTypeFieldItems,
-			Localized:    field.Localized,
-			Required:     field.Required,
-			Validations:  field.Validations,
-			Omitted:      field.Omitted,
-			Disabled:     field.Disabled,
-			DefaultValue: field.DefaultValue,
+			ID:               field.ID,
+			Name:             field.Name,
+			Type:             field.Type,
+			LinkType:         field.LinkType,
+			Items:            contentTypeFieldItems,
+			Localized:        field.Localized,
+			Required:         field.Required,
+			Validations:      field.Validations,
+			Omitted:          field.Omitted,
+			Disabled:         field.Disabled,
+			DefaultValue:     field.DefaultValue,
+			AllowedResources: field.AllowedResources,
 		}
 	})
 

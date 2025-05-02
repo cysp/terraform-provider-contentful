@@ -78,12 +78,39 @@ Required:
 
 Optional:
 
+- `allowed_resources` (Attributes List) (see [below for nested schema](#nestedatt--fields--allowed_resources))
 - `default_value` (String)
 - `disabled` (Boolean)
 - `items` (Attributes) (see [below for nested schema](#nestedatt--fields--items))
 - `link_type` (String)
 - `omitted` (Boolean)
 - `validations` (List of String)
+
+<a id="nestedatt--fields--allowed_resources"></a>
+### Nested Schema for `fields.allowed_resources`
+
+Optional:
+
+- `contentful_entry` (Attributes) (see [below for nested schema](#nestedatt--fields--allowed_resources--contentful_entry))
+- `external` (Attributes) (see [below for nested schema](#nestedatt--fields--allowed_resources--external))
+
+<a id="nestedatt--fields--allowed_resources--contentful_entry"></a>
+### Nested Schema for `fields.allowed_resources.contentful_entry`
+
+Required:
+
+- `content_types` (List of String)
+- `source` (String)
+
+
+<a id="nestedatt--fields--allowed_resources--external"></a>
+### Nested Schema for `fields.allowed_resources.external`
+
+Required:
+
+- `type` (String)
+
+
 
 <a id="nestedatt--fields--items"></a>
 ### Nested Schema for `fields.items`

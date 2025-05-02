@@ -17,18 +17,19 @@ import (
 
 //nolint:recvcheck
 type ContentTypeFieldValue struct {
-	ID           types.String                    `tfsdk:"id"`
-	Name         types.String                    `tfsdk:"name"`
-	FieldType    types.String                    `tfsdk:"type"`
-	LinkType     types.String                    `tfsdk:"link_type"`
-	Disabled     types.Bool                      `tfsdk:"disabled"`
-	Omitted      types.Bool                      `tfsdk:"omitted"`
-	Required     types.Bool                      `tfsdk:"required"`
-	DefaultValue jsontypes.Normalized            `tfsdk:"default_value"`
-	Items        ContentTypeFieldItemsValue      `tfsdk:"items"`
-	Localized    types.Bool                      `tfsdk:"localized"`
-	Validations  TypedList[jsontypes.Normalized] `tfsdk:"validations"`
-	state        attr.ValueState
+	ID               types.String                                        `tfsdk:"id"`
+	Name             types.String                                        `tfsdk:"name"`
+	FieldType        types.String                                        `tfsdk:"type"`
+	LinkType         types.String                                        `tfsdk:"link_type"`
+	Disabled         types.Bool                                          `tfsdk:"disabled"`
+	Omitted          types.Bool                                          `tfsdk:"omitted"`
+	Required         types.Bool                                          `tfsdk:"required"`
+	DefaultValue     jsontypes.Normalized                                `tfsdk:"default_value"`
+	Items            ContentTypeFieldItemsValue                          `tfsdk:"items"`
+	Localized        types.Bool                                          `tfsdk:"localized"`
+	Validations      TypedList[jsontypes.Normalized]                     `tfsdk:"validations"`
+	AllowedResources TypedList[ContentTypeFieldAllowedResourceItemValue] `tfsdk:"allowed_resources"`
+	state            attr.ValueState
 }
 
 var _ basetypes.ObjectValuable = ContentTypeFieldValue{}
@@ -104,6 +105,14 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Optional:    true,
 			Computed:    true,
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
+		},
+		"allowed_resources": schema.ListNestedAttribute{
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: NewContentTypeFieldAllowedResourceItemValueNull().SchemaAttributes(ctx),
+				CustomType: NewContentTypeFieldAllowedResourceItemValueNull().CustomType(ctx),
+			},
+			CustomType: NewTypedListNull[ContentTypeFieldAllowedResourceItemValue](ctx).CustomType(ctx),
+			Optional:   true,
 		},
 	}
 }

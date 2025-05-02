@@ -51,11 +51,12 @@ func TestContentTypeFieldValueToTerraformValueRoundtrip(t *testing.T) {
 					"link_type":   types.StringValue("Entry"),
 					"validations": DiagsNoErrorsMust(provider.NewTypedList(ctx, []jsontypes.Normalized{})),
 				})),
-				"default_value": jsontypes.NewNormalizedNull(),
-				"localized":     types.BoolValue(true),
-				"disabled":      types.BoolValue(false),
-				"omitted":       types.BoolValue(false),
-				"required":      types.BoolValue(true),
+				"default_value":     jsontypes.NewNormalizedNull(),
+				"localized":         types.BoolValue(true),
+				"disabled":          types.BoolValue(false),
+				"omitted":           types.BoolValue(false),
+				"required":          types.BoolValue(true),
+				"allowed_resources": provider.NewTypedListNull[provider.ContentTypeFieldAllowedResourceItemValue](ctx),
 			})),
 			check: func(t *testing.T, v tftypes.Value) {
 				t.Helper()

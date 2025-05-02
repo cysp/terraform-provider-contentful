@@ -13,6 +13,7 @@ linters:
       package-average: 0
     varnamelen:
       ignore-names:
+        - i
         - k
         - r
         - v
