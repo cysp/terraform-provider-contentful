@@ -24,6 +24,9 @@ func TestModelTypeEqual(t *testing.T) {
 	types := []attr.Type{
 		provider.NewTypedListNull[types.String](ctx).Type(ctx),
 		provider.NewTypedMapNull[types.String](ctx).Type(ctx),
+		provider.ContentTypeFieldAllowedResourceItemContentfulEntryType{},
+		provider.ContentTypeFieldAllowedResourceItemExternalType{},
+		provider.ContentTypeFieldAllowedResourceItemType{},
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
 		provider.EditorInterfaceControlType{},
@@ -91,6 +94,18 @@ func TestModelTypeValueFromObject(t *testing.T) {
 		"ContentTypeFieldItems": {
 			NullValue:    provider.NewContentTypeFieldItemsValueNull(),
 			UnknownValue: provider.NewContentTypeFieldItemsValueUnknown(),
+		},
+		"ContentTypeFieldAllowedResourceItem": {
+			NullValue:    provider.NewContentTypeFieldAllowedResourceItemValueNull(),
+			UnknownValue: provider.NewContentTypeFieldAllowedResourceItemValueUnknown(),
+		},
+		"ContentTypeFieldAllowedResourceItemContentfulEntry": {
+			NullValue:    provider.NewContentTypeFieldAllowedResourceItemContentfulEntryValueNull(),
+			UnknownValue: provider.NewContentTypeFieldAllowedResourceItemContentfulEntryValueUnknown(),
+		},
+		"ContentTypeFieldAllowedResourceItemExternal": {
+			NullValue:    provider.NewContentTypeFieldAllowedResourceItemExternalValueNull(),
+			UnknownValue: provider.NewContentTypeFieldAllowedResourceItemExternalValueUnknown(),
 		},
 		"EditorInterfaceControl": {
 			NullValue:    provider.NewEditorInterfaceControlValueNull(),
@@ -219,6 +234,9 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 	types := []attr.Type{
 		provider.NewTypedListNull[types.String](ctx).Type(ctx),
 		provider.NewTypedMapNull[types.String](ctx).Type(ctx),
+		provider.ContentTypeFieldAllowedResourceItemContentfulEntryType{},
+		provider.ContentTypeFieldAllowedResourceItemExternalType{},
+		provider.ContentTypeFieldAllowedResourceItemType{},
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
 		provider.EditorInterfaceControlType{},

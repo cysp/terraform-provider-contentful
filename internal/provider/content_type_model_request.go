@@ -74,6 +74,13 @@ func (v *ContentTypeFieldValue) ToContentTypeRequestFieldsFieldsItem(ctx context
 		fieldsItem.DefaultValue = []byte(modelDefaultValueValue)
 	}
 
+	if !v.AllowedResources.IsUnknown() && !v.AllowedResources.IsNull() {
+		fieldsItemAllowedResources, fieldsItemAllowedResourcesDiags := AllowedResourceListToContentTypeRequestFieldsFieldAllowedResources(ctx, path.AtName("allowed_resources"), v.AllowedResources)
+		diags.Append(fieldsItemAllowedResourcesDiags...)
+
+		fieldsItem.AllowedResources.SetTo(fieldsItemAllowedResources)
+	}
+
 	return fieldsItem, diags
 }
 
@@ -121,4 +128,61 @@ func ValidationsListToContentTypeRequestFieldsFieldValidations(ctx context.Conte
 	}
 
 	return validations, diags
+}
+
+func AllowedResourceListToContentTypeRequestFieldsFieldAllowedResources(ctx context.Context, path path.Path, allowedResourcesList TypedList[ContentTypeFieldAllowedResourceItemValue]) ([]cm.ResourceLink, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	allowedResources := allowedResourcesList.Elements()
+	resourceLinks := make([]cm.ResourceLink, len(allowedResources))
+
+	for index, resource := range allowedResources {
+		resourceLink, resourceDiags := resource.ToResourceLink(ctx, path.AtListIndex(index))
+		diags.Append(resourceDiags...)
+
+		resourceLinks[index] = resourceLink
+	}
+
+	return resourceLinks, diags
+}
+
+func (v *ContentTypeFieldAllowedResourceItemValue) ToResourceLink(ctx context.Context, path path.Path) (cm.ResourceLink, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	resourceLink := cm.ResourceLink{}
+
+	if !v.External.IsNull() && !v.External.IsUnknown() {
+		diags.Append(v.External.SetResourceLink(ctx, path, &resourceLink)...)
+	}
+
+	if !v.ContentfulEntry.IsNull() && !v.ContentfulEntry.IsUnknown() {
+		diags.Append(v.ContentfulEntry.SetResourceLink(ctx, path, &resourceLink)...)
+	}
+
+	return resourceLink, diags
+}
+
+func (v ContentTypeFieldAllowedResourceItemExternalValue) SetResourceLink(_ context.Context, _ path.Path, resourceLink *cm.ResourceLink) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	resourceLink.SetExternalResourceLink(cm.ExternalResourceLink{
+		Type: v.TypeID.ValueString(),
+	})
+
+	return diags
+}
+
+func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SetResourceLink(ctx context.Context, _ path.Path, resourceLink *cm.ResourceLink) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	contentTypes := make([]string, len(v.ContentTypes.Elements()))
+	diags.Append(tfsdk.ValueAs(ctx, v.ContentTypes, &contentTypes)...)
+
+	resourceLink.SetContentfulEntryResourceLink(cm.ContentfulEntryResourceLink{
+		Type:         cm.ContentfulEntryResourceLinkTypeContentfulEntry,
+		Source:       v.Source.ValueString(),
+		ContentTypes: contentTypes,
+	})
+
+	return diags
 }
