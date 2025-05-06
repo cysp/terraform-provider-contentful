@@ -65,10 +65,3 @@ func (ts *ContentfulManagementTestServer) SetupSpaceEnvironmentAppInstallationHa
 		}
 	}))
 }
-
-func (ts *ContentfulManagementTestServer) AddAppDefinitionID(appDefinitionID string) {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
-	ts.appDefinitionIDs[appDefinitionID] = struct{}{}
-}

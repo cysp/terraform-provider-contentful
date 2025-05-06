@@ -27,8 +27,9 @@ type ContentfulManagementTestServer struct {
 	apiKeys        SpaceMap[*cm.ApiKey]
 	previewAPIKeys SpaceMap[*cm.PreviewApiKey]
 
-	appDefinitionIDs map[string]struct{}
-	appInstallations SpaceEnvironmentMap[*cm.AppInstallation]
+	appDefinitionIDs               map[string]struct{}
+	appDefinitionResourceProviders OrganizationMap[*cm.ResourceProvider]
+	appInstallations               SpaceEnvironmentMap[*cm.AppInstallation]
 
 	contentTypes     SpaceEnvironmentMap[*cm.ContentType]
 	editorInterfaces SpaceEnvironmentMap[*cm.EditorInterface]
@@ -40,17 +41,18 @@ type ContentfulManagementTestServer struct {
 
 func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 	testserver := &ContentfulManagementTestServer{
-		mu:                   &sync.Mutex{},
-		personalAccessTokens: make(map[string]*cm.PersonalAccessToken),
-		enablements:          make(map[string]*cm.SpaceEnablement),
-		apiKeys:              NewSpaceMap[*cm.ApiKey](),
-		previewAPIKeys:       NewSpaceMap[*cm.PreviewApiKey](),
-		appDefinitionIDs:     make(map[string]struct{}),
-		appInstallations:     NewSpaceEnvironmentMap[*cm.AppInstallation](),
-		contentTypes:         NewSpaceEnvironmentMap[*cm.ContentType](),
-		editorInterfaces:     NewSpaceEnvironmentMap[*cm.EditorInterface](),
-		roles:                NewSpaceMap[*cm.Role](),
-		webhookDefinitions:   NewSpaceMap[*cm.WebhookDefinition](),
+		mu:                             &sync.Mutex{},
+		personalAccessTokens:           make(map[string]*cm.PersonalAccessToken),
+		enablements:                    make(map[string]*cm.SpaceEnablement),
+		apiKeys:                        NewSpaceMap[*cm.ApiKey](),
+		previewAPIKeys:                 NewSpaceMap[*cm.PreviewApiKey](),
+		appDefinitionIDs:               make(map[string]struct{}),
+		appDefinitionResourceProviders: NewOrganizationMap[*cm.ResourceProvider](),
+		appInstallations:               NewSpaceEnvironmentMap[*cm.AppInstallation](),
+		contentTypes:                   NewSpaceEnvironmentMap[*cm.ContentType](),
+		editorInterfaces:               NewSpaceEnvironmentMap[*cm.EditorInterface](),
+		roles:                          NewSpaceMap[*cm.Role](),
+		webhookDefinitions:             NewSpaceMap[*cm.WebhookDefinition](),
 	}
 
 	testserver.serveMux = http.NewServeMux()
@@ -58,6 +60,7 @@ func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 
 	testserver.setupUserHandler()
 	testserver.setupPersonalAccessTokenHandlers()
+	testserver.setupOrganizationAppDefinitionResourceProviderHandlers()
 	testserver.setupSpaceEnablementsHandlers()
 	testserver.setupSpaceAPIKeyHandlers()
 	testserver.SetupSpaceEnvironmentAppInstallationHandlers()

@@ -32,6 +32,12 @@ type DeactivateContentTypeParams struct {
 	ContentTypeID string
 }
 
+// DeleteAppDefinitionResourceProviderParams is parameters of deleteAppDefinitionResourceProvider operation.
+type DeleteAppDefinitionResourceProviderParams struct {
+	OrganizationID  string
+	AppDefinitionID string
+}
+
 // DeleteAppInstallationParams is parameters of deleteAppInstallation operation.
 type DeleteAppInstallationParams struct {
 	SpaceID         string
@@ -62,6 +68,12 @@ type DeleteRoleParams struct {
 type DeleteWebhookDefinitionParams struct {
 	SpaceID             string
 	WebhookDefinitionID string
+}
+
+// GetAppDefinitionResourceProviderParams is parameters of getAppDefinitionResourceProvider operation.
+type GetAppDefinitionResourceProviderParams struct {
+	OrganizationID  string
+	AppDefinitionID string
 }
 
 // GetAppInstallationParams is parameters of getAppInstallation operation.
@@ -117,6 +129,12 @@ type GetSpaceEnablementsParams struct {
 type GetWebhookDefinitionParams struct {
 	SpaceID             string
 	WebhookDefinitionID string
+}
+
+// PutAppDefinitionResourceProviderParams is parameters of putAppDefinitionResourceProvider operation.
+type PutAppDefinitionResourceProviderParams struct {
+	OrganizationID  string
+	AppDefinitionID string
 }
 
 // PutAppInstallationParams is parameters of putAppInstallation operation.
