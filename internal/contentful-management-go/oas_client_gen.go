@@ -58,6 +58,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
 	DeactivateContentType(ctx context.Context, params DeactivateContentTypeParams) (DeactivateContentTypeRes, error)
+	// DeleteAppDefinitionResourceProvider invokes deleteAppDefinitionResourceProvider operation.
+	//
+	// Delete an app resource provider definition.
+	//
+	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
+	DeleteAppDefinitionResourceProvider(ctx context.Context, params DeleteAppDefinitionResourceProviderParams) (DeleteAppDefinitionResourceProviderRes, error)
 	// DeleteAppInstallation invokes deleteAppInstallation operation.
 	//
 	// Uninstall an app.
@@ -88,6 +94,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams) (DeleteWebhookDefinitionRes, error)
+	// GetAppDefinitionResourceProvider invokes getAppDefinitionResourceProvider operation.
+	//
+	// Get one app resource provider definition.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
+	GetAppDefinitionResourceProvider(ctx context.Context, params GetAppDefinitionResourceProviderParams) (GetAppDefinitionResourceProviderRes, error)
 	// GetAppInstallation invokes getAppInstallation operation.
 	//
 	// Get one app installation.
@@ -148,6 +160,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (GetWebhookDefinitionRes, error)
+	// PutAppDefinitionResourceProvider invokes putAppDefinitionResourceProvider operation.
+	//
+	// Create or update an app resource provider definition.
+	//
+	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
+	PutAppDefinitionResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutAppDefinitionResourceProviderParams) (PutAppDefinitionResourceProviderRes, error)
 	// PutAppInstallation invokes putAppInstallation operation.
 	//
 	// Install or update an app.
@@ -849,6 +867,113 @@ func (c *Client) sendDeactivateContentType(ctx context.Context, params Deactivat
 	return result, nil
 }
 
+// DeleteAppDefinitionResourceProvider invokes deleteAppDefinitionResourceProvider operation.
+//
+// Delete an app resource provider definition.
+//
+// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
+func (c *Client) DeleteAppDefinitionResourceProvider(ctx context.Context, params DeleteAppDefinitionResourceProviderParams) (DeleteAppDefinitionResourceProviderRes, error) {
+	res, err := c.sendDeleteAppDefinitionResourceProvider(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeleteAppDefinitionResourceProvider(ctx context.Context, params DeleteAppDefinitionResourceProviderParams) (res DeleteAppDefinitionResourceProviderRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [5]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/resource_provider"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteAppDefinitionResourceProviderOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeDeleteAppDefinitionResourceProviderResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // DeleteAppInstallation invokes deleteAppInstallation operation.
 //
 // Uninstall an app.
@@ -1410,6 +1535,113 @@ func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteW
 	defer resp.Body.Close()
 
 	result, err := decodeDeleteWebhookDefinitionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetAppDefinitionResourceProvider invokes getAppDefinitionResourceProvider operation.
+//
+// Get one app resource provider definition.
+//
+// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
+func (c *Client) GetAppDefinitionResourceProvider(ctx context.Context, params GetAppDefinitionResourceProviderParams) (GetAppDefinitionResourceProviderRes, error) {
+	res, err := c.sendGetAppDefinitionResourceProvider(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetAppDefinitionResourceProvider(ctx context.Context, params GetAppDefinitionResourceProviderParams) (res GetAppDefinitionResourceProviderRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [5]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/resource_provider"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetAppDefinitionResourceProviderOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetAppDefinitionResourceProviderResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -2454,6 +2686,116 @@ func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhook
 	defer resp.Body.Close()
 
 	result, err := decodeGetWebhookDefinitionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutAppDefinitionResourceProvider invokes putAppDefinitionResourceProvider operation.
+//
+// Create or update an app resource provider definition.
+//
+// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
+func (c *Client) PutAppDefinitionResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutAppDefinitionResourceProviderParams) (PutAppDefinitionResourceProviderRes, error) {
+	res, err := c.sendPutAppDefinitionResourceProvider(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendPutAppDefinitionResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutAppDefinitionResourceProviderParams) (res PutAppDefinitionResourceProviderRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [5]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/resource_provider"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutAppDefinitionResourceProviderRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, PutAppDefinitionResourceProviderOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodePutAppDefinitionResourceProviderResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

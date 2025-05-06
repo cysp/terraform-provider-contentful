@@ -37,6 +37,7 @@ func (d *previewApiKeyDataSource) Configure(_ context.Context, req datasource.Co
 	resp.Diagnostics.Append(SetProviderDataFromDataSourceConfigureRequest(req, &d.providerData)...)
 }
 
+//nolint:dupl
 func (d *previewApiKeyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data PreviewAPIKeyDataSourceModel
 

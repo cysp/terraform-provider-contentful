@@ -2215,35 +2215,38 @@ func (s *Error) SetDetails(val jx.Raw) {
 	s.Details = val
 }
 
-func (*Error) activateContentTypeRes()       {}
-func (*Error) createDeliveryApiKeyRes()      {}
-func (*Error) createPersonalAccessTokenRes() {}
-func (*Error) createRoleRes()                {}
-func (*Error) createWebhookDefinitionRes()   {}
-func (*Error) deactivateContentTypeRes()     {}
-func (*Error) deleteAppInstallationRes()     {}
-func (*Error) deleteContentTypeRes()         {}
-func (*Error) deleteDeliveryApiKeyRes()      {}
-func (*Error) deleteRoleRes()                {}
-func (*Error) deleteWebhookDefinitionRes()   {}
-func (*Error) getAppInstallationRes()        {}
-func (*Error) getAuthenticatedUserRes()      {}
-func (*Error) getContentTypeRes()            {}
-func (*Error) getDeliveryApiKeyRes()         {}
-func (*Error) getEditorInterfaceRes()        {}
-func (*Error) getPersonalAccessTokenRes()    {}
-func (*Error) getPreviewApiKeyRes()          {}
-func (*Error) getRoleRes()                   {}
-func (*Error) getSpaceEnablementsRes()       {}
-func (*Error) getWebhookDefinitionRes()      {}
-func (*Error) putAppInstallationRes()        {}
-func (*Error) putContentTypeRes()            {}
-func (*Error) putEditorInterfaceRes()        {}
-func (*Error) putSpaceEnablementsRes()       {}
-func (*Error) revokePersonalAccessTokenRes() {}
-func (*Error) updateDeliveryApiKeyRes()      {}
-func (*Error) updateRoleRes()                {}
-func (*Error) updateWebhookDefinitionRes()   {}
+func (*Error) activateContentTypeRes()                 {}
+func (*Error) createDeliveryApiKeyRes()                {}
+func (*Error) createPersonalAccessTokenRes()           {}
+func (*Error) createRoleRes()                          {}
+func (*Error) createWebhookDefinitionRes()             {}
+func (*Error) deactivateContentTypeRes()               {}
+func (*Error) deleteAppDefinitionResourceProviderRes() {}
+func (*Error) deleteAppInstallationRes()               {}
+func (*Error) deleteContentTypeRes()                   {}
+func (*Error) deleteDeliveryApiKeyRes()                {}
+func (*Error) deleteRoleRes()                          {}
+func (*Error) deleteWebhookDefinitionRes()             {}
+func (*Error) getAppDefinitionResourceProviderRes()    {}
+func (*Error) getAppInstallationRes()                  {}
+func (*Error) getAuthenticatedUserRes()                {}
+func (*Error) getContentTypeRes()                      {}
+func (*Error) getDeliveryApiKeyRes()                   {}
+func (*Error) getEditorInterfaceRes()                  {}
+func (*Error) getPersonalAccessTokenRes()              {}
+func (*Error) getPreviewApiKeyRes()                    {}
+func (*Error) getRoleRes()                             {}
+func (*Error) getSpaceEnablementsRes()                 {}
+func (*Error) getWebhookDefinitionRes()                {}
+func (*Error) putAppDefinitionResourceProviderRes()    {}
+func (*Error) putAppInstallationRes()                  {}
+func (*Error) putContentTypeRes()                      {}
+func (*Error) putEditorInterfaceRes()                  {}
+func (*Error) putSpaceEnablementsRes()                 {}
+func (*Error) revokePersonalAccessTokenRes()           {}
+func (*Error) updateDeliveryApiKeyRes()                {}
+func (*Error) updateRoleRes()                          {}
+func (*Error) updateWebhookDefinitionRes()             {}
 
 // ErrorStatusCode wraps Error with StatusCode.
 type ErrorStatusCode struct {
@@ -2271,35 +2274,38 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 	s.Response = val
 }
 
-func (*ErrorStatusCode) activateContentTypeRes()       {}
-func (*ErrorStatusCode) createDeliveryApiKeyRes()      {}
-func (*ErrorStatusCode) createPersonalAccessTokenRes() {}
-func (*ErrorStatusCode) createRoleRes()                {}
-func (*ErrorStatusCode) createWebhookDefinitionRes()   {}
-func (*ErrorStatusCode) deactivateContentTypeRes()     {}
-func (*ErrorStatusCode) deleteAppInstallationRes()     {}
-func (*ErrorStatusCode) deleteContentTypeRes()         {}
-func (*ErrorStatusCode) deleteDeliveryApiKeyRes()      {}
-func (*ErrorStatusCode) deleteRoleRes()                {}
-func (*ErrorStatusCode) deleteWebhookDefinitionRes()   {}
-func (*ErrorStatusCode) getAppInstallationRes()        {}
-func (*ErrorStatusCode) getAuthenticatedUserRes()      {}
-func (*ErrorStatusCode) getContentTypeRes()            {}
-func (*ErrorStatusCode) getDeliveryApiKeyRes()         {}
-func (*ErrorStatusCode) getEditorInterfaceRes()        {}
-func (*ErrorStatusCode) getPersonalAccessTokenRes()    {}
-func (*ErrorStatusCode) getPreviewApiKeyRes()          {}
-func (*ErrorStatusCode) getRoleRes()                   {}
-func (*ErrorStatusCode) getSpaceEnablementsRes()       {}
-func (*ErrorStatusCode) getWebhookDefinitionRes()      {}
-func (*ErrorStatusCode) putAppInstallationRes()        {}
-func (*ErrorStatusCode) putContentTypeRes()            {}
-func (*ErrorStatusCode) putEditorInterfaceRes()        {}
-func (*ErrorStatusCode) putSpaceEnablementsRes()       {}
-func (*ErrorStatusCode) revokePersonalAccessTokenRes() {}
-func (*ErrorStatusCode) updateDeliveryApiKeyRes()      {}
-func (*ErrorStatusCode) updateRoleRes()                {}
-func (*ErrorStatusCode) updateWebhookDefinitionRes()   {}
+func (*ErrorStatusCode) activateContentTypeRes()                 {}
+func (*ErrorStatusCode) createDeliveryApiKeyRes()                {}
+func (*ErrorStatusCode) createPersonalAccessTokenRes()           {}
+func (*ErrorStatusCode) createRoleRes()                          {}
+func (*ErrorStatusCode) createWebhookDefinitionRes()             {}
+func (*ErrorStatusCode) deactivateContentTypeRes()               {}
+func (*ErrorStatusCode) deleteAppDefinitionResourceProviderRes() {}
+func (*ErrorStatusCode) deleteAppInstallationRes()               {}
+func (*ErrorStatusCode) deleteContentTypeRes()                   {}
+func (*ErrorStatusCode) deleteDeliveryApiKeyRes()                {}
+func (*ErrorStatusCode) deleteRoleRes()                          {}
+func (*ErrorStatusCode) deleteWebhookDefinitionRes()             {}
+func (*ErrorStatusCode) getAppDefinitionResourceProviderRes()    {}
+func (*ErrorStatusCode) getAppInstallationRes()                  {}
+func (*ErrorStatusCode) getAuthenticatedUserRes()                {}
+func (*ErrorStatusCode) getContentTypeRes()                      {}
+func (*ErrorStatusCode) getDeliveryApiKeyRes()                   {}
+func (*ErrorStatusCode) getEditorInterfaceRes()                  {}
+func (*ErrorStatusCode) getPersonalAccessTokenRes()              {}
+func (*ErrorStatusCode) getPreviewApiKeyRes()                    {}
+func (*ErrorStatusCode) getRoleRes()                             {}
+func (*ErrorStatusCode) getSpaceEnablementsRes()                 {}
+func (*ErrorStatusCode) getWebhookDefinitionRes()                {}
+func (*ErrorStatusCode) putAppDefinitionResourceProviderRes()    {}
+func (*ErrorStatusCode) putAppInstallationRes()                  {}
+func (*ErrorStatusCode) putContentTypeRes()                      {}
+func (*ErrorStatusCode) putEditorInterfaceRes()                  {}
+func (*ErrorStatusCode) putSpaceEnablementsRes()                 {}
+func (*ErrorStatusCode) revokePersonalAccessTokenRes()           {}
+func (*ErrorStatusCode) updateDeliveryApiKeyRes()                {}
+func (*ErrorStatusCode) updateRoleRes()                          {}
+func (*ErrorStatusCode) updateWebhookDefinitionRes()             {}
 
 // Ref: #/components/schemas/ErrorSys
 type ErrorSys struct {
@@ -2376,6 +2382,130 @@ func (s *ExternalResourceLink) SetType(val string) {
 	s.Type = val
 }
 
+// Ref: #/components/schemas/FunctionLink
+type FunctionLink struct {
+	Sys FunctionLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *FunctionLink) GetSys() FunctionLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *FunctionLink) SetSys(val FunctionLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type FunctionLinkSys struct {
+	// Merged property.
+	Type FunctionLinkSysType `json:"type"`
+	ID   string              `json:"id"`
+	// Merged property.
+	LinkType FunctionLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *FunctionLinkSys) GetType() FunctionLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *FunctionLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *FunctionLinkSys) GetLinkType() FunctionLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *FunctionLinkSys) SetType(val FunctionLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *FunctionLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *FunctionLinkSys) SetLinkType(val FunctionLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type FunctionLinkSysLinkType string
+
+const (
+	FunctionLinkSysLinkTypeFunction FunctionLinkSysLinkType = "Function"
+)
+
+// AllValues returns all FunctionLinkSysLinkType values.
+func (FunctionLinkSysLinkType) AllValues() []FunctionLinkSysLinkType {
+	return []FunctionLinkSysLinkType{
+		FunctionLinkSysLinkTypeFunction,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s FunctionLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case FunctionLinkSysLinkTypeFunction:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *FunctionLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch FunctionLinkSysLinkType(data) {
+	case FunctionLinkSysLinkTypeFunction:
+		*s = FunctionLinkSysLinkTypeFunction
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type FunctionLinkSysType string
+
+const (
+	FunctionLinkSysTypeLink FunctionLinkSysType = "Link"
+)
+
+// AllValues returns all FunctionLinkSysType values.
+func (FunctionLinkSysType) AllValues() []FunctionLinkSysType {
+	return []FunctionLinkSysType{
+		FunctionLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s FunctionLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case FunctionLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *FunctionLinkSysType) UnmarshalText(data []byte) error {
+	switch FunctionLinkSysType(data) {
+	case FunctionLinkSysTypeLink:
+		*s = FunctionLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 type GetSpaceEnablementsApplicationJSONOK SpaceEnablement
 
 func (*GetSpaceEnablementsApplicationJSONOK) getSpaceEnablementsRes() {}
@@ -2432,12 +2562,13 @@ func (o NilString) Or(d string) string {
 // Ref: #/components/responses/no-content
 type NoContent struct{}
 
-func (*NoContent) deactivateContentTypeRes()   {}
-func (*NoContent) deleteAppInstallationRes()   {}
-func (*NoContent) deleteContentTypeRes()       {}
-func (*NoContent) deleteDeliveryApiKeyRes()    {}
-func (*NoContent) deleteRoleRes()              {}
-func (*NoContent) deleteWebhookDefinitionRes() {}
+func (*NoContent) deactivateContentTypeRes()               {}
+func (*NoContent) deleteAppDefinitionResourceProviderRes() {}
+func (*NoContent) deleteAppInstallationRes()               {}
+func (*NoContent) deleteContentTypeRes()                   {}
+func (*NoContent) deleteDeliveryApiKeyRes()                {}
+func (*NoContent) deleteRoleRes()                          {}
+func (*NoContent) deleteWebhookDefinitionRes()             {}
 
 // NewOptApiKeyPreviewAPIKey returns new OptApiKeyPreviewAPIKey with value set to v.
 func NewOptApiKeyPreviewAPIKey(v ApiKeyPreviewAPIKey) OptApiKeyPreviewAPIKey {
@@ -3735,6 +3866,130 @@ func (o OptWebhookDefinitionFilterNot) Or(d WebhookDefinitionFilterNot) WebhookD
 	return d
 }
 
+// Ref: #/components/schemas/OrganizationLink
+type OrganizationLink struct {
+	Sys OrganizationLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *OrganizationLink) GetSys() OrganizationLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *OrganizationLink) SetSys(val OrganizationLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type OrganizationLinkSys struct {
+	// Merged property.
+	Type OrganizationLinkSysType `json:"type"`
+	ID   string                  `json:"id"`
+	// Merged property.
+	LinkType OrganizationLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *OrganizationLinkSys) GetType() OrganizationLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *OrganizationLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *OrganizationLinkSys) GetLinkType() OrganizationLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *OrganizationLinkSys) SetType(val OrganizationLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *OrganizationLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *OrganizationLinkSys) SetLinkType(val OrganizationLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type OrganizationLinkSysLinkType string
+
+const (
+	OrganizationLinkSysLinkTypeOrganization OrganizationLinkSysLinkType = "Organization"
+)
+
+// AllValues returns all OrganizationLinkSysLinkType values.
+func (OrganizationLinkSysLinkType) AllValues() []OrganizationLinkSysLinkType {
+	return []OrganizationLinkSysLinkType{
+		OrganizationLinkSysLinkTypeOrganization,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s OrganizationLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case OrganizationLinkSysLinkTypeOrganization:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *OrganizationLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch OrganizationLinkSysLinkType(data) {
+	case OrganizationLinkSysLinkTypeOrganization:
+		*s = OrganizationLinkSysLinkTypeOrganization
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type OrganizationLinkSysType string
+
+const (
+	OrganizationLinkSysTypeLink OrganizationLinkSysType = "Link"
+)
+
+// AllValues returns all OrganizationLinkSysType values.
+func (OrganizationLinkSysType) AllValues() []OrganizationLinkSysType {
+	return []OrganizationLinkSysType{
+		OrganizationLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s OrganizationLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case OrganizationLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *OrganizationLinkSysType) UnmarshalText(data []byte) error {
+	switch OrganizationLinkSysType(data) {
+	case OrganizationLinkSysTypeLink:
+		*s = OrganizationLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Merged schema.
 // Ref: #/components/schemas/PersonalAccessToken
 type PersonalAccessToken struct {
@@ -4176,6 +4431,280 @@ func NewExternalResourceLinkResourceLink(v ExternalResourceLink) ResourceLink {
 	var s ResourceLink
 	s.SetExternalResourceLink(v)
 	return s
+}
+
+// Merged schema.
+// Ref: #/components/schemas/ResourceProvider
+type ResourceProvider struct {
+	Sys      ResourceProviderSys  `json:"sys"`
+	Type     ResourceProviderType `json:"type"`
+	Function FunctionLink         `json:"function"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ResourceProvider) GetSys() ResourceProviderSys {
+	return s.Sys
+}
+
+// GetType returns the value of Type.
+func (s *ResourceProvider) GetType() ResourceProviderType {
+	return s.Type
+}
+
+// GetFunction returns the value of Function.
+func (s *ResourceProvider) GetFunction() FunctionLink {
+	return s.Function
+}
+
+// SetSys sets the value of Sys.
+func (s *ResourceProvider) SetSys(val ResourceProviderSys) {
+	s.Sys = val
+}
+
+// SetType sets the value of Type.
+func (s *ResourceProvider) SetType(val ResourceProviderType) {
+	s.Type = val
+}
+
+// SetFunction sets the value of Function.
+func (s *ResourceProvider) SetFunction(val FunctionLink) {
+	s.Function = val
+}
+
+func (*ResourceProvider) getAppDefinitionResourceProviderRes() {}
+
+// Merged schema.
+// Ref: #/components/schemas/ResourceProviderRequest
+type ResourceProviderRequest struct {
+	Sys      ResourceProviderRequestSys  `json:"sys"`
+	Type     ResourceProviderRequestType `json:"type"`
+	Function FunctionLink                `json:"function"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ResourceProviderRequest) GetSys() ResourceProviderRequestSys {
+	return s.Sys
+}
+
+// GetType returns the value of Type.
+func (s *ResourceProviderRequest) GetType() ResourceProviderRequestType {
+	return s.Type
+}
+
+// GetFunction returns the value of Function.
+func (s *ResourceProviderRequest) GetFunction() FunctionLink {
+	return s.Function
+}
+
+// SetSys sets the value of Sys.
+func (s *ResourceProviderRequest) SetSys(val ResourceProviderRequestSys) {
+	s.Sys = val
+}
+
+// SetType sets the value of Type.
+func (s *ResourceProviderRequest) SetType(val ResourceProviderRequestType) {
+	s.Type = val
+}
+
+// SetFunction sets the value of Function.
+func (s *ResourceProviderRequest) SetFunction(val FunctionLink) {
+	s.Function = val
+}
+
+// Ref: #/components/schemas/ResourceProviderRequestSys
+type ResourceProviderRequestSys struct {
+	ID string `json:"id"`
+}
+
+// GetID returns the value of ID.
+func (s *ResourceProviderRequestSys) GetID() string {
+	return s.ID
+}
+
+// SetID sets the value of ID.
+func (s *ResourceProviderRequestSys) SetID(val string) {
+	s.ID = val
+}
+
+type ResourceProviderRequestType string
+
+const (
+	ResourceProviderRequestTypeFunction ResourceProviderRequestType = "function"
+)
+
+// AllValues returns all ResourceProviderRequestType values.
+func (ResourceProviderRequestType) AllValues() []ResourceProviderRequestType {
+	return []ResourceProviderRequestType{
+		ResourceProviderRequestTypeFunction,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ResourceProviderRequestType) MarshalText() ([]byte, error) {
+	switch s {
+	case ResourceProviderRequestTypeFunction:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ResourceProviderRequestType) UnmarshalText(data []byte) error {
+	switch ResourceProviderRequestType(data) {
+	case ResourceProviderRequestTypeFunction:
+		*s = ResourceProviderRequestTypeFunction
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// ResourceProviderStatusCode wraps ResourceProvider with StatusCode.
+type ResourceProviderStatusCode struct {
+	StatusCode int
+	Response   ResourceProvider
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *ResourceProviderStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *ResourceProviderStatusCode) GetResponse() ResourceProvider {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *ResourceProviderStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *ResourceProviderStatusCode) SetResponse(val ResourceProvider) {
+	s.Response = val
+}
+
+func (*ResourceProviderStatusCode) putAppDefinitionResourceProviderRes() {}
+
+// Merged schema.
+// Ref: #/components/schemas/ResourceProviderSys
+type ResourceProviderSys struct {
+	// Merged property.
+	Type          ResourceProviderSysType `json:"type"`
+	ID            string                  `json:"id"`
+	Organization  OrganizationLink        `json:"organization"`
+	AppDefinition AppDefinitionLink       `json:"appDefinition"`
+}
+
+// GetType returns the value of Type.
+func (s *ResourceProviderSys) GetType() ResourceProviderSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ResourceProviderSys) GetID() string {
+	return s.ID
+}
+
+// GetOrganization returns the value of Organization.
+func (s *ResourceProviderSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetAppDefinition returns the value of AppDefinition.
+func (s *ResourceProviderSys) GetAppDefinition() AppDefinitionLink {
+	return s.AppDefinition
+}
+
+// SetType sets the value of Type.
+func (s *ResourceProviderSys) SetType(val ResourceProviderSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ResourceProviderSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetOrganization sets the value of Organization.
+func (s *ResourceProviderSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetAppDefinition sets the value of AppDefinition.
+func (s *ResourceProviderSys) SetAppDefinition(val AppDefinitionLink) {
+	s.AppDefinition = val
+}
+
+// Merged schema.
+type ResourceProviderSysType string
+
+const (
+	ResourceProviderSysTypeResourceProvider ResourceProviderSysType = "ResourceProvider"
+)
+
+// AllValues returns all ResourceProviderSysType values.
+func (ResourceProviderSysType) AllValues() []ResourceProviderSysType {
+	return []ResourceProviderSysType{
+		ResourceProviderSysTypeResourceProvider,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ResourceProviderSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ResourceProviderSysTypeResourceProvider:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ResourceProviderSysType) UnmarshalText(data []byte) error {
+	switch ResourceProviderSysType(data) {
+	case ResourceProviderSysTypeResourceProvider:
+		*s = ResourceProviderSysTypeResourceProvider
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type ResourceProviderType string
+
+const (
+	ResourceProviderTypeFunction ResourceProviderType = "function"
+)
+
+// AllValues returns all ResourceProviderType values.
+func (ResourceProviderType) AllValues() []ResourceProviderType {
+	return []ResourceProviderType{
+		ResourceProviderTypeFunction,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ResourceProviderType) MarshalText() ([]byte, error) {
+	switch s {
+	case ResourceProviderTypeFunction:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ResourceProviderType) UnmarshalText(data []byte) error {
+	switch ResourceProviderType(data) {
+	case ResourceProviderTypeFunction:
+		*s = ResourceProviderTypeFunction
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // Merged schema.

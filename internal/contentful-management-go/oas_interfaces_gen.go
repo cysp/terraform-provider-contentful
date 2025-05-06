@@ -25,6 +25,10 @@ type DeactivateContentTypeRes interface {
 	deactivateContentTypeRes()
 }
 
+type DeleteAppDefinitionResourceProviderRes interface {
+	deleteAppDefinitionResourceProviderRes()
+}
+
 type DeleteAppInstallationRes interface {
 	deleteAppInstallationRes()
 }
@@ -43,6 +47,10 @@ type DeleteRoleRes interface {
 
 type DeleteWebhookDefinitionRes interface {
 	deleteWebhookDefinitionRes()
+}
+
+type GetAppDefinitionResourceProviderRes interface {
+	getAppDefinitionResourceProviderRes()
 }
 
 type GetAppInstallationRes interface {
@@ -83,6 +91,10 @@ type GetSpaceEnablementsRes interface {
 
 type GetWebhookDefinitionRes interface {
 	getWebhookDefinitionRes()
+}
+
+type PutAppDefinitionResourceProviderRes interface {
+	putAppDefinitionResourceProviderRes()
 }
 
 type PutAppInstallationRes interface {

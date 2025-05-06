@@ -6,6 +6,12 @@ servers:
   - url: https://api.contentful.com
 components:
   parameters:
+    organization_id:
+      in: path
+      name: organization_id
+      required: true
+      schema:
+        type: string
     space_id:
       in: path
       name: space_id
@@ -99,6 +105,24 @@ components:
           type: string
       required:
         - type
+    BaseSysWithOrganization:
+      allOf:
+        - $ref: "#/components/schemas/BaseSys"
+        - type: object
+          properties:
+            organization:
+              $ref: "#/components/schemas/OrganizationLink"
+          required:
+            - organization
+    BaseSysWithAppDefinition:
+      allOf:
+        - $ref: "#/components/schemas/BaseSys"
+        - type: object
+          properties:
+            appDefinition:
+              $ref: "#/components/schemas/AppDefinitionLink"
+          required:
+            - appDefinition
     BaseSysWithSpace:
       allOf:
         - $ref: "#/components/schemas/BaseSys"
@@ -245,16 +269,13 @@ components:
     AppInstallationSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
+        - $ref: "#/components/schemas/BaseSysWithAppDefinition"
         - type: object
           properties:
             type:
               type: string
               enum:
                 - AppInstallation
-            appDefinition:
-              $ref: "#/components/schemas/AppDefinitionLink"
-          required:
-            - appDefinition
     AppInstallationFields:
       type: object
       properties:
@@ -471,6 +492,20 @@ components:
               type: string
           required:
             - linkType
+    OrganizationLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - Organization
+      required:
+        - sys
     SpaceLink:
       type: object
       properties:
@@ -511,6 +546,20 @@ components:
                   type: string
                   enum:
                     - AppDefinition
+      required:
+        - sys
+    FunctionLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - Function
       required:
         - sys
     ContentTypeLink:
@@ -654,6 +703,54 @@ components:
           required:
             - sys
         - $ref: "#/components/schemas/PreviewApiKeyFields"
+    ResourceProviderRequestSys:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+    ResourceProviderSys:
+      allOf:
+        - $ref: "#/components/schemas/BaseSysWithId"
+        - $ref: "#/components/schemas/BaseSysWithOrganization"
+        - $ref: "#/components/schemas/BaseSysWithAppDefinition"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - ResourceProvider
+    ResourceProviderFields:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - function
+        function:
+          $ref: "#/components/schemas/FunctionLink"
+      required:
+        - type
+        - function
+    ResourceProviderRequest:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: "#/components/schemas/ResourceProviderRequestSys"
+          required:
+            - sys
+        - $ref: "#/components/schemas/ResourceProviderFields"
+    ResourceProvider:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: "#/components/schemas/ResourceProviderSys"
+          required:
+            - sys
+        - $ref: "#/components/schemas/ResourceProviderFields"
     RoleSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpace"
@@ -1075,6 +1172,57 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "#/components/schemas/PreviewApiKey"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+    get:
+      operationId: getAppDefinitionResourceProvider
+      summary: Get one app resource provider definition
+      responses:
+        200:
+          description: An app resource provider definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/ResourceProvider"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putAppDefinitionResourceProvider
+      summary: Create or update an app resource provider definition
+      parameters:
+        - $ref: "#/components/parameters/organization_id"
+        - $ref: "#/components/parameters/app_definition_id"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "#/components/schemas/ResourceProviderRequest"
+      responses:
+        2XX:
+          description: An app resource provider definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/ResourceProvider"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteAppDefinitionResourceProvider
+      summary: Delete an app resource provider definition
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
