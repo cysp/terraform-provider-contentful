@@ -2222,12 +2222,14 @@ func (*Error) createRoleRes()                          {}
 func (*Error) createWebhookDefinitionRes()             {}
 func (*Error) deactivateContentTypeRes()               {}
 func (*Error) deleteAppDefinitionResourceProviderRes() {}
+func (*Error) deleteAppDefinitionResourceTypeRes()     {}
 func (*Error) deleteAppInstallationRes()               {}
 func (*Error) deleteContentTypeRes()                   {}
 func (*Error) deleteDeliveryApiKeyRes()                {}
 func (*Error) deleteRoleRes()                          {}
 func (*Error) deleteWebhookDefinitionRes()             {}
 func (*Error) getAppDefinitionResourceProviderRes()    {}
+func (*Error) getAppDefinitionResourceTypeRes()        {}
 func (*Error) getAppInstallationRes()                  {}
 func (*Error) getAuthenticatedUserRes()                {}
 func (*Error) getContentTypeRes()                      {}
@@ -2239,6 +2241,7 @@ func (*Error) getRoleRes()                             {}
 func (*Error) getSpaceEnablementsRes()                 {}
 func (*Error) getWebhookDefinitionRes()                {}
 func (*Error) putAppDefinitionResourceProviderRes()    {}
+func (*Error) putAppDefinitionResourceTypeRes()        {}
 func (*Error) putAppInstallationRes()                  {}
 func (*Error) putContentTypeRes()                      {}
 func (*Error) putEditorInterfaceRes()                  {}
@@ -2281,12 +2284,14 @@ func (*ErrorStatusCode) createRoleRes()                          {}
 func (*ErrorStatusCode) createWebhookDefinitionRes()             {}
 func (*ErrorStatusCode) deactivateContentTypeRes()               {}
 func (*ErrorStatusCode) deleteAppDefinitionResourceProviderRes() {}
+func (*ErrorStatusCode) deleteAppDefinitionResourceTypeRes()     {}
 func (*ErrorStatusCode) deleteAppInstallationRes()               {}
 func (*ErrorStatusCode) deleteContentTypeRes()                   {}
 func (*ErrorStatusCode) deleteDeliveryApiKeyRes()                {}
 func (*ErrorStatusCode) deleteRoleRes()                          {}
 func (*ErrorStatusCode) deleteWebhookDefinitionRes()             {}
 func (*ErrorStatusCode) getAppDefinitionResourceProviderRes()    {}
+func (*ErrorStatusCode) getAppDefinitionResourceTypeRes()        {}
 func (*ErrorStatusCode) getAppInstallationRes()                  {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()                {}
 func (*ErrorStatusCode) getContentTypeRes()                      {}
@@ -2298,6 +2303,7 @@ func (*ErrorStatusCode) getRoleRes()                             {}
 func (*ErrorStatusCode) getSpaceEnablementsRes()                 {}
 func (*ErrorStatusCode) getWebhookDefinitionRes()                {}
 func (*ErrorStatusCode) putAppDefinitionResourceProviderRes()    {}
+func (*ErrorStatusCode) putAppDefinitionResourceTypeRes()        {}
 func (*ErrorStatusCode) putAppInstallationRes()                  {}
 func (*ErrorStatusCode) putContentTypeRes()                      {}
 func (*ErrorStatusCode) putEditorInterfaceRes()                  {}
@@ -2564,6 +2570,7 @@ type NoContent struct{}
 
 func (*NoContent) deactivateContentTypeRes()               {}
 func (*NoContent) deleteAppDefinitionResourceProviderRes() {}
+func (*NoContent) deleteAppDefinitionResourceTypeRes()     {}
 func (*NoContent) deleteAppInstallationRes()               {}
 func (*NoContent) deleteContentTypeRes()                   {}
 func (*NoContent) deleteDeliveryApiKeyRes()                {}
@@ -3728,6 +3735,98 @@ func (o OptNilWebhookDefinitionTransformation) Or(d WebhookDefinitionTransformat
 	return d
 }
 
+// NewOptResourceTypeDefaultFieldMappingBadge returns new OptResourceTypeDefaultFieldMappingBadge with value set to v.
+func NewOptResourceTypeDefaultFieldMappingBadge(v ResourceTypeDefaultFieldMappingBadge) OptResourceTypeDefaultFieldMappingBadge {
+	return OptResourceTypeDefaultFieldMappingBadge{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptResourceTypeDefaultFieldMappingBadge is optional ResourceTypeDefaultFieldMappingBadge.
+type OptResourceTypeDefaultFieldMappingBadge struct {
+	Value ResourceTypeDefaultFieldMappingBadge
+	Set   bool
+}
+
+// IsSet returns true if OptResourceTypeDefaultFieldMappingBadge was set.
+func (o OptResourceTypeDefaultFieldMappingBadge) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptResourceTypeDefaultFieldMappingBadge) Reset() {
+	var v ResourceTypeDefaultFieldMappingBadge
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptResourceTypeDefaultFieldMappingBadge) SetTo(v ResourceTypeDefaultFieldMappingBadge) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptResourceTypeDefaultFieldMappingBadge) Get() (v ResourceTypeDefaultFieldMappingBadge, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptResourceTypeDefaultFieldMappingBadge) Or(d ResourceTypeDefaultFieldMappingBadge) ResourceTypeDefaultFieldMappingBadge {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptResourceTypeDefaultFieldMappingImage returns new OptResourceTypeDefaultFieldMappingImage with value set to v.
+func NewOptResourceTypeDefaultFieldMappingImage(v ResourceTypeDefaultFieldMappingImage) OptResourceTypeDefaultFieldMappingImage {
+	return OptResourceTypeDefaultFieldMappingImage{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptResourceTypeDefaultFieldMappingImage is optional ResourceTypeDefaultFieldMappingImage.
+type OptResourceTypeDefaultFieldMappingImage struct {
+	Value ResourceTypeDefaultFieldMappingImage
+	Set   bool
+}
+
+// IsSet returns true if OptResourceTypeDefaultFieldMappingImage was set.
+func (o OptResourceTypeDefaultFieldMappingImage) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptResourceTypeDefaultFieldMappingImage) Reset() {
+	var v ResourceTypeDefaultFieldMappingImage
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptResourceTypeDefaultFieldMappingImage) SetTo(v ResourceTypeDefaultFieldMappingImage) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptResourceTypeDefaultFieldMappingImage) Get() (v ResourceTypeDefaultFieldMappingImage, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptResourceTypeDefaultFieldMappingImage) Or(d ResourceTypeDefaultFieldMappingImage) ResourceTypeDefaultFieldMappingImage {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptSpaceEnablementField returns new OptSpaceEnablementField with value set to v.
 func NewOptSpaceEnablementField(v SpaceEnablementField) OptSpaceEnablementField {
 	return OptSpaceEnablementField{
@@ -4473,6 +4572,130 @@ func (s *ResourceProvider) SetFunction(val FunctionLink) {
 
 func (*ResourceProvider) getAppDefinitionResourceProviderRes() {}
 
+// Ref: #/components/schemas/ResourceProviderLink
+type ResourceProviderLink struct {
+	Sys ResourceProviderLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ResourceProviderLink) GetSys() ResourceProviderLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *ResourceProviderLink) SetSys(val ResourceProviderLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type ResourceProviderLinkSys struct {
+	// Merged property.
+	Type ResourceProviderLinkSysType `json:"type"`
+	ID   string                      `json:"id"`
+	// Merged property.
+	LinkType ResourceProviderLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ResourceProviderLinkSys) GetType() ResourceProviderLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ResourceProviderLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ResourceProviderLinkSys) GetLinkType() ResourceProviderLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ResourceProviderLinkSys) SetType(val ResourceProviderLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ResourceProviderLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ResourceProviderLinkSys) SetLinkType(val ResourceProviderLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type ResourceProviderLinkSysLinkType string
+
+const (
+	ResourceProviderLinkSysLinkTypeResourceProvider ResourceProviderLinkSysLinkType = "ResourceProvider"
+)
+
+// AllValues returns all ResourceProviderLinkSysLinkType values.
+func (ResourceProviderLinkSysLinkType) AllValues() []ResourceProviderLinkSysLinkType {
+	return []ResourceProviderLinkSysLinkType{
+		ResourceProviderLinkSysLinkTypeResourceProvider,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ResourceProviderLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case ResourceProviderLinkSysLinkTypeResourceProvider:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ResourceProviderLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch ResourceProviderLinkSysLinkType(data) {
+	case ResourceProviderLinkSysLinkTypeResourceProvider:
+		*s = ResourceProviderLinkSysLinkTypeResourceProvider
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type ResourceProviderLinkSysType string
+
+const (
+	ResourceProviderLinkSysTypeLink ResourceProviderLinkSysType = "Link"
+)
+
+// AllValues returns all ResourceProviderLinkSysType values.
+func (ResourceProviderLinkSysType) AllValues() []ResourceProviderLinkSysType {
+	return []ResourceProviderLinkSysType{
+		ResourceProviderLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ResourceProviderLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ResourceProviderLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ResourceProviderLinkSysType) UnmarshalText(data []byte) error {
+	switch ResourceProviderLinkSysType(data) {
+	case ResourceProviderLinkSysTypeLink:
+		*s = ResourceProviderLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Merged schema.
 // Ref: #/components/schemas/ResourceProviderRequest
 type ResourceProviderRequest struct {
@@ -4701,6 +4924,316 @@ func (s *ResourceProviderType) UnmarshalText(data []byte) error {
 	switch ResourceProviderType(data) {
 	case ResourceProviderTypeFunction:
 		*s = ResourceProviderTypeFunction
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/components/schemas/ResourceType
+type ResourceType struct {
+	Sys                 ResourceTypeSys                 `json:"sys"`
+	Name                string                          `json:"name"`
+	DefaultFieldMapping ResourceTypeDefaultFieldMapping `json:"defaultFieldMapping"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ResourceType) GetSys() ResourceTypeSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *ResourceType) GetName() string {
+	return s.Name
+}
+
+// GetDefaultFieldMapping returns the value of DefaultFieldMapping.
+func (s *ResourceType) GetDefaultFieldMapping() ResourceTypeDefaultFieldMapping {
+	return s.DefaultFieldMapping
+}
+
+// SetSys sets the value of Sys.
+func (s *ResourceType) SetSys(val ResourceTypeSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *ResourceType) SetName(val string) {
+	s.Name = val
+}
+
+// SetDefaultFieldMapping sets the value of DefaultFieldMapping.
+func (s *ResourceType) SetDefaultFieldMapping(val ResourceTypeDefaultFieldMapping) {
+	s.DefaultFieldMapping = val
+}
+
+func (*ResourceType) getAppDefinitionResourceTypeRes() {}
+
+// Ref: #/components/schemas/ResourceTypeDefaultFieldMapping
+type ResourceTypeDefaultFieldMapping struct {
+	Title       string                                  `json:"title"`
+	Subtitle    OptString                               `json:"subtitle"`
+	Description OptString                               `json:"description"`
+	ExternalUrl OptString                               `json:"externalUrl"`
+	Image       OptResourceTypeDefaultFieldMappingImage `json:"image"`
+	Badge       OptResourceTypeDefaultFieldMappingBadge `json:"badge"`
+}
+
+// GetTitle returns the value of Title.
+func (s *ResourceTypeDefaultFieldMapping) GetTitle() string {
+	return s.Title
+}
+
+// GetSubtitle returns the value of Subtitle.
+func (s *ResourceTypeDefaultFieldMapping) GetSubtitle() OptString {
+	return s.Subtitle
+}
+
+// GetDescription returns the value of Description.
+func (s *ResourceTypeDefaultFieldMapping) GetDescription() OptString {
+	return s.Description
+}
+
+// GetExternalUrl returns the value of ExternalUrl.
+func (s *ResourceTypeDefaultFieldMapping) GetExternalUrl() OptString {
+	return s.ExternalUrl
+}
+
+// GetImage returns the value of Image.
+func (s *ResourceTypeDefaultFieldMapping) GetImage() OptResourceTypeDefaultFieldMappingImage {
+	return s.Image
+}
+
+// GetBadge returns the value of Badge.
+func (s *ResourceTypeDefaultFieldMapping) GetBadge() OptResourceTypeDefaultFieldMappingBadge {
+	return s.Badge
+}
+
+// SetTitle sets the value of Title.
+func (s *ResourceTypeDefaultFieldMapping) SetTitle(val string) {
+	s.Title = val
+}
+
+// SetSubtitle sets the value of Subtitle.
+func (s *ResourceTypeDefaultFieldMapping) SetSubtitle(val OptString) {
+	s.Subtitle = val
+}
+
+// SetDescription sets the value of Description.
+func (s *ResourceTypeDefaultFieldMapping) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetExternalUrl sets the value of ExternalUrl.
+func (s *ResourceTypeDefaultFieldMapping) SetExternalUrl(val OptString) {
+	s.ExternalUrl = val
+}
+
+// SetImage sets the value of Image.
+func (s *ResourceTypeDefaultFieldMapping) SetImage(val OptResourceTypeDefaultFieldMappingImage) {
+	s.Image = val
+}
+
+// SetBadge sets the value of Badge.
+func (s *ResourceTypeDefaultFieldMapping) SetBadge(val OptResourceTypeDefaultFieldMappingBadge) {
+	s.Badge = val
+}
+
+type ResourceTypeDefaultFieldMappingBadge struct {
+	Label   string `json:"label"`
+	Variant string `json:"variant"`
+}
+
+// GetLabel returns the value of Label.
+func (s *ResourceTypeDefaultFieldMappingBadge) GetLabel() string {
+	return s.Label
+}
+
+// GetVariant returns the value of Variant.
+func (s *ResourceTypeDefaultFieldMappingBadge) GetVariant() string {
+	return s.Variant
+}
+
+// SetLabel sets the value of Label.
+func (s *ResourceTypeDefaultFieldMappingBadge) SetLabel(val string) {
+	s.Label = val
+}
+
+// SetVariant sets the value of Variant.
+func (s *ResourceTypeDefaultFieldMappingBadge) SetVariant(val string) {
+	s.Variant = val
+}
+
+type ResourceTypeDefaultFieldMappingImage struct {
+	URL     string    `json:"url"`
+	AltText OptString `json:"altText"`
+}
+
+// GetURL returns the value of URL.
+func (s *ResourceTypeDefaultFieldMappingImage) GetURL() string {
+	return s.URL
+}
+
+// GetAltText returns the value of AltText.
+func (s *ResourceTypeDefaultFieldMappingImage) GetAltText() OptString {
+	return s.AltText
+}
+
+// SetURL sets the value of URL.
+func (s *ResourceTypeDefaultFieldMappingImage) SetURL(val string) {
+	s.URL = val
+}
+
+// SetAltText sets the value of AltText.
+func (s *ResourceTypeDefaultFieldMappingImage) SetAltText(val OptString) {
+	s.AltText = val
+}
+
+// Ref: #/components/schemas/ResourceTypeFields
+type ResourceTypeFields struct {
+	Name                string                          `json:"name"`
+	DefaultFieldMapping ResourceTypeDefaultFieldMapping `json:"defaultFieldMapping"`
+}
+
+// GetName returns the value of Name.
+func (s *ResourceTypeFields) GetName() string {
+	return s.Name
+}
+
+// GetDefaultFieldMapping returns the value of DefaultFieldMapping.
+func (s *ResourceTypeFields) GetDefaultFieldMapping() ResourceTypeDefaultFieldMapping {
+	return s.DefaultFieldMapping
+}
+
+// SetName sets the value of Name.
+func (s *ResourceTypeFields) SetName(val string) {
+	s.Name = val
+}
+
+// SetDefaultFieldMapping sets the value of DefaultFieldMapping.
+func (s *ResourceTypeFields) SetDefaultFieldMapping(val ResourceTypeDefaultFieldMapping) {
+	s.DefaultFieldMapping = val
+}
+
+// ResourceTypeStatusCode wraps ResourceType with StatusCode.
+type ResourceTypeStatusCode struct {
+	StatusCode int
+	Response   ResourceType
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *ResourceTypeStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *ResourceTypeStatusCode) GetResponse() ResourceType {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *ResourceTypeStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *ResourceTypeStatusCode) SetResponse(val ResourceType) {
+	s.Response = val
+}
+
+func (*ResourceTypeStatusCode) putAppDefinitionResourceTypeRes() {}
+
+// Merged schema.
+// Ref: #/components/schemas/ResourceTypeSys
+type ResourceTypeSys struct {
+	// Merged property.
+	Type             ResourceTypeSysType  `json:"type"`
+	ID               string               `json:"id"`
+	Organization     OrganizationLink     `json:"organization"`
+	AppDefinition    AppDefinitionLink    `json:"appDefinition"`
+	ResourceProvider ResourceProviderLink `json:"resourceProvider"`
+}
+
+// GetType returns the value of Type.
+func (s *ResourceTypeSys) GetType() ResourceTypeSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ResourceTypeSys) GetID() string {
+	return s.ID
+}
+
+// GetOrganization returns the value of Organization.
+func (s *ResourceTypeSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetAppDefinition returns the value of AppDefinition.
+func (s *ResourceTypeSys) GetAppDefinition() AppDefinitionLink {
+	return s.AppDefinition
+}
+
+// GetResourceProvider returns the value of ResourceProvider.
+func (s *ResourceTypeSys) GetResourceProvider() ResourceProviderLink {
+	return s.ResourceProvider
+}
+
+// SetType sets the value of Type.
+func (s *ResourceTypeSys) SetType(val ResourceTypeSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ResourceTypeSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetOrganization sets the value of Organization.
+func (s *ResourceTypeSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetAppDefinition sets the value of AppDefinition.
+func (s *ResourceTypeSys) SetAppDefinition(val AppDefinitionLink) {
+	s.AppDefinition = val
+}
+
+// SetResourceProvider sets the value of ResourceProvider.
+func (s *ResourceTypeSys) SetResourceProvider(val ResourceProviderLink) {
+	s.ResourceProvider = val
+}
+
+// Merged schema.
+type ResourceTypeSysType string
+
+const (
+	ResourceTypeSysTypeResourceType ResourceTypeSysType = "ResourceType"
+)
+
+// AllValues returns all ResourceTypeSysType values.
+func (ResourceTypeSysType) AllValues() []ResourceTypeSysType {
+	return []ResourceTypeSysType{
+		ResourceTypeSysTypeResourceType,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ResourceTypeSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ResourceTypeSysTypeResourceType:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ResourceTypeSysType) UnmarshalText(data []byte) error {
+	switch ResourceTypeSysType(data) {
+	case ResourceTypeSysTypeResourceType:
+		*s = ResourceTypeSysTypeResourceType
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

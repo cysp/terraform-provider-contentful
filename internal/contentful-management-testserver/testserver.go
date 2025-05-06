@@ -29,6 +29,7 @@ type ContentfulManagementTestServer struct {
 
 	appDefinitionIDs               map[string]struct{}
 	appDefinitionResourceProviders OrganizationMap[*cm.ResourceProvider]
+	appDefinitionResourceTypes     OrganizationMap[*cm.ResourceType]
 	appInstallations               SpaceEnvironmentMap[*cm.AppInstallation]
 
 	contentTypes     SpaceEnvironmentMap[*cm.ContentType]
@@ -48,6 +49,7 @@ func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 		previewAPIKeys:                 NewSpaceMap[*cm.PreviewApiKey](),
 		appDefinitionIDs:               make(map[string]struct{}),
 		appDefinitionResourceProviders: NewOrganizationMap[*cm.ResourceProvider](),
+		appDefinitionResourceTypes:     NewOrganizationMap[*cm.ResourceType](),
 		appInstallations:               NewSpaceEnvironmentMap[*cm.AppInstallation](),
 		contentTypes:                   NewSpaceEnvironmentMap[*cm.ContentType](),
 		editorInterfaces:               NewSpaceEnvironmentMap[*cm.EditorInterface](),
@@ -61,6 +63,7 @@ func NewContentfulManagementTestServer() *ContentfulManagementTestServer {
 	testserver.setupUserHandler()
 	testserver.setupPersonalAccessTokenHandlers()
 	testserver.setupOrganizationAppDefinitionResourceProviderHandlers()
+	testserver.setupOrganizationAppDefinitionResourceTypeHandlers()
 	testserver.setupSpaceEnablementsHandlers()
 	testserver.setupSpaceAPIKeyHandlers()
 	testserver.SetupSpaceEnvironmentAppInstallationHandlers()

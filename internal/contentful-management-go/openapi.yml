@@ -54,6 +54,12 @@ components:
       required: true
       schema:
         type: string
+    resource_type_id:
+      in: path
+      name: resource_type_id
+      required: true
+      schema:
+        type: string
     role_id:
       in: path
       name: role_id
@@ -123,6 +129,15 @@ components:
               $ref: "#/components/schemas/AppDefinitionLink"
           required:
             - appDefinition
+    BaseSysWithResourceProvider:
+      allOf:
+        - $ref: "#/components/schemas/BaseSys"
+        - type: object
+          properties:
+            resourceProvider:
+              $ref: "#/components/schemas/ResourceProviderLink"
+          required:
+            - resourceProvider
     BaseSysWithSpace:
       allOf:
         - $ref: "#/components/schemas/BaseSys"
@@ -562,6 +577,20 @@ components:
                     - Function
       required:
         - sys
+    ResourceProviderLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - ResourceProvider
+      required:
+        - sys
     ContentTypeLink:
       type: object
       properties:
@@ -751,6 +780,69 @@ components:
           required:
             - sys
         - $ref: "#/components/schemas/ResourceProviderFields"
+    ResourceTypeSys:
+      allOf:
+        - $ref: "#/components/schemas/BaseSysWithId"
+        - $ref: "#/components/schemas/BaseSysWithOrganization"
+        - $ref: "#/components/schemas/BaseSysWithAppDefinition"
+        - $ref: "#/components/schemas/BaseSysWithResourceProvider"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - ResourceType
+    ResourceTypeFields:
+      type: object
+      properties:
+        name:
+          type: string
+        defaultFieldMapping:
+          $ref: "#/components/schemas/ResourceTypeDefaultFieldMapping"
+      required:
+        - name
+        - defaultFieldMapping
+    ResourceTypeDefaultFieldMapping:
+      type: object
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: string
+        description:
+          type: string
+        externalUrl:
+          type: string
+        image:
+          type: object
+          properties:
+            url:
+              type: string
+            altText:
+              type: string
+          required:
+            - url
+        badge:
+          type: object
+          properties:
+            label:
+              type: string
+            variant:
+              type: string
+          required:
+            - label
+            - variant
+      required:
+        - title
+    ResourceType:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: "#/components/schemas/ResourceTypeSys"
+          required:
+            - sys
+        - $ref: "#/components/schemas/ResourceTypeFields"
     RoleSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpace"
@@ -1219,6 +1311,59 @@ paths:
           $ref: "#/components/responses/error"
     delete:
       operationId: deleteAppDefinitionResourceProvider
+      summary: Delete an app resource provider definition
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+      - $ref: "#/components/parameters/resource_type_id"
+    get:
+      operationId: getAppDefinitionResourceType
+      summary: Get one app resource ttype definition
+      responses:
+        200:
+          description: An app resource type definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/ResourceType"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putAppDefinitionResourceType
+      summary: Create or update an app resource provider type definition
+      parameters:
+        - $ref: "#/components/parameters/organization_id"
+        - $ref: "#/components/parameters/app_definition_id"
+        - $ref: "#/components/parameters/resource_type_id"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "#/components/schemas/ResourceTypeFields"
+      responses:
+        2XX:
+          description: An app resource provider type definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/ResourceType"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteAppDefinitionResourceType
       summary: Delete an app resource provider definition
       responses:
         204:

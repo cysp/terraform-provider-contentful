@@ -64,6 +64,73 @@ func (ts *ContentfulManagementTestServer) setupOrganizationAppDefinitionResource
 	}))
 }
 
+func (ts *ContentfulManagementTestServer) setupOrganizationAppDefinitionResourceTypeHandlers() {
+	ts.serveMux.Handle("/organizations/{organizationID}/app_definitions/{appDefinitionID}/resource_provider/resource_types/{resourceTypeID}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		organizationID := r.PathValue("organizationID")
+		appDefinitionID := r.PathValue("appDefinitionID")
+		resourceTypeID := r.PathValue("resourceTypeID")
+
+		if organizationID == NonexistentID || appDefinitionID == NonexistentID || resourceTypeID == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+			return
+		}
+
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
+		appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(organizationID, appDefinitionID)
+		if appDefinitionResourceProvider == nil {
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+			return
+		}
+
+		resourceProviderID := appDefinitionResourceProvider.Sys.ID
+		appDefinitionResourceType := ts.appDefinitionResourceTypes.Get(organizationID, resourceTypeID)
+
+		switch r.Method {
+		case http.MethodGet:
+			switch appDefinitionResourceType {
+			case nil:
+				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+			default:
+				_ = WriteContentfulManagementResponse(w, http.StatusOK, appDefinitionResourceType)
+			}
+
+		case http.MethodPut:
+			var appDefinitionResourceTypeFields cm.ResourceTypeFields
+			if err := ReadContentfulManagementRequest(r, &appDefinitionResourceTypeFields); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
+
+				return
+			}
+
+			switch appDefinitionResourceType {
+			case nil:
+				appDefinitionResourceType := NewAppDefinitionResourceTypeFromRequest(organizationID, appDefinitionID, resourceProviderID, resourceTypeID, appDefinitionResourceTypeFields)
+				ts.appDefinitionResourceTypes.Set(organizationID, resourceTypeID, &appDefinitionResourceType)
+				_ = WriteContentfulManagementResponse(w, http.StatusOK, &appDefinitionResourceType)
+			default:
+				UpdateAppDefinitionResourceTypeFromFields(appDefinitionResourceType, organizationID, appDefinitionID, resourceProviderID, resourceTypeID, appDefinitionResourceTypeFields)
+				_ = WriteContentfulManagementResponse(w, http.StatusOK, appDefinitionResourceType)
+			}
+
+		case http.MethodDelete:
+			switch appDefinitionResourceType {
+			case nil:
+				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+			default:
+				ts.appDefinitionResourceTypes.Delete(organizationID, resourceTypeID)
+				w.WriteHeader(http.StatusNoContent)
+			}
+
+		default:
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+		}
+	}))
+}
+
 func (ts *ContentfulManagementTestServer) AddAppDefinitionID(appDefinitionID string) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
