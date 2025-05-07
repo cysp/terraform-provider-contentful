@@ -75,9 +75,9 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 	})
 
 	switch response := response.(type) {
-	case *cm.SpaceEnablement:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, *response)...)
+	case *cm.SpaceEnablementStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create space enablements", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -179,9 +179,9 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 	})
 
 	switch response := response.(type) {
-	case *cm.SpaceEnablement:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, *response)...)
+	case *cm.SpaceEnablementStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update space enablements", util.ErrorDetailFromContentfulManagementResponse(response, err))

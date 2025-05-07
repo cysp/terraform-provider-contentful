@@ -94,9 +94,7 @@ func (s *ApiKey) SetPreviewAPIKey(val OptApiKeyPreviewAPIKey) {
 	s.PreviewAPIKey = val
 }
 
-func (*ApiKey) createDeliveryApiKeyRes() {}
-func (*ApiKey) getDeliveryApiKeyRes()    {}
-func (*ApiKey) updateDeliveryApiKeyRes() {}
+func (*ApiKey) getDeliveryApiKeyRes() {}
 
 type ApiKeyPreviewAPIKey struct {
 	Sys ApiKeyPreviewAPIKeySys `json:"sys"`
@@ -257,6 +255,35 @@ func (s *ApiKeyRequestFields) SetDescription(val OptNilString) {
 func (s *ApiKeyRequestFields) SetEnvironments(val []EnvironmentLink) {
 	s.Environments = val
 }
+
+// ApiKeyStatusCode wraps ApiKey with StatusCode.
+type ApiKeyStatusCode struct {
+	StatusCode int
+	Response   ApiKey
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *ApiKeyStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *ApiKeyStatusCode) GetResponse() ApiKey {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *ApiKeyStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *ApiKeyStatusCode) SetResponse(val ApiKey) {
+	s.Response = val
+}
+
+func (*ApiKeyStatusCode) createDeliveryApiKeyRes() {}
+func (*ApiKeyStatusCode) updateDeliveryApiKeyRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/ApiKeySys
@@ -517,7 +544,6 @@ func (s *AppInstallation) SetParameters(val jx.Raw) {
 }
 
 func (*AppInstallation) getAppInstallationRes() {}
-func (*AppInstallation) putAppInstallationRes() {}
 
 // Ref: #/components/schemas/AppInstallationFields
 type AppInstallationFields struct {
@@ -533,6 +559,34 @@ func (s *AppInstallationFields) GetParameters() jx.Raw {
 func (s *AppInstallationFields) SetParameters(val jx.Raw) {
 	s.Parameters = val
 }
+
+// AppInstallationStatusCode wraps AppInstallation with StatusCode.
+type AppInstallationStatusCode struct {
+	StatusCode int
+	Response   AppInstallation
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *AppInstallationStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *AppInstallationStatusCode) GetResponse() AppInstallation {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *AppInstallationStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *AppInstallationStatusCode) SetResponse(val AppInstallation) {
+	s.Response = val
+}
+
+func (*AppInstallationStatusCode) putAppInstallationRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/AppInstallationSys
@@ -681,7 +735,6 @@ func (s *ContentType) SetFields(val []ContentTypeFieldsItem) {
 	s.Fields = val
 }
 
-func (*ContentType) activateContentTypeRes()   {}
 func (*ContentType) deactivateContentTypeRes() {}
 func (*ContentType) getContentTypeRes()        {}
 
@@ -1199,6 +1252,35 @@ func (s *ContentTypeRequestFieldsFieldsItemItems) SetValidations(val []jx.Raw) {
 	s.Validations = val
 }
 
+// ContentTypeStatusCode wraps ContentType with StatusCode.
+type ContentTypeStatusCode struct {
+	StatusCode int
+	Response   ContentType
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *ContentTypeStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *ContentTypeStatusCode) GetResponse() ContentType {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *ContentTypeStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *ContentTypeStatusCode) SetResponse(val ContentType) {
+	s.Response = val
+}
+
+func (*ContentTypeStatusCode) activateContentTypeRes() {}
+func (*ContentTypeStatusCode) putContentTypeRes()      {}
+
 // Merged schema.
 // Ref: #/components/schemas/ContentTypeSys
 type ContentTypeSys struct {
@@ -1471,7 +1553,6 @@ func (s *EditorInterface) SetSidebar(val OptNilEditorInterfaceSidebarItemArray) 
 }
 
 func (*EditorInterface) getEditorInterfaceRes() {}
-func (*EditorInterface) putEditorInterfaceRes() {}
 
 type EditorInterfaceControlsItem struct {
 	FieldId         string    `json:"fieldId"`
@@ -1923,6 +2004,34 @@ func (s *EditorInterfaceSidebarItem) SetSettings(val jx.Raw) {
 func (s *EditorInterfaceSidebarItem) SetDisabled(val OptBool) {
 	s.Disabled = val
 }
+
+// EditorInterfaceStatusCode wraps EditorInterface with StatusCode.
+type EditorInterfaceStatusCode struct {
+	StatusCode int
+	Response   EditorInterface
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *EditorInterfaceStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *EditorInterfaceStatusCode) GetResponse() EditorInterface {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *EditorInterfaceStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *EditorInterfaceStatusCode) SetResponse(val EditorInterface) {
+	s.Response = val
+}
+
+func (*EditorInterfaceStatusCode) putEditorInterfaceRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/EditorInterfaceSys
@@ -4149,9 +4258,7 @@ func (s *PersonalAccessToken) SetRevokedAt(val OptNilDateTime) {
 	s.RevokedAt = val
 }
 
-func (*PersonalAccessToken) createPersonalAccessTokenRes() {}
-func (*PersonalAccessToken) getPersonalAccessTokenRes()    {}
-func (*PersonalAccessToken) revokePersonalAccessTokenRes() {}
+func (*PersonalAccessToken) getPersonalAccessTokenRes() {}
 
 // Ref: #/components/schemas/PersonalAccessTokenRequestFields
 type PersonalAccessTokenRequestFields struct {
@@ -4189,6 +4296,35 @@ func (s *PersonalAccessTokenRequestFields) SetScopes(val []string) {
 func (s *PersonalAccessTokenRequestFields) SetExpiresIn(val OptNilInt) {
 	s.ExpiresIn = val
 }
+
+// PersonalAccessTokenStatusCode wraps PersonalAccessToken with StatusCode.
+type PersonalAccessTokenStatusCode struct {
+	StatusCode int
+	Response   PersonalAccessToken
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *PersonalAccessTokenStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *PersonalAccessTokenStatusCode) GetResponse() PersonalAccessToken {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *PersonalAccessTokenStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *PersonalAccessTokenStatusCode) SetResponse(val PersonalAccessToken) {
+	s.Response = val
+}
+
+func (*PersonalAccessTokenStatusCode) createPersonalAccessTokenRes() {}
+func (*PersonalAccessTokenStatusCode) revokePersonalAccessTokenRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/PersonalAccessTokenSys
@@ -4454,14 +4590,6 @@ func (s *PreviewApiKeySysType) UnmarshalText(data []byte) error {
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
-
-type PutContentTypeCreated ContentType
-
-func (*PutContentTypeCreated) putContentTypeRes() {}
-
-type PutContentTypeOK ContentType
-
-func (*PutContentTypeOK) putContentTypeRes() {}
 
 // Ref: #/components/schemas/ResourceLink
 // ResourceLink represents sum type.
@@ -5300,9 +5428,7 @@ func (s *Role) SetPolicies(val []RolePoliciesItem) {
 	s.Policies = val
 }
 
-func (*Role) createRoleRes() {}
-func (*Role) getRoleRes()    {}
-func (*Role) updateRoleRes() {}
+func (*Role) getRoleRes() {}
 
 // Ref: #/components/schemas/RoleFields
 type RoleFields struct {
@@ -5792,6 +5918,35 @@ func (s *RolePoliciesItemEffect) UnmarshalText(data []byte) error {
 	}
 }
 
+// RoleStatusCode wraps Role with StatusCode.
+type RoleStatusCode struct {
+	StatusCode int
+	Response   Role
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *RoleStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *RoleStatusCode) GetResponse() Role {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *RoleStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *RoleStatusCode) SetResponse(val Role) {
+	s.Response = val
+}
+
+func (*RoleStatusCode) createRoleRes() {}
+func (*RoleStatusCode) updateRoleRes() {}
+
 // Merged schema.
 // Ref: #/components/schemas/RoleSys
 type RoleSys struct {
@@ -5959,8 +6114,6 @@ func (s *SpaceEnablement) SetSuggestConcepts(val OptSpaceEnablementField) {
 	s.SuggestConcepts = val
 }
 
-func (*SpaceEnablement) putSpaceEnablementsRes() {}
-
 // Ref: #/components/schemas/SpaceEnablementField
 type SpaceEnablementField struct {
 	Enabled bool `json:"enabled"`
@@ -6023,6 +6176,34 @@ func (s *SpaceEnablementFields) SetStudioExperiences(val OptSpaceEnablementField
 func (s *SpaceEnablementFields) SetSuggestConcepts(val OptSpaceEnablementField) {
 	s.SuggestConcepts = val
 }
+
+// SpaceEnablementStatusCode wraps SpaceEnablement with StatusCode.
+type SpaceEnablementStatusCode struct {
+	StatusCode int
+	Response   SpaceEnablement
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *SpaceEnablementStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *SpaceEnablementStatusCode) GetResponse() SpaceEnablement {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *SpaceEnablementStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *SpaceEnablementStatusCode) SetResponse(val SpaceEnablement) {
+	s.Response = val
+}
+
+func (*SpaceEnablementStatusCode) putSpaceEnablementsRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/SpaceEnablementSys
@@ -6506,9 +6687,7 @@ func (s *WebhookDefinition) SetActive(val OptBool) {
 	s.Active = val
 }
 
-func (*WebhookDefinition) createWebhookDefinitionRes() {}
-func (*WebhookDefinition) getWebhookDefinitionRes()    {}
-func (*WebhookDefinition) updateWebhookDefinitionRes() {}
+func (*WebhookDefinition) getWebhookDefinitionRes() {}
 
 // Ref: #/components/schemas/WebhookDefinitionFields
 type WebhookDefinitionFields struct {
@@ -6789,6 +6968,35 @@ func (s *WebhookDefinitionHeader) SetSecret(val OptBool) {
 }
 
 type WebhookDefinitionHeaders []WebhookDefinitionHeader
+
+// WebhookDefinitionStatusCode wraps WebhookDefinition with StatusCode.
+type WebhookDefinitionStatusCode struct {
+	StatusCode int
+	Response   WebhookDefinition
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *WebhookDefinitionStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *WebhookDefinitionStatusCode) GetResponse() WebhookDefinition {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *WebhookDefinitionStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *WebhookDefinitionStatusCode) SetResponse(val WebhookDefinition) {
+	s.Response = val
+}
+
+func (*WebhookDefinitionStatusCode) createWebhookDefinitionRes() {}
+func (*WebhookDefinitionStatusCode) updateWebhookDefinitionRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/WebhookDefinitionSys

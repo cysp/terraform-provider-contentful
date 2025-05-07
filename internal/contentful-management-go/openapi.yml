@@ -1094,7 +1094,7 @@ paths:
             schema:
               $ref: "#/components/schemas/PersonalAccessTokenRequestFields"
       responses:
-        201:
+        2XX:
           description: A personal access token
           content:
             application/vnd.contentful.management.v1+json:
@@ -1128,7 +1128,7 @@ paths:
       operationId: revokePersonalAccessToken
       summary: Revoke a personal access token
       responses:
-        200:
+        2XX:
           description: A personal access token
           content:
             application/vnd.contentful.management.v1+json:
@@ -1171,7 +1171,7 @@ paths:
             schema:
               $ref: "#/components/schemas/SpaceEnablementFields"
       responses:
-        200:
+        2XX:
           description: Enablements for a space
           content:
             application/vnd.contentful.management.v1+json:
@@ -1194,7 +1194,7 @@ paths:
             schema:
               $ref: "#/components/schemas/ApiKeyRequestFields"
       responses:
-        201:
+        2XX:
           description: A delivery api key
           content:
             application/vnd.contentful.management.v1+json:
@@ -1236,7 +1236,7 @@ paths:
             schema:
               $ref: "#/components/schemas/ApiKeyRequestFields"
       responses:
-        200:
+        2XX:
           description: A delivery api key
           content:
             application/vnd.contentful.management.v1+json:
@@ -1415,7 +1415,7 @@ paths:
             schema:
               $ref: "#/components/schemas/AppInstallationFields"
       responses:
-        200:
+        2XX:
           description: An app installation
           content:
             application/vnd.contentful.management.v1+json:
@@ -1469,13 +1469,7 @@ paths:
             schema:
               $ref: "#/components/schemas/ContentTypeRequestFields"
       responses:
-        200:
-          description: A content type
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "#/components/schemas/ContentType"
-        201:
+        2XX:
           description: A content type
           content:
             application/vnd.contentful.management.v1+json:
@@ -1509,7 +1503,7 @@ paths:
         - $ref: "#/components/parameters/content_type_id"
         - $ref: "#/components/parameters/x-contentful-version"
       responses:
-        200:
+        2XX:
           description: A content type
           content:
             application/vnd.contentful.management.v1+json:
@@ -1569,7 +1563,7 @@ paths:
             schema:
               $ref: "#/components/schemas/EditorInterfaceFields"
       responses:
-        200:
+        2XX:
           description: An editor interface
           content:
             application/vnd.contentful.management.v1+json:
@@ -1592,7 +1586,7 @@ paths:
             schema:
               $ref: "#/components/schemas/RoleFields"
       responses:
-        201:
+        2XX:
           description: A role
           content:
             application/vnd.contentful.management.v1+json:
@@ -1634,7 +1628,7 @@ paths:
             schema:
               $ref: "#/components/schemas/RoleFields"
       responses:
-        200:
+        2XX:
           description: A role
           content:
             application/vnd.contentful.management.v1+json:
@@ -1667,7 +1661,7 @@ paths:
             schema:
               $ref: "#/components/schemas/WebhookDefinitionFields"
       responses:
-        201:
+        2XX:
           description: A webhook definition
           content:
             application/vnd.contentful.management.v1+json:
@@ -1709,7 +1703,7 @@ paths:
             schema:
               $ref: "#/components/schemas/WebhookDefinitionFields"
       responses:
-        200:
+        2XX:
           description: A webhook definition
           content:
             application/vnd.contentful.management.v1+json:
