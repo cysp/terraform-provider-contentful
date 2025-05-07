@@ -67,8 +67,8 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 	})
 
 	switch response := response.(type) {
-	case *cm.PersonalAccessToken:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+	case *cm.PersonalAccessTokenStatusCode:
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -152,8 +152,8 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 	})
 
 	switch response := response.(type) {
-	case *cm.PersonalAccessToken:
-		if !response.RevokedAt.IsSet() || response.RevokedAt.IsNull() {
+	case *cm.PersonalAccessTokenStatusCode:
+		if !response.Response.RevokedAt.IsSet() || response.Response.RevokedAt.IsNull() {
 			resp.Diagnostics.AddError("Failed to revoke personal access token", "Personal access token was not revoked")
 		}
 

@@ -79,9 +79,9 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 	})
 
 	switch response := response.(type) {
-	case *cm.ApiKey:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+	case *cm.ApiKeyStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -182,9 +182,9 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 	})
 
 	switch response := response.(type) {
-	case *cm.ApiKey:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+	case *cm.ApiKeyStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))

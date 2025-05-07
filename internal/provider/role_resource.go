@@ -78,9 +78,9 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	})
 
 	switch response := response.(type) {
-	case *cm.Role:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+	case *cm.RoleStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create role", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -181,9 +181,9 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	})
 
 	switch response := response.(type) {
-	case *cm.Role:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+	case *cm.RoleStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update role", util.ErrorDetailFromContentfulManagementResponse(response, err))

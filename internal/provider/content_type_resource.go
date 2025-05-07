@@ -81,9 +81,9 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	})
 
 	switch response := response.(type) {
-	case *cm.PutContentTypeCreated:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, (*cm.ContentType)(response))...)
+	case *cm.ContentTypeStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -109,8 +109,8 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	})
 
 	switch response := activateContentTypeResponse.(type) {
-	case *cm.ContentType:
-		currentVersion = response.Sys.Version
+	case *cm.ContentTypeStatusCode:
+		currentVersion = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to activate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -212,9 +212,9 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	})
 
 	switch response := putContentTypeResponse.(type) {
-	case *cm.PutContentTypeOK:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, (*cm.ContentType)(response))...)
+	case *cm.ContentTypeStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -240,8 +240,8 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	})
 
 	switch response := activateContentTypeResponse.(type) {
-	case *cm.ContentType:
-		currentVersion = response.Sys.Version
+	case *cm.ContentTypeStatusCode:
+		currentVersion = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to activate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))

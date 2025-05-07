@@ -77,9 +77,9 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	})
 
 	switch response := response.(type) {
-	case *cm.WebhookDefinition:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+	case *cm.WebhookDefinitionStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -180,9 +180,9 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	})
 
 	switch response := response.(type) {
-	case *cm.WebhookDefinition:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+	case *cm.WebhookDefinitionStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))

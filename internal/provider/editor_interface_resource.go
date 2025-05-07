@@ -82,9 +82,9 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 	})
 
 	switch response := response.(type) {
-	case *cm.EditorInterface:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+	case *cm.EditorInterfaceStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -192,9 +192,9 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	})
 
 	switch response := response.(type) {
-	case *cm.EditorInterface:
-		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+	case *cm.EditorInterfaceStatusCode:
+		currentVersion = response.Response.Sys.Version
+		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))

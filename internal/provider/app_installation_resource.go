@@ -83,8 +83,8 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 	})
 
 	switch response := response.(type) {
-	case *cm.AppInstallation:
-		resp.Diagnostics.Append(data.ReadFromResponse(response)...)
+	case *cm.AppInstallationStatusCode:
+		resp.Diagnostics.Append(data.ReadFromResponse(&response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -181,8 +181,8 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	})
 
 	switch response := response.(type) {
-	case *cm.AppInstallation:
-		resp.Diagnostics.Append(data.ReadFromResponse(response)...)
+	case *cm.AppInstallationStatusCode:
+		resp.Diagnostics.Append(data.ReadFromResponse(&response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
