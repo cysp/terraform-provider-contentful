@@ -66,6 +66,12 @@ components:
       required: true
       schema:
         type: string
+    webhook_definition_id:
+      in: path
+      name: webhook_definition_id
+      required: true
+      schema:
+        type: string
     x-contentful-version:
       in: header
       name: X-Contentful-Version
@@ -1649,15 +1655,11 @@ paths:
         default:
           $ref: "#/components/responses/error"
   /spaces/{space_id}/webhook_definitions:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
     post:
       operationId: createWebhookDefinition
       summary: Create a webhook definition
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
       requestBody:
         required: true
         content:
@@ -1676,20 +1678,12 @@ paths:
         default:
           $ref: "#/components/responses/error"
   /spaces/{space_id}/webhook_definitions/{webhook_definition_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/webhook_definition_id"
     get:
       operationId: getWebhookDefinition
       summary: Get a webhook definition
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: webhook_definition_id
-          schema:
-            type: string
-          required: true
       responses:
         200:
           description: A webhook definition
@@ -1705,21 +1699,9 @@ paths:
       operationId: updateWebhookDefinition
       summary: Update a webhook definition
       parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: webhook_definition_id
-          schema:
-            type: string
-          required: true
-        - in: header
-          name: X-Contentful-Version
-          schema:
-            type: integer
-          required: true
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/webhook_definition_id"
+        - $ref: "#/components/parameters/x-contentful-version"
       requestBody:
         required: true
         content:
@@ -1740,17 +1722,6 @@ paths:
     delete:
       operationId: deleteWebhookDefinition
       summary: Delete a webhook definition
-      parameters:
-        - in: path
-          name: space_id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: webhook_definition_id
-          schema:
-            type: string
-          required: true
       responses:
         204:
           $ref: "#/components/responses/no-content"
