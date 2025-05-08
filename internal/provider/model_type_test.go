@@ -39,7 +39,6 @@ func TestModelTypeEqual(t *testing.T) {
 		provider.EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldType{},
 		provider.EditorInterfaceGroupControlType{},
 		provider.EditorInterfaceSidebarType{},
-		provider.RolePolicyType{},
 		provider.WebhookFilterEqualsType{},
 		provider.WebhookFilterInType{},
 		provider.WebhookFilterNotType{},
@@ -147,10 +146,6 @@ func TestModelTypeValueFromObject(t *testing.T) {
 			NullValue:    provider.NewEditorInterfaceSidebarValueNull(),
 			UnknownValue: provider.NewEditorInterfaceSidebarValueUnknown(),
 		},
-		"RolePolicy": {
-			NullValue:    provider.NewRolePolicyValueNull(),
-			UnknownValue: provider.NewRolePolicyValueUnknown(),
-		},
 		"WebhookFilterEquals": {
 			NullValue:    provider.NewWebhookFilterEqualsValueNull(),
 			UnknownValue: provider.NewWebhookFilterEqualsValueUnknown(),
@@ -249,7 +244,6 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 		provider.EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldType{},
 		provider.EditorInterfaceGroupControlType{},
 		provider.EditorInterfaceSidebarType{},
-		provider.RolePolicyType{},
 		provider.WebhookFilterEqualsType{},
 		provider.WebhookFilterInType{},
 		provider.WebhookFilterNotType{},

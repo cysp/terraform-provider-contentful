@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, permissions cm.RolePermissions) (TypedMap[TypedList[types.String]], diag.Diagnostics) {
+func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, permissions cm.RolePermissions) (map[string][]types.String, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	permissionsValuesMap := make(map[string]TypedList[types.String], len(permissions))
+	permissionsValuesMap := make(map[string][]types.String, len(permissions))
 
 	for permission, item := range permissions {
 		path := path.AtMapKey(permission)
@@ -23,13 +23,10 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 		permissionsValuesMap[permission] = permissionActionsListValue
 	}
 
-	permissionsMapValue, permissionsListValueDiags := NewTypedMap(ctx, permissionsValuesMap)
-	diags.Append(permissionsListValueDiags...)
-
-	return permissionsMapValue, diags
+	return permissionsValuesMap, diags
 }
 
-func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Path, item cm.RolePermissionsItem) (TypedList[types.String], diag.Diagnostics) {
+func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Path, item cm.RolePermissionsItem) ([]types.String, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	switch item.Type {
@@ -37,19 +34,18 @@ func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Pa
 		actionsValues := make([]types.String, 1)
 		actionsValues[0] = types.StringValue(item.String)
 
-		actionsListValue, actionsListValueDiags := NewTypedList(ctx, actionsValues)
-		diags.Append(actionsListValueDiags...)
-
-		return actionsListValue, diags
+		return actionsValues, diags
 
 	case cm.StringArrayRolePermissionsItem:
-		actionsListValue, actionsListValueDiags := NewTypedListFromStringSlice(ctx, item.StringArray)
-		diags.Append(actionsListValueDiags...)
+		actionsValues := make([]types.String, len(item.StringArray))
+		for i, action := range item.StringArray {
+			actionsValues[i] = types.StringValue(action)
+		}
 
-		return actionsListValue, diags
+		return actionsValues, diags
 	}
 
 	diags.AddAttributeError(path, "unexpected type for permission actions", "")
 
-	return NewTypedListUnknown[types.String](ctx), diags
+	return nil, diags
 }

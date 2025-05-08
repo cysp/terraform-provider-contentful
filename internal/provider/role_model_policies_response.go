@@ -6,13 +6,12 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) (TypedList[RolePolicyValue], diag.Diagnostics) {
+func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) ([]RolePolicyValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	policiesValues := make([]RolePolicyValue, len(policies))
@@ -26,10 +25,7 @@ func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, polic
 		policiesValues[index] = policiesValue
 	}
 
-	policiesListValue, policiesListValueDiags := NewTypedList(ctx, policiesValues)
-	diags.Append(policiesListValueDiags...)
-
-	return policiesListValue, diags
+	return policiesValues, diags
 }
 
 func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.RolePoliciesItem) (RolePolicyValue, diag.Diagnostics) {
@@ -42,7 +38,6 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 
 	value := RolePolicyValue{
 		Effect: types.StringValue(string(effect)),
-		state:  attr.ValueStateKnown,
 	}
 
 	actionsListValue, actionsListValueDiags := NewPolicyActionsListValueFromResponse(ctx, path.AtName("actions"), item.Actions)
@@ -64,7 +59,7 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 	return value, diags
 }
 
-func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, actions cm.RolePoliciesItemActions) (TypedList[types.String], diag.Diagnostics) {
+func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, actions cm.RolePoliciesItemActions) ([]types.String, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	switch actions.Type {
@@ -72,19 +67,18 @@ func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, 
 		actionsValues := make([]types.String, 1)
 		actionsValues[0] = types.StringValue(actions.String)
 
-		actionsListValue, actionsListValueDiags := NewTypedList(ctx, actionsValues)
-		diags.Append(actionsListValueDiags...)
-
-		return actionsListValue, diags
+		return actionsValues, diags
 
 	case cm.StringArrayRolePoliciesItemActions:
-		actionsListValue, actionsListValueDiags := NewTypedListFromStringSlice(ctx, actions.StringArray)
-		diags.Append(actionsListValueDiags...)
+		actionsValues := make([]types.String, len(actions.StringArray))
+		for i, action := range actions.StringArray {
+			actionsValues[i] = types.StringValue(action)
+		}
 
-		return actionsListValue, diags
+		return actionsValues, diags
 	}
 
 	diags.AddAttributeError(path, "unexpected type for policy actions", "")
 
-	return NewTypedListUnknown[types.String](ctx), diags
+	return nil, diags
 }

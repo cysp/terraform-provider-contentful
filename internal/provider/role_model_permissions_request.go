@@ -7,22 +7,19 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToRoleFieldsPermissions(ctx context.Context, path path.Path, permissions TypedMap[TypedList[types.String]]) (cm.RoleFieldsPermissions, diag.Diagnostics) {
+func ToRoleFieldsPermissions(ctx context.Context, path path.Path, permissions map[string][]types.String) (cm.RoleFieldsPermissions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if permissions.IsUnknown() {
+	if permissions == nil {
 		return nil, diags
 	}
 
-	permissionsValues := permissions.Elements()
+	rolePermissionsItems := make(cm.RoleFieldsPermissions, len(permissions))
 
-	rolePermissionsItems := make(cm.RoleFieldsPermissions, len(permissions.Elements()))
-
-	for key, permissionsValueElement := range permissionsValues {
+	for key, permissionsValueElement := range permissions {
 		path := path.AtMapKey(key)
 
 		permissionsItem, permissionsItemDiags := ToRoleFieldsPermissionsItem(ctx, path, permissionsValueElement)
@@ -34,11 +31,13 @@ func ToRoleFieldsPermissions(ctx context.Context, path path.Path, permissions Ty
 	return rolePermissionsItems, diags
 }
 
-func ToRoleFieldsPermissionsItem(ctx context.Context, _ path.Path, value TypedList[types.String]) (cm.RoleFieldsPermissionsItem, diag.Diagnostics) {
+func ToRoleFieldsPermissionsItem(ctx context.Context, _ path.Path, value []types.String) (cm.RoleFieldsPermissionsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	actionStrings := make([]string, len(value.Elements()))
-	diags.Append(tfsdk.ValueAs(ctx, value, &actionStrings)...)
+	actionStrings := make([]string, len(value))
+	for i, action := range value {
+		actionStrings[i] = action.ValueString()
+	}
 
 	if slices.Contains(actionStrings, "all") {
 		return cm.RoleFieldsPermissionsItem{
