@@ -11,6 +11,7 @@ import (
 
 type AccessToken struct {
 	Token string
+	Roles []string
 }
 
 // GetToken returns the value of Token.
@@ -18,9 +19,19 @@ func (s *AccessToken) GetToken() string {
 	return s.Token
 }
 
+// GetRoles returns the value of Roles.
+func (s *AccessToken) GetRoles() []string {
+	return s.Roles
+}
+
 // SetToken sets the value of Token.
 func (s *AccessToken) SetToken(val string) {
 	s.Token = val
+}
+
+// SetRoles sets the value of Roles.
+func (s *AccessToken) SetRoles(val []string) {
+	s.Roles = val
 }
 
 // Merged schema.
