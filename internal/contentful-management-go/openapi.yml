@@ -385,10 +385,43 @@ components:
               - id
               - name
               - type
+        metadata:
+          $ref: "#/components/schemas/ContentTypeMetadata"
       required:
         - name
         - displayField
         - fields
+    ContentTypeMetadata:
+      type: object
+      properties:
+        annotations: {}
+        taxonomy:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentTypeMetadataTaxonomyItem"
+    ContentTypeMetadataAnnotationAssignment:
+      allOf:
+        - $ref: "#/components/schemas/AnnotationLink"
+        - type: object
+          properties:
+            parameters: {}
+    ContentTypeMetadataTaxonomyItem:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - TaxonomyConcept
+                    - TaxonomyConceptScheme
+        required:
+          type: boolean
+      required:
+        - sys
     ContentType:
       allOf:
         - type: object
@@ -555,6 +588,20 @@ components:
                     - Environment
       required:
         - sys
+    AnnotationLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - Annotation
+      required:
+        - sys
     AppDefinitionLink:
       type: object
       properties:
@@ -639,6 +686,34 @@ components:
           type: string
       required:
         - type
+    TaxonomyConceptLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - TaxonomyConcept
+      required:
+        - sys
+    TaxonomyConceptSchemeLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - TaxonomyConceptScheme
+      required:
+        - sys
     PersonalAccessTokenSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithId"
