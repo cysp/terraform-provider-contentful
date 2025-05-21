@@ -29,6 +29,10 @@ func TestModelTypeEqual(t *testing.T) {
 		provider.ContentTypeFieldAllowedResourceItemType{},
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
+		provider.ContentTypeMetadataTaxonomyItemConceptSchemeType{},
+		provider.ContentTypeMetadataTaxonomyItemConceptType{},
+		provider.ContentTypeMetadataTaxonomyItemType{},
+		provider.ContentTypeMetadataType{},
 		provider.EditorInterfaceControlType{},
 		provider.EditorInterfaceEditorLayoutItemType{},
 		provider.EditorInterfaceEditorLayoutItemGroupType{},
@@ -106,6 +110,22 @@ func TestModelTypeValueFromObject(t *testing.T) {
 		"ContentTypeFieldAllowedResourceItemExternal": {
 			NullValue:    provider.NewContentTypeFieldAllowedResourceItemExternalValueNull(),
 			UnknownValue: provider.NewContentTypeFieldAllowedResourceItemExternalValueUnknown(),
+		},
+		"ContentTypeMetadataTaxonomyItem": {
+			NullValue:    provider.NewContentTypeMetadataTaxonomyItemValueNull(),
+			UnknownValue: provider.NewContentTypeMetadataTaxonomyItemValueUnknown(),
+		},
+		"ContentTypeMetadataTaxonomyItemConceptScheme": {
+			NullValue:    provider.NewContentTypeMetadataTaxonomyItemConceptSchemeValueNull(),
+			UnknownValue: provider.NewContentTypeMetadataTaxonomyItemConceptSchemeValueUnknown(),
+		},
+		"ContentTypeMetadataTaxonomyItemConcept": {
+			NullValue:    provider.NewContentTypeMetadataTaxonomyItemConceptValueNull(),
+			UnknownValue: provider.NewContentTypeMetadataTaxonomyItemConceptValueUnknown(),
+		},
+		"ContentTypeMetadata": {
+			NullValue:    provider.NewContentTypeMetadataValueNull(),
+			UnknownValue: provider.NewContentTypeMetadataValueUnknown(),
 		},
 		"EditorInterfaceControl": {
 			NullValue:    provider.NewEditorInterfaceControlValueNull(),
@@ -239,6 +259,10 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 		provider.ContentTypeFieldAllowedResourceItemType{},
 		provider.ContentTypeFieldItemsType{},
 		provider.ContentTypeFieldType{},
+		provider.ContentTypeMetadataTaxonomyItemConceptSchemeType{},
+		provider.ContentTypeMetadataTaxonomyItemConceptType{},
+		provider.ContentTypeMetadataTaxonomyItemType{},
+		provider.ContentTypeMetadataType{},
 		provider.EditorInterfaceControlType{},
 		provider.EditorInterfaceEditorLayoutItemType{},
 		provider.EditorInterfaceEditorLayoutItemGroupType{},
