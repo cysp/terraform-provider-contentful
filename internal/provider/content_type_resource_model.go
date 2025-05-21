@@ -18,6 +18,7 @@ type ContentTypeResourceModel struct {
 	Description   types.String                     `tfsdk:"description"`
 	DisplayField  types.String                     `tfsdk:"display_field"`
 	Fields        TypedList[ContentTypeFieldValue] `tfsdk:"fields"`
+	Metadata      ContentTypeMetadataValue         `tfsdk:"metadata"`
 }
 
 func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
@@ -60,6 +61,11 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 				},
 				CustomType: NewTypedListUnknown[ContentTypeFieldValue](ctx).CustomType(ctx),
 				Required:   true,
+			},
+			"metadata": schema.SingleNestedAttribute{
+				Attributes: ContentTypeMetadataValue{}.SchemaAttributes(ctx),
+				CustomType: ContentTypeMetadataValue{}.CustomType(ctx),
+				Optional:   true,
 			},
 		},
 	}

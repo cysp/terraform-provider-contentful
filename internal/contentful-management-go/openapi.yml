@@ -394,20 +394,7 @@ components:
     ContentTypeMetadata:
       type: object
       properties:
-        annotations:
-          type: object
-          properties:
-            ContentType:
-              type: array
-              items:
-                $ref: "#/components/schemas/ContentTypeMetadataAnnotationAssignment"
-            ContentTypeField:
-              type: object
-              patternProperties:
-                ".*":
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/ContentTypeMetadataAnnotationAssignment"
+        annotations: {}
         taxonomy:
           type: array
           items:

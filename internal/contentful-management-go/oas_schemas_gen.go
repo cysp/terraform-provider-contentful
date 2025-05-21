@@ -1057,12 +1057,12 @@ func (s *ContentTypeLinkSysType) UnmarshalText(data []byte) error {
 
 // Ref: #/components/schemas/ContentTypeMetadata
 type ContentTypeMetadata struct {
-	Annotations OptContentTypeMetadataAnnotations `json:"annotations"`
+	Annotations jx.Raw                            `json:"annotations"`
 	Taxonomy    []ContentTypeMetadataTaxonomyItem `json:"taxonomy"`
 }
 
 // GetAnnotations returns the value of Annotations.
-func (s *ContentTypeMetadata) GetAnnotations() OptContentTypeMetadataAnnotations {
+func (s *ContentTypeMetadata) GetAnnotations() jx.Raw {
 	return s.Annotations
 }
 
@@ -1072,185 +1072,13 @@ func (s *ContentTypeMetadata) GetTaxonomy() []ContentTypeMetadataTaxonomyItem {
 }
 
 // SetAnnotations sets the value of Annotations.
-func (s *ContentTypeMetadata) SetAnnotations(val OptContentTypeMetadataAnnotations) {
+func (s *ContentTypeMetadata) SetAnnotations(val jx.Raw) {
 	s.Annotations = val
 }
 
 // SetTaxonomy sets the value of Taxonomy.
 func (s *ContentTypeMetadata) SetTaxonomy(val []ContentTypeMetadataTaxonomyItem) {
 	s.Taxonomy = val
-}
-
-// Merged schema.
-// Ref: #/components/schemas/ContentTypeMetadataAnnotationAssignment
-type ContentTypeMetadataAnnotationAssignment struct {
-	Sys        ContentTypeMetadataAnnotationAssignmentSys `json:"sys"`
-	Parameters jx.Raw                                     `json:"parameters"`
-}
-
-// GetSys returns the value of Sys.
-func (s *ContentTypeMetadataAnnotationAssignment) GetSys() ContentTypeMetadataAnnotationAssignmentSys {
-	return s.Sys
-}
-
-// GetParameters returns the value of Parameters.
-func (s *ContentTypeMetadataAnnotationAssignment) GetParameters() jx.Raw {
-	return s.Parameters
-}
-
-// SetSys sets the value of Sys.
-func (s *ContentTypeMetadataAnnotationAssignment) SetSys(val ContentTypeMetadataAnnotationAssignmentSys) {
-	s.Sys = val
-}
-
-// SetParameters sets the value of Parameters.
-func (s *ContentTypeMetadataAnnotationAssignment) SetParameters(val jx.Raw) {
-	s.Parameters = val
-}
-
-// Merged schema.
-type ContentTypeMetadataAnnotationAssignmentSys struct {
-	// Merged property.
-	Type ContentTypeMetadataAnnotationAssignmentSysType `json:"type"`
-	ID   string                                         `json:"id"`
-	// Merged property.
-	LinkType ContentTypeMetadataAnnotationAssignmentSysLinkType `json:"linkType"`
-}
-
-// GetType returns the value of Type.
-func (s *ContentTypeMetadataAnnotationAssignmentSys) GetType() ContentTypeMetadataAnnotationAssignmentSysType {
-	return s.Type
-}
-
-// GetID returns the value of ID.
-func (s *ContentTypeMetadataAnnotationAssignmentSys) GetID() string {
-	return s.ID
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *ContentTypeMetadataAnnotationAssignmentSys) GetLinkType() ContentTypeMetadataAnnotationAssignmentSysLinkType {
-	return s.LinkType
-}
-
-// SetType sets the value of Type.
-func (s *ContentTypeMetadataAnnotationAssignmentSys) SetType(val ContentTypeMetadataAnnotationAssignmentSysType) {
-	s.Type = val
-}
-
-// SetID sets the value of ID.
-func (s *ContentTypeMetadataAnnotationAssignmentSys) SetID(val string) {
-	s.ID = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *ContentTypeMetadataAnnotationAssignmentSys) SetLinkType(val ContentTypeMetadataAnnotationAssignmentSysLinkType) {
-	s.LinkType = val
-}
-
-// Merged schema.
-type ContentTypeMetadataAnnotationAssignmentSysLinkType string
-
-const (
-	ContentTypeMetadataAnnotationAssignmentSysLinkTypeAnnotation ContentTypeMetadataAnnotationAssignmentSysLinkType = "Annotation"
-)
-
-// AllValues returns all ContentTypeMetadataAnnotationAssignmentSysLinkType values.
-func (ContentTypeMetadataAnnotationAssignmentSysLinkType) AllValues() []ContentTypeMetadataAnnotationAssignmentSysLinkType {
-	return []ContentTypeMetadataAnnotationAssignmentSysLinkType{
-		ContentTypeMetadataAnnotationAssignmentSysLinkTypeAnnotation,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s ContentTypeMetadataAnnotationAssignmentSysLinkType) MarshalText() ([]byte, error) {
-	switch s {
-	case ContentTypeMetadataAnnotationAssignmentSysLinkTypeAnnotation:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *ContentTypeMetadataAnnotationAssignmentSysLinkType) UnmarshalText(data []byte) error {
-	switch ContentTypeMetadataAnnotationAssignmentSysLinkType(data) {
-	case ContentTypeMetadataAnnotationAssignmentSysLinkTypeAnnotation:
-		*s = ContentTypeMetadataAnnotationAssignmentSysLinkTypeAnnotation
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-// Merged schema.
-type ContentTypeMetadataAnnotationAssignmentSysType string
-
-const (
-	ContentTypeMetadataAnnotationAssignmentSysTypeLink ContentTypeMetadataAnnotationAssignmentSysType = "Link"
-)
-
-// AllValues returns all ContentTypeMetadataAnnotationAssignmentSysType values.
-func (ContentTypeMetadataAnnotationAssignmentSysType) AllValues() []ContentTypeMetadataAnnotationAssignmentSysType {
-	return []ContentTypeMetadataAnnotationAssignmentSysType{
-		ContentTypeMetadataAnnotationAssignmentSysTypeLink,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s ContentTypeMetadataAnnotationAssignmentSysType) MarshalText() ([]byte, error) {
-	switch s {
-	case ContentTypeMetadataAnnotationAssignmentSysTypeLink:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *ContentTypeMetadataAnnotationAssignmentSysType) UnmarshalText(data []byte) error {
-	switch ContentTypeMetadataAnnotationAssignmentSysType(data) {
-	case ContentTypeMetadataAnnotationAssignmentSysTypeLink:
-		*s = ContentTypeMetadataAnnotationAssignmentSysTypeLink
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-type ContentTypeMetadataAnnotations struct {
-	ContentType      []ContentTypeMetadataAnnotationAssignment         `json:"ContentType"`
-	ContentTypeField OptContentTypeMetadataAnnotationsContentTypeField `json:"ContentTypeField"`
-}
-
-// GetContentType returns the value of ContentType.
-func (s *ContentTypeMetadataAnnotations) GetContentType() []ContentTypeMetadataAnnotationAssignment {
-	return s.ContentType
-}
-
-// GetContentTypeField returns the value of ContentTypeField.
-func (s *ContentTypeMetadataAnnotations) GetContentTypeField() OptContentTypeMetadataAnnotationsContentTypeField {
-	return s.ContentTypeField
-}
-
-// SetContentType sets the value of ContentType.
-func (s *ContentTypeMetadataAnnotations) SetContentType(val []ContentTypeMetadataAnnotationAssignment) {
-	s.ContentType = val
-}
-
-// SetContentTypeField sets the value of ContentTypeField.
-func (s *ContentTypeMetadataAnnotations) SetContentTypeField(val OptContentTypeMetadataAnnotationsContentTypeField) {
-	s.ContentTypeField = val
-}
-
-type ContentTypeMetadataAnnotationsContentTypeField map[string][]ContentTypeMetadataAnnotationAssignment
-
-func (s *ContentTypeMetadataAnnotationsContentTypeField) init() ContentTypeMetadataAnnotationsContentTypeField {
-	m := *s
-	if m == nil {
-		m = map[string][]ContentTypeMetadataAnnotationAssignment{}
-		*s = m
-	}
-	return m
 }
 
 // Ref: #/components/schemas/ContentTypeMetadataTaxonomyItem
@@ -3237,98 +3065,6 @@ func (o OptContentTypeMetadata) Get() (v ContentTypeMetadata, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptContentTypeMetadata) Or(d ContentTypeMetadata) ContentTypeMetadata {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptContentTypeMetadataAnnotations returns new OptContentTypeMetadataAnnotations with value set to v.
-func NewOptContentTypeMetadataAnnotations(v ContentTypeMetadataAnnotations) OptContentTypeMetadataAnnotations {
-	return OptContentTypeMetadataAnnotations{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptContentTypeMetadataAnnotations is optional ContentTypeMetadataAnnotations.
-type OptContentTypeMetadataAnnotations struct {
-	Value ContentTypeMetadataAnnotations
-	Set   bool
-}
-
-// IsSet returns true if OptContentTypeMetadataAnnotations was set.
-func (o OptContentTypeMetadataAnnotations) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptContentTypeMetadataAnnotations) Reset() {
-	var v ContentTypeMetadataAnnotations
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptContentTypeMetadataAnnotations) SetTo(v ContentTypeMetadataAnnotations) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptContentTypeMetadataAnnotations) Get() (v ContentTypeMetadataAnnotations, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptContentTypeMetadataAnnotations) Or(d ContentTypeMetadataAnnotations) ContentTypeMetadataAnnotations {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptContentTypeMetadataAnnotationsContentTypeField returns new OptContentTypeMetadataAnnotationsContentTypeField with value set to v.
-func NewOptContentTypeMetadataAnnotationsContentTypeField(v ContentTypeMetadataAnnotationsContentTypeField) OptContentTypeMetadataAnnotationsContentTypeField {
-	return OptContentTypeMetadataAnnotationsContentTypeField{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptContentTypeMetadataAnnotationsContentTypeField is optional ContentTypeMetadataAnnotationsContentTypeField.
-type OptContentTypeMetadataAnnotationsContentTypeField struct {
-	Value ContentTypeMetadataAnnotationsContentTypeField
-	Set   bool
-}
-
-// IsSet returns true if OptContentTypeMetadataAnnotationsContentTypeField was set.
-func (o OptContentTypeMetadataAnnotationsContentTypeField) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptContentTypeMetadataAnnotationsContentTypeField) Reset() {
-	var v ContentTypeMetadataAnnotationsContentTypeField
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptContentTypeMetadataAnnotationsContentTypeField) SetTo(v ContentTypeMetadataAnnotationsContentTypeField) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptContentTypeMetadataAnnotationsContentTypeField) Get() (v ContentTypeMetadataAnnotationsContentTypeField, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptContentTypeMetadataAnnotationsContentTypeField) Or(d ContentTypeMetadataAnnotationsContentTypeField) ContentTypeMetadataAnnotationsContentTypeField {
 	if v, ok := o.Get(); ok {
 		return v
 	}
