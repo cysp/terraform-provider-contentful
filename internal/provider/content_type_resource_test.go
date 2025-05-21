@@ -208,6 +208,44 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 	})
 }
 
+func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
+	t.Parallel()
+
+	testserver := cmts.NewContentfulManagementTestServer()
+	defer testserver.Server().Close()
+
+	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
+
+	configVariables := config.Variables{
+		"space_id":             config.StringVariable("0p38pssr0fi3"),
+		"environment_id":       config.StringVariable("test"),
+		"test_content_type_id": config.StringVariable(contentTypeID),
+	}
+
+	ContentfulProviderMockedResourceTest(t, testserver.Server(), resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			{
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
 	t.Parallel()
 

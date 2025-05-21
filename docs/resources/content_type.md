@@ -61,6 +61,10 @@ resource "contentful_content_type" "author" {
 - `name` (String)
 - `space_id` (String)
 
+### Optional
+
+- `metadata` (Attributes) Metadata for the content type. Once set, metadata properties may not be removed, but the list of taxonomy items may be reduced to the empty list (see [below for nested schema](#nestedatt--metadata))
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.
@@ -123,6 +127,47 @@ Optional:
 
 - `link_type` (String)
 - `validations` (List of String)
+
+
+
+<a id="nestedatt--metadata"></a>
+### Nested Schema for `metadata`
+
+Optional:
+
+- `annotations` (String) Annotations for this content type, represented as a JSON object fragment.
+- `taxonomy` (Attributes List) List of taxonomy items for this content type. Each item represents a taxonomy term that may be associated with the content type. (see [below for nested schema](#nestedatt--metadata--taxonomy))
+
+<a id="nestedatt--metadata--taxonomy"></a>
+### Nested Schema for `metadata.taxonomy`
+
+Optional:
+
+- `taxonomy_concept` (Attributes) (see [below for nested schema](#nestedatt--metadata--taxonomy--taxonomy_concept))
+- `taxonomy_concept_scheme` (Attributes) (see [below for nested schema](#nestedatt--metadata--taxonomy--taxonomy_concept_scheme))
+
+<a id="nestedatt--metadata--taxonomy--taxonomy_concept"></a>
+### Nested Schema for `metadata.taxonomy.taxonomy_concept`
+
+Required:
+
+- `id` (String)
+
+Optional:
+
+- `required` (Boolean)
+
+
+<a id="nestedatt--metadata--taxonomy--taxonomy_concept_scheme"></a>
+### Nested Schema for `metadata.taxonomy.taxonomy_concept_scheme`
+
+Required:
+
+- `id` (String)
+
+Optional:
+
+- `required` (Boolean)
 
 ## Import
 

@@ -26,6 +26,11 @@ func (m *ContentTypeResourceModel) ToContentTypeRequestFields(ctx context.Contex
 
 	request.Fields = fields
 
+	metadata, metadataDiags := m.Metadata.ToOptContentTypeMetadata(ctx, path.Root("metadata"))
+	diags.Append(metadataDiags...)
+
+	request.Metadata = metadata
+
 	return request, diags
 }
 
