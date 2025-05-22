@@ -4,6 +4,7 @@ import (
 	"context"
 
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -14,7 +15,7 @@ import (
 
 //nolint:recvcheck
 type ContentTypeMetadataValue struct {
-	Annotations ContentTypeMetadataAnnotationsValue             `tfsdk:"annotations"`
+	Annotations jsontypes.Normalized                            `tfsdk:"annotations"`
 	Taxonomy    TypedList[ContentTypeMetadataTaxonomyItemValue] `tfsdk:"taxonomy"`
 	state       attr.ValueState
 }
@@ -48,9 +49,8 @@ func NewContentTypeMetadataValueKnownFromAttributes(ctx context.Context, attribu
 
 func (v ContentTypeMetadataValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"annotations": schema.SingleNestedAttribute{
-			Attributes: ContentTypeMetadataAnnotationsValue{}.SchemaAttributes(ctx),
-			CustomType: ContentTypeMetadataAnnotationsValue{}.CustomType(ctx),
+		"annotations": schema.StringAttribute{
+			CustomType: jsontypes.NormalizedType{},
 			Optional:   true,
 		},
 		"taxonomy": schema.ListNestedAttribute{

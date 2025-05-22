@@ -135,41 +135,8 @@ Optional:
 
 Optional:
 
-- `annotations` (Attributes) (see [below for nested schema](#nestedatt--metadata--annotations))
+- `annotations` (String)
 - `taxonomy` (Attributes List) (see [below for nested schema](#nestedatt--metadata--taxonomy))
-
-<a id="nestedatt--metadata--annotations"></a>
-### Nested Schema for `metadata.annotations`
-
-Optional:
-
-- `content_type` (Attributes List) (see [below for nested schema](#nestedatt--metadata--annotations--content_type))
-- `content_type_field` (Attributes Map) (see [below for nested schema](#nestedatt--metadata--annotations--content_type_field))
-
-<a id="nestedatt--metadata--annotations--content_type"></a>
-### Nested Schema for `metadata.annotations.content_type`
-
-Required:
-
-- `id` (String)
-
-Optional:
-
-- `parameters` (String)
-
-
-<a id="nestedatt--metadata--annotations--content_type_field"></a>
-### Nested Schema for `metadata.annotations.content_type_field`
-
-Required:
-
-- `id` (String)
-
-Optional:
-
-- `parameters` (String)
-
-
 
 <a id="nestedatt--metadata--taxonomy"></a>
 ### Nested Schema for `metadata.taxonomy`

@@ -19,32 +19,32 @@ resource "contentful_content_type" "test" {
   ]
 
   metadata = {
-    annotations = {
-      content_type = [
+    annotations = jsonencode({
+      ContentType = [
         {
           id = "aaa"
         },
         {
           id = "bbb"
-          parameters = jsonencode({
+          parameters = {
             b = "c"
-          })
+          }
         },
       ]
-      content_type_field = {
+      ContentTypeField = {
         "name" = [
           {
             id = "ccc"
           },
           {
             id = "ddd"
-            parameters = jsonencode({
+            parameters = {
               d = "e"
-            })
+            }
           },
         ]
       }
-    }
+    })
     taxonomy = [
       {
         concept_scheme = {
