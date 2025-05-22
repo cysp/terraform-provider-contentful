@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-//nolint:recvcheck
 type ContentTypeMetadataValue struct {
 	Annotations jsontypes.Normalized                            `tfsdk:"annotations"`
 	Taxonomy    TypedList[ContentTypeMetadataTaxonomyItemValue] `tfsdk:"taxonomy"`

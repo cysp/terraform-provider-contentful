@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-//nolint:recvcheck
 type ContentTypeMetadataTaxonomyItemConceptSchemeValue struct {
 	ID       types.String `tfsdk:"id"`
 	Required types.Bool   `tfsdk:"required"`
@@ -46,7 +45,7 @@ func NewContentTypeMetadataTaxonomyItemConceptSchemeValueKnownFromAttributes(ctx
 	return value, diags
 }
 
-func (v ContentTypeMetadataTaxonomyItemConceptSchemeValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+func (v ContentTypeMetadataTaxonomyItemConceptSchemeValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Required: true,

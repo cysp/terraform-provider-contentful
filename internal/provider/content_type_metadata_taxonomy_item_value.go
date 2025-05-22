@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-//nolint:recvcheck
 type ContentTypeMetadataTaxonomyItemValue struct {
 	TaxonomyConcept       ContentTypeMetadataTaxonomyItemConceptValue       `tfsdk:"taxonomy_concept"`
 	TaxonomyConceptScheme ContentTypeMetadataTaxonomyItemConceptSchemeValue `tfsdk:"taxonomy_concept_scheme"`
