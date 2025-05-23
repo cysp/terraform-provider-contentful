@@ -79,8 +79,11 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
+		responseModel, responseModelDiags := NewRoleResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create role", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -94,7 +97,6 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-//nolint:dupl
 func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data RoleResourceModel
 
@@ -121,8 +123,11 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	switch response := response.(type) {
 	case *cm.Role:
+		responseModel, responseModelDiags := NewRoleResourceModelFromResponse(ctx, *response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
 		if response, ok := response.(*cm.ErrorStatusCode); ok {
@@ -182,8 +187,11 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
+		responseModel, responseModelDiags := NewRoleResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update role", util.ErrorDetailFromContentfulManagementResponse(response, err))
