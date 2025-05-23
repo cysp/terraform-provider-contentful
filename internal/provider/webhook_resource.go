@@ -78,8 +78,11 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, data.Headers.Elements())
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -93,7 +96,6 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-//nolint:dupl
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data WebhookResourceModel
 
@@ -120,8 +122,11 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinition:
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, data.Headers.Elements())
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
 		if response, ok := response.(*cm.ErrorStatusCode); ok {
@@ -181,8 +186,11 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, data.Headers.Elements())
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
