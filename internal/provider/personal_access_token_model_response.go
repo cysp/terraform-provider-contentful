@@ -9,10 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *PersonalAccessTokenResourceModel) ReadFromResponse(ctx context.Context, personalAccessToken *cm.PersonalAccessToken) diag.Diagnostics {
+func NewPersonalAccessTokenResourceModelFromResponse(ctx context.Context, personalAccessToken cm.PersonalAccessToken, expiresIn types.Int64) (PersonalAccessTokenResourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	model.ID = types.StringValue(personalAccessToken.Sys.ID)
+	model := PersonalAccessTokenResourceModel{
+		ID: types.StringValue(personalAccessToken.Sys.ID),
+	}
 
 	model.Name = types.StringValue(personalAccessToken.Name)
 
@@ -25,9 +27,10 @@ func (model *PersonalAccessTokenResourceModel) ReadFromResponse(ctx context.Cont
 		model.Token = types.StringValue(token)
 	}
 
+	model.ExpiresIn = expiresIn
 	model.ExpiresAt = timetypes.NewRFC3339TimePointerValue(personalAccessToken.Sys.ExpiresAt.ValueTimePointer())
 
 	model.RevokedAt = timetypes.NewRFC3339TimePointerValue(personalAccessToken.RevokedAt.ValueTimePointer())
 
-	return diags
+	return model, diags
 }
