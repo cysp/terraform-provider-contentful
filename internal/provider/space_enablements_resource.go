@@ -76,8 +76,11 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 
 	switch response := response.(type) {
 	case *cm.SpaceEnablementStatusCode:
+		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create space enablements", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -116,12 +119,18 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 
 	switch response := response.(type) {
 	case *cm.GetSpaceEnablementsApplicationJSONOK:
+		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, cm.SpaceEnablement(*response))
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, cm.SpaceEnablement(*response))...)
 
 	case *cm.GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK:
+		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, cm.SpaceEnablement(*response))
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, cm.SpaceEnablement(*response))...)
 
 	default:
 		if response, ok := response.(*cm.ErrorStatusCode); ok {
@@ -180,8 +189,11 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 
 	switch response := response.(type) {
 	case *cm.SpaceEnablementStatusCode:
+		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update space enablements", util.ErrorDetailFromContentfulManagementResponse(response, err))
