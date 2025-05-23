@@ -10,15 +10,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *RoleResourceModel) ReadFromResponse(ctx context.Context, role *cm.Role) diag.Diagnostics {
+func NewRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleResourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := role.Sys.Space.Sys.ID
 	roleID := role.Sys.ID
 
-	model.ID = types.StringValue(strings.Join([]string{spaceID, roleID}, "/"))
-	model.SpaceID = types.StringValue(spaceID)
-	model.RoleID = types.StringValue(roleID)
+	model := RoleResourceModel{
+		ID:      types.StringValue(strings.Join([]string{spaceID, roleID}, "/")),
+		SpaceID: types.StringValue(spaceID),
+		RoleID:  types.StringValue(roleID),
+	}
 
 	model.Name = types.StringValue(role.Name)
 	model.Description = types.StringPointerValue(role.Description.ValueStringPointer())
@@ -33,5 +35,5 @@ func (model *RoleResourceModel) ReadFromResponse(ctx context.Context, role *cm.R
 
 	model.Policies = policiesListValue
 
-	return diags
+	return model, diags
 }

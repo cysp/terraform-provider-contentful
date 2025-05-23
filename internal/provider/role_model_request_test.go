@@ -13,8 +13,7 @@ func TestRoleModelRoundTripToRoleFields(t *testing.T) {
 
 	ctx := t.Context()
 
-	model := provider.RoleResourceModel{}
-	model.ReadFromResponse(ctx, &cm.Role{
+	model := DiagsNoErrorsMust(provider.NewRoleResourceModelFromResponse(ctx, cm.Role{
 		Sys: cm.RoleSys{
 			ID: "abcdef",
 		},
@@ -40,7 +39,7 @@ func TestRoleModelRoundTripToRoleFields(t *testing.T) {
 				Actions: cm.NewStringArrayRolePoliciesItemActions([]string{"all"}),
 			},
 		},
-	})
+	}))
 
 	assert.Equal(t, "Reader", model.Name.ValueString())
 	assert.Equal(t, "Read access to content", model.Description.ValueString())
