@@ -8,20 +8,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *AppDefinitionResourceProviderResourceModel) ReadFromResponse(_ context.Context, res *cm.ResourceProvider) diag.Diagnostics {
+func NewAppDefinitionResourceProviderResourceModelFromResponse(_ context.Context, res cm.ResourceProvider) (AppDefinitionResourceProviderResourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	organizationID := res.Sys.Organization.Sys.ID
 	appDefinitionID := res.Sys.AppDefinition.Sys.ID
 	resourceProviderID := res.Sys.ID
 
-	m.ID = types.StringValue(organizationID + "/" + appDefinitionID)
+	model := AppDefinitionResourceProviderResourceModel{
+		ID:                 types.StringValue(organizationID + "/" + appDefinitionID),
+		OrganizationID:     types.StringValue(organizationID),
+		AppDefinitionID:    types.StringValue(appDefinitionID),
+		ResourceProviderID: types.StringValue(resourceProviderID),
+	}
 
-	m.OrganizationID = types.StringValue(organizationID)
-	m.AppDefinitionID = types.StringValue(appDefinitionID)
-	m.ResourceProviderID = types.StringValue(resourceProviderID)
+	model.FunctionID = types.StringValue(res.Function.Sys.ID)
 
-	m.FunctionID = types.StringValue(res.Function.Sys.ID)
-
-	return diags
+	return model, diags
 }
