@@ -10,11 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *PreviewAPIKeyDataSourceModel) ReadFromResponse(ctx context.Context, previewAPIKey *cm.PreviewApiKey) diag.Diagnostics {
+func NewPreviewAPIKeyDataSourceModelFromResponse(ctx context.Context, previewAPIKey cm.PreviewApiKey) (PreviewAPIKeyDataSourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	model.SpaceID = types.StringValue(previewAPIKey.Sys.Space.Sys.ID)
-	model.PreviewAPIKeyID = types.StringValue(previewAPIKey.Sys.ID)
+	model := PreviewAPIKeyDataSourceModel{
+		SpaceID:         types.StringValue(previewAPIKey.Sys.Space.Sys.ID),
+		PreviewAPIKeyID: types.StringValue(previewAPIKey.Sys.ID),
+	}
 
 	model.Name = types.StringValue(previewAPIKey.Name)
 	model.Description = util.OptNilStringToStringValue(previewAPIKey.Description)
@@ -26,5 +28,5 @@ func (model *PreviewAPIKeyDataSourceModel) ReadFromResponse(ctx context.Context,
 
 	model.Environments = environmentsList
 
-	return diags
+	return model, diags
 }
