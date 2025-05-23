@@ -78,7 +78,10 @@ func (r *appDefinitionAppDefinitionResourceProviderResource) Create(ctx context.
 
 	switch response := response.(type) {
 	case *cm.ResourceProviderStatusCode:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
+		responseModel, responseModelDiags := NewAppDefinitionResourceProviderResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 
 	default:
 		resp.Diagnostics.AddError("Failed to create resource provider definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -116,7 +119,10 @@ func (r *appDefinitionAppDefinitionResourceProviderResource) Read(ctx context.Co
 
 	switch response := response.(type) {
 	case *cm.ResourceProvider:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+		responseModel, responseModelDiags := NewAppDefinitionResourceProviderResourceModelFromResponse(ctx, *response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 
 	default:
 		if response, ok := response.(*cm.ErrorStatusCode); ok {
@@ -171,7 +177,10 @@ func (r *appDefinitionAppDefinitionResourceProviderResource) Update(ctx context.
 
 	switch response := response.(type) {
 	case *cm.ResourceProviderStatusCode:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
+		responseModel, responseModelDiags := NewAppDefinitionResourceProviderResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 
 	default:
 		resp.Diagnostics.AddError("Failed to update resource provider definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
