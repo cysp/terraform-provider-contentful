@@ -10,26 +10,29 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *ContentTypeResourceModel) ReadFromResponse(ctx context.Context, contentType *cm.ContentType) diag.Diagnostics {
+func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm.ContentType) (ContentTypeResourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := contentType.Sys.Space.Sys.ID
 	environmentID := contentType.Sys.Environment.Sys.ID
 	contentTypeID := contentType.Sys.ID
 
-	m.ID = types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/"))
-	m.SpaceID = types.StringValue(spaceID)
-	m.EnvironmentID = types.StringValue(environmentID)
-	m.ContentTypeID = types.StringValue(contentTypeID)
+	model := ContentTypeResourceModel{
+		ID:            types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/")),
+		SpaceID:       types.StringValue(spaceID),
+		EnvironmentID: types.StringValue(environmentID),
+		ContentTypeID: types.StringValue(contentTypeID),
+	}
 
-	m.Name = types.StringValue(contentType.Name)
-	m.Description = types.StringValue(contentType.Description.Or(""))
-	m.DisplayField = types.StringValue(contentType.DisplayField.Or(""))
+	model.Name = types.StringValue(contentType.Name)
+	model.Description = types.StringValue(contentType.Description.Or(""))
+
+	model.DisplayField = types.StringValue(contentType.DisplayField.Or(""))
 
 	fieldsList, fieldsListDiags := NewFieldsListFromResponse(ctx, path.Root("fields"), contentType.Fields)
 	diags.Append(fieldsListDiags...)
 
-	m.Fields = fieldsList
+	model.Fields = fieldsList
 
-	return diags
+	return model, diags
 }

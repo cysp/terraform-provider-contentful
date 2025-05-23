@@ -80,8 +80,11 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 
 	switch response := response.(type) {
 	case *cm.ApiKeyStatusCode:
+		responseModel, responseModelDiags := NewDeliveryAPIKeyResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -95,7 +98,6 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-//nolint:dupl
 func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data DeliveryAPIKeyResourceModel
 
@@ -122,8 +124,11 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	switch response := response.(type) {
 	case *cm.ApiKey:
+		responseModel, responseModelDiags := NewDeliveryAPIKeyResourceModelFromResponse(ctx, *response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
 		if response, ok := response.(*cm.ErrorStatusCode); ok {
@@ -183,8 +188,11 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 
 	switch response := response.(type) {
 	case *cm.ApiKeyStatusCode:
+		responseModel, responseModelDiags := NewDeliveryAPIKeyResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))

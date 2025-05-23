@@ -91,12 +91,10 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model := provider.EditorInterfaceResourceModel{}
-
-			diags := model.ReadFromResponse(t.Context(), &test.editorInterface)
+			model, modelDiags := provider.NewEditorInterfaceResourceModelFromResponse(t.Context(), test.editorInterface)
 
 			assert.Equal(t, test.expectedModel, model)
-			assert.Empty(t, diags)
+			assert.Empty(t, modelDiags)
 		})
 	}
 }

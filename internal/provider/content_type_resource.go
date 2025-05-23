@@ -82,8 +82,11 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 
 	switch response := response.(type) {
 	case *cm.ContentTypeStatusCode:
+		responseModel, responseModelDiags := NewContentTypeResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -151,8 +154,11 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 
 	switch response := response.(type) {
 	case *cm.ContentType:
+		responseModel, responseModelDiags := NewContentTypeResourceModelFromResponse(ctx, *response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
 
 	default:
 		if response, ok := response.(*cm.ErrorStatusCode); ok {
@@ -213,8 +219,11 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 
 	switch response := putContentTypeResponse.(type) {
 	case *cm.ContentTypeStatusCode:
+		responseModel, responseModelDiags := NewContentTypeResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 		currentVersion = response.Response.Sys.Version
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update content type", util.ErrorDetailFromContentfulManagementResponse(response, err))

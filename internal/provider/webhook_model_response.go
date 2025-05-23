@@ -11,15 +11,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *WebhookResourceModel) ReadFromResponse(ctx context.Context, webhookDefinition *cm.WebhookDefinition) diag.Diagnostics {
+func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, existingHeaderValues map[string]WebhookHeaderValue) (WebhookResourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := webhookDefinition.Sys.Space.Sys.ID
 	webhookID := webhookDefinition.Sys.ID
 
-	model.ID = types.StringValue(strings.Join([]string{spaceID, webhookID}, "/"))
-	model.SpaceID = types.StringValue(spaceID)
-	model.WebhookID = types.StringValue(webhookID)
+	model := WebhookResourceModel{
+		ID:        types.StringValue(strings.Join([]string{spaceID, webhookID}, "/")),
+		SpaceID:   types.StringValue(spaceID),
+		WebhookID: types.StringValue(webhookID),
+	}
 
 	model.Name = types.StringValue(webhookDefinition.Name)
 
@@ -38,7 +40,7 @@ func (model *WebhookResourceModel) ReadFromResponse(ctx context.Context, webhook
 	model.HTTPBasicUsername = types.StringPointerValue(webhookDefinition.HttpBasicUsername.ValueStringPointer())
 	model.HTTPBasicPassword = types.StringPointerValue(webhookDefinition.HttpBasicPassword.ValueStringPointer())
 
-	headersList, headersListDiags := ReadHeaderValueMapFromResponse(ctx, path.Root("headers"), model.Headers, webhookDefinition.Headers)
+	headersList, headersListDiags := ReadHeaderValueMapFromResponse(ctx, path.Root("headers"), webhookDefinition.Headers, existingHeaderValues)
 	diags.Append(headersListDiags...)
 
 	model.Headers = headersList
@@ -50,5 +52,5 @@ func (model *WebhookResourceModel) ReadFromResponse(ctx context.Context, webhook
 
 	model.Active = util.OptBoolToBoolValue(webhookDefinition.Active)
 
-	return diags
+	return model, diags
 }

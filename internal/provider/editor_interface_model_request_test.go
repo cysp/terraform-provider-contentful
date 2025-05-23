@@ -47,8 +47,8 @@ func TestRoundTripToEditorInterfaceFields(t *testing.T) {
 		}),
 	}
 
-	model := provider.EditorInterfaceResourceModel{}
-	assert.Empty(t, model.ReadFromResponse(ctx, &editorInterface))
+	model, modelDiags := provider.NewEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
+	assert.Empty(t, modelDiags)
 
 	req, diags := model.ToEditorInterfaceFields(ctx)
 	assert.Empty(t, diags)

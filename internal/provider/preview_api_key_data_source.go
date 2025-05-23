@@ -62,7 +62,10 @@ func (d *previewApiKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	switch response := response.(type) {
 	case *cm.PreviewApiKey:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+		responseModel, responseModelDiags := NewPreviewAPIKeyDataSourceModelFromResponse(ctx, *response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 
 	default:
 		if response, ok := response.(*cm.ErrorStatusCode); ok {
