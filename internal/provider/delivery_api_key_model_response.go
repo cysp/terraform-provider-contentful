@@ -11,15 +11,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *DeliveryAPIKeyResourceModel) ReadFromResponse(ctx context.Context, apiKey *cm.ApiKey) diag.Diagnostics {
+func NewDeliveryAPIKeyResourceModelFromResponse(ctx context.Context, apiKey cm.ApiKey) (DeliveryAPIKeyResourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := apiKey.Sys.Space.Sys.ID
 	apiKeyID := apiKey.Sys.ID
 
-	model.ID = types.StringValue(strings.Join([]string{spaceID, apiKeyID}, "/"))
-	model.SpaceID = types.StringValue(spaceID)
-	model.APIKeyID = types.StringValue(apiKeyID)
+	model := DeliveryAPIKeyResourceModel{
+		ID:       types.StringValue(strings.Join([]string{spaceID, apiKeyID}, "/")),
+		SpaceID:  types.StringValue(spaceID),
+		APIKeyID: types.StringValue(apiKeyID),
+	}
 
 	model.Name = types.StringValue(apiKey.Name)
 	model.Description = util.OptNilStringToStringValue(apiKey.Description)
@@ -37,5 +39,5 @@ func (model *DeliveryAPIKeyResourceModel) ReadFromResponse(ctx context.Context, 
 		model.PreviewAPIKeyID = types.StringNull()
 	}
 
-	return diags
+	return model, diags
 }
