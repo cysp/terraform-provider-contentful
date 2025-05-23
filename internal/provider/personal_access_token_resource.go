@@ -68,7 +68,10 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 
 	switch response := response.(type) {
 	case *cm.PersonalAccessTokenStatusCode:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, &response.Response)...)
+		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, response.Response, data.ExpiresIn)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 
 	default:
 		resp.Diagnostics.AddError("Failed to create personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -104,7 +107,10 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 
 	switch response := response.(type) {
 	case *cm.PersonalAccessToken:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response)...)
+		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, *response, data.ExpiresIn)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 
 	default:
 		if response, ok := response.(*cm.ErrorStatusCode); ok {
