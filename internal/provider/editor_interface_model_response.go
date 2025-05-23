@@ -10,17 +10,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *EditorInterfaceResourceModel) ReadFromResponse(ctx context.Context, editorInterface *cm.EditorInterface) diag.Diagnostics {
+func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInterface cm.EditorInterface) (EditorInterfaceResourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := editorInterface.Sys.Space.Sys.ID
 	environmentID := editorInterface.Sys.Environment.Sys.ID
 	contentTypeID := editorInterface.Sys.ContentType.Sys.ID
 
-	model.ID = types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/"))
-	model.SpaceID = types.StringValue(spaceID)
-	model.EnvironmentID = types.StringValue(environmentID)
-	model.ContentTypeID = types.StringValue(contentTypeID)
+	model := EditorInterfaceResourceModel{
+		ID:            types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/")),
+		SpaceID:       types.StringValue(spaceID),
+		EnvironmentID: types.StringValue(environmentID),
+		ContentTypeID: types.StringValue(contentTypeID),
+	}
 
 	if editorInterfaceEditorLayout, ok := editorInterface.EditorLayout.Get(); ok {
 		editorLayout, editorLayoutDiags := NewEditorInterfaceEditorLayoutListValueFromResponse(ctx, path.Root("editor_layout"), editorInterfaceEditorLayout)
@@ -58,5 +60,5 @@ func (model *EditorInterfaceResourceModel) ReadFromResponse(ctx context.Context,
 		model.Sidebar = NewEditorInterfaceSidebarListValueNull(ctx)
 	}
 
-	return diags
+	return model, diags
 }
