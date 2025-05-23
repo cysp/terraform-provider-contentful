@@ -24,6 +24,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
 				AppDefinitionID: types.StringValue(""),
+				Marketplace:     types.SetNull(types.StringType),
 			},
 		},
 		"empty": {
@@ -35,6 +36,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
 				AppDefinitionID: types.StringValue(""),
+				Marketplace:     types.SetNull(types.StringType),
 				Parameters:      jsontypes.NewNormalizedValue("{}"),
 			},
 		},
@@ -47,6 +49,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
 				AppDefinitionID: types.StringValue(""),
+				Marketplace:     types.SetNull(types.StringType),
 				Parameters:      jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
 			},
 		},
@@ -56,9 +59,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model := provider.AppInstallationResourceModel{}
-
-			diags := model.ReadFromResponse(&test.appInstallation)
+			model, diags := provider.NewAppInstallationResourceModelFromResponse(test.appInstallation, types.SetNull(types.StringType))
 
 			assert.Equal(t, test.expectedModel, model)
 

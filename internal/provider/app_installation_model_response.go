@@ -11,17 +11,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *AppInstallationResourceModel) ReadFromResponse(appInstallation *cm.AppInstallation) diag.Diagnostics {
+func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallation, marketplace types.Set) (AppInstallationResourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := appInstallation.Sys.Space.Sys.ID
 	environmentID := appInstallation.Sys.Environment.Sys.ID
 	appDefinitionID := appInstallation.Sys.AppDefinition.Sys.ID
 
-	model.ID = types.StringValue(strings.Join([]string{spaceID, environmentID, appDefinitionID}, "/"))
-	model.SpaceID = types.StringValue(spaceID)
-	model.EnvironmentID = types.StringValue(environmentID)
-	model.AppDefinitionID = types.StringValue(appDefinitionID)
+	model := AppInstallationResourceModel{
+		ID:              types.StringValue(strings.Join([]string{spaceID, environmentID, appDefinitionID}, "/")),
+		SpaceID:         types.StringValue(spaceID),
+		EnvironmentID:   types.StringValue(environmentID),
+		AppDefinitionID: types.StringValue(appDefinitionID),
+	}
 
 	if appInstallation.Parameters != nil {
 		constraint, err := util.JxNormalizeOpaqueBytes(appInstallation.Parameters, util.JxEncodeOpaqueOptions{EscapeStrings: true})
@@ -34,5 +36,7 @@ func (model *AppInstallationResourceModel) ReadFromResponse(appInstallation *cm.
 		model.Parameters = jsontypes.NewNormalizedNull()
 	}
 
-	return diags
+	model.Marketplace = marketplace
+
+	return model, diags
 }
