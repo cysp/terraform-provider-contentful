@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *AppDefinitionResourceTypeResourceModel) ReadFromResponse(_ context.Context, response cm.ResourceType) diag.Diagnostics {
+func NewAppDefinitionResourceTypeResourceModelFromResponse(_ context.Context, response cm.ResourceType) (AppDefinitionResourceTypeResourceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	organizationID := response.Sys.Organization.Sys.ID
@@ -16,14 +16,15 @@ func (m *AppDefinitionResourceTypeResourceModel) ReadFromResponse(_ context.Cont
 	resourceProviderID := response.Sys.ResourceProvider.Sys.ID
 	resourceTypeID := response.Sys.ID
 
-	m.ID = types.StringValue(organizationID + "/" + appDefinitionID + "/" + resourceTypeID)
+	model := AppDefinitionResourceTypeResourceModel{
+		ID:                 types.StringValue(organizationID + "/" + appDefinitionID + "/" + resourceTypeID),
+		OrganizationID:     types.StringValue(organizationID),
+		AppDefinitionID:    types.StringValue(appDefinitionID),
+		ResourceProviderID: types.StringValue(resourceProviderID),
+		ResourceTypeID:     types.StringValue(resourceTypeID),
+	}
 
-	m.OrganizationID = types.StringValue(organizationID)
-	m.AppDefinitionID = types.StringValue(appDefinitionID)
-	m.ResourceProviderID = types.StringValue(resourceProviderID)
-	m.ResourceTypeID = types.StringValue(resourceTypeID)
-
-	m.Name = types.StringValue(response.Name)
+	model.Name = types.StringValue(response.Name)
 
 	defaultFieldMapping := ResourceTypeFieldMapping{
 		Title:       types.StringValue(response.DefaultFieldMapping.Title),
@@ -46,7 +47,7 @@ func (m *AppDefinitionResourceTypeResourceModel) ReadFromResponse(_ context.Cont
 		}
 	}
 
-	m.DefaultFieldMapping = &defaultFieldMapping
+	model.DefaultFieldMapping = &defaultFieldMapping
 
-	return diags
+	return model, diags
 }

@@ -80,7 +80,10 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Create(ctx context.Cont
 
 	switch response := response.(type) {
 	case *cm.ResourceTypeStatusCode:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response.Response)...)
+		responseModel, responseModelDiags := NewAppDefinitionResourceTypeResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 
 	default:
 		resp.Diagnostics.AddError("Failed to create resource type definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -118,7 +121,10 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Read(ctx context.Contex
 
 	switch response := response.(type) {
 	case *cm.ResourceType:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, *response)...)
+		responseModel, responseModelDiags := NewAppDefinitionResourceTypeResourceModelFromResponse(ctx, *response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 
 	default:
 		if response, ok := response.(*cm.ErrorStatusCode); ok {
@@ -174,7 +180,10 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Update(ctx context.Cont
 
 	switch response := response.(type) {
 	case *cm.ResourceTypeStatusCode:
-		resp.Diagnostics.Append(data.ReadFromResponse(ctx, response.Response)...)
+		responseModel, responseModelDiags := NewAppDefinitionResourceTypeResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(responseModelDiags...)
+
+		data = responseModel
 
 	default:
 		resp.Diagnostics.AddError("Failed to update resource type definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
