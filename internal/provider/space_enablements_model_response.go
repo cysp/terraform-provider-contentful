@@ -8,18 +8,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *SpaceEnablementsResourceModel) ReadFromResponse(_ context.Context, response cm.SpaceEnablement) diag.Diagnostics {
+func NewSpaceEnablementsResourceModelFromResponse(_ context.Context, response cm.SpaceEnablement) (SpaceEnablementsResourceModel, diag.Diagnostics) {
 	spaceID := response.Sys.Space.Sys.ID
 
-	m.ID = types.StringValue(spaceID)
-	m.SpaceID = types.StringValue(spaceID)
+	model := SpaceEnablementsResourceModel{
+		ID:      types.StringValue(spaceID),
+		SpaceID: types.StringValue(spaceID),
+	}
 
-	m.CrossSpaceLinks = boolValueFromOptSpaceEnablementField(response.CrossSpaceLinks)
-	m.SpaceTemplates = boolValueFromOptSpaceEnablementField(response.SpaceTemplates)
-	m.StudioExperiences = boolValueFromOptSpaceEnablementField(response.StudioExperiences)
-	m.SuggestConcepts = boolValueFromOptSpaceEnablementField(response.SuggestConcepts)
+	model.CrossSpaceLinks = boolValueFromOptSpaceEnablementField(response.CrossSpaceLinks)
+	model.SpaceTemplates = boolValueFromOptSpaceEnablementField(response.SpaceTemplates)
+	model.StudioExperiences = boolValueFromOptSpaceEnablementField(response.StudioExperiences)
+	model.SuggestConcepts = boolValueFromOptSpaceEnablementField(response.SuggestConcepts)
 
-	return nil
+	return model, nil
 }
 
 func boolValueFromOptSpaceEnablementField(field cm.OptSpaceEnablementField) types.Bool {
