@@ -65,6 +65,8 @@ func UpdateContentTypeFromRequestFields(contentType *cm.ContentType, contentType
 	})
 
 	contentType.DisplayField = cm.NewNilString(contentTypeFields.DisplayField)
+
+	contentType.Metadata = contentTypeFields.Metadata
 }
 
 func publishContentType(contentType *cm.ContentType) {

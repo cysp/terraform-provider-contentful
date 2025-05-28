@@ -694,6 +694,7 @@ type ContentType struct {
 	// Merged property.
 	DisplayField NilString               `json:"displayField"`
 	Fields       []ContentTypeFieldsItem `json:"fields"`
+	Metadata     OptContentTypeMetadata  `json:"metadata"`
 }
 
 // GetSys returns the value of Sys.
@@ -721,6 +722,11 @@ func (s *ContentType) GetFields() []ContentTypeFieldsItem {
 	return s.Fields
 }
 
+// GetMetadata returns the value of Metadata.
+func (s *ContentType) GetMetadata() OptContentTypeMetadata {
+	return s.Metadata
+}
+
 // SetSys sets the value of Sys.
 func (s *ContentType) SetSys(val ContentTypeSys) {
 	s.Sys = val
@@ -744,6 +750,11 @@ func (s *ContentType) SetDisplayField(val NilString) {
 // SetFields sets the value of Fields.
 func (s *ContentType) SetFields(val []ContentTypeFieldsItem) {
 	s.Fields = val
+}
+
+// SetMetadata sets the value of Metadata.
+func (s *ContentType) SetMetadata(val OptContentTypeMetadata) {
+	s.Metadata = val
 }
 
 func (*ContentType) deactivateContentTypeRes() {}
@@ -1044,12 +1055,181 @@ func (s *ContentTypeLinkSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/ContentTypeMetadata
+type ContentTypeMetadata struct {
+	Annotations jx.Raw                            `json:"annotations"`
+	Taxonomy    []ContentTypeMetadataTaxonomyItem `json:"taxonomy"`
+}
+
+// GetAnnotations returns the value of Annotations.
+func (s *ContentTypeMetadata) GetAnnotations() jx.Raw {
+	return s.Annotations
+}
+
+// GetTaxonomy returns the value of Taxonomy.
+func (s *ContentTypeMetadata) GetTaxonomy() []ContentTypeMetadataTaxonomyItem {
+	return s.Taxonomy
+}
+
+// SetAnnotations sets the value of Annotations.
+func (s *ContentTypeMetadata) SetAnnotations(val jx.Raw) {
+	s.Annotations = val
+}
+
+// SetTaxonomy sets the value of Taxonomy.
+func (s *ContentTypeMetadata) SetTaxonomy(val []ContentTypeMetadataTaxonomyItem) {
+	s.Taxonomy = val
+}
+
+// Ref: #/components/schemas/ContentTypeMetadataTaxonomyItem
+type ContentTypeMetadataTaxonomyItem struct {
+	Sys      ContentTypeMetadataTaxonomyItemSys `json:"sys"`
+	Required OptBool                            `json:"required"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ContentTypeMetadataTaxonomyItem) GetSys() ContentTypeMetadataTaxonomyItemSys {
+	return s.Sys
+}
+
+// GetRequired returns the value of Required.
+func (s *ContentTypeMetadataTaxonomyItem) GetRequired() OptBool {
+	return s.Required
+}
+
+// SetSys sets the value of Sys.
+func (s *ContentTypeMetadataTaxonomyItem) SetSys(val ContentTypeMetadataTaxonomyItemSys) {
+	s.Sys = val
+}
+
+// SetRequired sets the value of Required.
+func (s *ContentTypeMetadataTaxonomyItem) SetRequired(val OptBool) {
+	s.Required = val
+}
+
+// Merged schema.
+type ContentTypeMetadataTaxonomyItemSys struct {
+	// Merged property.
+	Type ContentTypeMetadataTaxonomyItemSysType `json:"type"`
+	ID   string                                 `json:"id"`
+	// Merged property.
+	LinkType ContentTypeMetadataTaxonomyItemSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeMetadataTaxonomyItemSys) GetType() ContentTypeMetadataTaxonomyItemSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ContentTypeMetadataTaxonomyItemSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ContentTypeMetadataTaxonomyItemSys) GetLinkType() ContentTypeMetadataTaxonomyItemSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeMetadataTaxonomyItemSys) SetType(val ContentTypeMetadataTaxonomyItemSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ContentTypeMetadataTaxonomyItemSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ContentTypeMetadataTaxonomyItemSys) SetLinkType(val ContentTypeMetadataTaxonomyItemSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type ContentTypeMetadataTaxonomyItemSysLinkType string
+
+const (
+	ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept       ContentTypeMetadataTaxonomyItemSysLinkType = "TaxonomyConcept"
+	ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme ContentTypeMetadataTaxonomyItemSysLinkType = "TaxonomyConceptScheme"
+)
+
+// AllValues returns all ContentTypeMetadataTaxonomyItemSysLinkType values.
+func (ContentTypeMetadataTaxonomyItemSysLinkType) AllValues() []ContentTypeMetadataTaxonomyItemSysLinkType {
+	return []ContentTypeMetadataTaxonomyItemSysLinkType{
+		ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept,
+		ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentTypeMetadataTaxonomyItemSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept:
+		return []byte(s), nil
+	case ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentTypeMetadataTaxonomyItemSysLinkType) UnmarshalText(data []byte) error {
+	switch ContentTypeMetadataTaxonomyItemSysLinkType(data) {
+	case ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept:
+		*s = ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept
+		return nil
+	case ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme:
+		*s = ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type ContentTypeMetadataTaxonomyItemSysType string
+
+const (
+	ContentTypeMetadataTaxonomyItemSysTypeLink ContentTypeMetadataTaxonomyItemSysType = "Link"
+)
+
+// AllValues returns all ContentTypeMetadataTaxonomyItemSysType values.
+func (ContentTypeMetadataTaxonomyItemSysType) AllValues() []ContentTypeMetadataTaxonomyItemSysType {
+	return []ContentTypeMetadataTaxonomyItemSysType{
+		ContentTypeMetadataTaxonomyItemSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentTypeMetadataTaxonomyItemSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentTypeMetadataTaxonomyItemSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentTypeMetadataTaxonomyItemSysType) UnmarshalText(data []byte) error {
+	switch ContentTypeMetadataTaxonomyItemSysType(data) {
+	case ContentTypeMetadataTaxonomyItemSysTypeLink:
+		*s = ContentTypeMetadataTaxonomyItemSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/components/schemas/ContentTypeRequestFields
 type ContentTypeRequestFields struct {
 	Name         string                               `json:"name"`
 	Description  OptNilString                         `json:"description"`
 	DisplayField string                               `json:"displayField"`
 	Fields       []ContentTypeRequestFieldsFieldsItem `json:"fields"`
+	Metadata     OptContentTypeMetadata               `json:"metadata"`
 }
 
 // GetName returns the value of Name.
@@ -1072,6 +1252,11 @@ func (s *ContentTypeRequestFields) GetFields() []ContentTypeRequestFieldsFieldsI
 	return s.Fields
 }
 
+// GetMetadata returns the value of Metadata.
+func (s *ContentTypeRequestFields) GetMetadata() OptContentTypeMetadata {
+	return s.Metadata
+}
+
 // SetName sets the value of Name.
 func (s *ContentTypeRequestFields) SetName(val string) {
 	s.Name = val
@@ -1090,6 +1275,11 @@ func (s *ContentTypeRequestFields) SetDisplayField(val string) {
 // SetFields sets the value of Fields.
 func (s *ContentTypeRequestFields) SetFields(val []ContentTypeRequestFieldsFieldsItem) {
 	s.Fields = val
+}
+
+// SetMetadata sets the value of Metadata.
+func (s *ContentTypeRequestFields) SetMetadata(val OptContentTypeMetadata) {
+	s.Metadata = val
 }
 
 type ContentTypeRequestFieldsFieldsItem struct {
@@ -2829,6 +3019,52 @@ func (o OptContentTypeFieldsItemItems) Get() (v ContentTypeFieldsItemItems, ok b
 
 // Or returns value if set, or given parameter if does not.
 func (o OptContentTypeFieldsItemItems) Or(d ContentTypeFieldsItemItems) ContentTypeFieldsItemItems {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptContentTypeMetadata returns new OptContentTypeMetadata with value set to v.
+func NewOptContentTypeMetadata(v ContentTypeMetadata) OptContentTypeMetadata {
+	return OptContentTypeMetadata{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptContentTypeMetadata is optional ContentTypeMetadata.
+type OptContentTypeMetadata struct {
+	Value ContentTypeMetadata
+	Set   bool
+}
+
+// IsSet returns true if OptContentTypeMetadata was set.
+func (o OptContentTypeMetadata) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptContentTypeMetadata) Reset() {
+	var v ContentTypeMetadata
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptContentTypeMetadata) SetTo(v ContentTypeMetadata) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptContentTypeMetadata) Get() (v ContentTypeMetadata, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptContentTypeMetadata) Or(d ContentTypeMetadata) ContentTypeMetadata {
 	if v, ok := o.Get(); ok {
 		return v
 	}
