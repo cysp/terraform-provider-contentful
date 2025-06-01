@@ -1,0 +1,27 @@
+name: update indirect dependencies
+
+on:
+  schedule:
+    - cron: "15 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-go@v5.5.0
+      - name: update indirect dependencies
+        run: for x in `go list -f '{{if .Indirect}}{{.Path}}{{end}}' -m all`; do go get -u "$x"; done
+      - name: go mod tidy
+        run: go mod tidy -v
+      - name: create pull request
+        uses: peter-evans/create-pull-request@v7.0.8
+        with:
+          commit-message: "chore(deps): bump indirect dependencies"
+          title: "chore(deps): bump indirect dependencies"
+          branch: "github-action-update-indirect-dependencies"
