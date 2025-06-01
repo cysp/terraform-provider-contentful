@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4.2.2
       - uses: actions/setup-go@v5.5.0
       - name: update indirect dependencies
-        run: for x in `go list -f '{{if .Indirect}}{{.Path}}{{end}}' -m all`; do go get -u "$x"; done
+        run: for x in `go list -f '{{if .Indirect}}{{.Path}}{{end}}' -m all`; do go get -u "$x"; done || true
       - name: go mod tidy
         run: go mod tidy -v
       - name: create pull request
