@@ -31,7 +31,7 @@ func contentfulProviderMockableResourceTest(t *testing.T, testserver *httptest.S
 		}
 
 		testcase.ProtoV6ProviderFactories = makeTestAccProtoV6ProviderFactories(ContentfulProviderOptionsWithHTTPTestServer(testserver)...)
-		resource.UnitTest(t, testcase)
+		resource.Test(t, testcase)
 
 	default:
 		if testcase.ProtoV6ProviderFactories == nil {
