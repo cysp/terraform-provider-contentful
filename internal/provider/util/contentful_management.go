@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -9,15 +10,7 @@ import (
 
 func ErrorDetailFromContentfulManagementResponse(response interface{}, err error) string {
 	if response, ok := response.(*cm.ErrorStatusCode); ok {
-		responseType, err := response.Response.Sys.Type.MarshalText()
-
-		if err == nil {
-			detail := string(responseType) + ": " + response.Response.Sys.ID
-
-			if responseMessage, ok := response.Response.Message.Get(); ok {
-				detail += ": " + responseMessage
-			}
-
+		if detail := ErrorDetailFromContentfulManagementErrorStatusCode(response); detail != "" {
 			return detail
 		}
 	}
@@ -27,6 +20,105 @@ func ErrorDetailFromContentfulManagementResponse(response interface{}, err error
 	}
 
 	return fmt.Sprintf("%v", response)
+}
+
+func ErrorDetailFromContentfulManagementErrorStatusCode(response *cm.ErrorStatusCode) string {
+	if response == nil {
+		return ""
+	}
+
+	responseType, err := response.Response.Sys.Type.MarshalText()
+	if err != nil {
+		return ""
+	}
+
+	detail := string(responseType) + ": " + response.Response.Sys.ID
+
+	if responseMessage, ok := response.Response.Message.Get(); ok {
+		detail += ": " + responseMessage
+	}
+
+	if response.Response.Sys.ID == "ValidationFailed" {
+		if details, ok := ContentfulManagementValidationFailedErrorDetails(response.Response.Details); ok {
+			for _, s := range details {
+				detail += "\n  " + s
+			}
+		}
+	}
+
+	return detail
+}
+
+type ValidationFailedErrorDetails struct {
+	Errors []ValidationFailedErrorDetailsError `json:"errors"`
+}
+
+type ValidationFailedErrorDetailsError struct {
+	Name    string `json:"name"`
+	Details string `json:"details"`
+	Path    []any  `json:"path"`
+}
+
+func ContentfulManagementValidationFailedErrorDetails(detailsJSONBytes []byte) ([]string, bool) {
+	details := ValidationFailedErrorDetails{}
+
+	err := json.Unmarshal(detailsJSONBytes, &details)
+	if err != nil {
+		return []string{}, false
+	}
+
+	strings := make([]string, 0, len(details.Errors))
+
+	for _, err := range details.Errors {
+		pathString, pathStringOk := ContentfulManagementValidationFailedErrorDetailsErrorPathToString(err.Path)
+
+		detailString := ""
+
+		if pathStringOk && pathString != "" {
+			detailString += pathString
+		}
+
+		if err.Details != "" {
+			if detailString != "" {
+				detailString += ": "
+			}
+
+			detailString += err.Details
+		}
+
+		strings = append(strings, detailString)
+	}
+
+	return strings, true
+}
+
+func ContentfulManagementValidationFailedErrorDetailsErrorPathToString(path []any) (string, bool) {
+	if len(path) == 0 {
+		return "", false
+	}
+
+	pathString := ""
+
+	for _, pathComponent := range path {
+		switch pathComponent := pathComponent.(type) {
+		case string:
+			if pathString != "" {
+				pathString += "."
+			}
+
+			pathString += pathComponent
+		case int64, int32, int16, int8, int, uint64, uint32, uint16, uint8, uint, float64, float32:
+			pathString += fmt.Sprintf("[%v]", pathComponent)
+		default:
+			if pathString != "" {
+				pathString += "."
+			}
+
+			pathString += "<unknown>"
+		}
+	}
+
+	return pathString, true
 }
 
 func OptBoolToBoolValue(b cm.OptBool) types.Bool {
