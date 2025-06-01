@@ -49,6 +49,34 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			err:      errors.ErrUnsupported,
 			expected: "unsupported operation",
 		},
+		"ValidationFailed with detailed errors": {
+			response: &cm.ErrorStatusCode{
+				StatusCode: 422,
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
+						ID:   "ValidationFailed",
+					},
+					Message: cm.NewOptString("Validation error"),
+					Details: []byte("{\"errors\":[{\"name\":\"required\",\"details\":\"The property \\\"annotations\\\" is required here\",\"path\":[\"metadata\",\"annotations\"]},{\"name\":\"required\",\"details\":\"The property \\\"taxonomy\\\" is required here\",\"path\":[\"metadata\",\"taxonomy\"]},{\"name\":\"in\",\"details\":\"Value must be one of expected values\",\"path\":[\"metadata\"],\"value\": {},\"expected\":[{\"required\":[\"annotations\"]},{\"required\":[\"taxonomy\"]}]}]}"),
+				},
+			},
+			expected: "Error: ValidationFailed: Validation error\n  metadata.annotations: The property \"annotations\" is required here\n  metadata.taxonomy: The property \"taxonomy\" is required here\n  metadata: Value must be one of expected values",
+		},
+		"ValidationFailed with detailed errors in fields list item": {
+			response: &cm.ErrorStatusCode{
+				StatusCode: 422,
+				Response: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
+						ID:   "ValidationFailed",
+					},
+					Message: cm.NewOptString("Validation error"),
+					Details: []byte("{\"errors\":[{\"name\":\"type\",\"details\":\"The type of \\\"required\\\" is incorrect, expected type: Boolean\",\"path\":[\"fields\",0,\"required\"],\"type\":\"Boolean\",\"value\":\"true\"}]}"),
+				},
+			},
+			expected: "Error: ValidationFailed: Validation error\n  fields[0].required: The type of \"required\" is incorrect, expected type: Boolean",
+		},
 	}
 
 	for name, test := range tests {
