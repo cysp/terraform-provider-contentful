@@ -533,6 +533,110 @@ components:
           required:
             - sys
         - $ref: "#/components/schemas/EditorInterfaceFields"
+    ExtensionSys:
+      allOf:
+        - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - Extension
+    ExtensionFields:
+      type: object
+      properties:
+        extension:
+          type: object
+          properties:
+            name:
+              type: string
+            src:
+              type: string
+            srcdoc:
+              type: string
+            fieldTypes:
+              type: array
+              items:
+                $ref: "#/components/schemas/ExtensionFieldType"
+            sidebar:
+              type: boolean
+          required:
+            - name
+        parameters: {}
+      required:
+        - extension
+    ExtensionFieldType:
+      oneOf:
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - Symbol
+                - Text
+                - RichText
+                - Integer
+                - Number
+                - Date
+                - Boolean
+                - Location
+                - Object
+          required:
+            - type
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - Link
+            linkType:
+              type: string
+          required:
+            - type
+            - linkType
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - Array
+            items:
+              oneOf:
+                - type: object
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                        - Symbol
+                  required:
+                    - type
+                - type: object
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                        - Link
+                    linkType:
+                      type: string
+                      enum:
+                        - Entry
+                        - Asset
+                  required:
+                    - type
+                    - linkType
+          required:
+            - type
+            - items
+    Extension:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: "#/components/schemas/ExtensionSys"
+          required:
+            - sys
+        - $ref: "#/components/schemas/ExtensionFields"
     LinkSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithId"
@@ -1791,6 +1895,114 @@ paths:
     delete:
       operationId: deleteWebhookDefinition
       summary: Delete a webhook definition
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}:
+    get:
+      operationId: getExtension
+      summary: Get a single extension
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: extension_id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: An extension
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/Extension"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putExtension
+      summary: Create or update an extension
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: extension_id
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: X-Contentful-Version
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              type: object
+              properties:
+                extension:
+                  $ref: "#/components/schemas/ExtensionFields"
+              required:
+                - extension
+      responses:
+        200:
+          description: An extension
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/Extension"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteExtension
+      summary: Delete an extension
+      parameters:
+        - in: path
+          name: space_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: environment_id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: extension_id
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: X-Contentful-Version
+          schema:
+            type: integer
+          required: true
       responses:
         204:
           $ref: "#/components/responses/no-content"
