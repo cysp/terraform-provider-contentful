@@ -52,7 +52,10 @@ func TestGetAuthenticatedUserUnauthorized(t *testing.T) {
 	require.NoError(t, err)
 
 	switch response := response.(type) {
-	case *cm.Error:
+	case *cm.GetAuthenticatedUserApplicationJSONUnauthorized:
+		require.NotNil(t, response)
+		assert.Equal(t, "AccessTokenInvalid", response.Sys.ID)
+	case *cm.GetAuthenticatedUserApplicationVndContentfulManagementV1JSONUnauthorized:
 		require.NotNil(t, response)
 		assert.Equal(t, "AccessTokenInvalid", response.Sys.ID)
 	default:

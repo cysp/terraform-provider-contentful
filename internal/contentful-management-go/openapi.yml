@@ -1134,9 +1134,15 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+        application/vnd.contentful.management.v1+json:
+          schema:
+            $ref: "#/components/schemas/Error"
     error:
       description: An error
       content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
         application/vnd.contentful.management.v1+json:
           schema:
             $ref: "#/components/schemas/Error"
