@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -12,6 +13,22 @@ func ErrorDetailFromContentfulManagementResponse(response interface{}, err error
 	if response, ok := response.(*cm.ErrorStatusCode); ok {
 		if detail := ErrorDetailFromContentfulManagementErrorStatusCode(response); detail != "" {
 			return detail
+		}
+	}
+
+	if response != nil {
+		cmErrorType := reflect.TypeFor[cm.Error]()
+
+		rValue := reflect.ValueOf(response)
+		if rValue.Kind() == reflect.Ptr && !rValue.IsNil() {
+			rValue = rValue.Elem()
+		}
+
+		if rValue.CanConvert(cmErrorType) {
+			cmError, ok := rValue.Convert(cmErrorType).Interface().(cm.Error)
+			if ok {
+				return ErrorDetailFromContentfulManagementError(cmError)
+			}
 		}
 	}
 
@@ -27,19 +44,23 @@ func ErrorDetailFromContentfulManagementErrorStatusCode(response *cm.ErrorStatus
 		return ""
 	}
 
-	responseType, err := response.Response.Sys.Type.MarshalText()
+	return ErrorDetailFromContentfulManagementError(response.Response)
+}
+
+func ErrorDetailFromContentfulManagementError(response cm.Error) string {
+	responseType, err := response.Sys.Type.MarshalText()
 	if err != nil {
 		return ""
 	}
 
-	detail := string(responseType) + ": " + response.Response.Sys.ID
+	detail := string(responseType) + ": " + response.Sys.ID
 
-	if responseMessage, ok := response.Response.Message.Get(); ok {
+	if responseMessage, ok := response.Message.Get(); ok {
 		detail += ": " + responseMessage
 	}
 
-	if response.Response.Sys.ID == "ValidationFailed" {
-		if details, ok := ContentfulManagementValidationFailedErrorDetails(response.Response.Details); ok {
+	if response.Sys.ID == "ValidationFailed" {
+		if details, ok := ContentfulManagementValidationFailedErrorDetails(response.Details); ok {
 			for _, s := range details {
 				detail += "\n  " + s
 			}

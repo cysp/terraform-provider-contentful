@@ -18,6 +18,25 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 		err      error
 		expected string
 	}{
+		"Error": {
+			response: cm.Error{
+				Sys: cm.ErrorSys{
+					Type: cm.ErrorSysTypeError,
+					ID:   "UnknownError",
+				},
+			},
+			expected: "Error: UnknownError",
+		},
+		"Error: *GetAuthenticatedUserApplicationVndContentfulManagementV1JSONUnauthorized": {
+			response: &cm.GetAuthenticatedUserApplicationVndContentfulManagementV1JSONUnauthorized{
+				Sys: cm.ErrorSys{
+					Type: cm.ErrorSysTypeError,
+					ID:   "Unauthorized",
+				},
+				Message: cm.NewOptString("Unauthorized"),
+			},
+			expected: "Error: Unauthorized: Unauthorized",
+		},
 		"ErrorStatusCode": {
 			response: &cm.ErrorStatusCode{
 				Response: cm.Error{
