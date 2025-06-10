@@ -68,7 +68,7 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 
 	switch response := response.(type) {
 	case *cm.PersonalAccessTokenStatusCode:
-		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, response.Response, data.ExpiresIn)
+		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, response.Response, data.Token, data.ExpiresIn)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -107,7 +107,7 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 
 	switch response := response.(type) {
 	case *cm.PersonalAccessToken:
-		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, *response, data.ExpiresIn)
+		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, *response, data.Token, data.ExpiresIn)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel

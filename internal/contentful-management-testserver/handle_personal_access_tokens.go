@@ -23,11 +23,13 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 
 			personalAccessTokenID := generateResourceID()
 			personalAccessToken := NewPersonalAccessTokenFromRequestFields(personalAccessTokenID, personalAccessTokenRequestFields)
-			personalAccessToken.Token.SetTo(generateResourceID())
 
 			ts.personalAccessTokens[personalAccessToken.Sys.ID] = &personalAccessToken
 
-			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &personalAccessToken)
+			personalAccessTokenWithToken := personalAccessToken
+			personalAccessTokenWithToken.Token.SetTo(generateResourceID())
+
+			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &personalAccessTokenWithToken)
 
 		default:
 			_ = WriteContentfulManagementErrorNotFoundResponse(w)
