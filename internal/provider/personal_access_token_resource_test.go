@@ -27,6 +27,9 @@ func TestAccPersonalAccessTokenResource(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("contentful_personal_access_token.test", "token"),
+				),
 			},
 			{
 				ConfigDirectory:         config.TestNameDirectory(),
@@ -35,6 +38,15 @@ func TestAccPersonalAccessTokenResource(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"expires_in", "token"},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("contentful_personal_access_token.test", "token"),
+				),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("contentful_personal_access_token.test", "token"),
+				),
 			},
 		},
 	})
