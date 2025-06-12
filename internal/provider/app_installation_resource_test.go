@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -24,7 +25,9 @@ func TestAccAppInstallationResource(t *testing.T) {
 		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	testserver.AddAppDefinitionID("1WkQ2J9LERPtbMTdUfSHka")
+	testserver.SetAppDefinition("organization-id", "1WkQ2J9LERPtbMTdUfSHka", cm.AppDefinitionFields{
+		Name: "Test App",
+	})
 
 	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{

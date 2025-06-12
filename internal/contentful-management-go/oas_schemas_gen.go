@@ -412,6 +412,453 @@ func (s *ApiKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/AppBundleLink
+type AppBundleLink struct {
+	Sys AppBundleLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppBundleLink) GetSys() AppBundleLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *AppBundleLink) SetSys(val AppBundleLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type AppBundleLinkSys struct {
+	// Merged property.
+	Type AppBundleLinkSysType `json:"type"`
+	ID   string               `json:"id"`
+	// Merged property.
+	LinkType AppBundleLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *AppBundleLinkSys) GetType() AppBundleLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *AppBundleLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *AppBundleLinkSys) GetLinkType() AppBundleLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *AppBundleLinkSys) SetType(val AppBundleLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *AppBundleLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *AppBundleLinkSys) SetLinkType(val AppBundleLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type AppBundleLinkSysLinkType string
+
+const (
+	AppBundleLinkSysLinkTypeAppBundle AppBundleLinkSysLinkType = "AppBundle"
+)
+
+// AllValues returns all AppBundleLinkSysLinkType values.
+func (AppBundleLinkSysLinkType) AllValues() []AppBundleLinkSysLinkType {
+	return []AppBundleLinkSysLinkType{
+		AppBundleLinkSysLinkTypeAppBundle,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppBundleLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppBundleLinkSysLinkTypeAppBundle:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppBundleLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch AppBundleLinkSysLinkType(data) {
+	case AppBundleLinkSysLinkTypeAppBundle:
+		*s = AppBundleLinkSysLinkTypeAppBundle
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type AppBundleLinkSysType string
+
+const (
+	AppBundleLinkSysTypeLink AppBundleLinkSysType = "Link"
+)
+
+// AllValues returns all AppBundleLinkSysType values.
+func (AppBundleLinkSysType) AllValues() []AppBundleLinkSysType {
+	return []AppBundleLinkSysType{
+		AppBundleLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppBundleLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppBundleLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppBundleLinkSysType) UnmarshalText(data []byte) error {
+	switch AppBundleLinkSysType(data) {
+	case AppBundleLinkSysTypeLink:
+		*s = AppBundleLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/components/schemas/AppDefinition
+type AppDefinition struct {
+	Sys        AppDefinitionSys             `json:"sys"`
+	Name       string                       `json:"name"`
+	Src        OptString                    `json:"src"`
+	Bundle     OptAppBundleLink             `json:"bundle"`
+	Locations  []AppDefinitionLocationsItem `json:"locations"`
+	Parameters OptAppDefinitionParameters   `json:"parameters"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppDefinition) GetSys() AppDefinitionSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *AppDefinition) GetName() string {
+	return s.Name
+}
+
+// GetSrc returns the value of Src.
+func (s *AppDefinition) GetSrc() OptString {
+	return s.Src
+}
+
+// GetBundle returns the value of Bundle.
+func (s *AppDefinition) GetBundle() OptAppBundleLink {
+	return s.Bundle
+}
+
+// GetLocations returns the value of Locations.
+func (s *AppDefinition) GetLocations() []AppDefinitionLocationsItem {
+	return s.Locations
+}
+
+// GetParameters returns the value of Parameters.
+func (s *AppDefinition) GetParameters() OptAppDefinitionParameters {
+	return s.Parameters
+}
+
+// SetSys sets the value of Sys.
+func (s *AppDefinition) SetSys(val AppDefinitionSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *AppDefinition) SetName(val string) {
+	s.Name = val
+}
+
+// SetSrc sets the value of Src.
+func (s *AppDefinition) SetSrc(val OptString) {
+	s.Src = val
+}
+
+// SetBundle sets the value of Bundle.
+func (s *AppDefinition) SetBundle(val OptAppBundleLink) {
+	s.Bundle = val
+}
+
+// SetLocations sets the value of Locations.
+func (s *AppDefinition) SetLocations(val []AppDefinitionLocationsItem) {
+	s.Locations = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *AppDefinition) SetParameters(val OptAppDefinitionParameters) {
+	s.Parameters = val
+}
+
+func (*AppDefinition) getAppDefinitionRes() {}
+
+// Ref: #/components/schemas/AppDefinitionFields
+type AppDefinitionFields struct {
+	Name       string                             `json:"name"`
+	Src        OptString                          `json:"src"`
+	Bundle     OptAppBundleLink                   `json:"bundle"`
+	Locations  []AppDefinitionFieldsLocationsItem `json:"locations"`
+	Parameters OptAppDefinitionParameters         `json:"parameters"`
+}
+
+// GetName returns the value of Name.
+func (s *AppDefinitionFields) GetName() string {
+	return s.Name
+}
+
+// GetSrc returns the value of Src.
+func (s *AppDefinitionFields) GetSrc() OptString {
+	return s.Src
+}
+
+// GetBundle returns the value of Bundle.
+func (s *AppDefinitionFields) GetBundle() OptAppBundleLink {
+	return s.Bundle
+}
+
+// GetLocations returns the value of Locations.
+func (s *AppDefinitionFields) GetLocations() []AppDefinitionFieldsLocationsItem {
+	return s.Locations
+}
+
+// GetParameters returns the value of Parameters.
+func (s *AppDefinitionFields) GetParameters() OptAppDefinitionParameters {
+	return s.Parameters
+}
+
+// SetName sets the value of Name.
+func (s *AppDefinitionFields) SetName(val string) {
+	s.Name = val
+}
+
+// SetSrc sets the value of Src.
+func (s *AppDefinitionFields) SetSrc(val OptString) {
+	s.Src = val
+}
+
+// SetBundle sets the value of Bundle.
+func (s *AppDefinitionFields) SetBundle(val OptAppBundleLink) {
+	s.Bundle = val
+}
+
+// SetLocations sets the value of Locations.
+func (s *AppDefinitionFields) SetLocations(val []AppDefinitionFieldsLocationsItem) {
+	s.Locations = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *AppDefinitionFields) SetParameters(val OptAppDefinitionParameters) {
+	s.Parameters = val
+}
+
+type AppDefinitionFieldsLocationsItem struct {
+	Location       AppDefinitionFieldsLocationsItemLocation          `json:"location"`
+	FieldTypes     []AppDefinitionFieldsLocationsItemFieldTypesItem  `json:"fieldTypes"`
+	NavigationItem OptAppDefinitionFieldsLocationsItemNavigationItem `json:"navigationItem"`
+}
+
+// GetLocation returns the value of Location.
+func (s *AppDefinitionFieldsLocationsItem) GetLocation() AppDefinitionFieldsLocationsItemLocation {
+	return s.Location
+}
+
+// GetFieldTypes returns the value of FieldTypes.
+func (s *AppDefinitionFieldsLocationsItem) GetFieldTypes() []AppDefinitionFieldsLocationsItemFieldTypesItem {
+	return s.FieldTypes
+}
+
+// GetNavigationItem returns the value of NavigationItem.
+func (s *AppDefinitionFieldsLocationsItem) GetNavigationItem() OptAppDefinitionFieldsLocationsItemNavigationItem {
+	return s.NavigationItem
+}
+
+// SetLocation sets the value of Location.
+func (s *AppDefinitionFieldsLocationsItem) SetLocation(val AppDefinitionFieldsLocationsItemLocation) {
+	s.Location = val
+}
+
+// SetFieldTypes sets the value of FieldTypes.
+func (s *AppDefinitionFieldsLocationsItem) SetFieldTypes(val []AppDefinitionFieldsLocationsItemFieldTypesItem) {
+	s.FieldTypes = val
+}
+
+// SetNavigationItem sets the value of NavigationItem.
+func (s *AppDefinitionFieldsLocationsItem) SetNavigationItem(val OptAppDefinitionFieldsLocationsItemNavigationItem) {
+	s.NavigationItem = val
+}
+
+type AppDefinitionFieldsLocationsItemFieldTypesItem struct {
+	Type     string                                                 `json:"type"`
+	LinkType OptString                                              `json:"linkType"`
+	Items    OptAppDefinitionFieldsLocationsItemFieldTypesItemItems `json:"items"`
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetItems returns the value of Items.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) GetItems() OptAppDefinitionFieldsLocationsItemFieldTypesItemItems {
+	return s.Items
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetItems sets the value of Items.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) SetItems(val OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) {
+	s.Items = val
+}
+
+type AppDefinitionFieldsLocationsItemFieldTypesItemItems struct {
+	Type     string    `json:"type"`
+	LinkType OptString `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+type AppDefinitionFieldsLocationsItemLocation string
+
+const (
+	AppDefinitionFieldsLocationsItemLocationAppConfig    AppDefinitionFieldsLocationsItemLocation = "app-config"
+	AppDefinitionFieldsLocationsItemLocationDialog       AppDefinitionFieldsLocationsItemLocation = "dialog"
+	AppDefinitionFieldsLocationsItemLocationEntryEditor  AppDefinitionFieldsLocationsItemLocation = "entry-editor"
+	AppDefinitionFieldsLocationsItemLocationEntrySidebar AppDefinitionFieldsLocationsItemLocation = "entry-sidebar"
+	AppDefinitionFieldsLocationsItemLocationHome         AppDefinitionFieldsLocationsItemLocation = "home"
+	AppDefinitionFieldsLocationsItemLocationPage         AppDefinitionFieldsLocationsItemLocation = "page"
+)
+
+// AllValues returns all AppDefinitionFieldsLocationsItemLocation values.
+func (AppDefinitionFieldsLocationsItemLocation) AllValues() []AppDefinitionFieldsLocationsItemLocation {
+	return []AppDefinitionFieldsLocationsItemLocation{
+		AppDefinitionFieldsLocationsItemLocationAppConfig,
+		AppDefinitionFieldsLocationsItemLocationDialog,
+		AppDefinitionFieldsLocationsItemLocationEntryEditor,
+		AppDefinitionFieldsLocationsItemLocationEntrySidebar,
+		AppDefinitionFieldsLocationsItemLocationHome,
+		AppDefinitionFieldsLocationsItemLocationPage,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppDefinitionFieldsLocationsItemLocation) MarshalText() ([]byte, error) {
+	switch s {
+	case AppDefinitionFieldsLocationsItemLocationAppConfig:
+		return []byte(s), nil
+	case AppDefinitionFieldsLocationsItemLocationDialog:
+		return []byte(s), nil
+	case AppDefinitionFieldsLocationsItemLocationEntryEditor:
+		return []byte(s), nil
+	case AppDefinitionFieldsLocationsItemLocationEntrySidebar:
+		return []byte(s), nil
+	case AppDefinitionFieldsLocationsItemLocationHome:
+		return []byte(s), nil
+	case AppDefinitionFieldsLocationsItemLocationPage:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppDefinitionFieldsLocationsItemLocation) UnmarshalText(data []byte) error {
+	switch AppDefinitionFieldsLocationsItemLocation(data) {
+	case AppDefinitionFieldsLocationsItemLocationAppConfig:
+		*s = AppDefinitionFieldsLocationsItemLocationAppConfig
+		return nil
+	case AppDefinitionFieldsLocationsItemLocationDialog:
+		*s = AppDefinitionFieldsLocationsItemLocationDialog
+		return nil
+	case AppDefinitionFieldsLocationsItemLocationEntryEditor:
+		*s = AppDefinitionFieldsLocationsItemLocationEntryEditor
+		return nil
+	case AppDefinitionFieldsLocationsItemLocationEntrySidebar:
+		*s = AppDefinitionFieldsLocationsItemLocationEntrySidebar
+		return nil
+	case AppDefinitionFieldsLocationsItemLocationHome:
+		*s = AppDefinitionFieldsLocationsItemLocationHome
+		return nil
+	case AppDefinitionFieldsLocationsItemLocationPage:
+		*s = AppDefinitionFieldsLocationsItemLocationPage
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type AppDefinitionFieldsLocationsItemNavigationItem struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
+}
+
+// GetName returns the value of Name.
+func (s *AppDefinitionFieldsLocationsItemNavigationItem) GetName() string {
+	return s.Name
+}
+
+// GetPath returns the value of Path.
+func (s *AppDefinitionFieldsLocationsItemNavigationItem) GetPath() string {
+	return s.Path
+}
+
+// SetName sets the value of Name.
+func (s *AppDefinitionFieldsLocationsItemNavigationItem) SetName(val string) {
+	s.Name = val
+}
+
+// SetPath sets the value of Path.
+func (s *AppDefinitionFieldsLocationsItemNavigationItem) SetPath(val string) {
+	s.Path = val
+}
+
 // Ref: #/components/schemas/AppDefinitionLink
 type AppDefinitionLink struct {
 	Sys AppDefinitionLinkSys `json:"sys"`
@@ -530,6 +977,454 @@ func (s *AppDefinitionLinkSysType) UnmarshalText(data []byte) error {
 	switch AppDefinitionLinkSysType(data) {
 	case AppDefinitionLinkSysTypeLink:
 		*s = AppDefinitionLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type AppDefinitionLocationsItem struct {
+	Location       AppDefinitionLocationsItemLocation          `json:"location"`
+	FieldTypes     []AppDefinitionLocationsItemFieldTypesItem  `json:"fieldTypes"`
+	NavigationItem OptAppDefinitionLocationsItemNavigationItem `json:"navigationItem"`
+}
+
+// GetLocation returns the value of Location.
+func (s *AppDefinitionLocationsItem) GetLocation() AppDefinitionLocationsItemLocation {
+	return s.Location
+}
+
+// GetFieldTypes returns the value of FieldTypes.
+func (s *AppDefinitionLocationsItem) GetFieldTypes() []AppDefinitionLocationsItemFieldTypesItem {
+	return s.FieldTypes
+}
+
+// GetNavigationItem returns the value of NavigationItem.
+func (s *AppDefinitionLocationsItem) GetNavigationItem() OptAppDefinitionLocationsItemNavigationItem {
+	return s.NavigationItem
+}
+
+// SetLocation sets the value of Location.
+func (s *AppDefinitionLocationsItem) SetLocation(val AppDefinitionLocationsItemLocation) {
+	s.Location = val
+}
+
+// SetFieldTypes sets the value of FieldTypes.
+func (s *AppDefinitionLocationsItem) SetFieldTypes(val []AppDefinitionLocationsItemFieldTypesItem) {
+	s.FieldTypes = val
+}
+
+// SetNavigationItem sets the value of NavigationItem.
+func (s *AppDefinitionLocationsItem) SetNavigationItem(val OptAppDefinitionLocationsItemNavigationItem) {
+	s.NavigationItem = val
+}
+
+type AppDefinitionLocationsItemFieldTypesItem struct {
+	Type     string                                           `json:"type"`
+	LinkType OptString                                        `json:"linkType"`
+	Items    OptAppDefinitionLocationsItemFieldTypesItemItems `json:"items"`
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionLocationsItemFieldTypesItem) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *AppDefinitionLocationsItemFieldTypesItem) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetItems returns the value of Items.
+func (s *AppDefinitionLocationsItemFieldTypesItem) GetItems() OptAppDefinitionLocationsItemFieldTypesItemItems {
+	return s.Items
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionLocationsItemFieldTypesItem) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *AppDefinitionLocationsItemFieldTypesItem) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetItems sets the value of Items.
+func (s *AppDefinitionLocationsItemFieldTypesItem) SetItems(val OptAppDefinitionLocationsItemFieldTypesItemItems) {
+	s.Items = val
+}
+
+type AppDefinitionLocationsItemFieldTypesItemItems struct {
+	Type     string    `json:"type"`
+	LinkType OptString `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionLocationsItemFieldTypesItemItems) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *AppDefinitionLocationsItemFieldTypesItemItems) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionLocationsItemFieldTypesItemItems) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *AppDefinitionLocationsItemFieldTypesItemItems) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+type AppDefinitionLocationsItemLocation string
+
+const (
+	AppDefinitionLocationsItemLocationAppConfig    AppDefinitionLocationsItemLocation = "app-config"
+	AppDefinitionLocationsItemLocationDialog       AppDefinitionLocationsItemLocation = "dialog"
+	AppDefinitionLocationsItemLocationEntryEditor  AppDefinitionLocationsItemLocation = "entry-editor"
+	AppDefinitionLocationsItemLocationEntrySidebar AppDefinitionLocationsItemLocation = "entry-sidebar"
+	AppDefinitionLocationsItemLocationHome         AppDefinitionLocationsItemLocation = "home"
+	AppDefinitionLocationsItemLocationPage         AppDefinitionLocationsItemLocation = "page"
+)
+
+// AllValues returns all AppDefinitionLocationsItemLocation values.
+func (AppDefinitionLocationsItemLocation) AllValues() []AppDefinitionLocationsItemLocation {
+	return []AppDefinitionLocationsItemLocation{
+		AppDefinitionLocationsItemLocationAppConfig,
+		AppDefinitionLocationsItemLocationDialog,
+		AppDefinitionLocationsItemLocationEntryEditor,
+		AppDefinitionLocationsItemLocationEntrySidebar,
+		AppDefinitionLocationsItemLocationHome,
+		AppDefinitionLocationsItemLocationPage,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppDefinitionLocationsItemLocation) MarshalText() ([]byte, error) {
+	switch s {
+	case AppDefinitionLocationsItemLocationAppConfig:
+		return []byte(s), nil
+	case AppDefinitionLocationsItemLocationDialog:
+		return []byte(s), nil
+	case AppDefinitionLocationsItemLocationEntryEditor:
+		return []byte(s), nil
+	case AppDefinitionLocationsItemLocationEntrySidebar:
+		return []byte(s), nil
+	case AppDefinitionLocationsItemLocationHome:
+		return []byte(s), nil
+	case AppDefinitionLocationsItemLocationPage:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppDefinitionLocationsItemLocation) UnmarshalText(data []byte) error {
+	switch AppDefinitionLocationsItemLocation(data) {
+	case AppDefinitionLocationsItemLocationAppConfig:
+		*s = AppDefinitionLocationsItemLocationAppConfig
+		return nil
+	case AppDefinitionLocationsItemLocationDialog:
+		*s = AppDefinitionLocationsItemLocationDialog
+		return nil
+	case AppDefinitionLocationsItemLocationEntryEditor:
+		*s = AppDefinitionLocationsItemLocationEntryEditor
+		return nil
+	case AppDefinitionLocationsItemLocationEntrySidebar:
+		*s = AppDefinitionLocationsItemLocationEntrySidebar
+		return nil
+	case AppDefinitionLocationsItemLocationHome:
+		*s = AppDefinitionLocationsItemLocationHome
+		return nil
+	case AppDefinitionLocationsItemLocationPage:
+		*s = AppDefinitionLocationsItemLocationPage
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type AppDefinitionLocationsItemNavigationItem struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
+}
+
+// GetName returns the value of Name.
+func (s *AppDefinitionLocationsItemNavigationItem) GetName() string {
+	return s.Name
+}
+
+// GetPath returns the value of Path.
+func (s *AppDefinitionLocationsItemNavigationItem) GetPath() string {
+	return s.Path
+}
+
+// SetName sets the value of Name.
+func (s *AppDefinitionLocationsItemNavigationItem) SetName(val string) {
+	s.Name = val
+}
+
+// SetPath sets the value of Path.
+func (s *AppDefinitionLocationsItemNavigationItem) SetPath(val string) {
+	s.Path = val
+}
+
+// Ref: #/components/schemas/AppDefinitionParameter
+type AppDefinitionParameter struct {
+	ID          string                          `json:"id"`
+	Type        string                          `json:"type"`
+	Name        string                          `json:"name"`
+	Description OptString                       `json:"description"`
+	Required    OptBool                         `json:"required"`
+	Default     jx.Raw                          `json:"default"`
+	Options     []jx.Raw                        `json:"options"`
+	Labels      OptAppDefinitionParameterLabels `json:"labels"`
+}
+
+// GetID returns the value of ID.
+func (s *AppDefinitionParameter) GetID() string {
+	return s.ID
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionParameter) GetType() string {
+	return s.Type
+}
+
+// GetName returns the value of Name.
+func (s *AppDefinitionParameter) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *AppDefinitionParameter) GetDescription() OptString {
+	return s.Description
+}
+
+// GetRequired returns the value of Required.
+func (s *AppDefinitionParameter) GetRequired() OptBool {
+	return s.Required
+}
+
+// GetDefault returns the value of Default.
+func (s *AppDefinitionParameter) GetDefault() jx.Raw {
+	return s.Default
+}
+
+// GetOptions returns the value of Options.
+func (s *AppDefinitionParameter) GetOptions() []jx.Raw {
+	return s.Options
+}
+
+// GetLabels returns the value of Labels.
+func (s *AppDefinitionParameter) GetLabels() OptAppDefinitionParameterLabels {
+	return s.Labels
+}
+
+// SetID sets the value of ID.
+func (s *AppDefinitionParameter) SetID(val string) {
+	s.ID = val
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionParameter) SetType(val string) {
+	s.Type = val
+}
+
+// SetName sets the value of Name.
+func (s *AppDefinitionParameter) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *AppDefinitionParameter) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetRequired sets the value of Required.
+func (s *AppDefinitionParameter) SetRequired(val OptBool) {
+	s.Required = val
+}
+
+// SetDefault sets the value of Default.
+func (s *AppDefinitionParameter) SetDefault(val jx.Raw) {
+	s.Default = val
+}
+
+// SetOptions sets the value of Options.
+func (s *AppDefinitionParameter) SetOptions(val []jx.Raw) {
+	s.Options = val
+}
+
+// SetLabels sets the value of Labels.
+func (s *AppDefinitionParameter) SetLabels(val OptAppDefinitionParameterLabels) {
+	s.Labels = val
+}
+
+type AppDefinitionParameterLabels struct {
+	Empty OptString `json:"empty"`
+	True  OptString `json:"true"`
+	False OptString `json:"false"`
+}
+
+// GetEmpty returns the value of Empty.
+func (s *AppDefinitionParameterLabels) GetEmpty() OptString {
+	return s.Empty
+}
+
+// GetTrue returns the value of True.
+func (s *AppDefinitionParameterLabels) GetTrue() OptString {
+	return s.True
+}
+
+// GetFalse returns the value of False.
+func (s *AppDefinitionParameterLabels) GetFalse() OptString {
+	return s.False
+}
+
+// SetEmpty sets the value of Empty.
+func (s *AppDefinitionParameterLabels) SetEmpty(val OptString) {
+	s.Empty = val
+}
+
+// SetTrue sets the value of True.
+func (s *AppDefinitionParameterLabels) SetTrue(val OptString) {
+	s.True = val
+}
+
+// SetFalse sets the value of False.
+func (s *AppDefinitionParameterLabels) SetFalse(val OptString) {
+	s.False = val
+}
+
+// Ref: #/components/schemas/AppDefinitionParameters
+type AppDefinitionParameters struct {
+	Installation []AppDefinitionParameter `json:"installation"`
+	Instance     []AppDefinitionParameter `json:"instance"`
+}
+
+// GetInstallation returns the value of Installation.
+func (s *AppDefinitionParameters) GetInstallation() []AppDefinitionParameter {
+	return s.Installation
+}
+
+// GetInstance returns the value of Instance.
+func (s *AppDefinitionParameters) GetInstance() []AppDefinitionParameter {
+	return s.Instance
+}
+
+// SetInstallation sets the value of Installation.
+func (s *AppDefinitionParameters) SetInstallation(val []AppDefinitionParameter) {
+	s.Installation = val
+}
+
+// SetInstance sets the value of Instance.
+func (s *AppDefinitionParameters) SetInstance(val []AppDefinitionParameter) {
+	s.Instance = val
+}
+
+// AppDefinitionStatusCode wraps AppDefinition with StatusCode.
+type AppDefinitionStatusCode struct {
+	StatusCode int
+	Response   AppDefinition
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *AppDefinitionStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *AppDefinitionStatusCode) GetResponse() AppDefinition {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *AppDefinitionStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *AppDefinitionStatusCode) SetResponse(val AppDefinition) {
+	s.Response = val
+}
+
+func (*AppDefinitionStatusCode) createAppDefinitionRes() {}
+func (*AppDefinitionStatusCode) putAppDefinitionRes()    {}
+
+// Merged schema.
+// Ref: #/components/schemas/AppDefinitionSys
+type AppDefinitionSys struct {
+	// Merged property.
+	Type         AppDefinitionSysType `json:"type"`
+	Organization OrganizationLink     `json:"organization"`
+	ID           string               `json:"id"`
+}
+
+// GetType returns the value of Type.
+func (s *AppDefinitionSys) GetType() AppDefinitionSysType {
+	return s.Type
+}
+
+// GetOrganization returns the value of Organization.
+func (s *AppDefinitionSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetID returns the value of ID.
+func (s *AppDefinitionSys) GetID() string {
+	return s.ID
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionSys) SetType(val AppDefinitionSysType) {
+	s.Type = val
+}
+
+// SetOrganization sets the value of Organization.
+func (s *AppDefinitionSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetID sets the value of ID.
+func (s *AppDefinitionSys) SetID(val string) {
+	s.ID = val
+}
+
+// Merged schema.
+type AppDefinitionSysType string
+
+const (
+	AppDefinitionSysTypeAppDefinition AppDefinitionSysType = "AppDefinition"
+)
+
+// AllValues returns all AppDefinitionSysType values.
+func (AppDefinitionSysType) AllValues() []AppDefinitionSysType {
+	return []AppDefinitionSysType{
+		AppDefinitionSysTypeAppDefinition,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppDefinitionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppDefinitionSysTypeAppDefinition:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppDefinitionSysType) UnmarshalText(data []byte) error {
+	switch AppDefinitionSysType(data) {
+	case AppDefinitionSysTypeAppDefinition:
+		*s = AppDefinitionSysTypeAppDefinition
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -1702,6 +2597,15 @@ func (s *ContentfulEntryResourceLinkType) UnmarshalText(data []byte) error {
 	}
 }
 
+type CreateAppDefinitionApplicationJSONUnauthorized Error
+
+func (*CreateAppDefinitionApplicationJSONUnauthorized) createAppDefinitionRes() {}
+
+type CreateAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
+
+func (*CreateAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) createAppDefinitionRes() {
+}
+
 type CreateDeliveryApiKeyApplicationJSONUnauthorized Error
 
 func (*CreateDeliveryApiKeyApplicationJSONUnauthorized) createDeliveryApiKeyRes() {}
@@ -1744,6 +2648,15 @@ func (*DeactivateContentTypeApplicationJSONUnauthorized) deactivateContentTypeRe
 type DeactivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized Error
 
 func (*DeactivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) deactivateContentTypeRes() {
+}
+
+type DeleteAppDefinitionApplicationJSONUnauthorized Error
+
+func (*DeleteAppDefinitionApplicationJSONUnauthorized) deleteAppDefinitionRes() {}
+
+type DeleteAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
+
+func (*DeleteAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) deleteAppDefinitionRes() {
 }
 
 type DeleteAppDefinitionResourceProviderApplicationJSONUnauthorized Error
@@ -2669,11 +3582,13 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 }
 
 func (*ErrorStatusCode) activateContentTypeRes()                 {}
+func (*ErrorStatusCode) createAppDefinitionRes()                 {}
 func (*ErrorStatusCode) createDeliveryApiKeyRes()                {}
 func (*ErrorStatusCode) createPersonalAccessTokenRes()           {}
 func (*ErrorStatusCode) createRoleRes()                          {}
 func (*ErrorStatusCode) createWebhookDefinitionRes()             {}
 func (*ErrorStatusCode) deactivateContentTypeRes()               {}
+func (*ErrorStatusCode) deleteAppDefinitionRes()                 {}
 func (*ErrorStatusCode) deleteAppDefinitionResourceProviderRes() {}
 func (*ErrorStatusCode) deleteAppDefinitionResourceTypeRes()     {}
 func (*ErrorStatusCode) deleteAppInstallationRes()               {}
@@ -2681,6 +3596,7 @@ func (*ErrorStatusCode) deleteContentTypeRes()                   {}
 func (*ErrorStatusCode) deleteDeliveryApiKeyRes()                {}
 func (*ErrorStatusCode) deleteRoleRes()                          {}
 func (*ErrorStatusCode) deleteWebhookDefinitionRes()             {}
+func (*ErrorStatusCode) getAppDefinitionRes()                    {}
 func (*ErrorStatusCode) getAppDefinitionResourceProviderRes()    {}
 func (*ErrorStatusCode) getAppDefinitionResourceTypeRes()        {}
 func (*ErrorStatusCode) getAppInstallationRes()                  {}
@@ -2693,6 +3609,7 @@ func (*ErrorStatusCode) getPreviewApiKeyRes()                    {}
 func (*ErrorStatusCode) getRoleRes()                             {}
 func (*ErrorStatusCode) getSpaceEnablementsRes()                 {}
 func (*ErrorStatusCode) getWebhookDefinitionRes()                {}
+func (*ErrorStatusCode) putAppDefinitionRes()                    {}
 func (*ErrorStatusCode) putAppDefinitionResourceProviderRes()    {}
 func (*ErrorStatusCode) putAppDefinitionResourceTypeRes()        {}
 func (*ErrorStatusCode) putAppInstallationRes()                  {}
@@ -2903,6 +3820,14 @@ func (s *FunctionLinkSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+type GetAppDefinitionApplicationJSONUnauthorized Error
+
+func (*GetAppDefinitionApplicationJSONUnauthorized) getAppDefinitionRes() {}
+
+type GetAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
+
+func (*GetAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) getAppDefinitionRes() {}
+
 type GetAppDefinitionResourceProviderApplicationJSONUnauthorized Error
 
 func (*GetAppDefinitionResourceProviderApplicationJSONUnauthorized) getAppDefinitionResourceProviderRes() {
@@ -3066,6 +3991,7 @@ func (o NilString) Or(d string) string {
 type NoContent struct{}
 
 func (*NoContent) deactivateContentTypeRes()               {}
+func (*NoContent) deleteAppDefinitionRes()                 {}
 func (*NoContent) deleteAppDefinitionResourceProviderRes() {}
 func (*NoContent) deleteAppDefinitionResourceTypeRes()     {}
 func (*NoContent) deleteAppInstallationRes()               {}
@@ -3114,6 +4040,328 @@ func (o OptApiKeyPreviewAPIKey) Get() (v ApiKeyPreviewAPIKey, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptApiKeyPreviewAPIKey) Or(d ApiKeyPreviewAPIKey) ApiKeyPreviewAPIKey {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppBundleLink returns new OptAppBundleLink with value set to v.
+func NewOptAppBundleLink(v AppBundleLink) OptAppBundleLink {
+	return OptAppBundleLink{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppBundleLink is optional AppBundleLink.
+type OptAppBundleLink struct {
+	Value AppBundleLink
+	Set   bool
+}
+
+// IsSet returns true if OptAppBundleLink was set.
+func (o OptAppBundleLink) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppBundleLink) Reset() {
+	var v AppBundleLink
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppBundleLink) SetTo(v AppBundleLink) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppBundleLink) Get() (v AppBundleLink, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppBundleLink) Or(d AppBundleLink) AppBundleLink {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppDefinitionFieldsLocationsItemFieldTypesItemItems returns new OptAppDefinitionFieldsLocationsItemFieldTypesItemItems with value set to v.
+func NewOptAppDefinitionFieldsLocationsItemFieldTypesItemItems(v AppDefinitionFieldsLocationsItemFieldTypesItemItems) OptAppDefinitionFieldsLocationsItemFieldTypesItemItems {
+	return OptAppDefinitionFieldsLocationsItemFieldTypesItemItems{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppDefinitionFieldsLocationsItemFieldTypesItemItems is optional AppDefinitionFieldsLocationsItemFieldTypesItemItems.
+type OptAppDefinitionFieldsLocationsItemFieldTypesItemItems struct {
+	Value AppDefinitionFieldsLocationsItemFieldTypesItemItems
+	Set   bool
+}
+
+// IsSet returns true if OptAppDefinitionFieldsLocationsItemFieldTypesItemItems was set.
+func (o OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) Reset() {
+	var v AppDefinitionFieldsLocationsItemFieldTypesItemItems
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) SetTo(v AppDefinitionFieldsLocationsItemFieldTypesItemItems) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) Get() (v AppDefinitionFieldsLocationsItemFieldTypesItemItems, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) Or(d AppDefinitionFieldsLocationsItemFieldTypesItemItems) AppDefinitionFieldsLocationsItemFieldTypesItemItems {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppDefinitionFieldsLocationsItemNavigationItem returns new OptAppDefinitionFieldsLocationsItemNavigationItem with value set to v.
+func NewOptAppDefinitionFieldsLocationsItemNavigationItem(v AppDefinitionFieldsLocationsItemNavigationItem) OptAppDefinitionFieldsLocationsItemNavigationItem {
+	return OptAppDefinitionFieldsLocationsItemNavigationItem{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppDefinitionFieldsLocationsItemNavigationItem is optional AppDefinitionFieldsLocationsItemNavigationItem.
+type OptAppDefinitionFieldsLocationsItemNavigationItem struct {
+	Value AppDefinitionFieldsLocationsItemNavigationItem
+	Set   bool
+}
+
+// IsSet returns true if OptAppDefinitionFieldsLocationsItemNavigationItem was set.
+func (o OptAppDefinitionFieldsLocationsItemNavigationItem) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppDefinitionFieldsLocationsItemNavigationItem) Reset() {
+	var v AppDefinitionFieldsLocationsItemNavigationItem
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppDefinitionFieldsLocationsItemNavigationItem) SetTo(v AppDefinitionFieldsLocationsItemNavigationItem) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppDefinitionFieldsLocationsItemNavigationItem) Get() (v AppDefinitionFieldsLocationsItemNavigationItem, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppDefinitionFieldsLocationsItemNavigationItem) Or(d AppDefinitionFieldsLocationsItemNavigationItem) AppDefinitionFieldsLocationsItemNavigationItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppDefinitionLocationsItemFieldTypesItemItems returns new OptAppDefinitionLocationsItemFieldTypesItemItems with value set to v.
+func NewOptAppDefinitionLocationsItemFieldTypesItemItems(v AppDefinitionLocationsItemFieldTypesItemItems) OptAppDefinitionLocationsItemFieldTypesItemItems {
+	return OptAppDefinitionLocationsItemFieldTypesItemItems{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppDefinitionLocationsItemFieldTypesItemItems is optional AppDefinitionLocationsItemFieldTypesItemItems.
+type OptAppDefinitionLocationsItemFieldTypesItemItems struct {
+	Value AppDefinitionLocationsItemFieldTypesItemItems
+	Set   bool
+}
+
+// IsSet returns true if OptAppDefinitionLocationsItemFieldTypesItemItems was set.
+func (o OptAppDefinitionLocationsItemFieldTypesItemItems) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppDefinitionLocationsItemFieldTypesItemItems) Reset() {
+	var v AppDefinitionLocationsItemFieldTypesItemItems
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppDefinitionLocationsItemFieldTypesItemItems) SetTo(v AppDefinitionLocationsItemFieldTypesItemItems) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppDefinitionLocationsItemFieldTypesItemItems) Get() (v AppDefinitionLocationsItemFieldTypesItemItems, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppDefinitionLocationsItemFieldTypesItemItems) Or(d AppDefinitionLocationsItemFieldTypesItemItems) AppDefinitionLocationsItemFieldTypesItemItems {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppDefinitionLocationsItemNavigationItem returns new OptAppDefinitionLocationsItemNavigationItem with value set to v.
+func NewOptAppDefinitionLocationsItemNavigationItem(v AppDefinitionLocationsItemNavigationItem) OptAppDefinitionLocationsItemNavigationItem {
+	return OptAppDefinitionLocationsItemNavigationItem{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppDefinitionLocationsItemNavigationItem is optional AppDefinitionLocationsItemNavigationItem.
+type OptAppDefinitionLocationsItemNavigationItem struct {
+	Value AppDefinitionLocationsItemNavigationItem
+	Set   bool
+}
+
+// IsSet returns true if OptAppDefinitionLocationsItemNavigationItem was set.
+func (o OptAppDefinitionLocationsItemNavigationItem) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppDefinitionLocationsItemNavigationItem) Reset() {
+	var v AppDefinitionLocationsItemNavigationItem
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppDefinitionLocationsItemNavigationItem) SetTo(v AppDefinitionLocationsItemNavigationItem) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppDefinitionLocationsItemNavigationItem) Get() (v AppDefinitionLocationsItemNavigationItem, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppDefinitionLocationsItemNavigationItem) Or(d AppDefinitionLocationsItemNavigationItem) AppDefinitionLocationsItemNavigationItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppDefinitionParameterLabels returns new OptAppDefinitionParameterLabels with value set to v.
+func NewOptAppDefinitionParameterLabels(v AppDefinitionParameterLabels) OptAppDefinitionParameterLabels {
+	return OptAppDefinitionParameterLabels{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppDefinitionParameterLabels is optional AppDefinitionParameterLabels.
+type OptAppDefinitionParameterLabels struct {
+	Value AppDefinitionParameterLabels
+	Set   bool
+}
+
+// IsSet returns true if OptAppDefinitionParameterLabels was set.
+func (o OptAppDefinitionParameterLabels) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppDefinitionParameterLabels) Reset() {
+	var v AppDefinitionParameterLabels
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppDefinitionParameterLabels) SetTo(v AppDefinitionParameterLabels) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppDefinitionParameterLabels) Get() (v AppDefinitionParameterLabels, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppDefinitionParameterLabels) Or(d AppDefinitionParameterLabels) AppDefinitionParameterLabels {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppDefinitionParameters returns new OptAppDefinitionParameters with value set to v.
+func NewOptAppDefinitionParameters(v AppDefinitionParameters) OptAppDefinitionParameters {
+	return OptAppDefinitionParameters{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppDefinitionParameters is optional AppDefinitionParameters.
+type OptAppDefinitionParameters struct {
+	Value AppDefinitionParameters
+	Set   bool
+}
+
+// IsSet returns true if OptAppDefinitionParameters was set.
+func (o OptAppDefinitionParameters) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppDefinitionParameters) Reset() {
+	var v AppDefinitionParameters
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppDefinitionParameters) SetTo(v AppDefinitionParameters) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppDefinitionParameters) Get() (v AppDefinitionParameters, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppDefinitionParameters) Or(d AppDefinitionParameters) AppDefinitionParameters {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -5024,6 +6272,14 @@ func (s *PreviewApiKeySysType) UnmarshalText(data []byte) error {
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
+
+type PutAppDefinitionApplicationJSONUnauthorized Error
+
+func (*PutAppDefinitionApplicationJSONUnauthorized) putAppDefinitionRes() {}
+
+type PutAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
+
+func (*PutAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) putAppDefinitionRes() {}
 
 type PutAppDefinitionResourceProviderApplicationJSONUnauthorized Error
 

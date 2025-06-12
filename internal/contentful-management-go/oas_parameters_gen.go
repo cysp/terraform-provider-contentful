@@ -10,6 +10,11 @@ type ActivateContentTypeParams struct {
 	XContentfulVersion int
 }
 
+// CreateAppDefinitionParams is parameters of createAppDefinition operation.
+type CreateAppDefinitionParams struct {
+	OrganizationID string
+}
+
 // CreateDeliveryApiKeyParams is parameters of createDeliveryApiKey operation.
 type CreateDeliveryApiKeyParams struct {
 	SpaceID string
@@ -30,6 +35,12 @@ type DeactivateContentTypeParams struct {
 	SpaceID       string
 	EnvironmentID string
 	ContentTypeID string
+}
+
+// DeleteAppDefinitionParams is parameters of deleteAppDefinition operation.
+type DeleteAppDefinitionParams struct {
+	OrganizationID  string
+	AppDefinitionID string
 }
 
 // DeleteAppDefinitionResourceProviderParams is parameters of deleteAppDefinitionResourceProvider operation.
@@ -75,6 +86,12 @@ type DeleteRoleParams struct {
 type DeleteWebhookDefinitionParams struct {
 	SpaceID             string
 	WebhookDefinitionID string
+}
+
+// GetAppDefinitionParams is parameters of getAppDefinition operation.
+type GetAppDefinitionParams struct {
+	OrganizationID  string
+	AppDefinitionID string
 }
 
 // GetAppDefinitionResourceProviderParams is parameters of getAppDefinitionResourceProvider operation.
@@ -143,6 +160,12 @@ type GetSpaceEnablementsParams struct {
 type GetWebhookDefinitionParams struct {
 	SpaceID             string
 	WebhookDefinitionID string
+}
+
+// PutAppDefinitionParams is parameters of putAppDefinition operation.
+type PutAppDefinitionParams struct {
+	OrganizationID  string
+	AppDefinitionID string
 }
 
 // PutAppDefinitionResourceProviderParams is parameters of putAppDefinitionResourceProvider operation.
