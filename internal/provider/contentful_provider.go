@@ -177,6 +177,7 @@ func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.
 
 func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewAppDefinitionResource,
 		NewAppDefinitionResourceProviderResource,
 		NewAppDefinitionResourceTypeResource,
 		NewAppInstallationResource,
