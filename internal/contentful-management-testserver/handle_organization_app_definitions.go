@@ -6,6 +6,97 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
+func (ts *ContentfulManagementTestServer) setupOrganizationAppDefinitionHandlers() {
+	ts.serveMux.Handle("/organizations/{organizationID}/app_definitions", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		organizationID := r.PathValue("organizationID")
+
+		if organizationID == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+			return
+		}
+
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
+		switch r.Method {
+		case http.MethodPost:
+			var appDefinitionRequest cm.AppDefinitionFields
+			if err := ReadContentfulManagementRequest(r, &appDefinitionRequest); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
+
+				return
+			}
+
+			appDefinitionID := generateResourceID()
+
+			appDefinition := NewAppDefinitionFromFields(organizationID, appDefinitionID, appDefinitionRequest)
+			ts.appDefinitions.Set(organizationID, appDefinition.Sys.ID, &appDefinition)
+
+			_ = WriteContentfulManagementResponse(w, http.StatusCreated, &appDefinition)
+
+		default:
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+		}
+	}))
+
+	ts.serveMux.Handle("/organizations/{organizationID}/app_definitions/{appDefinitionID}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		organizationID := r.PathValue("organizationID")
+		appDefinitionID := r.PathValue("appDefinitionID")
+
+		if organizationID == NonexistentID || appDefinitionID == NonexistentID {
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+
+			return
+		}
+
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+
+		appDefinition := ts.appDefinitions.Get(organizationID, appDefinitionID)
+
+		switch r.Method {
+		case http.MethodGet:
+			switch appDefinition {
+			case nil:
+				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+			default:
+				_ = WriteContentfulManagementResponse(w, http.StatusOK, appDefinition)
+			}
+
+		case http.MethodPut:
+			var appDefinitionRequest cm.AppDefinitionFields
+			if err := ReadContentfulManagementRequest(r, &appDefinitionRequest); err != nil {
+				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
+
+				return
+			}
+
+			switch appDefinition {
+			case nil:
+				appDefinition := NewAppDefinitionFromFields(organizationID, appDefinitionID, appDefinitionRequest)
+				ts.appDefinitions.Set(organizationID, appDefinition.Sys.ID, &appDefinition)
+				_ = WriteContentfulManagementResponse(w, http.StatusOK, &appDefinition)
+			default:
+				UpdateAppDefinitionFromFields(appDefinition, organizationID, appDefinitionID, appDefinitionRequest)
+				_ = WriteContentfulManagementResponse(w, http.StatusOK, appDefinition)
+			}
+
+		case http.MethodDelete:
+			switch appDefinition {
+			case nil:
+				_ = WriteContentfulManagementErrorNotFoundResponse(w)
+			default:
+				ts.appDefinitions.Delete(organizationID, appDefinitionID)
+				w.WriteHeader(http.StatusNoContent)
+			}
+
+		default:
+			_ = WriteContentfulManagementErrorNotFoundResponse(w)
+		}
+	}))
+}
+
 func (ts *ContentfulManagementTestServer) setupOrganizationAppDefinitionResourceProviderHandlers() {
 	ts.serveMux.Handle("/organizations/{organizationID}/app_definitions/{appDefinitionID}/resource_provider", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		organizationID := r.PathValue("organizationID")
@@ -131,11 +222,12 @@ func (ts *ContentfulManagementTestServer) setupOrganizationAppDefinitionResource
 	}))
 }
 
-func (ts *ContentfulManagementTestServer) AddAppDefinitionID(appDefinitionID string) {
+func (ts *ContentfulManagementTestServer) SetAppDefinition(organizationID, appDefinitionID string, appDefinitionFields cm.AppDefinitionFields) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.appDefinitionIDs[appDefinitionID] = struct{}{}
+	appDefinition := NewAppDefinitionFromFields(organizationID, appDefinitionID, appDefinitionFields)
+	ts.appDefinitions.Set(organizationID, appDefinitionID, &appDefinition)
 }
 
 func (ts *ContentfulManagementTestServer) SetAppDefinitionResourceProvider(organizationID, appDefinitionID string, resourceProviderRequest cm.ResourceProviderRequest) {

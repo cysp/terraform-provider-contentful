@@ -287,6 +287,153 @@ components:
           required:
             - sys
         - $ref: "#/components/schemas/ApiKeyFields"
+    AppBundleLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - AppBundle
+      required:
+        - sys
+    AppDefinitionSys:
+      allOf:
+        - $ref: "#/components/schemas/BaseSysWithOrganization"
+        - $ref: "#/components/schemas/BaseSysWithId"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - AppDefinition
+    AppDefinitionFields:
+      type: object
+      properties:
+        name:
+          type: string
+        src:
+          type: string
+        bundle:
+          $ref: "#/components/schemas/AppBundleLink"
+        locations:
+          type: array
+          items:
+            type: object
+            properties:
+              location:
+                type: string
+                enum:
+                  - app-config
+                  - dialog
+                  - entry-editor
+                  - entry-sidebar
+                  - home
+                  - page
+              fieldTypes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    linkType:
+                      type: string
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        linkType:
+                          type: string
+                      required:
+                        - type
+                  required:
+                    - type
+              navigationItem:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  path:
+                    type: string
+                required:
+                  - name
+                  - path
+            required:
+              - location
+        parameters:
+          $ref: "#/components/schemas/AppDefinitionParameters"
+      required:
+        - name
+    AppDefinitionParameters:
+      type: object
+      properties:
+        installation:
+          type: array
+          items:
+            $ref: "#/components/schemas/AppDefinitionParameter"
+        instance:
+          type: array
+          items:
+            $ref: "#/components/schemas/AppDefinitionParameter"
+    AppDefinitionParameter:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        required:
+          type: boolean
+        default: {}
+        options:
+          type: array
+          items: {}
+        labels:
+          type: object
+          properties:
+            empty:
+              type: string
+            true:
+              type: string
+            false:
+              type: string
+      required:
+        - id
+        - type
+        - name
+    AppDefinition:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: "#/components/schemas/AppDefinitionSys"
+          required:
+            - sys
+        - $ref: "#/components/schemas/AppDefinitionFields"
+    AppDefinitionLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - AppDefinition
+      required:
+        - sys
     AppInstallationSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
@@ -600,20 +747,6 @@ components:
                   type: string
                   enum:
                     - Annotation
-      required:
-        - sys
-    AppDefinitionLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - AppDefinition
       required:
         - sys
     FunctionLink:
@@ -1351,6 +1484,82 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "#/components/schemas/PreviewApiKey"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+    post:
+      operationId: createAppDefinition
+      summary: Create an app definition
+      parameters:
+        - $ref: "#/components/parameters/organization_id"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "#/components/schemas/AppDefinitionFields"
+      responses:
+        2XX:
+          description: An app definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/AppDefinition"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+    get:
+      operationId: getAppDefinition
+      summary: Get one app definition
+      responses:
+        200:
+          description: An app definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/AppDefinition"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putAppDefinition
+      summary: Create or update an app definition
+      parameters:
+        - $ref: "#/components/parameters/organization_id"
+        - $ref: "#/components/parameters/app_definition_id"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "#/components/schemas/AppDefinitionFields"
+      responses:
+        2XX:
+          description: An app definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/AppDefinition"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteAppDefinition
+      summary: Delete an app definition
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
         401:
           $ref: "#/components/responses/unauthorized"
         default:

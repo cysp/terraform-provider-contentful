@@ -19,7 +19,9 @@ func TestAccAppDefinitionResourceProviderResource(t *testing.T) {
 		"app_definition_id": config.StringVariable("app-definition-id"),
 	}
 
-	testserver.AddAppDefinitionID("app-definition-id")
+	testserver.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+		Name: "Test App",
+	})
 
 	ContentfulProviderMockedResourceTest(t, testserver.Server(), resource.TestCase{
 		Steps: []resource.TestStep{
@@ -45,7 +47,9 @@ func TestAccAppDefinitionResourceProviderImport(t *testing.T) {
 		"app_definition_id": config.StringVariable("app-definition-id"),
 	}
 
-	testserver.AddAppDefinitionID("app-definition-id")
+	testserver.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+		Name: "Test App",
+	})
 
 	testserver.SetAppDefinitionResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
 		Sys: cm.ResourceProviderRequestSys{

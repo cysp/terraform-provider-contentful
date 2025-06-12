@@ -5,6 +5,10 @@ type ActivateContentTypeRes interface {
 	activateContentTypeRes()
 }
 
+type CreateAppDefinitionRes interface {
+	createAppDefinitionRes()
+}
+
 type CreateDeliveryApiKeyRes interface {
 	createDeliveryApiKeyRes()
 }
@@ -23,6 +27,10 @@ type CreateWebhookDefinitionRes interface {
 
 type DeactivateContentTypeRes interface {
 	deactivateContentTypeRes()
+}
+
+type DeleteAppDefinitionRes interface {
+	deleteAppDefinitionRes()
 }
 
 type DeleteAppDefinitionResourceProviderRes interface {
@@ -51,6 +59,10 @@ type DeleteRoleRes interface {
 
 type DeleteWebhookDefinitionRes interface {
 	deleteWebhookDefinitionRes()
+}
+
+type GetAppDefinitionRes interface {
+	getAppDefinitionRes()
 }
 
 type GetAppDefinitionResourceProviderRes interface {
@@ -99,6 +111,10 @@ type GetSpaceEnablementsRes interface {
 
 type GetWebhookDefinitionRes interface {
 	getWebhookDefinitionRes()
+}
+
+type PutAppDefinitionRes interface {
+	putAppDefinitionRes()
 }
 
 type PutAppDefinitionResourceProviderRes interface {
