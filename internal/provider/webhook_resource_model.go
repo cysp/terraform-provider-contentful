@@ -40,7 +40,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 			"webhook_id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 			"active": schema.BoolAttribute{

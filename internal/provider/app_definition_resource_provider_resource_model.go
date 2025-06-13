@@ -23,7 +23,7 @@ func AppDefinitionResourceProviderResourceSchema(_ context.Context) schema.Schem
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 			"organization_id": schema.StringAttribute{
