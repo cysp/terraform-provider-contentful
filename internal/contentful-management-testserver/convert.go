@@ -6,29 +6,37 @@ type ConstraintOptNil[T any] interface {
 	Reset()
 }
 
-func convertOptNil[I any, O any](o ConstraintOptNil[O], i ConstraintOptNil[I], f func(I) O) {
+func convertOptNil[I any, O any](o ConstraintOptNil[O], i ConstraintOptNil[I], convert func(I) O) {
 	if value, ok := i.Get(); ok {
-		o.SetTo(f(value))
+		o.SetTo(convert(value))
 	} else {
 		o.Reset()
 	}
 }
 
-func convertSlice[I any, O any](i []I, f func(I) O) []O {
+func convertSlice[I any, O any](i []I, convert func(I) O) []O {
+	if i == nil {
+		return nil
+	}
+
 	out := make([]O, len(i))
 
 	for index, item := range i {
-		out[index] = f(item)
+		out[index] = convert(item)
 	}
 
 	return out
 }
 
-func convertMap[I any, O any](i map[string]I, f func(I) O) map[string]O {
+func convertMap[I any, O any](i map[string]I, convert func(I) O) map[string]O {
+	if i == nil {
+		return nil
+	}
+
 	out := make(map[string]O, len(i))
 
 	for key, item := range i {
-		out[key] = f(item)
+		out[key] = convert(item)
 	}
 
 	return out
