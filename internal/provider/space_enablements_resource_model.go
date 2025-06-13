@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -31,28 +30,28 @@ func SpaceEnablementsResourceSchema(_ context.Context) schema.Schema {
 				Computed: true,
 				Optional: true,
 				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 			"space_templates": schema.BoolAttribute{
 				Computed: true,
 				Optional: true,
 				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 			"studio_experiences": schema.BoolAttribute{
 				Computed: true,
 				Optional: true,
 				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 			"suggest_concepts": schema.BoolAttribute{
 				Computed: true,
 				Optional: true,
 				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 		},

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -36,7 +35,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 			"api_key_id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
@@ -51,20 +50,20 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 			"access_token": schema.StringAttribute{
 				Computed:  true,
 				Sensitive: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 			"preview_api_key_id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 		},

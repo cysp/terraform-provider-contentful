@@ -44,7 +44,7 @@ func AppDefinitionResourceTypeResourceSchema(_ context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					UseStateForUnknown(),
 				},
 			},
 			"organization_id": schema.StringAttribute{
