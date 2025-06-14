@@ -124,7 +124,7 @@ func TestToEditorInterfaceFields(t *testing.T) {
 
 	require.Empty(t, sidebarDiags)
 
-	model := provider.EditorInterfaceResourceModel{
+	model := provider.EditorInterfaceModel{
 		SpaceID:       types.StringValue("space_id"),
 		EnvironmentID: types.StringValue("environment_id"),
 		ContentTypeID: types.StringValue("content_type_id"),
@@ -210,7 +210,7 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 
 	require.Empty(t, sidebarDiags)
 
-	model := provider.EditorInterfaceResourceModel{
+	model := provider.EditorInterfaceModel{
 		SpaceID:       types.StringValue("space_id"),
 		EnvironmentID: types.StringValue("environment_id"),
 		ContentTypeID: types.StringValue("content_type_id"),

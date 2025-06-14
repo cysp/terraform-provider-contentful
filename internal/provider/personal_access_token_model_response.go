@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPersonalAccessTokenResourceModelFromResponse(ctx context.Context, personalAccessToken cm.PersonalAccessToken, existingToken types.String, expiresIn types.Int64) (PersonalAccessTokenResourceModel, diag.Diagnostics) {
+func NewPersonalAccessTokenResourceModelFromResponse(ctx context.Context, personalAccessToken cm.PersonalAccessToken, existingToken types.String, expiresIn types.Int64) (PersonalAccessTokenModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	model := PersonalAccessTokenResourceModel{
+	model := PersonalAccessTokenModel{
 		ID: types.StringValue(personalAccessToken.Sys.ID),
 	}
 

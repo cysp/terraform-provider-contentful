@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPreviewAPIKeyDataSourceModelFromResponse(ctx context.Context, previewAPIKey cm.PreviewApiKey) (PreviewAPIKeyDataSourceModel, diag.Diagnostics) {
+func NewPreviewAPIKeyDataSourceModelFromResponse(ctx context.Context, previewAPIKey cm.PreviewApiKey) (PreviewAPIKeyModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	model := PreviewAPIKeyDataSourceModel{
+	model := PreviewAPIKeyModel{
 		SpaceID:         types.StringValue(previewAPIKey.Sys.Space.Sys.ID),
 		PreviewAPIKeyID: types.StringValue(previewAPIKey.Sys.ID),
 	}

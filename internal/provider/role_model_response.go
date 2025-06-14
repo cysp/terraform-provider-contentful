@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleResourceModel, diag.Diagnostics) {
+func NewRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := role.Sys.Space.Sys.ID
 	roleID := role.Sys.ID
 
-	model := RoleResourceModel{
+	model := RoleModel{
 		ID:      types.StringValue(strings.Join([]string{spaceID, roleID}, "/")),
 		SpaceID: types.StringValue(spaceID),
 		RoleID:  types.StringValue(roleID),

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type SpaceEnablementsResourceModel struct {
+type SpaceEnablementsModel struct {
 	ID                types.String `tfsdk:"id"`
 	SpaceID           types.String `tfsdk:"space_id"`
 	CrossSpaceLinks   types.Bool   `tfsdk:"cross_space_links"`

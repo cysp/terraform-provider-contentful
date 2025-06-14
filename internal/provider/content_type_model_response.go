@@ -10,14 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm.ContentType) (ContentTypeResourceModel, diag.Diagnostics) {
+func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm.ContentType) (ContentTypeModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := contentType.Sys.Space.Sys.ID
 	environmentID := contentType.Sys.Environment.Sys.ID
 	contentTypeID := contentType.Sys.ID
 
-	model := ContentTypeResourceModel{
+	model := ContentTypeModel{
 		ID:            types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/")),
 		SpaceID:       types.StringValue(spaceID),
 		EnvironmentID: types.StringValue(environmentID),

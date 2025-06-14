@@ -46,7 +46,7 @@ func (r *webhookResource) ImportState(ctx context.Context, req resource.ImportSt
 }
 
 func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data WebhookResourceModel
+	var data WebhookModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -97,7 +97,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data WebhookResourceModel
+	var data WebhookModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -150,7 +150,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data WebhookResourceModel
+	var data WebhookModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -206,7 +206,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 //nolint:dupl
 func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data WebhookResourceModel
+	var data WebhookModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 

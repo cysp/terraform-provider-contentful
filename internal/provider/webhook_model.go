@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type WebhookResourceModel struct {
+type WebhookModel struct {
 	ID                types.String                  `tfsdk:"id"`
 	SpaceID           types.String                  `tfsdk:"space_id"`
 	WebhookID         types.String                  `tfsdk:"webhook_id"`

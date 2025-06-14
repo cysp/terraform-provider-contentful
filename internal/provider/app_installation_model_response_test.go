@@ -15,11 +15,11 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 
 	tests := map[string]struct {
 		appInstallation cm.AppInstallation
-		expectedModel   provider.AppInstallationResourceModel
+		expectedModel   provider.AppInstallationModel
 	}{
 		"null": {
 			appInstallation: cm.AppInstallation{},
-			expectedModel: provider.AppInstallationResourceModel{
+			expectedModel: provider.AppInstallationModel{
 				ID:              types.StringValue("//"),
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
@@ -31,7 +31,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 			appInstallation: cm.AppInstallation{
 				Parameters: []byte("{}"),
 			},
-			expectedModel: provider.AppInstallationResourceModel{
+			expectedModel: provider.AppInstallationModel{
 				ID:              types.StringValue("//"),
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
@@ -44,7 +44,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 			appInstallation: cm.AppInstallation{
 				Parameters: []byte("{\"foo\":\"bar\"}"),
 			},
-			expectedModel: provider.AppInstallationResourceModel{
+			expectedModel: provider.AppInstallationModel{
 				ID:              types.StringValue("//"),
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),

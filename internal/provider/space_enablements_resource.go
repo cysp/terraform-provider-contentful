@@ -43,7 +43,7 @@ func (r *spaceEnablementsResource) ImportState(ctx context.Context, req resource
 }
 
 func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data SpaceEnablementsResourceModel
+	var data SpaceEnablementsModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -95,7 +95,7 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 }
 
 func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data SpaceEnablementsResourceModel
+	var data SpaceEnablementsModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -154,7 +154,7 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data SpaceEnablementsResourceModel
+	var data SpaceEnablementsModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 

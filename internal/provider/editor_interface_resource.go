@@ -47,7 +47,7 @@ func (r *editorInterfaceResource) ImportState(ctx context.Context, req resource.
 }
 
 func (r *editorInterfaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data EditorInterfaceResourceModel
+	var data EditorInterfaceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -104,7 +104,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data EditorInterfaceResourceModel
+	var data EditorInterfaceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -160,7 +160,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 func (r *editorInterfaceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data EditorInterfaceResourceModel
+	var data EditorInterfaceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
