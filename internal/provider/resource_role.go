@@ -8,12 +8,14 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
 	_ resource.Resource                = (*roleResource)(nil)
 	_ resource.ResourceWithConfigure   = (*roleResource)(nil)
+	_ resource.ResourceWithIdentity    = (*roleResource)(nil)
 	_ resource.ResourceWithImportState = (*roleResource)(nil)
 )
 
@@ -36,6 +38,15 @@ func (r *roleResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 
 func (r *roleResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
+}
+
+func (r *roleResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"space_id": identityschema.StringAttribute{RequiredForImport: true},
+			"role_id":  identityschema.StringAttribute{RequiredForImport: true},
+		},
+	}
 }
 
 func (r *roleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
