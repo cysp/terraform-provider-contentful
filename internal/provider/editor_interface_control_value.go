@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -44,24 +43,6 @@ func NewEditorInterfaceControlValueNull() EditorInterfaceControlValue {
 func NewEditorInterfaceControlValueUnknown() EditorInterfaceControlValue {
 	return EditorInterfaceControlValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v EditorInterfaceControlValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"field_id": schema.StringAttribute{
-			Required: true,
-		},
-		"widget_namespace": schema.StringAttribute{
-			Optional: true,
-		},
-		"widget_id": schema.StringAttribute{
-			Optional: true,
-		},
-		"settings": schema.StringAttribute{
-			CustomType: jsontypes.NormalizedType{},
-			Optional:   true,
-		},
 	}
 }
 

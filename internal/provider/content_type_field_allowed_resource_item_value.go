@@ -4,12 +4,8 @@ import (
 	"context"
 
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
-	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -43,33 +39,6 @@ func NewContentTypeFieldAllowedResourceItemValueNull() ContentTypeFieldAllowedRe
 func NewContentTypeFieldAllowedResourceItemValueUnknown() ContentTypeFieldAllowedResourceItemValue {
 	return ContentTypeFieldAllowedResourceItemValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v ContentTypeFieldAllowedResourceItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"contentful_entry": schema.SingleNestedAttribute{
-			Attributes: NewContentTypeFieldAllowedResourceItemContentfulEntryValueNull().SchemaAttributes(ctx),
-			CustomType: NewContentTypeFieldAllowedResourceItemContentfulEntryValueNull().CustomType(ctx),
-			Optional:   true,
-			Validators: []validator.Object{
-				objectvalidator.ExactlyOneOf(
-					path.MatchRelative().AtParent().AtName("contentful_entry"),
-					path.MatchRelative().AtParent().AtName("external"),
-				),
-			},
-		},
-		"external": schema.SingleNestedAttribute{
-			Attributes: ContentTypeFieldAllowedResourceItemExternalValue{}.SchemaAttributes(ctx),
-			CustomType: ContentTypeFieldAllowedResourceItemExternalValue{}.CustomType(ctx),
-			Optional:   true,
-			Validators: []validator.Object{
-				objectvalidator.ExactlyOneOf(
-					path.MatchRelative().AtParent().AtName("contentful_entry"),
-					path.MatchRelative().AtParent().AtName("external"),
-				),
-			},
-		},
 	}
 }
 

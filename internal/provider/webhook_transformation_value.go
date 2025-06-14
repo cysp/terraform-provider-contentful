@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -49,24 +48,6 @@ func NewWebhookTransformationValueNull() WebhookTransformationValue {
 func NewWebhookTransformationValueUnknown() WebhookTransformationValue {
 	return WebhookTransformationValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v WebhookTransformationValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"method": schema.StringAttribute{
-			Optional: true,
-		},
-		"content_type": schema.StringAttribute{
-			Optional: true,
-		},
-		"include_content_length": schema.BoolAttribute{
-			Optional: true,
-		},
-		"body": schema.StringAttribute{
-			Optional:   true,
-			CustomType: jsontypes.NormalizedType{},
-		},
 	}
 }
 

@@ -6,7 +6,6 @@ import (
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -39,14 +38,6 @@ func NewEditorInterfaceEditorLayoutItemGroupItemFieldValueNull() EditorInterface
 func NewEditorInterfaceEditorLayoutItemGroupItemFieldValueUnknown() EditorInterfaceEditorLayoutItemGroupItemFieldValue {
 	return EditorInterfaceEditorLayoutItemGroupItemFieldValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v EditorInterfaceEditorLayoutItemGroupItemFieldValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"field_id": schema.StringAttribute{
-			Required: true,
-		},
 	}
 }
 

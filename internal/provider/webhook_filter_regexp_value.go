@@ -6,7 +6,6 @@ import (
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -48,17 +47,6 @@ func NewWebhookFilterRegexpValueNull() WebhookFilterRegexpValue {
 func NewWebhookFilterRegexpValueUnknown() WebhookFilterRegexpValue {
 	return WebhookFilterRegexpValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v WebhookFilterRegexpValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"doc": schema.StringAttribute{
-			Required: true,
-		},
-		"pattern": schema.StringAttribute{
-			Required: true,
-		},
 	}
 }
 

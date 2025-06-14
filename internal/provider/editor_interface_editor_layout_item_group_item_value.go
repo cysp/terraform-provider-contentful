@@ -4,12 +4,8 @@ import (
 	"context"
 
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
-	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -43,33 +39,6 @@ func NewEditorInterfaceEditorLayoutItemGroupItemValueNull() EditorInterfaceEdito
 func NewEditorInterfaceEditorLayoutItemGroupItemValueUnknown() EditorInterfaceEditorLayoutItemGroupItemValue {
 	return EditorInterfaceEditorLayoutItemGroupItemValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v EditorInterfaceEditorLayoutItemGroupItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"field": schema.SingleNestedAttribute{
-			Attributes: EditorInterfaceEditorLayoutItemGroupItemFieldValue{}.SchemaAttributes(ctx),
-			CustomType: EditorInterfaceEditorLayoutItemGroupItemFieldValue{}.CustomType(ctx),
-			Optional:   true,
-			Validators: []validator.Object{
-				objectvalidator.ExactlyOneOf(
-					path.MatchRelative().AtParent().AtName("field"),
-					path.MatchRelative().AtParent().AtName("group"),
-				),
-			},
-		},
-		"group": schema.SingleNestedAttribute{
-			Attributes: EditorInterfaceEditorLayoutItemGroupItemGroupValue{}.SchemaAttributes(ctx),
-			CustomType: EditorInterfaceEditorLayoutItemGroupItemGroupValue{}.CustomType(ctx),
-			Optional:   true,
-			Validators: []validator.Object{
-				objectvalidator.ExactlyOneOf(
-					path.MatchRelative().AtParent().AtName("field"),
-					path.MatchRelative().AtParent().AtName("group"),
-				),
-			},
-		},
 	}
 }
 

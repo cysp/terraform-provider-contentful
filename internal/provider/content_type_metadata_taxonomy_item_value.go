@@ -4,12 +4,8 @@ import (
 	"context"
 
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
-	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -46,33 +42,6 @@ func NewContentTypeMetadataTaxonomyItemValueKnownFromAttributes(ctx context.Cont
 	diags = append(diags, setAttributesDiags...)
 
 	return value, diags
-}
-
-func (v ContentTypeMetadataTaxonomyItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"taxonomy_concept": schema.SingleNestedAttribute{
-			Attributes: ContentTypeMetadataTaxonomyItemConceptValue{}.SchemaAttributes(ctx),
-			CustomType: ContentTypeMetadataTaxonomyItemConceptValue{}.CustomType(ctx),
-			Optional:   true,
-			Validators: []validator.Object{
-				objectvalidator.ExactlyOneOf(
-					path.MatchRelative().AtParent().AtName("taxonomy_concept"),
-					path.MatchRelative().AtParent().AtName("taxonomy_concept_scheme"),
-				),
-			},
-		},
-		"taxonomy_concept_scheme": schema.SingleNestedAttribute{
-			Attributes: ContentTypeMetadataTaxonomyItemConceptSchemeValue{}.SchemaAttributes(ctx),
-			CustomType: ContentTypeMetadataTaxonomyItemConceptSchemeValue{}.CustomType(ctx),
-			Optional:   true,
-			Validators: []validator.Object{
-				objectvalidator.ExactlyOneOf(
-					path.MatchRelative().AtParent().AtName("taxonomy_concept"),
-					path.MatchRelative().AtParent().AtName("taxonomy_concept_scheme"),
-				),
-			},
-		},
-	}
 }
 
 //nolint:ireturn

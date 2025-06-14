@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -42,23 +41,6 @@ func NewRolePolicyValueNull() RolePolicyValue {
 func NewRolePolicyValueUnknown() RolePolicyValue {
 	return RolePolicyValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v RolePolicyValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"actions": schema.ListAttribute{
-			ElementType: types.StringType,
-			CustomType:  TypedList[types.String]{}.CustomType(ctx),
-			Required:    true,
-		},
-		"constraint": schema.StringAttribute{
-			CustomType: jsontypes.NormalizedType{},
-			Optional:   true,
-		},
-		"effect": schema.StringAttribute{
-			Required: true,
-		},
 	}
 }
 

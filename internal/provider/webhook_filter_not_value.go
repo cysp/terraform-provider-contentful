@@ -6,7 +6,6 @@ import (
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -50,26 +49,6 @@ func NewWebhookFilterNotValueNull() WebhookFilterNotValue {
 func NewWebhookFilterNotValueUnknown() WebhookFilterNotValue {
 	return WebhookFilterNotValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v WebhookFilterNotValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"equals": schema.SingleNestedAttribute{
-			Attributes: WebhookFilterEqualsValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterEqualsValue{}.CustomType(ctx),
-			Optional:   true,
-		},
-		"in": schema.SingleNestedAttribute{
-			Attributes: WebhookFilterInValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterInValue{}.CustomType(ctx),
-			Optional:   true,
-		},
-		"regexp": schema.SingleNestedAttribute{
-			Attributes: WebhookFilterRegexpValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterRegexpValue{}.CustomType(ctx),
-			Optional:   true,
-		},
 	}
 }
 

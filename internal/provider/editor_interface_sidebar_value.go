@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -45,26 +43,6 @@ func NewEditorInterfaceSidebarValueNull() EditorInterfaceSidebarValue {
 func NewEditorInterfaceSidebarValueUnknown() EditorInterfaceSidebarValue {
 	return EditorInterfaceSidebarValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v EditorInterfaceSidebarValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"widget_namespace": schema.StringAttribute{
-			Required: true,
-		},
-		"widget_id": schema.StringAttribute{
-			Required: true,
-		},
-		"settings": schema.StringAttribute{
-			CustomType: jsontypes.NormalizedType{},
-			Optional:   true,
-		},
-		"disabled": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
-		},
 	}
 }
 
