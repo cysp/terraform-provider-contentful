@@ -73,8 +73,8 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - "1.10.*"
           - "1.11.*"
+          - "1.12.*"
     concurrency:
       group: testacc
     steps:
@@ -105,8 +105,8 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - "1.10.*"
           - "1.11.*"
+          - "1.12.*"
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: actions/setup-go@v5.5.0
