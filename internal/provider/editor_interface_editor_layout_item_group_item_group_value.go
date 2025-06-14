@@ -6,7 +6,6 @@ import (
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -41,25 +40,6 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupValueNull() EditorInterface
 func NewEditorInterfaceEditorLayoutItemGroupItemGroupValueUnknown() EditorInterfaceEditorLayoutItemGroupItemGroupValue {
 	return EditorInterfaceEditorLayoutItemGroupItemGroupValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"group_id": schema.StringAttribute{
-			Required: true,
-		},
-		"name": schema.StringAttribute{
-			Required: true,
-		},
-		"items": schema.ListNestedAttribute{
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{}.SchemaAttributes(ctx),
-				CustomType: EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{}.CustomType(ctx),
-			},
-			CustomType: NewTypedListNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue](ctx).CustomType(ctx),
-			Required:   true,
-		},
 	}
 }
 

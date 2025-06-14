@@ -6,7 +6,6 @@ import (
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -40,19 +39,6 @@ func NewContentTypeFieldAllowedResourceItemContentfulEntryValueNull() ContentTyp
 func NewContentTypeFieldAllowedResourceItemContentfulEntryValueUnknown() ContentTypeFieldAllowedResourceItemContentfulEntryValue {
 	return ContentTypeFieldAllowedResourceItemContentfulEntryValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"source": schema.StringAttribute{
-			Required: true,
-		},
-		"content_types": schema.ListAttribute{
-			ElementType: types.StringType,
-			CustomType:  NewTypedListNull[types.String](ctx).CustomType(ctx),
-			Required:    true,
-		},
 	}
 }
 

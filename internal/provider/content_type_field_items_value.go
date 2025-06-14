@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -47,24 +45,6 @@ func NewContentTypeFieldItemsValueKnownFromAttributes(ctx context.Context, attri
 	diags = append(diags, setAttributesDiags...)
 
 	return value, diags
-}
-
-func (v ContentTypeFieldItemsValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"type": schema.StringAttribute{
-			Required: true,
-		},
-		"link_type": schema.StringAttribute{
-			Optional: true,
-		},
-		"validations": schema.ListAttribute{
-			ElementType: jsontypes.NormalizedType{},
-			CustomType:  NewTypedListNull[jsontypes.Normalized](ctx).CustomType(ctx),
-			Optional:    true,
-			Computed:    true,
-			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
-		},
-	}
 }
 
 //nolint:ireturn

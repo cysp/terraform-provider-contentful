@@ -5,13 +5,8 @@ import (
 
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -48,37 +43,6 @@ func NewContentTypeMetadataValueKnownFromAttributes(ctx context.Context, attribu
 	diags = append(diags, setAttributesDiags...)
 
 	return value, diags
-}
-
-func (v ContentTypeMetadataValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"annotations": schema.StringAttribute{
-			CustomType:  jsontypes.NormalizedType{},
-			Description: "Annotations for this content type, represented as a JSON object fragment.",
-			Optional:    true,
-			Validators: []validator.String{
-				stringvalidator.AtLeastOneOf(
-					path.MatchRelative().AtParent().AtName("annotations"),
-					path.MatchRelative().AtParent().AtName("taxonomy"),
-				),
-			},
-		},
-		"taxonomy": schema.ListNestedAttribute{
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: ContentTypeMetadataTaxonomyItemValue{}.SchemaAttributes(ctx),
-				CustomType: ContentTypeMetadataTaxonomyItemValue{}.CustomType(ctx),
-			},
-			CustomType:  NewTypedListNull[ContentTypeMetadataTaxonomyItemValue](ctx).CustomType(ctx),
-			Description: "List of taxonomy items for this content type. Each item represents a taxonomy term that may be associated with the content type.",
-			Optional:    true,
-			Validators: []validator.List{
-				listvalidator.AtLeastOneOf(
-					path.MatchRelative().AtParent().AtName("annotations"),
-					path.MatchRelative().AtParent().AtName("taxonomy"),
-				),
-			},
-		},
-	}
 }
 
 //nolint:ireturn

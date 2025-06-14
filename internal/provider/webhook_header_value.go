@@ -6,9 +6,6 @@ import (
 	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -49,22 +46,6 @@ func NewWebhookHeaderValueNull() WebhookHeaderValue {
 func NewWebhookHeaderValueUnknown() WebhookHeaderValue {
 	return WebhookHeaderValue{
 		state: attr.ValueStateUnknown,
-	}
-}
-
-func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"value": schema.StringAttribute{
-			Required: true,
-		},
-		"secret": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
-			PlanModifiers: []planmodifier.Bool{
-				UseStateForUnknown(),
-			},
-		},
 	}
 }
 

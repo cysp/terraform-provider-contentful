@@ -7,9 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -57,64 +54,6 @@ func NewContentTypeFieldValueKnownFromAttributes(ctx context.Context, attributes
 	diags = append(diags, setAttributesDiags...)
 
 	return value, diags
-}
-
-func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"id": schema.StringAttribute{
-			Required: true,
-		},
-		"name": schema.StringAttribute{
-			Required: true,
-		},
-		"type": schema.StringAttribute{
-			Required: true,
-		},
-		"link_type": schema.StringAttribute{
-			Optional: true,
-		},
-		"items": schema.SingleNestedAttribute{
-			Attributes: ContentTypeFieldItemsValue{}.SchemaAttributes(ctx),
-			CustomType: ContentTypeFieldItemsValue{}.CustomType(ctx),
-			Optional:   true,
-		},
-		"default_value": schema.StringAttribute{
-			CustomType: jsontypes.NormalizedType{},
-			Optional:   true,
-			Computed:   true,
-		},
-		"localized": schema.BoolAttribute{
-			Required: true,
-		},
-		"disabled": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
-		},
-		"omitted": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
-		},
-		"required": schema.BoolAttribute{
-			Required: true,
-		},
-		"validations": schema.ListAttribute{
-			ElementType: jsontypes.NormalizedType{},
-			CustomType:  NewTypedListNull[jsontypes.Normalized](ctx).CustomType(ctx),
-			Optional:    true,
-			Computed:    true,
-			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
-		},
-		"allowed_resources": schema.ListNestedAttribute{
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: NewContentTypeFieldAllowedResourceItemValueNull().SchemaAttributes(ctx),
-				CustomType: NewContentTypeFieldAllowedResourceItemValueNull().CustomType(ctx),
-			},
-			CustomType: NewTypedListNull[ContentTypeFieldAllowedResourceItemValue](ctx).CustomType(ctx),
-			Optional:   true,
-		},
-	}
 }
 
 //nolint:ireturn
