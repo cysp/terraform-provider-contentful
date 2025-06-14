@@ -10,6 +10,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -51,7 +52,10 @@ type ContentfulProviderModel struct {
 	AccessToken types.String `tfsdk:"access_token"`
 }
 
-var _ provider.Provider = (*ContentfulProvider)(nil)
+var (
+	_ provider.Provider                       = (*ContentfulProvider)(nil)
+	_ provider.ProviderWithEphemeralResources = (*ContentfulProvider)(nil)
+)
 
 type Option func(*ContentfulProvider)
 
@@ -188,5 +192,11 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewRoleResource,
 		NewSpaceEnablementsResource,
 		NewWebhookResource,
+	}
+}
+
+func (p *ContentfulProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
+	return []func() ephemeral.EphemeralResource{
+		NewEphemeralPersonalAccessTokenResource,
 	}
 }

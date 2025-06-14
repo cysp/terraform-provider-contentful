@@ -42,6 +42,7 @@ func (r *personalAccessTokenResource) ImportState(ctx context.Context, req resou
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
+//nolint:dupl
 func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data PersonalAccessTokenModel
 
