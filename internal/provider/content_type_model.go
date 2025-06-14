@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type ContentTypeResourceModel struct {
+type ContentTypeModel struct {
 	ID            types.String                     `tfsdk:"id"`
 	SpaceID       types.String                     `tfsdk:"space_id"`
 	EnvironmentID types.String                     `tfsdk:"environment_id"`

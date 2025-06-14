@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewSpaceEnablementsResourceModelFromResponse(_ context.Context, response cm.SpaceEnablement) (SpaceEnablementsResourceModel, diag.Diagnostics) {
+func NewSpaceEnablementsResourceModelFromResponse(_ context.Context, response cm.SpaceEnablement) (SpaceEnablementsModel, diag.Diagnostics) {
 	spaceID := response.Sys.Space.Sys.ID
 
-	model := SpaceEnablementsResourceModel{
+	model := SpaceEnablementsModel{
 		ID:      types.StringValue(spaceID),
 		SpaceID: types.StringValue(spaceID),
 	}

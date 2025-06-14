@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (model *AppInstallationResourceModel) ToXContentfulMarketplaceHeaderValue(ctx context.Context) (cm.OptString, diag.Diagnostics) {
+func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx context.Context) (cm.OptString, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := cm.OptString{}
@@ -28,7 +28,7 @@ func (model *AppInstallationResourceModel) ToXContentfulMarketplaceHeaderValue(c
 	return value, diags
 }
 
-func (model *AppInstallationResourceModel) ToXContentfulMarketplaceHeaderValueElements(ctx context.Context) ([]string, diag.Diagnostics) {
+func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(ctx context.Context) ([]string, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if model.Marketplace.IsNull() || model.Marketplace.IsUnknown() {
@@ -49,7 +49,7 @@ func (model *AppInstallationResourceModel) ToXContentfulMarketplaceHeaderValueEl
 	return marketplaceStrings, diags
 }
 
-func (model *AppInstallationResourceModel) ToAppInstallationFields() (cm.AppInstallationFields, diag.Diagnostics) {
+func (model *AppInstallationModel) ToAppInstallationFields() (cm.AppInstallationFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fields := cm.AppInstallationFields{}

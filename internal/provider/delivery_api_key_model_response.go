@@ -11,13 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewDeliveryAPIKeyResourceModelFromResponse(ctx context.Context, apiKey cm.ApiKey) (DeliveryAPIKeyResourceModel, diag.Diagnostics) {
+func NewDeliveryAPIKeyResourceModelFromResponse(ctx context.Context, apiKey cm.ApiKey) (DeliveryAPIKeyModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := apiKey.Sys.Space.Sys.ID
 	apiKeyID := apiKey.Sys.ID
 
-	model := DeliveryAPIKeyResourceModel{
+	model := DeliveryAPIKeyModel{
 		ID:       types.StringValue(strings.Join([]string{spaceID, apiKeyID}, "/")),
 		SpaceID:  types.StringValue(spaceID),
 		APIKeyID: types.StringValue(apiKeyID),

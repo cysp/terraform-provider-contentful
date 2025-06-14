@@ -9,13 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewAppDefinitionResourceModelFromResponse(ctx context.Context, response cm.AppDefinition) (AppDefinitionResourceModel, diag.Diagnostics) {
+func NewAppDefinitionResourceModelFromResponse(ctx context.Context, response cm.AppDefinition) (AppDefinitionModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	organizationID := response.Sys.Organization.Sys.ID
 	appDefinitionID := response.Sys.ID
 
-	model := AppDefinitionResourceModel{
+	model := AppDefinitionModel{
 		ID:              types.StringValue(organizationID + "/" + appDefinitionID),
 		OrganizationID:  types.StringValue(organizationID),
 		AppDefinitionID: types.StringValue(appDefinitionID),

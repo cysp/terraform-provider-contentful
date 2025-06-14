@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
-func (model *WebhookResourceModel) ToWebhookDefinitionFields(ctx context.Context, path path.Path) (cm.WebhookDefinitionFields, diag.Diagnostics) {
+func (model *WebhookModel) ToWebhookDefinitionFields(ctx context.Context, path path.Path) (cm.WebhookDefinitionFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	req := cm.WebhookDefinitionFields{

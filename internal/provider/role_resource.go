@@ -47,7 +47,7 @@ func (r *roleResource) ImportState(ctx context.Context, req resource.ImportState
 
 //nolint:dupl
 func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data RoleResourceModel
+	var data RoleModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -98,7 +98,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 }
 
 func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data RoleResourceModel
+	var data RoleModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -151,7 +151,7 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 }
 
 func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data RoleResourceModel
+	var data RoleModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -206,7 +206,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 }
 
 func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data RoleResourceModel
+	var data RoleModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 

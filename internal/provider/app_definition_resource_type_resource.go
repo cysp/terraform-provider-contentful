@@ -48,7 +48,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) ImportState(ctx context
 
 //nolint:dupl
 func (r *appDefinitionAppDefinitionResourceTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data AppDefinitionResourceTypeResourceModel
+	var data AppDefinitionResourceTypeModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -97,7 +97,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Create(ctx context.Cont
 }
 
 func (r *appDefinitionAppDefinitionResourceTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data AppDefinitionResourceTypeResourceModel
+	var data AppDefinitionResourceTypeModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -148,7 +148,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Read(ctx context.Contex
 
 //nolint:dupl
 func (r *appDefinitionAppDefinitionResourceTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data AppDefinitionResourceTypeResourceModel
+	var data AppDefinitionResourceTypeModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -197,7 +197,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Update(ctx context.Cont
 }
 
 func (r *appDefinitionAppDefinitionResourceTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data AppDefinitionResourceTypeResourceModel
+	var data AppDefinitionResourceTypeModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 

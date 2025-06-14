@@ -11,14 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallation, marketplace types.Set) (AppInstallationResourceModel, diag.Diagnostics) {
+func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallation, marketplace types.Set) (AppInstallationModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := appInstallation.Sys.Space.Sys.ID
 	environmentID := appInstallation.Sys.Environment.Sys.ID
 	appDefinitionID := appInstallation.Sys.AppDefinition.Sys.ID
 
-	model := AppInstallationResourceModel{
+	model := AppInstallationModel{
 		ID:              types.StringValue(strings.Join([]string{spaceID, environmentID, appDefinitionID}, "/")),
 		SpaceID:         types.StringValue(spaceID),
 		EnvironmentID:   types.StringValue(environmentID),

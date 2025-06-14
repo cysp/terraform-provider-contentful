@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *EditorInterfaceResourceModel) ToEditorInterfaceFields(ctx context.Context) (cm.EditorInterfaceFields, diag.Diagnostics) {
+func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) (cm.EditorInterfaceFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	request := cm.EditorInterfaceFields{}

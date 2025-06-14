@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type PreviewAPIKeyDataSourceModel struct {
+type PreviewAPIKeyModel struct {
 	SpaceID         types.String            `tfsdk:"space_id"`
 	PreviewAPIKeyID types.String            `tfsdk:"preview_api_key_id"`
 	Name            types.String            `tfsdk:"name"`

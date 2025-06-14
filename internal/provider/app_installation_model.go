@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type AppInstallationResourceModel struct {
+type AppInstallationModel struct {
 	ID              types.String         `tfsdk:"id"`
 	SpaceID         types.String         `tfsdk:"space_id"`
 	EnvironmentID   types.String         `tfsdk:"environment_id"`

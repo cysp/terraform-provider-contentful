@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
-func (m *ContentTypeResourceModel) ToContentTypeRequestFields(ctx context.Context) (cm.ContentTypeRequestFields, diag.Diagnostics) {
+func (m *ContentTypeModel) ToContentTypeRequestFields(ctx context.Context) (cm.ContentTypeRequestFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	request := cm.ContentTypeRequestFields{

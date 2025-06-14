@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (m *AppDefinitionResourceProviderResourceModel) ToResourceProviderRequest(_ context.Context, _ path.Path) (cm.ResourceProviderRequest, diag.Diagnostics) {
+func (m *AppDefinitionResourceProviderModel) ToResourceProviderRequest(_ context.Context, _ path.Path) (cm.ResourceProviderRequest, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	req := cm.ResourceProviderRequest{

@@ -10,14 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInterface cm.EditorInterface) (EditorInterfaceResourceModel, diag.Diagnostics) {
+func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInterface cm.EditorInterface) (EditorInterfaceModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := editorInterface.Sys.Space.Sys.ID
 	environmentID := editorInterface.Sys.Environment.Sys.ID
 	contentTypeID := editorInterface.Sys.ContentType.Sys.ID
 
-	model := EditorInterfaceResourceModel{
+	model := EditorInterfaceModel{
 		ID:            types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/")),
 		SpaceID:       types.StringValue(spaceID),
 		EnvironmentID: types.StringValue(environmentID),
