@@ -53,6 +53,10 @@ type DeleteDeliveryApiKeyRes interface {
 	deleteDeliveryApiKeyRes()
 }
 
+type DeleteExtensionRes interface {
+	deleteExtensionRes()
+}
+
 type DeleteRoleRes interface {
 	deleteRoleRes()
 }
@@ -91,6 +95,10 @@ type GetDeliveryApiKeyRes interface {
 
 type GetEditorInterfaceRes interface {
 	getEditorInterfaceRes()
+}
+
+type GetExtensionRes interface {
+	getExtensionRes()
 }
 
 type GetPersonalAccessTokenRes interface {
@@ -135,6 +143,10 @@ type PutContentTypeRes interface {
 
 type PutEditorInterfaceRes interface {
 	putEditorInterfaceRes()
+}
+
+type PutExtensionRes interface {
+	putExtensionRes()
 }
 
 type PutSpaceEnablementsRes interface {
