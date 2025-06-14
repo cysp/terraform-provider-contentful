@@ -8,12 +8,14 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
 	_ resource.Resource                = (*spaceEnablementsResource)(nil)
 	_ resource.ResourceWithConfigure   = (*spaceEnablementsResource)(nil)
+	_ resource.ResourceWithIdentity    = (*spaceEnablementsResource)(nil)
 	_ resource.ResourceWithImportState = (*spaceEnablementsResource)(nil)
 )
 
@@ -38,8 +40,16 @@ func (r *spaceEnablementsResource) Configure(_ context.Context, req resource.Con
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
 
+func (r *spaceEnablementsResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"space_id": identityschema.StringAttribute{RequiredForImport: true},
+		},
+	}
+}
+
 func (r *spaceEnablementsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("space_id"), req, resp)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("space_id"), path.Root("space_id"), req, resp)
 }
 
 func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

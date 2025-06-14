@@ -8,12 +8,14 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
 	_ resource.Resource                = (*personalAccessTokenResource)(nil)
 	_ resource.ResourceWithConfigure   = (*personalAccessTokenResource)(nil)
+	_ resource.ResourceWithIdentity    = (*personalAccessTokenResource)(nil)
 	_ resource.ResourceWithImportState = (*personalAccessTokenResource)(nil)
 )
 
@@ -38,8 +40,16 @@ func (r *personalAccessTokenResource) Configure(_ context.Context, req resource.
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
 
+func (r *personalAccessTokenResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{RequiredForImport: true},
+		},
+	}
+}
+
 func (r *personalAccessTokenResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }
 
 func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

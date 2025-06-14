@@ -8,12 +8,14 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
 	_ resource.Resource                = (*appDefinitionAppDefinitionResource)(nil)
 	_ resource.ResourceWithConfigure   = (*appDefinitionAppDefinitionResource)(nil)
+	_ resource.ResourceWithIdentity    = (*appDefinitionAppDefinitionResource)(nil)
 	_ resource.ResourceWithImportState = (*appDefinitionAppDefinitionResource)(nil)
 )
 
@@ -36,6 +38,15 @@ func (r *appDefinitionAppDefinitionResource) Schema(ctx context.Context, _ resou
 
 func (r *appDefinitionAppDefinitionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
+}
+
+func (r *appDefinitionAppDefinitionResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"organization_id":   identityschema.StringAttribute{RequiredForImport: true},
+			"app_definition_id": identityschema.StringAttribute{RequiredForImport: true},
+		},
+	}
 }
 
 func (r *appDefinitionAppDefinitionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

@@ -8,12 +8,14 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
 	_ resource.Resource                = (*webhookResource)(nil)
 	_ resource.ResourceWithConfigure   = (*webhookResource)(nil)
+	_ resource.ResourceWithIdentity    = (*webhookResource)(nil)
 	_ resource.ResourceWithImportState = (*webhookResource)(nil)
 )
 
@@ -36,6 +38,15 @@ func (r *webhookResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 
 func (r *webhookResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
+}
+
+func (r *webhookResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"space_id":   identityschema.StringAttribute{RequiredForImport: true},
+			"webhook_id": identityschema.StringAttribute{RequiredForImport: true},
+		},
+	}
 }
 
 func (r *webhookResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
