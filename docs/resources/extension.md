@@ -50,11 +50,11 @@ Optional:
 
 Required:
 
-- `items` (Attributes) (see [below for nested schema](#nestedatt--extension--field_types--items))
 - `type` (String)
 
 Optional:
 
+- `items` (Attributes) (see [below for nested schema](#nestedatt--extension--field_types--items))
 - `link_type` (String)
 
 <a id="nestedatt--extension--field_types--items"></a>

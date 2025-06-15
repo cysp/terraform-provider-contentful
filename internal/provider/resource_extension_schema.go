@@ -94,7 +94,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 								Optional: true,
 							},
 						},
-						Required: true,
+						Optional: true,
 					},
 				},
 			},
