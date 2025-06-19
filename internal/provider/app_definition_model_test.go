@@ -27,10 +27,10 @@ func FuzzAppDefinitionResourceModelRoundtrip(f *testing.F) {
 			}),
 			Locations: []cm.AppDefinitionLocationsItem{
 				{
-					Location: cm.AppDefinitionLocationsItemLocation("app-config"),
+					Location: "app-config",
 				},
 				{
-					Location: cm.AppDefinitionLocationsItemLocation("entry-field"),
+					Location: "entry-field",
 					FieldTypes: []cm.AppDefinitionLocationsItemFieldTypesItem{
 						{
 							Type: "Symbol",

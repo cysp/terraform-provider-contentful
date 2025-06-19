@@ -669,13 +669,13 @@ func (s *AppDefinitionFields) SetParameters(val OptAppDefinitionParameters) {
 }
 
 type AppDefinitionFieldsLocationsItem struct {
-	Location       AppDefinitionFieldsLocationsItemLocation          `json:"location"`
+	Location       string                                            `json:"location"`
 	FieldTypes     []AppDefinitionFieldsLocationsItemFieldTypesItem  `json:"fieldTypes"`
 	NavigationItem OptAppDefinitionFieldsLocationsItemNavigationItem `json:"navigationItem"`
 }
 
 // GetLocation returns the value of Location.
-func (s *AppDefinitionFieldsLocationsItem) GetLocation() AppDefinitionFieldsLocationsItemLocation {
+func (s *AppDefinitionFieldsLocationsItem) GetLocation() string {
 	return s.Location
 }
 
@@ -690,7 +690,7 @@ func (s *AppDefinitionFieldsLocationsItem) GetNavigationItem() OptAppDefinitionF
 }
 
 // SetLocation sets the value of Location.
-func (s *AppDefinitionFieldsLocationsItem) SetLocation(val AppDefinitionFieldsLocationsItemLocation) {
+func (s *AppDefinitionFieldsLocationsItem) SetLocation(val string) {
 	s.Location = val
 }
 
@@ -763,75 +763,6 @@ func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) SetType(val string
 // SetLinkType sets the value of LinkType.
 func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) SetLinkType(val OptString) {
 	s.LinkType = val
-}
-
-type AppDefinitionFieldsLocationsItemLocation string
-
-const (
-	AppDefinitionFieldsLocationsItemLocationAppConfig    AppDefinitionFieldsLocationsItemLocation = "app-config"
-	AppDefinitionFieldsLocationsItemLocationDialog       AppDefinitionFieldsLocationsItemLocation = "dialog"
-	AppDefinitionFieldsLocationsItemLocationEntryEditor  AppDefinitionFieldsLocationsItemLocation = "entry-editor"
-	AppDefinitionFieldsLocationsItemLocationEntrySidebar AppDefinitionFieldsLocationsItemLocation = "entry-sidebar"
-	AppDefinitionFieldsLocationsItemLocationHome         AppDefinitionFieldsLocationsItemLocation = "home"
-	AppDefinitionFieldsLocationsItemLocationPage         AppDefinitionFieldsLocationsItemLocation = "page"
-)
-
-// AllValues returns all AppDefinitionFieldsLocationsItemLocation values.
-func (AppDefinitionFieldsLocationsItemLocation) AllValues() []AppDefinitionFieldsLocationsItemLocation {
-	return []AppDefinitionFieldsLocationsItemLocation{
-		AppDefinitionFieldsLocationsItemLocationAppConfig,
-		AppDefinitionFieldsLocationsItemLocationDialog,
-		AppDefinitionFieldsLocationsItemLocationEntryEditor,
-		AppDefinitionFieldsLocationsItemLocationEntrySidebar,
-		AppDefinitionFieldsLocationsItemLocationHome,
-		AppDefinitionFieldsLocationsItemLocationPage,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s AppDefinitionFieldsLocationsItemLocation) MarshalText() ([]byte, error) {
-	switch s {
-	case AppDefinitionFieldsLocationsItemLocationAppConfig:
-		return []byte(s), nil
-	case AppDefinitionFieldsLocationsItemLocationDialog:
-		return []byte(s), nil
-	case AppDefinitionFieldsLocationsItemLocationEntryEditor:
-		return []byte(s), nil
-	case AppDefinitionFieldsLocationsItemLocationEntrySidebar:
-		return []byte(s), nil
-	case AppDefinitionFieldsLocationsItemLocationHome:
-		return []byte(s), nil
-	case AppDefinitionFieldsLocationsItemLocationPage:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *AppDefinitionFieldsLocationsItemLocation) UnmarshalText(data []byte) error {
-	switch AppDefinitionFieldsLocationsItemLocation(data) {
-	case AppDefinitionFieldsLocationsItemLocationAppConfig:
-		*s = AppDefinitionFieldsLocationsItemLocationAppConfig
-		return nil
-	case AppDefinitionFieldsLocationsItemLocationDialog:
-		*s = AppDefinitionFieldsLocationsItemLocationDialog
-		return nil
-	case AppDefinitionFieldsLocationsItemLocationEntryEditor:
-		*s = AppDefinitionFieldsLocationsItemLocationEntryEditor
-		return nil
-	case AppDefinitionFieldsLocationsItemLocationEntrySidebar:
-		*s = AppDefinitionFieldsLocationsItemLocationEntrySidebar
-		return nil
-	case AppDefinitionFieldsLocationsItemLocationHome:
-		*s = AppDefinitionFieldsLocationsItemLocationHome
-		return nil
-	case AppDefinitionFieldsLocationsItemLocationPage:
-		*s = AppDefinitionFieldsLocationsItemLocationPage
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
 }
 
 type AppDefinitionFieldsLocationsItemNavigationItem struct {
@@ -984,13 +915,13 @@ func (s *AppDefinitionLinkSysType) UnmarshalText(data []byte) error {
 }
 
 type AppDefinitionLocationsItem struct {
-	Location       AppDefinitionLocationsItemLocation          `json:"location"`
+	Location       string                                      `json:"location"`
 	FieldTypes     []AppDefinitionLocationsItemFieldTypesItem  `json:"fieldTypes"`
 	NavigationItem OptAppDefinitionLocationsItemNavigationItem `json:"navigationItem"`
 }
 
 // GetLocation returns the value of Location.
-func (s *AppDefinitionLocationsItem) GetLocation() AppDefinitionLocationsItemLocation {
+func (s *AppDefinitionLocationsItem) GetLocation() string {
 	return s.Location
 }
 
@@ -1005,7 +936,7 @@ func (s *AppDefinitionLocationsItem) GetNavigationItem() OptAppDefinitionLocatio
 }
 
 // SetLocation sets the value of Location.
-func (s *AppDefinitionLocationsItem) SetLocation(val AppDefinitionLocationsItemLocation) {
+func (s *AppDefinitionLocationsItem) SetLocation(val string) {
 	s.Location = val
 }
 
@@ -1078,75 +1009,6 @@ func (s *AppDefinitionLocationsItemFieldTypesItemItems) SetType(val string) {
 // SetLinkType sets the value of LinkType.
 func (s *AppDefinitionLocationsItemFieldTypesItemItems) SetLinkType(val OptString) {
 	s.LinkType = val
-}
-
-type AppDefinitionLocationsItemLocation string
-
-const (
-	AppDefinitionLocationsItemLocationAppConfig    AppDefinitionLocationsItemLocation = "app-config"
-	AppDefinitionLocationsItemLocationDialog       AppDefinitionLocationsItemLocation = "dialog"
-	AppDefinitionLocationsItemLocationEntryEditor  AppDefinitionLocationsItemLocation = "entry-editor"
-	AppDefinitionLocationsItemLocationEntrySidebar AppDefinitionLocationsItemLocation = "entry-sidebar"
-	AppDefinitionLocationsItemLocationHome         AppDefinitionLocationsItemLocation = "home"
-	AppDefinitionLocationsItemLocationPage         AppDefinitionLocationsItemLocation = "page"
-)
-
-// AllValues returns all AppDefinitionLocationsItemLocation values.
-func (AppDefinitionLocationsItemLocation) AllValues() []AppDefinitionLocationsItemLocation {
-	return []AppDefinitionLocationsItemLocation{
-		AppDefinitionLocationsItemLocationAppConfig,
-		AppDefinitionLocationsItemLocationDialog,
-		AppDefinitionLocationsItemLocationEntryEditor,
-		AppDefinitionLocationsItemLocationEntrySidebar,
-		AppDefinitionLocationsItemLocationHome,
-		AppDefinitionLocationsItemLocationPage,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s AppDefinitionLocationsItemLocation) MarshalText() ([]byte, error) {
-	switch s {
-	case AppDefinitionLocationsItemLocationAppConfig:
-		return []byte(s), nil
-	case AppDefinitionLocationsItemLocationDialog:
-		return []byte(s), nil
-	case AppDefinitionLocationsItemLocationEntryEditor:
-		return []byte(s), nil
-	case AppDefinitionLocationsItemLocationEntrySidebar:
-		return []byte(s), nil
-	case AppDefinitionLocationsItemLocationHome:
-		return []byte(s), nil
-	case AppDefinitionLocationsItemLocationPage:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *AppDefinitionLocationsItemLocation) UnmarshalText(data []byte) error {
-	switch AppDefinitionLocationsItemLocation(data) {
-	case AppDefinitionLocationsItemLocationAppConfig:
-		*s = AppDefinitionLocationsItemLocationAppConfig
-		return nil
-	case AppDefinitionLocationsItemLocationDialog:
-		*s = AppDefinitionLocationsItemLocationDialog
-		return nil
-	case AppDefinitionLocationsItemLocationEntryEditor:
-		*s = AppDefinitionLocationsItemLocationEntryEditor
-		return nil
-	case AppDefinitionLocationsItemLocationEntrySidebar:
-		*s = AppDefinitionLocationsItemLocationEntrySidebar
-		return nil
-	case AppDefinitionLocationsItemLocationHome:
-		*s = AppDefinitionLocationsItemLocationHome
-		return nil
-	case AppDefinitionLocationsItemLocationPage:
-		*s = AppDefinitionLocationsItemLocationPage
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
 }
 
 type AppDefinitionLocationsItemNavigationItem struct {

@@ -76,7 +76,7 @@ func NewAppDefinitionLocationItemSliceFromAppDefinitionLocations(locations []cm.
 		fieldTypes := NewAppDefinitionLocationFieldTypesItemSliceFromFieldTypes(location.FieldTypes)
 
 		items[i] = AppDefinitionLocationsItem{
-			Location:   types.StringValue(string(location.Location)),
+			Location:   types.StringValue(location.Location),
 			FieldTypes: fieldTypes,
 		}
 

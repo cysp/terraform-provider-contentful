@@ -380,31 +380,6 @@ func (s *AppDefinition) Validate() error {
 			Error: err,
 		})
 	}
-	if err := func() error {
-		var failures []validate.FieldError
-		for i, elem := range s.Locations {
-			if err := func() error {
-				if err := elem.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				failures = append(failures, validate.FieldError{
-					Name:  fmt.Sprintf("[%d]", i),
-					Error: err,
-				})
-			}
-		}
-		if len(failures) > 0 {
-			return &validate.Error{Fields: failures}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "locations",
-			Error: err,
-		})
-	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
 	}
@@ -435,77 +410,10 @@ func (s *AppDefinitionFields) Validate() error {
 			Error: err,
 		})
 	}
-	if err := func() error {
-		var failures []validate.FieldError
-		for i, elem := range s.Locations {
-			if err := func() error {
-				if err := elem.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				failures = append(failures, validate.FieldError{
-					Name:  fmt.Sprintf("[%d]", i),
-					Error: err,
-				})
-			}
-		}
-		if len(failures) > 0 {
-			return &validate.Error{Fields: failures}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "locations",
-			Error: err,
-		})
-	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
-}
-
-func (s *AppDefinitionFieldsLocationsItem) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Location.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "location",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s AppDefinitionFieldsLocationsItemLocation) Validate() error {
-	switch s {
-	case "app-config":
-		return nil
-	case "dialog":
-		return nil
-	case "entry-editor":
-		return nil
-	case "entry-sidebar":
-		return nil
-	case "home":
-		return nil
-	case "page":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
 }
 
 func (s *AppDefinitionLink) Validate() error {
@@ -577,48 +485,6 @@ func (s AppDefinitionLinkSysLinkType) Validate() error {
 func (s AppDefinitionLinkSysType) Validate() error {
 	switch s {
 	case "Link":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
-func (s *AppDefinitionLocationsItem) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Location.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "location",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s AppDefinitionLocationsItemLocation) Validate() error {
-	switch s {
-	case "app-config":
-		return nil
-	case "dialog":
-		return nil
-	case "entry-editor":
-		return nil
-	case "entry-sidebar":
-		return nil
-	case "home":
-		return nil
-	case "page":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

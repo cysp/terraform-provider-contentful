@@ -1604,7 +1604,7 @@ func (s *AppDefinitionFieldsLocationsItem) Encode(e *jx.Encoder) {
 func (s *AppDefinitionFieldsLocationsItem) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("location")
-		s.Location.Encode(e)
+		e.Str(s.Location)
 	}
 	{
 		if s.FieldTypes != nil {
@@ -1642,7 +1642,9 @@ func (s *AppDefinitionFieldsLocationsItem) Decode(d *jx.Decoder) error {
 		case "location":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				if err := s.Location.Decode(d); err != nil {
+				v, err := d.Str()
+				s.Location = string(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -1971,54 +1973,6 @@ func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) MarshalJSON() ([]b
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes AppDefinitionFieldsLocationsItemLocation as json.
-func (s AppDefinitionFieldsLocationsItemLocation) Encode(e *jx.Encoder) {
-	e.Str(string(s))
-}
-
-// Decode decodes AppDefinitionFieldsLocationsItemLocation from json.
-func (s *AppDefinitionFieldsLocationsItemLocation) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode AppDefinitionFieldsLocationsItemLocation to nil")
-	}
-	v, err := d.StrBytes()
-	if err != nil {
-		return err
-	}
-	// Try to use constant string.
-	switch AppDefinitionFieldsLocationsItemLocation(v) {
-	case AppDefinitionFieldsLocationsItemLocationAppConfig:
-		*s = AppDefinitionFieldsLocationsItemLocationAppConfig
-	case AppDefinitionFieldsLocationsItemLocationDialog:
-		*s = AppDefinitionFieldsLocationsItemLocationDialog
-	case AppDefinitionFieldsLocationsItemLocationEntryEditor:
-		*s = AppDefinitionFieldsLocationsItemLocationEntryEditor
-	case AppDefinitionFieldsLocationsItemLocationEntrySidebar:
-		*s = AppDefinitionFieldsLocationsItemLocationEntrySidebar
-	case AppDefinitionFieldsLocationsItemLocationHome:
-		*s = AppDefinitionFieldsLocationsItemLocationHome
-	case AppDefinitionFieldsLocationsItemLocationPage:
-		*s = AppDefinitionFieldsLocationsItemLocationPage
-	default:
-		*s = AppDefinitionFieldsLocationsItemLocation(v)
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s AppDefinitionFieldsLocationsItemLocation) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *AppDefinitionFieldsLocationsItemLocation) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -2443,7 +2397,7 @@ func (s *AppDefinitionLocationsItem) Encode(e *jx.Encoder) {
 func (s *AppDefinitionLocationsItem) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("location")
-		s.Location.Encode(e)
+		e.Str(s.Location)
 	}
 	{
 		if s.FieldTypes != nil {
@@ -2481,7 +2435,9 @@ func (s *AppDefinitionLocationsItem) Decode(d *jx.Decoder) error {
 		case "location":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				if err := s.Location.Decode(d); err != nil {
+				v, err := d.Str()
+				s.Location = string(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -2810,54 +2766,6 @@ func (s *AppDefinitionLocationsItemFieldTypesItemItems) MarshalJSON() ([]byte, e
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *AppDefinitionLocationsItemFieldTypesItemItems) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes AppDefinitionLocationsItemLocation as json.
-func (s AppDefinitionLocationsItemLocation) Encode(e *jx.Encoder) {
-	e.Str(string(s))
-}
-
-// Decode decodes AppDefinitionLocationsItemLocation from json.
-func (s *AppDefinitionLocationsItemLocation) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode AppDefinitionLocationsItemLocation to nil")
-	}
-	v, err := d.StrBytes()
-	if err != nil {
-		return err
-	}
-	// Try to use constant string.
-	switch AppDefinitionLocationsItemLocation(v) {
-	case AppDefinitionLocationsItemLocationAppConfig:
-		*s = AppDefinitionLocationsItemLocationAppConfig
-	case AppDefinitionLocationsItemLocationDialog:
-		*s = AppDefinitionLocationsItemLocationDialog
-	case AppDefinitionLocationsItemLocationEntryEditor:
-		*s = AppDefinitionLocationsItemLocationEntryEditor
-	case AppDefinitionLocationsItemLocationEntrySidebar:
-		*s = AppDefinitionLocationsItemLocationEntrySidebar
-	case AppDefinitionLocationsItemLocationHome:
-		*s = AppDefinitionLocationsItemLocationHome
-	case AppDefinitionLocationsItemLocationPage:
-		*s = AppDefinitionLocationsItemLocationPage
-	default:
-		*s = AppDefinitionLocationsItemLocation(v)
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s AppDefinitionLocationsItemLocation) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *AppDefinitionLocationsItemLocation) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
