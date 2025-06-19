@@ -53,7 +53,7 @@ Required:
 
 Optional:
 
-- `items` (Attributes List) (see [below for nested schema](#nestedatt--locations--field_types--items))
+- `items` (Attributes) (see [below for nested schema](#nestedatt--locations--field_types--items))
 - `link_type` (String)
 
 <a id="nestedatt--locations--field_types--items"></a>
