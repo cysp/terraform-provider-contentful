@@ -1,0 +1,21 @@
+name: go-dependency-submission
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  go-action-detection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-go@v5.5.0
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - uses: actions/go-dependency-submission@v2.0.3
+        with:
+          go-mod-path: go.mod
