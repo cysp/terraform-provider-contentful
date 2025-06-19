@@ -62,15 +62,13 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 									"link_type": schema.StringAttribute{
 										Optional: true,
 									},
-									"items": schema.ListNestedAttribute{
-										NestedObject: schema.NestedAttributeObject{
-											Attributes: map[string]schema.Attribute{
-												"type": schema.StringAttribute{
-													Required: true,
-												},
-												"link_type": schema.StringAttribute{
-													Optional: true,
-												},
+									"items": schema.SingleNestedAttribute{
+										Attributes: map[string]schema.Attribute{
+											"type": schema.StringAttribute{
+												Required: true,
+											},
+											"link_type": schema.StringAttribute{
+												Optional: true,
 											},
 										},
 										Optional: true,
