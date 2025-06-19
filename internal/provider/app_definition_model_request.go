@@ -87,7 +87,7 @@ func (model *AppDefinitionModel) ToAppDefinitionFields(ctx context.Context, path
 
 func (model AppDefinitionLocationsItem) ToAppDefinitionFieldsLocationsItem(_ context.Context, _ path.Path) cm.AppDefinitionFieldsLocationsItem {
 	item := cm.AppDefinitionFieldsLocationsItem{
-		Location: cm.AppDefinitionFieldsLocationsItemLocation(model.Location.ValueString()),
+		Location: model.Location.ValueString(),
 	}
 
 	if model.FieldTypes != nil {

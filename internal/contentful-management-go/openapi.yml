@@ -333,13 +333,6 @@ components:
             properties:
               location:
                 type: string
-                enum:
-                  - app-config
-                  - dialog
-                  - entry-editor
-                  - entry-sidebar
-                  - home
-                  - page
               fieldTypes:
                 type: array
                 items:

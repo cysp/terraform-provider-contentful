@@ -39,7 +39,7 @@ func UpdateAppDefinitionFromFields(appDefinition *cm.AppDefinition, organization
 
 	appDefinition.Locations = convertSlice(fields.Locations, func(item cm.AppDefinitionFieldsLocationsItem) cm.AppDefinitionLocationsItem {
 		locationsItem := cm.AppDefinitionLocationsItem{
-			Location: cm.AppDefinitionLocationsItemLocation(item.Location),
+			Location: item.Location,
 			FieldTypes: convertSlice(item.FieldTypes, func(fieldType cm.AppDefinitionFieldsLocationsItemFieldTypesItem) cm.AppDefinitionLocationsItemFieldTypesItem {
 				fieldTypesItem := cm.AppDefinitionLocationsItemFieldTypesItem{
 					Type:     fieldType.Type,
