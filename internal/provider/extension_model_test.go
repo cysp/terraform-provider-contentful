@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -105,7 +105,7 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 			t.Fatalf("Failed to convert ExtensionModel to ExtensionFields: %v", extensionFieldsDiags)
 		}
 
-		output := cmts.NewExtensionFromFields(input.Sys.Space.Sys.ID, input.Sys.Environment.Sys.ID, input.Sys.ID, extensionFields)
+		output := cmt.NewExtensionFromFields(input.Sys.Space.Sys.ID, input.Sys.Environment.Sys.ID, input.Sys.ID, extensionFields)
 
 		assert.Equal(t, input, output, "Extension should be equal after roundtrip conversion")
 	})

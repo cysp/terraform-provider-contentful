@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,8 +12,7 @@ import (
 func TestAccExtensionResource(t *testing.T) {
 	t.Parallel()
 
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	extensionID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -23,7 +22,7 @@ func TestAccExtensionResource(t *testing.T) {
 		"test_extension_id": config.StringVariable(extensionID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),

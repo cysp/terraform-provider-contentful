@@ -5,9 +5,95 @@ package contentfulmanagement
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/go-faster/errors"
+
+	"github.com/ogen-go/ogen/ogenerrors"
 )
+
+// SecurityHandler is handler for security parameters.
+type SecurityHandler interface {
+	// HandleAccessToken handles accessToken security.
+	HandleAccessToken(ctx context.Context, operationName OperationName, t AccessToken) (context.Context, error)
+}
+
+func findAuthorization(h http.Header, prefix string) (string, bool) {
+	v, ok := h["Authorization"]
+	if !ok {
+		return "", false
+	}
+	for _, vv := range v {
+		scheme, value, ok := strings.Cut(vv, " ")
+		if !ok || !strings.EqualFold(scheme, prefix) {
+			continue
+		}
+		return value, true
+	}
+	return "", false
+}
+
+var operationRolesAccessToken = map[string][]string{
+	ActivateContentTypeOperation:                 []string{},
+	CreateAppDefinitionOperation:                 []string{},
+	CreateDeliveryApiKeyOperation:                []string{},
+	CreatePersonalAccessTokenOperation:           []string{},
+	CreateRoleOperation:                          []string{},
+	CreateWebhookDefinitionOperation:             []string{},
+	DeactivateContentTypeOperation:               []string{},
+	DeleteAppDefinitionOperation:                 []string{},
+	DeleteAppDefinitionResourceProviderOperation: []string{},
+	DeleteAppDefinitionResourceTypeOperation:     []string{},
+	DeleteAppInstallationOperation:               []string{},
+	DeleteContentTypeOperation:                   []string{},
+	DeleteDeliveryApiKeyOperation:                []string{},
+	DeleteExtensionOperation:                     []string{},
+	DeleteRoleOperation:                          []string{},
+	DeleteWebhookDefinitionOperation:             []string{},
+	GetAppDefinitionOperation:                    []string{},
+	GetAppDefinitionResourceProviderOperation:    []string{},
+	GetAppDefinitionResourceTypeOperation:        []string{},
+	GetAppInstallationOperation:                  []string{},
+	GetAuthenticatedUserOperation:                []string{},
+	GetContentTypeOperation:                      []string{},
+	GetDeliveryApiKeyOperation:                   []string{},
+	GetEditorInterfaceOperation:                  []string{},
+	GetExtensionOperation:                        []string{},
+	GetPersonalAccessTokenOperation:              []string{},
+	GetPreviewApiKeyOperation:                    []string{},
+	GetRoleOperation:                             []string{},
+	GetSpaceEnablementsOperation:                 []string{},
+	GetWebhookDefinitionOperation:                []string{},
+	PutAppDefinitionOperation:                    []string{},
+	PutAppDefinitionResourceProviderOperation:    []string{},
+	PutAppDefinitionResourceTypeOperation:        []string{},
+	PutAppInstallationOperation:                  []string{},
+	PutContentTypeOperation:                      []string{},
+	PutEditorInterfaceOperation:                  []string{},
+	PutExtensionOperation:                        []string{},
+	PutSpaceEnablementsOperation:                 []string{},
+	RevokePersonalAccessTokenOperation:           []string{},
+	UpdateDeliveryApiKeyOperation:                []string{},
+	UpdateRoleOperation:                          []string{},
+	UpdateWebhookDefinitionOperation:             []string{},
+}
+
+func (s *Server) securityAccessToken(ctx context.Context, operationName OperationName, req *http.Request) (context.Context, bool, error) {
+	var t AccessToken
+	token, ok := findAuthorization(req.Header, "Bearer")
+	if !ok {
+		return ctx, false, nil
+	}
+	t.Token = token
+	t.Roles = operationRolesAccessToken[operationName]
+	rctx, err := s.sec.HandleAccessToken(ctx, operationName, t)
+	if errors.Is(err, ogenerrors.ErrSkipServerSecurity) {
+		return nil, false, nil
+	} else if err != nil {
+		return nil, false, err
+	}
+	return rctx, true, err
+}
 
 // SecuritySource is provider of security values (tokens, passwords, etc.).
 type SecuritySource interface {

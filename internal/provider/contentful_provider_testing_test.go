@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -9,25 +10,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func ContentfulProviderMockedResourceTest(t *testing.T, testserver *httptest.Server, testcase resource.TestCase) {
+func ContentfulProviderMockedResourceTest(t *testing.T, server http.Handler, testcase resource.TestCase) {
 	t.Helper()
 
-	contentfulProviderMockableResourceTest(t, testserver, true, testcase)
+	contentfulProviderMockableResourceTest(t, server, true, testcase)
 }
 
-func ContentfulProviderMockableResourceTest(t *testing.T, testserver *httptest.Server, testcase resource.TestCase) {
+func ContentfulProviderMockableResourceTest(t *testing.T, server http.Handler, testcase resource.TestCase) {
 	t.Helper()
 
-	contentfulProviderMockableResourceTest(t, testserver, false, testcase)
+	contentfulProviderMockableResourceTest(t, server, false, testcase)
 }
 
-func contentfulProviderMockableResourceTest(t *testing.T, testserver *httptest.Server, alwaysMock bool, testcase resource.TestCase) {
+func contentfulProviderMockableResourceTest(t *testing.T, handler http.Handler, alwaysMock bool, testcase resource.TestCase) {
 	t.Helper()
 
 	switch {
 	case alwaysMock || os.Getenv("TF_ACC_MOCKED") != "":
 		if testcase.ProtoV6ProviderFactories != nil {
 			t.Fatal("tc.ProtoV6ProviderFactories must be nil")
+		}
+
+		var testserver *httptest.Server
+		if handler != nil {
+			testserver = httptest.NewServer(handler)
+			t.Cleanup(testserver.Close)
 		}
 
 		testcase.ProtoV6ProviderFactories = makeTestAccProtoV6ProviderFactories(ContentfulProviderOptionsWithHTTPTestServer(testserver)...)
