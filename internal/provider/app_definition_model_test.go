@@ -80,7 +80,8 @@ func FuzzAppDefinitionResourceModelRoundtrip(f *testing.F) {
 	}
 
 	for _, appDefinition := range corpus {
-		if appDefinitionJSON, appDefinitionJSONErr := json.Marshal(&appDefinition); appDefinitionJSONErr == nil {
+		appDefinitionJSON, appDefinitionJSONErr := json.Marshal(&appDefinition)
+		if appDefinitionJSONErr == nil {
 			f.Add(appDefinitionJSON)
 		} else {
 			f.Fatal(appDefinitionJSONErr)
@@ -89,7 +90,9 @@ func FuzzAppDefinitionResourceModelRoundtrip(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, inputBytes []byte) {
 		var input cm.AppDefinition
-		if err := json.Unmarshal(inputBytes, &input); err != nil {
+
+		err := json.Unmarshal(inputBytes, &input)
+		if err != nil {
 			t.Skipf("Skipping invalid JSON: %v", err)
 		}
 

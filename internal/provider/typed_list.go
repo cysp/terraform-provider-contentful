@@ -122,6 +122,7 @@ var _ basetypes.ListValuable = (*TypedList[attr.Value])(nil)
 
 func (v TypedList[T]) ToListValue(ctx context.Context) (basetypes.ListValue, diag.Diagnostics) {
 	var t T
+
 	elementType := t.Type(ctx)
 
 	if v.IsNull() {

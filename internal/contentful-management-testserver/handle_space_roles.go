@@ -23,7 +23,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceRoleHandlers() {
 		switch r.Method {
 		case http.MethodPost:
 			var roleFields cm.RoleFields
-			if err := ReadContentfulManagementRequest(r, &roleFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &roleFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return
@@ -66,7 +68,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceRoleHandlers() {
 
 		case http.MethodPut:
 			var roleFields cm.RoleFields
-			if err := ReadContentfulManagementRequest(r, &roleFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &roleFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return

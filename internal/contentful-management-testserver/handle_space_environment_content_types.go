@@ -1,3 +1,4 @@
+//nolint:dupl
 package contentfulmanagementtestserver
 
 import (
@@ -8,7 +9,6 @@ import (
 
 //nolint:cyclop,gocognit
 func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandlers() {
-	//nolint:dupl
 	ts.serveMux.Handle("/spaces/{spaceID}/environments/{environmentID}/content_types/{contentTypeID}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		spaceID := r.PathValue("spaceID")
 		environmentID := r.PathValue("environmentID")
@@ -35,7 +35,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			}
 		case http.MethodPut:
 			var contentTypeRequestFields cm.ContentTypeRequestFields
-			if err := ReadContentfulManagementRequest(r, &contentTypeRequestFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &contentTypeRequestFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return
@@ -139,7 +141,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnvironmentContentTypeHandle
 			}
 
 			editorInterfaceFields := cm.EditorInterfaceFields{}
-			if err := ReadContentfulManagementRequest(r, &editorInterfaceFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &editorInterfaceFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return

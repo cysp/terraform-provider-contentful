@@ -15,7 +15,9 @@ func (ts *ContentfulManagementTestServer) setupPersonalAccessTokenHandlers() {
 		switch r.Method {
 		case http.MethodPost:
 			var personalAccessTokenRequestFields cm.PersonalAccessTokenRequestFields
-			if err := ReadContentfulManagementRequestWithValidation(r, &personalAccessTokenRequestFields, validatePersonalAccessTokenRequestFields); err != nil {
+
+			err := ReadContentfulManagementRequestWithValidation(r, &personalAccessTokenRequestFields, validatePersonalAccessTokenRequestFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return

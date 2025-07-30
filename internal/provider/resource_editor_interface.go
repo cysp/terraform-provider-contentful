@@ -181,6 +181,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	var currentVersion int
+
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 

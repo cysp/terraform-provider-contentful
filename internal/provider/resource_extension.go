@@ -176,6 +176,7 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	var currentVersion int
+
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 

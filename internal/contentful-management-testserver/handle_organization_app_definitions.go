@@ -22,7 +22,9 @@ func (ts *ContentfulManagementTestServer) setupOrganizationAppDefinitionHandlers
 		switch r.Method {
 		case http.MethodPost:
 			var appDefinitionRequest cm.AppDefinitionFields
-			if err := ReadContentfulManagementRequest(r, &appDefinitionRequest); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &appDefinitionRequest)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return
@@ -66,7 +68,9 @@ func (ts *ContentfulManagementTestServer) setupOrganizationAppDefinitionHandlers
 
 		case http.MethodPut:
 			var appDefinitionRequest cm.AppDefinitionFields
-			if err := ReadContentfulManagementRequest(r, &appDefinitionRequest); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &appDefinitionRequest)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return
@@ -124,7 +128,9 @@ func (ts *ContentfulManagementTestServer) setupOrganizationAppDefinitionResource
 
 		case http.MethodPut:
 			var appDefinitionResourceProviderRequest cm.ResourceProviderRequest
-			if err := ReadContentfulManagementRequest(r, &appDefinitionResourceProviderRequest); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &appDefinitionResourceProviderRequest)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return
@@ -191,7 +197,9 @@ func (ts *ContentfulManagementTestServer) setupOrganizationAppDefinitionResource
 
 		case http.MethodPut:
 			var appDefinitionResourceTypeFields cm.ResourceTypeFields
-			if err := ReadContentfulManagementRequest(r, &appDefinitionResourceTypeFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &appDefinitionResourceTypeFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return

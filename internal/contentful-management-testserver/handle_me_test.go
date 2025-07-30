@@ -67,6 +67,7 @@ func TestHandleMeFound(t *testing.T) {
 	require.NoError(t, responseBodyErr)
 
 	var user cm.User
+
 	jsonUnmarshalErr := json.Unmarshal(responseBody, &user)
 	require.NoError(t, jsonUnmarshalErr)
 
