@@ -23,7 +23,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceWebhookDefinitionHandlers() 
 		switch r.Method {
 		case http.MethodPost:
 			var webhookDefinitionFields cm.WebhookDefinitionFields
-			if err := ReadContentfulManagementRequest(r, &webhookDefinitionFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &webhookDefinitionFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return
@@ -66,7 +68,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceWebhookDefinitionHandlers() 
 
 		case http.MethodPut:
 			var webhookDefinitionFields cm.WebhookDefinitionFields
-			if err := ReadContentfulManagementRequest(r, &webhookDefinitionFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &webhookDefinitionFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return

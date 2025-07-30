@@ -137,6 +137,7 @@ var _ basetypes.MapValuable = (*TypedMap[attr.Value])(nil)
 
 func (v TypedMap[T]) ToMapValue(ctx context.Context) (basetypes.MapValue, diag.Diagnostics) {
 	var t T
+
 	elementType := t.Type(ctx)
 
 	if v.IsNull() {

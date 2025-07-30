@@ -49,6 +49,7 @@ func TestPrivateDataGetIntNotSet(t *testing.T) {
 	privateData := newProviderPrivateData()
 
 	var value int
+
 	diags := provider.GetPrivateProviderData(ctx, privateData, "key", &value)
 
 	assert.Equal(t, 0, value)
@@ -68,6 +69,7 @@ func TestPrivateDataGetSetInt(t *testing.T) {
 	assert.Empty(t, diags)
 
 	var value int
+
 	diags = provider.GetPrivateProviderData(ctx, privateData, "key", &value)
 
 	assert.Equal(t, 42, value)
@@ -83,6 +85,7 @@ func TestPrivateDataGetIntInvalid(t *testing.T) {
 	privateData.data["key"] = []byte("invalid")
 
 	var value int
+
 	diags := provider.GetPrivateProviderData(ctx, privateData, "key", &value)
 
 	assert.Equal(t, 0, value)

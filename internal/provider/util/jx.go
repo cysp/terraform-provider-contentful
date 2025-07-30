@@ -177,7 +177,8 @@ func jxEncodeOpaqueOrderedObject(encoder *jx.Encoder, value map[string]interface
 
 		encoder.FieldStart(key)
 
-		if err := JxEncodeOpaqueOrdered(encoder, element, options); err != nil {
+		err := JxEncodeOpaqueOrdered(encoder, element, options)
+		if err != nil {
 			return err
 		}
 	}
@@ -191,7 +192,8 @@ func jxEncodeOpaqueOrderedArray(encoder *jx.Encoder, value []interface{}, option
 	encoder.ArrStart()
 
 	for _, element := range value {
-		if err := JxEncodeOpaqueOrdered(encoder, element, options); err != nil {
+		err := JxEncodeOpaqueOrdered(encoder, element, options)
+		if err != nil {
 			return err
 		}
 	}

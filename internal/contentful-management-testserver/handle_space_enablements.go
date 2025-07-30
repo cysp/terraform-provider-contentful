@@ -27,7 +27,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceEnablementsHandlers() {
 
 		case http.MethodPut:
 			var enablementRequestFields cm.SpaceEnablementFields
-			if err := ReadContentfulManagementRequest(r, &enablementRequestFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &enablementRequestFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return

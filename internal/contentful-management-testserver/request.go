@@ -23,12 +23,14 @@ func ReadContentfulManagementRequest[T any](r *http.Request, v *T) error {
 }
 
 func ReadContentfulManagementRequestWithValidation[T any](r *http.Request, v *T, validateFunc func(*T) error) error {
-	if err := ReadContentfulManagementRequest(r, v); err != nil {
-		return err
+	readErr := ReadContentfulManagementRequest(r, v)
+	if readErr != nil {
+		return readErr
 	}
 
-	if err := validateFunc(v); err != nil {
-		return err
+	validateErr := validateFunc(v)
+	if validateErr != nil {
+		return validateErr
 	}
 
 	return nil

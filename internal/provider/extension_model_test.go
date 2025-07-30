@@ -65,7 +65,8 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 	}
 
 	for _, extension := range corpus {
-		if extensionJSON, extensionJSONErr := json.Marshal(&extension); extensionJSONErr == nil {
+		extensionJSON, extensionJSONErr := json.Marshal(&extension)
+		if extensionJSONErr == nil {
 			f.Add(extensionJSON)
 		} else {
 			f.Fatal(extensionJSONErr)
@@ -74,7 +75,9 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, inputBytes []byte) {
 		var input cm.Extension
-		if err := json.Unmarshal(inputBytes, &input); err != nil {
+
+		err := json.Unmarshal(inputBytes, &input)
+		if err != nil {
 			t.Skipf("Skipping invalid JSON: %v", err)
 		}
 

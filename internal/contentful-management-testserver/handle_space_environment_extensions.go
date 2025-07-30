@@ -35,7 +35,9 @@ func (ts *ContentfulManagementTestServer) SetupSpaceEnvironmentExtensionHandlers
 
 		case http.MethodPut:
 			var extensionFields cm.ExtensionFields
-			if err := ReadContentfulManagementRequest(r, &extensionFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &extensionFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return

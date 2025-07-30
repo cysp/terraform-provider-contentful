@@ -173,6 +173,7 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	var currentVersion int
+
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 

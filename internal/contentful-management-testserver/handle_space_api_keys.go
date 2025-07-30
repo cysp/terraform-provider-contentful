@@ -22,7 +22,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 		switch r.Method {
 		case http.MethodPost:
 			var apiKeyRequestFields cm.ApiKeyRequestFields
-			if err := ReadContentfulManagementRequest(r, &apiKeyRequestFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &apiKeyRequestFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return
@@ -83,7 +85,9 @@ func (ts *ContentfulManagementTestServer) setupSpaceAPIKeyHandlers() {
 
 		case http.MethodPut:
 			var apiKeyRequestFields cm.ApiKeyRequestFields
-			if err := ReadContentfulManagementRequest(r, &apiKeyRequestFields); err != nil {
+
+			err := ReadContentfulManagementRequest(r, &apiKeyRequestFields)
+			if err != nil {
 				_ = WriteContentfulManagementErrorBadRequestResponseWithError(w, err)
 
 				return
