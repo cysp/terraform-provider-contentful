@@ -10,22 +10,6 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-func (s *ActivateContentTypeApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *ActivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (s *ApiKey) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -668,6 +652,76 @@ func (s AppInstallationSysType) Validate() error {
 	}
 }
 
+func (s ApplicationJSONError) Validate() error {
+	switch s.Type {
+	case ErrorApplicationJSONError:
+		if err := s.Error.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
+func (s *ApplicationJSONErrorStatusCode) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Response.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "Response",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ApplicationVndContentfulManagementV1JSONError) Validate() error {
+	switch s.Type {
+	case ErrorApplicationVndContentfulManagementV1JSONError:
+		if err := s.Error.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
+func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Response.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "Response",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
 func (s *ContentType) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -1198,246 +1252,6 @@ func (s ContentfulEntryResourceLinkType) Validate() error {
 	}
 }
 
-func (s *CreateAppDefinitionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CreateAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CreateDeliveryApiKeyApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CreateDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CreatePersonalAccessTokenApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CreatePersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CreateRoleApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CreateRoleApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CreateWebhookDefinitionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CreateWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeactivateContentTypeApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeactivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteAppDefinitionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteAppDefinitionResourceProviderApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteAppDefinitionResourceTypeApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteAppInstallationApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteContentTypeApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteDeliveryApiKeyApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteExtensionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteExtensionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteRoleApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteRoleApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteWebhookDefinitionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *DeleteWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (s *EditorInterface) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -1803,29 +1617,6 @@ func (s *Error) Validate() error {
 	return nil
 }
 
-func (s *ErrorStatusCode) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Response.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "Response",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
 func (s *ErrorSys) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -2113,198 +1904,6 @@ func (s FunctionLinkSysType) Validate() error {
 	}
 }
 
-func (s *GetAppDefinitionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetAppDefinitionResourceProviderApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetAppDefinitionResourceTypeApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetAppInstallationApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetAuthenticatedUserApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetAuthenticatedUserApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetContentTypeApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetDeliveryApiKeyApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetEditorInterfaceApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetExtensionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetExtensionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetPersonalAccessTokenApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetPersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetPreviewApiKeyApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetPreviewApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetRoleApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetRoleApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (s *GetSpaceEnablementsApplicationJSONOK) Validate() error {
 	alias := (*SpaceEnablement)(s)
 	if err := alias.Validate(); err != nil {
@@ -2313,40 +1912,8 @@ func (s *GetSpaceEnablementsApplicationJSONOK) Validate() error {
 	return nil
 }
 
-func (s *GetSpaceEnablementsApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (s *GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK) Validate() error {
 	alias := (*SpaceEnablement)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetSpaceEnablementsApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetWebhookDefinitionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
 	if err := alias.Validate(); err != nil {
 		return err
 	}
@@ -2629,134 +2196,6 @@ func (s PreviewApiKeySysType) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
-}
-
-func (s *PutAppDefinitionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutAppDefinitionResourceProviderApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutAppDefinitionResourceTypeApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutAppInstallationApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutContentTypeApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutEditorInterfaceApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutExtensionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutExtensionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutSpaceEnablementsApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutSpaceEnablementsApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s ResourceLink) Validate() error {
@@ -3131,22 +2570,6 @@ func (s ResourceTypeSysType) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
-}
-
-func (s *RevokePersonalAccessTokenApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *RevokePersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *Role) Validate() error {
@@ -3674,54 +3097,6 @@ func (s SpaceLinkSysType) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
-}
-
-func (s *UpdateDeliveryApiKeyApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *UpdateDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *UpdateRoleApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *UpdateRoleApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *UpdateWebhookDefinitionApplicationJSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *UpdateWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) Validate() error {
-	alias := (*Error)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *User) Validate() error {

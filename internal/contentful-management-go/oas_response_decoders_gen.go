@@ -30,7 +30,7 @@ func decodeActivateContentTypeResponse(resp *http.Response) (res ActivateContent
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response ActivateContentTypeApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -64,7 +64,7 @@ func decodeActivateContentTypeResponse(resp *http.Response) (res ActivateContent
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response ActivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -164,7 +164,7 @@ func decodeActivateContentTypeResponse(resp *http.Response) (res ActivateContent
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -190,7 +190,7 @@ func decodeActivateContentTypeResponse(resp *http.Response) (res ActivateContent
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -201,7 +201,7 @@ func decodeActivateContentTypeResponse(resp *http.Response) (res ActivateContent
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -227,7 +227,7 @@ func decodeActivateContentTypeResponse(resp *http.Response) (res ActivateContent
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -257,7 +257,7 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreateAppDefinitionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -291,7 +291,7 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreateAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -391,7 +391,7 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -417,7 +417,7 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -428,7 +428,7 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -454,7 +454,7 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -484,7 +484,7 @@ func decodeCreateDeliveryApiKeyResponse(resp *http.Response) (res CreateDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreateDeliveryApiKeyApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -518,7 +518,7 @@ func decodeCreateDeliveryApiKeyResponse(resp *http.Response) (res CreateDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreateDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -618,7 +618,7 @@ func decodeCreateDeliveryApiKeyResponse(resp *http.Response) (res CreateDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -644,7 +644,7 @@ func decodeCreateDeliveryApiKeyResponse(resp *http.Response) (res CreateDelivery
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -655,7 +655,7 @@ func decodeCreateDeliveryApiKeyResponse(resp *http.Response) (res CreateDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -681,7 +681,7 @@ func decodeCreateDeliveryApiKeyResponse(resp *http.Response) (res CreateDelivery
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -711,7 +711,7 @@ func decodeCreatePersonalAccessTokenResponse(resp *http.Response) (res CreatePer
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreatePersonalAccessTokenApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -745,7 +745,7 @@ func decodeCreatePersonalAccessTokenResponse(resp *http.Response) (res CreatePer
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreatePersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -845,7 +845,7 @@ func decodeCreatePersonalAccessTokenResponse(resp *http.Response) (res CreatePer
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -871,7 +871,7 @@ func decodeCreatePersonalAccessTokenResponse(resp *http.Response) (res CreatePer
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -882,7 +882,7 @@ func decodeCreatePersonalAccessTokenResponse(resp *http.Response) (res CreatePer
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -908,7 +908,7 @@ func decodeCreatePersonalAccessTokenResponse(resp *http.Response) (res CreatePer
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -938,7 +938,7 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreateRoleApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -972,7 +972,7 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreateRoleApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1072,7 +1072,7 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1098,7 +1098,7 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1109,7 +1109,7 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1135,7 +1135,7 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1165,7 +1165,7 @@ func decodeCreateWebhookDefinitionResponse(resp *http.Response) (res CreateWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreateWebhookDefinitionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1199,7 +1199,7 @@ func decodeCreateWebhookDefinitionResponse(resp *http.Response) (res CreateWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response CreateWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1299,7 +1299,7 @@ func decodeCreateWebhookDefinitionResponse(resp *http.Response) (res CreateWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1325,7 +1325,7 @@ func decodeCreateWebhookDefinitionResponse(resp *http.Response) (res CreateWebho
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1336,7 +1336,7 @@ func decodeCreateWebhookDefinitionResponse(resp *http.Response) (res CreateWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1362,7 +1362,7 @@ func decodeCreateWebhookDefinitionResponse(resp *http.Response) (res CreateWebho
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1439,7 +1439,7 @@ func decodeDeactivateContentTypeResponse(resp *http.Response) (res DeactivateCon
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeactivateContentTypeApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1473,7 +1473,7 @@ func decodeDeactivateContentTypeResponse(resp *http.Response) (res DeactivateCon
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeactivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1518,7 +1518,7 @@ func decodeDeactivateContentTypeResponse(resp *http.Response) (res DeactivateCon
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1544,7 +1544,7 @@ func decodeDeactivateContentTypeResponse(resp *http.Response) (res DeactivateCon
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1555,7 +1555,7 @@ func decodeDeactivateContentTypeResponse(resp *http.Response) (res DeactivateCon
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1581,7 +1581,7 @@ func decodeDeactivateContentTypeResponse(resp *http.Response) (res DeactivateCon
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1614,7 +1614,7 @@ func decodeDeleteAppDefinitionResponse(resp *http.Response) (res DeleteAppDefini
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteAppDefinitionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1648,7 +1648,7 @@ func decodeDeleteAppDefinitionResponse(resp *http.Response) (res DeleteAppDefini
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1693,7 +1693,7 @@ func decodeDeleteAppDefinitionResponse(resp *http.Response) (res DeleteAppDefini
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1719,7 +1719,7 @@ func decodeDeleteAppDefinitionResponse(resp *http.Response) (res DeleteAppDefini
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1730,7 +1730,7 @@ func decodeDeleteAppDefinitionResponse(resp *http.Response) (res DeleteAppDefini
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1756,7 +1756,7 @@ func decodeDeleteAppDefinitionResponse(resp *http.Response) (res DeleteAppDefini
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1789,7 +1789,7 @@ func decodeDeleteAppDefinitionResourceProviderResponse(resp *http.Response) (res
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteAppDefinitionResourceProviderApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1823,7 +1823,7 @@ func decodeDeleteAppDefinitionResourceProviderResponse(resp *http.Response) (res
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1868,7 +1868,7 @@ func decodeDeleteAppDefinitionResourceProviderResponse(resp *http.Response) (res
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1894,7 +1894,7 @@ func decodeDeleteAppDefinitionResourceProviderResponse(resp *http.Response) (res
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1905,7 +1905,7 @@ func decodeDeleteAppDefinitionResourceProviderResponse(resp *http.Response) (res
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1931,7 +1931,7 @@ func decodeDeleteAppDefinitionResourceProviderResponse(resp *http.Response) (res
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1964,7 +1964,7 @@ func decodeDeleteAppDefinitionResourceTypeResponse(resp *http.Response) (res Del
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteAppDefinitionResourceTypeApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -1998,7 +1998,7 @@ func decodeDeleteAppDefinitionResourceTypeResponse(resp *http.Response) (res Del
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2043,7 +2043,7 @@ func decodeDeleteAppDefinitionResourceTypeResponse(resp *http.Response) (res Del
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2069,7 +2069,7 @@ func decodeDeleteAppDefinitionResourceTypeResponse(resp *http.Response) (res Del
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2080,7 +2080,7 @@ func decodeDeleteAppDefinitionResourceTypeResponse(resp *http.Response) (res Del
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2106,7 +2106,7 @@ func decodeDeleteAppDefinitionResourceTypeResponse(resp *http.Response) (res Del
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2139,7 +2139,7 @@ func decodeDeleteAppInstallationResponse(resp *http.Response) (res DeleteAppInst
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteAppInstallationApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2173,7 +2173,7 @@ func decodeDeleteAppInstallationResponse(resp *http.Response) (res DeleteAppInst
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2218,7 +2218,7 @@ func decodeDeleteAppInstallationResponse(resp *http.Response) (res DeleteAppInst
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2244,7 +2244,7 @@ func decodeDeleteAppInstallationResponse(resp *http.Response) (res DeleteAppInst
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2255,7 +2255,7 @@ func decodeDeleteAppInstallationResponse(resp *http.Response) (res DeleteAppInst
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2281,7 +2281,7 @@ func decodeDeleteAppInstallationResponse(resp *http.Response) (res DeleteAppInst
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2314,7 +2314,7 @@ func decodeDeleteContentTypeResponse(resp *http.Response) (res DeleteContentType
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteContentTypeApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2348,7 +2348,7 @@ func decodeDeleteContentTypeResponse(resp *http.Response) (res DeleteContentType
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteContentTypeApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2393,7 +2393,7 @@ func decodeDeleteContentTypeResponse(resp *http.Response) (res DeleteContentType
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2419,7 +2419,7 @@ func decodeDeleteContentTypeResponse(resp *http.Response) (res DeleteContentType
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2430,7 +2430,7 @@ func decodeDeleteContentTypeResponse(resp *http.Response) (res DeleteContentType
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2456,7 +2456,7 @@ func decodeDeleteContentTypeResponse(resp *http.Response) (res DeleteContentType
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2489,7 +2489,7 @@ func decodeDeleteDeliveryApiKeyResponse(resp *http.Response) (res DeleteDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteDeliveryApiKeyApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2523,7 +2523,7 @@ func decodeDeleteDeliveryApiKeyResponse(resp *http.Response) (res DeleteDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2568,7 +2568,7 @@ func decodeDeleteDeliveryApiKeyResponse(resp *http.Response) (res DeleteDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2594,7 +2594,7 @@ func decodeDeleteDeliveryApiKeyResponse(resp *http.Response) (res DeleteDelivery
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2605,7 +2605,7 @@ func decodeDeleteDeliveryApiKeyResponse(resp *http.Response) (res DeleteDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2631,7 +2631,7 @@ func decodeDeleteDeliveryApiKeyResponse(resp *http.Response) (res DeleteDelivery
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2664,7 +2664,7 @@ func decodeDeleteExtensionResponse(resp *http.Response) (res DeleteExtensionRes,
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteExtensionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2698,7 +2698,7 @@ func decodeDeleteExtensionResponse(resp *http.Response) (res DeleteExtensionRes,
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteExtensionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2743,7 +2743,7 @@ func decodeDeleteExtensionResponse(resp *http.Response) (res DeleteExtensionRes,
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2769,7 +2769,7 @@ func decodeDeleteExtensionResponse(resp *http.Response) (res DeleteExtensionRes,
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2780,7 +2780,7 @@ func decodeDeleteExtensionResponse(resp *http.Response) (res DeleteExtensionRes,
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2806,7 +2806,7 @@ func decodeDeleteExtensionResponse(resp *http.Response) (res DeleteExtensionRes,
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2839,7 +2839,7 @@ func decodeDeleteRoleResponse(resp *http.Response) (res DeleteRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteRoleApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2873,7 +2873,7 @@ func decodeDeleteRoleResponse(resp *http.Response) (res DeleteRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteRoleApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2918,7 +2918,7 @@ func decodeDeleteRoleResponse(resp *http.Response) (res DeleteRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2944,7 +2944,7 @@ func decodeDeleteRoleResponse(resp *http.Response) (res DeleteRoleRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2955,7 +2955,7 @@ func decodeDeleteRoleResponse(resp *http.Response) (res DeleteRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2981,7 +2981,7 @@ func decodeDeleteRoleResponse(resp *http.Response) (res DeleteRoleRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3014,7 +3014,7 @@ func decodeDeleteWebhookDefinitionResponse(resp *http.Response) (res DeleteWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteWebhookDefinitionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3048,7 +3048,7 @@ func decodeDeleteWebhookDefinitionResponse(resp *http.Response) (res DeleteWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response DeleteWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3093,7 +3093,7 @@ func decodeDeleteWebhookDefinitionResponse(resp *http.Response) (res DeleteWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3119,7 +3119,7 @@ func decodeDeleteWebhookDefinitionResponse(resp *http.Response) (res DeleteWebho
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3130,7 +3130,7 @@ func decodeDeleteWebhookDefinitionResponse(resp *http.Response) (res DeleteWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3156,7 +3156,7 @@ func decodeDeleteWebhookDefinitionResponse(resp *http.Response) (res DeleteWebho
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3230,7 +3230,7 @@ func decodeGetAppDefinitionResponse(resp *http.Response) (res GetAppDefinitionRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAppDefinitionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3264,7 +3264,7 @@ func decodeGetAppDefinitionResponse(resp *http.Response) (res GetAppDefinitionRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3309,7 +3309,7 @@ func decodeGetAppDefinitionResponse(resp *http.Response) (res GetAppDefinitionRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3335,7 +3335,7 @@ func decodeGetAppDefinitionResponse(resp *http.Response) (res GetAppDefinitionRe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3346,7 +3346,7 @@ func decodeGetAppDefinitionResponse(resp *http.Response) (res GetAppDefinitionRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3372,7 +3372,7 @@ func decodeGetAppDefinitionResponse(resp *http.Response) (res GetAppDefinitionRe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3446,7 +3446,7 @@ func decodeGetAppDefinitionResourceProviderResponse(resp *http.Response) (res Ge
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAppDefinitionResourceProviderApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3480,7 +3480,7 @@ func decodeGetAppDefinitionResourceProviderResponse(resp *http.Response) (res Ge
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3525,7 +3525,7 @@ func decodeGetAppDefinitionResourceProviderResponse(resp *http.Response) (res Ge
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3551,7 +3551,7 @@ func decodeGetAppDefinitionResourceProviderResponse(resp *http.Response) (res Ge
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3562,7 +3562,7 @@ func decodeGetAppDefinitionResourceProviderResponse(resp *http.Response) (res Ge
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3588,7 +3588,7 @@ func decodeGetAppDefinitionResourceProviderResponse(resp *http.Response) (res Ge
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3662,7 +3662,7 @@ func decodeGetAppDefinitionResourceTypeResponse(resp *http.Response) (res GetApp
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAppDefinitionResourceTypeApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3696,7 +3696,7 @@ func decodeGetAppDefinitionResourceTypeResponse(resp *http.Response) (res GetApp
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3741,7 +3741,7 @@ func decodeGetAppDefinitionResourceTypeResponse(resp *http.Response) (res GetApp
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3767,7 +3767,7 @@ func decodeGetAppDefinitionResourceTypeResponse(resp *http.Response) (res GetApp
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3778,7 +3778,7 @@ func decodeGetAppDefinitionResourceTypeResponse(resp *http.Response) (res GetApp
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3804,7 +3804,7 @@ func decodeGetAppDefinitionResourceTypeResponse(resp *http.Response) (res GetApp
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3878,7 +3878,7 @@ func decodeGetAppInstallationResponse(resp *http.Response) (res GetAppInstallati
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAppInstallationApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3912,7 +3912,7 @@ func decodeGetAppInstallationResponse(resp *http.Response) (res GetAppInstallati
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3957,7 +3957,7 @@ func decodeGetAppInstallationResponse(resp *http.Response) (res GetAppInstallati
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3983,7 +3983,7 @@ func decodeGetAppInstallationResponse(resp *http.Response) (res GetAppInstallati
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3994,7 +3994,7 @@ func decodeGetAppInstallationResponse(resp *http.Response) (res GetAppInstallati
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4020,7 +4020,7 @@ func decodeGetAppInstallationResponse(resp *http.Response) (res GetAppInstallati
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4094,7 +4094,7 @@ func decodeGetAuthenticatedUserResponse(resp *http.Response) (res GetAuthenticat
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAuthenticatedUserApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4128,7 +4128,7 @@ func decodeGetAuthenticatedUserResponse(resp *http.Response) (res GetAuthenticat
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetAuthenticatedUserApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4173,7 +4173,7 @@ func decodeGetAuthenticatedUserResponse(resp *http.Response) (res GetAuthenticat
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4199,7 +4199,7 @@ func decodeGetAuthenticatedUserResponse(resp *http.Response) (res GetAuthenticat
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4210,7 +4210,7 @@ func decodeGetAuthenticatedUserResponse(resp *http.Response) (res GetAuthenticat
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4236,7 +4236,7 @@ func decodeGetAuthenticatedUserResponse(resp *http.Response) (res GetAuthenticat
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4310,7 +4310,7 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetContentTypeApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4344,7 +4344,7 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetContentTypeApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4389,7 +4389,7 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4415,7 +4415,7 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4426,7 +4426,7 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4452,7 +4452,7 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4526,7 +4526,7 @@ func decodeGetDeliveryApiKeyResponse(resp *http.Response) (res GetDeliveryApiKey
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetDeliveryApiKeyApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4560,7 +4560,7 @@ func decodeGetDeliveryApiKeyResponse(resp *http.Response) (res GetDeliveryApiKey
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4605,7 +4605,7 @@ func decodeGetDeliveryApiKeyResponse(resp *http.Response) (res GetDeliveryApiKey
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4631,7 +4631,7 @@ func decodeGetDeliveryApiKeyResponse(resp *http.Response) (res GetDeliveryApiKey
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4642,7 +4642,7 @@ func decodeGetDeliveryApiKeyResponse(resp *http.Response) (res GetDeliveryApiKey
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4668,7 +4668,7 @@ func decodeGetDeliveryApiKeyResponse(resp *http.Response) (res GetDeliveryApiKey
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4742,7 +4742,7 @@ func decodeGetEditorInterfaceResponse(resp *http.Response) (res GetEditorInterfa
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetEditorInterfaceApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4776,7 +4776,7 @@ func decodeGetEditorInterfaceResponse(resp *http.Response) (res GetEditorInterfa
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4821,7 +4821,7 @@ func decodeGetEditorInterfaceResponse(resp *http.Response) (res GetEditorInterfa
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4847,7 +4847,7 @@ func decodeGetEditorInterfaceResponse(resp *http.Response) (res GetEditorInterfa
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4858,7 +4858,7 @@ func decodeGetEditorInterfaceResponse(resp *http.Response) (res GetEditorInterfa
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4884,7 +4884,7 @@ func decodeGetEditorInterfaceResponse(resp *http.Response) (res GetEditorInterfa
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4958,7 +4958,7 @@ func decodeGetExtensionResponse(resp *http.Response) (res GetExtensionRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetExtensionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4992,7 +4992,7 @@ func decodeGetExtensionResponse(resp *http.Response) (res GetExtensionRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetExtensionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5037,7 +5037,7 @@ func decodeGetExtensionResponse(resp *http.Response) (res GetExtensionRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5063,7 +5063,7 @@ func decodeGetExtensionResponse(resp *http.Response) (res GetExtensionRes, _ err
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5074,7 +5074,7 @@ func decodeGetExtensionResponse(resp *http.Response) (res GetExtensionRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5100,7 +5100,7 @@ func decodeGetExtensionResponse(resp *http.Response) (res GetExtensionRes, _ err
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5174,7 +5174,7 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetPersonalAccessTokenApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5208,7 +5208,7 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetPersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5253,7 +5253,7 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5279,7 +5279,7 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5290,7 +5290,7 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5316,7 +5316,7 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5390,7 +5390,7 @@ func decodeGetPreviewApiKeyResponse(resp *http.Response) (res GetPreviewApiKeyRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetPreviewApiKeyApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5424,7 +5424,7 @@ func decodeGetPreviewApiKeyResponse(resp *http.Response) (res GetPreviewApiKeyRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetPreviewApiKeyApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5469,7 +5469,7 @@ func decodeGetPreviewApiKeyResponse(resp *http.Response) (res GetPreviewApiKeyRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5495,7 +5495,7 @@ func decodeGetPreviewApiKeyResponse(resp *http.Response) (res GetPreviewApiKeyRe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5506,7 +5506,7 @@ func decodeGetPreviewApiKeyResponse(resp *http.Response) (res GetPreviewApiKeyRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5532,7 +5532,7 @@ func decodeGetPreviewApiKeyResponse(resp *http.Response) (res GetPreviewApiKeyRe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5606,7 +5606,7 @@ func decodeGetRoleResponse(resp *http.Response) (res GetRoleRes, _ error) {
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetRoleApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5640,7 +5640,7 @@ func decodeGetRoleResponse(resp *http.Response) (res GetRoleRes, _ error) {
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetRoleApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5685,7 +5685,7 @@ func decodeGetRoleResponse(resp *http.Response) (res GetRoleRes, _ error) {
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5711,7 +5711,7 @@ func decodeGetRoleResponse(resp *http.Response) (res GetRoleRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5722,7 +5722,7 @@ func decodeGetRoleResponse(resp *http.Response) (res GetRoleRes, _ error) {
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5748,7 +5748,7 @@ func decodeGetRoleResponse(resp *http.Response) (res GetRoleRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5856,7 +5856,7 @@ func decodeGetSpaceEnablementsResponse(resp *http.Response) (res GetSpaceEnablem
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetSpaceEnablementsApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5890,7 +5890,7 @@ func decodeGetSpaceEnablementsResponse(resp *http.Response) (res GetSpaceEnablem
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetSpaceEnablementsApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5935,7 +5935,7 @@ func decodeGetSpaceEnablementsResponse(resp *http.Response) (res GetSpaceEnablem
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5961,7 +5961,7 @@ func decodeGetSpaceEnablementsResponse(resp *http.Response) (res GetSpaceEnablem
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5972,7 +5972,7 @@ func decodeGetSpaceEnablementsResponse(resp *http.Response) (res GetSpaceEnablem
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5998,7 +5998,7 @@ func decodeGetSpaceEnablementsResponse(resp *http.Response) (res GetSpaceEnablem
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6072,7 +6072,7 @@ func decodeGetWebhookDefinitionResponse(resp *http.Response) (res GetWebhookDefi
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetWebhookDefinitionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6106,7 +6106,7 @@ func decodeGetWebhookDefinitionResponse(resp *http.Response) (res GetWebhookDefi
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6151,7 +6151,7 @@ func decodeGetWebhookDefinitionResponse(resp *http.Response) (res GetWebhookDefi
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6177,7 +6177,7 @@ func decodeGetWebhookDefinitionResponse(resp *http.Response) (res GetWebhookDefi
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6188,7 +6188,7 @@ func decodeGetWebhookDefinitionResponse(resp *http.Response) (res GetWebhookDefi
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6214,7 +6214,7 @@ func decodeGetWebhookDefinitionResponse(resp *http.Response) (res GetWebhookDefi
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6244,7 +6244,7 @@ func decodePutAppDefinitionResponse(resp *http.Response) (res PutAppDefinitionRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutAppDefinitionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6278,7 +6278,7 @@ func decodePutAppDefinitionResponse(resp *http.Response) (res PutAppDefinitionRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6378,7 +6378,7 @@ func decodePutAppDefinitionResponse(resp *http.Response) (res PutAppDefinitionRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6404,7 +6404,7 @@ func decodePutAppDefinitionResponse(resp *http.Response) (res PutAppDefinitionRe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6415,7 +6415,7 @@ func decodePutAppDefinitionResponse(resp *http.Response) (res PutAppDefinitionRe
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6441,7 +6441,7 @@ func decodePutAppDefinitionResponse(resp *http.Response) (res PutAppDefinitionRe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6471,7 +6471,7 @@ func decodePutAppDefinitionResourceProviderResponse(resp *http.Response) (res Pu
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutAppDefinitionResourceProviderApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6505,7 +6505,7 @@ func decodePutAppDefinitionResourceProviderResponse(resp *http.Response) (res Pu
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6605,7 +6605,7 @@ func decodePutAppDefinitionResourceProviderResponse(resp *http.Response) (res Pu
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6631,7 +6631,7 @@ func decodePutAppDefinitionResourceProviderResponse(resp *http.Response) (res Pu
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6642,7 +6642,7 @@ func decodePutAppDefinitionResourceProviderResponse(resp *http.Response) (res Pu
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6668,7 +6668,7 @@ func decodePutAppDefinitionResourceProviderResponse(resp *http.Response) (res Pu
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6698,7 +6698,7 @@ func decodePutAppDefinitionResourceTypeResponse(resp *http.Response) (res PutApp
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutAppDefinitionResourceTypeApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6732,7 +6732,7 @@ func decodePutAppDefinitionResourceTypeResponse(resp *http.Response) (res PutApp
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6832,7 +6832,7 @@ func decodePutAppDefinitionResourceTypeResponse(resp *http.Response) (res PutApp
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6858,7 +6858,7 @@ func decodePutAppDefinitionResourceTypeResponse(resp *http.Response) (res PutApp
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6869,7 +6869,7 @@ func decodePutAppDefinitionResourceTypeResponse(resp *http.Response) (res PutApp
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6895,7 +6895,7 @@ func decodePutAppDefinitionResourceTypeResponse(resp *http.Response) (res PutApp
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6925,7 +6925,7 @@ func decodePutAppInstallationResponse(resp *http.Response) (res PutAppInstallati
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutAppInstallationApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -6959,7 +6959,7 @@ func decodePutAppInstallationResponse(resp *http.Response) (res PutAppInstallati
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7059,7 +7059,7 @@ func decodePutAppInstallationResponse(resp *http.Response) (res PutAppInstallati
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7085,7 +7085,7 @@ func decodePutAppInstallationResponse(resp *http.Response) (res PutAppInstallati
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7096,7 +7096,7 @@ func decodePutAppInstallationResponse(resp *http.Response) (res PutAppInstallati
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7122,7 +7122,7 @@ func decodePutAppInstallationResponse(resp *http.Response) (res PutAppInstallati
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7152,7 +7152,7 @@ func decodePutContentTypeResponse(resp *http.Response) (res PutContentTypeRes, _
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutContentTypeApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7186,7 +7186,7 @@ func decodePutContentTypeResponse(resp *http.Response) (res PutContentTypeRes, _
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutContentTypeApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7286,7 +7286,7 @@ func decodePutContentTypeResponse(resp *http.Response) (res PutContentTypeRes, _
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7312,7 +7312,7 @@ func decodePutContentTypeResponse(resp *http.Response) (res PutContentTypeRes, _
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7323,7 +7323,7 @@ func decodePutContentTypeResponse(resp *http.Response) (res PutContentTypeRes, _
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7349,7 +7349,7 @@ func decodePutContentTypeResponse(resp *http.Response) (res PutContentTypeRes, _
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7379,7 +7379,7 @@ func decodePutEditorInterfaceResponse(resp *http.Response) (res PutEditorInterfa
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutEditorInterfaceApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7413,7 +7413,7 @@ func decodePutEditorInterfaceResponse(resp *http.Response) (res PutEditorInterfa
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7513,7 +7513,7 @@ func decodePutEditorInterfaceResponse(resp *http.Response) (res PutEditorInterfa
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7539,7 +7539,7 @@ func decodePutEditorInterfaceResponse(resp *http.Response) (res PutEditorInterfa
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7550,7 +7550,7 @@ func decodePutEditorInterfaceResponse(resp *http.Response) (res PutEditorInterfa
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7576,7 +7576,7 @@ func decodePutEditorInterfaceResponse(resp *http.Response) (res PutEditorInterfa
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7606,7 +7606,7 @@ func decodePutExtensionResponse(resp *http.Response) (res PutExtensionRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutExtensionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7640,7 +7640,7 @@ func decodePutExtensionResponse(resp *http.Response) (res PutExtensionRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutExtensionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7740,7 +7740,7 @@ func decodePutExtensionResponse(resp *http.Response) (res PutExtensionRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7766,7 +7766,7 @@ func decodePutExtensionResponse(resp *http.Response) (res PutExtensionRes, _ err
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7777,7 +7777,7 @@ func decodePutExtensionResponse(resp *http.Response) (res PutExtensionRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7803,7 +7803,7 @@ func decodePutExtensionResponse(resp *http.Response) (res PutExtensionRes, _ err
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7833,7 +7833,7 @@ func decodePutSpaceEnablementsResponse(resp *http.Response) (res PutSpaceEnablem
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutSpaceEnablementsApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7867,7 +7867,7 @@ func decodePutSpaceEnablementsResponse(resp *http.Response) (res PutSpaceEnablem
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PutSpaceEnablementsApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7967,7 +7967,7 @@ func decodePutSpaceEnablementsResponse(resp *http.Response) (res PutSpaceEnablem
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -7993,7 +7993,7 @@ func decodePutSpaceEnablementsResponse(resp *http.Response) (res PutSpaceEnablem
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8004,7 +8004,7 @@ func decodePutSpaceEnablementsResponse(resp *http.Response) (res PutSpaceEnablem
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8030,7 +8030,7 @@ func decodePutSpaceEnablementsResponse(resp *http.Response) (res PutSpaceEnablem
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8060,7 +8060,7 @@ func decodeRevokePersonalAccessTokenResponse(resp *http.Response) (res RevokePer
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response RevokePersonalAccessTokenApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8094,7 +8094,7 @@ func decodeRevokePersonalAccessTokenResponse(resp *http.Response) (res RevokePer
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response RevokePersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8194,7 +8194,7 @@ func decodeRevokePersonalAccessTokenResponse(resp *http.Response) (res RevokePer
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8220,7 +8220,7 @@ func decodeRevokePersonalAccessTokenResponse(resp *http.Response) (res RevokePer
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8231,7 +8231,7 @@ func decodeRevokePersonalAccessTokenResponse(resp *http.Response) (res RevokePer
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8257,7 +8257,7 @@ func decodeRevokePersonalAccessTokenResponse(resp *http.Response) (res RevokePer
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8287,7 +8287,7 @@ func decodeUpdateDeliveryApiKeyResponse(resp *http.Response) (res UpdateDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response UpdateDeliveryApiKeyApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8321,7 +8321,7 @@ func decodeUpdateDeliveryApiKeyResponse(resp *http.Response) (res UpdateDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response UpdateDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8421,7 +8421,7 @@ func decodeUpdateDeliveryApiKeyResponse(resp *http.Response) (res UpdateDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8447,7 +8447,7 @@ func decodeUpdateDeliveryApiKeyResponse(resp *http.Response) (res UpdateDelivery
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8458,7 +8458,7 @@ func decodeUpdateDeliveryApiKeyResponse(resp *http.Response) (res UpdateDelivery
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8484,7 +8484,7 @@ func decodeUpdateDeliveryApiKeyResponse(resp *http.Response) (res UpdateDelivery
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8514,7 +8514,7 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response UpdateRoleApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8548,7 +8548,7 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response UpdateRoleApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8648,7 +8648,7 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8674,7 +8674,7 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8685,7 +8685,7 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8711,7 +8711,7 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8741,7 +8741,7 @@ func decodeUpdateWebhookDefinitionResponse(resp *http.Response) (res UpdateWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response UpdateWebhookDefinitionApplicationJSONUnauthorized
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8775,7 +8775,7 @@ func decodeUpdateWebhookDefinitionResponse(resp *http.Response) (res UpdateWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response UpdateWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8875,7 +8875,7 @@ func decodeUpdateWebhookDefinitionResponse(resp *http.Response) (res UpdateWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationJSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8901,7 +8901,7 @@ func decodeUpdateWebhookDefinitionResponse(resp *http.Response) (res UpdateWebho
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationJSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8912,7 +8912,7 @@ func decodeUpdateWebhookDefinitionResponse(resp *http.Response) (res UpdateWebho
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Error
+			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -8938,7 +8938,7 @@ func decodeUpdateWebhookDefinitionResponse(resp *http.Response) (res UpdateWebho
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ErrorStatusCode{
+			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil

@@ -10,9 +10,18 @@ import (
 )
 
 func ErrorDetailFromContentfulManagementResponse(response interface{}, err error) string {
-	if response, ok := response.(*cm.ErrorStatusCode); ok {
+	if response, ok := response.(cm.ErrorStatusCodeResponse); ok {
 		if detail := ErrorDetailFromContentfulManagementErrorStatusCode(response); detail != "" {
 			return detail
+		}
+	}
+
+	if response, ok := response.(cm.ErrorResponse); ok {
+		responseError, responseErrorOk := response.GetError()
+		if responseErrorOk {
+			if detail := ErrorDetailFromContentfulManagementError(responseError); detail != "" {
+				return detail
+			}
 		}
 	}
 
@@ -39,12 +48,17 @@ func ErrorDetailFromContentfulManagementResponse(response interface{}, err error
 	return fmt.Sprintf("%v", response)
 }
 
-func ErrorDetailFromContentfulManagementErrorStatusCode(response *cm.ErrorStatusCode) string {
+func ErrorDetailFromContentfulManagementErrorStatusCode(response cm.ErrorStatusCodeResponse) string {
 	if response == nil {
 		return ""
 	}
 
-	return ErrorDetailFromContentfulManagementError(response.Response)
+	responseError, responseErrorOk := response.GetError()
+	if !responseErrorOk {
+		return ""
+	}
+
+	return ErrorDetailFromContentfulManagementError(responseError)
 }
 
 func ErrorDetailFromContentfulManagementError(response cm.Error) string {

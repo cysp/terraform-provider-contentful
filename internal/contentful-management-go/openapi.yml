@@ -116,6 +116,12 @@ components:
           required:
             - sys
         - $ref: "#/components/schemas/ErrorFields"
+    ApplicationJSONError:
+      oneOf:
+        - $ref: "#/components/schemas/Error"
+    ApplicationVndContentfulManagementV1JSONError:
+      oneOf:
+        - $ref: "#/components/schemas/Error"
     BaseSys:
       type: object
       properties:
@@ -1326,19 +1332,19 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApplicationJSONError"
         application/vnd.contentful.management.v1+json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApplicationVndContentfulManagementV1JSONError"
     error:
       description: An error
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApplicationJSONError"
         application/vnd.contentful.management.v1+json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApplicationVndContentfulManagementV1JSONError"
 security:
   - accessToken: []
 paths:
