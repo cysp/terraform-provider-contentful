@@ -142,8 +142,8 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		currentVersion = response.Sys.Version
 
 	default:
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
 
@@ -246,8 +246,8 @@ func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.Delete
 	default:
 		handled := false
 
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Delivery api key already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 				handled = true

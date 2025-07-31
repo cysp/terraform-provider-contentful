@@ -27,75 +27,78 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			},
 			expected: "Error: UnknownError",
 		},
-		"Error: *GetAuthenticatedUserApplicationVndContentfulManagementV1JSONUnauthorized": {
-			response: &cm.GetAuthenticatedUserApplicationVndContentfulManagementV1JSONUnauthorized{
-				Sys: cm.ErrorSys{
-					Type: cm.ErrorSysTypeError,
-					ID:   "Unauthorized",
+		"Error: *ApplicationVndContentfulManagementV1JSONError": {
+			response: &cm.ApplicationVndContentfulManagementV1JSONError{
+				Type: cm.ErrorApplicationVndContentfulManagementV1JSONError,
+				Error: cm.Error{
+					Sys: cm.ErrorSys{
+						Type: cm.ErrorSysTypeError,
+						ID:   "Unauthorized",
+					},
+					Message: cm.NewOptString("Unauthorized"),
 				},
-				Message: cm.NewOptString("Unauthorized"),
 			},
 			expected: "Error: Unauthorized: Unauthorized",
 		},
-		"ErrorStatusCode": {
-			response: &cm.ErrorStatusCode{
-				Response: cm.Error{
+		"ApplicationVndContentfulManagementV1JSONErrorStatusCode": {
+			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
 					Sys: cm.ErrorSys{
 						Type: cm.ErrorSysTypeError,
 						ID:   "UnknownError",
 					},
-				},
+				}),
 			},
 			expected: "Error: UnknownError",
 		},
-		"ErrorStatusCodeWithMessage": {
-			response: &cm.ErrorStatusCode{
-				Response: cm.Error{
+		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessage": {
+			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
 					Sys: cm.ErrorSys{
 						Type: cm.ErrorSysTypeError,
 						ID:   "UnknownError",
 					},
 					Message: cm.NewOptString("Error message"),
-				},
+				}),
 			},
 			expected: "Error: UnknownError: Error message",
 		},
-		"ErrorStatusCodeWithMessageAndUnsupportedDetails": {
-			response: &cm.ErrorStatusCode{
-				Response: cm.Error{
+		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessageAndUnsupportedDetails": {
+			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
 					Sys: cm.ErrorSys{
 						Type: cm.ErrorSysTypeError,
 						ID:   "UnknownError",
 					},
 					Message: cm.NewOptString("Error message"),
 					Details: []byte(`"Detailed reason for error"`),
-				},
+				}),
 			},
 			expected: "Error: UnknownError: Error message",
 		},
-		"ErrorStatusCodeWithMessageAndReasons": {
-			response: &cm.ErrorStatusCode{
-				Response: cm.Error{
+		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessageAndReasons": {
+			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
 					Sys: cm.ErrorSys{
 						Type: cm.ErrorSysTypeError,
 						ID:   "UnknownError",
 					},
 					Message: cm.NewOptString("Error message"),
 					Details: []byte(`{"reasons":"Detailed reason for error"}`),
-				},
+				}),
 			},
 			expected: "Error: UnknownError: Error message: Detailed reason for error",
 		},
-		"ErrorStatusCodeWithMessageAndUnsupportedReason": {
-			response: &cm.ErrorStatusCode{
-				Response: cm.Error{
+		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessageAndUnsupportedReason": {
+			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
 					Sys: cm.ErrorSys{
 						Type: cm.ErrorSysTypeError,
 						ID:   "UnknownError",
 					},
 					Message: cm.NewOptString("Error message"),
 					Details: []byte(`{"reasons":["Reason 1", "Reason 2"]}`),
-				},
+				}),
 			},
 			expected: "Error: UnknownError: Error message",
 		},
@@ -108,30 +111,30 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			expected: "unsupported operation",
 		},
 		"ValidationFailed with detailed errors": {
-			response: &cm.ErrorStatusCode{
+			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: 422,
-				Response: cm.Error{
+				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
 					Sys: cm.ErrorSys{
 						Type: cm.ErrorSysTypeError,
 						ID:   "ValidationFailed",
 					},
 					Message: cm.NewOptString("Validation error"),
 					Details: []byte("{\"errors\":[{\"name\":\"required\",\"details\":\"The property \\\"annotations\\\" is required here\",\"path\":[\"metadata\",\"annotations\"]},{\"name\":\"required\",\"details\":\"The property \\\"taxonomy\\\" is required here\",\"path\":[\"metadata\",\"taxonomy\"]},{\"name\":\"in\",\"details\":\"Value must be one of expected values\",\"path\":[\"metadata\"],\"value\": {},\"expected\":[{\"required\":[\"annotations\"]},{\"required\":[\"taxonomy\"]}]}]}"),
-				},
+				}),
 			},
 			expected: "Error: ValidationFailed: Validation error\n  metadata.annotations: The property \"annotations\" is required here\n  metadata.taxonomy: The property \"taxonomy\" is required here\n  metadata: Value must be one of expected values",
 		},
 		"ValidationFailed with detailed errors in fields list item": {
-			response: &cm.ErrorStatusCode{
+			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: 422,
-				Response: cm.Error{
+				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
 					Sys: cm.ErrorSys{
 						Type: cm.ErrorSysTypeError,
 						ID:   "ValidationFailed",
 					},
 					Message: cm.NewOptString("Validation error"),
 					Details: []byte("{\"errors\":[{\"name\":\"type\",\"details\":\"The type of \\\"required\\\" is incorrect, expected type: Boolean\",\"path\":[\"fields\",0,\"required\"],\"type\":\"Boolean\",\"value\":\"true\"}]}"),
-				},
+				}),
 			},
 			expected: "Error: ValidationFailed: Validation error\n  fields[0].required: The type of \"required\" is incorrect, expected type: Boolean",
 		},

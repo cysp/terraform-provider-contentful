@@ -143,8 +143,8 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 		data = responseModel
 
 	default:
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
 
@@ -246,8 +246,8 @@ func (r *appInstallationResource) Delete(ctx context.Context, req resource.Delet
 	default:
 		handled := false
 
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("App already uninstalled", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 				handled = true

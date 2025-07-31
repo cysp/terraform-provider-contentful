@@ -140,8 +140,8 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		currentVersion = response.Sys.Version
 
 	default:
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
 
@@ -237,8 +237,8 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 	default:
 		handled := false
 
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Webhook already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 				handled = true

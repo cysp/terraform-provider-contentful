@@ -123,8 +123,8 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 		data = responseModel
 
 	default:
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
 
@@ -176,8 +176,8 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 	default:
 		handled := false
 
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			switch response.StatusCode {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			switch response.GetStatusCode() {
 			case http.StatusNotFound:
 				resp.Diagnostics.AddWarning("personal access token not found", util.ErrorDetailFromContentfulManagementResponse(response, err))
 

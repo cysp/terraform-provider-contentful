@@ -136,8 +136,8 @@ func (r *appDefinitionAppDefinitionResourceProviderResource) Read(ctx context.Co
 		data = responseModel
 
 	default:
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read resource provider definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
 
@@ -225,8 +225,8 @@ func (r *appDefinitionAppDefinitionResourceProviderResource) Delete(ctx context.
 	default:
 		handled := false
 
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Resource provider definition already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 				handled = true

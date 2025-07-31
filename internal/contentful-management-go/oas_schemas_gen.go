@@ -34,15 +34,6 @@ func (s *AccessToken) SetRoles(val []string) {
 	s.Roles = val
 }
 
-type ActivateContentTypeApplicationJSONUnauthorized Error
-
-func (*ActivateContentTypeApplicationJSONUnauthorized) activateContentTypeRes() {}
-
-type ActivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*ActivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) activateContentTypeRes() {
-}
-
 // Merged schema.
 // Ref: #/components/schemas/ApiKey
 type ApiKey struct {
@@ -1450,6 +1441,314 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/ApplicationJSONError
+// ApplicationJSONError represents sum type.
+type ApplicationJSONError struct {
+	Type  ApplicationJSONErrorType // switch on this field
+	Error Error
+}
+
+// ApplicationJSONErrorType is oneOf type of ApplicationJSONError.
+type ApplicationJSONErrorType string
+
+// Possible values for ApplicationJSONErrorType.
+const (
+	ErrorApplicationJSONError ApplicationJSONErrorType = "Error"
+)
+
+// IsError reports whether ApplicationJSONError is Error.
+func (s ApplicationJSONError) IsError() bool { return s.Type == ErrorApplicationJSONError }
+
+// SetError sets ApplicationJSONError to Error.
+func (s *ApplicationJSONError) SetError(v Error) {
+	s.Type = ErrorApplicationJSONError
+	s.Error = v
+}
+
+// GetError returns Error and true boolean if ApplicationJSONError is Error.
+func (s ApplicationJSONError) GetError() (v Error, ok bool) {
+	if !s.IsError() {
+		return v, false
+	}
+	return s.Error, true
+}
+
+// NewErrorApplicationJSONError returns new ApplicationJSONError from Error.
+func NewErrorApplicationJSONError(v Error) ApplicationJSONError {
+	var s ApplicationJSONError
+	s.SetError(v)
+	return s
+}
+
+func (*ApplicationJSONError) activateContentTypeRes()                 {}
+func (*ApplicationJSONError) createAppDefinitionRes()                 {}
+func (*ApplicationJSONError) createDeliveryApiKeyRes()                {}
+func (*ApplicationJSONError) createPersonalAccessTokenRes()           {}
+func (*ApplicationJSONError) createRoleRes()                          {}
+func (*ApplicationJSONError) createWebhookDefinitionRes()             {}
+func (*ApplicationJSONError) deactivateContentTypeRes()               {}
+func (*ApplicationJSONError) deleteAppDefinitionRes()                 {}
+func (*ApplicationJSONError) deleteAppDefinitionResourceProviderRes() {}
+func (*ApplicationJSONError) deleteAppDefinitionResourceTypeRes()     {}
+func (*ApplicationJSONError) deleteAppInstallationRes()               {}
+func (*ApplicationJSONError) deleteContentTypeRes()                   {}
+func (*ApplicationJSONError) deleteDeliveryApiKeyRes()                {}
+func (*ApplicationJSONError) deleteExtensionRes()                     {}
+func (*ApplicationJSONError) deleteRoleRes()                          {}
+func (*ApplicationJSONError) deleteWebhookDefinitionRes()             {}
+func (*ApplicationJSONError) getAppDefinitionRes()                    {}
+func (*ApplicationJSONError) getAppDefinitionResourceProviderRes()    {}
+func (*ApplicationJSONError) getAppDefinitionResourceTypeRes()        {}
+func (*ApplicationJSONError) getAppInstallationRes()                  {}
+func (*ApplicationJSONError) getAuthenticatedUserRes()                {}
+func (*ApplicationJSONError) getContentTypeRes()                      {}
+func (*ApplicationJSONError) getDeliveryApiKeyRes()                   {}
+func (*ApplicationJSONError) getEditorInterfaceRes()                  {}
+func (*ApplicationJSONError) getExtensionRes()                        {}
+func (*ApplicationJSONError) getPersonalAccessTokenRes()              {}
+func (*ApplicationJSONError) getPreviewApiKeyRes()                    {}
+func (*ApplicationJSONError) getRoleRes()                             {}
+func (*ApplicationJSONError) getSpaceEnablementsRes()                 {}
+func (*ApplicationJSONError) getWebhookDefinitionRes()                {}
+func (*ApplicationJSONError) putAppDefinitionRes()                    {}
+func (*ApplicationJSONError) putAppDefinitionResourceProviderRes()    {}
+func (*ApplicationJSONError) putAppDefinitionResourceTypeRes()        {}
+func (*ApplicationJSONError) putAppInstallationRes()                  {}
+func (*ApplicationJSONError) putContentTypeRes()                      {}
+func (*ApplicationJSONError) putEditorInterfaceRes()                  {}
+func (*ApplicationJSONError) putExtensionRes()                        {}
+func (*ApplicationJSONError) putSpaceEnablementsRes()                 {}
+func (*ApplicationJSONError) revokePersonalAccessTokenRes()           {}
+func (*ApplicationJSONError) updateDeliveryApiKeyRes()                {}
+func (*ApplicationJSONError) updateRoleRes()                          {}
+func (*ApplicationJSONError) updateWebhookDefinitionRes()             {}
+
+// ApplicationJSONErrorStatusCode wraps ApplicationJSONError with StatusCode.
+type ApplicationJSONErrorStatusCode struct {
+	StatusCode int
+	Response   ApplicationJSONError
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *ApplicationJSONErrorStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *ApplicationJSONErrorStatusCode) GetResponse() ApplicationJSONError {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *ApplicationJSONErrorStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *ApplicationJSONErrorStatusCode) SetResponse(val ApplicationJSONError) {
+	s.Response = val
+}
+
+func (*ApplicationJSONErrorStatusCode) activateContentTypeRes()                 {}
+func (*ApplicationJSONErrorStatusCode) createAppDefinitionRes()                 {}
+func (*ApplicationJSONErrorStatusCode) createDeliveryApiKeyRes()                {}
+func (*ApplicationJSONErrorStatusCode) createPersonalAccessTokenRes()           {}
+func (*ApplicationJSONErrorStatusCode) createRoleRes()                          {}
+func (*ApplicationJSONErrorStatusCode) createWebhookDefinitionRes()             {}
+func (*ApplicationJSONErrorStatusCode) deactivateContentTypeRes()               {}
+func (*ApplicationJSONErrorStatusCode) deleteAppDefinitionRes()                 {}
+func (*ApplicationJSONErrorStatusCode) deleteAppDefinitionResourceProviderRes() {}
+func (*ApplicationJSONErrorStatusCode) deleteAppDefinitionResourceTypeRes()     {}
+func (*ApplicationJSONErrorStatusCode) deleteAppInstallationRes()               {}
+func (*ApplicationJSONErrorStatusCode) deleteContentTypeRes()                   {}
+func (*ApplicationJSONErrorStatusCode) deleteDeliveryApiKeyRes()                {}
+func (*ApplicationJSONErrorStatusCode) deleteExtensionRes()                     {}
+func (*ApplicationJSONErrorStatusCode) deleteRoleRes()                          {}
+func (*ApplicationJSONErrorStatusCode) deleteWebhookDefinitionRes()             {}
+func (*ApplicationJSONErrorStatusCode) getAppDefinitionRes()                    {}
+func (*ApplicationJSONErrorStatusCode) getAppDefinitionResourceProviderRes()    {}
+func (*ApplicationJSONErrorStatusCode) getAppDefinitionResourceTypeRes()        {}
+func (*ApplicationJSONErrorStatusCode) getAppInstallationRes()                  {}
+func (*ApplicationJSONErrorStatusCode) getAuthenticatedUserRes()                {}
+func (*ApplicationJSONErrorStatusCode) getContentTypeRes()                      {}
+func (*ApplicationJSONErrorStatusCode) getDeliveryApiKeyRes()                   {}
+func (*ApplicationJSONErrorStatusCode) getEditorInterfaceRes()                  {}
+func (*ApplicationJSONErrorStatusCode) getExtensionRes()                        {}
+func (*ApplicationJSONErrorStatusCode) getPersonalAccessTokenRes()              {}
+func (*ApplicationJSONErrorStatusCode) getPreviewApiKeyRes()                    {}
+func (*ApplicationJSONErrorStatusCode) getRoleRes()                             {}
+func (*ApplicationJSONErrorStatusCode) getSpaceEnablementsRes()                 {}
+func (*ApplicationJSONErrorStatusCode) getWebhookDefinitionRes()                {}
+func (*ApplicationJSONErrorStatusCode) putAppDefinitionRes()                    {}
+func (*ApplicationJSONErrorStatusCode) putAppDefinitionResourceProviderRes()    {}
+func (*ApplicationJSONErrorStatusCode) putAppDefinitionResourceTypeRes()        {}
+func (*ApplicationJSONErrorStatusCode) putAppInstallationRes()                  {}
+func (*ApplicationJSONErrorStatusCode) putContentTypeRes()                      {}
+func (*ApplicationJSONErrorStatusCode) putEditorInterfaceRes()                  {}
+func (*ApplicationJSONErrorStatusCode) putExtensionRes()                        {}
+func (*ApplicationJSONErrorStatusCode) putSpaceEnablementsRes()                 {}
+func (*ApplicationJSONErrorStatusCode) revokePersonalAccessTokenRes()           {}
+func (*ApplicationJSONErrorStatusCode) updateDeliveryApiKeyRes()                {}
+func (*ApplicationJSONErrorStatusCode) updateRoleRes()                          {}
+func (*ApplicationJSONErrorStatusCode) updateWebhookDefinitionRes()             {}
+
+// Ref: #/components/schemas/ApplicationVndContentfulManagementV1JSONError
+// ApplicationVndContentfulManagementV1JSONError represents sum type.
+type ApplicationVndContentfulManagementV1JSONError struct {
+	Type  ApplicationVndContentfulManagementV1JSONErrorType // switch on this field
+	Error Error
+}
+
+// ApplicationVndContentfulManagementV1JSONErrorType is oneOf type of ApplicationVndContentfulManagementV1JSONError.
+type ApplicationVndContentfulManagementV1JSONErrorType string
+
+// Possible values for ApplicationVndContentfulManagementV1JSONErrorType.
+const (
+	ErrorApplicationVndContentfulManagementV1JSONError ApplicationVndContentfulManagementV1JSONErrorType = "Error"
+)
+
+// IsError reports whether ApplicationVndContentfulManagementV1JSONError is Error.
+func (s ApplicationVndContentfulManagementV1JSONError) IsError() bool {
+	return s.Type == ErrorApplicationVndContentfulManagementV1JSONError
+}
+
+// SetError sets ApplicationVndContentfulManagementV1JSONError to Error.
+func (s *ApplicationVndContentfulManagementV1JSONError) SetError(v Error) {
+	s.Type = ErrorApplicationVndContentfulManagementV1JSONError
+	s.Error = v
+}
+
+// GetError returns Error and true boolean if ApplicationVndContentfulManagementV1JSONError is Error.
+func (s ApplicationVndContentfulManagementV1JSONError) GetError() (v Error, ok bool) {
+	if !s.IsError() {
+		return v, false
+	}
+	return s.Error, true
+}
+
+// NewErrorApplicationVndContentfulManagementV1JSONError returns new ApplicationVndContentfulManagementV1JSONError from Error.
+func NewErrorApplicationVndContentfulManagementV1JSONError(v Error) ApplicationVndContentfulManagementV1JSONError {
+	var s ApplicationVndContentfulManagementV1JSONError
+	s.SetError(v)
+	return s
+}
+
+func (*ApplicationVndContentfulManagementV1JSONError) activateContentTypeRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONError) createAppDefinitionRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONError) createDeliveryApiKeyRes()                {}
+func (*ApplicationVndContentfulManagementV1JSONError) createPersonalAccessTokenRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONError) createRoleRes()                          {}
+func (*ApplicationVndContentfulManagementV1JSONError) createWebhookDefinitionRes()             {}
+func (*ApplicationVndContentfulManagementV1JSONError) deactivateContentTypeRes()               {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteAppDefinitionRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteAppDefinitionResourceProviderRes() {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteAppDefinitionResourceTypeRes()     {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteAppInstallationRes()               {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteContentTypeRes()                   {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteDeliveryApiKeyRes()                {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteExtensionRes()                     {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteRoleRes()                          {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteWebhookDefinitionRes()             {}
+func (*ApplicationVndContentfulManagementV1JSONError) getAppDefinitionRes()                    {}
+func (*ApplicationVndContentfulManagementV1JSONError) getAppDefinitionResourceProviderRes()    {}
+func (*ApplicationVndContentfulManagementV1JSONError) getAppDefinitionResourceTypeRes()        {}
+func (*ApplicationVndContentfulManagementV1JSONError) getAppInstallationRes()                  {}
+func (*ApplicationVndContentfulManagementV1JSONError) getAuthenticatedUserRes()                {}
+func (*ApplicationVndContentfulManagementV1JSONError) getContentTypeRes()                      {}
+func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryApiKeyRes()                   {}
+func (*ApplicationVndContentfulManagementV1JSONError) getEditorInterfaceRes()                  {}
+func (*ApplicationVndContentfulManagementV1JSONError) getExtensionRes()                        {}
+func (*ApplicationVndContentfulManagementV1JSONError) getPersonalAccessTokenRes()              {}
+func (*ApplicationVndContentfulManagementV1JSONError) getPreviewApiKeyRes()                    {}
+func (*ApplicationVndContentfulManagementV1JSONError) getRoleRes()                             {}
+func (*ApplicationVndContentfulManagementV1JSONError) getSpaceEnablementsRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONError) getWebhookDefinitionRes()                {}
+func (*ApplicationVndContentfulManagementV1JSONError) putAppDefinitionRes()                    {}
+func (*ApplicationVndContentfulManagementV1JSONError) putAppDefinitionResourceProviderRes()    {}
+func (*ApplicationVndContentfulManagementV1JSONError) putAppDefinitionResourceTypeRes()        {}
+func (*ApplicationVndContentfulManagementV1JSONError) putAppInstallationRes()                  {}
+func (*ApplicationVndContentfulManagementV1JSONError) putContentTypeRes()                      {}
+func (*ApplicationVndContentfulManagementV1JSONError) putEditorInterfaceRes()                  {}
+func (*ApplicationVndContentfulManagementV1JSONError) putExtensionRes()                        {}
+func (*ApplicationVndContentfulManagementV1JSONError) putSpaceEnablementsRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONError) revokePersonalAccessTokenRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONError) updateDeliveryApiKeyRes()                {}
+func (*ApplicationVndContentfulManagementV1JSONError) updateRoleRes()                          {}
+func (*ApplicationVndContentfulManagementV1JSONError) updateWebhookDefinitionRes()             {}
+
+// ApplicationVndContentfulManagementV1JSONErrorStatusCode wraps ApplicationVndContentfulManagementV1JSONError with StatusCode.
+type ApplicationVndContentfulManagementV1JSONErrorStatusCode struct {
+	StatusCode int
+	Response   ApplicationVndContentfulManagementV1JSONError
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) GetResponse() ApplicationVndContentfulManagementV1JSONError {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) SetResponse(val ApplicationVndContentfulManagementV1JSONError) {
+	s.Response = val
+}
+
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) activateContentTypeRes()       {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createAppDefinitionRes()       {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createDeliveryApiKeyRes()      {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createPersonalAccessTokenRes() {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createRoleRes()                {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createWebhookDefinitionRes()   {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deactivateContentTypeRes()     {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppDefinitionRes()       {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppDefinitionResourceProviderRes() {
+}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppDefinitionResourceTypeRes() {
+}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppInstallationRes()   {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteContentTypeRes()       {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteDeliveryApiKeyRes()    {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteExtensionRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteRoleRes()              {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteWebhookDefinitionRes() {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppDefinitionRes()        {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppDefinitionResourceProviderRes() {
+}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppDefinitionResourceTypeRes() {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppInstallationRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAuthenticatedUserRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypeRes()               {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryApiKeyRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEditorInterfaceRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getExtensionRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPersonalAccessTokenRes()       {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPreviewApiKeyRes()             {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getRoleRes()                      {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getSpaceEnablementsRes()          {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getWebhookDefinitionRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppDefinitionRes()             {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppDefinitionResourceProviderRes() {
+}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppDefinitionResourceTypeRes() {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppInstallationRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putContentTypeRes()               {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putEditorInterfaceRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putExtensionRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putSpaceEnablementsRes()          {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) revokePersonalAccessTokenRes()    {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateDeliveryApiKeyRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateRoleRes()                   {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateWebhookDefinitionRes()      {}
+
 // Merged schema.
 // Ref: #/components/schemas/ContentType
 type ContentType struct {
@@ -2459,140 +2758,6 @@ func (s *ContentfulEntryResourceLinkType) UnmarshalText(data []byte) error {
 	}
 }
 
-type CreateAppDefinitionApplicationJSONUnauthorized Error
-
-func (*CreateAppDefinitionApplicationJSONUnauthorized) createAppDefinitionRes() {}
-
-type CreateAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*CreateAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) createAppDefinitionRes() {
-}
-
-type CreateDeliveryApiKeyApplicationJSONUnauthorized Error
-
-func (*CreateDeliveryApiKeyApplicationJSONUnauthorized) createDeliveryApiKeyRes() {}
-
-type CreateDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*CreateDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) createDeliveryApiKeyRes() {
-}
-
-type CreatePersonalAccessTokenApplicationJSONUnauthorized Error
-
-func (*CreatePersonalAccessTokenApplicationJSONUnauthorized) createPersonalAccessTokenRes() {}
-
-type CreatePersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*CreatePersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized) createPersonalAccessTokenRes() {
-}
-
-type CreateRoleApplicationJSONUnauthorized Error
-
-func (*CreateRoleApplicationJSONUnauthorized) createRoleRes() {}
-
-type CreateRoleApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*CreateRoleApplicationVndContentfulManagementV1JSONUnauthorized) createRoleRes() {}
-
-type CreateWebhookDefinitionApplicationJSONUnauthorized Error
-
-func (*CreateWebhookDefinitionApplicationJSONUnauthorized) createWebhookDefinitionRes() {}
-
-type CreateWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*CreateWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) createWebhookDefinitionRes() {
-}
-
-type DeactivateContentTypeApplicationJSONUnauthorized Error
-
-func (*DeactivateContentTypeApplicationJSONUnauthorized) deactivateContentTypeRes() {}
-
-type DeactivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeactivateContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) deactivateContentTypeRes() {
-}
-
-type DeleteAppDefinitionApplicationJSONUnauthorized Error
-
-func (*DeleteAppDefinitionApplicationJSONUnauthorized) deleteAppDefinitionRes() {}
-
-type DeleteAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeleteAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) deleteAppDefinitionRes() {
-}
-
-type DeleteAppDefinitionResourceProviderApplicationJSONUnauthorized Error
-
-func (*DeleteAppDefinitionResourceProviderApplicationJSONUnauthorized) deleteAppDefinitionResourceProviderRes() {
-}
-
-type DeleteAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeleteAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized) deleteAppDefinitionResourceProviderRes() {
-}
-
-type DeleteAppDefinitionResourceTypeApplicationJSONUnauthorized Error
-
-func (*DeleteAppDefinitionResourceTypeApplicationJSONUnauthorized) deleteAppDefinitionResourceTypeRes() {
-}
-
-type DeleteAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeleteAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized) deleteAppDefinitionResourceTypeRes() {
-}
-
-type DeleteAppInstallationApplicationJSONUnauthorized Error
-
-func (*DeleteAppInstallationApplicationJSONUnauthorized) deleteAppInstallationRes() {}
-
-type DeleteAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeleteAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized) deleteAppInstallationRes() {
-}
-
-type DeleteContentTypeApplicationJSONUnauthorized Error
-
-func (*DeleteContentTypeApplicationJSONUnauthorized) deleteContentTypeRes() {}
-
-type DeleteContentTypeApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeleteContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) deleteContentTypeRes() {
-}
-
-type DeleteDeliveryApiKeyApplicationJSONUnauthorized Error
-
-func (*DeleteDeliveryApiKeyApplicationJSONUnauthorized) deleteDeliveryApiKeyRes() {}
-
-type DeleteDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeleteDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) deleteDeliveryApiKeyRes() {
-}
-
-type DeleteExtensionApplicationJSONUnauthorized Error
-
-func (*DeleteExtensionApplicationJSONUnauthorized) deleteExtensionRes() {}
-
-type DeleteExtensionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeleteExtensionApplicationVndContentfulManagementV1JSONUnauthorized) deleteExtensionRes() {}
-
-type DeleteRoleApplicationJSONUnauthorized Error
-
-func (*DeleteRoleApplicationJSONUnauthorized) deleteRoleRes() {}
-
-type DeleteRoleApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeleteRoleApplicationVndContentfulManagementV1JSONUnauthorized) deleteRoleRes() {}
-
-type DeleteWebhookDefinitionApplicationJSONUnauthorized Error
-
-func (*DeleteWebhookDefinitionApplicationJSONUnauthorized) deleteWebhookDefinitionRes() {}
-
-type DeleteWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*DeleteWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) deleteWebhookDefinitionRes() {
-}
-
 // Merged schema.
 // Ref: #/components/schemas/EditorInterface
 type EditorInterface struct {
@@ -3425,75 +3590,6 @@ func (s *Error) SetDetails(val jx.Raw) {
 	s.Details = val
 }
 
-// ErrorStatusCode wraps Error with StatusCode.
-type ErrorStatusCode struct {
-	StatusCode int
-	Response   Error
-}
-
-// GetStatusCode returns the value of StatusCode.
-func (s *ErrorStatusCode) GetStatusCode() int {
-	return s.StatusCode
-}
-
-// GetResponse returns the value of Response.
-func (s *ErrorStatusCode) GetResponse() Error {
-	return s.Response
-}
-
-// SetStatusCode sets the value of StatusCode.
-func (s *ErrorStatusCode) SetStatusCode(val int) {
-	s.StatusCode = val
-}
-
-// SetResponse sets the value of Response.
-func (s *ErrorStatusCode) SetResponse(val Error) {
-	s.Response = val
-}
-
-func (*ErrorStatusCode) activateContentTypeRes()                 {}
-func (*ErrorStatusCode) createAppDefinitionRes()                 {}
-func (*ErrorStatusCode) createDeliveryApiKeyRes()                {}
-func (*ErrorStatusCode) createPersonalAccessTokenRes()           {}
-func (*ErrorStatusCode) createRoleRes()                          {}
-func (*ErrorStatusCode) createWebhookDefinitionRes()             {}
-func (*ErrorStatusCode) deactivateContentTypeRes()               {}
-func (*ErrorStatusCode) deleteAppDefinitionRes()                 {}
-func (*ErrorStatusCode) deleteAppDefinitionResourceProviderRes() {}
-func (*ErrorStatusCode) deleteAppDefinitionResourceTypeRes()     {}
-func (*ErrorStatusCode) deleteAppInstallationRes()               {}
-func (*ErrorStatusCode) deleteContentTypeRes()                   {}
-func (*ErrorStatusCode) deleteDeliveryApiKeyRes()                {}
-func (*ErrorStatusCode) deleteExtensionRes()                     {}
-func (*ErrorStatusCode) deleteRoleRes()                          {}
-func (*ErrorStatusCode) deleteWebhookDefinitionRes()             {}
-func (*ErrorStatusCode) getAppDefinitionRes()                    {}
-func (*ErrorStatusCode) getAppDefinitionResourceProviderRes()    {}
-func (*ErrorStatusCode) getAppDefinitionResourceTypeRes()        {}
-func (*ErrorStatusCode) getAppInstallationRes()                  {}
-func (*ErrorStatusCode) getAuthenticatedUserRes()                {}
-func (*ErrorStatusCode) getContentTypeRes()                      {}
-func (*ErrorStatusCode) getDeliveryApiKeyRes()                   {}
-func (*ErrorStatusCode) getEditorInterfaceRes()                  {}
-func (*ErrorStatusCode) getExtensionRes()                        {}
-func (*ErrorStatusCode) getPersonalAccessTokenRes()              {}
-func (*ErrorStatusCode) getPreviewApiKeyRes()                    {}
-func (*ErrorStatusCode) getRoleRes()                             {}
-func (*ErrorStatusCode) getSpaceEnablementsRes()                 {}
-func (*ErrorStatusCode) getWebhookDefinitionRes()                {}
-func (*ErrorStatusCode) putAppDefinitionRes()                    {}
-func (*ErrorStatusCode) putAppDefinitionResourceProviderRes()    {}
-func (*ErrorStatusCode) putAppDefinitionResourceTypeRes()        {}
-func (*ErrorStatusCode) putAppInstallationRes()                  {}
-func (*ErrorStatusCode) putContentTypeRes()                      {}
-func (*ErrorStatusCode) putEditorInterfaceRes()                  {}
-func (*ErrorStatusCode) putExtensionRes()                        {}
-func (*ErrorStatusCode) putSpaceEnablementsRes()                 {}
-func (*ErrorStatusCode) revokePersonalAccessTokenRes()           {}
-func (*ErrorStatusCode) updateDeliveryApiKeyRes()                {}
-func (*ErrorStatusCode) updateRoleRes()                          {}
-func (*ErrorStatusCode) updateWebhookDefinitionRes()             {}
-
 // Ref: #/components/schemas/ErrorSys
 type ErrorSys struct {
 	Type ErrorSysType `json:"type"`
@@ -4165,135 +4261,13 @@ func (s *FunctionLinkSysType) UnmarshalText(data []byte) error {
 	}
 }
 
-type GetAppDefinitionApplicationJSONUnauthorized Error
-
-func (*GetAppDefinitionApplicationJSONUnauthorized) getAppDefinitionRes() {}
-
-type GetAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) getAppDefinitionRes() {}
-
-type GetAppDefinitionResourceProviderApplicationJSONUnauthorized Error
-
-func (*GetAppDefinitionResourceProviderApplicationJSONUnauthorized) getAppDefinitionResourceProviderRes() {
-}
-
-type GetAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized) getAppDefinitionResourceProviderRes() {
-}
-
-type GetAppDefinitionResourceTypeApplicationJSONUnauthorized Error
-
-func (*GetAppDefinitionResourceTypeApplicationJSONUnauthorized) getAppDefinitionResourceTypeRes() {}
-
-type GetAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized) getAppDefinitionResourceTypeRes() {
-}
-
-type GetAppInstallationApplicationJSONUnauthorized Error
-
-func (*GetAppInstallationApplicationJSONUnauthorized) getAppInstallationRes() {}
-
-type GetAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized) getAppInstallationRes() {
-}
-
-type GetAuthenticatedUserApplicationJSONUnauthorized Error
-
-func (*GetAuthenticatedUserApplicationJSONUnauthorized) getAuthenticatedUserRes() {}
-
-type GetAuthenticatedUserApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetAuthenticatedUserApplicationVndContentfulManagementV1JSONUnauthorized) getAuthenticatedUserRes() {
-}
-
-type GetContentTypeApplicationJSONUnauthorized Error
-
-func (*GetContentTypeApplicationJSONUnauthorized) getContentTypeRes() {}
-
-type GetContentTypeApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) getContentTypeRes() {}
-
-type GetDeliveryApiKeyApplicationJSONUnauthorized Error
-
-func (*GetDeliveryApiKeyApplicationJSONUnauthorized) getDeliveryApiKeyRes() {}
-
-type GetDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) getDeliveryApiKeyRes() {
-}
-
-type GetEditorInterfaceApplicationJSONUnauthorized Error
-
-func (*GetEditorInterfaceApplicationJSONUnauthorized) getEditorInterfaceRes() {}
-
-type GetEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized) getEditorInterfaceRes() {
-}
-
-type GetExtensionApplicationJSONUnauthorized Error
-
-func (*GetExtensionApplicationJSONUnauthorized) getExtensionRes() {}
-
-type GetExtensionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetExtensionApplicationVndContentfulManagementV1JSONUnauthorized) getExtensionRes() {}
-
-type GetPersonalAccessTokenApplicationJSONUnauthorized Error
-
-func (*GetPersonalAccessTokenApplicationJSONUnauthorized) getPersonalAccessTokenRes() {}
-
-type GetPersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetPersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized) getPersonalAccessTokenRes() {
-}
-
-type GetPreviewApiKeyApplicationJSONUnauthorized Error
-
-func (*GetPreviewApiKeyApplicationJSONUnauthorized) getPreviewApiKeyRes() {}
-
-type GetPreviewApiKeyApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetPreviewApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) getPreviewApiKeyRes() {}
-
-type GetRoleApplicationJSONUnauthorized Error
-
-func (*GetRoleApplicationJSONUnauthorized) getRoleRes() {}
-
-type GetRoleApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetRoleApplicationVndContentfulManagementV1JSONUnauthorized) getRoleRes() {}
-
 type GetSpaceEnablementsApplicationJSONOK SpaceEnablement
 
 func (*GetSpaceEnablementsApplicationJSONOK) getSpaceEnablementsRes() {}
 
-type GetSpaceEnablementsApplicationJSONUnauthorized Error
-
-func (*GetSpaceEnablementsApplicationJSONUnauthorized) getSpaceEnablementsRes() {}
-
 type GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK SpaceEnablement
 
 func (*GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK) getSpaceEnablementsRes() {}
-
-type GetSpaceEnablementsApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetSpaceEnablementsApplicationVndContentfulManagementV1JSONUnauthorized) getSpaceEnablementsRes() {
-}
-
-type GetWebhookDefinitionApplicationJSONUnauthorized Error
-
-func (*GetWebhookDefinitionApplicationJSONUnauthorized) getWebhookDefinitionRes() {}
-
-type GetWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*GetWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) getWebhookDefinitionRes() {
-}
 
 // NewNilString returns new NilString with value set to v.
 func NewNilString(v string) NilString {
@@ -6719,76 +6693,6 @@ func (s *PreviewApiKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
-type PutAppDefinitionApplicationJSONUnauthorized Error
-
-func (*PutAppDefinitionApplicationJSONUnauthorized) putAppDefinitionRes() {}
-
-type PutAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*PutAppDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) putAppDefinitionRes() {}
-
-type PutAppDefinitionResourceProviderApplicationJSONUnauthorized Error
-
-func (*PutAppDefinitionResourceProviderApplicationJSONUnauthorized) putAppDefinitionResourceProviderRes() {
-}
-
-type PutAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*PutAppDefinitionResourceProviderApplicationVndContentfulManagementV1JSONUnauthorized) putAppDefinitionResourceProviderRes() {
-}
-
-type PutAppDefinitionResourceTypeApplicationJSONUnauthorized Error
-
-func (*PutAppDefinitionResourceTypeApplicationJSONUnauthorized) putAppDefinitionResourceTypeRes() {}
-
-type PutAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*PutAppDefinitionResourceTypeApplicationVndContentfulManagementV1JSONUnauthorized) putAppDefinitionResourceTypeRes() {
-}
-
-type PutAppInstallationApplicationJSONUnauthorized Error
-
-func (*PutAppInstallationApplicationJSONUnauthorized) putAppInstallationRes() {}
-
-type PutAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*PutAppInstallationApplicationVndContentfulManagementV1JSONUnauthorized) putAppInstallationRes() {
-}
-
-type PutContentTypeApplicationJSONUnauthorized Error
-
-func (*PutContentTypeApplicationJSONUnauthorized) putContentTypeRes() {}
-
-type PutContentTypeApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*PutContentTypeApplicationVndContentfulManagementV1JSONUnauthorized) putContentTypeRes() {}
-
-type PutEditorInterfaceApplicationJSONUnauthorized Error
-
-func (*PutEditorInterfaceApplicationJSONUnauthorized) putEditorInterfaceRes() {}
-
-type PutEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*PutEditorInterfaceApplicationVndContentfulManagementV1JSONUnauthorized) putEditorInterfaceRes() {
-}
-
-type PutExtensionApplicationJSONUnauthorized Error
-
-func (*PutExtensionApplicationJSONUnauthorized) putExtensionRes() {}
-
-type PutExtensionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*PutExtensionApplicationVndContentfulManagementV1JSONUnauthorized) putExtensionRes() {}
-
-type PutSpaceEnablementsApplicationJSONUnauthorized Error
-
-func (*PutSpaceEnablementsApplicationJSONUnauthorized) putSpaceEnablementsRes() {}
-
-type PutSpaceEnablementsApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*PutSpaceEnablementsApplicationVndContentfulManagementV1JSONUnauthorized) putSpaceEnablementsRes() {
-}
-
 // Ref: #/components/schemas/ResourceLink
 // ResourceLink represents sum type.
 type ResourceLink struct {
@@ -7564,15 +7468,6 @@ func (s *ResourceTypeSysType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
-}
-
-type RevokePersonalAccessTokenApplicationJSONUnauthorized Error
-
-func (*RevokePersonalAccessTokenApplicationJSONUnauthorized) revokePersonalAccessTokenRes() {}
-
-type RevokePersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*RevokePersonalAccessTokenApplicationVndContentfulManagementV1JSONUnauthorized) revokePersonalAccessTokenRes() {
 }
 
 // Merged schema.
@@ -8630,32 +8525,6 @@ func (s *SpaceLinkSysType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
-}
-
-type UpdateDeliveryApiKeyApplicationJSONUnauthorized Error
-
-func (*UpdateDeliveryApiKeyApplicationJSONUnauthorized) updateDeliveryApiKeyRes() {}
-
-type UpdateDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*UpdateDeliveryApiKeyApplicationVndContentfulManagementV1JSONUnauthorized) updateDeliveryApiKeyRes() {
-}
-
-type UpdateRoleApplicationJSONUnauthorized Error
-
-func (*UpdateRoleApplicationJSONUnauthorized) updateRoleRes() {}
-
-type UpdateRoleApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*UpdateRoleApplicationVndContentfulManagementV1JSONUnauthorized) updateRoleRes() {}
-
-type UpdateWebhookDefinitionApplicationJSONUnauthorized Error
-
-func (*UpdateWebhookDefinitionApplicationJSONUnauthorized) updateWebhookDefinitionRes() {}
-
-type UpdateWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized Error
-
-func (*UpdateWebhookDefinitionApplicationVndContentfulManagementV1JSONUnauthorized) updateWebhookDefinitionRes() {
 }
 
 // Merged schema.

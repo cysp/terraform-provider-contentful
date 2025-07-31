@@ -174,8 +174,8 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		currentVersion = response.Sys.Version
 
 	default:
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
 
@@ -310,8 +310,9 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	default:
 		handled := false
 
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound || (response.Response.Sys.ID == "BadRequest" && response.Response.Message.Value == "Not published") {
+		if response, ok := response.(cm.ErrorStatusCodeResponse); ok {
+			responseError, _ := response.GetError()
+			if response.GetStatusCode() == http.StatusNotFound || (responseError.Sys.ID == "BadRequest" && responseError.Message.Value == "Not published") {
 				resp.Diagnostics.AddWarning("Content type already deactivated", "")
 
 				handled = true
@@ -346,8 +347,8 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	default:
 		handled := false
 
-		if response, ok := response.(*cm.ErrorStatusCode); ok {
-			if response.StatusCode == http.StatusNotFound {
+		if response, ok := response.(cm.StatusCodeResponse); ok {
+			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Content type already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 				handled = true
