@@ -1,4 +1,4 @@
-package client
+package contentfulmanagement
 
 func NewOptPointerString(value *string) OptString {
 	if value == nil {

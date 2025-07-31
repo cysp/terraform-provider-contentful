@@ -1,4 +1,4 @@
-package client
+package contentfulmanagement
 
 func NewOptNilStringNull() OptNilString {
 	return OptNilString{Set: true, Null: true}

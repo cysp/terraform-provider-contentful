@@ -5,25 +5,24 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 //nolint:paralleltest
 func TestAccSpaceEnablementsResourceImport(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	testserver.SetSpaceEnablements("0p38pssr0fi3", cm.SpaceEnablementFields{
+	server.SetSpaceEnablements("0p38pssr0fi3", cm.SpaceEnablementFields{
 		CrossSpaceLinks: cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
 	})
 
-	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -38,14 +37,13 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -61,14 +59,13 @@ func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),

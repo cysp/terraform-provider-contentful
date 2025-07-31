@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -115,7 +115,7 @@ func FuzzAppDefinitionResourceModelRoundtrip(f *testing.F) {
 			t.Fatalf("Failed to convert AppDefinitionResourceModel to AppDefinitionFields: %v", appDefinitionFieldsDiags)
 		}
 
-		output := cmts.NewAppDefinitionFromFields(input.Sys.Organization.Sys.ID, input.Sys.ID, appDefinitionFields)
+		output := cmt.NewAppDefinitionFromFields(input.Sys.Organization.Sys.ID, input.Sys.ID, appDefinitionFields)
 
 		assert.Equal(t, input, output, "AppDefinition should be equal after roundtrip conversion")
 	})

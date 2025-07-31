@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -13,8 +13,7 @@ import (
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImport(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -22,13 +21,13 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	testserver.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
+	server.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
 		Name: "Author",
 	})
 
-	testserver.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceFields{})
+	server.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceFields{})
 
-	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -74,8 +73,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -83,7 +81,7 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -105,8 +103,7 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -114,7 +111,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -127,8 +124,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -136,7 +132,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -149,8 +145,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -158,13 +153,13 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	testserver.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
+	server.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
 		Name: "Author",
 	})
 
-	testserver.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceFields{})
+	server.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceFields{})
 
-	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestStepDirectory(),

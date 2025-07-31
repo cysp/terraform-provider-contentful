@@ -1,4 +1,4 @@
-package client
+package contentfulmanagement
 
 func NewOptPointerBool(value *bool) OptBool {
 	if value == nil {

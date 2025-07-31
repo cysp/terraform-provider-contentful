@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -12,15 +12,14 @@ import (
 func TestAccPreviewApiKeyDataSourceNotFound(t *testing.T) {
 	t.Parallel()
 
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"space_id":           config.StringVariable("0p38pssr0fi3"),
 		"preview_api_key_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

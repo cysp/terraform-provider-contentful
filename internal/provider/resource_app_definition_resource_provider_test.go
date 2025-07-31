@@ -4,26 +4,25 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmts "github.com/cysp/terraform-provider-contentful/internal/contentful-management-testserver"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 //nolint:paralleltest
 func TestAccAppDefinitionResourceProviderResource(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"organization_id":   config.StringVariable("organization-id"),
 		"app_definition_id": config.StringVariable("app-definition-id"),
 	}
 
-	testserver.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
 		Name: "Test App",
 	})
 
-	ContentfulProviderMockedResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -39,19 +38,18 @@ func TestAccAppDefinitionResourceProviderResource(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppDefinitionResourceProviderImport(t *testing.T) {
-	testserver := cmts.NewContentfulManagementTestServer()
-	defer testserver.Server().Close()
+	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
 		"organization_id":   config.StringVariable("organization-id"),
 		"app_definition_id": config.StringVariable("app-definition-id"),
 	}
 
-	testserver.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
 		Name: "Test App",
 	})
 
-	testserver.SetAppDefinitionResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
+	server.SetAppDefinitionResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
 		Sys: cm.ResourceProviderRequestSys{
 			ID: "resource-provider-id",
 		},
@@ -65,7 +63,7 @@ func TestAccAppDefinitionResourceProviderImport(t *testing.T) {
 		},
 	})
 
-	ContentfulProviderMockedResourceTest(t, testserver.Server(), resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
