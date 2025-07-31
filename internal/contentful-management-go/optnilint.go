@@ -1,4 +1,4 @@
-package client
+package contentfulmanagement
 
 func NewOptNilIntNull() OptNilInt {
 	return OptNilInt{Set: true, Null: true}
