@@ -1,4 +1,4 @@
-package client
+package contentfulmanagement
 
 func NewOptNilWebhookDefinitionFilterArrayNull() OptNilWebhookDefinitionFilterArray {
 	return OptNilWebhookDefinitionFilterArray{Set: true, Null: true}

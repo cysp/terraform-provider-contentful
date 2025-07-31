@@ -1,4 +1,4 @@
-package client
+package contentfulmanagement
 
 type ErrorResponse interface {
 	GetError() (v Error, ok bool)

@@ -1,4 +1,4 @@
-package client_test
+package contentfulmanagement_test
 
 import (
 	"testing"

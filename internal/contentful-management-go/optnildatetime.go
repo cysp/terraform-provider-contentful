@@ -1,4 +1,4 @@
-package client
+package contentfulmanagement
 
 import "time"
 
