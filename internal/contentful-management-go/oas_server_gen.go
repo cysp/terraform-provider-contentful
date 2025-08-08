@@ -158,6 +158,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	GetExtension(ctx context.Context, params GetExtensionParams) (GetExtensionRes, error)
+	// GetMarketplaceAppDefinitions implements getMarketplaceAppDefinitions operation.
+	//
+	// Get marketplace app definitions.
+	//
+	// GET /app_definitions
+	GetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams) (GetMarketplaceAppDefinitionsRes, error)
 	// GetPersonalAccessToken implements getPersonalAccessToken operation.
 	//
 	// Get a single personal access token.

@@ -1348,6 +1348,50 @@ components:
 security:
   - accessToken: []
 paths:
+  /app_definitions:
+    get:
+      operationId: getMarketplaceAppDefinitions
+      summary: Get marketplace app definitions
+      parameters:
+        - name: sys.id[in]
+          in: query
+          required: true
+          schema:
+            type: array
+            minItems: 1
+            items:
+              type: string
+      responses:
+        200:
+          description: A list of app definitions
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                type: object
+                properties:
+                  sys:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - Array
+                    required:
+                      - type
+                  total:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AppDefinition"
+                required:
+                  - sys
+                  - total
+                  - items
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
   /users/me:
     get:
       operationId: getAuthenticatedUser

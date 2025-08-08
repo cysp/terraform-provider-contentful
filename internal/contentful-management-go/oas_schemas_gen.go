@@ -1505,6 +1505,7 @@ func (*ApplicationJSONError) getContentTypeRes()                      {}
 func (*ApplicationJSONError) getDeliveryApiKeyRes()                   {}
 func (*ApplicationJSONError) getEditorInterfaceRes()                  {}
 func (*ApplicationJSONError) getExtensionRes()                        {}
+func (*ApplicationJSONError) getMarketplaceAppDefinitionsRes()        {}
 func (*ApplicationJSONError) getPersonalAccessTokenRes()              {}
 func (*ApplicationJSONError) getPreviewApiKeyRes()                    {}
 func (*ApplicationJSONError) getRoleRes()                             {}
@@ -1574,6 +1575,7 @@ func (*ApplicationJSONErrorStatusCode) getContentTypeRes()                      
 func (*ApplicationJSONErrorStatusCode) getDeliveryApiKeyRes()                   {}
 func (*ApplicationJSONErrorStatusCode) getEditorInterfaceRes()                  {}
 func (*ApplicationJSONErrorStatusCode) getExtensionRes()                        {}
+func (*ApplicationJSONErrorStatusCode) getMarketplaceAppDefinitionsRes()        {}
 func (*ApplicationJSONErrorStatusCode) getPersonalAccessTokenRes()              {}
 func (*ApplicationJSONErrorStatusCode) getPreviewApiKeyRes()                    {}
 func (*ApplicationJSONErrorStatusCode) getRoleRes()                             {}
@@ -1658,6 +1660,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getContentTypeRes()       
 func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryApiKeyRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEditorInterfaceRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONError) getExtensionRes()                        {}
+func (*ApplicationVndContentfulManagementV1JSONError) getMarketplaceAppDefinitionsRes()        {}
 func (*ApplicationVndContentfulManagementV1JSONError) getPersonalAccessTokenRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONError) getPreviewApiKeyRes()                    {}
 func (*ApplicationVndContentfulManagementV1JSONError) getRoleRes()                             {}
@@ -1730,6 +1733,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypeRe
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryApiKeyRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEditorInterfaceRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getExtensionRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getMarketplaceAppDefinitionsRes() {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPersonalAccessTokenRes()       {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPreviewApiKeyRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getRoleRes()                      {}
@@ -4255,6 +4259,92 @@ func (s *FunctionLinkSysType) UnmarshalText(data []byte) error {
 	switch FunctionLinkSysType(data) {
 	case FunctionLinkSysTypeLink:
 		*s = FunctionLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type GetMarketplaceAppDefinitionsOK struct {
+	Sys   GetMarketplaceAppDefinitionsOKSys `json:"sys"`
+	Total int                               `json:"total"`
+	Items []AppDefinition                   `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *GetMarketplaceAppDefinitionsOK) GetSys() GetMarketplaceAppDefinitionsOKSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *GetMarketplaceAppDefinitionsOK) GetTotal() int {
+	return s.Total
+}
+
+// GetItems returns the value of Items.
+func (s *GetMarketplaceAppDefinitionsOK) GetItems() []AppDefinition {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *GetMarketplaceAppDefinitionsOK) SetSys(val GetMarketplaceAppDefinitionsOKSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *GetMarketplaceAppDefinitionsOK) SetTotal(val int) {
+	s.Total = val
+}
+
+// SetItems sets the value of Items.
+func (s *GetMarketplaceAppDefinitionsOK) SetItems(val []AppDefinition) {
+	s.Items = val
+}
+
+func (*GetMarketplaceAppDefinitionsOK) getMarketplaceAppDefinitionsRes() {}
+
+type GetMarketplaceAppDefinitionsOKSys struct {
+	Type GetMarketplaceAppDefinitionsOKSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *GetMarketplaceAppDefinitionsOKSys) GetType() GetMarketplaceAppDefinitionsOKSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *GetMarketplaceAppDefinitionsOKSys) SetType(val GetMarketplaceAppDefinitionsOKSysType) {
+	s.Type = val
+}
+
+type GetMarketplaceAppDefinitionsOKSysType string
+
+const (
+	GetMarketplaceAppDefinitionsOKSysTypeArray GetMarketplaceAppDefinitionsOKSysType = "Array"
+)
+
+// AllValues returns all GetMarketplaceAppDefinitionsOKSysType values.
+func (GetMarketplaceAppDefinitionsOKSysType) AllValues() []GetMarketplaceAppDefinitionsOKSysType {
+	return []GetMarketplaceAppDefinitionsOKSysType{
+		GetMarketplaceAppDefinitionsOKSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GetMarketplaceAppDefinitionsOKSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case GetMarketplaceAppDefinitionsOKSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GetMarketplaceAppDefinitionsOKSysType) UnmarshalText(data []byte) error {
+	switch GetMarketplaceAppDefinitionsOKSysType(data) {
+	case GetMarketplaceAppDefinitionsOKSysTypeArray:
+		*s = GetMarketplaceAppDefinitionsOKSysTypeArray
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

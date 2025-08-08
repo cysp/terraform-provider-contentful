@@ -172,6 +172,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	GetExtension(ctx context.Context, params GetExtensionParams) (GetExtensionRes, error)
+	// GetMarketplaceAppDefinitions invokes getMarketplaceAppDefinitions operation.
+	//
+	// Get marketplace app definitions.
+	//
+	// GET /app_definitions
+	GetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams) (GetMarketplaceAppDefinitionsRes, error)
 	// GetPersonalAccessToken invokes getPersonalAccessToken operation.
 	//
 	// Get a single personal access token.
@@ -3060,6 +3066,101 @@ func (c *Client) sendGetExtension(ctx context.Context, params GetExtensionParams
 	defer resp.Body.Close()
 
 	result, err := decodeGetExtensionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetMarketplaceAppDefinitions invokes getMarketplaceAppDefinitions operation.
+//
+// Get marketplace app definitions.
+//
+// GET /app_definitions
+func (c *Client) GetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams) (GetMarketplaceAppDefinitionsRes, error) {
+	res, err := c.sendGetMarketplaceAppDefinitions(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams) (res GetMarketplaceAppDefinitionsRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/app_definitions"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	q := uri.NewQueryEncoder()
+	{
+		// Encode "sys.id[in]" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "sys.id[in]",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeArray(func(e uri.Encoder) error {
+				for i, item := range params.SysIDIn {
+					if err := func() error {
+						return e.EncodeValue(conv.StringToString(item))
+					}(); err != nil {
+						return errors.Wrapf(err, "[%d]", i)
+					}
+				}
+				return nil
+			})
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	u.RawQuery = q.Values().Encode()
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetMarketplaceAppDefinitionsOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetMarketplaceAppDefinitionsResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

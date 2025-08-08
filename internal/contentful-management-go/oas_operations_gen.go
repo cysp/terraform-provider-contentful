@@ -31,6 +31,7 @@ const (
 	GetDeliveryApiKeyOperation                   OperationName = "GetDeliveryApiKey"
 	GetEditorInterfaceOperation                  OperationName = "GetEditorInterface"
 	GetExtensionOperation                        OperationName = "GetExtension"
+	GetMarketplaceAppDefinitionsOperation        OperationName = "GetMarketplaceAppDefinitions"
 	GetPersonalAccessTokenOperation              OperationName = "GetPersonalAccessToken"
 	GetPreviewApiKeyOperation                    OperationName = "GetPreviewApiKey"
 	GetRoleOperation                             OperationName = "GetRole"

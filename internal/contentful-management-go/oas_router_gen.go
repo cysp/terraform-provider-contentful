@@ -61,6 +61,26 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			switch elem[0] {
+			case 'a': // Prefix: "app_definitions"
+
+				if l := len("app_definitions"); len(elem) >= l && elem[0:l] == "app_definitions" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch r.Method {
+					case "GET":
+						s.handleGetMarketplaceAppDefinitionsRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, "GET")
+					}
+
+					return
+				}
+
 			case 'o': // Prefix: "organizations/"
 
 				if l := len("organizations/"); len(elem) >= l && elem[0:l] == "organizations/" {
@@ -970,6 +990,30 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				break
 			}
 			switch elem[0] {
+			case 'a': // Prefix: "app_definitions"
+
+				if l := len("app_definitions"); len(elem) >= l && elem[0:l] == "app_definitions" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch method {
+					case "GET":
+						r.name = GetMarketplaceAppDefinitionsOperation
+						r.summary = "Get marketplace app definitions"
+						r.operationID = "getMarketplaceAppDefinitions"
+						r.pathPattern = "/app_definitions"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
+					}
+				}
+
 			case 'o': // Prefix: "organizations/"
 
 				if l := len("organizations/"); len(elem) >= l && elem[0:l] == "organizations/" {

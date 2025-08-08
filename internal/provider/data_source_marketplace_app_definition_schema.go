@@ -8,14 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-func AppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
+func MarketplaceAppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
 			},
 			"organization_id": schema.StringAttribute{
-				Required: true,
+				Computed: true,
 			},
 			"app_definition_id": schema.StringAttribute{
 				Required: true,
@@ -80,13 +80,13 @@ func AppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 				Attributes: map[string]schema.Attribute{
 					"installation": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: AppDefinitionParameterDataSourceSchemaAttributes(ctx),
+							Attributes: MarketplaceAppDefinitionParameterDataSourceSchemaAttributes(ctx),
 						},
 						Computed: true,
 					},
 					"instance": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: AppDefinitionParameterDataSourceSchemaAttributes(ctx),
+							Attributes: MarketplaceAppDefinitionParameterDataSourceSchemaAttributes(ctx),
 						},
 						Computed: true,
 					},
@@ -98,7 +98,7 @@ func AppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 //nolint:dupl
-func AppDefinitionParameterDataSourceSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+func MarketplaceAppDefinitionParameterDataSourceSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Computed: true,
