@@ -3143,6 +3143,88 @@ func decodeGetExtensionParams(args [3]string, argsEscaped bool, r *http.Request)
 	return params, nil
 }
 
+// GetMarketplaceAppDefinitionsParams is parameters of getMarketplaceAppDefinitions operation.
+type GetMarketplaceAppDefinitionsParams struct {
+	SysIDIn []string
+}
+
+func unpackGetMarketplaceAppDefinitionsParams(packed middleware.Parameters) (params GetMarketplaceAppDefinitionsParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "sys.id[in]",
+			In:   "query",
+		}
+		params.SysIDIn = packed[key].([]string)
+	}
+	return params
+}
+
+func decodeGetMarketplaceAppDefinitionsParams(args [0]string, argsEscaped bool, r *http.Request) (params GetMarketplaceAppDefinitionsParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: sys.id[in].
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "sys.id[in]",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				return d.DecodeArray(func(d uri.Decoder) error {
+					var paramsDotSysIDInVal string
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToString(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotSysIDInVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					params.SysIDIn = append(params.SysIDIn, paramsDotSysIDInVal)
+					return nil
+				})
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if params.SysIDIn == nil {
+					return errors.New("nil is invalid value")
+				}
+				if err := (validate.Array{
+					MinLength:    1,
+					MinLengthSet: true,
+					MaxLength:    0,
+					MaxLengthSet: false,
+				}).ValidateLength(len(params.SysIDIn)); err != nil {
+					return errors.Wrap(err, "array")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "sys.id[in]",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetPersonalAccessTokenParams is parameters of getPersonalAccessToken operation.
 type GetPersonalAccessTokenParams struct {
 	AccessTokenID string

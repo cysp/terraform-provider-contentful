@@ -18,6 +18,8 @@ type Handler struct {
 	apiKeys        SpaceMap[*cm.ApiKey]
 	previewAPIKeys SpaceMap[*cm.PreviewApiKey]
 
+	marketplaceAppDefinitions map[string]*cm.AppDefinition
+
 	appDefinitions                 OrganizationMap[*cm.AppDefinition]
 	appDefinitionResourceProviders OrganizationMap[*cm.ResourceProvider]
 	appDefinitionResourceTypes     OrganizationMap[*cm.ResourceType]
@@ -43,6 +45,7 @@ func NewHandler() *Handler {
 		enablements:                    make(map[string]*cm.SpaceEnablement),
 		apiKeys:                        NewSpaceMap[*cm.ApiKey](),
 		previewAPIKeys:                 NewSpaceMap[*cm.PreviewApiKey](),
+		marketplaceAppDefinitions:      make(map[string]*cm.AppDefinition),
 		appDefinitions:                 NewOrganizationMap[*cm.AppDefinition](),
 		appDefinitionResourceProviders: NewOrganizationMap[*cm.ResourceProvider](),
 		appDefinitionResourceTypes:     NewOrganizationMap[*cm.ResourceType](),

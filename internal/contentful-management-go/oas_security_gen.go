@@ -59,6 +59,7 @@ var operationRolesAccessToken = map[string][]string{
 	GetDeliveryApiKeyOperation:                   []string{},
 	GetEditorInterfaceOperation:                  []string{},
 	GetExtensionOperation:                        []string{},
+	GetMarketplaceAppDefinitionsOperation:        []string{},
 	GetPersonalAccessTokenOperation:              []string{},
 	GetPreviewApiKeyOperation:                    []string{},
 	GetRoleOperation:                             []string{},

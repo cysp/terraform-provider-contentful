@@ -101,6 +101,10 @@ type GetExtensionRes interface {
 	getExtensionRes()
 }
 
+type GetMarketplaceAppDefinitionsRes interface {
+	getMarketplaceAppDefinitionsRes()
+}
+
 type GetPersonalAccessTokenRes interface {
 	getPersonalAccessTokenRes()
 }
