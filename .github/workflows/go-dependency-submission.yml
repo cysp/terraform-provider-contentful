@@ -11,7 +11,7 @@ jobs:
   go-action-detection:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"

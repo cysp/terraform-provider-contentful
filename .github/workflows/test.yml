@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
@@ -51,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
@@ -78,7 +78,7 @@ jobs:
     concurrency:
       group: testacc
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
@@ -108,7 +108,7 @@ jobs:
           - "1.11.*"
           - "1.12.*"
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
