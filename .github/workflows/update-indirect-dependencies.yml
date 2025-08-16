@@ -13,14 +13,14 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5.0.0
-      - uses: actions/setup-go@v5.5.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
       - name: update indirect dependencies
         run: for x in `go list -f '{{if .Indirect}}{{.Path}}{{end}}' -m all`; do go get -u "$x"; done || true
       - name: go mod tidy
         run: go mod tidy -v
       - name: create pull request
-        uses: peter-evans/create-pull-request@v7.0.8
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
           commit-message: "chore(deps): bump indirect dependencies"
           title: "chore(deps): bump indirect dependencies"
