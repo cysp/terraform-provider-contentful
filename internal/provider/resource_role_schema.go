@@ -38,9 +38,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 			"policies": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: RolePolicyValue{}.SchemaAttributes(ctx),
-					CustomType: RolePolicyValue{}.CustomType(ctx),
+					CustomType: NewTypedObjectUnknown[RolePolicyValue]().CustomType(ctx),
 				},
-				CustomType: TypedList[RolePolicyValue]{}.CustomType(ctx),
+				CustomType: TypedList[TypedObject[RolePolicyValue]]{}.CustomType(ctx),
 				Required:   true,
 			},
 		},
