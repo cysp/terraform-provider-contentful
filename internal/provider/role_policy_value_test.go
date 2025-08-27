@@ -15,7 +15,7 @@ func TestRolePolicyValueUnknown(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := NewRolePolicyValueUnknown()
+	value := NewTypedObjectUnknown[RolePolicyValue]()
 	assert.True(t, value.IsUnknown())
 	assert.False(t, value.IsNull())
 
@@ -37,7 +37,7 @@ func TestRolePolicyValueNull(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := NewRolePolicyValueNull()
+	value := NewTypedObjectNull[RolePolicyValue]()
 	assert.False(t, value.IsUnknown())
 	assert.True(t, value.IsNull())
 
@@ -71,7 +71,7 @@ func TestRolePolicyValueInvalid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			value, diags := NewRolePolicyValueKnownFromAttributes(ctx, attributes)
+			value, diags := NewTypedObjectFromAttributes[RolePolicyValue](ctx, attributes)
 
 			assert.False(t, value.IsUnknown())
 			assert.False(t, value.IsNull())

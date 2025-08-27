@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies TypedList[RolePolicyValue]) ([]cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
+func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies TypedList[TypedObject[RolePolicyValue]]) ([]cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if policies.IsUnknown() {
@@ -36,15 +36,15 @@ func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies TypedLis
 	return rolePoliciesItems, diags
 }
 
-func ToRoleFieldsPoliciesItem(ctx context.Context, path path.Path, policy RolePolicyValue) (cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
+func ToRoleFieldsPoliciesItem(ctx context.Context, path path.Path, policy TypedObject[RolePolicyValue]) (cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	effect := policy.Effect.ValueString()
+	effect := policy.Value().Effect.ValueString()
 
-	actions, actionsDiags := ToRoleFieldsPoliciesItemActions(ctx, path.AtName("actions"), policy.Actions)
+	actions, actionsDiags := ToRoleFieldsPoliciesItemActions(ctx, path.AtName("actions"), policy.Value().Actions)
 	diags.Append(actionsDiags...)
 
-	constraint, constraintDiags := ToOptRoleFieldsPoliciesItemConstraint(ctx, path.AtName("constraint"), policy.Constraint)
+	constraint, constraintDiags := ToOptRoleFieldsPoliciesItemConstraint(ctx, path.AtName("constraint"), policy.Value().Constraint)
 	diags.Append(constraintDiags...)
 
 	return cm.RoleFieldsPoliciesItem{

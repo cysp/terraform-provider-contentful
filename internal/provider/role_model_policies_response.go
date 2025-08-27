@@ -6,16 +6,15 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) (TypedList[RolePolicyValue], diag.Diagnostics) {
+func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) (TypedList[TypedObject[RolePolicyValue]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	policiesValues := make([]RolePolicyValue, len(policies))
+	policiesValues := make([]TypedObject[RolePolicyValue], len(policies))
 
 	for index, item := range policies {
 		path := path.AtListIndex(index)
@@ -31,7 +30,7 @@ func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, polic
 	return policiesListValue, diags
 }
 
-func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.RolePoliciesItem) (RolePolicyValue, diag.Diagnostics) {
+func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.RolePoliciesItem) (TypedObject[RolePolicyValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	effect, err := item.Effect.MarshalText()
@@ -41,7 +40,6 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 
 	value := RolePolicyValue{
 		Effect: types.StringValue(string(effect)),
-		state:  attr.ValueStateKnown,
 	}
 
 	actionsListValue, actionsListValueDiags := NewPolicyActionsListValueFromResponse(ctx, path.AtName("actions"), item.Actions)
@@ -60,7 +58,9 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 		value.Constraint = jsontypes.NewNormalizedNull()
 	}
 
-	return value, diags
+	object := NewTypedObject(value)
+
+	return object, diags
 }
 
 func NewPolicyActionsListValueFromResponse(_ context.Context, path path.Path, actions cm.RolePoliciesItemActions) (TypedList[types.String], diag.Diagnostics) {

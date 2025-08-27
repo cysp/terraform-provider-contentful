@@ -21,6 +21,7 @@ func TestModelTypeEqual(t *testing.T) {
 		attr.Type
 	}
 
+	//nolint:dupl
 	types := []attr.Type{
 		NewTypedListNull[types.String]().Type(ctx),
 		NewTypedMapNull[types.String]().Type(ctx),
@@ -43,7 +44,7 @@ func TestModelTypeEqual(t *testing.T) {
 		EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldType{},
 		EditorInterfaceGroupControlType{},
 		EditorInterfaceSidebarType{},
-		RolePolicyType{},
+		NewTypedObjectNull[RolePolicyValue]().Type(ctx),
 		WebhookFilterEqualsType{},
 		WebhookFilterInType{},
 		WebhookFilterNotType{},
@@ -168,8 +169,8 @@ func TestModelTypeValueFromObject(t *testing.T) {
 			UnknownValue: NewEditorInterfaceSidebarValueUnknown(),
 		},
 		"RolePolicy": {
-			NullValue:    NewRolePolicyValueNull(),
-			UnknownValue: NewRolePolicyValueUnknown(),
+			NullValue:    NewTypedObjectNull[RolePolicyValue](),
+			UnknownValue: NewTypedObjectUnknown[RolePolicyValue](),
 		},
 		"WebhookFilterEquals": {
 			NullValue:    NewWebhookFilterEqualsValueNull(),
@@ -251,6 +252,7 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 
 	ctx := t.Context()
 
+	//nolint:dupl
 	types := []attr.Type{
 		NewTypedListNull[types.String]().Type(ctx),
 		NewTypedMapNull[types.String]().Type(ctx),
@@ -273,7 +275,7 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 		EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldType{},
 		EditorInterfaceGroupControlType{},
 		EditorInterfaceSidebarType{},
-		RolePolicyType{},
+		NewTypedObjectNull[RolePolicyValue]().Type(ctx),
 		WebhookFilterEqualsType{},
 		WebhookFilterInType{},
 		WebhookFilterNotType{},
