@@ -4,13 +4,12 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorInterfaceEditorLayoutItemGroupValueFromResponse(ctx context.Context, path path.Path, item cm.EditorInterfaceEditorLayoutItem) (EditorInterfaceEditorLayoutItemGroupValue, diag.Diagnostics) {
+func NewEditorInterfaceEditorLayoutItemGroupValueFromResponse(ctx context.Context, path path.Path, item cm.EditorInterfaceEditorLayoutItem) (TypedObject[EditorInterfaceEditorLayoutItemGroupValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	switch item.Type {
@@ -25,21 +24,20 @@ func NewEditorInterfaceEditorLayoutItemGroupValueFromResponse(ctx context.Contex
 		groupItemItems, groupItemItemsDiags := NewEditorInterfaceEditorLayoutItemGroupItemValueListFromResponse(ctx, path.AtName("items"), groupItem.Items)
 		diags.Append(groupItemItemsDiags...)
 
-		return EditorInterfaceEditorLayoutItemGroupValue{
+		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupValue{
 			GroupID: types.StringValue(groupItem.GroupId),
 			Name:    types.StringValue(groupItem.Name),
 			Items:   groupItemItems,
-			state:   attr.ValueStateKnown,
-		}, diags
+		}), diags
 
 	case cm.EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem:
 		diags.AddAttributeError(path, "Failed to read editor layout item", "Expected group item")
 	}
 
-	return NewEditorInterfaceEditorLayoutItemGroupValueNull(), diags
+	return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue](), diags
 }
 
-func (v *EditorInterfaceEditorLayoutItemGroupValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+func (v EditorInterfaceEditorLayoutItemGroupValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := cm.EditorInterfaceEditorLayoutGroupItem{
@@ -53,7 +51,7 @@ func (v *EditorInterfaceEditorLayoutItemGroupValue) ToEditorInterfaceEditorLayou
 		itemItems := make([]cm.EditorInterfaceEditorLayoutItem, len(itemItemsValues))
 
 		for index, itemItem := range itemItemsValues {
-			itemItemObject, itemItemObjectDiags := itemItem.ToEditorInterfaceEditorLayoutItem(ctx, path.AtListIndex(index))
+			itemItemObject, itemItemObjectDiags := itemItem.Value().ToEditorInterfaceEditorLayoutItem(ctx, path.AtListIndex(index))
 			diags.Append(itemItemObjectDiags...)
 
 			itemItems[index] = itemItemObject

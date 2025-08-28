@@ -41,33 +41,33 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 			"editor_layout": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceEditorLayoutItemValue{}.SchemaAttributes(ctx),
-					CustomType: EditorInterfaceEditorLayoutItemValue{}.CustomType(ctx),
+					CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemValue]().CustomType(ctx),
 				},
-				CustomType: TypedList[EditorInterfaceEditorLayoutItemValue]{}.CustomType(ctx),
+				CustomType: TypedList[TypedObject[EditorInterfaceEditorLayoutItemValue]]{}.CustomType(ctx),
 				Optional:   true,
 			},
 			"controls": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceControlValue{}.SchemaAttributes(ctx),
-					CustomType: EditorInterfaceControlValue{}.CustomType(ctx),
+					CustomType: NewTypedObjectNull[EditorInterfaceControlValue]().CustomType(ctx),
 				},
-				CustomType: TypedList[EditorInterfaceControlValue]{}.CustomType(ctx),
+				CustomType: TypedList[TypedObject[EditorInterfaceControlValue]]{}.CustomType(ctx),
 				Optional:   true,
 			},
 			"group_controls": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceGroupControlValue{}.SchemaAttributes(ctx),
-					CustomType: EditorInterfaceGroupControlValue{}.CustomType(ctx),
+					CustomType: NewTypedObjectNull[EditorInterfaceGroupControlValue]().CustomType(ctx),
 				},
-				CustomType: TypedList[EditorInterfaceGroupControlValue]{}.CustomType(ctx),
+				CustomType: TypedList[TypedObject[EditorInterfaceGroupControlValue]]{}.CustomType(ctx),
 				Optional:   true,
 			},
 			"sidebar": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceSidebarValue{}.SchemaAttributes(ctx),
-					CustomType: EditorInterfaceSidebarValue{}.CustomType(ctx),
+					CustomType: NewTypedObjectNull[EditorInterfaceSidebarValue]().CustomType(ctx),
 				},
-				CustomType: TypedList[EditorInterfaceSidebarValue]{}.CustomType(ctx),
+				CustomType: TypedList[TypedObject[EditorInterfaceSidebarValue]]{}.CustomType(ctx),
 				Optional:   true,
 			},
 		},
@@ -112,7 +112,7 @@ func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) SchemaAttributes
 	return map[string]schema.Attribute{
 		"field": schema.SingleNestedAttribute{
 			Attributes: EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}.SchemaAttributes(ctx),
-			CustomType: EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue]().CustomType(ctx),
 			Required:   true,
 		},
 	}
@@ -129,9 +129,9 @@ func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) SchemaAttributes(ctx
 		"items": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{}.SchemaAttributes(ctx),
-				CustomType: EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{}.CustomType(ctx),
+				CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]().CustomType(ctx),
 			},
-			CustomType: NewTypedListNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]().CustomType(ctx),
+			CustomType: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]]().CustomType(ctx),
 			Required:   true,
 		},
 	}
@@ -141,7 +141,7 @@ func (v EditorInterfaceEditorLayoutItemGroupItemValue) SchemaAttributes(ctx cont
 	return map[string]schema.Attribute{
 		"field": schema.SingleNestedAttribute{
 			Attributes: EditorInterfaceEditorLayoutItemGroupItemFieldValue{}.SchemaAttributes(ctx),
-			CustomType: EditorInterfaceEditorLayoutItemGroupItemFieldValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue]().CustomType(ctx),
 			Optional:   true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
@@ -152,7 +152,7 @@ func (v EditorInterfaceEditorLayoutItemGroupItemValue) SchemaAttributes(ctx cont
 		},
 		"group": schema.SingleNestedAttribute{
 			Attributes: EditorInterfaceEditorLayoutItemGroupItemGroupValue{}.SchemaAttributes(ctx),
-			CustomType: EditorInterfaceEditorLayoutItemGroupItemGroupValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue]().CustomType(ctx),
 			Optional:   true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
@@ -175,9 +175,9 @@ func (v EditorInterfaceEditorLayoutItemGroupValue) SchemaAttributes(ctx context.
 		"items": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: EditorInterfaceEditorLayoutItemGroupItemValue{}.SchemaAttributes(ctx),
-				CustomType: EditorInterfaceEditorLayoutItemGroupItemValue{}.CustomType(ctx),
+				CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue]().CustomType(ctx),
 			},
-			CustomType: NewTypedListNull[EditorInterfaceEditorLayoutItemGroupItemValue]().CustomType(ctx),
+			CustomType: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]]().CustomType(ctx),
 			Required:   true,
 		},
 	}
@@ -187,7 +187,7 @@ func (v EditorInterfaceEditorLayoutItemValue) SchemaAttributes(ctx context.Conte
 	return map[string]schema.Attribute{
 		"group": schema.SingleNestedAttribute{
 			Attributes: EditorInterfaceEditorLayoutItemGroupValue{}.SchemaAttributes(ctx),
-			CustomType: EditorInterfaceEditorLayoutItemGroupValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue]().CustomType(ctx),
 			Required:   true,
 		},
 	}

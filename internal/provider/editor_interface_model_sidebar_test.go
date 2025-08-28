@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -17,13 +18,14 @@ func TestSidebarValueToEditorInterfaceFieldsSidebarItem(t *testing.T) {
 	ctx := t.Context()
 	path := path.Root("sidebar")
 
-	model := NewEditorInterfaceSidebarValueKnown()
-	model.WidgetNamespace = types.StringValue("widget_namespace")
-	model.WidgetID = types.StringValue("widget_id")
-	model.Disabled = types.BoolNull()
-	model.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
+	model := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"disabled":         types.BoolNull(),
+		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+	}))
 
-	item, diags := model.ToEditorInterfaceFieldsSidebarItem(ctx, path)
+	item, diags := model.Value().ToEditorInterfaceFieldsSidebarItem(ctx, path)
 
 	assert.Equal(t, "widget_namespace", item.WidgetNamespace)
 	assert.Equal(t, "widget_id", item.WidgetId)
@@ -39,13 +41,14 @@ func TestSidebarValueToEditorInterfaceFieldsSidebarItemInvalidSettings(t *testin
 	ctx := t.Context()
 	path := path.Root("sidebar")
 
-	model := NewEditorInterfaceSidebarValueKnown()
-	model.WidgetNamespace = types.StringValue("widget_namespace")
-	model.WidgetID = types.StringValue("widget_id")
-	model.Disabled = types.BoolNull()
-	model.Settings = jsontypes.NewNormalizedValue(`invalid json`)
+	model := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"disabled":         types.BoolNull(),
+		"settings":         jsontypes.NewNormalizedValue(`invalid json`),
+	}))
 
-	sidebarItem, diags := model.ToEditorInterfaceFieldsSidebarItem(ctx, path)
+	sidebarItem, diags := model.Value().ToEditorInterfaceFieldsSidebarItem(ctx, path)
 
 	assert.NotNil(t, sidebarItem)
 	assert.Empty(t, diags)
@@ -64,9 +67,9 @@ func TestNewEditorInterfaceSidebarValueFromResponse(t *testing.T) {
 
 	value, valueDiags := NewEditorInterfaceSidebarValueFromResponse(path, item)
 
-	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.Equal(t, "widget_id", value.WidgetID.ValueString())
-	assert.JSONEq(t, `{"foo":"bar"}`, value.Settings.ValueString())
+	assert.Equal(t, "widget_namespace", value.Value().WidgetNamespace.ValueString())
+	assert.Equal(t, "widget_id", value.Value().WidgetID.ValueString())
+	assert.JSONEq(t, `{"foo":"bar"}`, value.Value().Settings.ValueString())
 
 	assert.Empty(t, valueDiags)
 }
@@ -83,9 +86,9 @@ func TestNewEditorInterfaceSidebarValueFromResponseSettingsNull(t *testing.T) {
 
 	value, valueDiags := NewEditorInterfaceSidebarValueFromResponse(path, item)
 
-	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.Equal(t, "widget_id", value.WidgetID.ValueString())
-	assert.True(t, value.Settings.IsNull())
+	assert.Equal(t, "widget_namespace", value.Value().WidgetNamespace.ValueString())
+	assert.Equal(t, "widget_id", value.Value().WidgetID.ValueString())
+	assert.True(t, value.Value().Settings.IsNull())
 
 	assert.Empty(t, valueDiags)
 }

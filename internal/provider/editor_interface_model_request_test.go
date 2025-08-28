@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -100,22 +101,25 @@ func TestToEditorInterfaceFields(t *testing.T) {
 
 	ctx := t.Context()
 
-	controlValue1 := NewEditorInterfaceControlValueKnown()
-	controlValue1.FieldID = types.StringValue("field_id")
-	controlValue1.WidgetNamespace = types.StringValue("widget_namespace")
-	controlValue1.WidgetID = types.StringValue("widget_id")
-	controlValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
+	controlValue1 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceControlValue](ctx, map[string]attr.Value{
+		"field_id":         types.StringValue("field_id"),
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+	}))
 
-	controls := NewTypedList([]EditorInterfaceControlValue{
+	controls := NewTypedList([]TypedObject[EditorInterfaceControlValue]{
 		controlValue1,
 	})
 
-	sidebarValue1 := NewEditorInterfaceSidebarValueKnown()
-	sidebarValue1.WidgetNamespace = types.StringValue("widget_namespace")
-	sidebarValue1.WidgetID = types.StringValue("widget_id")
-	sidebarValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
+	sidebarValue1 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+		"disabled":         types.BoolNull(),
+	}))
 
-	sidebar := NewTypedList([]EditorInterfaceSidebarValue{
+	sidebar := NewTypedList([]TypedObject[EditorInterfaceSidebarValue]{
 		sidebarValue1,
 	})
 
@@ -156,46 +160,55 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 
 	ctx := t.Context()
 
-	controlValue1 := NewEditorInterfaceControlValueKnown()
-	controlValue1.FieldID = types.StringValue("field_id")
-	controlValue1.WidgetNamespace = types.StringValue("widget_namespace")
-	controlValue1.WidgetID = types.StringValue("widget_id")
-	controlValue1.Settings = jsontypes.NewNormalizedNull()
+	controlValue1 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceControlValue](ctx, map[string]attr.Value{
+		"field_id":         types.StringValue("field_id"),
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedNull(),
+	}))
 
-	controlValue2 := NewEditorInterfaceControlValueKnown()
-	controlValue2.FieldID = types.StringValue("field_id")
-	controlValue2.WidgetNamespace = types.StringValue("widget_namespace")
-	controlValue2.WidgetID = types.StringValue("widget_id")
-	controlValue2.Settings = jsontypes.NewNormalizedValue(`invalid json`)
+	controlValue2 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceControlValue](ctx, map[string]attr.Value{
+		"field_id":         types.StringValue("field_id"),
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedValue(`invalid json`),
+	}))
 
-	controlValue3 := NewEditorInterfaceControlValueKnown()
-	controlValue3.FieldID = types.StringValue("field_id")
-	controlValue3.WidgetNamespace = types.StringValue("widget_namespace")
-	controlValue3.WidgetID = types.StringValue("widget_id")
-	controlValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
+	controlValue3 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceControlValue](ctx, map[string]attr.Value{
+		"field_id":         types.StringValue("field_id"),
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+	}))
 
-	controls := NewTypedList([]EditorInterfaceControlValue{
+	controls := NewTypedList([]TypedObject[EditorInterfaceControlValue]{
 		controlValue1,
 		controlValue2,
 		controlValue3,
 	})
 
-	sidebarValue1 := NewEditorInterfaceSidebarValueKnown()
-	sidebarValue1.WidgetNamespace = types.StringValue("widget_namespace")
-	sidebarValue1.WidgetID = types.StringValue("widget_id")
-	sidebarValue1.Settings = jsontypes.NewNormalizedNull()
+	sidebarValue1 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedNull(),
+		"disabled":         types.BoolNull(),
+	}))
 
-	sidebarValue2 := NewEditorInterfaceSidebarValueKnown()
-	sidebarValue2.WidgetNamespace = types.StringValue("widget_namespace")
-	sidebarValue2.WidgetID = types.StringValue("widget_id")
-	sidebarValue2.Settings = jsontypes.NewNormalizedValue(`invalid json`)
+	sidebarValue2 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedValue(`invalid json`),
+		"disabled":         types.BoolNull(),
+	}))
 
-	sidebarValue3 := NewEditorInterfaceSidebarValueKnown()
-	sidebarValue3.WidgetNamespace = types.StringValue("widget_namespace")
-	sidebarValue3.WidgetID = types.StringValue("widget_id")
-	sidebarValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
+	sidebarValue3 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+		"disabled":         types.BoolNull(),
+	}))
 
-	sidebar := NewTypedList([]EditorInterfaceSidebarValue{
+	sidebar := NewTypedList([]TypedObject[EditorInterfaceSidebarValue]{
 		sidebarValue1,
 		sidebarValue2,
 		sidebarValue3,

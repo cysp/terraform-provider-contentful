@@ -7,23 +7,12 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorInterfaceControlListValueNull() TypedList[EditorInterfaceControlValue] {
-	return NewTypedListNull[EditorInterfaceControlValue]()
-}
-
-func NewEditorInterfaceControlValueKnown() EditorInterfaceControlValue {
-	return EditorInterfaceControlValue{
-		state: attr.ValueStateKnown,
-	}
-}
-
-func (v *EditorInterfaceControlValue) ToEditorInterfaceFieldsControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsControlsItem, diag.Diagnostics) {
+func (v EditorInterfaceControlValue) ToEditorInterfaceFieldsControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := cm.EditorInterfaceFieldsControlsItem{
@@ -40,10 +29,10 @@ func (v *EditorInterfaceControlValue) ToEditorInterfaceFieldsControlsItem(_ cont
 	return item, diags
 }
 
-func NewEditorInterfaceControlListValueFromResponse(_ context.Context, path path.Path, controlsItems []cm.EditorInterfaceControlsItem) (TypedList[EditorInterfaceControlValue], diag.Diagnostics) {
+func NewEditorInterfaceControlListValueFromResponse(_ context.Context, path path.Path, controlsItems []cm.EditorInterfaceControlsItem) (TypedList[TypedObject[EditorInterfaceControlValue]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]EditorInterfaceControlValue, len(controlsItems))
+	listElementValues := make([]TypedObject[EditorInterfaceControlValue], len(controlsItems))
 
 	for index, item := range controlsItems {
 		path := path.AtListIndex(index)
@@ -59,7 +48,7 @@ func NewEditorInterfaceControlListValueFromResponse(_ context.Context, path path
 	return list, diags
 }
 
-func NewEditorInterfaceControlValueFromResponse(path path.Path, item cm.EditorInterfaceControlsItem) (EditorInterfaceControlValue, diag.Diagnostics) {
+func NewEditorInterfaceControlValueFromResponse(path path.Path, item cm.EditorInterfaceControlsItem) (TypedObject[EditorInterfaceControlValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := EditorInterfaceControlValue{
@@ -67,7 +56,6 @@ func NewEditorInterfaceControlValueFromResponse(path path.Path, item cm.EditorIn
 		WidgetNamespace: util.OptStringToStringValue(item.WidgetNamespace),
 		WidgetID:        util.OptStringToStringValue(item.WidgetId),
 		Settings:        jsontypes.NewNormalizedNull(),
-		state:           attr.ValueStateKnown,
 	}
 
 	if item.Settings != nil {
@@ -79,5 +67,5 @@ func NewEditorInterfaceControlValueFromResponse(path path.Path, item cm.EditorIn
 		value.Settings = jsontypes.NewNormalizedValue(string(settings))
 	}
 
-	return value, diags
+	return NewTypedObject(value), diags
 }

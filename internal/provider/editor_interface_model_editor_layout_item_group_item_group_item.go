@@ -4,16 +4,15 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemValueListFromResponse(ctx context.Context, path path.Path, items []cm.EditorInterfaceEditorLayoutItem) (TypedList[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue], diag.Diagnostics) {
+func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemValueListFromResponse(ctx context.Context, path path.Path, items []cm.EditorInterfaceEditorLayoutItem) (TypedList[TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]EditorInterfaceEditorLayoutItemGroupItemGroupItemValue, len(items))
+	listElementValues := make([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue], len(items))
 
 	for index, item := range items {
 		path := path.AtListIndex(index)
@@ -21,10 +20,9 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemValueListFromResponse(c
 		editorLayoutValue, editorLayoutValueDiags := NewEditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValueFromResponse(ctx, path, item)
 		diags.Append(editorLayoutValueDiags...)
 
-		listElementValues[index] = EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{
+		listElementValues[index] = NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{
 			Field: editorLayoutValue,
-			state: attr.ValueStateKnown,
-		}
+		})
 	}
 
 	list := NewTypedList(listElementValues)
@@ -32,7 +30,7 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemValueListFromResponse(c
 	return list, diags
 }
 
-func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValueFromResponse(_ context.Context, path path.Path, item cm.EditorInterfaceEditorLayoutItem) (EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue, diag.Diagnostics) {
+func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValueFromResponse(_ context.Context, path path.Path, item cm.EditorInterfaceEditorLayoutItem) (TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	switch item.Type {
@@ -44,30 +42,29 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValueFromResponse(
 		if !itemFieldItemOk {
 			diags.AddAttributeError(path, "Failed to read field item", "Expected field item")
 
-			return EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}, diags
+			return NewTypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}), diags
 		}
 
-		return EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{
+		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{
 			FieldID: types.StringValue(itemFieldItem.FieldId),
-			state:   attr.ValueStateKnown,
-		}, diags
+		}), diags
 	}
 
-	return EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}, diags
+	return NewTypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}), diags
 }
 
-func (v *EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if !v.Field.IsUnknown() && !v.Field.IsNull() {
-		fieldItem, fieldItemDiags := v.Field.ToEditorInterfaceEditorLayoutItem(ctx, path.AtName("field"))
+		fieldItem, fieldItemDiags := v.Field.Value().ToEditorInterfaceEditorLayoutItem(ctx, path.AtName("field"))
 		diags.Append(fieldItemDiags...)
 
 		return fieldItem, diags
 	}
 
 	// if !v.Group.IsUnknown() && !v.Group.IsNull() {
-	// 	groupItem, groupItemDiags := v.Group.ToEditorInterfaceEditorLayoutGroupItem(ctx, path.AtName("group"))
+	// 	groupItem, groupItemDiags := v.Group.Value().ToEditorInterfaceEditorLayoutGroupItem(ctx, path.AtName("group"))
 	// 	diags.Append(groupItemDiags...)
 
 	// 	return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(groupItem), diags

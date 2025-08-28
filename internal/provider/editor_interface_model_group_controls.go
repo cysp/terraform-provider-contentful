@@ -7,23 +7,12 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorInterfaceGroupControlListValueNull() TypedList[EditorInterfaceGroupControlValue] {
-	return NewTypedListNull[EditorInterfaceGroupControlValue]()
-}
-
-func NewEditorInterfaceGroupControlValueKnown() EditorInterfaceGroupControlValue {
-	return EditorInterfaceGroupControlValue{
-		state: attr.ValueStateKnown,
-	}
-}
-
-func (v *EditorInterfaceGroupControlValue) ToEditorInterfaceFieldsGroupControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsGroupControlsItem, diag.Diagnostics) {
+func (v EditorInterfaceGroupControlValue) ToEditorInterfaceFieldsGroupControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsGroupControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := cm.EditorInterfaceFieldsGroupControlsItem{
@@ -40,10 +29,10 @@ func (v *EditorInterfaceGroupControlValue) ToEditorInterfaceFieldsGroupControlsI
 	return item, diags
 }
 
-func NewEditorInterfaceGroupControlListValueFromResponse(_ context.Context, path path.Path, groupControlsItems []cm.EditorInterfaceGroupControlsItem) (TypedList[EditorInterfaceGroupControlValue], diag.Diagnostics) {
+func NewEditorInterfaceGroupControlListValueFromResponse(_ context.Context, path path.Path, groupControlsItems []cm.EditorInterfaceGroupControlsItem) (TypedList[TypedObject[EditorInterfaceGroupControlValue]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]EditorInterfaceGroupControlValue, len(groupControlsItems))
+	listElementValues := make([]TypedObject[EditorInterfaceGroupControlValue], len(groupControlsItems))
 
 	for index, item := range groupControlsItems {
 		path := path.AtListIndex(index)
@@ -59,7 +48,7 @@ func NewEditorInterfaceGroupControlListValueFromResponse(_ context.Context, path
 	return list, diags
 }
 
-func NewEditorInterfaceGroupControlValueFromResponse(path path.Path, item cm.EditorInterfaceGroupControlsItem) (EditorInterfaceGroupControlValue, diag.Diagnostics) {
+func NewEditorInterfaceGroupControlValueFromResponse(path path.Path, item cm.EditorInterfaceGroupControlsItem) (TypedObject[EditorInterfaceGroupControlValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := EditorInterfaceGroupControlValue{
@@ -67,7 +56,6 @@ func NewEditorInterfaceGroupControlValueFromResponse(path path.Path, item cm.Edi
 		WidgetNamespace: util.OptStringToStringValue(item.WidgetNamespace),
 		WidgetID:        util.OptStringToStringValue(item.WidgetId),
 		Settings:        jsontypes.NewNormalizedNull(),
-		state:           attr.ValueStateKnown,
 	}
 
 	if item.Settings != nil {
@@ -79,5 +67,5 @@ func NewEditorInterfaceGroupControlValueFromResponse(path path.Path, item cm.Edi
 		value.Settings = jsontypes.NewNormalizedValue(string(settings))
 	}
 
-	return value, diags
+	return NewTypedObject(value), diags
 }

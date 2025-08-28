@@ -6,19 +6,12 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorInterfaceSidebarValueKnown() EditorInterfaceSidebarValue {
-	return EditorInterfaceSidebarValue{
-		state: attr.ValueStateKnown,
-	}
-}
-
-func (v *EditorInterfaceSidebarValue) ToEditorInterfaceFieldsSidebarItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsSidebarItem, diag.Diagnostics) {
+func (v EditorInterfaceSidebarValue) ToEditorInterfaceFieldsSidebarItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	item := cm.EditorInterfaceFieldsSidebarItem{
@@ -39,7 +32,7 @@ func (v *EditorInterfaceSidebarValue) ToEditorInterfaceFieldsSidebarItem(_ conte
 	return item, diags
 }
 
-func NewEditorInterfaceSidebarValueFromResponse(path path.Path, item cm.EditorInterfaceSidebarItem) (EditorInterfaceSidebarValue, diag.Diagnostics) {
+func NewEditorInterfaceSidebarValueFromResponse(path path.Path, item cm.EditorInterfaceSidebarItem) (TypedObject[EditorInterfaceSidebarValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	value := EditorInterfaceSidebarValue{
@@ -47,7 +40,6 @@ func NewEditorInterfaceSidebarValueFromResponse(path path.Path, item cm.EditorIn
 		WidgetID:        types.StringValue(item.WidgetId),
 		Disabled:        types.BoolNull(),
 		Settings:        jsontypes.NewNormalizedNull(),
-		state:           attr.ValueStateKnown,
 	}
 
 	if disabled, ok := item.Disabled.Get(); ok {
@@ -63,17 +55,13 @@ func NewEditorInterfaceSidebarValueFromResponse(path path.Path, item cm.EditorIn
 		value.Settings = jsontypes.NewNormalizedValue(string(settings))
 	}
 
-	return value, diags
+	return NewTypedObject(value), diags
 }
 
-func NewEditorInterfaceSidebarListValueNull() TypedList[EditorInterfaceSidebarValue] {
-	return NewTypedListNull[EditorInterfaceSidebarValue]()
-}
-
-func NewEditorInterfaceSidebarListValueFromResponse(_ context.Context, path path.Path, sidebarItems []cm.EditorInterfaceSidebarItem) (TypedList[EditorInterfaceSidebarValue], diag.Diagnostics) {
+func NewEditorInterfaceSidebarListValueFromResponse(_ context.Context, path path.Path, sidebarItems []cm.EditorInterfaceSidebarItem) (TypedList[TypedObject[EditorInterfaceSidebarValue]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]EditorInterfaceSidebarValue, len(sidebarItems))
+	listElementValues := make([]TypedObject[EditorInterfaceSidebarValue], len(sidebarItems))
 
 	for index, item := range sidebarItems {
 		sidebarValue, sidebarValueDiags := NewEditorInterfaceSidebarValueFromResponse(path.AtListIndex(index), item)
