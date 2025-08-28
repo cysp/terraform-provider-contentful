@@ -30,7 +30,7 @@ func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 
 		model.EditorLayout = editorLayout
 	} else {
-		model.EditorLayout = NewEditorInterfaceEditorLayoutListValueNull()
+		model.EditorLayout = NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]]()
 	}
 
 	if editorInterfaceControls, ok := editorInterface.Controls.Get(); ok {
@@ -39,7 +39,7 @@ func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 
 		model.Controls = controlsListValue
 	} else {
-		model.Controls = NewEditorInterfaceControlListValueNull()
+		model.Controls = NewTypedListNull[TypedObject[EditorInterfaceControlValue]]()
 	}
 
 	if editorInterfaceGroupControls, ok := editorInterface.GroupControls.Get(); ok {
@@ -48,7 +48,7 @@ func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 
 		model.GroupControls = groupControlsListValue
 	} else {
-		model.GroupControls = NewEditorInterfaceGroupControlListValueNull()
+		model.GroupControls = NewTypedListNull[TypedObject[EditorInterfaceGroupControlValue]]()
 	}
 
 	if editorInterfaceSidebar, ok := editorInterface.Sidebar.Get(); ok {
@@ -57,7 +57,7 @@ func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 
 		model.Sidebar = sidebarListValue
 	} else {
-		model.Sidebar = NewEditorInterfaceSidebarListValueNull()
+		model.Sidebar = NewTypedListNull[TypedObject[EditorInterfaceSidebarValue]]()
 	}
 
 	return model, diags

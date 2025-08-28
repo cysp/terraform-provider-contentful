@@ -25,7 +25,7 @@ func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) 
 		for index, editorLayoutElement := range editorLayoutElementValues {
 			path := editorLayoutPath.AtListIndex(index)
 
-			requestEditorLayoutItem, requestEditorLayoutItemDiags := editorLayoutElement.ToEditorInterfaceEditorLayoutItem(ctx, path)
+			requestEditorLayoutItem, requestEditorLayoutItemDiags := editorLayoutElement.Value().ToEditorInterfaceEditorLayoutItem(ctx, path)
 			diags.Append(requestEditorLayoutItemDiags...)
 
 			requestEditorLayoutItems[index] = requestEditorLayoutItem
@@ -46,7 +46,7 @@ func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) 
 		for index, controlsElement := range controlsElementValues {
 			path := controlsPath.AtListIndex(index)
 
-			requestControlsItem, requestControlsItemDiags := controlsElement.ToEditorInterfaceFieldsControlsItem(ctx, path)
+			requestControlsItem, requestControlsItemDiags := controlsElement.Value().ToEditorInterfaceFieldsControlsItem(ctx, path)
 			diags.Append(requestControlsItemDiags...)
 
 			requestControlsItems[index] = requestControlsItem
@@ -67,7 +67,7 @@ func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) 
 		for index, groupControlsElement := range groupControlsElementValues {
 			path := controlsPath.AtListIndex(index)
 
-			requestGroupControlsItem, requestGroupControlsItemDiags := groupControlsElement.ToEditorInterfaceFieldsGroupControlsItem(ctx, path)
+			requestGroupControlsItem, requestGroupControlsItemDiags := groupControlsElement.Value().ToEditorInterfaceFieldsGroupControlsItem(ctx, path)
 			diags.Append(requestGroupControlsItemDiags...)
 
 			requestGroupControlsItems[index] = requestGroupControlsItem
@@ -88,7 +88,7 @@ func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) 
 		for index, sidebarElement := range sidebarElementValues {
 			path := sidebarPath.AtListIndex(index)
 
-			requestSidebarItem, requestSidebarItemDiags := sidebarElement.ToEditorInterfaceFieldsSidebarItem(ctx, path)
+			requestSidebarItem, requestSidebarItemDiags := sidebarElement.Value().ToEditorInterfaceFieldsSidebarItem(ctx, path)
 			diags.Append(requestSidebarItemDiags...)
 
 			requestSidebarItems[index] = requestSidebarItem

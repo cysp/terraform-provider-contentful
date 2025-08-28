@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -17,13 +18,14 @@ func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItem(t *testi
 	ctx := t.Context()
 	path := path.Root("controls")
 
-	model := NewEditorInterfaceControlValueKnown()
-	model.FieldID = types.StringValue("field_id")
-	model.WidgetNamespace = types.StringValue("widget_namespace")
-	model.WidgetID = types.StringValue("widget_id")
-	model.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
+	model := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceControlValue](ctx, map[string]attr.Value{
+		"field_id":         types.StringValue("field_id"),
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+	}))
 
-	item, diags := model.ToEditorInterfaceFieldsControlsItem(ctx, path)
+	item, diags := model.Value().ToEditorInterfaceFieldsControlsItem(ctx, path)
 
 	assert.Equal(t, "field_id", item.FieldId)
 	assert.Equal(t, cm.NewOptString("widget_namespace"), item.WidgetNamespace)
@@ -39,13 +41,14 @@ func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItemInvalidSe
 	ctx := t.Context()
 	path := path.Root("controls")
 
-	model := NewEditorInterfaceControlValueKnown()
-	model.FieldID = types.StringValue("field_id")
-	model.WidgetNamespace = types.StringValue("widget_namespace")
-	model.WidgetID = types.StringValue("widget_id")
-	model.Settings = jsontypes.NewNormalizedValue(`invalid json`)
+	model := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceControlValue](ctx, map[string]attr.Value{
+		"field_id":         types.StringValue("field_id"),
+		"widget_namespace": types.StringValue("widget_namespace"),
+		"widget_id":        types.StringValue("widget_id"),
+		"settings":         jsontypes.NewNormalizedValue(`invalid json`),
+	}))
 
-	controlsItem, diags := model.ToEditorInterfaceFieldsControlsItem(ctx, path)
+	controlsItem, diags := model.Value().ToEditorInterfaceFieldsControlsItem(ctx, path)
 
 	assert.NotNil(t, controlsItem)
 	assert.Empty(t, diags)
@@ -65,10 +68,10 @@ func TestNewEditorInterfaceControlValueFromResponse(t *testing.T) {
 
 	value, diags := NewEditorInterfaceControlValueFromResponse(path, item)
 
-	assert.Equal(t, "field_id", value.FieldID.ValueString())
-	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.Equal(t, "widget_id", value.WidgetID.ValueString())
-	assert.JSONEq(t, `{"foo":"bar"}`, value.Settings.ValueString())
+	assert.Equal(t, "field_id", value.Value().FieldID.ValueString())
+	assert.Equal(t, "widget_namespace", value.Value().WidgetNamespace.ValueString())
+	assert.Equal(t, "widget_id", value.Value().WidgetID.ValueString())
+	assert.JSONEq(t, `{"foo":"bar"}`, value.Value().Settings.ValueString())
 
 	assert.Empty(t, diags)
 }
@@ -86,10 +89,10 @@ func TestNewEditorInterfaceControlValueFromResponseSettingsNull(t *testing.T) {
 
 	value, diags := NewEditorInterfaceControlValueFromResponse(path, item)
 
-	assert.Equal(t, "field_id", value.FieldID.ValueString())
-	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
-	assert.Equal(t, "widget_id", value.WidgetID.ValueString())
-	assert.True(t, value.Settings.IsNull())
+	assert.Equal(t, "field_id", value.Value().FieldID.ValueString())
+	assert.Equal(t, "widget_namespace", value.Value().WidgetNamespace.ValueString())
+	assert.Equal(t, "widget_id", value.Value().WidgetID.ValueString())
+	assert.True(t, value.Value().Settings.IsNull())
 
 	assert.Empty(t, diags)
 }
