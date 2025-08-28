@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.ContentTypeFieldsItem) (TypedList[ContentTypeFieldValue], diag.Diagnostics) {
+func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.ContentTypeFieldsItem) (TypedList[TypedObject[ContentTypeFieldValue]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	listElementValues := make([]ContentTypeFieldValue, len(items))
+	listElementValues := make([]TypedObject[ContentTypeFieldValue], len(items))
 
 	for index, item := range items {
 		path := path.AtListIndex(index)
@@ -32,7 +32,7 @@ func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.C
 	return list, diags
 }
 
-func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.ContentTypeFieldsItem) (ContentTypeFieldValue, diag.Diagnostics) {
+func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.ContentTypeFieldsItem) (TypedObject[ContentTypeFieldValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	defaultValueValue := jsontypes.NewNormalizedNull()
@@ -51,8 +51,7 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 		Omitted:          util.OptBoolToBoolValue(item.Omitted),
 		Required:         util.OptBoolToBoolValue(item.Required),
 		Validations:      NewTypedListNull[jsontypes.Normalized](),
-		AllowedResources: NewTypedListNull[ContentTypeFieldAllowedResourceItemValue](),
-		state:            attr.ValueStateKnown,
+		AllowedResources: NewTypedListNull[TypedObject[ContentTypeFieldAllowedResourceItemValue]](),
 	}
 
 	itemsValue, itemsValueDiags := NewItemsValueFromResponse(ctx, path.AtName("items"), item.Items)
@@ -72,31 +71,29 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 		value.AllowedResources = allowedResourcesList
 	}
 
-	return value, diags
+	return NewTypedObject(value), diags
 }
 
-func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptContentTypeFieldsItemItems) (ContentTypeFieldItemsValue, diag.Diagnostics) {
+func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptContentTypeFieldsItemItems) (TypedObject[ContentTypeFieldItemsValue], diag.Diagnostics) {
+	itemItems, itemItemsOk := item.Get()
+	if !itemItemsOk {
+		return NewTypedObjectNull[ContentTypeFieldItemsValue](), nil
+	}
+
 	diags := diag.Diagnostics{}
 
 	value := ContentTypeFieldItemsValue{
-		state: attr.ValueStateNull,
+		ItemsType:   util.OptStringToStringValue(itemItems.Type),
+		LinkType:    util.OptStringToStringValue(itemItems.LinkType),
+		Validations: NewTypedListNull[jsontypes.Normalized](),
 	}
 
-	if itemItems, ok := item.Get(); ok {
-		value = ContentTypeFieldItemsValue{
-			ItemsType:   util.OptStringToStringValue(itemItems.Type),
-			LinkType:    util.OptStringToStringValue(itemItems.LinkType),
-			Validations: NewTypedListNull[jsontypes.Normalized](),
-			state:       attr.ValueStateKnown,
-		}
+	validationsList, validationsListDiags := NewValidationsListFromResponse(ctx, path.AtName("validations"), itemItems.Validations)
+	diags.Append(validationsListDiags...)
 
-		validationsList, validationsListDiags := NewValidationsListFromResponse(ctx, path.AtName("validations"), itemItems.Validations)
-		diags.Append(validationsListDiags...)
+	value.Validations = validationsList
 
-		value.Validations = validationsList
-	}
-
-	return value, diags
+	return NewTypedObject(value), diags
 }
 
 func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations []jx.Raw) (TypedList[jsontypes.Normalized], diag.Diagnostics) {
@@ -115,10 +112,10 @@ func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations 
 	return list, diags
 }
 
-func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, path path.Path, resourceLinks []cm.ResourceLink) (TypedList[ContentTypeFieldAllowedResourceItemValue], diag.Diagnostics) {
+func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, path path.Path, resourceLinks []cm.ResourceLink) (TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	allowedResourceElements := make([]ContentTypeFieldAllowedResourceItemValue, len(resourceLinks))
+	allowedResourceElements := make([]TypedObject[ContentTypeFieldAllowedResourceItemValue], len(resourceLinks))
 
 	for i, resourceLink := range resourceLinks {
 		path := path.AtListIndex(i)
@@ -134,15 +131,15 @@ func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, pa
 
 			contentTypesList := NewTypedListFromStringSlice(contentfulEntryResourceLink.ContentTypes)
 
-			contentfulEntryResourceItem, contentfulEntryResourceItemDiags := NewContentTypeFieldAllowedResourceItemContentfulEntryValueKnownFromAttributes(ctx, map[string]attr.Value{
+			contentfulEntryResourceItem, contentfulEntryResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemContentfulEntryValue](ctx, map[string]attr.Value{
 				"source":        types.StringValue(contentfulEntryResourceLink.Source),
 				"content_types": contentTypesList,
 			})
 			diags.Append(contentfulEntryResourceItemDiags...)
 
-			allowedResourceItem, allowedResourceItemDiags := NewContentTypeFieldAllowedResourceItemValueKnownFromAttributes(ctx, map[string]attr.Value{
+			allowedResourceItem, allowedResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemValue](ctx, map[string]attr.Value{
 				"contentful_entry": contentfulEntryResourceItem,
-				"external":         NewContentTypeFieldAllowedResourceItemExternalValueNull(),
+				"external":         NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue](),
 			})
 			diags.Append(allowedResourceItemDiags...)
 
@@ -156,14 +153,14 @@ func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, pa
 				break
 			}
 
-			externalResourceItem, externalResourceItemDiags := NewContentTypeFieldAllowedResourceItemExternalValueKnownFromAttributes(ctx, map[string]attr.Value{
+			externalResourceItem, externalResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemExternalValue](ctx, map[string]attr.Value{
 				"type": types.StringValue(externalResourceLink.Type),
 			})
 			diags.Append(externalResourceItemDiags...)
 
-			allowedResourceItem, allowedResourceItemDiags := NewContentTypeFieldAllowedResourceItemValueKnownFromAttributes(ctx, map[string]attr.Value{
+			allowedResourceItem, allowedResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemValue](ctx, map[string]attr.Value{
 				"external":         externalResourceItem,
-				"contentful_entry": NewContentTypeFieldAllowedResourceItemContentfulEntryValueNull(),
+				"contentful_entry": NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
 			})
 			diags.Append(allowedResourceItemDiags...)
 

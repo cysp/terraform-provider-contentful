@@ -18,11 +18,11 @@ func TestContentTypeFieldValueToTerraformValueRoundtrip(t *testing.T) {
 	ctx := t.Context()
 
 	testcases := map[string]struct {
-		input ContentTypeFieldValue
+		input TypedObject[ContentTypeFieldValue]
 		check func(t *testing.T, v tftypes.Value)
 	}{
 		"unknown": {
-			input: NewContentTypeFieldValueUnknown(),
+			input: NewTypedObjectUnknown[ContentTypeFieldValue](),
 			check: func(t *testing.T, v tftypes.Value) {
 				t.Helper()
 
@@ -31,7 +31,7 @@ func TestContentTypeFieldValueToTerraformValueRoundtrip(t *testing.T) {
 			},
 		},
 		"null": {
-			input: NewContentTypeFieldValueNull(),
+			input: NewTypedObjectNull[ContentTypeFieldValue](),
 			check: func(t *testing.T, v tftypes.Value) {
 				t.Helper()
 
@@ -40,13 +40,13 @@ func TestContentTypeFieldValueToTerraformValueRoundtrip(t *testing.T) {
 			},
 		},
 		"known": {
-			input: DiagsNoErrorsMust(NewContentTypeFieldValueKnownFromAttributes(ctx, map[string]attr.Value{
+			input: DiagsNoErrorsMust(NewTypedObjectFromAttributes[ContentTypeFieldValue](ctx, map[string]attr.Value{
 				"type":        types.StringValue("Link"),
 				"link_type":   types.StringValue("Entry"),
 				"validations": NewTypedList([]jsontypes.Normalized{}),
 				"id":          types.StringValue("id"),
 				"name":        types.StringValue("name"),
-				"items": DiagsNoErrorsMust(NewContentTypeFieldItemsValueKnownFromAttributes(ctx, map[string]attr.Value{
+				"items": DiagsNoErrorsMust(NewTypedObjectFromAttributes[ContentTypeFieldItemsValue](ctx, map[string]attr.Value{
 					"type":        types.StringValue("Link"),
 					"link_type":   types.StringValue("Entry"),
 					"validations": NewTypedList([]jsontypes.Normalized{}),
@@ -56,7 +56,66 @@ func TestContentTypeFieldValueToTerraformValueRoundtrip(t *testing.T) {
 				"disabled":          types.BoolValue(false),
 				"omitted":           types.BoolValue(false),
 				"required":          types.BoolValue(true),
-				"allowed_resources": NewTypedListNull[ContentTypeFieldAllowedResourceItemValue](),
+				"allowed_resources": NewTypedListNull[TypedObject[ContentTypeFieldAllowedResourceItemValue]](),
+			})),
+			check: func(t *testing.T, v tftypes.Value) {
+				t.Helper()
+
+				assert.True(t, v.IsKnown())
+				assert.False(t, v.IsNull())
+			},
+		},
+	}
+
+	for name, testcase := range testcases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			actual, err := testcase.input.ToTerraformValue(ctx)
+			require.NoError(t, err)
+
+			testcase.check(t, actual)
+
+			roundtrip, err := testcase.input.Type(ctx).ValueFromTerraform(ctx, actual)
+			require.NoError(t, err)
+
+			assert.True(t, testcase.input.Equal(roundtrip))
+		})
+	}
+}
+
+func TestContentTypeFieldItemsValueToTerraformValueRoundtrip(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	testcases := map[string]struct {
+		input TypedObject[ContentTypeFieldItemsValue]
+		check func(t *testing.T, v tftypes.Value)
+	}{
+		"unknown": {
+			input: NewTypedObjectUnknown[ContentTypeFieldItemsValue](),
+			check: func(t *testing.T, v tftypes.Value) {
+				t.Helper()
+
+				assert.False(t, v.IsKnown())
+				assert.False(t, v.IsNull())
+			},
+		},
+		"null": {
+			input: NewTypedObjectNull[ContentTypeFieldItemsValue](),
+			check: func(t *testing.T, v tftypes.Value) {
+				t.Helper()
+
+				assert.True(t, v.IsKnown())
+				assert.True(t, v.IsNull())
+			},
+		},
+		"known": {
+			input: DiagsNoErrorsMust(NewTypedObjectFromAttributes[ContentTypeFieldItemsValue](ctx, map[string]attr.Value{
+				"type":        types.StringValue("Link"),
+				"link_type":   types.StringValue("Entry"),
+				"validations": NewTypedList([]jsontypes.Normalized{}),
 			})),
 			check: func(t *testing.T, v tftypes.Value) {
 				t.Helper()
