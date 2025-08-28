@@ -22,13 +22,13 @@ func TestToEnvironmentLinks(t *testing.T) {
 		expectedDiags bool
 	}{
 		"unknown": {
-			value:    NewTypedListUnknown[types.String](ctx),
+			value:    NewTypedListUnknown[types.String](),
 			expected: nil,
 		},
 		"unknown element": {
-			value: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
+			value: NewTypedList([]types.String{
 				types.StringUnknown(),
-			})),
+			}),
 			expected: []cm.EnvironmentLink{
 				{
 					Sys: cm.EnvironmentLinkSys{
@@ -41,11 +41,11 @@ func TestToEnvironmentLinks(t *testing.T) {
 			expectedDiags: true,
 		},
 		"known and unknown elements": {
-			value: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
+			value: NewTypedList([]types.String{
 				types.StringValue("a"),
 				types.StringUnknown(),
 				types.StringValue("c"),
-			})),
+			}),
 			expected: []cm.EnvironmentLink{
 				{
 					Sys: cm.EnvironmentLinkSys{
@@ -72,14 +72,14 @@ func TestToEnvironmentLinks(t *testing.T) {
 			expectedDiags: true,
 		},
 		"empty": {
-			value:    DiagsNoErrorsMust(NewTypedList(ctx, []types.String{})),
+			value:    NewTypedList([]types.String{}),
 			expected: []cm.EnvironmentLink{},
 		},
 		"known elements": {
-			value: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
+			value: NewTypedList([]types.String{
 				types.StringValue("env1"),
 				types.StringValue("env2"),
-			})),
+			}),
 			expected: []cm.EnvironmentLink{
 				{
 					Sys: cm.EnvironmentLinkSys{
@@ -139,10 +139,10 @@ func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 		},
 	}
 
-	expected := DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
+	expected := NewTypedList([]types.String{
 		types.StringValue("env1"),
 		types.StringValue("env2"),
-	}))
+	})
 
 	result, diags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, path, environmentLinks)
 	assert.Empty(t, diags)

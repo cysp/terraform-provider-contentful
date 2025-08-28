@@ -17,10 +17,10 @@ type WebhookFilterInValue struct {
 	state  attr.ValueState
 }
 
-func NewWebhookFilterInValueKnown(ctx context.Context) WebhookFilterInValue {
+func NewWebhookFilterInValueKnown(_ context.Context) WebhookFilterInValue {
 	return WebhookFilterInValue{
 		Doc:    types.StringNull(),
-		Values: NewTypedListNull[types.String](ctx),
+		Values: NewTypedListNull[types.String](),
 		state:  attr.ValueStateKnown,
 	}
 }

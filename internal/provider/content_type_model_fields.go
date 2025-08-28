@@ -27,8 +27,7 @@ func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.C
 		listElementValues[index] = listElementValue
 	}
 
-	list, listDiags := NewTypedList(ctx, listElementValues)
-	diags.Append(listDiags...)
+	list := NewTypedList(listElementValues)
 
 	return list, diags
 }
@@ -51,8 +50,8 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 		Disabled:         util.OptBoolToBoolValue(item.Disabled),
 		Omitted:          util.OptBoolToBoolValue(item.Omitted),
 		Required:         util.OptBoolToBoolValue(item.Required),
-		Validations:      NewTypedListNull[jsontypes.Normalized](ctx),
-		AllowedResources: NewTypedListNull[ContentTypeFieldAllowedResourceItemValue](ctx),
+		Validations:      NewTypedListNull[jsontypes.Normalized](),
+		AllowedResources: NewTypedListNull[ContentTypeFieldAllowedResourceItemValue](),
 		state:            attr.ValueStateKnown,
 	}
 
@@ -87,7 +86,7 @@ func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptC
 		value = ContentTypeFieldItemsValue{
 			ItemsType:   util.OptStringToStringValue(itemItems.Type),
 			LinkType:    util.OptStringToStringValue(itemItems.LinkType),
-			Validations: NewTypedListNull[jsontypes.Normalized](ctx),
+			Validations: NewTypedListNull[jsontypes.Normalized](),
 			state:       attr.ValueStateKnown,
 		}
 
@@ -100,7 +99,7 @@ func NewItemsValueFromResponse(ctx context.Context, path path.Path, item cm.OptC
 	return value, diags
 }
 
-func NewValidationsListFromResponse(ctx context.Context, _ path.Path, validations []jx.Raw) (TypedList[jsontypes.Normalized], diag.Diagnostics) {
+func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations []jx.Raw) (TypedList[jsontypes.Normalized], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	validationElements := make([]jsontypes.Normalized, len(validations))
@@ -111,8 +110,7 @@ func NewValidationsListFromResponse(ctx context.Context, _ path.Path, validation
 		validationElements[i] = jsontypes.NewNormalizedValue(encoder.String())
 	}
 
-	list, listDiags := NewTypedList(ctx, validationElements)
-	diags.Append(listDiags...)
+	list := NewTypedList(validationElements)
 
 	return list, diags
 }
@@ -134,8 +132,7 @@ func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, pa
 				break
 			}
 
-			contentTypesList, contentTypesListDiags := NewTypedListFromStringSlice(ctx, contentfulEntryResourceLink.ContentTypes)
-			diags.Append(contentTypesListDiags...)
+			contentTypesList := NewTypedListFromStringSlice(contentfulEntryResourceLink.ContentTypes)
 
 			contentfulEntryResourceItem, contentfulEntryResourceItemDiags := NewContentTypeFieldAllowedResourceItemContentfulEntryValueKnownFromAttributes(ctx, map[string]attr.Value{
 				"source":        types.StringValue(contentfulEntryResourceLink.Source),
@@ -177,8 +174,7 @@ func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, pa
 		}
 	}
 
-	list, listDiags := NewTypedList(ctx, allowedResourceElements)
-	diags.Append(listDiags...)
+	list := NewTypedList(allowedResourceElements)
 
 	return list, diags
 }

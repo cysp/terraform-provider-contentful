@@ -12,8 +12,6 @@ import (
 func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 	t.Parallel()
 
-	ctx := t.Context()
-
 	tests := map[string]struct {
 		editorInterface cm.EditorInterface
 		expectedModel   EditorInterfaceModel
@@ -44,10 +42,10 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				SpaceID:       types.StringValue("space"),
 				EnvironmentID: types.StringValue("environment"),
 				ContentTypeID: types.StringValue("content_type"),
-				EditorLayout:  NewTypedListNull[EditorInterfaceEditorLayoutItemValue](ctx),
-				Controls:      NewTypedListNull[EditorInterfaceControlValue](ctx),
-				GroupControls: NewTypedListNull[EditorInterfaceGroupControlValue](ctx),
-				Sidebar:       NewTypedListNull[EditorInterfaceSidebarValue](ctx),
+				EditorLayout:  NewTypedListNull[EditorInterfaceEditorLayoutItemValue](),
+				Controls:      NewTypedListNull[EditorInterfaceControlValue](),
+				GroupControls: NewTypedListNull[EditorInterfaceGroupControlValue](),
+				Sidebar:       NewTypedListNull[EditorInterfaceSidebarValue](),
 			},
 		},
 		"empty": {
@@ -80,10 +78,10 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				SpaceID:       types.StringValue("space"),
 				EnvironmentID: types.StringValue("environment"),
 				ContentTypeID: types.StringValue("content_type"),
-				EditorLayout:  DiagsNoErrorsMust(NewTypedList(ctx, []EditorInterfaceEditorLayoutItemValue{})),
-				Controls:      DiagsNoErrorsMust(NewTypedList(ctx, []EditorInterfaceControlValue{})),
-				GroupControls: DiagsNoErrorsMust(NewTypedList(ctx, []EditorInterfaceGroupControlValue{})),
-				Sidebar:       DiagsNoErrorsMust(NewTypedList(ctx, []EditorInterfaceSidebarValue{})),
+				EditorLayout:  NewTypedList([]EditorInterfaceEditorLayoutItemValue{}),
+				Controls:      NewTypedList([]EditorInterfaceControlValue{}),
+				GroupControls: NewTypedList([]EditorInterfaceGroupControlValue{}),
+				Sidebar:       NewTypedList([]EditorInterfaceSidebarValue{}),
 			},
 		},
 	}

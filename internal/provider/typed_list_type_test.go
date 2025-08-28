@@ -24,15 +24,15 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 	}{
 		"null type": {
 			tfval:    tftypes.NewValue(nil, nil),
-			expected: NewTypedListNull[types.String](ctx),
+			expected: NewTypedListNull[types.String](),
 		},
 		"unknown": {
 			tfval:    tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, tftypes.UnknownValue),
-			expected: NewTypedListUnknown[types.String](ctx),
+			expected: NewTypedListUnknown[types.String](),
 		},
 		"null": {
 			tfval:    tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
-			expected: NewTypedListNull[types.String](ctx),
+			expected: NewTypedListNull[types.String](),
 		},
 		"incorrect type": {
 			tfval:       tftypes.NewValue(tftypes.String, "string"),
@@ -44,17 +44,17 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 		},
 		"empty": {
 			tfval:    tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{}),
-			expected: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{})),
+			expected: NewTypedList([]types.String{}),
 		},
 		"with elements": {
 			tfval: tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{
 				tftypes.NewValue(tftypes.String, "value1"),
 				tftypes.NewValue(tftypes.String, "value2"),
 			}),
-			expected: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
+			expected: NewTypedList([]types.String{
 				types.StringValue("value1"),
 				types.StringValue("value2"),
-			})),
+			}),
 		},
 		"with interior unknown element": {
 			tfval: tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{
@@ -62,11 +62,11 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 				tftypes.NewValue(tftypes.String, tftypes.UnknownValue),
 				tftypes.NewValue(tftypes.String, "value2"),
 			}),
-			expected: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
+			expected: NewTypedList([]types.String{
 				types.StringValue("value1"),
 				types.StringUnknown(),
 				types.StringValue("value2"),
-			})),
+			}),
 		},
 		"with interior null element": {
 			tfval: tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{
@@ -74,11 +74,11 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 				tftypes.NewValue(tftypes.String, nil),
 				tftypes.NewValue(tftypes.String, "value2"),
 			}),
-			expected: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
+			expected: NewTypedList([]types.String{
 				types.StringValue("value1"),
 				types.StringNull(),
 				types.StringValue("value2"),
-			})),
+			}),
 		},
 	}
 

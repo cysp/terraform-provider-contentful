@@ -35,7 +35,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"environments": schema.ListAttribute{
 				ElementType: types.StringType,
-				CustomType:  NewTypedListNull[types.String](ctx).CustomType(ctx),
+				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.List{

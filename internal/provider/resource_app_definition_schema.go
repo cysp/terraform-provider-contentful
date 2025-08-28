@@ -137,7 +137,7 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 		},
 		"options": schema.ListAttribute{
 			ElementType: jsontypes.NormalizedType{},
-			CustomType:  NewTypedListNull[jsontypes.Normalized](ctx).CustomType(ctx),
+			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
 		},
 		"labels": schema.SingleNestedAttribute{

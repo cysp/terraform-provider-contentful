@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEditorInterfaceControlListValueNull(ctx context.Context) TypedList[EditorInterfaceControlValue] {
-	return NewTypedListNull[EditorInterfaceControlValue](ctx)
+func NewEditorInterfaceControlListValueNull() TypedList[EditorInterfaceControlValue] {
+	return NewTypedListNull[EditorInterfaceControlValue]()
 }
 
 func NewEditorInterfaceControlValueKnown() EditorInterfaceControlValue {
@@ -40,7 +40,7 @@ func (v *EditorInterfaceControlValue) ToEditorInterfaceFieldsControlsItem(_ cont
 	return item, diags
 }
 
-func NewEditorInterfaceControlListValueFromResponse(ctx context.Context, path path.Path, controlsItems []cm.EditorInterfaceControlsItem) (TypedList[EditorInterfaceControlValue], diag.Diagnostics) {
+func NewEditorInterfaceControlListValueFromResponse(_ context.Context, path path.Path, controlsItems []cm.EditorInterfaceControlsItem) (TypedList[EditorInterfaceControlValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]EditorInterfaceControlValue, len(controlsItems))
@@ -54,8 +54,7 @@ func NewEditorInterfaceControlListValueFromResponse(ctx context.Context, path pa
 		listElementValues[index] = controlValue
 	}
 
-	list, listDiags := NewTypedList(ctx, listElementValues)
-	diags.Append(listDiags...)
+	list := NewTypedList(listElementValues)
 
 	return list, diags
 }

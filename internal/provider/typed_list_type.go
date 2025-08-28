@@ -30,7 +30,7 @@ func (t TypedListType[T]) TerraformType(ctx context.Context) tftypes.Type {
 //nolint:ireturn
 func (t TypedListType[T]) ValueFromTerraform(ctx context.Context, tfval tftypes.Value) (attr.Value, error) {
 	if tfval.Type() == nil {
-		return NewTypedListNull[T](ctx), nil
+		return NewTypedListNull[T](), nil
 	}
 
 	elementType := t.ElementTypeWithContext(ctx)
@@ -41,11 +41,11 @@ func (t TypedListType[T]) ValueFromTerraform(ctx context.Context, tfval tftypes.
 	}
 
 	if !tfval.IsKnown() {
-		return NewTypedListUnknown[T](ctx), nil
+		return NewTypedListUnknown[T](), nil
 	}
 
 	if tfval.IsNull() {
-		return NewTypedListNull[T](ctx), nil
+		return NewTypedListNull[T](), nil
 	}
 
 	tfelems := []tftypes.Value{}
@@ -72,9 +72,9 @@ func (t TypedListType[T]) ValueFromTerraform(ctx context.Context, tfval tftypes.
 		elements[idx] = element
 	}
 
-	list, listDiags := NewTypedList(ctx, elements)
+	list := NewTypedList(elements)
 
-	return list, ErrorFromDiags(listDiags)
+	return list, nil
 }
 
 //nolint:ireturn
@@ -139,11 +139,11 @@ func (t TypedListType[T]) ElementTypeWithContext(ctx context.Context) attr.Type 
 //nolint:ireturn
 func (t TypedListType[T]) ValueFromList(ctx context.Context, value basetypes.ListValue) (basetypes.ListValuable, diag.Diagnostics) {
 	if value.IsUnknown() {
-		return NewTypedListUnknown[T](ctx), nil
+		return NewTypedListUnknown[T](), nil
 	}
 
 	if value.IsNull() {
-		return NewTypedListNull[T](ctx), nil
+		return NewTypedListNull[T](), nil
 	}
 
 	var diags diag.Diagnostics

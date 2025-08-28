@@ -27,10 +27,7 @@ func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 
 	model.URL = types.StringValue(webhookDefinition.URL)
 
-	topicsList, topicsListDiags := NewTypedListFromStringSlice(ctx, webhookDefinition.Topics)
-	diags.Append(topicsListDiags...)
-
-	model.Topics = topicsList
+	model.Topics = NewTypedListFromStringSlice(webhookDefinition.Topics)
 
 	filtersList, filtersListDiags := ReadWebhookFiltersListValueFromResponse(ctx, path.Root("filters"), webhookDefinition.Filters)
 	diags.Append(filtersListDiags...)

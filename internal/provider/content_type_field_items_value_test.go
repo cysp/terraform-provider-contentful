@@ -43,7 +43,7 @@ func TestContentTypeFieldItemsValueToTerraformValueRoundtrip(t *testing.T) {
 			input: DiagsNoErrorsMust(NewContentTypeFieldItemsValueKnownFromAttributes(ctx, map[string]attr.Value{
 				"type":        types.StringValue("Link"),
 				"link_type":   types.StringValue("Entry"),
-				"validations": DiagsNoErrorsMust(NewTypedList(ctx, []jsontypes.Normalized{})),
+				"validations": NewTypedList([]jsontypes.Normalized{}),
 			})),
 			check: func(t *testing.T, v tftypes.Value) {
 				t.Helper()

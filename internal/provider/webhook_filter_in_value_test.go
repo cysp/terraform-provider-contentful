@@ -16,7 +16,7 @@ func TestWebhookFilterInValueKnownFromAttributesInvalid(t *testing.T) {
 
 	attributes := map[string]attr.Value{
 		"doc":    types.StringNull(),
-		"values": NewTypedListNull[types.String](ctx),
+		"values": NewTypedListNull[types.String](),
 	}
 
 	testcases := GenerateInvalidValueFromAttributesTestcases(t, attributes)

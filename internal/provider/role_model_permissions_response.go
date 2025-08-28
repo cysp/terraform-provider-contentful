@@ -29,27 +29,22 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 	return permissionsMapValue, diags
 }
 
-func NewPermissionActionsListValueFromResponse(ctx context.Context, path path.Path, item cm.RolePermissionsItem) (TypedList[types.String], diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewPermissionActionsListValueFromResponse(_ context.Context, path path.Path, item cm.RolePermissionsItem) (TypedList[types.String], diag.Diagnostics) {
 	switch item.Type {
 	case cm.StringRolePermissionsItem:
 		actionsValues := make([]types.String, 1)
 		actionsValues[0] = types.StringValue(item.String)
 
-		actionsListValue, actionsListValueDiags := NewTypedList(ctx, actionsValues)
-		diags.Append(actionsListValueDiags...)
+		actionsListValue := NewTypedList(actionsValues)
 
-		return actionsListValue, diags
+		return actionsListValue, nil
 
 	case cm.StringArrayRolePermissionsItem:
-		actionsListValue, actionsListValueDiags := NewTypedListFromStringSlice(ctx, item.StringArray)
-		diags.Append(actionsListValueDiags...)
-
-		return actionsListValue, diags
+		return NewTypedListFromStringSlice(item.StringArray), nil
 	}
 
+	diags := diag.Diagnostics{}
 	diags.AddAttributeError(path, "unexpected type for permission actions", "")
 
-	return NewTypedListUnknown[types.String](ctx), diags
+	return NewTypedListUnknown[types.String](), diags
 }
