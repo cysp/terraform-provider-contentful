@@ -14,7 +14,7 @@ type ContentTypeModel struct {
 	Description   types.String                                  `tfsdk:"description"`
 	DisplayField  types.String                                  `tfsdk:"display_field"`
 	Fields        TypedList[TypedObject[ContentTypeFieldValue]] `tfsdk:"fields"`
-	Metadata      ContentTypeMetadataValue                      `tfsdk:"metadata"`
+	Metadata      TypedObject[ContentTypeMetadataValue]         `tfsdk:"metadata"`
 }
 
 type ContentTypeFieldValue struct {
