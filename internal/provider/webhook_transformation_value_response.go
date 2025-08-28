@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ReadWebhookTransformationValueFromResponse(ctx context.Context, _ path.Path, optNilTransformation cm.OptNilWebhookDefinitionTransformation) (WebhookTransformationValue, diag.Diagnostics) {
+func ReadWebhookTransformationValueFromResponse(ctx context.Context, _ path.Path, optNilTransformation cm.OptNilWebhookDefinitionTransformation) (TypedObject[WebhookTransformationValue], diag.Diagnostics) {
 	transformation, transformationOk := optNilTransformation.Get()
 	if !transformationOk {
-		return NewWebhookTransformationValueNull(), nil
+		return NewTypedObjectNull[WebhookTransformationValue](), nil
 	}
 
 	diags := diag.Diagnostics{}
@@ -28,7 +28,7 @@ func ReadWebhookTransformationValueFromResponse(ctx context.Context, _ path.Path
 		bodyValue = jsontypes.NewNormalizedValue(transformation.Body.String())
 	}
 
-	value, valueDiags := NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
+	value, valueDiags := NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
 		"method":                 methodValue,
 		"content_type":           contentTypeValue,
 		"include_content_length": includeContentLengthValue,

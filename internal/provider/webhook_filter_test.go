@@ -10,51 +10,87 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func webhookFiltersListForTesting(t *testing.T) TypedList[WebhookFilterValue] {
+func webhookFiltersListForTesting(t *testing.T) TypedList[TypedObject[WebhookFilterValue]] {
 	t.Helper()
 
 	ctx := t.Context()
 
-	filterEquals := NewWebhookFilterEqualsValueKnown()
-	filterEquals.Doc = types.StringValue("sys.type")
-	filterEquals.Value = types.StringValue("abc")
+	filterEquals := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterEqualsValue](ctx, map[string]attr.Value{
+		"doc":   types.StringValue("sys.type"),
+		"value": types.StringValue("abc"),
+	}))
 
-	filterIn := NewWebhookFilterInValueKnown(ctx)
-	filterIn.Doc = types.StringValue("sys.type")
-	filterIn.Values = NewTypedList([]types.String{types.StringValue("abc"), types.StringValue("def")})
+	filterIn := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterInValue](ctx, map[string]attr.Value{
+		"doc":    types.StringValue("sys.type"),
+		"values": NewTypedList([]types.String{types.StringValue("abc"), types.StringValue("def")}),
+	}))
 
-	filterRegexp := NewWebhookFilterRegexpValueKnown()
-	filterRegexp.Doc = types.StringValue("sys.type")
-	filterRegexp.Pattern = types.StringValue("abc.*")
+	filterRegexp := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterRegexpValue](ctx, map[string]attr.Value{
+		"doc":     types.StringValue("sys.type"),
+		"pattern": types.StringValue("abc.*"),
+	}))
 
-	filterNotEquals := NewWebhookFilterNotValueKnown()
-	filterNotEquals.Equals = filterEquals
+	filterNotEquals := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterNotValue](ctx, map[string]attr.Value{
+		"equals": filterEquals,
+		"in":     NewTypedObjectNull[WebhookFilterInValue](),
+		"regexp": NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}))
 
-	filterNotIn := NewWebhookFilterNotValueKnown()
-	filterNotIn.In = filterIn
+	filterNotIn := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterNotValue](ctx, map[string]attr.Value{
+		"equals": NewTypedObjectNull[WebhookFilterEqualsValue](),
+		"in":     filterIn,
+		"regexp": NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}))
 
-	filterNotRegexp := NewWebhookFilterNotValueKnown()
-	filterNotRegexp.Regexp = filterRegexp
+	filterNotRegexp := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterNotValue](ctx, map[string]attr.Value{
+		"equals": NewTypedObjectNull[WebhookFilterEqualsValue](),
+		"in":     NewTypedObjectNull[WebhookFilterInValue](),
+		"regexp": filterRegexp,
+	}))
 
-	filterFilterEquals := NewWebhookFilterValueKnown()
-	filterFilterEquals.Equals = filterEquals
+	filterFilterEquals := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterValue](ctx, map[string]attr.Value{
+		"not":    NewTypedObjectNull[WebhookFilterNotValue](),
+		"equals": filterEquals,
+		"in":     NewTypedObjectNull[WebhookFilterInValue](),
+		"regexp": NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}))
 
-	filterFilterIn := NewWebhookFilterValueKnown()
-	filterFilterIn.In = filterIn
+	filterFilterIn := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterValue](ctx, map[string]attr.Value{
+		"not":    NewTypedObjectNull[WebhookFilterNotValue](),
+		"equals": NewTypedObjectNull[WebhookFilterEqualsValue](),
+		"in":     filterIn,
+		"regexp": NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}))
 
-	filterFilterRegexp := NewWebhookFilterValueKnown()
-	filterFilterRegexp.Regexp = filterRegexp
+	filterFilterRegexp := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterValue](ctx, map[string]attr.Value{
+		"not":    NewTypedObjectNull[WebhookFilterNotValue](),
+		"equals": NewTypedObjectNull[WebhookFilterEqualsValue](),
+		"in":     NewTypedObjectNull[WebhookFilterInValue](),
+		"regexp": filterRegexp,
+	}))
 
-	filterFilterNotEquals := NewWebhookFilterValueKnown()
-	filterFilterNotEquals.Not = filterNotEquals
+	filterFilterNotEquals := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterValue](ctx, map[string]attr.Value{
+		"not":    filterNotEquals,
+		"equals": NewTypedObjectNull[WebhookFilterEqualsValue](),
+		"in":     NewTypedObjectNull[WebhookFilterInValue](),
+		"regexp": NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}))
 
-	filterFilterNotIn := NewWebhookFilterValueKnown()
-	filterFilterNotIn.Not = filterNotIn
+	filterFilterNotIn := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterValue](ctx, map[string]attr.Value{
+		"not":    filterNotIn,
+		"equals": NewTypedObjectNull[WebhookFilterEqualsValue](),
+		"in":     NewTypedObjectNull[WebhookFilterInValue](),
+		"regexp": NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}))
 
-	filterFilterNotRegexp := NewWebhookFilterValueKnown()
-	filterFilterNotRegexp.Not = filterNotRegexp
+	filterFilterNotRegexp := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookFilterValue](ctx, map[string]attr.Value{
+		"not":    filterNotRegexp,
+		"equals": NewTypedObjectNull[WebhookFilterEqualsValue](),
+		"in":     NewTypedObjectNull[WebhookFilterInValue](),
+		"regexp": NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}))
 
-	filters := NewTypedList([]WebhookFilterValue{
+	filters := NewTypedList([]TypedObject[WebhookFilterValue]{
 		filterFilterEquals,
 		filterFilterIn,
 		filterFilterRegexp,
@@ -118,11 +154,11 @@ func TestWebhookFilterValueToObjectValueUnknown(t *testing.T) {
 	ctx := t.Context()
 
 	values := []AttrValueWithToObjectValue{
-		NewWebhookFilterValueUnknown(),
-		NewWebhookFilterNotValueUnknown(),
-		NewWebhookFilterEqualsValueUnknown(),
-		NewWebhookFilterInValueUnknown(),
-		NewWebhookFilterRegexpValueUnknown(),
+		NewTypedObjectUnknown[WebhookFilterValue](),
+		NewTypedObjectUnknown[WebhookFilterNotValue](),
+		NewTypedObjectUnknown[WebhookFilterEqualsValue](),
+		NewTypedObjectUnknown[WebhookFilterInValue](),
+		NewTypedObjectUnknown[WebhookFilterRegexpValue](),
 	}
 
 	for _, value := range values {
@@ -141,11 +177,11 @@ func TestWebhookFilterValueToObjectValue(t *testing.T) {
 	ctx := t.Context()
 
 	values := []AttrValueWithToObjectValue{
-		NewWebhookFilterValueKnown(),
-		NewWebhookFilterNotValueKnown(),
-		NewWebhookFilterEqualsValueKnown(),
-		NewWebhookFilterInValueKnown(ctx),
-		NewWebhookFilterRegexpValueKnown(),
+		NewTypedObject(WebhookFilterValue{}),
+		NewTypedObject(WebhookFilterNotValue{}),
+		NewTypedObject(WebhookFilterEqualsValue{}),
+		NewTypedObject(WebhookFilterInValue{}),
+		NewTypedObject(WebhookFilterRegexpValue{}),
 	}
 
 	for _, value := range values {
@@ -163,11 +199,11 @@ func TestWebhookFilterValueToTerraformValueNull(t *testing.T) {
 	ctx := t.Context()
 
 	values := []attr.Value{
-		NewWebhookFilterValueNull(),
-		NewWebhookFilterNotValueNull(),
-		NewWebhookFilterEqualsValueNull(),
-		NewWebhookFilterInValueNull(),
-		NewWebhookFilterRegexpValueNull(),
+		NewTypedObjectNull[WebhookFilterValue](),
+		NewTypedObjectNull[WebhookFilterNotValue](),
+		NewTypedObjectNull[WebhookFilterEqualsValue](),
+		NewTypedObjectNull[WebhookFilterInValue](),
+		NewTypedObjectNull[WebhookFilterRegexpValue](),
 	}
 
 	for _, value := range values {
@@ -185,11 +221,11 @@ func TestWebhookFilterValueToTerraformValueUnknown(t *testing.T) {
 	ctx := t.Context()
 
 	values := []attr.Value{
-		NewWebhookFilterValueUnknown(),
-		NewWebhookFilterNotValueUnknown(),
-		NewWebhookFilterEqualsValueUnknown(),
-		NewWebhookFilterInValueUnknown(),
-		NewWebhookFilterRegexpValueUnknown(),
+		NewTypedObjectUnknown[WebhookFilterValue](),
+		NewTypedObjectUnknown[WebhookFilterNotValue](),
+		NewTypedObjectUnknown[WebhookFilterEqualsValue](),
+		NewTypedObjectUnknown[WebhookFilterInValue](),
+		NewTypedObjectUnknown[WebhookFilterRegexpValue](),
 	}
 
 	for _, value := range values {
@@ -197,5 +233,29 @@ func TestWebhookFilterValueToTerraformValueUnknown(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.False(t, objectValue.IsKnown())
+	}
+}
+
+func TestWebhookFilterValueKnownFromAttributesInvalid(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	attributes := map[string]attr.Value{
+		"not":    NewTypedObjectNull[WebhookFilterNotValue](),
+		"equals": NewTypedObjectNull[WebhookFilterEqualsValue](),
+		"in":     NewTypedObjectNull[WebhookFilterInValue](),
+		"regexp": NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}
+
+	testcases := GenerateInvalidValueFromAttributesTestcases(t, attributes)
+
+	for name, testcase := range testcases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			_, diags := NewTypedObjectFromAttributes[WebhookFilterValue](ctx, testcase)
+			assert.True(t, diags.HasError())
+		})
 	}
 }

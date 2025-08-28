@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (v *WebhookHeaderValue) ToWebhookDefinitionHeader(_ context.Context, path path.Path, key string) (cm.WebhookDefinitionHeader, diag.Diagnostics) {
+func (v WebhookHeaderValue) ToWebhookDefinitionHeader(_ context.Context, path path.Path, key string) (cm.WebhookDefinitionHeader, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	header := cm.WebhookDefinitionHeader{

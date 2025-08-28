@@ -76,8 +76,8 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Headers: NewTypedMap(map[string]WebhookHeaderValue{
-					"X-Header": DiagsNoErrorsMust(NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
+				Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
+					"X-Header": DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
 						"value":  types.StringValue("value"),
 						"secret": types.BoolValue(false),
 					})),
@@ -105,7 +105,7 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Transformation: DiagsNoErrorsMust(NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
+				Transformation: DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
@@ -131,7 +131,7 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Transformation: DiagsNoErrorsMust(NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
+				Transformation: DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),

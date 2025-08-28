@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model TypedMap[WebhookHeaderValue]) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
+func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model TypedMap[TypedObject[WebhookHeaderValue]]) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
 	if model.IsNull() || model.IsUnknown() {
 		return nil, nil
 	}
@@ -34,7 +34,7 @@ func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model Typed
 	for index, key := range headersKeys {
 		headersValue := headersValues[key]
 
-		header, headerDiags := headersValue.ToWebhookDefinitionHeader(ctx, path.AtMapKey(key), key)
+		header, headerDiags := headersValue.Value().ToWebhookDefinitionHeader(ctx, path.AtMapKey(key), key)
 		diags.Append(headerDiags...)
 
 		headers[index] = header

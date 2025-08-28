@@ -16,7 +16,7 @@ func TestWebhookTransformationValueUnknown(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := NewWebhookTransformationValueUnknown()
+	value := NewTypedObjectUnknown[WebhookTransformationValue]()
 	assert.True(t, value.IsUnknown())
 	assert.False(t, value.IsNull())
 
@@ -38,7 +38,7 @@ func TestWebhookTransformationValueNull(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := NewWebhookTransformationValueNull()
+	value := NewTypedObjectNull[WebhookTransformationValue]()
 	assert.False(t, value.IsUnknown())
 	assert.True(t, value.IsNull())
 
@@ -73,7 +73,7 @@ func TestWebhookTransformationValueInvalid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			value, diags := NewWebhookTransformationValueKnownFromAttributes(ctx, attributes)
+			value, diags := NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, attributes)
 
 			assert.False(t, value.IsUnknown())
 			assert.False(t, value.IsNull())
@@ -90,20 +90,20 @@ func TestWebhookTransformationValueConversion(t *testing.T) {
 	ctx := t.Context()
 
 	values := []AttrValueWithToObjectValue{
-		NewWebhookTransformationValueKnown(),
-		DiagsNoErrorsMust(NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
+		NewTypedObject(WebhookTransformationValue{}),
+		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
 			"method":                 types.StringUnknown(),
 			"content_type":           types.StringUnknown(),
 			"include_content_length": types.BoolUnknown(),
 			"body":                   jsontypes.NewNormalizedUnknown(),
 		})),
-		DiagsNoErrorsMust(NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
+		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
 			"method":                 types.StringNull(),
 			"content_type":           types.StringNull(),
 			"include_content_length": types.BoolNull(),
 			"body":                   jsontypes.NewNormalizedNull(),
 		})),
-		DiagsNoErrorsMust(NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
+		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
 			"method":                 types.StringValue("method"),
 			"content_type":           types.StringValue("content_type"),
 			"include_content_length": types.BoolValue(true),
@@ -132,4 +132,58 @@ func TestWebhookTransformationValueConversion(t *testing.T) {
 			assert.False(t, tfvalue.IsNull())
 		})
 	}
+}
+
+func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	typ := NewTypedObjectNull[WebhookTransformationValue]().CustomType(ctx)
+
+	t.Run("unknown", func(t *testing.T) {
+		t.Parallel()
+
+		value := types.ObjectUnknown(typ.AttributeTypes())
+
+		object, diags := typ.ValueFromObject(ctx, value)
+
+		assert.True(t, object.IsUnknown())
+		assert.Empty(t, diags)
+	})
+
+	t.Run("null", func(t *testing.T) {
+		t.Parallel()
+
+		value := types.ObjectNull(typ.AttributeTypes())
+
+		object, diags := typ.ValueFromObject(ctx, value)
+
+		assert.True(t, object.IsNull())
+		assert.Empty(t, diags)
+	})
+
+	t.Run("value", func(t *testing.T) {
+		t.Parallel()
+
+		value, diags := types.ObjectValue(typ.AttributeTypes(), map[string]attr.Value{
+			"method":                 types.StringValue("method"),
+			"content_type":           types.StringValue("content_type"),
+			"include_content_length": types.BoolValue(true),
+			"body":                   jsontypes.NewNormalizedValue("{}"),
+		})
+		require.Empty(t, diags)
+		require.False(t, diags.HasError())
+
+		object, diags := typ.ValueFromObject(ctx, value)
+
+		assert.False(t, diags.HasError())
+		assert.False(t, object.IsNull())
+		assert.False(t, object.IsUnknown())
+
+		transformation, transformationOk := object.(TypedObject[WebhookTransformationValue])
+		assert.True(t, transformationOk)
+		assert.Equal(t, "method", transformation.Value().Method.ValueString())
+		assert.True(t, transformation.Value().IncludeContentLength.ValueBool())
+	})
 }

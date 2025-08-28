@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, existingHeaderValues map[string]WebhookHeaderValue) (WebhookModel, diag.Diagnostics) {
+func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, existingHeaderValues map[string]TypedObject[WebhookHeaderValue]) (WebhookModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := webhookDefinition.Sys.Space.Sys.ID

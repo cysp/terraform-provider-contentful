@@ -12,9 +12,9 @@ func WebhookHeadersSchema(ctx context.Context, optional bool) schema.Attribute {
 	return schema.MapNestedAttribute{
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: WebhookHeaderValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookHeaderValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[WebhookHeaderValue]().CustomType(ctx),
 		},
-		CustomType: TypedMap[WebhookHeaderValue]{}.CustomType(ctx),
+		CustomType: TypedMap[TypedObject[WebhookHeaderValue]]{}.CustomType(ctx),
 		Optional:   optional,
 		Computed:   true,
 		PlanModifiers: []planmodifier.Map{

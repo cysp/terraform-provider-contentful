@@ -9,18 +9,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v *WebhookHeaderValue) ReadFromResponse(_ context.Context, _ path.Path, header cm.WebhookDefinitionHeader) diag.Diagnostics {
+func NewWebhookHeaderValueFromResponse(_ context.Context, _ path.Path, header cm.WebhookDefinitionHeader, existingHeaderValue TypedObject[WebhookHeaderValue]) (TypedObject[WebhookHeaderValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	headerIsSecret := header.Secret.Or(false)
 
-	if value, ok := header.Value.Get(); ok {
-		v.Value = types.StringValue(value)
-	} else if !headerIsSecret {
-		v.Value = types.StringNull()
+	value := WebhookHeaderValue{}
+
+	if existingHeaderValue, existingHeaderValueOk := existingHeaderValue.GetValue(); existingHeaderValueOk {
+		value.Value = existingHeaderValue.Value
 	}
 
-	v.Secret = types.BoolValue(headerIsSecret)
+	if headerValue, ok := header.Value.Get(); ok {
+		value.Value = types.StringValue(headerValue)
+	} else if !headerIsSecret {
+		value.Value = types.StringNull()
+	}
 
-	return diags
+	value.Secret = types.BoolValue(headerIsSecret)
+
+	return NewTypedObject(value), diags
 }

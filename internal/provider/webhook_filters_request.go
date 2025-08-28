@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList TypedList[WebhookFilterValue]) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
+func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList TypedList[TypedObject[WebhookFilterValue]]) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
 	if filterValuesList.IsNull() || filterValuesList.IsUnknown() {
 		return cm.NewOptNilWebhookDefinitionFilterArrayNull(), nil
 	}
@@ -25,7 +25,7 @@ func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, f
 	for index, filterValue := range filterValues {
 		path := path.AtListIndex(index)
 
-		filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, filterValue)
+		filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, filterValue.Value())
 		diags.Append(filterDiags...)
 
 		filters[index] = filter
@@ -39,37 +39,41 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	filter := cm.WebhookDefinitionFilter{}
 
-	if !value.Not.IsNull() && !value.Not.IsUnknown() {
+	notValue, notValueOk := value.Not.GetValue()
+	if notValueOk {
 		path := path.AtName("not")
 
-		filterNot, filterNotDiags := ToWebhookDefinitionFilterNot(ctx, path, value.Not)
+		filterNot, filterNotDiags := ToWebhookDefinitionFilterNot(ctx, path, notValue)
 		diags.Append(filterNotDiags...)
 
 		filter.Not = filterNot
 	}
 
-	if !value.Equals.IsNull() && !value.Equals.IsUnknown() {
+	equalsValue, equalsValueOk := value.Equals.GetValue()
+	if equalsValueOk {
 		path := path.AtName("equals")
 
-		filterEquals, filterEqualsDiags := ToWebhookDefinitionFilterEquals(ctx, path, value.Equals)
+		filterEquals, filterEqualsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
 		diags.Append(filterEqualsDiags...)
 
 		filter.Equals = filterEquals
 	}
 
-	if !value.In.IsNull() && !value.In.IsUnknown() {
+	inValue, inValueOk := value.In.GetValue()
+	if inValueOk {
 		path := path.AtName("in")
 
-		filterIn, filterInDiags := ToWebhookDefinitionFilterIn(ctx, path, value.In)
+		filterIn, filterInDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
 		diags.Append(filterInDiags...)
 
 		filter.In = filterIn
 	}
 
-	if !value.Regexp.IsNull() && !value.Regexp.IsUnknown() {
+	regexpValue, regexpValueOk := value.Regexp.GetValue()
+	if regexpValueOk {
 		path := path.AtName("regexp")
 
-		filterRegexp, filterRegexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, value.Regexp)
+		filterRegexp, filterRegexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
 		diags.Append(filterRegexpDiags...)
 
 		filter.Regexp = filterRegexp
@@ -81,49 +85,39 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value WebhookFilterNotValue) (cm.OptWebhookDefinitionFilterNot, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	optFilterNot := cm.OptWebhookDefinitionFilterNot{}
+	filterNot := cm.WebhookDefinitionFilterNot{}
 
-	if !value.IsNull() && !value.IsUnknown() {
-		filterNot := cm.WebhookDefinitionFilterNot{}
+	if equalsValue, equalsValueOk := value.Equals.GetValue(); equalsValueOk {
+		path := path.AtName("equals")
 
-		if !value.Equals.IsNull() && !value.Equals.IsUnknown() {
-			path := path.AtName("equals")
+		equals, equalsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
+		diags.Append(equalsDiags...)
 
-			equals, equalsDiags := ToWebhookDefinitionFilterEquals(ctx, path, value.Equals)
-			diags.Append(equalsDiags...)
-
-			filterNot.Equals = equals
-		}
-
-		if !value.In.IsNull() && !value.In.IsUnknown() {
-			path := path.AtName("in")
-
-			in, inDiags := ToWebhookDefinitionFilterIn(ctx, path, value.In)
-			diags.Append(inDiags...)
-
-			filterNot.In = in
-		}
-
-		if !value.Regexp.IsNull() && !value.Regexp.IsUnknown() {
-			path := path.AtName("regexp")
-
-			regexp, regexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, value.Regexp)
-			diags.Append(regexpDiags...)
-
-			filterNot.Regexp = regexp
-		}
-
-		optFilterNot.SetTo(filterNot)
+		filterNot.Equals = equals
 	}
 
-	return optFilterNot, diags
+	if inValue, inValueOk := value.In.GetValue(); inValueOk {
+		path := path.AtName("in")
+
+		in, inDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
+		diags.Append(inDiags...)
+
+		filterNot.In = in
+	}
+
+	if regexpValue, regexpValueOk := value.Regexp.GetValue(); regexpValueOk {
+		path := path.AtName("regexp")
+
+		regexp, regexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
+		diags.Append(regexpDiags...)
+
+		filterNot.Regexp = regexp
+	}
+
+	return cm.NewOptWebhookDefinitionFilterNot(filterNot), diags
 }
 
 func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value WebhookFilterEqualsValue) (cm.WebhookDefinitionFilterEquals, diag.Diagnostics) {
-	if value.IsNull() || value.IsUnknown() {
-		return nil, nil
-	}
-
 	diags := diag.Diagnostics{}
 
 	filter := cm.WebhookDefinitionFilterEquals{}
@@ -142,10 +136,6 @@ func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value 
 }
 
 func ToWebhookDefinitionFilterIn(ctx context.Context, path path.Path, value WebhookFilterInValue) (cm.WebhookDefinitionFilterIn, diag.Diagnostics) {
-	if value.IsNull() || value.IsUnknown() {
-		return nil, nil
-	}
-
 	diags := diag.Diagnostics{}
 
 	filter := cm.WebhookDefinitionFilterIn{}
@@ -164,10 +154,6 @@ func ToWebhookDefinitionFilterIn(ctx context.Context, path path.Path, value Webh
 }
 
 func ToWebhookDefinitionFilterRegexp(ctx context.Context, path path.Path, value WebhookFilterRegexpValue) (cm.WebhookDefinitionFilterRegexp, diag.Diagnostics) {
-	if value.IsNull() || value.IsUnknown() {
-		return nil, nil
-	}
-
 	diags := diag.Diagnostics{}
 
 	filter := cm.WebhookDefinitionFilterRegexp{}
