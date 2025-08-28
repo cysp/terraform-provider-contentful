@@ -30,7 +30,7 @@ func (t TypedMapType[T]) TerraformType(ctx context.Context) tftypes.Type {
 //nolint:ireturn
 func (t TypedMapType[T]) ValueFromTerraform(ctx context.Context, tfval tftypes.Value) (attr.Value, error) {
 	if tfval.Type() == nil {
-		return NewTypedMapNull[T](ctx), nil
+		return NewTypedMapNull[T](), nil
 	}
 
 	elementType := t.ElementTypeWithContext(ctx)
@@ -41,11 +41,11 @@ func (t TypedMapType[T]) ValueFromTerraform(ctx context.Context, tfval tftypes.V
 	}
 
 	if !tfval.IsKnown() {
-		return NewTypedMapUnknown[T](ctx), nil
+		return NewTypedMapUnknown[T](), nil
 	}
 
 	if tfval.IsNull() {
-		return NewTypedMapNull[T](ctx), nil
+		return NewTypedMapNull[T](), nil
 	}
 
 	tfelems := map[string]tftypes.Value{}
@@ -72,9 +72,7 @@ func (t TypedMapType[T]) ValueFromTerraform(ctx context.Context, tfval tftypes.V
 		elements[key] = element
 	}
 
-	list, listDiags := NewTypedMap(ctx, elements)
-
-	return list, ErrorFromDiags(listDiags)
+	return NewTypedMap(elements), nil
 }
 
 //nolint:ireturn
@@ -139,11 +137,11 @@ func (t TypedMapType[T]) ElementTypeWithContext(ctx context.Context) attr.Type {
 //nolint:ireturn
 func (t TypedMapType[T]) ValueFromMap(ctx context.Context, value basetypes.MapValue) (basetypes.MapValuable, diag.Diagnostics) {
 	if value.IsUnknown() {
-		return NewTypedMapUnknown[T](ctx), nil
+		return NewTypedMapUnknown[T](), nil
 	}
 
 	if value.IsNull() {
-		return NewTypedMapNull[T](ctx), nil
+		return NewTypedMapNull[T](), nil
 	}
 
 	var diags diag.Diagnostics

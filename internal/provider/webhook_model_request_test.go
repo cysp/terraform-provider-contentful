@@ -76,12 +76,12 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Headers: DiagsNoErrorsMust(NewTypedMap(ctx, map[string]WebhookHeaderValue{
+				Headers: NewTypedMap(map[string]WebhookHeaderValue{
 					"X-Header": DiagsNoErrorsMust(NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 						"value":  types.StringValue("value"),
 						"secret": types.BoolValue(false),
 					})),
-				})),
+				}),
 			},
 			expected: cm.WebhookDefinitionFields{
 				Name:              "headers-webhook",

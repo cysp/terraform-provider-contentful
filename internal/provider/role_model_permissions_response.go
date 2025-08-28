@@ -23,8 +23,7 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 		permissionsValuesMap[permission] = permissionActionsListValue
 	}
 
-	permissionsMapValue, permissionsListValueDiags := NewTypedMap(ctx, permissionsValuesMap)
-	diags.Append(permissionsListValueDiags...)
+	permissionsMapValue := NewTypedMap(permissionsValuesMap)
 
 	return permissionsMapValue, diags
 }

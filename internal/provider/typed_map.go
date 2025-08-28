@@ -16,25 +16,25 @@ type TypedMap[T attr.Value] struct {
 	state    attr.ValueState
 }
 
-func NewTypedMapUnknown[T attr.Value](_ context.Context) TypedMap[T] {
+func NewTypedMapUnknown[T attr.Value]() TypedMap[T] {
 	return TypedMap[T]{
 		elements: make(map[string]T, 0),
 		state:    attr.ValueStateUnknown,
 	}
 }
 
-func NewTypedMapNull[T attr.Value](_ context.Context) TypedMap[T] {
+func NewTypedMapNull[T attr.Value]() TypedMap[T] {
 	return TypedMap[T]{
 		elements: make(map[string]T, 0),
 		state:    attr.ValueStateNull,
 	}
 }
 
-func NewTypedMap[T attr.Value](_ context.Context, elements map[string]T) (TypedMap[T], diag.Diagnostics) {
+func NewTypedMap[T attr.Value](elements map[string]T) TypedMap[T] {
 	return TypedMap[T]{
 		elements: elements,
 		state:    attr.ValueStateKnown,
-	}, nil
+	}
 }
 
 var _ attr.Value = (*TypedMap[attr.Value])(nil)
