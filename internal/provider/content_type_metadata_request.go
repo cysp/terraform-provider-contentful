@@ -8,17 +8,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (m ContentTypeMetadataValue) ToOptContentTypeMetadata(ctx context.Context, path path.Path) (cm.OptContentTypeMetadata, diag.Diagnostics) {
+func ToOptContentTypeMetadata(ctx context.Context, path path.Path, m TypedObject[ContentTypeMetadataValue]) (cm.OptContentTypeMetadata, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if m.IsNull() {
+	value, valueOk := m.GetValue()
+	if !valueOk {
 		return cm.OptContentTypeMetadata{}, diags
 	}
 
-	taxonomy := ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(ctx, path.AtName("taxonomy"), m.Taxonomy)
+	taxonomy := ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(ctx, path.AtName("taxonomy"), value.Taxonomy)
 
 	metadata := cm.ContentTypeMetadata{
-		Annotations: []byte(m.Annotations.ValueString()),
+		Annotations: []byte(value.Annotations.ValueString()),
 		Taxonomy:    taxonomy,
 	}
 
@@ -28,7 +29,7 @@ func (m ContentTypeMetadataValue) ToOptContentTypeMetadata(ctx context.Context, 
 func ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
 	ctx context.Context,
 	path path.Path,
-	items TypedList[ContentTypeMetadataTaxonomyItemValue],
+	items TypedList[TypedObject[ContentTypeMetadataTaxonomyItemValue]],
 ) []cm.ContentTypeMetadataTaxonomyItem {
 	if items.IsNull() || items.IsUnknown() {
 		return nil
@@ -39,7 +40,7 @@ func ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
 	requestItems := make([]cm.ContentTypeMetadataTaxonomyItem, 0, len(itemValues))
 
 	for index, itemValue := range itemValues {
-		item := itemValue.ToContentTypeMetadataTaxonomyItem(ctx, path.AtListIndex(index))
+		item := ToContentTypeMetadataTaxonomyItem(ctx, path.AtListIndex(index), itemValue)
 
 		requestItems = append(requestItems, item...)
 	}
@@ -47,35 +48,39 @@ func ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
 	return requestItems
 }
 
-func (v ContentTypeMetadataTaxonomyItemValue) ToContentTypeMetadataTaxonomyItem(
+func ToContentTypeMetadataTaxonomyItem(
 	_ context.Context,
 	_ path.Path,
+	object TypedObject[ContentTypeMetadataTaxonomyItemValue],
 ) []cm.ContentTypeMetadataTaxonomyItem {
-	if v.IsUnknown() || v.IsNull() {
+	value, valueOk := object.GetValue()
+	if !valueOk {
 		return nil
 	}
 
 	items := make([]cm.ContentTypeMetadataTaxonomyItem, 0, 1)
 
-	if !v.TaxonomyConceptScheme.IsUnknown() && !v.TaxonomyConceptScheme.IsNull() {
+	taxonomyConceptScheme, taxonomyConceptSchemeOk := value.TaxonomyConceptScheme.GetValue()
+	if taxonomyConceptSchemeOk {
 		items = append(items, cm.ContentTypeMetadataTaxonomyItem{
 			Sys: cm.ContentTypeMetadataTaxonomyItemSys{
 				Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
 				LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme,
-				ID:       v.TaxonomyConceptScheme.ID.ValueString(),
+				ID:       taxonomyConceptScheme.ID.ValueString(),
 			},
-			Required: cm.NewOptPointerBool(v.TaxonomyConceptScheme.Required.ValueBoolPointer()),
+			Required: cm.NewOptPointerBool(taxonomyConceptScheme.Required.ValueBoolPointer()),
 		})
 	}
 
-	if !v.TaxonomyConcept.IsUnknown() && !v.TaxonomyConcept.IsNull() {
+	taxonomyConcept, taxonomyConceptOk := value.TaxonomyConcept.GetValue()
+	if taxonomyConceptOk {
 		items = append(items, cm.ContentTypeMetadataTaxonomyItem{
 			Sys: cm.ContentTypeMetadataTaxonomyItemSys{
 				Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
 				LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept,
-				ID:       v.TaxonomyConcept.ID.ValueString(),
+				ID:       taxonomyConcept.ID.ValueString(),
 			},
-			Required: cm.NewOptPointerBool(v.TaxonomyConcept.Required.ValueBoolPointer()),
+			Required: cm.NewOptPointerBool(taxonomyConcept.Required.ValueBoolPointer()),
 		})
 	}
 

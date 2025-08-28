@@ -61,7 +61,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"metadata": schema.SingleNestedAttribute{
 				Attributes:  ContentTypeMetadataValue{}.SchemaAttributes(ctx),
-				CustomType:  ContentTypeMetadataValue{}.CustomType(ctx),
+				CustomType:  NewTypedObjectNull[ContentTypeMetadataValue]().CustomType(ctx),
 				Description: `Metadata for the content type. Once set, metadata properties may not be removed, but the list of taxonomy items may be reduced to the empty list`,
 				Optional:    true,
 			},
@@ -223,7 +223,7 @@ func (v ContentTypeMetadataTaxonomyItemValue) SchemaAttributes(ctx context.Conte
 	return map[string]schema.Attribute{
 		"taxonomy_concept": schema.SingleNestedAttribute{
 			Attributes: ContentTypeMetadataTaxonomyItemConceptValue{}.SchemaAttributes(ctx),
-			CustomType: ContentTypeMetadataTaxonomyItemConceptValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue]().CustomType(ctx),
 			Optional:   true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
@@ -234,7 +234,7 @@ func (v ContentTypeMetadataTaxonomyItemValue) SchemaAttributes(ctx context.Conte
 		},
 		"taxonomy_concept_scheme": schema.SingleNestedAttribute{
 			Attributes: ContentTypeMetadataTaxonomyItemConceptSchemeValue{}.SchemaAttributes(ctx),
-			CustomType: ContentTypeMetadataTaxonomyItemConceptSchemeValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue]().CustomType(ctx),
 			Optional:   true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
@@ -262,9 +262,9 @@ func (v ContentTypeMetadataValue) SchemaAttributes(ctx context.Context) map[stri
 		"taxonomy": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: ContentTypeMetadataTaxonomyItemValue{}.SchemaAttributes(ctx),
-				CustomType: ContentTypeMetadataTaxonomyItemValue{}.CustomType(ctx),
+				CustomType: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemValue]().CustomType(ctx),
 			},
-			CustomType:  NewTypedListNull[ContentTypeMetadataTaxonomyItemValue]().CustomType(ctx),
+			CustomType:  NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]]().CustomType(ctx),
 			Description: "List of taxonomy items for this content type. Each item represents a taxonomy term that may be associated with the content type.",
 			Optional:    true,
 			Validators: []validator.List{

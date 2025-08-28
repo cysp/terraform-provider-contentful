@@ -26,7 +26,7 @@ func (m *ContentTypeModel) ToContentTypeRequestFields(ctx context.Context) (cm.C
 
 	request.Fields = fields
 
-	metadata, metadataDiags := m.Metadata.ToOptContentTypeMetadata(ctx, path.Root("metadata"))
+	metadata, metadataDiags := ToOptContentTypeMetadata(ctx, path.Root("metadata"), m.Metadata)
 	diags.Append(metadataDiags...)
 
 	request.Metadata = metadata
@@ -43,7 +43,8 @@ func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.P
 
 	for index, fieldsValue := range fieldsValues {
 		path := path.AtListIndex(index)
-		fieldsItem, fieldsItemDiags := fieldsValue.Value().ToContentTypeRequestFieldsFieldsItem(ctx, path)
+
+		fieldsItem, fieldsItemDiags := ToContentTypeRequestFieldsFieldsItem(ctx, path, fieldsValue.Value())
 		diags.Append(fieldsItemDiags...)
 
 		fieldsItems[index] = fieldsItem
@@ -52,7 +53,7 @@ func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.P
 	return fieldsItems, diags
 }
 
-func (v ContentTypeFieldValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
+func ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path, v ContentTypeFieldValue) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx, path.AtName("items"), v.Items)
@@ -94,8 +95,9 @@ func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context
 
 	fieldsItemItems := cm.OptContentTypeRequestFieldsFieldsItemItems{}
 
-	if !itemsObject.IsNull() && !itemsObject.IsUnknown() {
-		items, itemsDiags := itemsObject.Value().ToContentTypeRequestFieldsFieldsItemItems(ctx, path)
+	itemsValue, itemsValueOk := itemsObject.GetValue()
+	if itemsValueOk {
+		items, itemsDiags := itemsValue.ToContentTypeRequestFieldsFieldsItemItems(ctx, path)
 		diags.Append(itemsDiags...)
 
 		fieldsItemItems.SetTo(items)

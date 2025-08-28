@@ -11,12 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewContentTypeMetadataFromResponse(ctx context.Context, path path.Path, optMetadata cm.OptContentTypeMetadata) (ContentTypeMetadataValue, diag.Diagnostics) {
+func NewContentTypeMetadataFromResponse(ctx context.Context, path path.Path, optMetadata cm.OptContentTypeMetadata) (TypedObject[ContentTypeMetadataValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	metadata, metadataOk := optMetadata.Get()
 	if !metadataOk {
-		return NewContentTypeMetadataValueNull(), diags
+		return NewTypedObjectNull[ContentTypeMetadataValue](), diags
 	}
 
 	annotations := jsontypes.NewNormalizedNull()
@@ -27,7 +27,7 @@ func NewContentTypeMetadataFromResponse(ctx context.Context, path path.Path, opt
 	taxonomy, taxonomyDiags := NewContentTypeMetadataTaxonomyItemsFromResponse(ctx, path.AtName("taxonomy"), metadata.Taxonomy)
 	diags.Append(taxonomyDiags...)
 
-	model, modelDiags := NewContentTypeMetadataValueKnownFromAttributes(ctx, map[string]attr.Value{
+	model, modelDiags := NewTypedObjectFromAttributes[ContentTypeMetadataValue](ctx, map[string]attr.Value{
 		"annotations": annotations,
 		"taxonomy":    taxonomy,
 	})
@@ -40,14 +40,14 @@ func NewContentTypeMetadataTaxonomyItemsFromResponse(
 	ctx context.Context,
 	path path.Path,
 	taxonomy []cm.ContentTypeMetadataTaxonomyItem,
-) (TypedList[ContentTypeMetadataTaxonomyItemValue], diag.Diagnostics) {
+) (TypedList[TypedObject[ContentTypeMetadataTaxonomyItemValue]], diag.Diagnostics) {
 	if taxonomy == nil {
-		return NewTypedListNull[ContentTypeMetadataTaxonomyItemValue](), diag.Diagnostics{}
+		return NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](), diag.Diagnostics{}
 	}
 
 	diags := diag.Diagnostics{}
 
-	items := make([]ContentTypeMetadataTaxonomyItemValue, 0, len(taxonomy))
+	items := make([]TypedObject[ContentTypeMetadataTaxonomyItemValue], 0, len(taxonomy))
 
 	for index, item := range taxonomy {
 		itemValue, itemValueDiags := NewContentTypeMetadataTaxonomyItemFromResponse(ctx, path.AtListIndex(index), item)
@@ -65,32 +65,32 @@ func NewContentTypeMetadataTaxonomyItemFromResponse(
 	ctx context.Context,
 	_ path.Path,
 	item cm.ContentTypeMetadataTaxonomyItem,
-) (ContentTypeMetadataTaxonomyItemValue, diag.Diagnostics) {
+) (TypedObject[ContentTypeMetadataTaxonomyItemValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	attributes := make(map[string]attr.Value, 1)
 
 	switch item.Sys.LinkType {
 	case cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme:
-		value, valueDiags := NewContentTypeMetadataTaxonomyItemConceptSchemeValueKnownFromAttributes(ctx, map[string]attr.Value{
+		value, valueDiags := NewTypedObjectFromAttributes[ContentTypeMetadataTaxonomyItemConceptSchemeValue](ctx, map[string]attr.Value{
 			"id":       types.StringValue(item.Sys.ID),
 			"required": types.BoolPointerValue(item.Required.ValueBoolPointer()),
 		})
 		diags.Append(valueDiags...)
 
 		attributes["taxonomy_concept_scheme"] = value
-		attributes["taxonomy_concept"] = NewContentTypeMetadataTaxonomyItemConceptValueNull()
+		attributes["taxonomy_concept"] = NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue]()
 
 	case cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept:
-		value, valueDiags := NewContentTypeMetadataTaxonomyItemConceptValueKnownFromAttributes(ctx, map[string]attr.Value{
+		value, valueDiags := NewTypedObjectFromAttributes[ContentTypeMetadataTaxonomyItemConceptValue](ctx, map[string]attr.Value{
 			"id":       types.StringValue(item.Sys.ID),
 			"required": types.BoolPointerValue(item.Required.ValueBoolPointer()),
 		})
 		diags.Append(valueDiags...)
 
-		attributes["taxonomy_concept_scheme"] = NewContentTypeMetadataTaxonomyItemConceptSchemeValueNull()
+		attributes["taxonomy_concept_scheme"] = NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue]()
 		attributes["taxonomy_concept"] = value
 	}
 
-	return NewContentTypeMetadataTaxonomyItemValueKnownFromAttributes(ctx, attributes)
+	return NewTypedObjectFromAttributes[ContentTypeMetadataTaxonomyItemValue](ctx, attributes)
 }
