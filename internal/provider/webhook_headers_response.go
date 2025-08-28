@@ -25,8 +25,7 @@ func ReadHeaderValueMapFromResponse(ctx context.Context, path path.Path, headers
 		headersValues[header.Key] = value
 	}
 
-	headersList, headersListDiags := NewTypedMap(ctx, headersValues)
-	diags.Append(headersListDiags...)
+	headersList := NewTypedMap(headersValues)
 
 	return headersList, diags
 }

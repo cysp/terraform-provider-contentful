@@ -12,33 +12,31 @@ import (
 func TestTypedMapEqual(t *testing.T) {
 	t.Parallel()
 
-	ctx := t.Context()
-
-	map1 := DiagsNoErrorsMust(NewTypedMap(ctx, map[string]types.String{
+	map1 := NewTypedMap(map[string]types.String{
 		"key1": types.StringValue("value1"),
 		"key2": types.StringValue("value2"),
-	}))
+	})
 
-	map2 := DiagsNoErrorsMust(NewTypedMap(ctx, map[string]types.String{
+	map2 := NewTypedMap(map[string]types.String{
 		"key1": types.StringValue("value1"),
 		"key2": types.StringValue("value2"),
-	}))
+	})
 
-	mapDifferentValues := DiagsNoErrorsMust(NewTypedMap(ctx, map[string]types.String{
+	mapDifferentValues := NewTypedMap(map[string]types.String{
 		"key1": types.StringValue("different"),
 		"key2": types.StringValue("value2"),
-	}))
+	})
 
-	mapDifferentKeys := DiagsNoErrorsMust(NewTypedMap(ctx, map[string]types.String{
+	mapDifferentKeys := NewTypedMap(map[string]types.String{
 		"key1": types.StringValue("value1"),
 		"key3": types.StringValue("value3"),
-	}))
+	})
 
-	mapDifferentLength := DiagsNoErrorsMust(NewTypedMap(ctx, map[string]types.String{
+	mapDifferentLength := NewTypedMap(map[string]types.String{
 		"key1": types.StringValue("value1"),
 		"key2": types.StringValue("value2"),
 		"key3": types.StringValue("value3"),
-	}))
+	})
 
 	testcases := map[string]struct {
 		map1     TypedMap[types.String]
@@ -66,23 +64,23 @@ func TestTypedMapEqual(t *testing.T) {
 			expected: false,
 		},
 		"null != known": {
-			map1:     NewTypedMapNull[types.String](ctx),
+			map1:     NewTypedMapNull[types.String](),
 			map2:     map1,
 			expected: false,
 		},
 		"unknown != known": {
-			map1:     NewTypedMapUnknown[types.String](ctx),
+			map1:     NewTypedMapUnknown[types.String](),
 			map2:     map1,
 			expected: false,
 		},
 		"null == null": {
-			map1:     NewTypedMapNull[types.String](ctx),
-			map2:     NewTypedMapNull[types.String](ctx),
+			map1:     NewTypedMapNull[types.String](),
+			map2:     NewTypedMapNull[types.String](),
 			expected: true,
 		},
 		"unknown == unknown": {
-			map1:     NewTypedMapUnknown[types.String](ctx),
-			map2:     NewTypedMapUnknown[types.String](ctx),
+			map1:     NewTypedMapUnknown[types.String](),
+			map2:     NewTypedMapUnknown[types.String](),
 			expected: true,
 		},
 		"different type": {
