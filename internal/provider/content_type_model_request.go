@@ -34,7 +34,7 @@ func (m *ContentTypeModel) ToContentTypeRequestFields(ctx context.Context) (cm.C
 	return request, diags
 }
 
-func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.Path, fieldsList TypedList[ContentTypeFieldValue]) ([]cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
+func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.Path, fieldsList TypedList[TypedObject[ContentTypeFieldValue]]) ([]cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsValues := fieldsList.Elements()
@@ -43,7 +43,7 @@ func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.P
 
 	for index, fieldsValue := range fieldsValues {
 		path := path.AtListIndex(index)
-		fieldsItem, fieldsItemDiags := fieldsValue.ToContentTypeRequestFieldsFieldsItem(ctx, path)
+		fieldsItem, fieldsItemDiags := fieldsValue.Value().ToContentTypeRequestFieldsFieldsItem(ctx, path)
 		diags.Append(fieldsItemDiags...)
 
 		fieldsItems[index] = fieldsItem
@@ -52,7 +52,7 @@ func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.P
 	return fieldsItems, diags
 }
 
-func (v *ContentTypeFieldValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
+func (v ContentTypeFieldValue) ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx, path.AtName("items"), v.Items)
@@ -89,13 +89,13 @@ func (v *ContentTypeFieldValue) ToContentTypeRequestFieldsFieldsItem(ctx context
 	return fieldsItem, diags
 }
 
-func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path, itemsObject ContentTypeFieldItemsValue) (cm.OptContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
+func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path, itemsObject TypedObject[ContentTypeFieldItemsValue]) (cm.OptContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsItemItems := cm.OptContentTypeRequestFieldsFieldsItemItems{}
 
 	if !itemsObject.IsNull() && !itemsObject.IsUnknown() {
-		items, itemsDiags := itemsObject.ToContentTypeRequestFieldsFieldsItemItems(ctx, path)
+		items, itemsDiags := itemsObject.Value().ToContentTypeRequestFieldsFieldsItemItems(ctx, path)
 		diags.Append(itemsDiags...)
 
 		fieldsItemItems.SetTo(items)
@@ -104,7 +104,7 @@ func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context
 	return fieldsItemItems, diags
 }
 
-func (v *ContentTypeFieldItemsValue) ToContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
+func (v ContentTypeFieldItemsValue) ToContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	itemsValidations, itemsValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), v.Validations)
@@ -135,14 +135,14 @@ func ValidationsListToContentTypeRequestFieldsFieldValidations(ctx context.Conte
 	return validations, diags
 }
 
-func AllowedResourceListToContentTypeRequestFieldsFieldAllowedResources(ctx context.Context, path path.Path, allowedResourcesList TypedList[ContentTypeFieldAllowedResourceItemValue]) ([]cm.ResourceLink, diag.Diagnostics) {
+func AllowedResourceListToContentTypeRequestFieldsFieldAllowedResources(ctx context.Context, path path.Path, allowedResourcesList TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]]) ([]cm.ResourceLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	allowedResources := allowedResourcesList.Elements()
 	resourceLinks := make([]cm.ResourceLink, len(allowedResources))
 
 	for index, resource := range allowedResources {
-		resourceLink, resourceDiags := resource.ToResourceLink(ctx, path.AtListIndex(index))
+		resourceLink, resourceDiags := resource.Value().ToResourceLink(ctx, path.AtListIndex(index))
 		diags.Append(resourceDiags...)
 
 		resourceLinks[index] = resourceLink
@@ -151,17 +151,17 @@ func AllowedResourceListToContentTypeRequestFieldsFieldAllowedResources(ctx cont
 	return resourceLinks, diags
 }
 
-func (v *ContentTypeFieldAllowedResourceItemValue) ToResourceLink(ctx context.Context, path path.Path) (cm.ResourceLink, diag.Diagnostics) {
+func (v ContentTypeFieldAllowedResourceItemValue) ToResourceLink(ctx context.Context, path path.Path) (cm.ResourceLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	resourceLink := cm.ResourceLink{}
 
 	if !v.External.IsNull() && !v.External.IsUnknown() {
-		diags.Append(v.External.SetResourceLink(ctx, path, &resourceLink)...)
+		diags.Append(v.External.Value().SetResourceLink(ctx, path, &resourceLink)...)
 	}
 
 	if !v.ContentfulEntry.IsNull() && !v.ContentfulEntry.IsUnknown() {
-		diags.Append(v.ContentfulEntry.SetResourceLink(ctx, path, &resourceLink)...)
+		diags.Append(v.ContentfulEntry.Value().SetResourceLink(ctx, path, &resourceLink)...)
 	}
 
 	return resourceLink, diags

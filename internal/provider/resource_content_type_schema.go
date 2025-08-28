@@ -54,9 +54,9 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 			"fields": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: ContentTypeFieldValue{}.SchemaAttributes(ctx),
-					CustomType: ContentTypeFieldValue{}.CustomType(ctx),
+					CustomType: NewTypedObjectNull[ContentTypeFieldValue]().CustomType(ctx),
 				},
-				CustomType: NewTypedListUnknown[ContentTypeFieldValue]().CustomType(ctx),
+				CustomType: NewTypedListUnknown[TypedObject[ContentTypeFieldValue]]().CustomType(ctx),
 				Required:   true,
 			},
 			"metadata": schema.SingleNestedAttribute{
@@ -93,8 +93,8 @@ func (v ContentTypeFieldAllowedResourceItemExternalValue) SchemaAttributes(_ con
 func (v ContentTypeFieldAllowedResourceItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"contentful_entry": schema.SingleNestedAttribute{
-			Attributes: NewContentTypeFieldAllowedResourceItemContentfulEntryValueNull().SchemaAttributes(ctx),
-			CustomType: NewContentTypeFieldAllowedResourceItemContentfulEntryValueNull().CustomType(ctx),
+			Attributes: ContentTypeFieldAllowedResourceItemContentfulEntryValue{}.SchemaAttributes(ctx),
+			CustomType: NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue]().CustomType(ctx),
 			Optional:   true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
@@ -105,7 +105,7 @@ func (v ContentTypeFieldAllowedResourceItemValue) SchemaAttributes(ctx context.C
 		},
 		"external": schema.SingleNestedAttribute{
 			Attributes: ContentTypeFieldAllowedResourceItemExternalValue{}.SchemaAttributes(ctx),
-			CustomType: ContentTypeFieldAllowedResourceItemExternalValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue]().CustomType(ctx),
 			Optional:   true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
@@ -151,7 +151,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 		},
 		"items": schema.SingleNestedAttribute{
 			Attributes: ContentTypeFieldItemsValue{}.SchemaAttributes(ctx),
-			CustomType: ContentTypeFieldItemsValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[ContentTypeFieldItemsValue]().CustomType(ctx),
 			Optional:   true,
 		},
 		"default_value": schema.StringAttribute{
@@ -184,10 +184,10 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 		},
 		"allowed_resources": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: NewContentTypeFieldAllowedResourceItemValueNull().SchemaAttributes(ctx),
-				CustomType: NewContentTypeFieldAllowedResourceItemValueNull().CustomType(ctx),
+				Attributes: ContentTypeFieldAllowedResourceItemValue{}.SchemaAttributes(ctx),
+				CustomType: NewTypedObjectNull[ContentTypeFieldAllowedResourceItemValue]().CustomType(ctx),
 			},
-			CustomType: NewTypedListNull[ContentTypeFieldAllowedResourceItemValue]().CustomType(ctx),
+			CustomType: NewTypedListNull[TypedObject[ContentTypeFieldAllowedResourceItemValue]]().CustomType(ctx),
 			Optional:   true,
 		},
 	}
