@@ -74,6 +74,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	DeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams) (DeleteAppInstallationRes, error)
+	// DeleteAppSigningSecret implements deleteAppSigningSecret operation.
+	//
+	// Delete an app signing secret.
+	//
+	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
+	DeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams) (DeleteAppSigningSecretRes, error)
 	// DeleteContentType implements deleteContentType operation.
 	//
 	// Delete a content type.
@@ -128,6 +134,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	GetAppInstallation(ctx context.Context, params GetAppInstallationParams) (GetAppInstallationRes, error)
+	// GetAppSigningSecret implements getAppSigningSecret operation.
+	//
+	// Get one app signing secret.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
+	GetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams) (GetAppSigningSecretRes, error)
 	// GetAuthenticatedUser implements getAuthenticatedUser operation.
 	//
 	// Get the authenticated user.
@@ -218,6 +230,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	PutAppInstallation(ctx context.Context, req *AppInstallationFields, params PutAppInstallationParams) (PutAppInstallationRes, error)
+	// PutAppSigningSecret implements putAppSigningSecret operation.
+	//
+	// Create or update an app signing secret.
+	//
+	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
+	PutAppSigningSecret(ctx context.Context, req *AppSigningSecretRequestFields, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error)
 	// PutContentType implements putContentType operation.
 	//
 	// Update a content type.

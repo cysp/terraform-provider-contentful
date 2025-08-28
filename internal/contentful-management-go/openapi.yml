@@ -462,6 +462,39 @@ components:
           required:
             - sys
         - $ref: "#/components/schemas/AppInstallationFields"
+    AppSigningSecretSys:
+      allOf:
+        - $ref: "#/components/schemas/BaseSysWithOrganization"
+        - $ref: "#/components/schemas/BaseSysWithAppDefinition"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - AppSigningSecret
+    AppSigningSecretFields:
+      type: object
+      properties:
+        redactedValue:
+          type: string
+      required:
+        - redactedValue
+    AppSigningSecretRequestFields:
+      type: object
+      properties:
+        value:
+          type: string
+      required:
+        - value
+    AppSigningSecret:
+      allOf:
+        - type: object
+          properties:
+            sys:
+              $ref: "#/components/schemas/AppSigningSecretSys"
+          required:
+            - sys
+        - $ref: "#/components/schemas/AppSigningSecretFields"
     ContentTypeSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
@@ -1718,6 +1751,57 @@ paths:
     delete:
       operationId: deleteAppDefinitionResourceProvider
       summary: Delete an app resource provider definition
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+    get:
+      operationId: getAppSigningSecret
+      summary: Get one app signing secret
+      responses:
+        200:
+          description: An app signing secret
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/AppSigningSecret"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putAppSigningSecret
+      summary: Create or update an app signing secret
+      parameters:
+        - $ref: "#/components/parameters/organization_id"
+        - $ref: "#/components/parameters/app_definition_id"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "#/components/schemas/AppSigningSecretRequestFields"
+      responses:
+        2XX:
+          description: An app signing secret
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/AppSigningSecret"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteAppSigningSecret
+      summary: Delete an app signing secret
       responses:
         204:
           $ref: "#/components/responses/no-content"

@@ -45,6 +45,10 @@ type DeleteAppInstallationRes interface {
 	deleteAppInstallationRes()
 }
 
+type DeleteAppSigningSecretRes interface {
+	deleteAppSigningSecretRes()
+}
+
 type DeleteContentTypeRes interface {
 	deleteContentTypeRes()
 }
@@ -79,6 +83,10 @@ type GetAppDefinitionResourceTypeRes interface {
 
 type GetAppInstallationRes interface {
 	getAppInstallationRes()
+}
+
+type GetAppSigningSecretRes interface {
+	getAppSigningSecretRes()
 }
 
 type GetAuthenticatedUserRes interface {
@@ -139,6 +147,10 @@ type PutAppDefinitionResourceTypeRes interface {
 
 type PutAppInstallationRes interface {
 	putAppInstallationRes()
+}
+
+type PutAppSigningSecretRes interface {
+	putAppSigningSecretRes()
 }
 
 type PutContentTypeRes interface {
