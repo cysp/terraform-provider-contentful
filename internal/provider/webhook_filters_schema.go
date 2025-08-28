@@ -15,9 +15,9 @@ func WebhookFiltersSchema(ctx context.Context, optional bool) schema.Attribute {
 	return schema.ListNestedAttribute{
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: WebhookFilterValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[WebhookFilterValue]().CustomType(ctx),
 		},
-		CustomType: NewTypedListNull[WebhookFilterValue]().CustomType(ctx),
+		CustomType: NewTypedListNull[TypedObject[WebhookFilterValue]]().CustomType(ctx),
 		Optional:   optional,
 	}
 }
@@ -50,17 +50,17 @@ func (v WebhookFilterNotValue) SchemaAttributes(ctx context.Context) map[string]
 	return map[string]schema.Attribute{
 		"equals": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterEqualsValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterEqualsValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[WebhookFilterEqualsValue]().CustomType(ctx),
 			Optional:   true,
 		},
 		"in": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterInValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterInValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[WebhookFilterInValue]().CustomType(ctx),
 			Optional:   true,
 		},
 		"regexp": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterRegexpValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterRegexpValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[WebhookFilterRegexpValue]().CustomType(ctx),
 			Optional:   true,
 		},
 	}
@@ -81,22 +81,22 @@ func (v WebhookFilterValue) SchemaAttributes(ctx context.Context) map[string]sch
 	return map[string]schema.Attribute{
 		"not": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterNotValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterNotValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[WebhookFilterNotValue]().CustomType(ctx),
 			Optional:   true,
 		},
 		"equals": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterEqualsValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterEqualsValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[WebhookFilterEqualsValue]().CustomType(ctx),
 			Optional:   true,
 		},
 		"in": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterInValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterInValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[WebhookFilterInValue]().CustomType(ctx),
 			Optional:   true,
 		},
 		"regexp": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterRegexpValue{}.SchemaAttributes(ctx),
-			CustomType: WebhookFilterRegexpValue{}.CustomType(ctx),
+			CustomType: NewTypedObjectNull[WebhookFilterRegexpValue]().CustomType(ctx),
 			Optional:   true,
 		},
 	}

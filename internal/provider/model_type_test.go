@@ -45,13 +45,13 @@ func TestModelTypeEqual(t *testing.T) {
 		NewTypedObjectNull[EditorInterfaceGroupControlValue]().Type(ctx),
 		NewTypedObjectNull[EditorInterfaceSidebarValue]().Type(ctx),
 		NewTypedObjectNull[RolePolicyValue]().Type(ctx),
-		WebhookFilterEqualsType{},
-		WebhookFilterInType{},
-		WebhookFilterNotType{},
-		WebhookFilterRegexpType{},
-		WebhookFilterType{},
-		WebhookHeaderType{},
-		WebhookTransformationType{},
+		NewTypedObjectNull[WebhookFilterEqualsValue]().Type(ctx),
+		NewTypedObjectNull[WebhookFilterInValue]().Type(ctx),
+		NewTypedObjectNull[WebhookFilterNotValue]().Type(ctx),
+		NewTypedObjectNull[WebhookFilterRegexpValue]().Type(ctx),
+		NewTypedObjectNull[WebhookFilterValue]().Type(ctx),
+		NewTypedObjectNull[WebhookHeaderValue]().Type(ctx),
+		NewTypedObjectNull[WebhookTransformationValue]().Type(ctx),
 	}
 
 	for aIndex, aType := range types {
@@ -173,32 +173,32 @@ func TestModelTypeValueFromObject(t *testing.T) {
 			UnknownValue: NewTypedObjectUnknown[RolePolicyValue](),
 		},
 		"WebhookFilterEquals": {
-			NullValue:    NewWebhookFilterEqualsValueNull(),
-			UnknownValue: NewWebhookFilterEqualsValueUnknown(),
+			NullValue:    NewTypedObjectNull[WebhookFilterEqualsValue](),
+			UnknownValue: NewTypedObjectUnknown[WebhookFilterEqualsValue](),
 		},
 		"WebhookFilterIn": {
-			NullValue:    NewWebhookFilterInValueNull(),
-			UnknownValue: NewWebhookFilterInValueUnknown(),
+			NullValue:    NewTypedObjectNull[WebhookFilterInValue](),
+			UnknownValue: NewTypedObjectUnknown[WebhookFilterInValue](),
 		},
 		"WebhookFilterNot": {
-			NullValue:    NewWebhookFilterNotValueNull(),
-			UnknownValue: NewWebhookFilterNotValueUnknown(),
+			NullValue:    NewTypedObjectNull[WebhookFilterNotValue](),
+			UnknownValue: NewTypedObjectUnknown[WebhookFilterNotValue](),
 		},
 		"WebhookFilterRegexp": {
-			NullValue:    NewWebhookFilterRegexpValueNull(),
-			UnknownValue: NewWebhookFilterRegexpValueUnknown(),
+			NullValue:    NewTypedObjectNull[WebhookFilterRegexpValue](),
+			UnknownValue: NewTypedObjectUnknown[WebhookFilterRegexpValue](),
 		},
 		"WebhookFilter": {
-			NullValue:    NewWebhookFilterValueNull(),
-			UnknownValue: NewWebhookFilterValueUnknown(),
+			NullValue:    NewTypedObjectNull[WebhookFilterValue](),
+			UnknownValue: NewTypedObjectUnknown[WebhookFilterValue](),
 		},
 		"WebhookHeader": {
-			NullValue:    NewWebhookHeaderValueNull(),
-			UnknownValue: NewWebhookHeaderValueUnknown(),
+			NullValue:    NewTypedObjectNull[WebhookHeaderValue](),
+			UnknownValue: NewTypedObjectUnknown[WebhookHeaderValue](),
 		},
 		"WebhookTransformation": {
-			NullValue:    NewWebhookTransformationValueNull(),
-			UnknownValue: NewWebhookTransformationValueUnknown(),
+			NullValue:    NewTypedObjectNull[WebhookTransformationValue](),
+			UnknownValue: NewTypedObjectUnknown[WebhookTransformationValue](),
 		},
 	}
 
@@ -276,13 +276,13 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 		NewTypedObjectNull[EditorInterfaceGroupControlValue]().Type(ctx),
 		NewTypedObjectNull[EditorInterfaceSidebarValue]().Type(ctx),
 		NewTypedObjectNull[RolePolicyValue]().Type(ctx),
-		WebhookFilterEqualsType{},
-		WebhookFilterInType{},
-		WebhookFilterNotType{},
-		WebhookFilterRegexpType{},
-		WebhookFilterType{},
-		WebhookHeaderType{},
-		WebhookTransformationType{},
+		NewTypedObjectNull[WebhookFilterEqualsValue]().Type(ctx),
+		NewTypedObjectNull[WebhookFilterInValue]().Type(ctx),
+		NewTypedObjectNull[WebhookFilterNotValue]().Type(ctx),
+		NewTypedObjectNull[WebhookFilterRegexpValue]().Type(ctx),
+		NewTypedObjectNull[WebhookFilterValue]().Type(ctx),
+		NewTypedObjectNull[WebhookHeaderValue]().Type(ctx),
+		NewTypedObjectNull[WebhookTransformationValue]().Type(ctx),
 	}
 
 	tfvalniltype := tftypes.NewValue(nil, nil)

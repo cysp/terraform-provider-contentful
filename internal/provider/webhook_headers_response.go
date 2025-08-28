@@ -8,20 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func ReadHeaderValueMapFromResponse(ctx context.Context, path path.Path, headers []cm.WebhookDefinitionHeader, existingHeaderValues map[string]WebhookHeaderValue) (TypedMap[WebhookHeaderValue], diag.Diagnostics) {
+func ReadHeaderValueMapFromResponse(ctx context.Context, path path.Path, headers []cm.WebhookDefinitionHeader, existingHeaderValues map[string]TypedObject[WebhookHeaderValue]) (TypedMap[TypedObject[WebhookHeaderValue]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	headersValues := make(map[string]WebhookHeaderValue, len(headers))
+	headersValues := make(map[string]TypedObject[WebhookHeaderValue], len(headers))
 
 	for _, header := range headers {
-		var value WebhookHeaderValue
-		if existingHeader, found := existingHeaderValues[header.Key]; found {
-			value = existingHeader
-		} else {
-			value = NewWebhookHeaderValueKnown()
-		}
+		existingHeader := existingHeaderValues[header.Key]
 
-		diags.Append(value.ReadFromResponse(ctx, path.AtMapKey(header.Key), header)...)
+		value, valueDiags := NewWebhookHeaderValueFromResponse(ctx, path.AtMapKey(header.Key), header, existingHeader)
+		diags.Append(valueDiags...)
+
 		headersValues[header.Key] = value
 	}
 

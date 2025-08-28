@@ -5,18 +5,18 @@ import (
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWebhookFilterInValueKnownFromAttributesInvalid(t *testing.T) {
+func TestWebhookFilterNotValueKnownFromAttributesInvalid(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
 
 	attributes := map[string]attr.Value{
-		"doc":    types.StringNull(),
-		"values": NewTypedListNull[types.String](),
+		"equals": NewTypedObjectNull[WebhookFilterEqualsValue](),
+		"in":     NewTypedObjectNull[WebhookFilterInValue](),
+		"regexp": NewTypedObjectNull[WebhookFilterRegexpValue](),
 	}
 
 	testcases := GenerateInvalidValueFromAttributesTestcases(t, attributes)
@@ -25,7 +25,7 @@ func TestWebhookFilterInValueKnownFromAttributesInvalid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, diags := NewWebhookFilterInValueKnownFromAttributes(ctx, testcase)
+			_, diags := NewTypedObjectFromAttributes[WebhookFilterNotValue](ctx, testcase)
 			assert.True(t, diags.HasError())
 		})
 	}

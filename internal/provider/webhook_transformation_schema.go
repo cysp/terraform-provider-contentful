@@ -10,7 +10,7 @@ import (
 func WebhookTransformationSchema(ctx context.Context, optional bool) schema.Attribute {
 	return schema.SingleNestedAttribute{
 		Attributes: WebhookTransformationValue{}.SchemaAttributes(ctx),
-		CustomType: WebhookTransformationValue{}.CustomType(ctx),
+		CustomType: NewTypedObjectNull[WebhookTransformationValue]().CustomType(ctx),
 		Optional:   optional,
 	}
 }

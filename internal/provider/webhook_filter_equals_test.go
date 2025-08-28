@@ -1,3 +1,4 @@
+//nolint:dupl
 package provider_test
 
 import (
@@ -14,7 +15,7 @@ func TestWebhookFilterEqualsValueObjectRoundtrip(t *testing.T) {
 
 	ctx := t.Context()
 
-	value, valueDiags := NewWebhookFilterEqualsValueKnownFromAttributes(ctx, map[string]attr.Value{
+	value, valueDiags := NewTypedObjectFromAttributes[WebhookFilterEqualsValue](ctx, map[string]attr.Value{
 		"doc":   types.StringValue("doc"),
 		"value": types.StringValue("value"),
 	})
@@ -23,8 +24,30 @@ func TestWebhookFilterEqualsValueObjectRoundtrip(t *testing.T) {
 	objectValue, objectValueDiags := value.ToObjectValue(ctx)
 	assert.Empty(t, objectValueDiags)
 
-	valueFromObject, valueFromObjectDiags := WebhookFilterEqualsType{}.ValueFromObject(ctx, objectValue)
+	valueFromObject, valueFromObjectDiags := value.CustomType(ctx).ValueFromObject(ctx, objectValue)
 	assert.Empty(t, valueFromObjectDiags)
 
 	assert.True(t, value.Equal(valueFromObject))
+}
+
+func TestWebhookFilterEqualsValueKnownFromAttributesInvalid(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	attributes := map[string]attr.Value{
+		"doc":   types.StringNull(),
+		"value": types.StringNull(),
+	}
+
+	testcases := GenerateInvalidValueFromAttributesTestcases(t, attributes)
+
+	for name, testcase := range testcases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			_, diags := NewTypedObjectFromAttributes[WebhookFilterEqualsValue](ctx, testcase)
+			assert.True(t, diags.HasError())
+		})
+	}
 }
