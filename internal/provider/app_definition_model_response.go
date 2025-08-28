@@ -124,7 +124,7 @@ func NewAppDefinitionLocationFieldTypeItemsItemSliceFromItems(items cm.AppDefini
 	return item
 }
 
-func NewAppDefinitionParameterFromResponse(ctx context.Context, parameter cm.AppDefinitionParameter) (AppDefinitionParameter, diag.Diagnostics) {
+func NewAppDefinitionParameterFromResponse(_ context.Context, parameter cm.AppDefinitionParameter) (AppDefinitionParameter, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	model := AppDefinitionParameter{
@@ -144,10 +144,7 @@ func NewAppDefinitionParameterFromResponse(ctx context.Context, parameter cm.App
 			}
 		}
 
-		optionsList, optionsDiags := NewTypedList(ctx, optionsElements)
-		diags.Append(optionsDiags...)
-
-		model.Options = optionsList
+		model.Options = NewTypedList(optionsElements)
 	}
 
 	if parameter.Default != nil {

@@ -26,8 +26,7 @@ func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, polic
 		policiesValues[index] = policiesValue
 	}
 
-	policiesListValue, policiesListValueDiags := NewTypedList(ctx, policiesValues)
-	diags.Append(policiesListValueDiags...)
+	policiesListValue := NewTypedList(policiesValues)
 
 	return policiesListValue, diags
 }
@@ -64,27 +63,22 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 	return value, diags
 }
 
-func NewPolicyActionsListValueFromResponse(ctx context.Context, path path.Path, actions cm.RolePoliciesItemActions) (TypedList[types.String], diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewPolicyActionsListValueFromResponse(_ context.Context, path path.Path, actions cm.RolePoliciesItemActions) (TypedList[types.String], diag.Diagnostics) {
 	switch actions.Type {
 	case cm.StringRolePoliciesItemActions:
 		actionsValues := make([]types.String, 1)
 		actionsValues[0] = types.StringValue(actions.String)
 
-		actionsListValue, actionsListValueDiags := NewTypedList(ctx, actionsValues)
-		diags.Append(actionsListValueDiags...)
+		actionsListValue := NewTypedList(actionsValues)
 
-		return actionsListValue, diags
+		return actionsListValue, nil
 
 	case cm.StringArrayRolePoliciesItemActions:
-		actionsListValue, actionsListValueDiags := NewTypedListFromStringSlice(ctx, actions.StringArray)
-		diags.Append(actionsListValueDiags...)
-
-		return actionsListValue, diags
+		return NewTypedListFromStringSlice(actions.StringArray), nil
 	}
 
+	diags := diag.Diagnostics{}
 	diags.AddAttributeError(path, "unexpected type for policy actions", "")
 
-	return NewTypedListUnknown[types.String](ctx), diags
+	return NewTypedListUnknown[types.String](), diags
 }

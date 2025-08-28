@@ -42,7 +42,7 @@ func NewContentTypeMetadataTaxonomyItemsFromResponse(
 	taxonomy []cm.ContentTypeMetadataTaxonomyItem,
 ) (TypedList[ContentTypeMetadataTaxonomyItemValue], diag.Diagnostics) {
 	if taxonomy == nil {
-		return NewTypedListNull[ContentTypeMetadataTaxonomyItemValue](ctx), diag.Diagnostics{}
+		return NewTypedListNull[ContentTypeMetadataTaxonomyItemValue](), diag.Diagnostics{}
 	}
 
 	diags := diag.Diagnostics{}
@@ -56,8 +56,7 @@ func NewContentTypeMetadataTaxonomyItemsFromResponse(
 		items = append(items, itemValue)
 	}
 
-	list, listDiags := NewTypedList(ctx, items)
-	diags.Append(listDiags...)
+	list := NewTypedList(items)
 
 	return list, diags
 }

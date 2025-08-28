@@ -21,7 +21,7 @@ func webhookFiltersListForTesting(t *testing.T) TypedList[WebhookFilterValue] {
 
 	filterIn := NewWebhookFilterInValueKnown(ctx)
 	filterIn.Doc = types.StringValue("sys.type")
-	filterIn.Values = DiagsNoErrorsMust(NewTypedList(ctx, []types.String{types.StringValue("abc"), types.StringValue("def")}))
+	filterIn.Values = NewTypedList([]types.String{types.StringValue("abc"), types.StringValue("def")})
 
 	filterRegexp := NewWebhookFilterRegexpValueKnown()
 	filterRegexp.Doc = types.StringValue("sys.type")
@@ -54,7 +54,7 @@ func webhookFiltersListForTesting(t *testing.T) TypedList[WebhookFilterValue] {
 	filterFilterNotRegexp := NewWebhookFilterValueKnown()
 	filterFilterNotRegexp.Not = filterNotRegexp
 
-	filters, filtersDiags := NewTypedList(ctx, []WebhookFilterValue{
+	filters := NewTypedList([]WebhookFilterValue{
 		filterFilterEquals,
 		filterFilterIn,
 		filterFilterRegexp,
@@ -62,8 +62,6 @@ func webhookFiltersListForTesting(t *testing.T) TypedList[WebhookFilterValue] {
 		filterFilterNotIn,
 		filterFilterNotRegexp,
 	})
-
-	assert.Empty(t, filtersDiags)
 
 	return filters
 }

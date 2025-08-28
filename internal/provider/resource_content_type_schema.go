@@ -56,7 +56,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 					Attributes: ContentTypeFieldValue{}.SchemaAttributes(ctx),
 					CustomType: ContentTypeFieldValue{}.CustomType(ctx),
 				},
-				CustomType: NewTypedListUnknown[ContentTypeFieldValue](ctx).CustomType(ctx),
+				CustomType: NewTypedListUnknown[ContentTypeFieldValue]().CustomType(ctx),
 				Required:   true,
 			},
 			"metadata": schema.SingleNestedAttribute{
@@ -76,7 +76,7 @@ func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SchemaAttribute
 		},
 		"content_types": schema.ListAttribute{
 			ElementType: types.StringType,
-			CustomType:  NewTypedListNull[types.String](ctx).CustomType(ctx),
+			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Required:    true,
 		},
 	}
@@ -127,7 +127,7 @@ func (v ContentTypeFieldItemsValue) SchemaAttributes(ctx context.Context) map[st
 		},
 		"validations": schema.ListAttribute{
 			ElementType: jsontypes.NormalizedType{},
-			CustomType:  NewTypedListNull[jsontypes.Normalized](ctx).CustomType(ctx),
+			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
 			Computed:    true,
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
@@ -177,7 +177,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 		},
 		"validations": schema.ListAttribute{
 			ElementType: jsontypes.NormalizedType{},
-			CustomType:  NewTypedListNull[jsontypes.Normalized](ctx).CustomType(ctx),
+			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
 			Computed:    true,
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
@@ -187,7 +187,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 				Attributes: NewContentTypeFieldAllowedResourceItemValueNull().SchemaAttributes(ctx),
 				CustomType: NewContentTypeFieldAllowedResourceItemValueNull().CustomType(ctx),
 			},
-			CustomType: NewTypedListNull[ContentTypeFieldAllowedResourceItemValue](ctx).CustomType(ctx),
+			CustomType: NewTypedListNull[ContentTypeFieldAllowedResourceItemValue]().CustomType(ctx),
 			Optional:   true,
 		},
 	}
@@ -264,7 +264,7 @@ func (v ContentTypeMetadataValue) SchemaAttributes(ctx context.Context) map[stri
 				Attributes: ContentTypeMetadataTaxonomyItemValue{}.SchemaAttributes(ctx),
 				CustomType: ContentTypeMetadataTaxonomyItemValue{}.CustomType(ctx),
 			},
-			CustomType:  NewTypedListNull[ContentTypeMetadataTaxonomyItemValue](ctx).CustomType(ctx),
+			CustomType:  NewTypedListNull[ContentTypeMetadataTaxonomyItemValue]().CustomType(ctx),
 			Description: "List of taxonomy items for this content type. Each item represents a taxonomy term that may be associated with the content type.",
 			Optional:    true,
 			Validators: []validator.List{

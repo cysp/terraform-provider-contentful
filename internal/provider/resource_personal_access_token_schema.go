@@ -40,7 +40,7 @@ func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"scopes": schema.ListAttribute{
 				ElementType: types.StringType,
-				CustomType:  NewTypedListNull[types.String](ctx).CustomType(ctx),
+				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Required:    true,
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.RequiresReplace(),

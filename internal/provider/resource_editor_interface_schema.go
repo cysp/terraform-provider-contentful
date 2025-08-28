@@ -131,7 +131,7 @@ func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) SchemaAttributes(ctx
 				Attributes: EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{}.SchemaAttributes(ctx),
 				CustomType: EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{}.CustomType(ctx),
 			},
-			CustomType: NewTypedListNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue](ctx).CustomType(ctx),
+			CustomType: NewTypedListNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]().CustomType(ctx),
 			Required:   true,
 		},
 	}
@@ -177,7 +177,7 @@ func (v EditorInterfaceEditorLayoutItemGroupValue) SchemaAttributes(ctx context.
 				Attributes: EditorInterfaceEditorLayoutItemGroupItemValue{}.SchemaAttributes(ctx),
 				CustomType: EditorInterfaceEditorLayoutItemGroupItemValue{}.CustomType(ctx),
 			},
-			CustomType: NewTypedListNull[EditorInterfaceEditorLayoutItemGroupItemValue](ctx).CustomType(ctx),
+			CustomType: NewTypedListNull[EditorInterfaceEditorLayoutItemGroupItemValue]().CustomType(ctx),
 			Required:   true,
 		},
 	}

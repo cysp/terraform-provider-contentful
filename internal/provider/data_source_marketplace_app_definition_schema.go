@@ -121,7 +121,7 @@ func MarketplaceAppDefinitionParameterDataSourceSchemaAttributes(ctx context.Con
 		},
 		"options": schema.ListAttribute{
 			ElementType: jsontypes.NormalizedType{},
-			CustomType:  NewTypedListNull[jsontypes.Normalized](ctx).CustomType(ctx),
+			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Computed:    true,
 		},
 		"labels": schema.SingleNestedAttribute{

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPersonalAccessTokenResourceModelFromResponse(ctx context.Context, personalAccessToken cm.PersonalAccessToken, existingToken types.String, expiresIn types.Int64) (PersonalAccessTokenModel, diag.Diagnostics) {
+func NewPersonalAccessTokenResourceModelFromResponse(_ context.Context, personalAccessToken cm.PersonalAccessToken, existingToken types.String, expiresIn types.Int64) (PersonalAccessTokenModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	model := PersonalAccessTokenModel{
@@ -18,10 +18,7 @@ func NewPersonalAccessTokenResourceModelFromResponse(ctx context.Context, person
 
 	model.Name = types.StringValue(personalAccessToken.Name)
 
-	scopesList, scopesListDiags := NewTypedListFromStringSlice(ctx, personalAccessToken.Scopes)
-	diags.Append(scopesListDiags...)
-
-	model.Scopes = scopesList
+	model.Scopes = NewTypedListFromStringSlice(personalAccessToken.Scopes)
 
 	model.Token = existingToken
 	if token, ok := personalAccessToken.Token.Get(); ok {

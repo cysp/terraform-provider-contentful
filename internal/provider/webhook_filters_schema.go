@@ -17,7 +17,7 @@ func WebhookFiltersSchema(ctx context.Context, optional bool) schema.Attribute {
 			Attributes: WebhookFilterValue{}.SchemaAttributes(ctx),
 			CustomType: WebhookFilterValue{}.CustomType(ctx),
 		},
-		CustomType: NewTypedListNull[WebhookFilterValue](ctx).CustomType(ctx),
+		CustomType: NewTypedListNull[WebhookFilterValue]().CustomType(ctx),
 		Optional:   optional,
 	}
 }
@@ -40,7 +40,7 @@ func (v WebhookFilterInValue) SchemaAttributes(ctx context.Context) map[string]s
 		},
 		"values": schema.ListAttribute{
 			ElementType: types.StringType,
-			CustomType:  NewTypedListNull[types.String](ctx).CustomType(ctx),
+			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Required:    true,
 		},
 	}

@@ -22,7 +22,7 @@ func TestModelTypeEqual(t *testing.T) {
 	}
 
 	types := []attr.Type{
-		NewTypedListNull[types.String](ctx).Type(ctx),
+		NewTypedListNull[types.String]().Type(ctx),
 		NewTypedMapNull[types.String](ctx).Type(ctx),
 		ContentTypeFieldAllowedResourceItemContentfulEntryType{},
 		ContentTypeFieldAllowedResourceItemExternalType{},
@@ -252,7 +252,7 @@ func TestModelTypeValueFromTerraform(t *testing.T) {
 	ctx := t.Context()
 
 	types := []attr.Type{
-		NewTypedListNull[types.String](ctx).Type(ctx),
+		NewTypedListNull[types.String]().Type(ctx),
 		NewTypedMapNull[types.String](ctx).Type(ctx),
 		ContentTypeFieldAllowedResourceItemContentfulEntryType{},
 		ContentTypeFieldAllowedResourceItemExternalType{},

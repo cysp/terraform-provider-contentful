@@ -31,10 +31,10 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 				URL:               types.StringValue("https://example.com/webhook"),
 				HTTPBasicUsername: types.StringNull(),
 				HTTPBasicPassword: types.StringNull(),
-				Topics: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
+				Topics: NewTypedList([]types.String{
 					types.StringValue("Entry.create"),
 					types.StringValue("Entry.delete"),
-				})),
+				}),
 			},
 			expected: cm.WebhookDefinitionFields{
 				Name:              "test-webhook",
@@ -55,9 +55,9 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 				URL:               types.StringValue("https://example.com/webhook"),
 				HTTPBasicUsername: types.StringValue("user"),
 				HTTPBasicPassword: types.StringValue("pass"),
-				Topics: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
+				Topics: NewTypedList([]types.String{
 					types.StringValue("Entry.*"),
-				})),
+				}),
 			},
 			expected: cm.WebhookDefinitionFields{
 				Name:              "auth-webhook",

@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRoundTripToEditorInterfaceFields(t *testing.T) {
@@ -107,22 +106,18 @@ func TestToEditorInterfaceFields(t *testing.T) {
 	controlValue1.WidgetID = types.StringValue("widget_id")
 	controlValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	controls, controlsDiags := NewTypedList(ctx, []EditorInterfaceControlValue{
+	controls := NewTypedList([]EditorInterfaceControlValue{
 		controlValue1,
 	})
-
-	require.Empty(t, controlsDiags)
 
 	sidebarValue1 := NewEditorInterfaceSidebarValueKnown()
 	sidebarValue1.WidgetNamespace = types.StringValue("widget_namespace")
 	sidebarValue1.WidgetID = types.StringValue("widget_id")
 	sidebarValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	sidebar, sidebarDiags := NewTypedList(ctx, []EditorInterfaceSidebarValue{
+	sidebar := NewTypedList([]EditorInterfaceSidebarValue{
 		sidebarValue1,
 	})
-
-	require.Empty(t, sidebarDiags)
 
 	model := EditorInterfaceModel{
 		SpaceID:       types.StringValue("space_id"),
@@ -179,13 +174,11 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 	controlValue3.WidgetID = types.StringValue("widget_id")
 	controlValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	controls, controlsDiags := NewTypedList(ctx, []EditorInterfaceControlValue{
+	controls := NewTypedList([]EditorInterfaceControlValue{
 		controlValue1,
 		controlValue2,
 		controlValue3,
 	})
-
-	require.Empty(t, controlsDiags)
 
 	sidebarValue1 := NewEditorInterfaceSidebarValueKnown()
 	sidebarValue1.WidgetNamespace = types.StringValue("widget_namespace")
@@ -202,13 +195,11 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 	sidebarValue3.WidgetID = types.StringValue("widget_id")
 	sidebarValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	sidebar, sidebarDiags := NewTypedList(ctx, []EditorInterfaceSidebarValue{
+	sidebar := NewTypedList([]EditorInterfaceSidebarValue{
 		sidebarValue1,
 		sidebarValue2,
 		sidebarValue3,
 	})
-
-	require.Empty(t, sidebarDiags)
 
 	model := EditorInterfaceModel{
 		SpaceID:       types.StringValue("space_id"),

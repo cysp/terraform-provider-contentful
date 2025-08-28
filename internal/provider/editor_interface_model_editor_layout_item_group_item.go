@@ -23,8 +23,7 @@ func NewEditorInterfaceEditorLayoutItemGroupItemValueListFromResponse(ctx contex
 		listElementValues[index] = editorLayoutValue
 	}
 
-	list, listDiags := NewTypedList(ctx, listElementValues)
-	diags.Append(listDiags...)
+	list := NewTypedList(listElementValues)
 
 	return list, diags
 }

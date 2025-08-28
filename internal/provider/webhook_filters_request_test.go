@@ -18,10 +18,10 @@ func TestToOptNilWebhookDefinitionFilterArrayNil(t *testing.T) {
 		input TypedList[WebhookFilterValue]
 	}{
 		"null": {
-			input: NewTypedListNull[WebhookFilterValue](ctx),
+			input: NewTypedListNull[WebhookFilterValue](),
 		},
 		"unknown": {
-			input: NewTypedListUnknown[WebhookFilterValue](ctx),
+			input: NewTypedListUnknown[WebhookFilterValue](),
 		},
 	}
 

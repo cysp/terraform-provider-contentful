@@ -16,25 +16,25 @@ type TypedList[T attr.Value] struct {
 	state    attr.ValueState
 }
 
-func NewTypedListUnknown[T attr.Value](_ context.Context) TypedList[T] {
+func NewTypedListUnknown[T attr.Value]() TypedList[T] {
 	return TypedList[T]{
 		elements: make([]T, 0),
 		state:    attr.ValueStateUnknown,
 	}
 }
 
-func NewTypedListNull[T attr.Value](_ context.Context) TypedList[T] {
+func NewTypedListNull[T attr.Value]() TypedList[T] {
 	return TypedList[T]{
 		elements: make([]T, 0),
 		state:    attr.ValueStateNull,
 	}
 }
 
-func NewTypedList[T attr.Value](_ context.Context, elements []T) (TypedList[T], diag.Diagnostics) {
+func NewTypedList[T attr.Value](elements []T) TypedList[T] {
 	return TypedList[T]{
 		elements: elements,
 		state:    attr.ValueStateKnown,
-	}, nil
+	}
 }
 
 var _ attr.Value = (*TypedList[attr.Value])(nil)

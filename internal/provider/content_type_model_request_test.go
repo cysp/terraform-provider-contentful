@@ -17,7 +17,7 @@ func TestToOptContentTypeFieldsItemItemsErrorHandling(t *testing.T) {
 	_, itemsObjectDiags := NewContentTypeFieldItemsValueKnownFromAttributes(ctx, map[string]attr.Value{
 		"type":        types.StringNull(),
 		"link_type":   types.StringNull(),
-		"validations": DiagsNoErrorsMust(NewTypedList(ctx, []types.String{types.StringNull()})),
+		"validations": NewTypedList([]types.String{types.StringNull()}),
 	})
 	assert.NotEmpty(t, itemsObjectDiags)
 }

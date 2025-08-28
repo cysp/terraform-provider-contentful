@@ -66,11 +66,11 @@ func NewEditorInterfaceSidebarValueFromResponse(path path.Path, item cm.EditorIn
 	return value, diags
 }
 
-func NewEditorInterfaceSidebarListValueNull(ctx context.Context) TypedList[EditorInterfaceSidebarValue] {
-	return NewTypedListNull[EditorInterfaceSidebarValue](ctx)
+func NewEditorInterfaceSidebarListValueNull() TypedList[EditorInterfaceSidebarValue] {
+	return NewTypedListNull[EditorInterfaceSidebarValue]()
 }
 
-func NewEditorInterfaceSidebarListValueFromResponse(ctx context.Context, path path.Path, sidebarItems []cm.EditorInterfaceSidebarItem) (TypedList[EditorInterfaceSidebarValue], diag.Diagnostics) {
+func NewEditorInterfaceSidebarListValueFromResponse(_ context.Context, path path.Path, sidebarItems []cm.EditorInterfaceSidebarItem) (TypedList[EditorInterfaceSidebarValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	listElementValues := make([]EditorInterfaceSidebarValue, len(sidebarItems))
@@ -82,8 +82,7 @@ func NewEditorInterfaceSidebarListValueFromResponse(ctx context.Context, path pa
 		listElementValues[index] = sidebarValue
 	}
 
-	list, listDiags := NewTypedList(ctx, listElementValues)
-	diags.Append(listDiags...)
+	list := NewTypedList(listElementValues)
 
 	return list, diags
 }

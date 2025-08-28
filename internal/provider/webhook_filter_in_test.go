@@ -16,7 +16,7 @@ func TestWebhookFilterInValueObjectRoundtrip(t *testing.T) {
 
 	value, valueDiags := NewWebhookFilterInValueKnownFromAttributes(ctx, map[string]attr.Value{
 		"doc":    types.StringValue("doc"),
-		"values": DiagsNoErrorsMust(NewTypedList(ctx, []types.String{types.StringValue("value")})),
+		"values": NewTypedList([]types.String{types.StringValue("value")}),
 	})
 	assert.Empty(t, valueDiags)
 

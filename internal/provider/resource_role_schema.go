@@ -31,7 +31,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 			},
 			"permissions": schema.MapAttribute{
-				ElementType: NewTypedListNull[types.String](ctx).Type(ctx),
+				ElementType: NewTypedListNull[types.String]().Type(ctx),
 				CustomType:  NewTypedMapNull[TypedList[types.String]](ctx).CustomType(ctx),
 				Required:    true,
 			},

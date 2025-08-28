@@ -27,8 +27,7 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemValueListFromResponse(c
 		}
 	}
 
-	list, listDiags := NewTypedList(ctx, listElementValues)
-	diags.Append(listDiags...)
+	list := NewTypedList(listElementValues)
 
 	return list, diags
 }

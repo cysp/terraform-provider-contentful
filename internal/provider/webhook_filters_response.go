@@ -14,7 +14,7 @@ import (
 func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path, optNilFilters cm.OptNilWebhookDefinitionFilterArray) (TypedList[WebhookFilterValue], diag.Diagnostics) {
 	filters, filtersOk := optNilFilters.Get()
 	if !filtersOk {
-		return NewTypedListNull[WebhookFilterValue](ctx), nil
+		return NewTypedListNull[WebhookFilterValue](), nil
 	}
 
 	diags := diag.Diagnostics{}
@@ -28,8 +28,7 @@ func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path
 		filtersElements[index] = filtersElement
 	}
 
-	filtersList, filtersListDiags := NewTypedList(ctx, filtersElements)
-	diags.Append(filtersListDiags...)
+	filtersList := NewTypedList(filtersElements)
 
 	return filtersList, diags
 }
@@ -200,7 +199,7 @@ func ReadWebhookDefinitionFilterTermString(_ context.Context, path path.Path, in
 	return types.StringValue(valueValue), diags
 }
 
-func ReadWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.Path, input jx.Raw) (TypedList[types.String], diag.Diagnostics) {
+func ReadWebhookDefinitionFilterTermStringArray(_ context.Context, path path.Path, input jx.Raw) (TypedList[types.String], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	decoder := jx.DecodeBytes(input)
 
@@ -221,8 +220,7 @@ func ReadWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.P
 		diags.AddAttributeError(path, "failed to decode value", "")
 	}
 
-	valueValuesList, valueValuesListDiags := NewTypedList(ctx, valueElements)
-	diags.Append(valueValuesListDiags...)
+	valueValuesList := NewTypedList(valueElements)
 
 	return valueValuesList, diags
 }
