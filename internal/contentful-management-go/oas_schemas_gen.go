@@ -1441,6 +1441,152 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Merged schema.
+// Ref: #/components/schemas/AppSigningSecret
+type AppSigningSecret struct {
+	Sys           AppSigningSecretSys `json:"sys"`
+	RedactedValue string              `json:"redactedValue"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppSigningSecret) GetSys() AppSigningSecretSys {
+	return s.Sys
+}
+
+// GetRedactedValue returns the value of RedactedValue.
+func (s *AppSigningSecret) GetRedactedValue() string {
+	return s.RedactedValue
+}
+
+// SetSys sets the value of Sys.
+func (s *AppSigningSecret) SetSys(val AppSigningSecretSys) {
+	s.Sys = val
+}
+
+// SetRedactedValue sets the value of RedactedValue.
+func (s *AppSigningSecret) SetRedactedValue(val string) {
+	s.RedactedValue = val
+}
+
+func (*AppSigningSecret) getAppSigningSecretRes() {}
+
+// Ref: #/components/schemas/AppSigningSecretRequestFields
+type AppSigningSecretRequestFields struct {
+	Value string `json:"value"`
+}
+
+// GetValue returns the value of Value.
+func (s *AppSigningSecretRequestFields) GetValue() string {
+	return s.Value
+}
+
+// SetValue sets the value of Value.
+func (s *AppSigningSecretRequestFields) SetValue(val string) {
+	s.Value = val
+}
+
+// AppSigningSecretStatusCode wraps AppSigningSecret with StatusCode.
+type AppSigningSecretStatusCode struct {
+	StatusCode int
+	Response   AppSigningSecret
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *AppSigningSecretStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *AppSigningSecretStatusCode) GetResponse() AppSigningSecret {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *AppSigningSecretStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *AppSigningSecretStatusCode) SetResponse(val AppSigningSecret) {
+	s.Response = val
+}
+
+func (*AppSigningSecretStatusCode) putAppSigningSecretRes() {}
+
+// Merged schema.
+// Ref: #/components/schemas/AppSigningSecretSys
+type AppSigningSecretSys struct {
+	// Merged property.
+	Type          AppSigningSecretSysType `json:"type"`
+	Organization  OrganizationLink        `json:"organization"`
+	AppDefinition AppDefinitionLink       `json:"appDefinition"`
+}
+
+// GetType returns the value of Type.
+func (s *AppSigningSecretSys) GetType() AppSigningSecretSysType {
+	return s.Type
+}
+
+// GetOrganization returns the value of Organization.
+func (s *AppSigningSecretSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetAppDefinition returns the value of AppDefinition.
+func (s *AppSigningSecretSys) GetAppDefinition() AppDefinitionLink {
+	return s.AppDefinition
+}
+
+// SetType sets the value of Type.
+func (s *AppSigningSecretSys) SetType(val AppSigningSecretSysType) {
+	s.Type = val
+}
+
+// SetOrganization sets the value of Organization.
+func (s *AppSigningSecretSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetAppDefinition sets the value of AppDefinition.
+func (s *AppSigningSecretSys) SetAppDefinition(val AppDefinitionLink) {
+	s.AppDefinition = val
+}
+
+// Merged schema.
+type AppSigningSecretSysType string
+
+const (
+	AppSigningSecretSysTypeAppSigningSecret AppSigningSecretSysType = "AppSigningSecret"
+)
+
+// AllValues returns all AppSigningSecretSysType values.
+func (AppSigningSecretSysType) AllValues() []AppSigningSecretSysType {
+	return []AppSigningSecretSysType{
+		AppSigningSecretSysTypeAppSigningSecret,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppSigningSecretSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppSigningSecretSysTypeAppSigningSecret:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppSigningSecretSysType) UnmarshalText(data []byte) error {
+	switch AppSigningSecretSysType(data) {
+	case AppSigningSecretSysTypeAppSigningSecret:
+		*s = AppSigningSecretSysTypeAppSigningSecret
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/components/schemas/ApplicationJSONError
 // ApplicationJSONError represents sum type.
 type ApplicationJSONError struct {
@@ -1491,6 +1637,7 @@ func (*ApplicationJSONError) deleteAppDefinitionRes()                 {}
 func (*ApplicationJSONError) deleteAppDefinitionResourceProviderRes() {}
 func (*ApplicationJSONError) deleteAppDefinitionResourceTypeRes()     {}
 func (*ApplicationJSONError) deleteAppInstallationRes()               {}
+func (*ApplicationJSONError) deleteAppSigningSecretRes()              {}
 func (*ApplicationJSONError) deleteContentTypeRes()                   {}
 func (*ApplicationJSONError) deleteDeliveryApiKeyRes()                {}
 func (*ApplicationJSONError) deleteExtensionRes()                     {}
@@ -1500,6 +1647,7 @@ func (*ApplicationJSONError) getAppDefinitionRes()                    {}
 func (*ApplicationJSONError) getAppDefinitionResourceProviderRes()    {}
 func (*ApplicationJSONError) getAppDefinitionResourceTypeRes()        {}
 func (*ApplicationJSONError) getAppInstallationRes()                  {}
+func (*ApplicationJSONError) getAppSigningSecretRes()                 {}
 func (*ApplicationJSONError) getAuthenticatedUserRes()                {}
 func (*ApplicationJSONError) getContentTypeRes()                      {}
 func (*ApplicationJSONError) getDeliveryApiKeyRes()                   {}
@@ -1515,6 +1663,7 @@ func (*ApplicationJSONError) putAppDefinitionRes()                    {}
 func (*ApplicationJSONError) putAppDefinitionResourceProviderRes()    {}
 func (*ApplicationJSONError) putAppDefinitionResourceTypeRes()        {}
 func (*ApplicationJSONError) putAppInstallationRes()                  {}
+func (*ApplicationJSONError) putAppSigningSecretRes()                 {}
 func (*ApplicationJSONError) putContentTypeRes()                      {}
 func (*ApplicationJSONError) putEditorInterfaceRes()                  {}
 func (*ApplicationJSONError) putExtensionRes()                        {}
@@ -1561,6 +1710,7 @@ func (*ApplicationJSONErrorStatusCode) deleteAppDefinitionRes()                 
 func (*ApplicationJSONErrorStatusCode) deleteAppDefinitionResourceProviderRes() {}
 func (*ApplicationJSONErrorStatusCode) deleteAppDefinitionResourceTypeRes()     {}
 func (*ApplicationJSONErrorStatusCode) deleteAppInstallationRes()               {}
+func (*ApplicationJSONErrorStatusCode) deleteAppSigningSecretRes()              {}
 func (*ApplicationJSONErrorStatusCode) deleteContentTypeRes()                   {}
 func (*ApplicationJSONErrorStatusCode) deleteDeliveryApiKeyRes()                {}
 func (*ApplicationJSONErrorStatusCode) deleteExtensionRes()                     {}
@@ -1570,6 +1720,7 @@ func (*ApplicationJSONErrorStatusCode) getAppDefinitionRes()                    
 func (*ApplicationJSONErrorStatusCode) getAppDefinitionResourceProviderRes()    {}
 func (*ApplicationJSONErrorStatusCode) getAppDefinitionResourceTypeRes()        {}
 func (*ApplicationJSONErrorStatusCode) getAppInstallationRes()                  {}
+func (*ApplicationJSONErrorStatusCode) getAppSigningSecretRes()                 {}
 func (*ApplicationJSONErrorStatusCode) getAuthenticatedUserRes()                {}
 func (*ApplicationJSONErrorStatusCode) getContentTypeRes()                      {}
 func (*ApplicationJSONErrorStatusCode) getDeliveryApiKeyRes()                   {}
@@ -1585,6 +1736,7 @@ func (*ApplicationJSONErrorStatusCode) putAppDefinitionRes()                    
 func (*ApplicationJSONErrorStatusCode) putAppDefinitionResourceProviderRes()    {}
 func (*ApplicationJSONErrorStatusCode) putAppDefinitionResourceTypeRes()        {}
 func (*ApplicationJSONErrorStatusCode) putAppInstallationRes()                  {}
+func (*ApplicationJSONErrorStatusCode) putAppSigningSecretRes()                 {}
 func (*ApplicationJSONErrorStatusCode) putContentTypeRes()                      {}
 func (*ApplicationJSONErrorStatusCode) putEditorInterfaceRes()                  {}
 func (*ApplicationJSONErrorStatusCode) putExtensionRes()                        {}
@@ -1646,6 +1798,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) deleteAppDefinitionRes()  
 func (*ApplicationVndContentfulManagementV1JSONError) deleteAppDefinitionResourceProviderRes() {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteAppDefinitionResourceTypeRes()     {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteAppInstallationRes()               {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteAppSigningSecretRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteContentTypeRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteDeliveryApiKeyRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteExtensionRes()                     {}
@@ -1655,6 +1808,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getAppDefinitionRes()     
 func (*ApplicationVndContentfulManagementV1JSONError) getAppDefinitionResourceProviderRes()    {}
 func (*ApplicationVndContentfulManagementV1JSONError) getAppDefinitionResourceTypeRes()        {}
 func (*ApplicationVndContentfulManagementV1JSONError) getAppInstallationRes()                  {}
+func (*ApplicationVndContentfulManagementV1JSONError) getAppSigningSecretRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONError) getAuthenticatedUserRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) getContentTypeRes()                      {}
 func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryApiKeyRes()                   {}
@@ -1670,6 +1824,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) putAppDefinitionRes()     
 func (*ApplicationVndContentfulManagementV1JSONError) putAppDefinitionResourceProviderRes()    {}
 func (*ApplicationVndContentfulManagementV1JSONError) putAppDefinitionResourceTypeRes()        {}
 func (*ApplicationVndContentfulManagementV1JSONError) putAppInstallationRes()                  {}
+func (*ApplicationVndContentfulManagementV1JSONError) putAppSigningSecretRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONError) putContentTypeRes()                      {}
 func (*ApplicationVndContentfulManagementV1JSONError) putEditorInterfaceRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONError) putExtensionRes()                        {}
@@ -1718,6 +1873,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppDefinit
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppDefinitionResourceTypeRes() {
 }
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppInstallationRes()   {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppSigningSecretRes()  {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteContentTypeRes()       {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteDeliveryApiKeyRes()    {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteExtensionRes()         {}
@@ -1728,6 +1884,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppDefinition
 }
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppDefinitionResourceTypeRes() {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppInstallationRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppSigningSecretRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAuthenticatedUserRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypeRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryApiKeyRes()            {}
@@ -1744,6 +1901,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppDefinition
 }
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppDefinitionResourceTypeRes() {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppInstallationRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppSigningSecretRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putContentTypeRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putEditorInterfaceRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putExtensionRes()                 {}
@@ -4412,6 +4570,7 @@ func (*NoContent) deleteAppDefinitionRes()                 {}
 func (*NoContent) deleteAppDefinitionResourceProviderRes() {}
 func (*NoContent) deleteAppDefinitionResourceTypeRes()     {}
 func (*NoContent) deleteAppInstallationRes()               {}
+func (*NoContent) deleteAppSigningSecretRes()              {}
 func (*NoContent) deleteContentTypeRes()                   {}
 func (*NoContent) deleteDeliveryApiKeyRes()                {}
 func (*NoContent) deleteExtensionRes()                     {}

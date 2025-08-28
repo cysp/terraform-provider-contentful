@@ -24,6 +24,7 @@ type Handler struct {
 	appDefinitionResourceProviders OrganizationMap[*cm.ResourceProvider]
 	appDefinitionResourceTypes     OrganizationMap[*cm.ResourceType]
 	appInstallations               SpaceEnvironmentMap[*cm.AppInstallation]
+	appSigningSecrets              OrganizationMap[*cm.AppSigningSecret]
 
 	contentTypes     SpaceEnvironmentMap[*cm.ContentType]
 	editorInterfaces SpaceEnvironmentMap[*cm.EditorInterface]
@@ -50,6 +51,7 @@ func NewHandler() *Handler {
 		appDefinitionResourceProviders: NewOrganizationMap[*cm.ResourceProvider](),
 		appDefinitionResourceTypes:     NewOrganizationMap[*cm.ResourceType](),
 		appInstallations:               NewSpaceEnvironmentMap[*cm.AppInstallation](),
+		appSigningSecrets:              NewOrganizationMap[*cm.AppSigningSecret](),
 		contentTypes:                   NewSpaceEnvironmentMap[*cm.ContentType](),
 		editorInterfaces:               NewSpaceEnvironmentMap[*cm.EditorInterface](),
 		extensions:                     NewSpaceEnvironmentMap[*cm.Extension](),

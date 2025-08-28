@@ -88,6 +88,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	DeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams) (DeleteAppInstallationRes, error)
+	// DeleteAppSigningSecret invokes deleteAppSigningSecret operation.
+	//
+	// Delete an app signing secret.
+	//
+	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
+	DeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams) (DeleteAppSigningSecretRes, error)
 	// DeleteContentType invokes deleteContentType operation.
 	//
 	// Delete a content type.
@@ -142,6 +148,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	GetAppInstallation(ctx context.Context, params GetAppInstallationParams) (GetAppInstallationRes, error)
+	// GetAppSigningSecret invokes getAppSigningSecret operation.
+	//
+	// Get one app signing secret.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
+	GetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams) (GetAppSigningSecretRes, error)
 	// GetAuthenticatedUser invokes getAuthenticatedUser operation.
 	//
 	// Get the authenticated user.
@@ -232,6 +244,12 @@ type Invoker interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	PutAppInstallation(ctx context.Context, request *AppInstallationFields, params PutAppInstallationParams) (PutAppInstallationRes, error)
+	// PutAppSigningSecret invokes putAppSigningSecret operation.
+	//
+	// Create or update an app signing secret.
+	//
+	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
+	PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestFields, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error)
 	// PutContentType invokes putContentType operation.
 	//
 	// Update a content type.
@@ -1491,6 +1509,113 @@ func (c *Client) sendDeleteAppInstallation(ctx context.Context, params DeleteApp
 	return result, nil
 }
 
+// DeleteAppSigningSecret invokes deleteAppSigningSecret operation.
+//
+// Delete an app signing secret.
+//
+// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
+func (c *Client) DeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams) (DeleteAppSigningSecretRes, error) {
+	res, err := c.sendDeleteAppSigningSecret(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams) (res DeleteAppSigningSecretRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [5]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/signing_secret"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteAppSigningSecretOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeDeleteAppSigningSecretResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // DeleteContentType invokes deleteContentType operation.
 //
 // Delete a content type.
@@ -2515,6 +2640,113 @@ func (c *Client) sendGetAppInstallation(ctx context.Context, params GetAppInstal
 	defer resp.Body.Close()
 
 	result, err := decodeGetAppInstallationResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetAppSigningSecret invokes getAppSigningSecret operation.
+//
+// Get one app signing secret.
+//
+// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
+func (c *Client) GetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams) (GetAppSigningSecretRes, error) {
+	res, err := c.sendGetAppSigningSecret(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams) (res GetAppSigningSecretRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [5]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/signing_secret"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetAppSigningSecretOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetAppSigningSecretResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -4145,6 +4377,116 @@ func (c *Client) sendPutAppInstallation(ctx context.Context, request *AppInstall
 	defer resp.Body.Close()
 
 	result, err := decodePutAppInstallationResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutAppSigningSecret invokes putAppSigningSecret operation.
+//
+// Create or update an app signing secret.
+//
+// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
+func (c *Client) PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestFields, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error) {
+	res, err := c.sendPutAppSigningSecret(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestFields, params PutAppSigningSecretParams) (res PutAppSigningSecretRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [5]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/signing_secret"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutAppSigningSecretRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, PutAppSigningSecretOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodePutAppSigningSecretResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
