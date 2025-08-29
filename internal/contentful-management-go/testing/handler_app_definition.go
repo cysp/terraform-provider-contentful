@@ -12,10 +12,6 @@ func (ts *Handler) CreateAppDefinition(_ context.Context, req *cm.AppDefinitionF
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	appDefinitionID := generateResourceID()
 	appDefinition := NewAppDefinitionFromFields(params.OrganizationID, appDefinitionID, *req)
 	ts.appDefinitions.Set(params.OrganizationID, appDefinition.Sys.ID, &appDefinition)
@@ -31,10 +27,6 @@ func (ts *Handler) GetAppDefinition(_ context.Context, params cm.GetAppDefinitio
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	appDefinition := ts.appDefinitions.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinition == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinition not found"), nil), nil
@@ -47,10 +39,6 @@ func (ts *Handler) GetAppDefinition(_ context.Context, params cm.GetAppDefinitio
 func (ts *Handler) PutAppDefinition(_ context.Context, req *cm.AppDefinitionFields, params cm.PutAppDefinitionParams) (cm.PutAppDefinitionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	appDefinition := ts.appDefinitions.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinition == nil {
@@ -75,10 +63,6 @@ func (ts *Handler) PutAppDefinition(_ context.Context, req *cm.AppDefinitionFiel
 func (ts *Handler) DeleteAppDefinition(_ context.Context, params cm.DeleteAppDefinitionParams) (cm.DeleteAppDefinitionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	appDefinition := ts.appDefinitions.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinition == nil {
