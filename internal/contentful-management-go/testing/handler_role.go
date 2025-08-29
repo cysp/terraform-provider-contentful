@@ -13,10 +13,6 @@ func (ts *Handler) CreateRole(_ context.Context, req *cm.RoleFields, params cm.C
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	role := NewRoleFromFields(params.SpaceID, generateResourceID(), *req)
 	ts.roles.Set(params.SpaceID, role.Sys.ID, &role)
 
@@ -31,10 +27,6 @@ func (ts *Handler) GetRole(_ context.Context, params cm.GetRoleParams) (cm.GetRo
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.RoleID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
 	if role == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Role not found"), nil), nil
@@ -47,10 +39,6 @@ func (ts *Handler) GetRole(_ context.Context, params cm.GetRoleParams) (cm.GetRo
 func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleFields, params cm.UpdateRoleParams) (cm.UpdateRoleRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.RoleID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
 	if role == nil {
@@ -75,10 +63,6 @@ func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleFields, params cm.U
 func (ts *Handler) DeleteRole(_ context.Context, params cm.DeleteRoleParams) (cm.DeleteRoleRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.RoleID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
 	if role == nil {

@@ -13,10 +13,6 @@ func (ts *Handler) GetAppInstallation(_ context.Context, params cm.GetAppInstall
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 	if appInstallation == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppInstallation not found"), nil), nil
@@ -29,10 +25,6 @@ func (ts *Handler) GetAppInstallation(_ context.Context, params cm.GetAppInstall
 func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallationFields, params cm.PutAppInstallationParams) (cm.PutAppInstallationRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 	if appInstallation == nil {
@@ -57,10 +49,6 @@ func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallation
 func (ts *Handler) DeleteAppInstallation(_ context.Context, params cm.DeleteAppInstallationParams) (cm.DeleteAppInstallationRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 	if appInstallation == nil {

@@ -4,10 +4,6 @@ import (
 	"math/rand"
 )
 
-const (
-	NonexistentID = "nonexistent"
-)
-
 func generateResourceID() string {
 	return RandStringBytes(8) //nolint:mnd
 }
