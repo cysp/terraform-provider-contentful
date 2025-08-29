@@ -12,6 +12,10 @@ func (ts *Handler) GetAppDefinitionResourceProvider(_ context.Context, params cm
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinitionResourceProvider not found"), nil), nil
@@ -24,6 +28,10 @@ func (ts *Handler) GetAppDefinitionResourceProvider(_ context.Context, params cm
 func (ts *Handler) PutAppDefinitionResourceProvider(_ context.Context, req *cm.ResourceProviderRequest, params cm.PutAppDefinitionResourceProviderParams) (cm.PutAppDefinitionResourceProviderRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
+
+	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
@@ -49,6 +57,10 @@ func (ts *Handler) PutAppDefinitionResourceProvider(_ context.Context, req *cm.R
 func (ts *Handler) DeleteAppDefinitionResourceProvider(_ context.Context, params cm.DeleteAppDefinitionResourceProviderParams) (cm.DeleteAppDefinitionResourceProviderRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
+
+	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {

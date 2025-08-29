@@ -12,6 +12,10 @@ func (ts *Handler) CreateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequest
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if params.SpaceID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
 	apiKeyID := generateResourceID()
 	apiKey := NewAPIKeyFromRequestFields(params.SpaceID, apiKeyID, *req)
 	apiKey.AccessToken = generateResourceID()
@@ -44,6 +48,10 @@ func (ts *Handler) GetDeliveryApiKey(_ context.Context, params cm.GetDeliveryApi
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if params.SpaceID == NonexistentID || params.APIKeyID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
 	if apiKey == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ApiKey not found"), nil), nil
@@ -56,6 +64,10 @@ func (ts *Handler) GetDeliveryApiKey(_ context.Context, params cm.GetDeliveryApi
 func (ts *Handler) UpdateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequestFields, params cm.UpdateDeliveryApiKeyParams) (cm.UpdateDeliveryApiKeyRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
+
+	if params.SpaceID == NonexistentID || params.APIKeyID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
 
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
 	if apiKey == nil {
@@ -80,6 +92,10 @@ func (ts *Handler) UpdateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequest
 func (ts *Handler) DeleteDeliveryApiKey(_ context.Context, params cm.DeleteDeliveryApiKeyParams) (cm.DeleteDeliveryApiKeyRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
+
+	if params.SpaceID == NonexistentID || params.APIKeyID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
 
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
 	if apiKey == nil {

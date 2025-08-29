@@ -12,6 +12,10 @@ func (ts *Handler) GetAppDefinitionResourceType(_ context.Context, params cm.Get
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID || params.ResourceTypeID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinitionResourceProvider not found"), nil), nil
@@ -29,6 +33,10 @@ func (ts *Handler) GetAppDefinitionResourceType(_ context.Context, params cm.Get
 func (ts *Handler) PutAppDefinitionResourceType(_ context.Context, req *cm.ResourceTypeFields, params cm.PutAppDefinitionResourceTypeParams) (cm.PutAppDefinitionResourceTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
+
+	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID || params.ResourceTypeID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
@@ -61,6 +69,10 @@ func (ts *Handler) PutAppDefinitionResourceType(_ context.Context, req *cm.Resou
 func (ts *Handler) DeleteAppDefinitionResourceType(_ context.Context, params cm.DeleteAppDefinitionResourceTypeParams) (cm.DeleteAppDefinitionResourceTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
+
+	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID || params.ResourceTypeID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {

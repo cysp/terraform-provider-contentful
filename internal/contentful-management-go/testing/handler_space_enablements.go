@@ -12,6 +12,10 @@ func (ts *Handler) GetSpaceEnablements(_ context.Context, params cm.GetSpaceEnab
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if params.SpaceID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
 	enablements, ok := ts.enablements[params.SpaceID]
 	if !ok {
 		enablements = pointerTo(NewSpaceEnablement(params.SpaceID))
@@ -25,6 +29,10 @@ func (ts *Handler) GetSpaceEnablements(_ context.Context, params cm.GetSpaceEnab
 func (ts *Handler) PutSpaceEnablements(_ context.Context, req *cm.SpaceEnablementFields, params cm.PutSpaceEnablementsParams) (cm.PutSpaceEnablementsRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
+
+	if params.SpaceID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
 
 	enablements, ok := ts.enablements[params.SpaceID]
 	if !ok {

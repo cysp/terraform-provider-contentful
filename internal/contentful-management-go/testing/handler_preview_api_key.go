@@ -11,6 +11,10 @@ func (ts *Handler) GetPreviewApiKey(_ context.Context, params cm.GetPreviewApiKe
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if params.SpaceID == NonexistentID || params.PreviewAPIKeyID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
 	previewAPIKey := ts.previewAPIKeys.Get(params.SpaceID, params.PreviewAPIKeyID)
 	if previewAPIKey == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("PreviewApiKey not found"), nil), nil
