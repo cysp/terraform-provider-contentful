@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	provider "github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +15,7 @@ func TestWebhookHeaderValueUnknown(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := provider.NewWebhookHeaderValueUnknown()
+	value := NewWebhookHeaderValueUnknown()
 	assert.True(t, value.IsUnknown())
 	assert.False(t, value.IsNull())
 
@@ -37,7 +37,7 @@ func TestWebhookHeaderValueNull(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := provider.NewWebhookHeaderValueNull()
+	value := NewWebhookHeaderValueNull()
 	assert.False(t, value.IsUnknown())
 	assert.True(t, value.IsNull())
 
@@ -78,7 +78,7 @@ func TestWebhookHeaderValueInvalid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			value, diags := provider.NewWebhookHeaderValueKnownFromAttributes(ctx, attributes)
+			value, diags := NewWebhookHeaderValueKnownFromAttributes(ctx, attributes)
 
 			assert.False(t, value.IsUnknown())
 			assert.False(t, value.IsNull())
@@ -94,21 +94,21 @@ func TestWebhookHeaderValueConversion(t *testing.T) {
 
 	ctx := t.Context()
 
-	values := []provider.AttrValueWithToObjectValue{
-		provider.NewWebhookHeaderValueKnown(),
-		DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
+	values := []AttrValueWithToObjectValue{
+		NewWebhookHeaderValueKnown(),
+		DiagsNoErrorsMust(NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"value":  types.StringUnknown(),
 			"secret": types.BoolUnknown(),
 		})),
-		DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
+		DiagsNoErrorsMust(NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"value":  types.StringNull(),
 			"secret": types.BoolNull(),
 		})),
-		DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
+		DiagsNoErrorsMust(NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"value":  types.StringValue("value"),
 			"secret": types.BoolValue(false),
 		})),
-		DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
+		DiagsNoErrorsMust(NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 			"value":  types.StringValue("value"),
 			"secret": types.BoolValue(true),
 		})),

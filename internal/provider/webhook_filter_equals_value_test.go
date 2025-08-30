@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,7 @@ func TestWebhookFilterEqualsValueKnownFromAttributesInvalid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, diags := provider.NewWebhookFilterEqualsValueKnownFromAttributes(ctx, testcase)
+			_, diags := NewWebhookFilterEqualsValueKnownFromAttributes(ctx, testcase)
 			assert.True(t, diags.HasError())
 		})
 	}

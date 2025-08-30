@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
@@ -15,24 +15,24 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 
 	ctx := t.Context()
 
-	listType := provider.TypedList[types.String]{}.Type(ctx)
+	listType := TypedList[types.String]{}.Type(ctx)
 
 	testcases := map[string]struct {
 		tfval       tftypes.Value
 		expectError bool
-		expected    provider.TypedList[types.String]
+		expected    TypedList[types.String]
 	}{
 		"null type": {
 			tfval:    tftypes.NewValue(nil, nil),
-			expected: provider.NewTypedListNull[types.String](ctx),
+			expected: NewTypedListNull[types.String](ctx),
 		},
 		"unknown": {
 			tfval:    tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, tftypes.UnknownValue),
-			expected: provider.NewTypedListUnknown[types.String](ctx),
+			expected: NewTypedListUnknown[types.String](ctx),
 		},
 		"null": {
 			tfval:    tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
-			expected: provider.NewTypedListNull[types.String](ctx),
+			expected: NewTypedListNull[types.String](ctx),
 		},
 		"incorrect type": {
 			tfval:       tftypes.NewValue(tftypes.String, "string"),
@@ -44,14 +44,14 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 		},
 		"empty": {
 			tfval:    tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{}),
-			expected: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{})),
+			expected: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{})),
 		},
 		"with elements": {
 			tfval: tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{
 				tftypes.NewValue(tftypes.String, "value1"),
 				tftypes.NewValue(tftypes.String, "value2"),
 			}),
-			expected: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
+			expected: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
 				types.StringValue("value1"),
 				types.StringValue("value2"),
 			})),
@@ -62,7 +62,7 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 				tftypes.NewValue(tftypes.String, tftypes.UnknownValue),
 				tftypes.NewValue(tftypes.String, "value2"),
 			}),
-			expected: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
+			expected: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
 				types.StringValue("value1"),
 				types.StringUnknown(),
 				types.StringValue("value2"),
@@ -74,7 +74,7 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 				tftypes.NewValue(tftypes.String, nil),
 				tftypes.NewValue(tftypes.String, "value2"),
 			}),
-			expected: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
+			expected: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
 				types.StringValue("value1"),
 				types.StringNull(),
 				types.StringValue("value2"),
@@ -98,7 +98,7 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 
 			require.NoError(t, err)
 
-			actualTypedList, ok := actual.(provider.TypedList[types.String])
+			actualTypedList, ok := actual.(TypedList[types.String])
 			require.True(t, ok, "Expected TypedList[types.String] but got %T", actual)
 
 			assert.Equal(t, testcase.expected, actualTypedList)

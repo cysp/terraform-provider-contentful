@@ -3,58 +3,58 @@ package provider_test
 import (
 	"testing"
 
-	provider "github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func webhookFiltersListForTesting(t *testing.T) provider.TypedList[provider.WebhookFilterValue] {
+func webhookFiltersListForTesting(t *testing.T) TypedList[WebhookFilterValue] {
 	t.Helper()
 
 	ctx := t.Context()
 
-	filterEquals := provider.NewWebhookFilterEqualsValueKnown()
+	filterEquals := NewWebhookFilterEqualsValueKnown()
 	filterEquals.Doc = types.StringValue("sys.type")
 	filterEquals.Value = types.StringValue("abc")
 
-	filterIn := provider.NewWebhookFilterInValueKnown(ctx)
+	filterIn := NewWebhookFilterInValueKnown(ctx)
 	filterIn.Doc = types.StringValue("sys.type")
-	filterIn.Values = DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{types.StringValue("abc"), types.StringValue("def")}))
+	filterIn.Values = DiagsNoErrorsMust(NewTypedList(ctx, []types.String{types.StringValue("abc"), types.StringValue("def")}))
 
-	filterRegexp := provider.NewWebhookFilterRegexpValueKnown()
+	filterRegexp := NewWebhookFilterRegexpValueKnown()
 	filterRegexp.Doc = types.StringValue("sys.type")
 	filterRegexp.Pattern = types.StringValue("abc.*")
 
-	filterNotEquals := provider.NewWebhookFilterNotValueKnown()
+	filterNotEquals := NewWebhookFilterNotValueKnown()
 	filterNotEquals.Equals = filterEquals
 
-	filterNotIn := provider.NewWebhookFilterNotValueKnown()
+	filterNotIn := NewWebhookFilterNotValueKnown()
 	filterNotIn.In = filterIn
 
-	filterNotRegexp := provider.NewWebhookFilterNotValueKnown()
+	filterNotRegexp := NewWebhookFilterNotValueKnown()
 	filterNotRegexp.Regexp = filterRegexp
 
-	filterFilterEquals := provider.NewWebhookFilterValueKnown()
+	filterFilterEquals := NewWebhookFilterValueKnown()
 	filterFilterEquals.Equals = filterEquals
 
-	filterFilterIn := provider.NewWebhookFilterValueKnown()
+	filterFilterIn := NewWebhookFilterValueKnown()
 	filterFilterIn.In = filterIn
 
-	filterFilterRegexp := provider.NewWebhookFilterValueKnown()
+	filterFilterRegexp := NewWebhookFilterValueKnown()
 	filterFilterRegexp.Regexp = filterRegexp
 
-	filterFilterNotEquals := provider.NewWebhookFilterValueKnown()
+	filterFilterNotEquals := NewWebhookFilterValueKnown()
 	filterFilterNotEquals.Not = filterNotEquals
 
-	filterFilterNotIn := provider.NewWebhookFilterValueKnown()
+	filterFilterNotIn := NewWebhookFilterValueKnown()
 	filterFilterNotIn.Not = filterNotIn
 
-	filterFilterNotRegexp := provider.NewWebhookFilterValueKnown()
+	filterFilterNotRegexp := NewWebhookFilterValueKnown()
 	filterFilterNotRegexp.Not = filterNotRegexp
 
-	filters, filtersDiags := provider.NewTypedList(ctx, []provider.WebhookFilterValue{
+	filters, filtersDiags := NewTypedList(ctx, []WebhookFilterValue{
 		filterFilterEquals,
 		filterFilterIn,
 		filterFilterRegexp,
@@ -73,12 +73,12 @@ func webhookFiltersListForTesting(t *testing.T) provider.TypedList[provider.Webh
 
 // 	ctx := context.Background()
 
-// 	typs := []provider.AttrTypeWithValueFromObject{
-// 		provider.WebhookFilterValue{}.CustomType(ctx),
-// 		provider.WebhookFilterNotType{},
-// 		provider.WebhookFilterEqualsType{},
-// 		provider.WebhookFilterInType{},
-// 		provider.WebhookFilterRegexpType{},
+// 	typs := []AttrTypeWithValueFromObject{
+// 		WebhookFilterValue{}.CustomType(ctx),
+// 		WebhookFilterNotType{},
+// 		WebhookFilterEqualsType{},
+// 		WebhookFilterInType{},
+// 		WebhookFilterRegexpType{},
 // 	}
 
 // 	tfvalniltype := tftypes.NewValue(nil, nil)
@@ -119,12 +119,12 @@ func TestWebhookFilterValueToObjectValueUnknown(t *testing.T) {
 
 	ctx := t.Context()
 
-	values := []provider.AttrValueWithToObjectValue{
-		provider.NewWebhookFilterValueUnknown(),
-		provider.NewWebhookFilterNotValueUnknown(),
-		provider.NewWebhookFilterEqualsValueUnknown(),
-		provider.NewWebhookFilterInValueUnknown(),
-		provider.NewWebhookFilterRegexpValueUnknown(),
+	values := []AttrValueWithToObjectValue{
+		NewWebhookFilterValueUnknown(),
+		NewWebhookFilterNotValueUnknown(),
+		NewWebhookFilterEqualsValueUnknown(),
+		NewWebhookFilterInValueUnknown(),
+		NewWebhookFilterRegexpValueUnknown(),
 	}
 
 	for _, value := range values {
@@ -142,12 +142,12 @@ func TestWebhookFilterValueToObjectValue(t *testing.T) {
 
 	ctx := t.Context()
 
-	values := []provider.AttrValueWithToObjectValue{
-		provider.NewWebhookFilterValueKnown(),
-		provider.NewWebhookFilterNotValueKnown(),
-		provider.NewWebhookFilterEqualsValueKnown(),
-		provider.NewWebhookFilterInValueKnown(ctx),
-		provider.NewWebhookFilterRegexpValueKnown(),
+	values := []AttrValueWithToObjectValue{
+		NewWebhookFilterValueKnown(),
+		NewWebhookFilterNotValueKnown(),
+		NewWebhookFilterEqualsValueKnown(),
+		NewWebhookFilterInValueKnown(ctx),
+		NewWebhookFilterRegexpValueKnown(),
 	}
 
 	for _, value := range values {
@@ -165,11 +165,11 @@ func TestWebhookFilterValueToTerraformValueNull(t *testing.T) {
 	ctx := t.Context()
 
 	values := []attr.Value{
-		provider.NewWebhookFilterValueNull(),
-		provider.NewWebhookFilterNotValueNull(),
-		provider.NewWebhookFilterEqualsValueNull(),
-		provider.NewWebhookFilterInValueNull(),
-		provider.NewWebhookFilterRegexpValueNull(),
+		NewWebhookFilterValueNull(),
+		NewWebhookFilterNotValueNull(),
+		NewWebhookFilterEqualsValueNull(),
+		NewWebhookFilterInValueNull(),
+		NewWebhookFilterRegexpValueNull(),
 	}
 
 	for _, value := range values {
@@ -187,11 +187,11 @@ func TestWebhookFilterValueToTerraformValueUnknown(t *testing.T) {
 	ctx := t.Context()
 
 	values := []attr.Value{
-		provider.NewWebhookFilterValueUnknown(),
-		provider.NewWebhookFilterNotValueUnknown(),
-		provider.NewWebhookFilterEqualsValueUnknown(),
-		provider.NewWebhookFilterInValueUnknown(),
-		provider.NewWebhookFilterRegexpValueUnknown(),
+		NewWebhookFilterValueUnknown(),
+		NewWebhookFilterNotValueUnknown(),
+		NewWebhookFilterEqualsValueUnknown(),
+		NewWebhookFilterInValueUnknown(),
+		NewWebhookFilterRegexpValueUnknown(),
 	}
 
 	for _, value := range values {

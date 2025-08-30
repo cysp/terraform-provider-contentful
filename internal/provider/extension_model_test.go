@@ -6,7 +6,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/stretchr/testify/assert"
@@ -95,7 +95,7 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 			input.Extension.Srcdoc.Reset()
 		}
 
-		model, modelDiags := provider.NewExtensionModelFromResponse(t.Context(), input)
+		model, modelDiags := NewExtensionModelFromResponse(t.Context(), input)
 		if modelDiags.HasError() {
 			t.Fatalf("Failed to convert Extension to ExtensionModel: %v", modelDiags)
 		}

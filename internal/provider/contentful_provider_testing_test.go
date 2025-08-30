@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -49,14 +49,14 @@ func contentfulProviderMockableResourceTest(t *testing.T, handler http.Handler, 
 	}
 }
 
-func ContentfulProviderOptionsWithHTTPTestServer(testserver *httptest.Server) []provider.Option {
+func ContentfulProviderOptionsWithHTTPTestServer(testserver *httptest.Server) []Option {
 	if testserver == nil {
 		return nil
 	}
 
-	return []provider.Option{
-		provider.WithContentfulURL(testserver.URL),
-		provider.WithHTTPClient(testserver.Client()),
-		provider.WithAccessToken("12345"),
+	return []Option{
+		WithContentfulURL(testserver.URL),
+		WithHTTPClient(testserver.Client()),
+		WithAccessToken("12345"),
 	}
 }

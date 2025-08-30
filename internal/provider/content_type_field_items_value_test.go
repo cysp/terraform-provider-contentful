@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -18,11 +18,11 @@ func TestContentTypeFieldItemsValueToTerraformValueRoundtrip(t *testing.T) {
 	ctx := t.Context()
 
 	testcases := map[string]struct {
-		input provider.ContentTypeFieldItemsValue
+		input ContentTypeFieldItemsValue
 		check func(t *testing.T, v tftypes.Value)
 	}{
 		"unknown": {
-			input: provider.NewContentTypeFieldItemsValueUnknown(),
+			input: NewContentTypeFieldItemsValueUnknown(),
 			check: func(t *testing.T, v tftypes.Value) {
 				t.Helper()
 
@@ -31,7 +31,7 @@ func TestContentTypeFieldItemsValueToTerraformValueRoundtrip(t *testing.T) {
 			},
 		},
 		"null": {
-			input: provider.NewContentTypeFieldItemsValueNull(),
+			input: NewContentTypeFieldItemsValueNull(),
 			check: func(t *testing.T, v tftypes.Value) {
 				t.Helper()
 
@@ -40,10 +40,10 @@ func TestContentTypeFieldItemsValueToTerraformValueRoundtrip(t *testing.T) {
 			},
 		},
 		"known": {
-			input: DiagsNoErrorsMust(provider.NewContentTypeFieldItemsValueKnownFromAttributes(ctx, map[string]attr.Value{
+			input: DiagsNoErrorsMust(NewContentTypeFieldItemsValueKnownFromAttributes(ctx, map[string]attr.Value{
 				"type":        types.StringValue("Link"),
 				"link_type":   types.StringValue("Entry"),
-				"validations": DiagsNoErrorsMust(provider.NewTypedList(ctx, []jsontypes.Normalized{})),
+				"validations": DiagsNoErrorsMust(NewTypedList(ctx, []jsontypes.Normalized{})),
 			})),
 			check: func(t *testing.T, v tftypes.Value) {
 				t.Helper()
