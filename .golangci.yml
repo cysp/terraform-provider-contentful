@@ -35,6 +35,10 @@ linters:
           - revive
         path: "util/*"
         text: "var-naming: avoid meaningless package names"
+      - linters:
+          - revive
+        path: ".*_test.go"
+        text: "dot-imports: should not use dot imports"
 
 issues:
   max-issues-per-linter: 0

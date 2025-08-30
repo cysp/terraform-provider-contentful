@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -17,7 +17,7 @@ func TestSidebarValueToEditorInterfaceFieldsSidebarItem(t *testing.T) {
 	ctx := t.Context()
 	path := path.Root("sidebar")
 
-	model := provider.NewEditorInterfaceSidebarValueKnown()
+	model := NewEditorInterfaceSidebarValueKnown()
 	model.WidgetNamespace = types.StringValue("widget_namespace")
 	model.WidgetID = types.StringValue("widget_id")
 	model.Disabled = types.BoolNull()
@@ -39,7 +39,7 @@ func TestSidebarValueToEditorInterfaceFieldsSidebarItemInvalidSettings(t *testin
 	ctx := t.Context()
 	path := path.Root("sidebar")
 
-	model := provider.NewEditorInterfaceSidebarValueKnown()
+	model := NewEditorInterfaceSidebarValueKnown()
 	model.WidgetNamespace = types.StringValue("widget_namespace")
 	model.WidgetID = types.StringValue("widget_id")
 	model.Disabled = types.BoolNull()
@@ -62,7 +62,7 @@ func TestNewEditorInterfaceSidebarValueFromResponse(t *testing.T) {
 		Settings:        []byte(`{"foo":"bar"}`),
 	}
 
-	value, valueDiags := provider.NewEditorInterfaceSidebarValueFromResponse(path, item)
+	value, valueDiags := NewEditorInterfaceSidebarValueFromResponse(path, item)
 
 	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
 	assert.Equal(t, "widget_id", value.WidgetID.ValueString())
@@ -81,7 +81,7 @@ func TestNewEditorInterfaceSidebarValueFromResponseSettingsNull(t *testing.T) {
 		WidgetId:        "widget_id",
 	}
 
-	value, valueDiags := provider.NewEditorInterfaceSidebarValueFromResponse(path, item)
+	value, valueDiags := NewEditorInterfaceSidebarValueFromResponse(path, item)
 
 	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
 	assert.Equal(t, "widget_id", value.WidgetID.ValueString())

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -20,18 +20,18 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 	filters := webhookFiltersListForTesting(t)
 
 	testcases := map[string]struct {
-		model     provider.WebhookModel
+		model     WebhookModel
 		expected  cm.WebhookDefinitionFields
 		expectErr bool
 	}{
 		"basic": {
-			model: provider.WebhookModel{
+			model: WebhookModel{
 				Name:              types.StringValue("test-webhook"),
 				Active:            types.BoolValue(true),
 				URL:               types.StringValue("https://example.com/webhook"),
 				HTTPBasicUsername: types.StringNull(),
 				HTTPBasicPassword: types.StringNull(),
-				Topics: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
+				Topics: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
 					types.StringValue("Entry.create"),
 					types.StringValue("Entry.delete"),
 				})),
@@ -49,13 +49,13 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			expectErr: false,
 		},
 		"with auth": {
-			model: provider.WebhookModel{
+			model: WebhookModel{
 				Name:              types.StringValue("auth-webhook"),
 				Active:            types.BoolValue(true),
 				URL:               types.StringValue("https://example.com/webhook"),
 				HTTPBasicUsername: types.StringValue("user"),
 				HTTPBasicPassword: types.StringValue("pass"),
-				Topics: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
+				Topics: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
 					types.StringValue("Entry.*"),
 				})),
 			},
@@ -72,12 +72,12 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			expectErr: false,
 		},
 		"with headers": {
-			model: provider.WebhookModel{
+			model: WebhookModel{
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Headers: DiagsNoErrorsMust(provider.NewTypedMap(ctx, map[string]provider.WebhookHeaderValue{
-					"X-Header": DiagsNoErrorsMust(provider.NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
+				Headers: DiagsNoErrorsMust(NewTypedMap(ctx, map[string]WebhookHeaderValue{
+					"X-Header": DiagsNoErrorsMust(NewWebhookHeaderValueKnownFromAttributes(ctx, map[string]attr.Value{
 						"value":  types.StringValue("value"),
 						"secret": types.BoolValue(false),
 					})),
@@ -101,11 +101,11 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			},
 		},
 		"with transformation": {
-			model: provider.WebhookModel{
+			model: WebhookModel{
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Transformation: DiagsNoErrorsMust(provider.NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
+				Transformation: DiagsNoErrorsMust(NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
@@ -127,11 +127,11 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			},
 		},
 		"with transformation body": {
-			model: provider.WebhookModel{
+			model: WebhookModel{
 				Name:   types.StringValue("headers-webhook"),
 				Active: types.BoolValue(true),
 				URL:    types.StringValue("https://example.com/webhook"),
-				Transformation: DiagsNoErrorsMust(provider.NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
+				Transformation: DiagsNoErrorsMust(NewWebhookTransformationValueKnownFromAttributes(ctx, map[string]attr.Value{
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
@@ -154,7 +154,7 @@ func TestWebhookModelToWebhookDefinitionFields(t *testing.T) {
 			},
 		},
 		"with filters": {
-			model: provider.WebhookModel{
+			model: WebhookModel{
 				Name:              types.StringValue("filters-webhook"),
 				Active:            types.BoolValue(true),
 				URL:               types.StringValue("https://example.com/webhook"),

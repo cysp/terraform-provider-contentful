@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -17,7 +17,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItem(t *testi
 	ctx := t.Context()
 	path := path.Root("controls")
 
-	model := provider.NewEditorInterfaceControlValueKnown()
+	model := NewEditorInterfaceControlValueKnown()
 	model.FieldID = types.StringValue("field_id")
 	model.WidgetNamespace = types.StringValue("widget_namespace")
 	model.WidgetID = types.StringValue("widget_id")
@@ -39,7 +39,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItemInvalidSe
 	ctx := t.Context()
 	path := path.Root("controls")
 
-	model := provider.NewEditorInterfaceControlValueKnown()
+	model := NewEditorInterfaceControlValueKnown()
 	model.FieldID = types.StringValue("field_id")
 	model.WidgetNamespace = types.StringValue("widget_namespace")
 	model.WidgetID = types.StringValue("widget_id")
@@ -63,7 +63,7 @@ func TestNewEditorInterfaceControlValueFromResponse(t *testing.T) {
 		Settings:        []byte(`{"foo":"bar"}`),
 	}
 
-	value, diags := provider.NewEditorInterfaceControlValueFromResponse(path, item)
+	value, diags := NewEditorInterfaceControlValueFromResponse(path, item)
 
 	assert.Equal(t, "field_id", value.FieldID.ValueString())
 	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())
@@ -84,7 +84,7 @@ func TestNewEditorInterfaceControlValueFromResponseSettingsNull(t *testing.T) {
 		WidgetId:        cm.NewOptString("widget_id"),
 	}
 
-	value, diags := provider.NewEditorInterfaceControlValueFromResponse(path, item)
+	value, diags := NewEditorInterfaceControlValueFromResponse(path, item)
 
 	assert.Equal(t, "field_id", value.FieldID.ValueString())
 	assert.Equal(t, "widget_namespace", value.WidgetNamespace.ValueString())

@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,14 +16,14 @@ func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
 
 	ctx := t.Context()
 
-	typ := provider.WebhookTransformationValue{}.ObjectType(ctx)
+	typ := WebhookTransformationValue{}.ObjectType(ctx)
 
 	t.Run("unknown", func(t *testing.T) {
 		t.Parallel()
 
 		value := types.ObjectUnknown(typ.AttrTypes)
 
-		object, diags := provider.WebhookTransformationType{}.ValueFromObject(ctx, value)
+		object, diags := WebhookTransformationType{}.ValueFromObject(ctx, value)
 
 		assert.True(t, object.IsUnknown())
 		assert.Empty(t, diags)
@@ -34,7 +34,7 @@ func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
 
 		value := types.ObjectNull(typ.AttrTypes)
 
-		object, diags := provider.WebhookTransformationType{}.ValueFromObject(ctx, value)
+		object, diags := WebhookTransformationType{}.ValueFromObject(ctx, value)
 
 		assert.True(t, object.IsNull())
 		assert.Empty(t, diags)
@@ -52,13 +52,13 @@ func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
 		require.Empty(t, diags)
 		require.False(t, diags.HasError())
 
-		object, diags := provider.WebhookTransformationType{}.ValueFromObject(ctx, value)
+		object, diags := WebhookTransformationType{}.ValueFromObject(ctx, value)
 
 		assert.False(t, diags.HasError())
 		assert.False(t, object.IsNull())
 		assert.False(t, object.IsUnknown())
 
-		transformation, transformationOk := object.(provider.WebhookTransformationValue)
+		transformation, transformationOk := object.(WebhookTransformationValue)
 		assert.True(t, transformationOk)
 		assert.Equal(t, "method", transformation.Method.ValueString())
 		assert.True(t, transformation.IncludeContentLength.ValueBool())

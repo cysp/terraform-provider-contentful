@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -17,16 +17,16 @@ func TestToEnvironmentLinks(t *testing.T) {
 	path := path.Root("test")
 
 	tests := map[string]struct {
-		value         provider.TypedList[types.String]
+		value         TypedList[types.String]
 		expected      []cm.EnvironmentLink
 		expectedDiags bool
 	}{
 		"unknown": {
-			value:    provider.NewTypedListUnknown[types.String](ctx),
+			value:    NewTypedListUnknown[types.String](ctx),
 			expected: nil,
 		},
 		"unknown element": {
-			value: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
+			value: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
 				types.StringUnknown(),
 			})),
 			expected: []cm.EnvironmentLink{
@@ -41,7 +41,7 @@ func TestToEnvironmentLinks(t *testing.T) {
 			expectedDiags: true,
 		},
 		"known and unknown elements": {
-			value: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
+			value: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
 				types.StringValue("a"),
 				types.StringUnknown(),
 				types.StringValue("c"),
@@ -72,11 +72,11 @@ func TestToEnvironmentLinks(t *testing.T) {
 			expectedDiags: true,
 		},
 		"empty": {
-			value:    DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{})),
+			value:    DiagsNoErrorsMust(NewTypedList(ctx, []types.String{})),
 			expected: []cm.EnvironmentLink{},
 		},
 		"known elements": {
-			value: DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
+			value: DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
 				types.StringValue("env1"),
 				types.StringValue("env2"),
 			})),
@@ -103,7 +103,7 @@ func TestToEnvironmentLinks(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, diags := provider.ToEnvironmentLinks(ctx, path, test.value)
+			result, diags := ToEnvironmentLinks(ctx, path, test.value)
 
 			assert.Equal(t, test.expected, result)
 
@@ -139,12 +139,12 @@ func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 		},
 	}
 
-	expected := DiagsNoErrorsMust(provider.NewTypedList(ctx, []types.String{
+	expected := DiagsNoErrorsMust(NewTypedList(ctx, []types.String{
 		types.StringValue("env1"),
 		types.StringValue("env2"),
 	}))
 
-	result, diags := provider.NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, path, environmentLinks)
+	result, diags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, path, environmentLinks)
 	assert.Empty(t, diags)
 	assert.Equal(t, expected, result)
 }

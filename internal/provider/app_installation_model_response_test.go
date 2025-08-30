@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -15,11 +15,11 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 
 	tests := map[string]struct {
 		appInstallation cm.AppInstallation
-		expectedModel   provider.AppInstallationModel
+		expectedModel   AppInstallationModel
 	}{
 		"null": {
 			appInstallation: cm.AppInstallation{},
-			expectedModel: provider.AppInstallationModel{
+			expectedModel: AppInstallationModel{
 				ID:              types.StringValue("//"),
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
@@ -31,7 +31,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 			appInstallation: cm.AppInstallation{
 				Parameters: []byte("{}"),
 			},
-			expectedModel: provider.AppInstallationModel{
+			expectedModel: AppInstallationModel{
 				ID:              types.StringValue("//"),
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
@@ -44,7 +44,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 			appInstallation: cm.AppInstallation{
 				Parameters: []byte("{\"foo\":\"bar\"}"),
 			},
-			expectedModel: provider.AppInstallationModel{
+			expectedModel: AppInstallationModel{
 				ID:              types.StringValue("//"),
 				SpaceID:         types.StringValue(""),
 				EnvironmentID:   types.StringValue(""),
@@ -59,7 +59,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model, diags := provider.NewAppInstallationResourceModelFromResponse(test.appInstallation, types.SetNull(types.StringType))
+			model, diags := NewAppInstallationResourceModelFromResponse(test.appInstallation, types.SetNull(types.StringType))
 
 			assert.Equal(t, test.expectedModel, model)
 

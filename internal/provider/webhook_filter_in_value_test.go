@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ func TestWebhookFilterInValueKnownFromAttributesInvalid(t *testing.T) {
 
 	attributes := map[string]attr.Value{
 		"doc":    types.StringNull(),
-		"values": provider.NewTypedListNull[types.String](ctx),
+		"values": NewTypedListNull[types.String](ctx),
 	}
 
 	testcases := GenerateInvalidValueFromAttributesTestcases(t, attributes)
@@ -25,7 +25,7 @@ func TestWebhookFilterInValueKnownFromAttributesInvalid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, diags := provider.NewWebhookFilterInValueKnownFromAttributes(ctx, testcase)
+			_, diags := NewWebhookFilterInValueKnownFromAttributes(ctx, testcase)
 			assert.True(t, diags.HasError())
 		})
 	}

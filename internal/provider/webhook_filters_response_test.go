@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/stretchr/testify/assert"
 )
@@ -35,7 +35,7 @@ func TestReadWebhookDefinitionFilterTermString(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, diags := provider.ReadWebhookDefinitionFilterTermString(
+			_, diags := ReadWebhookDefinitionFilterTermString(
 				ctx,
 				path.Root("test"),
 				testcase.input,
@@ -81,7 +81,7 @@ func TestReadWebhookDefinitionFilterTermStringArray(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, diags := provider.ReadWebhookDefinitionFilterTermStringArray(
+			_, diags := ReadWebhookDefinitionFilterTermStringArray(
 				ctx,
 				path.Root("test"),
 				testcase.input,
@@ -137,7 +137,7 @@ func TestReadWebhookDefinitionFilterTermStringObject(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			value, diags := provider.ReadWebhookDefinitionFilterTermStringObject(
+			value, diags := ReadWebhookDefinitionFilterTermStringObject(
 				ctx,
 				path.Root("test"),
 				testcase.name,

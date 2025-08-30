@@ -6,7 +6,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/stretchr/testify/assert"
@@ -105,7 +105,7 @@ func FuzzAppDefinitionResourceModelRoundtrip(f *testing.F) {
 			input.Bundle.Value.Sys.LinkType = cm.AppBundleLinkSysLinkTypeAppBundle
 		}
 
-		model, modelDiags := provider.NewAppDefinitionResourceModelFromResponse(t.Context(), input)
+		model, modelDiags := NewAppDefinitionResourceModelFromResponse(t.Context(), input)
 		if modelDiags.HasError() {
 			t.Fatalf("Failed to convert AppDefinition to AppDefinitionResourceModel: %v", modelDiags)
 		}

@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +15,7 @@ func TestRolePolicyValueUnknown(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := provider.NewRolePolicyValueUnknown()
+	value := NewRolePolicyValueUnknown()
 	assert.True(t, value.IsUnknown())
 	assert.False(t, value.IsNull())
 
@@ -37,7 +37,7 @@ func TestRolePolicyValueNull(t *testing.T) {
 
 	ctx := t.Context()
 
-	value := provider.NewRolePolicyValueNull()
+	value := NewRolePolicyValueNull()
 	assert.False(t, value.IsUnknown())
 	assert.True(t, value.IsNull())
 
@@ -71,7 +71,7 @@ func TestRolePolicyValueInvalid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			value, diags := provider.NewRolePolicyValueKnownFromAttributes(ctx, attributes)
+			value, diags := NewRolePolicyValueKnownFromAttributes(ctx, attributes)
 
 			assert.False(t, value.IsUnknown())
 			assert.False(t, value.IsNull())

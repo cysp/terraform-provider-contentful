@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +16,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 
 	tests := map[string]struct {
 		editorInterface cm.EditorInterface
-		expectedModel   provider.EditorInterfaceModel
+		expectedModel   EditorInterfaceModel
 	}{
 		"null": {
 			editorInterface: cm.EditorInterface{
@@ -39,15 +39,15 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 					ID: "null",
 				},
 			},
-			expectedModel: provider.EditorInterfaceModel{
+			expectedModel: EditorInterfaceModel{
 				ID:            types.StringValue("space/environment/content_type"),
 				SpaceID:       types.StringValue("space"),
 				EnvironmentID: types.StringValue("environment"),
 				ContentTypeID: types.StringValue("content_type"),
-				EditorLayout:  provider.NewTypedListNull[provider.EditorInterfaceEditorLayoutItemValue](ctx),
-				Controls:      provider.NewTypedListNull[provider.EditorInterfaceControlValue](ctx),
-				GroupControls: provider.NewTypedListNull[provider.EditorInterfaceGroupControlValue](ctx),
-				Sidebar:       provider.NewTypedListNull[provider.EditorInterfaceSidebarValue](ctx),
+				EditorLayout:  NewTypedListNull[EditorInterfaceEditorLayoutItemValue](ctx),
+				Controls:      NewTypedListNull[EditorInterfaceControlValue](ctx),
+				GroupControls: NewTypedListNull[EditorInterfaceGroupControlValue](ctx),
+				Sidebar:       NewTypedListNull[EditorInterfaceSidebarValue](ctx),
 			},
 		},
 		"empty": {
@@ -75,15 +75,15 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray([]cm.EditorInterfaceGroupControlsItem{}),
 				Sidebar:       cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{}),
 			},
-			expectedModel: provider.EditorInterfaceModel{
+			expectedModel: EditorInterfaceModel{
 				ID:            types.StringValue("space/environment/content_type"),
 				SpaceID:       types.StringValue("space"),
 				EnvironmentID: types.StringValue("environment"),
 				ContentTypeID: types.StringValue("content_type"),
-				EditorLayout:  DiagsNoErrorsMust(provider.NewTypedList(ctx, []provider.EditorInterfaceEditorLayoutItemValue{})),
-				Controls:      DiagsNoErrorsMust(provider.NewTypedList(ctx, []provider.EditorInterfaceControlValue{})),
-				GroupControls: DiagsNoErrorsMust(provider.NewTypedList(ctx, []provider.EditorInterfaceGroupControlValue{})),
-				Sidebar:       DiagsNoErrorsMust(provider.NewTypedList(ctx, []provider.EditorInterfaceSidebarValue{})),
+				EditorLayout:  DiagsNoErrorsMust(NewTypedList(ctx, []EditorInterfaceEditorLayoutItemValue{})),
+				Controls:      DiagsNoErrorsMust(NewTypedList(ctx, []EditorInterfaceControlValue{})),
+				GroupControls: DiagsNoErrorsMust(NewTypedList(ctx, []EditorInterfaceGroupControlValue{})),
+				Sidebar:       DiagsNoErrorsMust(NewTypedList(ctx, []EditorInterfaceSidebarValue{})),
 			},
 		},
 	}
@@ -91,7 +91,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model, modelDiags := provider.NewEditorInterfaceResourceModelFromResponse(t.Context(), test.editorInterface)
+			model, modelDiags := NewEditorInterfaceResourceModelFromResponse(t.Context(), test.editorInterface)
 
 			assert.Equal(t, test.expectedModel, model)
 			assert.Empty(t, modelDiags)

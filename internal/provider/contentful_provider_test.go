@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func makeTestAccProtoV6ProviderFactories(options ...provider.Option) map[string]func() (tfprotov6.ProviderServer, error) {
+func makeTestAccProtoV6ProviderFactories(options ...Option) map[string]func() (tfprotov6.ProviderServer, error) {
 	return map[string]func() (tfprotov6.ProviderServer, error){
-		"contentful": providerserver.NewProtocol6WithError(provider.Factory("test", options...)()),
+		"contentful": providerserver.NewProtocol6WithError(Factory("test", options...)()),
 	}
 }
 

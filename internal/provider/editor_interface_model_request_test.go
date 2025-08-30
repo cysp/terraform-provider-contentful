@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -47,7 +47,7 @@ func TestRoundTripToEditorInterfaceFields(t *testing.T) {
 		}),
 	}
 
-	model, modelDiags := provider.NewEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
+	model, modelDiags := NewEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
 	assert.Empty(t, modelDiags)
 
 	req, diags := model.ToEditorInterfaceFields(ctx)
@@ -101,30 +101,30 @@ func TestToEditorInterfaceFields(t *testing.T) {
 
 	ctx := t.Context()
 
-	controlValue1 := provider.NewEditorInterfaceControlValueKnown()
+	controlValue1 := NewEditorInterfaceControlValueKnown()
 	controlValue1.FieldID = types.StringValue("field_id")
 	controlValue1.WidgetNamespace = types.StringValue("widget_namespace")
 	controlValue1.WidgetID = types.StringValue("widget_id")
 	controlValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	controls, controlsDiags := provider.NewTypedList(ctx, []provider.EditorInterfaceControlValue{
+	controls, controlsDiags := NewTypedList(ctx, []EditorInterfaceControlValue{
 		controlValue1,
 	})
 
 	require.Empty(t, controlsDiags)
 
-	sidebarValue1 := provider.NewEditorInterfaceSidebarValueKnown()
+	sidebarValue1 := NewEditorInterfaceSidebarValueKnown()
 	sidebarValue1.WidgetNamespace = types.StringValue("widget_namespace")
 	sidebarValue1.WidgetID = types.StringValue("widget_id")
 	sidebarValue1.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	sidebar, sidebarDiags := provider.NewTypedList(ctx, []provider.EditorInterfaceSidebarValue{
+	sidebar, sidebarDiags := NewTypedList(ctx, []EditorInterfaceSidebarValue{
 		sidebarValue1,
 	})
 
 	require.Empty(t, sidebarDiags)
 
-	model := provider.EditorInterfaceModel{
+	model := EditorInterfaceModel{
 		SpaceID:       types.StringValue("space_id"),
 		EnvironmentID: types.StringValue("environment_id"),
 		ContentTypeID: types.StringValue("content_type_id"),
@@ -161,25 +161,25 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 
 	ctx := t.Context()
 
-	controlValue1 := provider.NewEditorInterfaceControlValueKnown()
+	controlValue1 := NewEditorInterfaceControlValueKnown()
 	controlValue1.FieldID = types.StringValue("field_id")
 	controlValue1.WidgetNamespace = types.StringValue("widget_namespace")
 	controlValue1.WidgetID = types.StringValue("widget_id")
 	controlValue1.Settings = jsontypes.NewNormalizedNull()
 
-	controlValue2 := provider.NewEditorInterfaceControlValueKnown()
+	controlValue2 := NewEditorInterfaceControlValueKnown()
 	controlValue2.FieldID = types.StringValue("field_id")
 	controlValue2.WidgetNamespace = types.StringValue("widget_namespace")
 	controlValue2.WidgetID = types.StringValue("widget_id")
 	controlValue2.Settings = jsontypes.NewNormalizedValue(`invalid json`)
 
-	controlValue3 := provider.NewEditorInterfaceControlValueKnown()
+	controlValue3 := NewEditorInterfaceControlValueKnown()
 	controlValue3.FieldID = types.StringValue("field_id")
 	controlValue3.WidgetNamespace = types.StringValue("widget_namespace")
 	controlValue3.WidgetID = types.StringValue("widget_id")
 	controlValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	controls, controlsDiags := provider.NewTypedList(ctx, []provider.EditorInterfaceControlValue{
+	controls, controlsDiags := NewTypedList(ctx, []EditorInterfaceControlValue{
 		controlValue1,
 		controlValue2,
 		controlValue3,
@@ -187,22 +187,22 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 
 	require.Empty(t, controlsDiags)
 
-	sidebarValue1 := provider.NewEditorInterfaceSidebarValueKnown()
+	sidebarValue1 := NewEditorInterfaceSidebarValueKnown()
 	sidebarValue1.WidgetNamespace = types.StringValue("widget_namespace")
 	sidebarValue1.WidgetID = types.StringValue("widget_id")
 	sidebarValue1.Settings = jsontypes.NewNormalizedNull()
 
-	sidebarValue2 := provider.NewEditorInterfaceSidebarValueKnown()
+	sidebarValue2 := NewEditorInterfaceSidebarValueKnown()
 	sidebarValue2.WidgetNamespace = types.StringValue("widget_namespace")
 	sidebarValue2.WidgetID = types.StringValue("widget_id")
 	sidebarValue2.Settings = jsontypes.NewNormalizedValue(`invalid json`)
 
-	sidebarValue3 := provider.NewEditorInterfaceSidebarValueKnown()
+	sidebarValue3 := NewEditorInterfaceSidebarValueKnown()
 	sidebarValue3.WidgetNamespace = types.StringValue("widget_namespace")
 	sidebarValue3.WidgetID = types.StringValue("widget_id")
 	sidebarValue3.Settings = jsontypes.NewNormalizedValue(`{"foo":"bar"}`)
 
-	sidebar, sidebarDiags := provider.NewTypedList(ctx, []provider.EditorInterfaceSidebarValue{
+	sidebar, sidebarDiags := NewTypedList(ctx, []EditorInterfaceSidebarValue{
 		sidebarValue1,
 		sidebarValue2,
 		sidebarValue3,
@@ -210,7 +210,7 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 
 	require.Empty(t, sidebarDiags)
 
-	model := provider.EditorInterfaceModel{
+	model := EditorInterfaceModel{
 		SpaceID:       types.StringValue("space_id"),
 		EnvironmentID: types.StringValue("environment_id"),
 		ContentTypeID: types.StringValue("content_type_id"),

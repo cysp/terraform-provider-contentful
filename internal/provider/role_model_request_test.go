@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +13,7 @@ func TestRoleModelRoundTripToRoleFields(t *testing.T) {
 
 	ctx := t.Context()
 
-	model := DiagsNoErrorsMust(provider.NewRoleResourceModelFromResponse(ctx, cm.Role{
+	model := DiagsNoErrorsMust(NewRoleResourceModelFromResponse(ctx, cm.Role{
 		Sys: cm.RoleSys{
 			ID: "abcdef",
 		},

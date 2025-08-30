@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -14,7 +14,7 @@ func TestWebhookFilterRegexpValueObjectRoundtrip(t *testing.T) {
 
 	ctx := t.Context()
 
-	value, valueDiags := provider.NewWebhookFilterRegexpValueKnownFromAttributes(ctx, map[string]attr.Value{
+	value, valueDiags := NewWebhookFilterRegexpValueKnownFromAttributes(ctx, map[string]attr.Value{
 		"doc":     types.StringValue("doc"),
 		"pattern": types.StringValue("pattern"),
 	})
@@ -23,7 +23,7 @@ func TestWebhookFilterRegexpValueObjectRoundtrip(t *testing.T) {
 	objectValue, objectValueDiags := value.ToObjectValue(ctx)
 	assert.Empty(t, objectValueDiags)
 
-	valueFromObject, valueFromObjectDiags := provider.WebhookFilterRegexpType{}.ValueFromObject(ctx, objectValue)
+	valueFromObject, valueFromObjectDiags := WebhookFilterRegexpType{}.ValueFromObject(ctx, objectValue)
 	assert.Empty(t, valueFromObjectDiags)
 
 	assert.True(t, value.Equal(valueFromObject))

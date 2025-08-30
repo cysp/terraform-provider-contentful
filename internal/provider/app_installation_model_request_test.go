@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -15,40 +15,40 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		model        provider.AppInstallationModel
+		model        AppInstallationModel
 		expectErrors bool
 		expected     cm.OptString
 	}{
 		"absent": {
-			model:    provider.AppInstallationModel{},
+			model:    AppInstallationModel{},
 			expected: cm.OptString{},
 		},
 		"null": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Marketplace: types.SetNull(types.StringType),
 			},
 			expected: cm.OptString{},
 		},
 		"unknown": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Marketplace: types.SetUnknown(types.StringType),
 			},
 			expected: cm.OptString{},
 		},
 		"empty": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Marketplace: types.SetValueMust(types.StringType, []attr.Value{}),
 			},
 			expected: cm.OptString{},
 		},
 		"foo": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("foo")}),
 			},
 			expected: cm.NewOptString("foo"),
 		},
 		"foo,bar": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("foo"), types.StringValue("bar")}),
 			},
 			expected: cm.NewOptString("bar,foo"),
@@ -76,38 +76,38 @@ func TestToAppInstallationFields(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		model               provider.AppInstallationModel
+		model               AppInstallationModel
 		expectErrors        bool
 		expectWarnings      bool
 		expectedRequestBody string
 	}{
 		"null": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedNull(),
 			},
 			expectedRequestBody: "{}",
 		},
 		"unknown": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedUnknown(),
 			},
 			expectWarnings:      true,
 			expectedRequestBody: "{}",
 		},
 		"empty": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("{}"),
 			},
 			expectedRequestBody: "{\"parameters\":{}}",
 		},
 		"foo=bar": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
 			},
 			expectedRequestBody: "{\"parameters\":{\"foo\":\"bar\"}}",
 		},
 		"invalid": {
-			model: provider.AppInstallationModel{
+			model: AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedValue("invalid"),
 			},
 			expectedRequestBody: "{\"parameters\":invalid}",

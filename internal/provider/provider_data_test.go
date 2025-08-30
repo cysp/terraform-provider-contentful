@@ -3,7 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/stretchr/testify/assert"
@@ -34,7 +34,7 @@ func TestProviderDataFromDataSourceConfigureRequest(t *testing.T) {
 
 			var providerData string
 
-			diags := provider.SetProviderDataFromDataSourceConfigureRequest(datasource.ConfigureRequest{
+			diags := SetProviderDataFromDataSourceConfigureRequest(datasource.ConfigureRequest{
 				ProviderData: test.providerData,
 			}, &providerData)
 
@@ -70,7 +70,7 @@ func TestProviderDataFromResourceeConfigureRequest(t *testing.T) {
 
 			var providerData string
 
-			diags := provider.SetProviderDataFromResourceConfigureRequest(resource.ConfigureRequest{
+			diags := SetProviderDataFromResourceConfigureRequest(resource.ConfigureRequest{
 				ProviderData: test.providerData,
 			}, &providerData)
 

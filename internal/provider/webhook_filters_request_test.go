@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,13 +15,13 @@ func TestToOptNilWebhookDefinitionFilterArrayNil(t *testing.T) {
 	ctx := t.Context()
 
 	testcases := map[string]struct {
-		input provider.TypedList[provider.WebhookFilterValue]
+		input TypedList[WebhookFilterValue]
 	}{
 		"null": {
-			input: provider.NewTypedListNull[provider.WebhookFilterValue](ctx),
+			input: NewTypedListNull[WebhookFilterValue](ctx),
 		},
 		"unknown": {
-			input: provider.NewTypedListUnknown[provider.WebhookFilterValue](ctx),
+			input: NewTypedListUnknown[WebhookFilterValue](ctx),
 		},
 	}
 
@@ -31,7 +31,7 @@ func TestToOptNilWebhookDefinitionFilterArrayNil(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, diags := provider.ToOptNilWebhookDefinitionFilterArray(
+			result, diags := ToOptNilWebhookDefinitionFilterArray(
 				ctx,
 				path.Root("test"),
 				testcase.input,
@@ -48,16 +48,16 @@ func TestToWebhookDefinitionFilterNil(t *testing.T) {
 
 	ctx := t.Context()
 
-	testcases := map[string]provider.WebhookFilterValue{
-		"null":    provider.NewWebhookFilterValueNull(),
-		"unknown": provider.NewWebhookFilterValueUnknown(),
+	testcases := map[string]WebhookFilterValue{
+		"null":    NewWebhookFilterValueNull(),
+		"unknown": NewWebhookFilterValueUnknown(),
 	}
 
 	for name, value := range testcases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, diags := provider.ToWebhookDefinitionFilter(
+			result, diags := ToWebhookDefinitionFilter(
 				ctx,
 				path.Root("test"),
 				value,
@@ -74,16 +74,16 @@ func TestToWebhookDefinitionFilterNotNil(t *testing.T) {
 
 	ctx := t.Context()
 
-	testcases := map[string]provider.WebhookFilterNotValue{
-		"null":    provider.NewWebhookFilterNotValueNull(),
-		"unknown": provider.NewWebhookFilterNotValueUnknown(),
+	testcases := map[string]WebhookFilterNotValue{
+		"null":    NewWebhookFilterNotValueNull(),
+		"unknown": NewWebhookFilterNotValueUnknown(),
 	}
 
 	for name, value := range testcases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, diags := provider.ToWebhookDefinitionFilterNot(
+			result, diags := ToWebhookDefinitionFilterNot(
 				ctx,
 				path.Root("test"),
 				value,
@@ -100,16 +100,16 @@ func TestToWebhookDefinitionFilterEqualsNil(t *testing.T) {
 
 	ctx := t.Context()
 
-	testcases := map[string]provider.WebhookFilterEqualsValue{
-		"null":    provider.NewWebhookFilterEqualsValueNull(),
-		"unknown": provider.NewWebhookFilterEqualsValueUnknown(),
+	testcases := map[string]WebhookFilterEqualsValue{
+		"null":    NewWebhookFilterEqualsValueNull(),
+		"unknown": NewWebhookFilterEqualsValueUnknown(),
 	}
 
 	for name, value := range testcases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, diags := provider.ToWebhookDefinitionFilterEquals(
+			result, diags := ToWebhookDefinitionFilterEquals(
 				ctx,
 				path.Root("test"),
 				value,
@@ -126,16 +126,16 @@ func TestToWebhookDefinitionFilterInValue(t *testing.T) {
 
 	ctx := t.Context()
 
-	testcases := map[string]provider.WebhookFilterInValue{
-		"null":    provider.NewWebhookFilterInValueNull(),
-		"unknown": provider.NewWebhookFilterInValueUnknown(),
+	testcases := map[string]WebhookFilterInValue{
+		"null":    NewWebhookFilterInValueNull(),
+		"unknown": NewWebhookFilterInValueUnknown(),
 	}
 
 	for name, value := range testcases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, diags := provider.ToWebhookDefinitionFilterIn(
+			result, diags := ToWebhookDefinitionFilterIn(
 				ctx,
 				path.Root("test"),
 				value,
@@ -152,16 +152,16 @@ func TestToWebhookDefinitionFilterRegexpValue(t *testing.T) {
 
 	ctx := t.Context()
 
-	testcases := map[string]provider.WebhookFilterRegexpValue{
-		"null":    provider.NewWebhookFilterRegexpValueNull(),
-		"unknown": provider.NewWebhookFilterRegexpValueUnknown(),
+	testcases := map[string]WebhookFilterRegexpValue{
+		"null":    NewWebhookFilterRegexpValueNull(),
+		"unknown": NewWebhookFilterRegexpValueUnknown(),
 	}
 
 	for name, value := range testcases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, diags := provider.ToWebhookDefinitionFilterRegexp(
+			result, diags := ToWebhookDefinitionFilterRegexp(
 				ctx,
 				path.Root("test"),
 				value,
