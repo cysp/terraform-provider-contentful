@@ -778,177 +778,6 @@ func decodeDeleteAppDefinitionParams(args [2]string, argsEscaped bool, r *http.R
 	return params, nil
 }
 
-// DeleteAppDefinitionResourceTypeParams is parameters of deleteAppDefinitionResourceType operation.
-type DeleteAppDefinitionResourceTypeParams struct {
-	OrganizationID  string
-	AppDefinitionID string
-	ResourceTypeID  string
-}
-
-func unpackDeleteAppDefinitionResourceTypeParams(packed middleware.Parameters) (params DeleteAppDefinitionResourceTypeParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "organization_id",
-			In:   "path",
-		}
-		params.OrganizationID = packed[key].(string)
-	}
-	{
-		key := middleware.ParameterKey{
-			Name: "app_definition_id",
-			In:   "path",
-		}
-		params.AppDefinitionID = packed[key].(string)
-	}
-	{
-		key := middleware.ParameterKey{
-			Name: "resource_type_id",
-			In:   "path",
-		}
-		params.ResourceTypeID = packed[key].(string)
-	}
-	return params
-}
-
-func decodeDeleteAppDefinitionResourceTypeParams(args [3]string, argsEscaped bool, r *http.Request) (params DeleteAppDefinitionResourceTypeParams, _ error) {
-	// Decode path: organization_id.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "organization_id",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.OrganizationID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "organization_id",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode path: app_definition_id.
-	if err := func() error {
-		param := args[1]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[1])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "app_definition_id",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.AppDefinitionID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "app_definition_id",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode path: resource_type_id.
-	if err := func() error {
-		param := args[2]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[2])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "resource_type_id",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.ResourceTypeID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "resource_type_id",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
 // DeleteAppInstallationParams is parameters of deleteAppInstallation operation.
 type DeleteAppInstallationParams struct {
 	SpaceID         string
@@ -1816,6 +1645,177 @@ func decodeDeleteResourceProviderParams(args [2]string, argsEscaped bool, r *htt
 	return params, nil
 }
 
+// DeleteResourceTypeParams is parameters of deleteResourceType operation.
+type DeleteResourceTypeParams struct {
+	OrganizationID  string
+	AppDefinitionID string
+	ResourceTypeID  string
+}
+
+func unpackDeleteResourceTypeParams(packed middleware.Parameters) (params DeleteResourceTypeParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "app_definition_id",
+			In:   "path",
+		}
+		params.AppDefinitionID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "resource_type_id",
+			In:   "path",
+		}
+		params.ResourceTypeID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeDeleteResourceTypeParams(args [3]string, argsEscaped bool, r *http.Request) (params DeleteResourceTypeParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: app_definition_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "app_definition_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.AppDefinitionID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "app_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: resource_type_id.
+	if err := func() error {
+		param := args[2]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[2])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "resource_type_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.ResourceTypeID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "resource_type_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // DeleteRoleParams is parameters of deleteRole operation.
 type DeleteRoleParams struct {
 	SpaceID string
@@ -2163,177 +2163,6 @@ func decodeGetAppDefinitionParams(args [2]string, argsEscaped bool, r *http.Requ
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "app_definition_id",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
-// GetAppDefinitionResourceTypeParams is parameters of getAppDefinitionResourceType operation.
-type GetAppDefinitionResourceTypeParams struct {
-	OrganizationID  string
-	AppDefinitionID string
-	ResourceTypeID  string
-}
-
-func unpackGetAppDefinitionResourceTypeParams(packed middleware.Parameters) (params GetAppDefinitionResourceTypeParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "organization_id",
-			In:   "path",
-		}
-		params.OrganizationID = packed[key].(string)
-	}
-	{
-		key := middleware.ParameterKey{
-			Name: "app_definition_id",
-			In:   "path",
-		}
-		params.AppDefinitionID = packed[key].(string)
-	}
-	{
-		key := middleware.ParameterKey{
-			Name: "resource_type_id",
-			In:   "path",
-		}
-		params.ResourceTypeID = packed[key].(string)
-	}
-	return params
-}
-
-func decodeGetAppDefinitionResourceTypeParams(args [3]string, argsEscaped bool, r *http.Request) (params GetAppDefinitionResourceTypeParams, _ error) {
-	// Decode path: organization_id.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "organization_id",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.OrganizationID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "organization_id",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode path: app_definition_id.
-	if err := func() error {
-		param := args[1]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[1])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "app_definition_id",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.AppDefinitionID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "app_definition_id",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode path: resource_type_id.
-	if err := func() error {
-		param := args[2]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[2])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "resource_type_id",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.ResourceTypeID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "resource_type_id",
 			In:   "path",
 			Err:  err,
 		}
@@ -3644,6 +3473,177 @@ func decodeGetResourceProviderParams(args [2]string, argsEscaped bool, r *http.R
 	return params, nil
 }
 
+// GetResourceTypeParams is parameters of getResourceType operation.
+type GetResourceTypeParams struct {
+	OrganizationID  string
+	AppDefinitionID string
+	ResourceTypeID  string
+}
+
+func unpackGetResourceTypeParams(packed middleware.Parameters) (params GetResourceTypeParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "app_definition_id",
+			In:   "path",
+		}
+		params.AppDefinitionID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "resource_type_id",
+			In:   "path",
+		}
+		params.ResourceTypeID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetResourceTypeParams(args [3]string, argsEscaped bool, r *http.Request) (params GetResourceTypeParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: app_definition_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "app_definition_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.AppDefinitionID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "app_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: resource_type_id.
+	if err := func() error {
+		param := args[2]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[2])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "resource_type_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.ResourceTypeID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "resource_type_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetRoleParams is parameters of getRole operation.
 type GetRoleParams struct {
 	SpaceID string
@@ -4056,177 +4056,6 @@ func decodePutAppDefinitionParams(args [2]string, argsEscaped bool, r *http.Requ
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "app_definition_id",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
-// PutAppDefinitionResourceTypeParams is parameters of putAppDefinitionResourceType operation.
-type PutAppDefinitionResourceTypeParams struct {
-	OrganizationID  string
-	AppDefinitionID string
-	ResourceTypeID  string
-}
-
-func unpackPutAppDefinitionResourceTypeParams(packed middleware.Parameters) (params PutAppDefinitionResourceTypeParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "organization_id",
-			In:   "path",
-		}
-		params.OrganizationID = packed[key].(string)
-	}
-	{
-		key := middleware.ParameterKey{
-			Name: "app_definition_id",
-			In:   "path",
-		}
-		params.AppDefinitionID = packed[key].(string)
-	}
-	{
-		key := middleware.ParameterKey{
-			Name: "resource_type_id",
-			In:   "path",
-		}
-		params.ResourceTypeID = packed[key].(string)
-	}
-	return params
-}
-
-func decodePutAppDefinitionResourceTypeParams(args [3]string, argsEscaped bool, r *http.Request) (params PutAppDefinitionResourceTypeParams, _ error) {
-	// Decode path: organization_id.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "organization_id",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.OrganizationID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "organization_id",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode path: app_definition_id.
-	if err := func() error {
-		param := args[1]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[1])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "app_definition_id",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.AppDefinitionID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "app_definition_id",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode path: resource_type_id.
-	if err := func() error {
-		param := args[2]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[2])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "resource_type_id",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.ResourceTypeID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "resource_type_id",
 			In:   "path",
 			Err:  err,
 		}
@@ -5326,6 +5155,177 @@ func decodePutResourceProviderParams(args [2]string, argsEscaped bool, r *http.R
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "app_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PutResourceTypeParams is parameters of putResourceType operation.
+type PutResourceTypeParams struct {
+	OrganizationID  string
+	AppDefinitionID string
+	ResourceTypeID  string
+}
+
+func unpackPutResourceTypeParams(packed middleware.Parameters) (params PutResourceTypeParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "app_definition_id",
+			In:   "path",
+		}
+		params.AppDefinitionID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "resource_type_id",
+			In:   "path",
+		}
+		params.ResourceTypeID = packed[key].(string)
+	}
+	return params
+}
+
+func decodePutResourceTypeParams(args [3]string, argsEscaped bool, r *http.Request) (params PutResourceTypeParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: app_definition_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "app_definition_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.AppDefinitionID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "app_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: resource_type_id.
+	if err := func() error {
+		param := args[2]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[2])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "resource_type_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.ResourceTypeID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "resource_type_id",
 			In:   "path",
 			Err:  err,
 		}

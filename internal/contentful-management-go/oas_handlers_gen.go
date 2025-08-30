@@ -1109,139 +1109,6 @@ func (s *Server) handleDeleteAppDefinitionRequest(args [2]string, argsEscaped bo
 	}
 }
 
-// handleDeleteAppDefinitionResourceTypeRequest handles deleteAppDefinitionResourceType operation.
-//
-// Delete an app resource provider definition.
-//
-// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (s *Server) handleDeleteAppDefinitionResourceTypeRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
-	statusWriter := &codeRecorder{ResponseWriter: w}
-	w = statusWriter
-	ctx := r.Context()
-
-	var (
-		err          error
-		opErrContext = ogenerrors.OperationContext{
-			Name: DeleteAppDefinitionResourceTypeOperation,
-			ID:   "deleteAppDefinitionResourceType",
-		}
-	)
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-			sctx, ok, err := s.securityAccessToken(ctx, DeleteAppDefinitionResourceTypeOperation, r)
-			if err != nil {
-				err = &ogenerrors.SecurityError{
-					OperationContext: opErrContext,
-					Security:         "AccessToken",
-					Err:              err,
-				}
-				defer recordError("Security:AccessToken", err)
-				s.cfg.ErrorHandler(ctx, w, r, err)
-				return
-			}
-			if ok {
-				satisfied[0] |= 1 << 0
-				ctx = sctx
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			err = &ogenerrors.SecurityError{
-				OperationContext: opErrContext,
-				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
-			}
-			defer recordError("Security", err)
-			s.cfg.ErrorHandler(ctx, w, r, err)
-			return
-		}
-	}
-	params, err := decodeDeleteAppDefinitionResourceTypeParams(args, argsEscaped, r)
-	if err != nil {
-		err = &ogenerrors.DecodeParamsError{
-			OperationContext: opErrContext,
-			Err:              err,
-		}
-		defer recordError("DecodeParams", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-
-	var response DeleteAppDefinitionResourceTypeRes
-	if m := s.cfg.Middleware; m != nil {
-		mreq := middleware.Request{
-			Context:          ctx,
-			OperationName:    DeleteAppDefinitionResourceTypeOperation,
-			OperationSummary: "Delete an app resource provider definition",
-			OperationID:      "deleteAppDefinitionResourceType",
-			Body:             nil,
-			Params: middleware.Parameters{
-				{
-					Name: "organization_id",
-					In:   "path",
-				}: params.OrganizationID,
-				{
-					Name: "app_definition_id",
-					In:   "path",
-				}: params.AppDefinitionID,
-				{
-					Name: "resource_type_id",
-					In:   "path",
-				}: params.ResourceTypeID,
-			},
-			Raw: r,
-		}
-
-		type (
-			Request  = struct{}
-			Params   = DeleteAppDefinitionResourceTypeParams
-			Response = DeleteAppDefinitionResourceTypeRes
-		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
-			m,
-			mreq,
-			unpackDeleteAppDefinitionResourceTypeParams,
-			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.DeleteAppDefinitionResourceType(ctx, params)
-				return response, err
-			},
-		)
-	} else {
-		response, err = s.h.DeleteAppDefinitionResourceType(ctx, params)
-	}
-	if err != nil {
-		defer recordError("Internal", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-
-	if err := encodeDeleteAppDefinitionResourceTypeResponse(response, w); err != nil {
-		defer recordError("EncodeResponse", err)
-		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
-			s.cfg.ErrorHandler(ctx, w, r, err)
-		}
-		return
-	}
-}
-
 // handleDeleteAppInstallationRequest handles deleteAppInstallation operation.
 //
 // Uninstall an app.
@@ -2028,6 +1895,139 @@ func (s *Server) handleDeleteResourceProviderRequest(args [2]string, argsEscaped
 	}
 }
 
+// handleDeleteResourceTypeRequest handles deleteResourceType operation.
+//
+// Delete a resource type definition.
+//
+// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
+func (s *Server) handleDeleteResourceTypeRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: DeleteResourceTypeOperation,
+			ID:   "deleteResourceType",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityAccessToken(ctx, DeleteResourceTypeOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "AccessToken",
+					Err:              err,
+				}
+				defer recordError("Security:AccessToken", err)
+				s.cfg.ErrorHandler(ctx, w, r, err)
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			defer recordError("Security", err)
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+	}
+	params, err := decodeDeleteResourceTypeParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	var response DeleteResourceTypeRes
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    DeleteResourceTypeOperation,
+			OperationSummary: "Delete a resource type definition",
+			OperationID:      "deleteResourceType",
+			Body:             nil,
+			Params: middleware.Parameters{
+				{
+					Name: "organization_id",
+					In:   "path",
+				}: params.OrganizationID,
+				{
+					Name: "app_definition_id",
+					In:   "path",
+				}: params.AppDefinitionID,
+				{
+					Name: "resource_type_id",
+					In:   "path",
+				}: params.ResourceTypeID,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = struct{}
+			Params   = DeleteResourceTypeParams
+			Response = DeleteResourceTypeRes
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackDeleteResourceTypeParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.DeleteResourceType(ctx, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.DeleteResourceType(ctx, params)
+	}
+	if err != nil {
+		defer recordError("Internal", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	if err := encodeDeleteResourceTypeResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
 // handleDeleteRoleRequest handles deleteRole operation.
 //
 // Delete a role.
@@ -2407,139 +2407,6 @@ func (s *Server) handleGetAppDefinitionRequest(args [2]string, argsEscaped bool,
 	}
 
 	if err := encodeGetAppDefinitionResponse(response, w); err != nil {
-		defer recordError("EncodeResponse", err)
-		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
-			s.cfg.ErrorHandler(ctx, w, r, err)
-		}
-		return
-	}
-}
-
-// handleGetAppDefinitionResourceTypeRequest handles getAppDefinitionResourceType operation.
-//
-// Get one app resource ttype definition.
-//
-// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (s *Server) handleGetAppDefinitionResourceTypeRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
-	statusWriter := &codeRecorder{ResponseWriter: w}
-	w = statusWriter
-	ctx := r.Context()
-
-	var (
-		err          error
-		opErrContext = ogenerrors.OperationContext{
-			Name: GetAppDefinitionResourceTypeOperation,
-			ID:   "getAppDefinitionResourceType",
-		}
-	)
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-			sctx, ok, err := s.securityAccessToken(ctx, GetAppDefinitionResourceTypeOperation, r)
-			if err != nil {
-				err = &ogenerrors.SecurityError{
-					OperationContext: opErrContext,
-					Security:         "AccessToken",
-					Err:              err,
-				}
-				defer recordError("Security:AccessToken", err)
-				s.cfg.ErrorHandler(ctx, w, r, err)
-				return
-			}
-			if ok {
-				satisfied[0] |= 1 << 0
-				ctx = sctx
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			err = &ogenerrors.SecurityError{
-				OperationContext: opErrContext,
-				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
-			}
-			defer recordError("Security", err)
-			s.cfg.ErrorHandler(ctx, w, r, err)
-			return
-		}
-	}
-	params, err := decodeGetAppDefinitionResourceTypeParams(args, argsEscaped, r)
-	if err != nil {
-		err = &ogenerrors.DecodeParamsError{
-			OperationContext: opErrContext,
-			Err:              err,
-		}
-		defer recordError("DecodeParams", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-
-	var response GetAppDefinitionResourceTypeRes
-	if m := s.cfg.Middleware; m != nil {
-		mreq := middleware.Request{
-			Context:          ctx,
-			OperationName:    GetAppDefinitionResourceTypeOperation,
-			OperationSummary: "Get one app resource ttype definition",
-			OperationID:      "getAppDefinitionResourceType",
-			Body:             nil,
-			Params: middleware.Parameters{
-				{
-					Name: "organization_id",
-					In:   "path",
-				}: params.OrganizationID,
-				{
-					Name: "app_definition_id",
-					In:   "path",
-				}: params.AppDefinitionID,
-				{
-					Name: "resource_type_id",
-					In:   "path",
-				}: params.ResourceTypeID,
-			},
-			Raw: r,
-		}
-
-		type (
-			Request  = struct{}
-			Params   = GetAppDefinitionResourceTypeParams
-			Response = GetAppDefinitionResourceTypeRes
-		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
-			m,
-			mreq,
-			unpackGetAppDefinitionResourceTypeParams,
-			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.GetAppDefinitionResourceType(ctx, params)
-				return response, err
-			},
-		)
-	} else {
-		response, err = s.h.GetAppDefinitionResourceType(ctx, params)
-	}
-	if err != nil {
-		defer recordError("Internal", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-
-	if err := encodeGetAppDefinitionResourceTypeResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
@@ -3956,6 +3823,139 @@ func (s *Server) handleGetResourceProviderRequest(args [2]string, argsEscaped bo
 	}
 }
 
+// handleGetResourceTypeRequest handles getResourceType operation.
+//
+// Get one resource type definition.
+//
+// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
+func (s *Server) handleGetResourceTypeRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: GetResourceTypeOperation,
+			ID:   "getResourceType",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityAccessToken(ctx, GetResourceTypeOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "AccessToken",
+					Err:              err,
+				}
+				defer recordError("Security:AccessToken", err)
+				s.cfg.ErrorHandler(ctx, w, r, err)
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			defer recordError("Security", err)
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+	}
+	params, err := decodeGetResourceTypeParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	var response GetResourceTypeRes
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    GetResourceTypeOperation,
+			OperationSummary: "Get one resource type definition",
+			OperationID:      "getResourceType",
+			Body:             nil,
+			Params: middleware.Parameters{
+				{
+					Name: "organization_id",
+					In:   "path",
+				}: params.OrganizationID,
+				{
+					Name: "app_definition_id",
+					In:   "path",
+				}: params.AppDefinitionID,
+				{
+					Name: "resource_type_id",
+					In:   "path",
+				}: params.ResourceTypeID,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = struct{}
+			Params   = GetResourceTypeParams
+			Response = GetResourceTypeRes
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackGetResourceTypeParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.GetResourceType(ctx, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.GetResourceType(ctx, params)
+	}
+	if err != nil {
+		defer recordError("Internal", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	if err := encodeGetResourceTypeResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
 // handleGetRoleRequest handles getRole operation.
 //
 // Get a role.
@@ -4475,154 +4475,6 @@ func (s *Server) handlePutAppDefinitionRequest(args [2]string, argsEscaped bool,
 	}
 
 	if err := encodePutAppDefinitionResponse(response, w); err != nil {
-		defer recordError("EncodeResponse", err)
-		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
-			s.cfg.ErrorHandler(ctx, w, r, err)
-		}
-		return
-	}
-}
-
-// handlePutAppDefinitionResourceTypeRequest handles putAppDefinitionResourceType operation.
-//
-// Create or update an app resource provider type definition.
-//
-// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (s *Server) handlePutAppDefinitionResourceTypeRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
-	statusWriter := &codeRecorder{ResponseWriter: w}
-	w = statusWriter
-	ctx := r.Context()
-
-	var (
-		err          error
-		opErrContext = ogenerrors.OperationContext{
-			Name: PutAppDefinitionResourceTypeOperation,
-			ID:   "putAppDefinitionResourceType",
-		}
-	)
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-			sctx, ok, err := s.securityAccessToken(ctx, PutAppDefinitionResourceTypeOperation, r)
-			if err != nil {
-				err = &ogenerrors.SecurityError{
-					OperationContext: opErrContext,
-					Security:         "AccessToken",
-					Err:              err,
-				}
-				defer recordError("Security:AccessToken", err)
-				s.cfg.ErrorHandler(ctx, w, r, err)
-				return
-			}
-			if ok {
-				satisfied[0] |= 1 << 0
-				ctx = sctx
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			err = &ogenerrors.SecurityError{
-				OperationContext: opErrContext,
-				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
-			}
-			defer recordError("Security", err)
-			s.cfg.ErrorHandler(ctx, w, r, err)
-			return
-		}
-	}
-	params, err := decodePutAppDefinitionResourceTypeParams(args, argsEscaped, r)
-	if err != nil {
-		err = &ogenerrors.DecodeParamsError{
-			OperationContext: opErrContext,
-			Err:              err,
-		}
-		defer recordError("DecodeParams", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-	request, close, err := s.decodePutAppDefinitionResourceTypeRequest(r)
-	if err != nil {
-		err = &ogenerrors.DecodeRequestError{
-			OperationContext: opErrContext,
-			Err:              err,
-		}
-		defer recordError("DecodeRequest", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-	defer func() {
-		if err := close(); err != nil {
-			recordError("CloseRequest", err)
-		}
-	}()
-
-	var response PutAppDefinitionResourceTypeRes
-	if m := s.cfg.Middleware; m != nil {
-		mreq := middleware.Request{
-			Context:          ctx,
-			OperationName:    PutAppDefinitionResourceTypeOperation,
-			OperationSummary: "Create or update an app resource provider type definition",
-			OperationID:      "putAppDefinitionResourceType",
-			Body:             request,
-			Params: middleware.Parameters{
-				{
-					Name: "organization_id",
-					In:   "path",
-				}: params.OrganizationID,
-				{
-					Name: "app_definition_id",
-					In:   "path",
-				}: params.AppDefinitionID,
-				{
-					Name: "resource_type_id",
-					In:   "path",
-				}: params.ResourceTypeID,
-			},
-			Raw: r,
-		}
-
-		type (
-			Request  = *ResourceTypeFields
-			Params   = PutAppDefinitionResourceTypeParams
-			Response = PutAppDefinitionResourceTypeRes
-		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
-			m,
-			mreq,
-			unpackPutAppDefinitionResourceTypeParams,
-			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.PutAppDefinitionResourceType(ctx, request, params)
-				return response, err
-			},
-		)
-	} else {
-		response, err = s.h.PutAppDefinitionResourceType(ctx, request, params)
-	}
-	if err != nil {
-		defer recordError("Internal", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-
-	if err := encodePutAppDefinitionResourceTypeResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
@@ -5519,6 +5371,154 @@ func (s *Server) handlePutResourceProviderRequest(args [2]string, argsEscaped bo
 	}
 
 	if err := encodePutResourceProviderResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
+// handlePutResourceTypeRequest handles putResourceType operation.
+//
+// Create or update a resource type definition.
+//
+// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
+func (s *Server) handlePutResourceTypeRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: PutResourceTypeOperation,
+			ID:   "putResourceType",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityAccessToken(ctx, PutResourceTypeOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "AccessToken",
+					Err:              err,
+				}
+				defer recordError("Security:AccessToken", err)
+				s.cfg.ErrorHandler(ctx, w, r, err)
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			defer recordError("Security", err)
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+	}
+	params, err := decodePutResourceTypeParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+	request, close, err := s.decodePutResourceTypeRequest(r)
+	if err != nil {
+		err = &ogenerrors.DecodeRequestError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeRequest", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+	defer func() {
+		if err := close(); err != nil {
+			recordError("CloseRequest", err)
+		}
+	}()
+
+	var response PutResourceTypeRes
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    PutResourceTypeOperation,
+			OperationSummary: "Create or update a resource type definition",
+			OperationID:      "putResourceType",
+			Body:             request,
+			Params: middleware.Parameters{
+				{
+					Name: "organization_id",
+					In:   "path",
+				}: params.OrganizationID,
+				{
+					Name: "app_definition_id",
+					In:   "path",
+				}: params.AppDefinitionID,
+				{
+					Name: "resource_type_id",
+					In:   "path",
+				}: params.ResourceTypeID,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = *ResourceTypeFields
+			Params   = PutResourceTypeParams
+			Response = PutResourceTypeRes
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackPutResourceTypeParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.PutResourceType(ctx, request, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.PutResourceType(ctx, request, params)
+	}
+	if err != nil {
+		defer recordError("Internal", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	if err := encodePutResourceTypeResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)

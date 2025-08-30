@@ -70,12 +70,6 @@ type Invoker interface {
 	//
 	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}
 	DeleteAppDefinition(ctx context.Context, params DeleteAppDefinitionParams) (DeleteAppDefinitionRes, error)
-	// DeleteAppDefinitionResourceType invokes deleteAppDefinitionResourceType operation.
-	//
-	// Delete an app resource provider definition.
-	//
-	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-	DeleteAppDefinitionResourceType(ctx context.Context, params DeleteAppDefinitionResourceTypeParams) (DeleteAppDefinitionResourceTypeRes, error)
 	// DeleteAppInstallation invokes deleteAppInstallation operation.
 	//
 	// Uninstall an app.
@@ -112,6 +106,12 @@ type Invoker interface {
 	//
 	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
 	DeleteResourceProvider(ctx context.Context, params DeleteResourceProviderParams) (DeleteResourceProviderRes, error)
+	// DeleteResourceType invokes deleteResourceType operation.
+	//
+	// Delete a resource type definition.
+	//
+	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
+	DeleteResourceType(ctx context.Context, params DeleteResourceTypeParams) (DeleteResourceTypeRes, error)
 	// DeleteRole invokes deleteRole operation.
 	//
 	// Delete a role.
@@ -130,12 +130,6 @@ type Invoker interface {
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}
 	GetAppDefinition(ctx context.Context, params GetAppDefinitionParams) (GetAppDefinitionRes, error)
-	// GetAppDefinitionResourceType invokes getAppDefinitionResourceType operation.
-	//
-	// Get one app resource ttype definition.
-	//
-	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-	GetAppDefinitionResourceType(ctx context.Context, params GetAppDefinitionResourceTypeParams) (GetAppDefinitionResourceTypeRes, error)
 	// GetAppInstallation invokes getAppInstallation operation.
 	//
 	// Get one app installation.
@@ -202,6 +196,12 @@ type Invoker interface {
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
 	GetResourceProvider(ctx context.Context, params GetResourceProviderParams) (GetResourceProviderRes, error)
+	// GetResourceType invokes getResourceType operation.
+	//
+	// Get one resource type definition.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
+	GetResourceType(ctx context.Context, params GetResourceTypeParams) (GetResourceTypeRes, error)
 	// GetRole invokes getRole operation.
 	//
 	// Get a role.
@@ -226,12 +226,6 @@ type Invoker interface {
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}
 	PutAppDefinition(ctx context.Context, request *AppDefinitionFields, params PutAppDefinitionParams) (PutAppDefinitionRes, error)
-	// PutAppDefinitionResourceType invokes putAppDefinitionResourceType operation.
-	//
-	// Create or update an app resource provider type definition.
-	//
-	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-	PutAppDefinitionResourceType(ctx context.Context, request *ResourceTypeFields, params PutAppDefinitionResourceTypeParams) (PutAppDefinitionResourceTypeRes, error)
 	// PutAppInstallation invokes putAppInstallation operation.
 	//
 	// Install or update an app.
@@ -268,6 +262,12 @@ type Invoker interface {
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
 	PutResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutResourceProviderParams) (PutResourceProviderRes, error)
+	// PutResourceType invokes putResourceType operation.
+	//
+	// Create or update a resource type definition.
+	//
+	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
+	PutResourceType(ctx context.Context, request *ResourceTypeFields, params PutResourceTypeParams) (PutResourceTypeRes, error)
 	// PutSpaceEnablements invokes putSpaceEnablements operation.
 	//
 	// Update enablements for a space.
@@ -1152,131 +1152,6 @@ func (c *Client) sendDeleteAppDefinition(ctx context.Context, params DeleteAppDe
 	return result, nil
 }
 
-// DeleteAppDefinitionResourceType invokes deleteAppDefinitionResourceType operation.
-//
-// Delete an app resource provider definition.
-//
-// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (c *Client) DeleteAppDefinitionResourceType(ctx context.Context, params DeleteAppDefinitionResourceTypeParams) (DeleteAppDefinitionResourceTypeRes, error) {
-	res, err := c.sendDeleteAppDefinitionResourceType(ctx, params)
-	return res, err
-}
-
-func (c *Client) sendDeleteAppDefinitionResourceType(ctx context.Context, params DeleteAppDefinitionResourceTypeParams) (res DeleteAppDefinitionResourceTypeRes, err error) {
-
-	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [6]string
-	pathParts[0] = "/organizations/"
-	{
-		// Encode "organization_id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "organization_id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.OrganizationID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
-	pathParts[2] = "/app_definitions/"
-	{
-		// Encode "app_definition_id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "app_definition_id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[3] = encoded
-	}
-	pathParts[4] = "/resource_provider/resource_types/"
-	{
-		// Encode "resource_type_id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "resource_type_id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.ResourceTypeID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[5] = encoded
-	}
-	uri.AddPathParts(u, pathParts[:]...)
-
-	r, err := ht.NewRequest(ctx, "DELETE", u)
-	if err != nil {
-		return res, errors.Wrap(err, "create request")
-	}
-
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-
-			switch err := c.securityAccessToken(ctx, DeleteAppDefinitionResourceTypeOperation, r); {
-			case err == nil: // if NO error
-				satisfied[0] |= 1 << 0
-			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
-				// Skip this security.
-			default:
-				return res, errors.Wrap(err, "security \"AccessToken\"")
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
-		}
-	}
-
-	resp, err := c.cfg.Client.Do(r)
-	if err != nil {
-		return res, errors.Wrap(err, "do request")
-	}
-	defer resp.Body.Close()
-
-	result, err := decodeDeleteAppDefinitionResourceTypeResponse(resp)
-	if err != nil {
-		return res, errors.Wrap(err, "decode response")
-	}
-
-	return result, nil
-}
-
 // DeleteAppInstallation invokes deleteAppInstallation operation.
 //
 // Uninstall an app.
@@ -1972,6 +1847,131 @@ func (c *Client) sendDeleteResourceProvider(ctx context.Context, params DeleteRe
 	return result, nil
 }
 
+// DeleteResourceType invokes deleteResourceType operation.
+//
+// Delete a resource type definition.
+//
+// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
+func (c *Client) DeleteResourceType(ctx context.Context, params DeleteResourceTypeParams) (DeleteResourceTypeRes, error) {
+	res, err := c.sendDeleteResourceType(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeleteResourceType(ctx context.Context, params DeleteResourceTypeParams) (res DeleteResourceTypeRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [6]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/resource_provider/resource_types/"
+	{
+		// Encode "resource_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "resource_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ResourceTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteResourceTypeOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeDeleteResourceTypeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // DeleteRole invokes deleteRole operation.
 //
 // Delete a role.
@@ -2283,131 +2283,6 @@ func (c *Client) sendGetAppDefinition(ctx context.Context, params GetAppDefiniti
 	defer resp.Body.Close()
 
 	result, err := decodeGetAppDefinitionResponse(resp)
-	if err != nil {
-		return res, errors.Wrap(err, "decode response")
-	}
-
-	return result, nil
-}
-
-// GetAppDefinitionResourceType invokes getAppDefinitionResourceType operation.
-//
-// Get one app resource ttype definition.
-//
-// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (c *Client) GetAppDefinitionResourceType(ctx context.Context, params GetAppDefinitionResourceTypeParams) (GetAppDefinitionResourceTypeRes, error) {
-	res, err := c.sendGetAppDefinitionResourceType(ctx, params)
-	return res, err
-}
-
-func (c *Client) sendGetAppDefinitionResourceType(ctx context.Context, params GetAppDefinitionResourceTypeParams) (res GetAppDefinitionResourceTypeRes, err error) {
-
-	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [6]string
-	pathParts[0] = "/organizations/"
-	{
-		// Encode "organization_id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "organization_id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.OrganizationID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
-	pathParts[2] = "/app_definitions/"
-	{
-		// Encode "app_definition_id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "app_definition_id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[3] = encoded
-	}
-	pathParts[4] = "/resource_provider/resource_types/"
-	{
-		// Encode "resource_type_id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "resource_type_id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.ResourceTypeID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[5] = encoded
-	}
-	uri.AddPathParts(u, pathParts[:]...)
-
-	r, err := ht.NewRequest(ctx, "GET", u)
-	if err != nil {
-		return res, errors.Wrap(err, "create request")
-	}
-
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-
-			switch err := c.securityAccessToken(ctx, GetAppDefinitionResourceTypeOperation, r); {
-			case err == nil: // if NO error
-				satisfied[0] |= 1 << 0
-			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
-				// Skip this security.
-			default:
-				return res, errors.Wrap(err, "security \"AccessToken\"")
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
-		}
-	}
-
-	resp, err := c.cfg.Client.Do(r)
-	if err != nil {
-		return res, errors.Wrap(err, "do request")
-	}
-	defer resp.Body.Close()
-
-	result, err := decodeGetAppDefinitionResourceTypeResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -3593,6 +3468,131 @@ func (c *Client) sendGetResourceProvider(ctx context.Context, params GetResource
 	return result, nil
 }
 
+// GetResourceType invokes getResourceType operation.
+//
+// Get one resource type definition.
+//
+// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
+func (c *Client) GetResourceType(ctx context.Context, params GetResourceTypeParams) (GetResourceTypeRes, error) {
+	res, err := c.sendGetResourceType(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetResourceType(ctx context.Context, params GetResourceTypeParams) (res GetResourceTypeRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [6]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/resource_provider/resource_types/"
+	{
+		// Encode "resource_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "resource_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ResourceTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetResourceTypeOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetResourceTypeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetRole invokes getRole operation.
 //
 // Get a role.
@@ -3995,134 +3995,6 @@ func (c *Client) sendPutAppDefinition(ctx context.Context, request *AppDefinitio
 	defer resp.Body.Close()
 
 	result, err := decodePutAppDefinitionResponse(resp)
-	if err != nil {
-		return res, errors.Wrap(err, "decode response")
-	}
-
-	return result, nil
-}
-
-// PutAppDefinitionResourceType invokes putAppDefinitionResourceType operation.
-//
-// Create or update an app resource provider type definition.
-//
-// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (c *Client) PutAppDefinitionResourceType(ctx context.Context, request *ResourceTypeFields, params PutAppDefinitionResourceTypeParams) (PutAppDefinitionResourceTypeRes, error) {
-	res, err := c.sendPutAppDefinitionResourceType(ctx, request, params)
-	return res, err
-}
-
-func (c *Client) sendPutAppDefinitionResourceType(ctx context.Context, request *ResourceTypeFields, params PutAppDefinitionResourceTypeParams) (res PutAppDefinitionResourceTypeRes, err error) {
-
-	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [6]string
-	pathParts[0] = "/organizations/"
-	{
-		// Encode "organization_id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "organization_id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.OrganizationID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
-	pathParts[2] = "/app_definitions/"
-	{
-		// Encode "app_definition_id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "app_definition_id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[3] = encoded
-	}
-	pathParts[4] = "/resource_provider/resource_types/"
-	{
-		// Encode "resource_type_id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "resource_type_id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.ResourceTypeID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[5] = encoded
-	}
-	uri.AddPathParts(u, pathParts[:]...)
-
-	r, err := ht.NewRequest(ctx, "PUT", u)
-	if err != nil {
-		return res, errors.Wrap(err, "create request")
-	}
-	if err := encodePutAppDefinitionResourceTypeRequest(request, r); err != nil {
-		return res, errors.Wrap(err, "encode request")
-	}
-
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-
-			switch err := c.securityAccessToken(ctx, PutAppDefinitionResourceTypeOperation, r); {
-			case err == nil: // if NO error
-				satisfied[0] |= 1 << 0
-			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
-				// Skip this security.
-			default:
-				return res, errors.Wrap(err, "security \"AccessToken\"")
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
-		}
-	}
-
-	resp, err := c.cfg.Client.Do(r)
-	if err != nil {
-		return res, errors.Wrap(err, "do request")
-	}
-	defer resp.Body.Close()
-
-	result, err := decodePutAppDefinitionResourceTypeResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -4911,6 +4783,134 @@ func (c *Client) sendPutResourceProvider(ctx context.Context, request *ResourceP
 	defer resp.Body.Close()
 
 	result, err := decodePutResourceProviderResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutResourceType invokes putResourceType operation.
+//
+// Create or update a resource type definition.
+//
+// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
+func (c *Client) PutResourceType(ctx context.Context, request *ResourceTypeFields, params PutResourceTypeParams) (PutResourceTypeRes, error) {
+	res, err := c.sendPutResourceType(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendPutResourceType(ctx context.Context, request *ResourceTypeFields, params PutResourceTypeParams) (res PutResourceTypeRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [6]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/resource_provider/resource_types/"
+	{
+		// Encode "resource_type_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "resource_type_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ResourceTypeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutResourceTypeRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, PutResourceTypeOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodePutResourceTypeResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
