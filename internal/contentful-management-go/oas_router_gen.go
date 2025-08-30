@@ -229,19 +229,19 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 										// Leaf node.
 										switch r.Method {
 										case "DELETE":
-											s.handleDeleteAppDefinitionResourceTypeRequest([3]string{
+											s.handleDeleteResourceTypeRequest([3]string{
 												args[0],
 												args[1],
 												args[2],
 											}, elemIsEscaped, w, r)
 										case "GET":
-											s.handleGetAppDefinitionResourceTypeRequest([3]string{
+											s.handleGetResourceTypeRequest([3]string{
 												args[0],
 												args[1],
 												args[2],
 											}, elemIsEscaped, w, r)
 										case "PUT":
-											s.handlePutAppDefinitionResourceTypeRequest([3]string{
+											s.handlePutResourceTypeRequest([3]string{
 												args[0],
 												args[1],
 												args[2],
@@ -1225,25 +1225,25 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										// Leaf node.
 										switch method {
 										case "DELETE":
-											r.name = DeleteAppDefinitionResourceTypeOperation
-											r.summary = "Delete an app resource provider definition"
-											r.operationID = "deleteAppDefinitionResourceType"
+											r.name = DeleteResourceTypeOperation
+											r.summary = "Delete a resource type definition"
+											r.operationID = "deleteResourceType"
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
 											r.args = args
 											r.count = 3
 											return r, true
 										case "GET":
-											r.name = GetAppDefinitionResourceTypeOperation
-											r.summary = "Get one app resource ttype definition"
-											r.operationID = "getAppDefinitionResourceType"
+											r.name = GetResourceTypeOperation
+											r.summary = "Get one resource type definition"
+											r.operationID = "getResourceType"
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
 											r.args = args
 											r.count = 3
 											return r, true
 										case "PUT":
-											r.name = PutAppDefinitionResourceTypeOperation
-											r.summary = "Create or update an app resource provider type definition"
-											r.operationID = "putAppDefinitionResourceType"
+											r.name = PutResourceTypeOperation
+											r.summary = "Create or update a resource type definition"
+											r.operationID = "putResourceType"
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
 											r.args = args
 											r.count = 3

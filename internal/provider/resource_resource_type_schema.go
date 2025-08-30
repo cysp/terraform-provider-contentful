@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-func AppDefinitionResourceTypeResourceSchema(_ context.Context) schema.Schema {
+func ResourceTypeResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -84,6 +84,5 @@ func AppDefinitionResourceTypeResourceSchema(_ context.Context) schema.Schema {
 				},
 			},
 		},
-		DeprecationMessage: "Use contentful_resource_type instead. Existing resources may be moved from contentful_app_definition_resource_type to contentful_resource_type. contentful_app_definition_resource_type will be removed in a future version.",
 	}
 }

@@ -8,7 +8,7 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) GetAppDefinitionResourceType(_ context.Context, params cm.GetAppDefinitionResourceTypeParams) (cm.GetAppDefinitionResourceTypeRes, error) {
+func (ts *Handler) GetResourceType(_ context.Context, params cm.GetResourceTypeParams) (cm.GetResourceTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -23,14 +23,14 @@ func (ts *Handler) GetAppDefinitionResourceType(_ context.Context, params cm.Get
 
 	appDefinitionResourceType := ts.appDefinitionResourceTypes.Get(params.OrganizationID, params.ResourceTypeID)
 	if appDefinitionResourceType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinitionResourceType not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceType not found"), nil), nil
 	}
 
 	return appDefinitionResourceType, nil
 }
 
 //nolint:ireturn
-func (ts *Handler) PutAppDefinitionResourceType(_ context.Context, req *cm.ResourceTypeFields, params cm.PutAppDefinitionResourceTypeParams) (cm.PutAppDefinitionResourceTypeRes, error) {
+func (ts *Handler) PutResourceType(_ context.Context, req *cm.ResourceTypeFields, params cm.PutResourceTypeParams) (cm.PutResourceTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -48,7 +48,7 @@ func (ts *Handler) PutAppDefinitionResourceType(_ context.Context, req *cm.Resou
 	appDefinitionResourceType := ts.appDefinitionResourceTypes.Get(params.OrganizationID, params.ResourceTypeID)
 
 	if appDefinitionResourceType == nil {
-		newResourceType := NewAppDefinitionResourceTypeFromRequest(params.OrganizationID, params.AppDefinitionID, resourceProviderID, params.ResourceTypeID, *req)
+		newResourceType := NewResourceTypeFromRequest(params.OrganizationID, params.AppDefinitionID, resourceProviderID, params.ResourceTypeID, *req)
 		ts.appDefinitionResourceTypes.Set(params.OrganizationID, params.ResourceTypeID, &newResourceType)
 
 		return &cm.ResourceTypeStatusCode{
@@ -57,7 +57,7 @@ func (ts *Handler) PutAppDefinitionResourceType(_ context.Context, req *cm.Resou
 		}, nil
 	}
 
-	UpdateAppDefinitionResourceTypeFromFields(appDefinitionResourceType, params.OrganizationID, params.AppDefinitionID, resourceProviderID, params.ResourceTypeID, *req)
+	UpdateResourceTypeFromFields(appDefinitionResourceType, params.OrganizationID, params.AppDefinitionID, resourceProviderID, params.ResourceTypeID, *req)
 
 	return &cm.ResourceTypeStatusCode{
 		StatusCode: http.StatusOK,
@@ -66,7 +66,7 @@ func (ts *Handler) PutAppDefinitionResourceType(_ context.Context, req *cm.Resou
 }
 
 //nolint:ireturn
-func (ts *Handler) DeleteAppDefinitionResourceType(_ context.Context, params cm.DeleteAppDefinitionResourceTypeParams) (cm.DeleteAppDefinitionResourceTypeRes, error) {
+func (ts *Handler) DeleteResourceType(_ context.Context, params cm.DeleteResourceTypeParams) (cm.DeleteResourceTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -81,7 +81,7 @@ func (ts *Handler) DeleteAppDefinitionResourceType(_ context.Context, params cm.
 
 	appDefinitionResourceType := ts.appDefinitionResourceTypes.Get(params.OrganizationID, params.ResourceTypeID)
 	if appDefinitionResourceType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinitionResourceType not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceType not found"), nil), nil
 	}
 
 	ts.appDefinitionResourceTypes.Delete(params.OrganizationID, params.ResourceTypeID)

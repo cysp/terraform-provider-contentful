@@ -1815,11 +1815,11 @@ paths:
       - $ref: "#/components/parameters/app_definition_id"
       - $ref: "#/components/parameters/resource_type_id"
     get:
-      operationId: getAppDefinitionResourceType
-      summary: Get one app resource ttype definition
+      operationId: getResourceType
+      summary: Get one resource type definition
       responses:
         200:
-          description: An app resource type definition
+          description: A resource type definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
@@ -1829,8 +1829,8 @@ paths:
         default:
           $ref: "#/components/responses/error"
     put:
-      operationId: putAppDefinitionResourceType
-      summary: Create or update an app resource provider type definition
+      operationId: putResourceType
+      summary: Create or update a resource type definition
       parameters:
         - $ref: "#/components/parameters/organization_id"
         - $ref: "#/components/parameters/app_definition_id"
@@ -1843,7 +1843,7 @@ paths:
               $ref: "#/components/schemas/ResourceTypeFields"
       responses:
         2XX:
-          description: An app resource provider type definition
+          description: A resource type definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
@@ -1853,8 +1853,8 @@ paths:
         default:
           $ref: "#/components/responses/error"
     delete:
-      operationId: deleteAppDefinitionResourceType
-      summary: Delete an app resource provider definition
+      operationId: deleteResourceType
+      summary: Delete a resource type definition
       responses:
         204:
           $ref: "#/components/responses/no-content"

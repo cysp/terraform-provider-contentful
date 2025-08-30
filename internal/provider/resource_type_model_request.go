@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (r *AppDefinitionResourceTypeModel) ToResourceTypeFields(_ context.Context, _ path.Path) (cm.ResourceTypeFields, diag.Diagnostics) {
+func (r *ResourceTypeModel) ToResourceTypeFields(_ context.Context, _ path.Path) (cm.ResourceTypeFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	resourceTypeFields := cm.ResourceTypeFields{

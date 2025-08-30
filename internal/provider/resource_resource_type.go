@@ -13,34 +13,35 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*appDefinitionAppDefinitionResourceTypeResource)(nil)
-	_ resource.ResourceWithConfigure   = (*appDefinitionAppDefinitionResourceTypeResource)(nil)
-	_ resource.ResourceWithIdentity    = (*appDefinitionAppDefinitionResourceTypeResource)(nil)
-	_ resource.ResourceWithImportState = (*appDefinitionAppDefinitionResourceTypeResource)(nil)
+	_ resource.Resource                = (*appDefinitionResourceTypeResource)(nil)
+	_ resource.ResourceWithConfigure   = (*appDefinitionResourceTypeResource)(nil)
+	_ resource.ResourceWithIdentity    = (*appDefinitionResourceTypeResource)(nil)
+	_ resource.ResourceWithImportState = (*appDefinitionResourceTypeResource)(nil)
+	_ resource.ResourceWithMoveState   = (*appDefinitionResourceTypeResource)(nil)
 )
 
 //nolint:ireturn
-func NewAppDefinitionResourceTypeResource() resource.Resource {
-	return &appDefinitionAppDefinitionResourceTypeResource{}
+func NewResourceTypeResource() resource.Resource {
+	return &appDefinitionResourceTypeResource{}
 }
 
-type appDefinitionAppDefinitionResourceTypeResource struct {
+type appDefinitionResourceTypeResource struct {
 	providerData ContentfulProviderData
 }
 
-func (r *appDefinitionAppDefinitionResourceTypeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_app_definition_resource_type"
+func (r *appDefinitionResourceTypeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_resource_type"
 }
 
-func (r *appDefinitionAppDefinitionResourceTypeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = AppDefinitionResourceTypeResourceSchema(ctx)
+func (r *appDefinitionResourceTypeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = ResourceTypeResourceSchema(ctx)
 }
 
-func (r *appDefinitionAppDefinitionResourceTypeResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *appDefinitionResourceTypeResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
 
-func (r *appDefinitionAppDefinitionResourceTypeResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+func (r *appDefinitionResourceTypeResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
 	resp.IdentitySchema = identityschema.Schema{
 		Attributes: map[string]identityschema.Attribute{
 			"organization_id":   identityschema.StringAttribute{RequiredForImport: true},
@@ -50,7 +51,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) IdentitySchema(_ contex
 	}
 }
 
-func (r *appDefinitionAppDefinitionResourceTypeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *appDefinitionResourceTypeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	ImportStatePassthroughMultipartID(ctx, []path.Path{
 		path.Root("organization_id"),
 		path.Root("app_definition_id"),
@@ -58,8 +59,25 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) ImportState(ctx context
 	}, req, resp)
 }
 
+func (r *appDefinitionResourceTypeResource) MoveState(ctx context.Context) []resource.StateMover {
+	schema := ResourceTypeResourceSchema(ctx)
+
+	return []resource.StateMover{
+		{
+			SourceSchema: &schema,
+			StateMover: func(_ context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
+				if req.SourceTypeName == "contentful_app_definition_resource_type" && req.SourceSchemaVersion == 0 {
+					resp.TargetState = *req.SourceState
+
+					return
+				}
+			},
+		},
+	}
+}
+
 //nolint:dupl
-func (r *appDefinitionAppDefinitionResourceTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data ResourceTypeModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -83,7 +101,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Create(ctx context.Cont
 
 	response, err := r.providerData.client.PutResourceType(ctx, &request, params)
 
-	tflog.Info(ctx, "app_definition_resource_type.create", map[string]interface{}{
+	tflog.Info(ctx, "resource_type.create", map[string]interface{}{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -108,7 +126,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Create(ctx context.Cont
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *appDefinitionAppDefinitionResourceTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data ResourceTypeModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -125,7 +143,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Read(ctx context.Contex
 
 	response, err := r.providerData.client.GetResourceType(ctx, params)
 
-	tflog.Info(ctx, "app_definition_resource_type.read", map[string]interface{}{
+	tflog.Info(ctx, "resource_type.read", map[string]interface{}{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -159,7 +177,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Read(ctx context.Contex
 }
 
 //nolint:dupl
-func (r *appDefinitionAppDefinitionResourceTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data ResourceTypeModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -183,7 +201,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Update(ctx context.Cont
 
 	response, err := r.providerData.client.PutResourceType(ctx, &request, params)
 
-	tflog.Info(ctx, "app_definition_resource_type.update", map[string]interface{}{
+	tflog.Info(ctx, "resource_type.update", map[string]interface{}{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -208,7 +226,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Update(ctx context.Cont
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *appDefinitionAppDefinitionResourceTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *appDefinitionResourceTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data ResourceTypeModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
