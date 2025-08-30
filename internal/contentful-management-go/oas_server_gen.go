@@ -56,12 +56,6 @@ type Handler interface {
 	//
 	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}
 	DeleteAppDefinition(ctx context.Context, params DeleteAppDefinitionParams) (DeleteAppDefinitionRes, error)
-	// DeleteAppDefinitionResourceProvider implements deleteAppDefinitionResourceProvider operation.
-	//
-	// Delete an app resource provider definition.
-	//
-	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
-	DeleteAppDefinitionResourceProvider(ctx context.Context, params DeleteAppDefinitionResourceProviderParams) (DeleteAppDefinitionResourceProviderRes, error)
 	// DeleteAppDefinitionResourceType implements deleteAppDefinitionResourceType operation.
 	//
 	// Delete an app resource provider definition.
@@ -98,6 +92,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	DeleteExtension(ctx context.Context, params DeleteExtensionParams) (DeleteExtensionRes, error)
+	// DeleteResourceProvider implements deleteResourceProvider operation.
+	//
+	// Delete a resource provider definition.
+	//
+	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
+	DeleteResourceProvider(ctx context.Context, params DeleteResourceProviderParams) (DeleteResourceProviderRes, error)
 	// DeleteRole implements deleteRole operation.
 	//
 	// Delete a role.
@@ -116,12 +116,6 @@ type Handler interface {
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}
 	GetAppDefinition(ctx context.Context, params GetAppDefinitionParams) (GetAppDefinitionRes, error)
-	// GetAppDefinitionResourceProvider implements getAppDefinitionResourceProvider operation.
-	//
-	// Get one app resource provider definition.
-	//
-	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
-	GetAppDefinitionResourceProvider(ctx context.Context, params GetAppDefinitionResourceProviderParams) (GetAppDefinitionResourceProviderRes, error)
 	// GetAppDefinitionResourceType implements getAppDefinitionResourceType operation.
 	//
 	// Get one app resource ttype definition.
@@ -188,6 +182,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
 	GetPreviewApiKey(ctx context.Context, params GetPreviewApiKeyParams) (GetPreviewApiKeyRes, error)
+	// GetResourceProvider implements getResourceProvider operation.
+	//
+	// Get one resource provider definition.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
+	GetResourceProvider(ctx context.Context, params GetResourceProviderParams) (GetResourceProviderRes, error)
 	// GetRole implements getRole operation.
 	//
 	// Get a role.
@@ -212,12 +212,6 @@ type Handler interface {
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}
 	PutAppDefinition(ctx context.Context, req *AppDefinitionFields, params PutAppDefinitionParams) (PutAppDefinitionRes, error)
-	// PutAppDefinitionResourceProvider implements putAppDefinitionResourceProvider operation.
-	//
-	// Create or update an app resource provider definition.
-	//
-	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
-	PutAppDefinitionResourceProvider(ctx context.Context, req *ResourceProviderRequest, params PutAppDefinitionResourceProviderParams) (PutAppDefinitionResourceProviderRes, error)
 	// PutAppDefinitionResourceType implements putAppDefinitionResourceType operation.
 	//
 	// Create or update an app resource provider type definition.
@@ -254,6 +248,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	PutExtension(ctx context.Context, req *ExtensionFields, params PutExtensionParams) (PutExtensionRes, error)
+	// PutResourceProvider implements putResourceProvider operation.
+	//
+	// Create or update a resource provider definition.
+	//
+	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
+	PutResourceProvider(ctx context.Context, req *ResourceProviderRequest, params PutResourceProviderParams) (PutResourceProviderRes, error)
 	// PutSpaceEnablements implements putSpaceEnablements operation.
 	//
 	// Update enablements for a space.

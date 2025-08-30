@@ -33,10 +33,6 @@ type DeleteAppDefinitionRes interface {
 	deleteAppDefinitionRes()
 }
 
-type DeleteAppDefinitionResourceProviderRes interface {
-	deleteAppDefinitionResourceProviderRes()
-}
-
 type DeleteAppDefinitionResourceTypeRes interface {
 	deleteAppDefinitionResourceTypeRes()
 }
@@ -61,6 +57,10 @@ type DeleteExtensionRes interface {
 	deleteExtensionRes()
 }
 
+type DeleteResourceProviderRes interface {
+	deleteResourceProviderRes()
+}
+
 type DeleteRoleRes interface {
 	deleteRoleRes()
 }
@@ -71,10 +71,6 @@ type DeleteWebhookDefinitionRes interface {
 
 type GetAppDefinitionRes interface {
 	getAppDefinitionRes()
-}
-
-type GetAppDefinitionResourceProviderRes interface {
-	getAppDefinitionResourceProviderRes()
 }
 
 type GetAppDefinitionResourceTypeRes interface {
@@ -121,6 +117,10 @@ type GetPreviewApiKeyRes interface {
 	getPreviewApiKeyRes()
 }
 
+type GetResourceProviderRes interface {
+	getResourceProviderRes()
+}
+
 type GetRoleRes interface {
 	getRoleRes()
 }
@@ -135,10 +135,6 @@ type GetWebhookDefinitionRes interface {
 
 type PutAppDefinitionRes interface {
 	putAppDefinitionRes()
-}
-
-type PutAppDefinitionResourceProviderRes interface {
-	putAppDefinitionResourceProviderRes()
 }
 
 type PutAppDefinitionResourceTypeRes interface {
@@ -163,6 +159,10 @@ type PutEditorInterfaceRes interface {
 
 type PutExtensionRes interface {
 	putExtensionRes()
+}
+
+type PutResourceProviderRes interface {
+	putResourceProviderRes()
 }
 
 type PutSpaceEnablementsRes interface {

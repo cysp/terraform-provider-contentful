@@ -18,7 +18,7 @@ func (ts *Handler) GetAppDefinitionResourceType(_ context.Context, params cm.Get
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinitionResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
 	}
 
 	appDefinitionResourceType := ts.appDefinitionResourceTypes.Get(params.OrganizationID, params.ResourceTypeID)
@@ -40,7 +40,7 @@ func (ts *Handler) PutAppDefinitionResourceType(_ context.Context, req *cm.Resou
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinitionResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
 	}
 
 	resourceProviderID := appDefinitionResourceProvider.Sys.ID
@@ -76,7 +76,7 @@ func (ts *Handler) DeleteAppDefinitionResourceType(_ context.Context, params cm.
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinitionResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
 	}
 
 	appDefinitionResourceType := ts.appDefinitionResourceTypes.Get(params.OrganizationID, params.ResourceTypeID)

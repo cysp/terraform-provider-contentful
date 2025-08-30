@@ -4,12 +4,12 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewAppDefinitionResourceProviderFromRequest(organizationID, appDefinitionID string, resourceProviderRequest cm.ResourceProviderRequest) cm.ResourceProvider {
+func NewResourceProviderFromRequest(organizationID, appDefinitionID string, resourceProviderRequest cm.ResourceProviderRequest) cm.ResourceProvider {
 	resourceProvider := cm.ResourceProvider{
 		Sys: NewResourceProviderSys(organizationID, appDefinitionID, resourceProviderRequest.Sys.ID),
 	}
 
-	UpdateAppDefinitionResourceProviderFromRequest(&resourceProvider, organizationID, appDefinitionID, resourceProviderRequest)
+	UpdateResourceProviderFromRequest(&resourceProvider, organizationID, appDefinitionID, resourceProviderRequest)
 
 	return resourceProvider
 }
@@ -35,7 +35,7 @@ func NewResourceProviderSys(organizationID, appDefinitionID, resourceProviderID 
 	}
 }
 
-func UpdateAppDefinitionResourceProviderFromRequest(resourceProvider *cm.ResourceProvider, organizationID, appDefinitionID string, resourceProviderRequest cm.ResourceProviderRequest) {
+func UpdateResourceProviderFromRequest(resourceProvider *cm.ResourceProvider, organizationID, appDefinitionID string, resourceProviderRequest cm.ResourceProviderRequest) {
 	resourceProvider.Sys.ID = resourceProviderRequest.Sys.ID
 	resourceProvider.Sys.Organization.Sys.ID = organizationID
 	resourceProvider.Sys.AppDefinition.Sys.ID = appDefinitionID
