@@ -12,16 +12,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestModelTypeEqual(t *testing.T) {
+func TestModelType(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
 
-	type InequalType struct {
-		attr.Type
-	}
-
-	//nolint:dupl
 	types := []attr.Type{
 		NewTypedListNull[types.String]().Type(ctx),
 		NewTypedMapNull[types.String]().Type(ctx),
@@ -54,35 +49,81 @@ func TestModelTypeEqual(t *testing.T) {
 		NewTypedObjectNull[WebhookTransformationValue]().Type(ctx),
 	}
 
-	for aIndex, aType := range types {
-		t.Run(aType.String(), func(t *testing.T) {
-			t.Parallel()
+	t.Run("Equal", func(t *testing.T) {
+		t.Parallel()
 
+		type InequalType struct {
+			attr.Type
+		}
+
+		for aIndex, aType := range types {
 			t.Run(aType.String(), func(t *testing.T) {
 				t.Parallel()
 
-				assert.True(t, aType.Equal(aType)) //nolint:gocritic
-			})
+				t.Run(aType.String(), func(t *testing.T) {
+					t.Parallel()
 
-			t.Run("inequal", func(t *testing.T) {
-				t.Parallel()
+					assert.True(t, aType.Equal(aType)) //nolint:gocritic
+				})
 
-				assert.False(t, aType.Equal(InequalType{aType}))
-			})
-
-			for bIndex, bType := range types {
-				if aIndex == bIndex {
-					continue
-				}
-
-				t.Run(bType.String(), func(t *testing.T) {
+				t.Run("inequal", func(t *testing.T) {
 					t.Parallel()
 
 					assert.False(t, aType.Equal(InequalType{aType}))
 				})
-			}
-		})
-	}
+
+				for bIndex, bType := range types {
+					if aIndex == bIndex {
+						continue
+					}
+
+					t.Run(bType.String(), func(t *testing.T) {
+						t.Parallel()
+
+						assert.False(t, aType.Equal(InequalType{aType}))
+					})
+				}
+			})
+		}
+	})
+
+	t.Run("ValueFromTerraform", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+
+		tfvalniltype := tftypes.NewValue(nil, nil)
+
+		for _, typ := range types {
+			tftyp := typ.TerraformType(ctx)
+
+			t.Run("unknown", func(t *testing.T) {
+				t.Parallel()
+
+				tfvalunknown := tftypes.NewValue(tftyp, tftypes.UnknownValue)
+				valueUnknown, err := typ.ValueFromTerraform(ctx, tfvalunknown)
+				require.NoError(t, err)
+				assert.True(t, valueUnknown.IsUnknown())
+			})
+
+			t.Run("nil", func(t *testing.T) {
+				t.Parallel()
+
+				valueNil, err := typ.ValueFromTerraform(ctx, tfvalniltype)
+				require.NoError(t, err)
+				assert.True(t, valueNil.IsNull())
+			})
+
+			t.Run("null", func(t *testing.T) {
+				t.Parallel()
+
+				tfvalnull := tftypes.NewValue(tftyp, nil)
+				valueNull, err := typ.ValueFromTerraform(ctx, tfvalnull)
+				require.NoError(t, err)
+				assert.True(t, valueNull.IsNull())
+			})
+		}
+	})
 }
 
 func TestModelTypeValueFromObject(t *testing.T) {
@@ -243,77 +284,6 @@ func TestModelTypeValueFromObject(t *testing.T) {
 
 			assert.False(t, actual.IsUnknown())
 			assert.True(t, actual.IsNull())
-		})
-	}
-}
-
-func TestModelTypeValueFromTerraform(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-
-	//nolint:dupl
-	types := []attr.Type{
-		NewTypedListNull[types.String]().Type(ctx),
-		NewTypedMapNull[types.String]().Type(ctx),
-		NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue]().Type(ctx),
-		NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue]().Type(ctx),
-		NewTypedObjectNull[ContentTypeFieldAllowedResourceItemValue]().Type(ctx),
-		NewTypedObjectNull[ContentTypeFieldItemsValue]().Type(ctx),
-		NewTypedObjectNull[ContentTypeFieldValue]().Type(ctx),
-		NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue]().Type(ctx),
-		NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue]().Type(ctx),
-		NewTypedObjectNull[ContentTypeMetadataTaxonomyItemValue]().Type(ctx),
-		NewTypedObjectNull[ContentTypeMetadataValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceControlValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceEditorLayoutItemValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceGroupControlValue]().Type(ctx),
-		NewTypedObjectNull[EditorInterfaceSidebarValue]().Type(ctx),
-		NewTypedObjectNull[RolePolicyValue]().Type(ctx),
-		NewTypedObjectNull[WebhookFilterEqualsValue]().Type(ctx),
-		NewTypedObjectNull[WebhookFilterInValue]().Type(ctx),
-		NewTypedObjectNull[WebhookFilterNotValue]().Type(ctx),
-		NewTypedObjectNull[WebhookFilterRegexpValue]().Type(ctx),
-		NewTypedObjectNull[WebhookFilterValue]().Type(ctx),
-		NewTypedObjectNull[WebhookHeaderValue]().Type(ctx),
-		NewTypedObjectNull[WebhookTransformationValue]().Type(ctx),
-	}
-
-	tfvalniltype := tftypes.NewValue(nil, nil)
-
-	for _, typ := range types {
-		tftyp := typ.TerraformType(ctx)
-
-		t.Run("unknown", func(t *testing.T) {
-			t.Parallel()
-
-			tfvalunknown := tftypes.NewValue(tftyp, tftypes.UnknownValue)
-			valueUnknown, err := typ.ValueFromTerraform(ctx, tfvalunknown)
-			require.NoError(t, err)
-			assert.True(t, valueUnknown.IsUnknown())
-		})
-
-		t.Run("nil", func(t *testing.T) {
-			t.Parallel()
-
-			valueNil, err := typ.ValueFromTerraform(ctx, tfvalniltype)
-			require.NoError(t, err)
-			assert.True(t, valueNil.IsNull())
-		})
-
-		t.Run("null", func(t *testing.T) {
-			t.Parallel()
-
-			tfvalnull := tftypes.NewValue(tftyp, nil)
-			valueNull, err := typ.ValueFromTerraform(ctx, tfvalnull)
-			require.NoError(t, err)
-			assert.True(t, valueNull.IsNull())
 		})
 	}
 }
