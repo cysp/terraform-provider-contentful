@@ -1,0 +1,1 @@
+terraform import contentful_app_signing_secret.this $CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID
