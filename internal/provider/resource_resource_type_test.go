@@ -15,9 +15,9 @@ func TestAccResourceTypeResource(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
-		"organization_id":      config.StringVariable("organization-id"),
-		"app_definition_id":    config.StringVariable("app-definition-id"),
-		"resource_provider_id": config.StringVariable("resource-provider-id"),
+		"organization_id":   config.StringVariable("organization-id"),
+		"app_definition_id": config.StringVariable("app-definition-id"),
+		"resource_type_id":  config.StringVariable("resource-provider:test"),
 	}
 
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
@@ -26,7 +26,7 @@ func TestAccResourceTypeResource(t *testing.T) {
 
 	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
 		Sys: cm.ResourceProviderRequestSys{
-			ID: "resource-provider-id",
+			ID: "resource-provider",
 		},
 		Type: cm.ResourceProviderRequestTypeFunction,
 		Function: cm.FunctionLink{
@@ -57,9 +57,9 @@ func TestAccResourceTypeResourceImport(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
-		"organization_id":      config.StringVariable("organization-id"),
-		"app_definition_id":    config.StringVariable("app-definition-id"),
-		"resource_provider_id": config.StringVariable("resource-provider-id"),
+		"organization_id":   config.StringVariable("organization-id"),
+		"app_definition_id": config.StringVariable("app-definition-id"),
+		"resource_type_id":  config.StringVariable("resource-provider:test"),
 	}
 
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
@@ -68,7 +68,7 @@ func TestAccResourceTypeResourceImport(t *testing.T) {
 
 	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
 		Sys: cm.ResourceProviderRequestSys{
-			ID: "resource-provider-id",
+			ID: "resource-provider",
 		},
 		Type: cm.ResourceProviderRequestTypeFunction,
 		Function: cm.FunctionLink{
@@ -86,7 +86,7 @@ func TestAccResourceTypeResourceImport(t *testing.T) {
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_resource_type.test", "id", "organization-id/app-definition-id/resource-provider-id:test"),
+					resource.TestCheckResourceAttr("contentful_resource_type.test", "id", "organization-id/app-definition-id/resource-provider:test"),
 				),
 			},
 			{
@@ -103,19 +103,13 @@ func TestAccResourceTypeResourceImport(t *testing.T) {
 func TestAccResourceTypeResourceMovedFromAppDefinitionResourceType(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
-	configVariables := config.Variables{
-		"organization_id":      config.StringVariable("organization-id"),
-		"app_definition_id":    config.StringVariable("app-definition-id"),
-		"resource_provider_id": config.StringVariable("resource-provider-id"),
-	}
-
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
 		Name: "Test App",
 	})
 
 	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
 		Sys: cm.ResourceProviderRequestSys{
-			ID: "resource-provider-id",
+			ID: "resource-provider",
 		},
 		Type: cm.ResourceProviderRequestTypeFunction,
 		Function: cm.FunctionLink{
@@ -131,11 +125,19 @@ func TestAccResourceTypeResourceMovedFromAppDefinitionResourceType(t *testing.T)
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigVariables: config.Variables{
+					"organization_id":      config.StringVariable("organization-id"),
+					"app_definition_id":    config.StringVariable("app-definition-id"),
+					"resource_provider_id": config.StringVariable("resource-provider"),
+				},
 			},
 			{
 				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigVariables: config.Variables{
+					"organization_id":   config.StringVariable("organization-id"),
+					"app_definition_id": config.StringVariable("app-definition-id"),
+					"resource_type_id":  config.StringVariable("resource-provider:test"),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_resource_type.test", plancheck.ResourceActionNoop),

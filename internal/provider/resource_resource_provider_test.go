@@ -52,7 +52,7 @@ func TestAccResourceProviderResourceImport(t *testing.T) {
 
 	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
 		Sys: cm.ResourceProviderRequestSys{
-			ID: "resource-provider-id",
+			ID: "resource-provider",
 		},
 		Type: cm.ResourceProviderRequestTypeFunction,
 		Function: cm.FunctionLink{

@@ -6,6 +6,6 @@ variable "app_definition_id" {
   type = string
 }
 
-variable "resource_provider_id" {
+variable "resource_type_id" {
   type = string
 }
