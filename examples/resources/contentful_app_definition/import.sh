@@ -1,0 +1,1 @@
+terraform import contentful_app_definition.this $CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID
