@@ -36,7 +36,7 @@ func TestAccAppDefinitionResourceProviderResource(t *testing.T) {
 	})
 }
 
-//nolint:paralleltest
+//nolint:dupl,paralleltest
 func TestAccAppDefinitionResourceProviderImport(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -49,7 +49,7 @@ func TestAccAppDefinitionResourceProviderImport(t *testing.T) {
 		Name: "Test App",
 	})
 
-	server.SetAppDefinitionResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
+	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
 		Sys: cm.ResourceProviderRequestSys{
 			ID: "resource-provider-id",
 		},

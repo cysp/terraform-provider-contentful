@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-func AppDefinitionResourceProviderResourceSchema(_ context.Context) schema.Schema {
+func ResourceProviderResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -39,6 +39,5 @@ func AppDefinitionResourceProviderResourceSchema(_ context.Context) schema.Schem
 				Required: true,
 			},
 		},
-		DeprecationMessage: "Use contentful_resource_provider instead. Existing resources may be moved from contentful_app_definition_resource_provider to contentful_resource_provider. contentful_app_definition_resource_provider will be removed in a future version.",
 	}
 }

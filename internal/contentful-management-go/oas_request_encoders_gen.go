@@ -95,20 +95,6 @@ func encodePutAppDefinitionRequest(
 	return nil
 }
 
-func encodePutAppDefinitionResourceProviderRequest(
-	req *ResourceProviderRequest,
-	r *http.Request,
-) error {
-	const contentType = "application/vnd.contentful.management.v1+json"
-	e := new(jx.Encoder)
-	{
-		req.Encode(e)
-	}
-	encoded := e.Bytes()
-	ht.SetBody(r, bytes.NewReader(encoded), contentType)
-	return nil
-}
-
 func encodePutAppDefinitionResourceTypeRequest(
 	req *ResourceTypeFields,
 	r *http.Request,
@@ -181,6 +167,20 @@ func encodePutEditorInterfaceRequest(
 
 func encodePutExtensionRequest(
 	req *ExtensionFields,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodePutResourceProviderRequest(
+	req *ResourceProviderRequest,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

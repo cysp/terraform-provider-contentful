@@ -9,7 +9,7 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) GetAppDefinitionResourceProvider(_ context.Context, params cm.GetAppDefinitionResourceProviderParams) (cm.GetAppDefinitionResourceProviderRes, error) {
+func (ts *Handler) GetResourceProvider(_ context.Context, params cm.GetResourceProviderParams) (cm.GetResourceProviderRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -19,14 +19,14 @@ func (ts *Handler) GetAppDefinitionResourceProvider(_ context.Context, params cm
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinitionResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
 	}
 
 	return appDefinitionResourceProvider, nil
 }
 
 //nolint:ireturn
-func (ts *Handler) PutAppDefinitionResourceProvider(_ context.Context, req *cm.ResourceProviderRequest, params cm.PutAppDefinitionResourceProviderParams) (cm.PutAppDefinitionResourceProviderRes, error) {
+func (ts *Handler) PutResourceProvider(_ context.Context, req *cm.ResourceProviderRequest, params cm.PutResourceProviderParams) (cm.PutResourceProviderRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -36,7 +36,7 @@ func (ts *Handler) PutAppDefinitionResourceProvider(_ context.Context, req *cm.R
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
-		appDefinitionResourceProvider := NewAppDefinitionResourceProviderFromRequest(params.OrganizationID, params.AppDefinitionID, *req)
+		appDefinitionResourceProvider := NewResourceProviderFromRequest(params.OrganizationID, params.AppDefinitionID, *req)
 
 		ts.appDefinitionResourceProviders.Set(params.OrganizationID, params.AppDefinitionID, &appDefinitionResourceProvider)
 
@@ -46,7 +46,7 @@ func (ts *Handler) PutAppDefinitionResourceProvider(_ context.Context, req *cm.R
 		}, nil
 	}
 
-	UpdateAppDefinitionResourceProviderFromRequest(appDefinitionResourceProvider, params.OrganizationID, params.AppDefinitionID, *req)
+	UpdateResourceProviderFromRequest(appDefinitionResourceProvider, params.OrganizationID, params.AppDefinitionID, *req)
 
 	return &cm.ResourceProviderStatusCode{
 		StatusCode: http.StatusOK,
@@ -55,7 +55,7 @@ func (ts *Handler) PutAppDefinitionResourceProvider(_ context.Context, req *cm.R
 }
 
 //nolint:ireturn
-func (ts *Handler) DeleteAppDefinitionResourceProvider(_ context.Context, params cm.DeleteAppDefinitionResourceProviderParams) (cm.DeleteAppDefinitionResourceProviderRes, error) {
+func (ts *Handler) DeleteResourceProvider(_ context.Context, params cm.DeleteResourceProviderParams) (cm.DeleteResourceProviderRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -65,7 +65,7 @@ func (ts *Handler) DeleteAppDefinitionResourceProvider(_ context.Context, params
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinitionResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
 	}
 
 	ts.appDefinitionResourceProviders.Delete(params.OrganizationID, params.AppDefinitionID)

@@ -1712,11 +1712,11 @@ paths:
       - $ref: "#/components/parameters/organization_id"
       - $ref: "#/components/parameters/app_definition_id"
     get:
-      operationId: getAppDefinitionResourceProvider
-      summary: Get one app resource provider definition
+      operationId: getResourceProvider
+      summary: Get one resource provider definition
       responses:
         200:
-          description: An app resource provider definition
+          description: A resource provider definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
@@ -1726,8 +1726,8 @@ paths:
         default:
           $ref: "#/components/responses/error"
     put:
-      operationId: putAppDefinitionResourceProvider
-      summary: Create or update an app resource provider definition
+      operationId: putResourceProvider
+      summary: Create or update a resource provider definition
       parameters:
         - $ref: "#/components/parameters/organization_id"
         - $ref: "#/components/parameters/app_definition_id"
@@ -1739,7 +1739,7 @@ paths:
               $ref: "#/components/schemas/ResourceProviderRequest"
       responses:
         2XX:
-          description: An app resource provider definition
+          description: A resource provider definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
@@ -1749,8 +1749,8 @@ paths:
         default:
           $ref: "#/components/responses/error"
     delete:
-      operationId: deleteAppDefinitionResourceProvider
-      summary: Delete an app resource provider definition
+      operationId: deleteResourceProvider
+      summary: Delete a resource provider definition
       responses:
         204:
           $ref: "#/components/responses/no-content"
