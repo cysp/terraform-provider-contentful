@@ -30,10 +30,7 @@ func ResourceTypeResourceSchema(_ context.Context) schema.Schema {
 				},
 			},
 			"resource_provider_id": schema.StringAttribute{
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
+				Computed: true,
 			},
 			"resource_type_id": schema.StringAttribute{
 				Required: true,

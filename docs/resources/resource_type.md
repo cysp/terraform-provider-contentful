@@ -37,12 +37,12 @@ resource "contentful_resource_type" "this" {
 - `default_field_mapping` (Attributes) (see [below for nested schema](#nestedatt--default_field_mapping))
 - `name` (String)
 - `organization_id` (String)
-- `resource_provider_id` (String)
 - `resource_type_id` (String)
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `resource_provider_id` (String)
 
 <a id="nestedatt--default_field_mapping"></a>
 ### Nested Schema for `default_field_mapping`
