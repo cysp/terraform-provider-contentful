@@ -15,6 +15,7 @@ func TestNewTypedObjectFromAttributes(t *testing.T) {
 	t.Parallel()
 
 	type testTypedObjectNestedStruct struct {
+		string types.String `tfsdk:"unexported_string"`
 		String types.String `tfsdk:"string"`
 	}
 
@@ -34,6 +35,24 @@ func TestNewTypedObjectFromAttributes(t *testing.T) {
 		object, objectDiags := NewTypedObjectFromAttributes[testTypedObjectNestedStruct](t.Context(), map[string]attr.Value{})
 		assert.NotNil(t, object)
 		assert.Equal(t, expected, objectDiags)
+		assert.Empty(t, object.Value().string)
+		assert.True(t, object.Value().String.IsNull())
+	})
+
+	t.Run("excess attributes", func(t *testing.T) {
+		t.Parallel()
+
+		expected := diag.Diagnostics{}
+		expected.AddAttributeError(path.Root("unexported_string"), "invalid data", "unknown attribute: unexported_string")
+
+		object, objectDiags := NewTypedObjectFromAttributes[testTypedObjectNestedStruct](t.Context(), map[string]attr.Value{
+			"unexported_string": types.StringValue("test"),
+			"string":            types.StringValue("test"),
+		})
+		assert.NotNil(t, object)
+		assert.Equal(t, expected, objectDiags)
+		assert.Empty(t, object.Value().string)
+		assert.Equal(t, "test", object.Value().String.ValueString())
 	})
 
 	t.Run("valid", func(t *testing.T) {
@@ -47,9 +66,8 @@ func TestNewTypedObjectFromAttributes(t *testing.T) {
 		}
 
 		object, objectDiags := NewTypedObjectFromAttributes[testTypedObjectStruct](t.Context(), map[string]attr.Value{
-			"string":                   types.StringValue("test"),
-			"nested_object":            nestedObject,
-			"unexported_nested_object": nestedObject,
+			"string":        types.StringValue("test"),
+			"nested_object": nestedObject,
 		})
 
 		if objectDiags.HasError() {

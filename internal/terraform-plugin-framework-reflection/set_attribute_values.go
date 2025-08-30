@@ -23,6 +23,11 @@ func SetAttributeValues(ctx context.Context, value any, attributes map[string]at
 		val = val.Elem()
 	}
 
+	attributeKeysRemaining := map[string]struct{}{}
+	for key := range attributes {
+		attributeKeysRemaining[key] = struct{}{}
+	}
+
 	for i := range typ.NumField() {
 		field := typ.Field(i)
 
@@ -34,6 +39,8 @@ func SetAttributeValues(ctx context.Context, value any, attributes map[string]at
 		if tag == "" {
 			continue
 		}
+
+		delete(attributeKeysRemaining, tag)
 
 		fieldValueInterface := reflect.New(field.Type).Interface()
 
@@ -63,6 +70,10 @@ func SetAttributeValues(ctx context.Context, value any, attributes map[string]at
 		}
 
 		val.FieldByIndex(field.Index).Set(fieldValue)
+	}
+
+	for key := range attributeKeysRemaining {
+		diags.AddAttributeError(path.Root(key), "invalid data", "unknown attribute: "+key)
 	}
 
 	return diags
