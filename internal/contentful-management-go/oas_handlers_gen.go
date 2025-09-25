@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/go-faster/errors"
-
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
@@ -97,6 +96,8 @@ func (s *Server) handleActivateContentTypeRequest(args [3]string, argsEscaped bo
 		return
 	}
 
+	var rawBody []byte
+
 	var response ActivateContentTypeRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -105,6 +106,7 @@ func (s *Server) handleActivateContentTypeRequest(args [3]string, argsEscaped bo
 			OperationSummary: "Activate a content type",
 			OperationID:      "activateContentType",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -233,7 +235,9 @@ func (s *Server) handleCreateAppDefinitionRequest(args [1]string, argsEscaped bo
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodeCreateAppDefinitionRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeCreateAppDefinitionRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -257,6 +261,7 @@ func (s *Server) handleCreateAppDefinitionRequest(args [1]string, argsEscaped bo
 			OperationSummary: "Create an app definition",
 			OperationID:      "createAppDefinition",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -373,7 +378,9 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodeCreateDeliveryApiKeyRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeCreateDeliveryApiKeyRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -397,6 +404,7 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 			OperationSummary: "Create a delivery api key",
 			OperationID:      "createDeliveryApiKey",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -503,7 +511,9 @@ func (s *Server) handleCreatePersonalAccessTokenRequest(args [0]string, argsEsca
 			return
 		}
 	}
-	request, close, err := s.decodeCreatePersonalAccessTokenRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeCreatePersonalAccessTokenRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -527,6 +537,7 @@ func (s *Server) handleCreatePersonalAccessTokenRequest(args [0]string, argsEsca
 			OperationSummary: "Create a personal access token",
 			OperationID:      "createPersonalAccessToken",
 			Body:             request,
+			RawBody:          rawBody,
 			Params:           middleware.Parameters{},
 			Raw:              r,
 		}
@@ -638,7 +649,9 @@ func (s *Server) handleCreateRoleRequest(args [1]string, argsEscaped bool, w htt
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodeCreateRoleRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeCreateRoleRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -662,6 +675,7 @@ func (s *Server) handleCreateRoleRequest(args [1]string, argsEscaped bool, w htt
 			OperationSummary: "Create a role",
 			OperationID:      "createRole",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -778,7 +792,9 @@ func (s *Server) handleCreateWebhookDefinitionRequest(args [1]string, argsEscape
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodeCreateWebhookDefinitionRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeCreateWebhookDefinitionRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -802,6 +818,7 @@ func (s *Server) handleCreateWebhookDefinitionRequest(args [1]string, argsEscape
 			OperationSummary: "Create a webhook definition",
 			OperationID:      "createWebhookDefinition",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -919,6 +936,8 @@ func (s *Server) handleDeactivateContentTypeRequest(args [3]string, argsEscaped 
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeactivateContentTypeRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -927,6 +946,7 @@ func (s *Server) handleDeactivateContentTypeRequest(args [3]string, argsEscaped 
 			OperationSummary: "Deactivate a content type",
 			OperationID:      "deactivateContentType",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -1052,6 +1072,8 @@ func (s *Server) handleDeleteAppDefinitionRequest(args [2]string, argsEscaped bo
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteAppDefinitionRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -1060,6 +1082,7 @@ func (s *Server) handleDeleteAppDefinitionRequest(args [2]string, argsEscaped bo
 			OperationSummary: "Delete an app definition",
 			OperationID:      "deleteAppDefinition",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -1181,6 +1204,8 @@ func (s *Server) handleDeleteAppInstallationRequest(args [3]string, argsEscaped 
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteAppInstallationRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -1189,6 +1214,7 @@ func (s *Server) handleDeleteAppInstallationRequest(args [3]string, argsEscaped 
 			OperationSummary: "Uninstall an app",
 			OperationID:      "deleteAppInstallation",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -1314,6 +1340,8 @@ func (s *Server) handleDeleteAppSigningSecretRequest(args [2]string, argsEscaped
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteAppSigningSecretRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -1322,6 +1350,7 @@ func (s *Server) handleDeleteAppSigningSecretRequest(args [2]string, argsEscaped
 			OperationSummary: "Delete an app signing secret",
 			OperationID:      "deleteAppSigningSecret",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -1443,6 +1472,8 @@ func (s *Server) handleDeleteContentTypeRequest(args [3]string, argsEscaped bool
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteContentTypeRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -1451,6 +1482,7 @@ func (s *Server) handleDeleteContentTypeRequest(args [3]string, argsEscaped bool
 			OperationSummary: "Delete a content type",
 			OperationID:      "deleteContentType",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -1576,6 +1608,8 @@ func (s *Server) handleDeleteDeliveryApiKeyRequest(args [2]string, argsEscaped b
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteDeliveryApiKeyRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -1584,6 +1618,7 @@ func (s *Server) handleDeleteDeliveryApiKeyRequest(args [2]string, argsEscaped b
 			OperationSummary: "Delete a single delivery api key",
 			OperationID:      "deleteDeliveryApiKey",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -1705,6 +1740,8 @@ func (s *Server) handleDeleteExtensionRequest(args [3]string, argsEscaped bool, 
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteExtensionRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -1713,6 +1750,7 @@ func (s *Server) handleDeleteExtensionRequest(args [3]string, argsEscaped bool, 
 			OperationSummary: "Delete an extension",
 			OperationID:      "deleteExtension",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -1838,6 +1876,8 @@ func (s *Server) handleDeleteResourceProviderRequest(args [2]string, argsEscaped
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteResourceProviderRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -1846,6 +1886,7 @@ func (s *Server) handleDeleteResourceProviderRequest(args [2]string, argsEscaped
 			OperationSummary: "Delete a resource provider definition",
 			OperationID:      "deleteResourceProvider",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -1967,6 +2008,8 @@ func (s *Server) handleDeleteResourceTypeRequest(args [3]string, argsEscaped boo
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteResourceTypeRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -1975,6 +2018,7 @@ func (s *Server) handleDeleteResourceTypeRequest(args [3]string, argsEscaped boo
 			OperationSummary: "Delete a resource type definition",
 			OperationID:      "deleteResourceType",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -2100,6 +2144,8 @@ func (s *Server) handleDeleteRoleRequest(args [2]string, argsEscaped bool, w htt
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteRoleRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -2108,6 +2154,7 @@ func (s *Server) handleDeleteRoleRequest(args [2]string, argsEscaped bool, w htt
 			OperationSummary: "Delete a role",
 			OperationID:      "deleteRole",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -2229,6 +2276,8 @@ func (s *Server) handleDeleteWebhookDefinitionRequest(args [2]string, argsEscape
 		return
 	}
 
+	var rawBody []byte
+
 	var response DeleteWebhookDefinitionRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -2237,6 +2286,7 @@ func (s *Server) handleDeleteWebhookDefinitionRequest(args [2]string, argsEscape
 			OperationSummary: "Delete a webhook definition",
 			OperationID:      "deleteWebhookDefinition",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -2358,6 +2408,8 @@ func (s *Server) handleGetAppDefinitionRequest(args [2]string, argsEscaped bool,
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetAppDefinitionRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -2366,6 +2418,7 @@ func (s *Server) handleGetAppDefinitionRequest(args [2]string, argsEscaped bool,
 			OperationSummary: "Get one app definition",
 			OperationID:      "getAppDefinition",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -2487,6 +2540,8 @@ func (s *Server) handleGetAppInstallationRequest(args [3]string, argsEscaped boo
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetAppInstallationRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -2495,6 +2550,7 @@ func (s *Server) handleGetAppInstallationRequest(args [3]string, argsEscaped boo
 			OperationSummary: "Get one app installation",
 			OperationID:      "getAppInstallation",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -2620,6 +2676,8 @@ func (s *Server) handleGetAppSigningSecretRequest(args [2]string, argsEscaped bo
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetAppSigningSecretRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -2628,6 +2686,7 @@ func (s *Server) handleGetAppSigningSecretRequest(args [2]string, argsEscaped bo
 			OperationSummary: "Get one app signing secret",
 			OperationID:      "getAppSigningSecret",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -2739,6 +2798,8 @@ func (s *Server) handleGetAuthenticatedUserRequest(args [0]string, argsEscaped b
 		}
 	}
 
+	var rawBody []byte
+
 	var response GetAuthenticatedUserRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -2747,6 +2808,7 @@ func (s *Server) handleGetAuthenticatedUserRequest(args [0]string, argsEscaped b
 			OperationSummary: "Get the authenticated user",
 			OperationID:      "getAuthenticatedUser",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params:           middleware.Parameters{},
 			Raw:              r,
 		}
@@ -2859,6 +2921,8 @@ func (s *Server) handleGetContentTypeRequest(args [3]string, argsEscaped bool, w
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetContentTypeRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -2867,6 +2931,7 @@ func (s *Server) handleGetContentTypeRequest(args [3]string, argsEscaped bool, w
 			OperationSummary: "Get a content type",
 			OperationID:      "getContentType",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -2992,6 +3057,8 @@ func (s *Server) handleGetDeliveryApiKeyRequest(args [2]string, argsEscaped bool
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetDeliveryApiKeyRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -3000,6 +3067,7 @@ func (s *Server) handleGetDeliveryApiKeyRequest(args [2]string, argsEscaped bool
 			OperationSummary: "Get a single delivery api key",
 			OperationID:      "getDeliveryApiKey",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -3121,6 +3189,8 @@ func (s *Server) handleGetEditorInterfaceRequest(args [3]string, argsEscaped boo
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetEditorInterfaceRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -3129,6 +3199,7 @@ func (s *Server) handleGetEditorInterfaceRequest(args [3]string, argsEscaped boo
 			OperationSummary: "Get the editor interface for a content type",
 			OperationID:      "getEditorInterface",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -3254,6 +3325,8 @@ func (s *Server) handleGetExtensionRequest(args [3]string, argsEscaped bool, w h
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetExtensionRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -3262,6 +3335,7 @@ func (s *Server) handleGetExtensionRequest(args [3]string, argsEscaped bool, w h
 			OperationSummary: "Get a single extension",
 			OperationID:      "getExtension",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -3387,6 +3461,8 @@ func (s *Server) handleGetMarketplaceAppDefinitionsRequest(args [0]string, argsE
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetMarketplaceAppDefinitionsRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -3395,6 +3471,7 @@ func (s *Server) handleGetMarketplaceAppDefinitionsRequest(args [0]string, argsE
 			OperationSummary: "Get marketplace app definitions",
 			OperationID:      "getMarketplaceAppDefinitions",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "sys.id[in]",
@@ -3512,6 +3589,8 @@ func (s *Server) handleGetPersonalAccessTokenRequest(args [1]string, argsEscaped
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetPersonalAccessTokenRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -3520,6 +3599,7 @@ func (s *Server) handleGetPersonalAccessTokenRequest(args [1]string, argsEscaped
 			OperationSummary: "Get a single personal access token",
 			OperationID:      "getPersonalAccessToken",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "access_token_id",
@@ -3637,6 +3717,8 @@ func (s *Server) handleGetPreviewApiKeyRequest(args [2]string, argsEscaped bool,
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetPreviewApiKeyRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -3645,6 +3727,7 @@ func (s *Server) handleGetPreviewApiKeyRequest(args [2]string, argsEscaped bool,
 			OperationSummary: "Get a single preview api key",
 			OperationID:      "getPreviewApiKey",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -3766,6 +3849,8 @@ func (s *Server) handleGetResourceProviderRequest(args [2]string, argsEscaped bo
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetResourceProviderRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -3774,6 +3859,7 @@ func (s *Server) handleGetResourceProviderRequest(args [2]string, argsEscaped bo
 			OperationSummary: "Get one resource provider definition",
 			OperationID:      "getResourceProvider",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -3895,6 +3981,8 @@ func (s *Server) handleGetResourceTypeRequest(args [3]string, argsEscaped bool, 
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetResourceTypeRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -3903,6 +3991,7 @@ func (s *Server) handleGetResourceTypeRequest(args [3]string, argsEscaped bool, 
 			OperationSummary: "Get one resource type definition",
 			OperationID:      "getResourceType",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -4028,6 +4117,8 @@ func (s *Server) handleGetRoleRequest(args [2]string, argsEscaped bool, w http.R
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetRoleRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -4036,6 +4127,7 @@ func (s *Server) handleGetRoleRequest(args [2]string, argsEscaped bool, w http.R
 			OperationSummary: "Get a role",
 			OperationID:      "getRole",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -4157,6 +4249,8 @@ func (s *Server) handleGetSpaceEnablementsRequest(args [1]string, argsEscaped bo
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetSpaceEnablementsRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -4165,6 +4259,7 @@ func (s *Server) handleGetSpaceEnablementsRequest(args [1]string, argsEscaped bo
 			OperationSummary: "Get enablements for a space",
 			OperationID:      "getSpaceEnablements",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -4282,6 +4377,8 @@ func (s *Server) handleGetWebhookDefinitionRequest(args [2]string, argsEscaped b
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetWebhookDefinitionRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -4290,6 +4387,7 @@ func (s *Server) handleGetWebhookDefinitionRequest(args [2]string, argsEscaped b
 			OperationSummary: "Get a webhook definition",
 			OperationID:      "getWebhookDefinition",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -4410,7 +4508,9 @@ func (s *Server) handlePutAppDefinitionRequest(args [2]string, argsEscaped bool,
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodePutAppDefinitionRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodePutAppDefinitionRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -4434,6 +4534,7 @@ func (s *Server) handlePutAppDefinitionRequest(args [2]string, argsEscaped bool,
 			OperationSummary: "Create or update an app definition",
 			OperationID:      "putAppDefinition",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -4554,7 +4655,9 @@ func (s *Server) handlePutAppInstallationRequest(args [3]string, argsEscaped boo
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodePutAppInstallationRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodePutAppInstallationRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -4578,6 +4681,7 @@ func (s *Server) handlePutAppInstallationRequest(args [3]string, argsEscaped boo
 			OperationSummary: "Install or update an app",
 			OperationID:      "putAppInstallation",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -4706,7 +4810,9 @@ func (s *Server) handlePutAppSigningSecretRequest(args [2]string, argsEscaped bo
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodePutAppSigningSecretRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodePutAppSigningSecretRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -4730,6 +4836,7 @@ func (s *Server) handlePutAppSigningSecretRequest(args [2]string, argsEscaped bo
 			OperationSummary: "Create or update an app signing secret",
 			OperationID:      "putAppSigningSecret",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -4850,7 +4957,9 @@ func (s *Server) handlePutContentTypeRequest(args [3]string, argsEscaped bool, w
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodePutContentTypeRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodePutContentTypeRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -4874,6 +4983,7 @@ func (s *Server) handlePutContentTypeRequest(args [3]string, argsEscaped bool, w
 			OperationSummary: "Update a content type",
 			OperationID:      "putContentType",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -5002,7 +5112,9 @@ func (s *Server) handlePutEditorInterfaceRequest(args [3]string, argsEscaped boo
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodePutEditorInterfaceRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodePutEditorInterfaceRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -5026,6 +5138,7 @@ func (s *Server) handlePutEditorInterfaceRequest(args [3]string, argsEscaped boo
 			OperationSummary: "Update the editor interface for a content type",
 			OperationID:      "putEditorInterface",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -5154,7 +5267,9 @@ func (s *Server) handlePutExtensionRequest(args [3]string, argsEscaped bool, w h
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodePutExtensionRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodePutExtensionRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -5178,6 +5293,7 @@ func (s *Server) handlePutExtensionRequest(args [3]string, argsEscaped bool, w h
 			OperationSummary: "Create or update an extension",
 			OperationID:      "putExtension",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -5306,7 +5422,9 @@ func (s *Server) handlePutResourceProviderRequest(args [2]string, argsEscaped bo
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodePutResourceProviderRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodePutResourceProviderRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -5330,6 +5448,7 @@ func (s *Server) handlePutResourceProviderRequest(args [2]string, argsEscaped bo
 			OperationSummary: "Create or update a resource provider definition",
 			OperationID:      "putResourceProvider",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -5450,7 +5569,9 @@ func (s *Server) handlePutResourceTypeRequest(args [3]string, argsEscaped bool, 
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodePutResourceTypeRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodePutResourceTypeRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -5474,6 +5595,7 @@ func (s *Server) handlePutResourceTypeRequest(args [3]string, argsEscaped bool, 
 			OperationSummary: "Create or update a resource type definition",
 			OperationID:      "putResourceType",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "organization_id",
@@ -5598,7 +5720,9 @@ func (s *Server) handlePutSpaceEnablementsRequest(args [1]string, argsEscaped bo
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodePutSpaceEnablementsRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodePutSpaceEnablementsRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -5622,6 +5746,7 @@ func (s *Server) handlePutSpaceEnablementsRequest(args [1]string, argsEscaped bo
 			OperationSummary: "Update enablements for a space",
 			OperationID:      "putSpaceEnablements",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -5743,6 +5868,8 @@ func (s *Server) handleRevokePersonalAccessTokenRequest(args [1]string, argsEsca
 		return
 	}
 
+	var rawBody []byte
+
 	var response RevokePersonalAccessTokenRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -5751,6 +5878,7 @@ func (s *Server) handleRevokePersonalAccessTokenRequest(args [1]string, argsEsca
 			OperationSummary: "Revoke a personal access token",
 			OperationID:      "revokePersonalAccessToken",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "access_token_id",
@@ -5867,7 +5995,9 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodeUpdateDeliveryApiKeyRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeUpdateDeliveryApiKeyRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -5891,6 +6021,7 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 			OperationSummary: "Update a single delivery api key",
 			OperationID:      "updateDeliveryApiKey",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -6015,7 +6146,9 @@ func (s *Server) handleUpdateRoleRequest(args [2]string, argsEscaped bool, w htt
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodeUpdateRoleRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeUpdateRoleRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -6039,6 +6172,7 @@ func (s *Server) handleUpdateRoleRequest(args [2]string, argsEscaped bool, w htt
 			OperationSummary: "Update a role",
 			OperationID:      "updateRole",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
@@ -6163,7 +6297,9 @@ func (s *Server) handleUpdateWebhookDefinitionRequest(args [2]string, argsEscape
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodeUpdateWebhookDefinitionRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeUpdateWebhookDefinitionRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -6187,6 +6323,7 @@ func (s *Server) handleUpdateWebhookDefinitionRequest(args [2]string, argsEscape
 			OperationSummary: "Update a webhook definition",
 			OperationID:      "updateWebhookDefinition",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "space_id",
