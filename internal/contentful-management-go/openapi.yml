@@ -117,10 +117,10 @@ components:
             - sys
         - $ref: "#/components/schemas/ErrorFields"
     ApplicationJSONError:
-      oneOf:
+      anyOf:
         - $ref: "#/components/schemas/Error"
     ApplicationVndContentfulManagementV1JSONError:
-      oneOf:
+      anyOf:
         - $ref: "#/components/schemas/Error"
     BaseSys:
       type: object
