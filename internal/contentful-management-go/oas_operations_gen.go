@@ -28,6 +28,7 @@ const (
 	GetAppSigningSecretOperation          OperationName = "GetAppSigningSecret"
 	GetAuthenticatedUserOperation         OperationName = "GetAuthenticatedUser"
 	GetContentTypeOperation               OperationName = "GetContentType"
+	GetContentTypesOperation              OperationName = "GetContentTypes"
 	GetDeliveryApiKeyOperation            OperationName = "GetDeliveryApiKey"
 	GetEditorInterfaceOperation           OperationName = "GetEditorInterface"
 	GetExtensionOperation                 OperationName = "GetExtension"
