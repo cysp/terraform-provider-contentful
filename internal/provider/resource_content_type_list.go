@@ -71,6 +71,7 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 			yield(list.ListResult{
 				Diagnostics: diags,
 			})
+
 			return
 		}
 
