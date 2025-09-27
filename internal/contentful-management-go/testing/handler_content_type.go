@@ -8,6 +8,31 @@ import (
 )
 
 //nolint:ireturn
+func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesParams) (cm.GetContentTypesRes, error) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
+	contentTypes := ts.contentTypes.List(params.SpaceID, params.EnvironmentID)
+
+	items := make([]cm.ContentType, 0, len(contentTypes))
+	for _, ct := range contentTypes {
+		items = append(items, *ct)
+	}
+
+	return &cm.GetContentTypesOK{
+		Sys: cm.GetContentTypesOKSys{
+			Type: cm.GetContentTypesOKSysTypeArray,
+		},
+		Total: len(contentTypes),
+		Items: items,
+	}, nil
+}
+
+//nolint:ireturn
 func (ts *Handler) GetContentType(_ context.Context, params cm.GetContentTypeParams) (cm.GetContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
@@ -24,7 +49,7 @@ func (ts *Handler) GetContentType(_ context.Context, params cm.GetContentTypePar
 	return contentType, nil
 }
 
-//nolint:ireturn
+//nolint:dupl,ireturn
 func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestData, params cm.PutContentTypeParams) (cm.PutContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()

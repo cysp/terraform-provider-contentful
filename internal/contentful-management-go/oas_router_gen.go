@@ -663,45 +663,23 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 											return
 										}
 
-									case 'c': // Prefix: "content_types/"
+									case 'c': // Prefix: "content_types"
 
-										if l := len("content_types/"); len(elem) >= l && elem[0:l] == "content_types/" {
+										if l := len("content_types"); len(elem) >= l && elem[0:l] == "content_types" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "content_type_id"
-										// Match until "/"
-										idx := strings.IndexByte(elem, '/')
-										if idx < 0 {
-											idx = len(elem)
-										}
-										args[2] = elem[:idx]
-										elem = elem[idx:]
-
 										if len(elem) == 0 {
 											switch r.Method {
-											case "DELETE":
-												s.handleDeleteContentTypeRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
 											case "GET":
-												s.handleGetContentTypeRequest([3]string{
+												s.handleGetContentTypesRequest([2]string{
 													args[0],
 													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											case "PUT":
-												s.handlePutContentTypeRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
 												}, elemIsEscaped, w, r)
 											default:
-												s.notAllowed(w, r, "DELETE,GET,PUT")
+												s.notAllowed(w, r, "GET")
 											}
 
 											return
@@ -715,68 +693,114 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 												break
 											}
 
+											// Param: "content_type_id"
+											// Match until "/"
+											idx := strings.IndexByte(elem, '/')
+											if idx < 0 {
+												idx = len(elem)
+											}
+											args[2] = elem[:idx]
+											elem = elem[idx:]
+
 											if len(elem) == 0 {
-												break
+												switch r.Method {
+												case "DELETE":
+													s.handleDeleteContentTypeRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "GET":
+													s.handleGetContentTypeRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "PUT":
+													s.handlePutContentTypeRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												default:
+													s.notAllowed(w, r, "DELETE,GET,PUT")
+												}
+
+												return
 											}
 											switch elem[0] {
-											case 'e': // Prefix: "editor_interface"
+											case '/': // Prefix: "/"
 
-												if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
+												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 													elem = elem[l:]
 												} else {
 													break
 												}
 
 												if len(elem) == 0 {
-													// Leaf node.
-													switch r.Method {
-													case "GET":
-														s.handleGetEditorInterfaceRequest([3]string{
-															args[0],
-															args[1],
-															args[2],
-														}, elemIsEscaped, w, r)
-													case "PUT":
-														s.handlePutEditorInterfaceRequest([3]string{
-															args[0],
-															args[1],
-															args[2],
-														}, elemIsEscaped, w, r)
-													default:
-														s.notAllowed(w, r, "GET,PUT")
-													}
-
-													return
-												}
-
-											case 'p': // Prefix: "published"
-
-												if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
-													elem = elem[l:]
-												} else {
 													break
 												}
+												switch elem[0] {
+												case 'e': // Prefix: "editor_interface"
 
-												if len(elem) == 0 {
-													// Leaf node.
-													switch r.Method {
-													case "DELETE":
-														s.handleDeactivateContentTypeRequest([3]string{
-															args[0],
-															args[1],
-															args[2],
-														}, elemIsEscaped, w, r)
-													case "PUT":
-														s.handleActivateContentTypeRequest([3]string{
-															args[0],
-															args[1],
-															args[2],
-														}, elemIsEscaped, w, r)
-													default:
-														s.notAllowed(w, r, "DELETE,PUT")
+													if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
+														elem = elem[l:]
+													} else {
+														break
 													}
 
-													return
+													if len(elem) == 0 {
+														// Leaf node.
+														switch r.Method {
+														case "GET":
+															s.handleGetEditorInterfaceRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														case "PUT":
+															s.handlePutEditorInterfaceRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														default:
+															s.notAllowed(w, r, "GET,PUT")
+														}
+
+														return
+													}
+
+												case 'p': // Prefix: "published"
+
+													if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch r.Method {
+														case "DELETE":
+															s.handleDeactivateContentTypeRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														case "PUT":
+															s.handleActivateContentTypeRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														default:
+															s.notAllowed(w, r, "DELETE,PUT")
+														}
+
+														return
+													}
+
 												}
 
 											}
@@ -2085,51 +2109,24 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											}
 										}
 
-									case 'c': // Prefix: "content_types/"
+									case 'c': // Prefix: "content_types"
 
-										if l := len("content_types/"); len(elem) >= l && elem[0:l] == "content_types/" {
+										if l := len("content_types"); len(elem) >= l && elem[0:l] == "content_types" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "content_type_id"
-										// Match until "/"
-										idx := strings.IndexByte(elem, '/')
-										if idx < 0 {
-											idx = len(elem)
-										}
-										args[2] = elem[:idx]
-										elem = elem[idx:]
-
 										if len(elem) == 0 {
 											switch method {
-											case "DELETE":
-												r.name = DeleteContentTypeOperation
-												r.summary = "Delete a content type"
-												r.operationID = "deleteContentType"
-												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
-												r.args = args
-												r.count = 3
-												return r, true
 											case "GET":
-												r.name = GetContentTypeOperation
-												r.summary = "Get a content type"
-												r.operationID = "getContentType"
+												r.name = GetContentTypesOperation
+												r.summary = "Get a collection of content types"
+												r.operationID = "getContentTypes"
 												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types"
 												r.args = args
-												r.count = 3
-												return r, true
-											case "PUT":
-												r.name = PutContentTypeOperation
-												r.summary = "Update a content type"
-												r.operationID = "putContentType"
-												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
-												r.args = args
-												r.count = 3
+												r.count = 2
 												return r, true
 											default:
 												return
@@ -2144,76 +2141,129 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												break
 											}
 
+											// Param: "content_type_id"
+											// Match until "/"
+											idx := strings.IndexByte(elem, '/')
+											if idx < 0 {
+												idx = len(elem)
+											}
+											args[2] = elem[:idx]
+											elem = elem[idx:]
+
 											if len(elem) == 0 {
-												break
+												switch method {
+												case "DELETE":
+													r.name = DeleteContentTypeOperation
+													r.summary = "Delete a content type"
+													r.operationID = "deleteContentType"
+													r.operationGroup = ""
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "GET":
+													r.name = GetContentTypeOperation
+													r.summary = "Get a content type"
+													r.operationID = "getContentType"
+													r.operationGroup = ""
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "PUT":
+													r.name = PutContentTypeOperation
+													r.summary = "Update a content type"
+													r.operationID = "putContentType"
+													r.operationGroup = ""
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												default:
+													return
+												}
 											}
 											switch elem[0] {
-											case 'e': // Prefix: "editor_interface"
+											case '/': // Prefix: "/"
 
-												if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
+												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 													elem = elem[l:]
 												} else {
 													break
 												}
 
 												if len(elem) == 0 {
-													// Leaf node.
-													switch method {
-													case "GET":
-														r.name = GetEditorInterfaceOperation
-														r.summary = "Get the editor interface for a content type"
-														r.operationID = "getEditorInterface"
-														r.operationGroup = ""
-														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
-														r.args = args
-														r.count = 3
-														return r, true
-													case "PUT":
-														r.name = PutEditorInterfaceOperation
-														r.summary = "Update the editor interface for a content type"
-														r.operationID = "putEditorInterface"
-														r.operationGroup = ""
-														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
-														r.args = args
-														r.count = 3
-														return r, true
-													default:
-														return
-													}
-												}
-
-											case 'p': // Prefix: "published"
-
-												if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
-													elem = elem[l:]
-												} else {
 													break
 												}
+												switch elem[0] {
+												case 'e': // Prefix: "editor_interface"
 
-												if len(elem) == 0 {
-													// Leaf node.
-													switch method {
-													case "DELETE":
-														r.name = DeactivateContentTypeOperation
-														r.summary = "Deactivate a content type"
-														r.operationID = "deactivateContentType"
-														r.operationGroup = ""
-														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
-														r.args = args
-														r.count = 3
-														return r, true
-													case "PUT":
-														r.name = ActivateContentTypeOperation
-														r.summary = "Activate a content type"
-														r.operationID = "activateContentType"
-														r.operationGroup = ""
-														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
-														r.args = args
-														r.count = 3
-														return r, true
-													default:
-														return
+													if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
+														elem = elem[l:]
+													} else {
+														break
 													}
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch method {
+														case "GET":
+															r.name = GetEditorInterfaceOperation
+															r.summary = "Get the editor interface for a content type"
+															r.operationID = "getEditorInterface"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
+															r.args = args
+															r.count = 3
+															return r, true
+														case "PUT":
+															r.name = PutEditorInterfaceOperation
+															r.summary = "Update the editor interface for a content type"
+															r.operationID = "putEditorInterface"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
+															r.args = args
+															r.count = 3
+															return r, true
+														default:
+															return
+														}
+													}
+
+												case 'p': // Prefix: "published"
+
+													if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch method {
+														case "DELETE":
+															r.name = DeactivateContentTypeOperation
+															r.summary = "Deactivate a content type"
+															r.operationID = "deactivateContentType"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
+															r.args = args
+															r.count = 3
+															return r, true
+														case "PUT":
+															r.name = ActivateContentTypeOperation
+															r.summary = "Activate a content type"
+															r.operationID = "activateContentType"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
+															r.args = args
+															r.count = 3
+															return r, true
+														default:
+															return
+														}
+													}
+
 												}
 
 											}

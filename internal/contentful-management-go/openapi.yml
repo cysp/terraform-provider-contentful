@@ -132,6 +132,26 @@ components:
       required: false
       schema:
         type: integer
+    skip:
+      in: query
+      name: skip
+      required: false
+      schema:
+        type: integer
+        format: int64
+    limit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        format: int64
+    order:
+      in: query
+      name: order
+      required: false
+      schema:
+        type: string
   schemas:
     ApplicationJSONError:
       anyOf:
@@ -873,6 +893,50 @@ paths:
       responses:
         204:
           $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/content_types:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+    get:
+      operationId: getContentTypes
+      summary: Get a collection of content types
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/order"
+      responses:
+        200:
+          description: A list of content types
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                type: object
+                properties:
+                  sys:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - Array
+                    required:
+                      - type
+                  total:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
+                required:
+                  - sys
+                  - total
+                  - items
         401:
           $ref: "#/components/responses/unauthorized"
         default:

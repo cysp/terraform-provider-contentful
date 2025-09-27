@@ -1535,6 +1535,7 @@ func (*ApplicationJSONError) getAppInstallationRes()             {}
 func (*ApplicationJSONError) getAppSigningSecretRes()            {}
 func (*ApplicationJSONError) getAuthenticatedUserRes()           {}
 func (*ApplicationJSONError) getContentTypeRes()                 {}
+func (*ApplicationJSONError) getContentTypesRes()                {}
 func (*ApplicationJSONError) getDeliveryAPIKeyRes()              {}
 func (*ApplicationJSONError) getEditorInterfaceRes()             {}
 func (*ApplicationJSONError) getEntryRes()                       {}
@@ -1628,6 +1629,7 @@ func (*ApplicationJSONErrorStatusCode) getAppInstallationRes()             {}
 func (*ApplicationJSONErrorStatusCode) getAppSigningSecretRes()            {}
 func (*ApplicationJSONErrorStatusCode) getAuthenticatedUserRes()           {}
 func (*ApplicationJSONErrorStatusCode) getContentTypeRes()                 {}
+func (*ApplicationJSONErrorStatusCode) getContentTypesRes()                {}
 func (*ApplicationJSONErrorStatusCode) getDeliveryAPIKeyRes()              {}
 func (*ApplicationJSONErrorStatusCode) getEditorInterfaceRes()             {}
 func (*ApplicationJSONErrorStatusCode) getEntryRes()                       {}
@@ -1736,6 +1738,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getAppInstallationRes()   
 func (*ApplicationVndContentfulManagementV1JSONError) getAppSigningSecretRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) getAuthenticatedUserRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) getContentTypeRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONError) getContentTypesRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryAPIKeyRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEditorInterfaceRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEntryRes()                       {}
@@ -1829,6 +1832,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppInstallati
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppSigningSecretRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAuthenticatedUserRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypeRes()                 {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypesRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryAPIKeyRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEditorInterfaceRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEntryRes()                       {}
@@ -5010,6 +5014,92 @@ func (s *FunctionLinkSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+type GetContentTypesOK struct {
+	Sys   GetContentTypesOKSys `json:"sys"`
+	Total int                  `json:"total"`
+	Items []ContentType        `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *GetContentTypesOK) GetSys() GetContentTypesOKSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *GetContentTypesOK) GetTotal() int {
+	return s.Total
+}
+
+// GetItems returns the value of Items.
+func (s *GetContentTypesOK) GetItems() []ContentType {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *GetContentTypesOK) SetSys(val GetContentTypesOKSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *GetContentTypesOK) SetTotal(val int) {
+	s.Total = val
+}
+
+// SetItems sets the value of Items.
+func (s *GetContentTypesOK) SetItems(val []ContentType) {
+	s.Items = val
+}
+
+func (*GetContentTypesOK) getContentTypesRes() {}
+
+type GetContentTypesOKSys struct {
+	Type GetContentTypesOKSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *GetContentTypesOKSys) GetType() GetContentTypesOKSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *GetContentTypesOKSys) SetType(val GetContentTypesOKSysType) {
+	s.Type = val
+}
+
+type GetContentTypesOKSysType string
+
+const (
+	GetContentTypesOKSysTypeArray GetContentTypesOKSysType = "Array"
+)
+
+// AllValues returns all GetContentTypesOKSysType values.
+func (GetContentTypesOKSysType) AllValues() []GetContentTypesOKSysType {
+	return []GetContentTypesOKSysType{
+		GetContentTypesOKSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GetContentTypesOKSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case GetContentTypesOKSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GetContentTypesOKSysType) UnmarshalText(data []byte) error {
+	switch GetContentTypesOKSysType(data) {
+	case GetContentTypesOKSysTypeArray:
+		*s = GetContentTypesOKSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 type GetMarketplaceAppDefinitionsOK struct {
 	Sys   GetMarketplaceAppDefinitionsOKSys `json:"sys"`
 	Total int                               `json:"total"`
@@ -5946,6 +6036,52 @@ func (o OptInt) Get() (v int, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptInt) Or(d int) int {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptInt64 returns new OptInt64 with value set to v.
+func NewOptInt64(v int64) OptInt64 {
+	return OptInt64{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptInt64 is optional int64.
+type OptInt64 struct {
+	Value int64
+	Set   bool
+}
+
+// IsSet returns true if OptInt64 was set.
+func (o OptInt64) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptInt64) Reset() {
+	var v int64
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptInt64) SetTo(v int64) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptInt64) Get() (v int64, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptInt64) Or(d int64) int64 {
 	if v, ok := o.Get(); ok {
 		return v
 	}
