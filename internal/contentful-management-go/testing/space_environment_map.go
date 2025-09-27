@@ -10,6 +10,29 @@ func NewSpaceEnvironmentMap[Value any]() SpaceEnvironmentMap[Value] {
 	}
 }
 
+func (sm *SpaceEnvironmentMap[Value]) List(spaceID string, environmentID string) []Value {
+	spaceValues, exists := sm.m[spaceID]
+	if !exists {
+		var zeroValue []Value
+
+		return zeroValue
+	}
+
+	environmentValues, exists := spaceValues[environmentID]
+	if !exists {
+		var zeroValue []Value
+
+		return zeroValue
+	}
+
+	value := make([]Value, 0, len(environmentValues))
+	for _, v := range environmentValues {
+		value = append(value, v)
+	}
+
+	return value
+}
+
 //nolint:ireturn
 func (sm *SpaceEnvironmentMap[Value]) Get(spaceID string, environmentID string, key string) Value {
 	spaceValues, exists := sm.m[spaceID]

@@ -65,6 +65,7 @@ var operationRolesAccessToken = map[string][]string{
 	GetAppSigningSecretOperation:            []string{},
 	GetAuthenticatedUserOperation:           []string{},
 	GetContentTypeOperation:                 []string{},
+	GetContentTypesOperation:                []string{},
 	GetDeliveryAPIKeyOperation:              []string{},
 	GetEditorInterfaceOperation:             []string{},
 	GetEntryOperation:                       []string{},

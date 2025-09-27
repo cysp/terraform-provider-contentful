@@ -10,6 +10,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -160,7 +161,9 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		editorInterfaceVersionOffset: &ContentfulContentTypeCounter{},
 	}
 
+	resp.ActionData = providerData
 	resp.DataSourceData = providerData
+	resp.ListResourceData = providerData
 	resp.ResourceData = providerData
 }
 
@@ -174,6 +177,12 @@ func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.
 		NewAppDefinitionDataSource,
 		NewMarketplaceAppDefinitionDataSource,
 		NewPreviewAPIKeyDataSource,
+	}
+}
+
+func (p *ContentfulProvider) ListResources(_ context.Context) []func() list.ListResource {
+	return []func() list.ListResource{
+		NewContentTypeListResource,
 	}
 }
 
