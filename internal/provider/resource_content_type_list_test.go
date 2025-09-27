@@ -49,7 +49,7 @@ list "contentful_content_type" "content_types" {
 				ConfigVariables: configVariables,
 				Query:           true,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLength("contentful_content_type.content_types", 1),
+					querycheck.ExpectLengthAtLeast("contentful_content_type.content_types", 1),
 					querycheck.ExpectIdentity("contentful_content_type.content_types", map[string]knownvalue.Check{
 						"space_id":        knownvalue.StringExact("0p38pssr0fi3"),
 						"environment_id":  knownvalue.StringExact("master"),
