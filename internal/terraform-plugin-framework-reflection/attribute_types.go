@@ -10,24 +10,36 @@ import (
 func AttributeTypesFor[T any](ctx context.Context) map[string]attr.Type {
 	typ := reflect.TypeFor[T]()
 
-	return attributeTypesOf(ctx, typ)
+	attributeTypes := make(map[string]attr.Type)
+
+	extractAttributeTypesOf(ctx, attributeTypes, typ)
+
+	return attributeTypes
 }
 
 func AttributeTypesOf(ctx context.Context, value any) map[string]attr.Type {
 	typ := reflect.TypeOf(value)
 
-	return attributeTypesOf(ctx, typ)
+	attributeTypes := make(map[string]attr.Type)
+
+	extractAttributeTypesOf(ctx, attributeTypes, typ)
+
+	return attributeTypes
 }
 
-func attributeTypesOf(ctx context.Context, typ reflect.Type) map[string]attr.Type {
+func extractAttributeTypesOf(ctx context.Context, attributeTypes map[string]attr.Type, typ reflect.Type) {
 	if typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()
 	}
 
-	attrs := make(map[string]attr.Type)
-
 	for i := range typ.NumField() {
 		field := typ.Field(i)
+
+		if field.Type.Kind() == reflect.Struct && field.Anonymous {
+			extractAttributeTypesOf(ctx, attributeTypes, field.Type)
+
+			continue
+		}
 
 		tag := field.Tag.Get("tfsdk")
 		if tag == "" {
@@ -41,8 +53,6 @@ func attributeTypesOf(ctx context.Context, typ reflect.Type) map[string]attr.Typ
 			continue
 		}
 
-		attrs[tag] = fieldAttrValue.Type(ctx)
+		attributeTypes[tag] = fieldAttrValue.Type(ctx)
 	}
-
-	return attrs
 }

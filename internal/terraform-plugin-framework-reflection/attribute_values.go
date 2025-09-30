@@ -7,6 +7,14 @@ import (
 )
 
 func AttributeValuesOf(value any) map[string]attr.Value {
+	attributeValues := make(map[string]attr.Value)
+
+	extractAttributeValuesOf(attributeValues, value)
+
+	return attributeValues
+}
+
+func extractAttributeValuesOf(attributeValues map[string]attr.Value, value any) {
 	typ := reflect.TypeOf(value)
 	if typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()
@@ -17,10 +25,16 @@ func AttributeValuesOf(value any) map[string]attr.Value {
 		val = val.Elem()
 	}
 
-	attrs := make(map[string]attr.Value)
-
 	for i := range typ.NumField() {
 		field := typ.Field(i)
+
+		if field.Type.Kind() == reflect.Struct && field.Anonymous {
+			fieldValueInterface := val.Field(i).Interface()
+
+			extractAttributeValuesOf(attributeValues, fieldValueInterface)
+
+			continue
+		}
 
 		tag := field.Tag.Get("tfsdk")
 		if tag == "" {
@@ -34,8 +48,6 @@ func AttributeValuesOf(value any) map[string]attr.Value {
 			continue
 		}
 
-		attrs[tag] = fieldAttrValue
+		attributeValues[tag] = fieldAttrValue
 	}
-
-	return attrs
 }
