@@ -31,7 +31,7 @@ func SetAttributeValues(ctx context.Context, value any, attributes map[string]at
 	for i := range typ.NumField() {
 		field := typ.Field(i)
 
-		if field.PkgPath != "" {
+		if !field.IsExported() {
 			continue
 		}
 
