@@ -5,13 +5,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type ExtensionIdentityModel struct {
+	SpaceID       types.String `tfsdk:"space_id"`
+	EnvironmentID types.String `tfsdk:"environment_id"`
+	ExtensionID   types.String `tfsdk:"extension_id"`
+}
+
 type ExtensionModel struct {
-	ID            types.String             `tfsdk:"id"`
-	SpaceID       types.String             `tfsdk:"space_id"`
-	EnvironmentID types.String             `tfsdk:"environment_id"`
-	ExtensionID   types.String             `tfsdk:"extension_id"`
-	Extension     *ExtensionModelExtension `tfsdk:"extension"`
-	Parameters    jsontypes.Normalized     `tfsdk:"parameters"`
+	ExtensionIdentityModel
+
+	ID         types.String             `tfsdk:"id"`
+	Extension  *ExtensionModelExtension `tfsdk:"extension"`
+	Parameters jsontypes.Normalized     `tfsdk:"parameters"`
 }
 
 type ExtensionModelExtension struct {

@@ -105,12 +105,16 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel EditorInterfaceIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(data.ContentTypeID.ValueString())
 }
@@ -161,12 +165,16 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		resp.Diagnostics.AddError("Failed to read editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel EditorInterfaceIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(data.ContentTypeID.ValueString())
 }
@@ -222,12 +230,16 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel EditorInterfaceIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(data.ContentTypeID.ValueString())
 }

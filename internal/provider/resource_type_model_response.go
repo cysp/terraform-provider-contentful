@@ -17,11 +17,13 @@ func NewResourceTypeResourceModelFromResponse(_ context.Context, response cm.Res
 	resourceTypeID := response.Sys.ID
 
 	model := ResourceTypeModel{
-		ID:                 types.StringValue(organizationID + "/" + appDefinitionID + "/" + resourceTypeID),
-		OrganizationID:     types.StringValue(organizationID),
-		AppDefinitionID:    types.StringValue(appDefinitionID),
+		ID: types.StringValue(organizationID + "/" + appDefinitionID + "/" + resourceTypeID),
+		ResourceTypeIdentityModel: ResourceTypeIdentityModel{
+			OrganizationID:  types.StringValue(organizationID),
+			AppDefinitionID: types.StringValue(appDefinitionID),
+			ResourceTypeID:  types.StringValue(resourceTypeID),
+		},
 		ResourceProviderID: types.StringValue(resourceProviderID),
-		ResourceTypeID:     types.StringValue(resourceTypeID),
 	}
 
 	model.Name = types.StringValue(response.Name)

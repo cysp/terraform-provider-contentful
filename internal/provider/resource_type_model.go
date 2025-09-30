@@ -4,12 +4,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type ResourceTypeIdentityModel struct {
+	OrganizationID  types.String `tfsdk:"organization_id"`
+	AppDefinitionID types.String `tfsdk:"app_definition_id"`
+	ResourceTypeID  types.String `tfsdk:"resource_type_id"`
+}
+
 type ResourceTypeModel struct {
+	ResourceTypeIdentityModel
+
 	ID                  types.String              `tfsdk:"id"`
-	OrganizationID      types.String              `tfsdk:"organization_id"`
-	AppDefinitionID     types.String              `tfsdk:"app_definition_id"`
 	ResourceProviderID  types.String              `tfsdk:"resource_provider_id"`
-	ResourceTypeID      types.String              `tfsdk:"resource_type_id"`
 	Name                types.String              `tfsdk:"name"`
 	DefaultFieldMapping *ResourceTypeFieldMapping `tfsdk:"default_field_mapping"`
 }

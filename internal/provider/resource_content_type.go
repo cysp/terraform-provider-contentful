@@ -131,12 +131,16 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		resp.Diagnostics.AddError("Failed to activate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel ContentTypeIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
 //nolint:dupl
@@ -186,12 +190,16 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.AddError("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel ContentTypeIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
 func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -270,12 +278,16 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 		resp.Diagnostics.AddError("Failed to activate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel ContentTypeIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
 	r.providerData.editorInterfaceVersionOffset.Increment(data.ContentTypeID.ValueString())
 }

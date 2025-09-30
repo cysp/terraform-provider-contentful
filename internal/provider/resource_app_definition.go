@@ -96,10 +96,14 @@ func (r *appDefinitionAppDefinitionResource) Create(ctx context.Context, req res
 		resp.Diagnostics.AddError("Failed to create app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel AppDefinitionIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -146,10 +150,14 @@ func (r *appDefinitionAppDefinitionResource) Read(ctx context.Context, req resou
 		resp.Diagnostics.AddError("Failed to read app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel AppDefinitionIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -195,10 +203,14 @@ func (r *appDefinitionAppDefinitionResource) Update(ctx context.Context, req res
 		resp.Diagnostics.AddError("Failed to update app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel AppDefinitionIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

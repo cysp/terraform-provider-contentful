@@ -4,10 +4,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type WebhookIdentityModel struct {
+	SpaceID   types.String `tfsdk:"space_id"`
+	WebhookID types.String `tfsdk:"webhook_id"`
+}
+
 type WebhookModel struct {
+	WebhookIdentityModel
+
 	ID                types.String                               `tfsdk:"id"`
-	SpaceID           types.String                               `tfsdk:"space_id"`
-	WebhookID         types.String                               `tfsdk:"webhook_id"`
 	Name              types.String                               `tfsdk:"name"`
 	URL               types.String                               `tfsdk:"url"`
 	Topics            TypedList[types.String]                    `tfsdk:"topics"`

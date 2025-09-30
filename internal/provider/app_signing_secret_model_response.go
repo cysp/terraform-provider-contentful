@@ -15,9 +15,11 @@ func NewAppSigningSecretResourceModelFromResponse(_ context.Context, res cm.AppS
 	appDefinitionID := res.Sys.AppDefinition.Sys.ID
 
 	model := AppSigningSecretModel{
-		ID:              types.StringValue(organizationID + "/" + appDefinitionID),
-		OrganizationID:  types.StringValue(organizationID),
-		AppDefinitionID: types.StringValue(appDefinitionID),
+		ID: types.StringValue(organizationID + "/" + appDefinitionID),
+		AppSigningSecretIdentityModel: AppSigningSecretIdentityModel{
+			OrganizationID:  types.StringValue(organizationID),
+			AppDefinitionID: types.StringValue(appDefinitionID),
+		},
 	}
 
 	return model, diags

@@ -5,15 +5,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type AppDefinitionIdentityModel struct {
+	OrganizationID  types.String `tfsdk:"organization_id"`
+	AppDefinitionID types.String `tfsdk:"app_definition_id"`
+}
+
 type AppDefinitionModel struct {
-	ID              types.String                 `tfsdk:"id"`
-	OrganizationID  types.String                 `tfsdk:"organization_id"`
-	AppDefinitionID types.String                 `tfsdk:"app_definition_id"`
-	Name            types.String                 `tfsdk:"name"`
-	Src             types.String                 `tfsdk:"src"`
-	BundleID        types.String                 `tfsdk:"bundle_id"`
-	Locations       []AppDefinitionLocationsItem `tfsdk:"locations"`
-	Parameters      *AppDefinitionParameters     `tfsdk:"parameters"`
+	AppDefinitionIdentityModel
+
+	ID         types.String                 `tfsdk:"id"`
+	Name       types.String                 `tfsdk:"name"`
+	Src        types.String                 `tfsdk:"src"`
+	BundleID   types.String                 `tfsdk:"bundle_id"`
+	Locations  []AppDefinitionLocationsItem `tfsdk:"locations"`
+	Parameters *AppDefinitionParameters     `tfsdk:"parameters"`
 }
 
 type AppDefinitionLocationsItem struct {

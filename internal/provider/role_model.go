@@ -5,10 +5,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type RoleIdentityModel struct {
+	SpaceID types.String `tfsdk:"space_id"`
+	RoleID  types.String `tfsdk:"role_id"`
+}
+
 type RoleModel struct {
+	RoleIdentityModel
+
 	ID          types.String                            `tfsdk:"id"`
-	SpaceID     types.String                            `tfsdk:"space_id"`
-	RoleID      types.String                            `tfsdk:"role_id"`
 	Name        types.String                            `tfsdk:"name"`
 	Description types.String                            `tfsdk:"description"`
 	Permissions TypedMap[TypedList[types.String]]       `tfsdk:"permissions"`
