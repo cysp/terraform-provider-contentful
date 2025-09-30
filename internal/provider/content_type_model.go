@@ -5,16 +5,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type ContentTypeIdentityModel struct {
+	SpaceID       types.String `tfsdk:"space_id"`
+	EnvironmentID types.String `tfsdk:"environment_id"`
+	ContentTypeID types.String `tfsdk:"content_type_id"`
+}
+
 type ContentTypeModel struct {
-	ID            types.String                                  `tfsdk:"id"`
-	SpaceID       types.String                                  `tfsdk:"space_id"`
-	EnvironmentID types.String                                  `tfsdk:"environment_id"`
-	ContentTypeID types.String                                  `tfsdk:"content_type_id"`
-	Name          types.String                                  `tfsdk:"name"`
-	Description   types.String                                  `tfsdk:"description"`
-	DisplayField  types.String                                  `tfsdk:"display_field"`
-	Fields        TypedList[TypedObject[ContentTypeFieldValue]] `tfsdk:"fields"`
-	Metadata      TypedObject[ContentTypeMetadataValue]         `tfsdk:"metadata"`
+	ContentTypeIdentityModel
+
+	ID           types.String                                  `tfsdk:"id"`
+	Name         types.String                                  `tfsdk:"name"`
+	Description  types.String                                  `tfsdk:"description"`
+	DisplayField types.String                                  `tfsdk:"display_field"`
+	Fields       TypedList[TypedObject[ContentTypeFieldValue]] `tfsdk:"fields"`
+	Metadata     TypedObject[ContentTypeMetadataValue]         `tfsdk:"metadata"`
 }
 
 type ContentTypeFieldValue struct {

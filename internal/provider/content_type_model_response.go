@@ -18,10 +18,12 @@ func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm
 	contentTypeID := contentType.Sys.ID
 
 	model := ContentTypeModel{
-		ID:            types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/")),
-		SpaceID:       types.StringValue(spaceID),
-		EnvironmentID: types.StringValue(environmentID),
-		ContentTypeID: types.StringValue(contentTypeID),
+		ID: types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/")),
+		ContentTypeIdentityModel: ContentTypeIdentityModel{
+			SpaceID:       types.StringValue(spaceID),
+			EnvironmentID: types.StringValue(environmentID),
+			ContentTypeID: types.StringValue(contentTypeID),
+		},
 	}
 
 	model.Name = types.StringValue(contentType.Name)

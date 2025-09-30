@@ -101,10 +101,14 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		resp.Diagnostics.AddError("Failed to create app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel AppSigningSecretIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &plan)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -154,10 +158,14 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 		resp.Diagnostics.AddError("Failed to read app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel AppSigningSecretIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -211,10 +219,14 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		resp.Diagnostics.AddError("Failed to update app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel AppSigningSecretIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &plan)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

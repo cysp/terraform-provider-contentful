@@ -5,11 +5,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type AppInstallationIdentityModel struct {
+	SpaceID         types.String `tfsdk:"space_id"`
+	EnvironmentID   types.String `tfsdk:"environment_id"`
+	AppDefinitionID types.String `tfsdk:"app_definition_id"`
+}
+
 type AppInstallationModel struct {
-	ID              types.String         `tfsdk:"id"`
-	SpaceID         types.String         `tfsdk:"space_id"`
-	EnvironmentID   types.String         `tfsdk:"environment_id"`
-	AppDefinitionID types.String         `tfsdk:"app_definition_id"`
-	Marketplace     types.Set            `tfsdk:"marketplace"`
-	Parameters      jsontypes.Normalized `tfsdk:"parameters"`
+	AppInstallationIdentityModel
+
+	ID          types.String         `tfsdk:"id"`
+	Marketplace types.Set            `tfsdk:"marketplace"`
+	Parameters  jsontypes.Normalized `tfsdk:"parameters"`
 }

@@ -12,8 +12,10 @@ func NewSpaceEnablementsResourceModelFromResponse(_ context.Context, response cm
 	spaceID := response.Sys.Space.Sys.ID
 
 	model := SpaceEnablementsModel{
-		ID:      types.StringValue(spaceID),
-		SpaceID: types.StringValue(spaceID),
+		ID: types.StringValue(spaceID),
+		SpaceEnablementsIdentityModel: SpaceEnablementsIdentityModel{
+			SpaceID: types.StringValue(spaceID),
+		},
 	}
 
 	model.CrossSpaceLinks = boolValueFromOptSpaceEnablementField(response.CrossSpaceLinks)

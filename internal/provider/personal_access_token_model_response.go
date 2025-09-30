@@ -13,7 +13,9 @@ func NewPersonalAccessTokenResourceModelFromResponse(_ context.Context, personal
 	diags := diag.Diagnostics{}
 
 	model := PersonalAccessTokenModel{
-		ID: types.StringValue(personalAccessToken.Sys.ID),
+		PersonalAccessTokenIdentityModel: PersonalAccessTokenIdentityModel{
+			ID: types.StringValue(personalAccessToken.Sys.ID),
+		},
 	}
 
 	model.Name = types.StringValue(personalAccessToken.Name)

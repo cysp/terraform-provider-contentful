@@ -18,9 +18,11 @@ func NewDeliveryAPIKeyResourceModelFromResponse(ctx context.Context, apiKey cm.A
 	apiKeyID := apiKey.Sys.ID
 
 	model := DeliveryAPIKeyModel{
-		ID:       types.StringValue(strings.Join([]string{spaceID, apiKeyID}, "/")),
-		SpaceID:  types.StringValue(spaceID),
-		APIKeyID: types.StringValue(apiKeyID),
+		ID: types.StringValue(strings.Join([]string{spaceID, apiKeyID}, "/")),
+		DeliveryAPIKeyIdentityModel: DeliveryAPIKeyIdentityModel{
+			SpaceID:  types.StringValue(spaceID),
+			APIKeyID: types.StringValue(apiKeyID),
+		},
 	}
 
 	model.Name = types.StringValue(apiKey.Name)

@@ -124,9 +124,11 @@ func TestToEditorInterfaceFields(t *testing.T) {
 	})
 
 	model := EditorInterfaceModel{
-		SpaceID:       types.StringValue("space_id"),
-		EnvironmentID: types.StringValue("environment_id"),
-		ContentTypeID: types.StringValue("content_type_id"),
+		EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
+			SpaceID:       types.StringValue("space_id"),
+			EnvironmentID: types.StringValue("environment_id"),
+			ContentTypeID: types.StringValue("content_type_id"),
+		},
 
 		Controls: controls,
 		Sidebar:  sidebar,
@@ -215,9 +217,11 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 	})
 
 	model := EditorInterfaceModel{
-		SpaceID:       types.StringValue("space_id"),
-		EnvironmentID: types.StringValue("environment_id"),
-		ContentTypeID: types.StringValue("content_type_id"),
+		EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
+			SpaceID:       types.StringValue("space_id"),
+			EnvironmentID: types.StringValue("environment_id"),
+			ContentTypeID: types.StringValue("content_type_id"),
+		},
 
 		Controls: controls,
 		Sidebar:  sidebar,

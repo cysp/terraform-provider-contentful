@@ -20,11 +20,13 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		"null": {
 			appInstallation: cm.AppInstallation{},
 			expectedModel: AppInstallationModel{
-				ID:              types.StringValue("//"),
-				SpaceID:         types.StringValue(""),
-				EnvironmentID:   types.StringValue(""),
-				AppDefinitionID: types.StringValue(""),
-				Marketplace:     types.SetNull(types.StringType),
+				ID: types.StringValue("//"),
+				AppInstallationIdentityModel: AppInstallationIdentityModel{
+					SpaceID:         types.StringValue(""),
+					EnvironmentID:   types.StringValue(""),
+					AppDefinitionID: types.StringValue(""),
+				},
+				Marketplace: types.SetNull(types.StringType),
 			},
 		},
 		"empty": {
@@ -32,12 +34,14 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				Parameters: []byte("{}"),
 			},
 			expectedModel: AppInstallationModel{
-				ID:              types.StringValue("//"),
-				SpaceID:         types.StringValue(""),
-				EnvironmentID:   types.StringValue(""),
-				AppDefinitionID: types.StringValue(""),
-				Marketplace:     types.SetNull(types.StringType),
-				Parameters:      jsontypes.NewNormalizedValue("{}"),
+				ID: types.StringValue("//"),
+				AppInstallationIdentityModel: AppInstallationIdentityModel{
+					SpaceID:         types.StringValue(""),
+					EnvironmentID:   types.StringValue(""),
+					AppDefinitionID: types.StringValue(""),
+				},
+				Marketplace: types.SetNull(types.StringType),
+				Parameters:  jsontypes.NewNormalizedValue("{}"),
 			},
 		},
 		"foo=bar": {
@@ -45,12 +49,14 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				Parameters: []byte("{\"foo\":\"bar\"}"),
 			},
 			expectedModel: AppInstallationModel{
-				ID:              types.StringValue("//"),
-				SpaceID:         types.StringValue(""),
-				EnvironmentID:   types.StringValue(""),
-				AppDefinitionID: types.StringValue(""),
-				Marketplace:     types.SetNull(types.StringType),
-				Parameters:      jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
+				ID: types.StringValue("//"),
+				AppInstallationIdentityModel: AppInstallationIdentityModel{
+					SpaceID:         types.StringValue(""),
+					EnvironmentID:   types.StringValue(""),
+					AppDefinitionID: types.StringValue(""),
+				},
+				Marketplace: types.SetNull(types.StringType),
+				Parameters:  jsontypes.NewNormalizedValue("{\"foo\":\"bar\"}"),
 			},
 		},
 	}

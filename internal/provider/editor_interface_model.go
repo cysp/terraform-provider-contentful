@@ -5,11 +5,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type EditorInterfaceIdentityModel struct {
+	SpaceID       types.String `tfsdk:"space_id"`
+	EnvironmentID types.String `tfsdk:"environment_id"`
+	ContentTypeID types.String `tfsdk:"content_type_id"`
+}
+
 type EditorInterfaceModel struct {
+	EditorInterfaceIdentityModel
+
 	ID            types.String                                                 `tfsdk:"id"`
-	SpaceID       types.String                                                 `tfsdk:"space_id"`
-	EnvironmentID types.String                                                 `tfsdk:"environment_id"`
-	ContentTypeID types.String                                                 `tfsdk:"content_type_id"`
 	EditorLayout  TypedList[TypedObject[EditorInterfaceEditorLayoutItemValue]] `tfsdk:"editor_layout"`
 	Controls      TypedList[TypedObject[EditorInterfaceControlValue]]          `tfsdk:"controls"`
 	GroupControls TypedList[TypedObject[EditorInterfaceGroupControlValue]]     `tfsdk:"group_controls"`

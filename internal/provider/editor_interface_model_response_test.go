@@ -38,10 +38,12 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				},
 			},
 			expectedModel: EditorInterfaceModel{
-				ID:            types.StringValue("space/environment/content_type"),
-				SpaceID:       types.StringValue("space"),
-				EnvironmentID: types.StringValue("environment"),
-				ContentTypeID: types.StringValue("content_type"),
+				ID: types.StringValue("space/environment/content_type"),
+				EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
+					SpaceID:       types.StringValue("space"),
+					EnvironmentID: types.StringValue("environment"),
+					ContentTypeID: types.StringValue("content_type"),
+				},
 				EditorLayout:  NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]](),
 				Controls:      NewTypedListNull[TypedObject[EditorInterfaceControlValue]](),
 				GroupControls: NewTypedListNull[TypedObject[EditorInterfaceGroupControlValue]](),
@@ -74,10 +76,12 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				Sidebar:       cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{}),
 			},
 			expectedModel: EditorInterfaceModel{
-				ID:            types.StringValue("space/environment/content_type"),
-				SpaceID:       types.StringValue("space"),
-				EnvironmentID: types.StringValue("environment"),
-				ContentTypeID: types.StringValue("content_type"),
+				ID: types.StringValue("space/environment/content_type"),
+				EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
+					SpaceID:       types.StringValue("space"),
+					EnvironmentID: types.StringValue("environment"),
+					ContentTypeID: types.StringValue("content_type"),
+				},
 				EditorLayout:  NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemValue]{}),
 				Controls:      NewTypedList([]TypedObject[EditorInterfaceControlValue]{}),
 				GroupControls: NewTypedList([]TypedObject[EditorInterfaceGroupControlValue]{}),
