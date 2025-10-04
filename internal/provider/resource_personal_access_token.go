@@ -89,7 +89,7 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 		resp.Diagnostics.AddError("Failed to create personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
-	var identityModel PersonalAccessTokenIdentityModel
+	var identityModel IDIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -141,7 +141,7 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 		resp.Diagnostics.AddError("Failed to read personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
-	var identityModel PersonalAccessTokenIdentityModel
+	var identityModel IDIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
 	if resp.Diagnostics.HasError() {

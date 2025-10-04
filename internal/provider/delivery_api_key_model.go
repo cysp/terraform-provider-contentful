@@ -10,9 +10,9 @@ type DeliveryAPIKeyIdentityModel struct {
 }
 
 type DeliveryAPIKeyModel struct {
+	IDIdentityModel
 	DeliveryAPIKeyIdentityModel
 
-	ID              types.String            `tfsdk:"id"`
 	Name            types.String            `tfsdk:"name"`
 	Description     types.String            `tfsdk:"description"`
 	Environments    TypedList[types.String] `tfsdk:"environments"`

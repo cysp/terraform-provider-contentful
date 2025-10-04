@@ -11,9 +11,9 @@ type RoleIdentityModel struct {
 }
 
 type RoleModel struct {
+	IDIdentityModel
 	RoleIdentityModel
 
-	ID          types.String                            `tfsdk:"id"`
 	Name        types.String                            `tfsdk:"name"`
 	Description types.String                            `tfsdk:"description"`
 	Permissions TypedMap[TypedList[types.String]]       `tfsdk:"permissions"`

@@ -20,7 +20,9 @@ func NewExtensionModelFromResponse(ctx context.Context, response cm.Extension) (
 	extensionID := response.Sys.ID
 
 	model := ExtensionModel{
-		ID: types.StringValue(strings.Join([]string{spaceID, environmentID, extensionID}, "/")),
+		IDIdentityModel: IDIdentityModel{
+			ID: types.StringValue(strings.Join([]string{spaceID, environmentID, extensionID}, "/")),
+		},
 		ExtensionIdentityModel: ExtensionIdentityModel{
 			SpaceID:       types.StringValue(spaceID),
 			EnvironmentID: types.StringValue(environmentID),

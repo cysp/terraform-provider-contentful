@@ -12,9 +12,9 @@ type ContentTypeIdentityModel struct {
 }
 
 type ContentTypeModel struct {
+	IDIdentityModel
 	ContentTypeIdentityModel
 
-	ID           types.String                                  `tfsdk:"id"`
 	Name         types.String                                  `tfsdk:"name"`
 	Description  types.String                                  `tfsdk:"description"`
 	DisplayField types.String                                  `tfsdk:"display_field"`

@@ -10,9 +10,9 @@ type WebhookIdentityModel struct {
 }
 
 type WebhookModel struct {
+	IDIdentityModel
 	WebhookIdentityModel
 
-	ID                types.String                               `tfsdk:"id"`
 	Name              types.String                               `tfsdk:"name"`
 	URL               types.String                               `tfsdk:"url"`
 	Topics            TypedList[types.String]                    `tfsdk:"topics"`

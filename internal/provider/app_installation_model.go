@@ -12,9 +12,9 @@ type AppInstallationIdentityModel struct {
 }
 
 type AppInstallationModel struct {
+	IDIdentityModel
 	AppInstallationIdentityModel
 
-	ID          types.String         `tfsdk:"id"`
 	Marketplace types.Set            `tfsdk:"marketplace"`
 	Parameters  jsontypes.Normalized `tfsdk:"parameters"`
 }

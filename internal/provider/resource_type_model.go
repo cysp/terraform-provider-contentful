@@ -11,9 +11,9 @@ type ResourceTypeIdentityModel struct {
 }
 
 type ResourceTypeModel struct {
+	IDIdentityModel
 	ResourceTypeIdentityModel
 
-	ID                  types.String              `tfsdk:"id"`
 	ResourceProviderID  types.String              `tfsdk:"resource_provider_id"`
 	Name                types.String              `tfsdk:"name"`
 	DefaultFieldMapping *ResourceTypeFieldMapping `tfsdk:"default_field_mapping"`

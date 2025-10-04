@@ -19,7 +19,9 @@ func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallat
 	appDefinitionID := appInstallation.Sys.AppDefinition.Sys.ID
 
 	model := AppInstallationModel{
-		ID: types.StringValue(strings.Join([]string{spaceID, environmentID, appDefinitionID}, "/")),
+		IDIdentityModel: IDIdentityModel{
+			ID: types.StringValue(strings.Join([]string{spaceID, environmentID, appDefinitionID}, "/")),
+		},
 		AppInstallationIdentityModel: AppInstallationIdentityModel{
 			SpaceID:         types.StringValue(spaceID),
 			EnvironmentID:   types.StringValue(environmentID),

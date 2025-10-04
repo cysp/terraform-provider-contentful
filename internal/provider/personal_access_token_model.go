@@ -5,12 +5,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type PersonalAccessTokenIdentityModel struct {
-	ID types.String `tfsdk:"id"`
-}
-
 type PersonalAccessTokenModel struct {
-	PersonalAccessTokenIdentityModel
+	IDIdentityModel
 
 	Name      types.String            `tfsdk:"name"`
 	ExpiresIn types.Int64             `tfsdk:"expires_in"`

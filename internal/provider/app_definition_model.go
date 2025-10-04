@@ -11,9 +11,9 @@ type AppDefinitionIdentityModel struct {
 }
 
 type AppDefinitionModel struct {
+	IDIdentityModel
 	AppDefinitionIdentityModel
 
-	ID         types.String                 `tfsdk:"id"`
 	Name       types.String                 `tfsdk:"name"`
 	Src        types.String                 `tfsdk:"src"`
 	BundleID   types.String                 `tfsdk:"bundle_id"`
