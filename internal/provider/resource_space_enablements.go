@@ -49,7 +49,9 @@ func (r *spaceEnablementsResource) IdentitySchema(_ context.Context, _ resource.
 }
 
 func (r *spaceEnablementsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("space_id"), path.Root("space_id"), req, resp)
+	ImportStatePassthroughMultipartID(ctx, []path.Path{
+		path.Root("space_id"),
+	}, req, resp)
 }
 
 func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

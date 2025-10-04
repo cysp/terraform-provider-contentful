@@ -49,7 +49,9 @@ func (r *personalAccessTokenResource) IdentitySchema(_ context.Context, _ resour
 }
 
 func (r *personalAccessTokenResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
+	ImportStatePassthroughMultipartID(ctx, []path.Path{
+		path.Root("id"),
+	}, req, resp)
 }
 
 func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

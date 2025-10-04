@@ -22,6 +22,10 @@ func ImportStatePassthroughMultipartID(ctx context.Context, attrPaths []path.Pat
 		}
 
 		for i, attrPath := range attrPaths {
+			if resp.Identity != nil {
+				resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, attrPath, attrValues[i])...)
+			}
+
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, attrPath, attrValues[i])...)
 		}
 
@@ -35,6 +39,10 @@ func ImportStatePassthroughMultipartID(ctx context.Context, attrPaths []path.Pat
 
 		if identityComponentValue.IsUnknown() || identityComponentValue.IsNull() {
 			resp.Diagnostics.AddAttributeError(attrPath, "Resource Import Passthrough Multipart ID Mismatch", "")
+		}
+
+		if resp.Identity != nil {
+			resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, attrPath, identityComponentValue)...)
 		}
 
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, attrPath, identityComponentValue)...)
