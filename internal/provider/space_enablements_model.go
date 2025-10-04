@@ -9,11 +9,11 @@ type SpaceEnablementsIdentityModel struct {
 }
 
 type SpaceEnablementsModel struct {
+	IDIdentityModel
 	SpaceEnablementsIdentityModel
 
-	ID                types.String `tfsdk:"id"`
-	CrossSpaceLinks   types.Bool   `tfsdk:"cross_space_links"`
-	SpaceTemplates    types.Bool   `tfsdk:"space_templates"`
-	StudioExperiences types.Bool   `tfsdk:"studio_experiences"`
-	SuggestConcepts   types.Bool   `tfsdk:"suggest_concepts"`
+	CrossSpaceLinks   types.Bool `tfsdk:"cross_space_links"`
+	SpaceTemplates    types.Bool `tfsdk:"space_templates"`
+	StudioExperiences types.Bool `tfsdk:"studio_experiences"`
+	SuggestConcepts   types.Bool `tfsdk:"suggest_concepts"`
 }

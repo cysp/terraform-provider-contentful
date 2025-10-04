@@ -12,9 +12,9 @@ type ExtensionIdentityModel struct {
 }
 
 type ExtensionModel struct {
+	IDIdentityModel
 	ExtensionIdentityModel
 
-	ID         types.String             `tfsdk:"id"`
 	Extension  *ExtensionModelExtension `tfsdk:"extension"`
 	Parameters jsontypes.Normalized     `tfsdk:"parameters"`
 }

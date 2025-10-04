@@ -12,9 +12,9 @@ type EditorInterfaceIdentityModel struct {
 }
 
 type EditorInterfaceModel struct {
+	IDIdentityModel
 	EditorInterfaceIdentityModel
 
-	ID            types.String                                                 `tfsdk:"id"`
 	EditorLayout  TypedList[TypedObject[EditorInterfaceEditorLayoutItemValue]] `tfsdk:"editor_layout"`
 	Controls      TypedList[TypedObject[EditorInterfaceControlValue]]          `tfsdk:"controls"`
 	GroupControls TypedList[TypedObject[EditorInterfaceGroupControlValue]]     `tfsdk:"group_controls"`

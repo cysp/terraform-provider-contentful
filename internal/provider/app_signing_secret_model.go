@@ -10,8 +10,8 @@ type AppSigningSecretIdentityModel struct {
 }
 
 type AppSigningSecretModel struct {
+	IDIdentityModel
 	AppSigningSecretIdentityModel
 
-	ID    types.String `tfsdk:"id"`
 	Value types.String `tfsdk:"value"`
 }

@@ -10,9 +10,9 @@ type ResourceProviderIdentityModel struct {
 }
 
 type ResourceProviderModel struct {
+	IDIdentityModel
 	ResourceProviderIdentityModel
 
-	ID                 types.String `tfsdk:"id"`
 	ResourceProviderID types.String `tfsdk:"resource_provider_id"`
 	FunctionID         types.String `tfsdk:"function_id"`
 }

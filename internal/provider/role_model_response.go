@@ -17,7 +17,9 @@ func NewRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleMo
 	roleID := role.Sys.ID
 
 	model := RoleModel{
-		ID: types.StringValue(strings.Join([]string{spaceID, roleID}, "/")),
+		IDIdentityModel: IDIdentityModel{
+			ID: types.StringValue(strings.Join([]string{spaceID, roleID}, "/")),
+		},
 		RoleIdentityModel: RoleIdentityModel{
 			SpaceID: types.StringValue(spaceID),
 			RoleID:  types.StringValue(roleID),
