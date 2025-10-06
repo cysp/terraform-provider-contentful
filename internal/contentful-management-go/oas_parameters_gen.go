@@ -3091,7 +3091,7 @@ func decodeGetExtensionParams(args [3]string, argsEscaped bool, r *http.Request)
 
 // GetMarketplaceAppDefinitionsParams is parameters of getMarketplaceAppDefinitions operation.
 type GetMarketplaceAppDefinitionsParams struct {
-	SysIDIn []string
+	SysIDIn []string `json:",omitempty"`
 }
 
 func unpackGetMarketplaceAppDefinitionsParams(packed middleware.Parameters) (params GetMarketplaceAppDefinitionsParams) {
@@ -4067,7 +4067,7 @@ type PutAppInstallationParams struct {
 	SpaceID                string
 	EnvironmentID          string
 	AppDefinitionID        string
-	XContentfulMarketplace OptString
+	XContentfulMarketplace OptString `json:",omitempty,omitzero"`
 }
 
 func unpackPutAppInstallationParams(packed middleware.Parameters) (params PutAppInstallationParams) {
