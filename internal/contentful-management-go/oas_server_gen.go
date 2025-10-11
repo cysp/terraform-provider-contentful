@@ -140,6 +140,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
 	GetContentType(ctx context.Context, params GetContentTypeParams) (GetContentTypeRes, error)
+	// GetContentTypes implements getContentTypes operation.
+	//
+	// Get a collection of content types.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/content_types
+	GetContentTypes(ctx context.Context, params GetContentTypesParams) (GetContentTypesRes, error)
 	// GetDeliveryApiKey implements getDeliveryApiKey operation.
 	//
 	// Get a single delivery api key.
