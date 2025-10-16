@@ -29,6 +29,8 @@ type Handler struct {
 	contentTypes     SpaceEnvironmentMap[*cm.ContentType]
 	editorInterfaces SpaceEnvironmentMap[*cm.EditorInterface]
 
+	entries SpaceEnvironmentMap[*cm.Entry]
+
 	extensions SpaceEnvironmentMap[*cm.Extension]
 
 	roles SpaceMap[*cm.Role]
@@ -54,6 +56,7 @@ func NewHandler() *Handler {
 		appSigningSecrets:              NewOrganizationMap[*cm.AppSigningSecret](),
 		contentTypes:                   NewSpaceEnvironmentMap[*cm.ContentType](),
 		editorInterfaces:               NewSpaceEnvironmentMap[*cm.EditorInterface](),
+		entries:                        NewSpaceEnvironmentMap[*cm.Entry](),
 		extensions:                     NewSpaceEnvironmentMap[*cm.Extension](),
 		roles:                          NewSpaceMap[*cm.Role](),
 		webhookDefinitions:             NewSpaceMap[*cm.WebhookDefinition](),
