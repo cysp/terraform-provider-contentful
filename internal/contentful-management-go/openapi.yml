@@ -48,6 +48,12 @@ components:
       required: true
       schema:
         type: string
+    entry_id:
+      in: path
+      name: entry_id
+      required: true
+      schema:
+        type: string
     extension_id:
       in: path
       name: extension_id
@@ -75,6 +81,18 @@ components:
     webhook_definition_id:
       in: path
       name: webhook_definition_id
+      required: true
+      schema:
+        type: string
+    x-contentful-content-type-optional:
+      in: header
+      name: X-Contentful-Content-Type
+      required: false
+      schema:
+        type: string
+    x-contentful-content-type-required:
+      in: header
+      name: X-Contentful-Content-Type
       required: true
       schema:
         type: string
@@ -212,6 +230,15 @@ components:
             publishedAt:
               type: string
               format: date-time
+    BaseSysWithContentType:
+      allOf:
+        - $ref: "#/components/schemas/BaseSys"
+        - type: object
+          properties:
+            contentType:
+              $ref: "#/components/schemas/ContentTypeLink"
+          required:
+            - contentType
     UserSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
@@ -918,6 +945,20 @@ components:
           type: string
       required:
         - type
+    TagLink:
+      type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "#/components/schemas/LinkSys"
+            - type: object
+              properties:
+                linkType:
+                  type: string
+                  enum:
+                    - Tag
+      required:
+        - sys
     TaxonomyConceptLink:
       type: object
       properties:
@@ -1352,6 +1393,48 @@ components:
           required:
             - sys
         - $ref: "#/components/schemas/WebhookDefinitionFields"
+    EntrySys:
+      allOf:
+        - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
+        - $ref: "#/components/schemas/BaseSysWithContentType"
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersionAndPublishedVersion"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - Entry
+    EntryFields:
+      type: object
+      additionalProperties: {}
+    Entry:
+      type: object
+      properties:
+        sys:
+          $ref: "#/components/schemas/EntrySys"
+        metadata:
+          $ref: "#/components/schemas/EntryMetadata"
+        fields:
+          $ref: "#/components/schemas/EntryFields"
+      required:
+        - sys
+    EntryRequest:
+      type: object
+      properties:
+        metadata:
+          $ref: "#/components/schemas/EntryMetadata"
+        fields:
+          $ref: "#/components/schemas/EntryFields"
+    EntryMetadata:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/EntryMetadataTagsItem"
+    EntryMetadataTagsItem:
+      allOf:
+        - $ref: "#/components/schemas/TagLink"
   securitySchemes:
     accessToken:
       type: http
@@ -2053,6 +2136,89 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "#/components/schemas/EditorInterface"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/entries:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+    post:
+      operationId: createEntry
+      summary: Create an entry
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/x-contentful-content-type-required"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "#/components/schemas/EntryRequest"
+      responses:
+        2XX:
+          description: An entry
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/entry_id"
+    get:
+      operationId: getEntry
+      summary: Get a single entry
+      responses:
+        200:
+          description: An entry
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putEntry
+      summary: Create or update an entry
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/entry_id"
+        - $ref: "#/components/parameters/x-contentful-content-type-optional"
+        - $ref: "#/components/parameters/x-contentful-version"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "#/components/schemas/EntryRequest"
+      responses:
+        2XX:
+          description: An entry
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteEntry
+      summary: Delete an entry
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
         401:
           $ref: "#/components/responses/unauthorized"
         default:

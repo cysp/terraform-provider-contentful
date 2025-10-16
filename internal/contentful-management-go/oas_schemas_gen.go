@@ -1629,6 +1629,7 @@ func NewErrorApplicationJSONError(v Error) ApplicationJSONError {
 func (*ApplicationJSONError) activateContentTypeRes()          {}
 func (*ApplicationJSONError) createAppDefinitionRes()          {}
 func (*ApplicationJSONError) createDeliveryApiKeyRes()         {}
+func (*ApplicationJSONError) createEntryRes()                  {}
 func (*ApplicationJSONError) createPersonalAccessTokenRes()    {}
 func (*ApplicationJSONError) createRoleRes()                   {}
 func (*ApplicationJSONError) createWebhookDefinitionRes()      {}
@@ -1638,6 +1639,7 @@ func (*ApplicationJSONError) deleteAppInstallationRes()        {}
 func (*ApplicationJSONError) deleteAppSigningSecretRes()       {}
 func (*ApplicationJSONError) deleteContentTypeRes()            {}
 func (*ApplicationJSONError) deleteDeliveryApiKeyRes()         {}
+func (*ApplicationJSONError) deleteEntryRes()                  {}
 func (*ApplicationJSONError) deleteExtensionRes()              {}
 func (*ApplicationJSONError) deleteResourceProviderRes()       {}
 func (*ApplicationJSONError) deleteResourceTypeRes()           {}
@@ -1650,6 +1652,7 @@ func (*ApplicationJSONError) getAuthenticatedUserRes()         {}
 func (*ApplicationJSONError) getContentTypeRes()               {}
 func (*ApplicationJSONError) getDeliveryApiKeyRes()            {}
 func (*ApplicationJSONError) getEditorInterfaceRes()           {}
+func (*ApplicationJSONError) getEntryRes()                     {}
 func (*ApplicationJSONError) getExtensionRes()                 {}
 func (*ApplicationJSONError) getMarketplaceAppDefinitionsRes() {}
 func (*ApplicationJSONError) getPersonalAccessTokenRes()       {}
@@ -1664,6 +1667,7 @@ func (*ApplicationJSONError) putAppInstallationRes()           {}
 func (*ApplicationJSONError) putAppSigningSecretRes()          {}
 func (*ApplicationJSONError) putContentTypeRes()               {}
 func (*ApplicationJSONError) putEditorInterfaceRes()           {}
+func (*ApplicationJSONError) putEntryRes()                     {}
 func (*ApplicationJSONError) putExtensionRes()                 {}
 func (*ApplicationJSONError) putResourceProviderRes()          {}
 func (*ApplicationJSONError) putResourceTypeRes()              {}
@@ -1702,6 +1706,7 @@ func (s *ApplicationJSONErrorStatusCode) SetResponse(val ApplicationJSONError) {
 func (*ApplicationJSONErrorStatusCode) activateContentTypeRes()          {}
 func (*ApplicationJSONErrorStatusCode) createAppDefinitionRes()          {}
 func (*ApplicationJSONErrorStatusCode) createDeliveryApiKeyRes()         {}
+func (*ApplicationJSONErrorStatusCode) createEntryRes()                  {}
 func (*ApplicationJSONErrorStatusCode) createPersonalAccessTokenRes()    {}
 func (*ApplicationJSONErrorStatusCode) createRoleRes()                   {}
 func (*ApplicationJSONErrorStatusCode) createWebhookDefinitionRes()      {}
@@ -1711,6 +1716,7 @@ func (*ApplicationJSONErrorStatusCode) deleteAppInstallationRes()        {}
 func (*ApplicationJSONErrorStatusCode) deleteAppSigningSecretRes()       {}
 func (*ApplicationJSONErrorStatusCode) deleteContentTypeRes()            {}
 func (*ApplicationJSONErrorStatusCode) deleteDeliveryApiKeyRes()         {}
+func (*ApplicationJSONErrorStatusCode) deleteEntryRes()                  {}
 func (*ApplicationJSONErrorStatusCode) deleteExtensionRes()              {}
 func (*ApplicationJSONErrorStatusCode) deleteResourceProviderRes()       {}
 func (*ApplicationJSONErrorStatusCode) deleteResourceTypeRes()           {}
@@ -1723,6 +1729,7 @@ func (*ApplicationJSONErrorStatusCode) getAuthenticatedUserRes()         {}
 func (*ApplicationJSONErrorStatusCode) getContentTypeRes()               {}
 func (*ApplicationJSONErrorStatusCode) getDeliveryApiKeyRes()            {}
 func (*ApplicationJSONErrorStatusCode) getEditorInterfaceRes()           {}
+func (*ApplicationJSONErrorStatusCode) getEntryRes()                     {}
 func (*ApplicationJSONErrorStatusCode) getExtensionRes()                 {}
 func (*ApplicationJSONErrorStatusCode) getMarketplaceAppDefinitionsRes() {}
 func (*ApplicationJSONErrorStatusCode) getPersonalAccessTokenRes()       {}
@@ -1737,6 +1744,7 @@ func (*ApplicationJSONErrorStatusCode) putAppInstallationRes()           {}
 func (*ApplicationJSONErrorStatusCode) putAppSigningSecretRes()          {}
 func (*ApplicationJSONErrorStatusCode) putContentTypeRes()               {}
 func (*ApplicationJSONErrorStatusCode) putEditorInterfaceRes()           {}
+func (*ApplicationJSONErrorStatusCode) putEntryRes()                     {}
 func (*ApplicationJSONErrorStatusCode) putExtensionRes()                 {}
 func (*ApplicationJSONErrorStatusCode) putResourceProviderRes()          {}
 func (*ApplicationJSONErrorStatusCode) putResourceTypeRes()              {}
@@ -1790,6 +1798,7 @@ func NewErrorApplicationVndContentfulManagementV1JSONError(v Error) ApplicationV
 func (*ApplicationVndContentfulManagementV1JSONError) activateContentTypeRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) createAppDefinitionRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) createDeliveryApiKeyRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONError) createEntryRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONError) createPersonalAccessTokenRes()    {}
 func (*ApplicationVndContentfulManagementV1JSONError) createRoleRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONError) createWebhookDefinitionRes()      {}
@@ -1799,6 +1808,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) deleteAppInstallationRes()
 func (*ApplicationVndContentfulManagementV1JSONError) deleteAppSigningSecretRes()       {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteContentTypeRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteDeliveryApiKeyRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteEntryRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteExtensionRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceProviderRes()       {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceTypeRes()           {}
@@ -1811,6 +1821,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getAuthenticatedUserRes() 
 func (*ApplicationVndContentfulManagementV1JSONError) getContentTypeRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryApiKeyRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEditorInterfaceRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONError) getEntryRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONError) getExtensionRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONError) getMarketplaceAppDefinitionsRes() {}
 func (*ApplicationVndContentfulManagementV1JSONError) getPersonalAccessTokenRes()       {}
@@ -1825,6 +1836,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) putAppInstallationRes()   
 func (*ApplicationVndContentfulManagementV1JSONError) putAppSigningSecretRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) putContentTypeRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONError) putEditorInterfaceRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONError) putEntryRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONError) putExtensionRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONError) putResourceProviderRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) putResourceTypeRes()              {}
@@ -1863,6 +1875,7 @@ func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) SetResponse(va
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) activateContentTypeRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createAppDefinitionRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createDeliveryApiKeyRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createEntryRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createPersonalAccessTokenRes()    {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createRoleRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createWebhookDefinitionRes()      {}
@@ -1872,6 +1885,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppInstall
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppSigningSecretRes()       {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteContentTypeRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteDeliveryApiKeyRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEntryRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteExtensionRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceProviderRes()       {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceTypeRes()           {}
@@ -1884,6 +1898,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAuthenticated
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypeRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryApiKeyRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEditorInterfaceRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEntryRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getExtensionRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getMarketplaceAppDefinitionsRes() {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPersonalAccessTokenRes()       {}
@@ -1898,6 +1913,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppInstallati
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppSigningSecretRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putContentTypeRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putEditorInterfaceRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putEntryRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putExtensionRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceProviderRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceTypeRes()              {}
@@ -3586,6 +3602,278 @@ func (s *EditorInterfaceSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/Entry
+type Entry struct {
+	Sys      EntrySys         `json:"sys"`
+	Metadata OptEntryMetadata `json:"metadata"`
+	Fields   OptEntryFields   `json:"fields"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Entry) GetSys() EntrySys {
+	return s.Sys
+}
+
+// GetMetadata returns the value of Metadata.
+func (s *Entry) GetMetadata() OptEntryMetadata {
+	return s.Metadata
+}
+
+// GetFields returns the value of Fields.
+func (s *Entry) GetFields() OptEntryFields {
+	return s.Fields
+}
+
+// SetSys sets the value of Sys.
+func (s *Entry) SetSys(val EntrySys) {
+	s.Sys = val
+}
+
+// SetMetadata sets the value of Metadata.
+func (s *Entry) SetMetadata(val OptEntryMetadata) {
+	s.Metadata = val
+}
+
+// SetFields sets the value of Fields.
+func (s *Entry) SetFields(val OptEntryFields) {
+	s.Fields = val
+}
+
+func (*Entry) getEntryRes() {}
+
+// Ref: #/components/schemas/EntryFields
+type EntryFields map[string]jx.Raw
+
+func (s *EntryFields) init() EntryFields {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+// Ref: #/components/schemas/EntryMetadata
+type EntryMetadata struct {
+	Tags []TagLink `json:"tags"`
+}
+
+// GetTags returns the value of Tags.
+func (s *EntryMetadata) GetTags() []TagLink {
+	return s.Tags
+}
+
+// SetTags sets the value of Tags.
+func (s *EntryMetadata) SetTags(val []TagLink) {
+	s.Tags = val
+}
+
+// Ref: #/components/schemas/EntryRequest
+type EntryRequest struct {
+	Metadata OptEntryMetadata `json:"metadata"`
+	Fields   OptEntryFields   `json:"fields"`
+}
+
+// GetMetadata returns the value of Metadata.
+func (s *EntryRequest) GetMetadata() OptEntryMetadata {
+	return s.Metadata
+}
+
+// GetFields returns the value of Fields.
+func (s *EntryRequest) GetFields() OptEntryFields {
+	return s.Fields
+}
+
+// SetMetadata sets the value of Metadata.
+func (s *EntryRequest) SetMetadata(val OptEntryMetadata) {
+	s.Metadata = val
+}
+
+// SetFields sets the value of Fields.
+func (s *EntryRequest) SetFields(val OptEntryFields) {
+	s.Fields = val
+}
+
+// EntryStatusCode wraps Entry with StatusCode.
+type EntryStatusCode struct {
+	StatusCode int
+	Response   Entry
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *EntryStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *EntryStatusCode) GetResponse() Entry {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *EntryStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *EntryStatusCode) SetResponse(val Entry) {
+	s.Response = val
+}
+
+func (*EntryStatusCode) createEntryRes() {}
+func (*EntryStatusCode) putEntryRes()    {}
+
+// Merged schema.
+// Ref: #/components/schemas/EntrySys
+type EntrySys struct {
+	// Merged property.
+	Type             EntrySysType    `json:"type"`
+	Space            SpaceLink       `json:"space"`
+	Environment      EnvironmentLink `json:"environment"`
+	ContentType      ContentTypeLink `json:"contentType"`
+	ID               string          `json:"id"`
+	Version          int             `json:"version"`
+	CreatedAt        OptDateTime     `json:"createdAt"`
+	UpdatedAt        OptDateTime     `json:"updatedAt"`
+	PublishedVersion OptInt          `json:"publishedVersion"`
+	PublishedAt      OptDateTime     `json:"publishedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *EntrySys) GetType() EntrySysType {
+	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *EntrySys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *EntrySys) GetEnvironment() EnvironmentLink {
+	return s.Environment
+}
+
+// GetContentType returns the value of ContentType.
+func (s *EntrySys) GetContentType() ContentTypeLink {
+	return s.ContentType
+}
+
+// GetID returns the value of ID.
+func (s *EntrySys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *EntrySys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *EntrySys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *EntrySys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// GetPublishedVersion returns the value of PublishedVersion.
+func (s *EntrySys) GetPublishedVersion() OptInt {
+	return s.PublishedVersion
+}
+
+// GetPublishedAt returns the value of PublishedAt.
+func (s *EntrySys) GetPublishedAt() OptDateTime {
+	return s.PublishedAt
+}
+
+// SetType sets the value of Type.
+func (s *EntrySys) SetType(val EntrySysType) {
+	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *EntrySys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *EntrySys) SetEnvironment(val EnvironmentLink) {
+	s.Environment = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *EntrySys) SetContentType(val ContentTypeLink) {
+	s.ContentType = val
+}
+
+// SetID sets the value of ID.
+func (s *EntrySys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *EntrySys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *EntrySys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *EntrySys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// SetPublishedVersion sets the value of PublishedVersion.
+func (s *EntrySys) SetPublishedVersion(val OptInt) {
+	s.PublishedVersion = val
+}
+
+// SetPublishedAt sets the value of PublishedAt.
+func (s *EntrySys) SetPublishedAt(val OptDateTime) {
+	s.PublishedAt = val
+}
+
+// Merged schema.
+type EntrySysType string
+
+const (
+	EntrySysTypeEntry EntrySysType = "Entry"
+)
+
+// AllValues returns all EntrySysType values.
+func (EntrySysType) AllValues() []EntrySysType {
+	return []EntrySysType{
+		EntrySysTypeEntry,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EntrySysType) MarshalText() ([]byte, error) {
+	switch s {
+	case EntrySysTypeEntry:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EntrySysType) UnmarshalText(data []byte) error {
+	switch EntrySysType(data) {
+	case EntrySysTypeEntry:
+		*s = EntrySysTypeEntry
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/components/schemas/EnvironmentLink
 type EnvironmentLink struct {
 	Sys EnvironmentLinkSys `json:"sys"`
@@ -4567,6 +4855,7 @@ func (*NoContent) deleteAppInstallationRes()   {}
 func (*NoContent) deleteAppSigningSecretRes()  {}
 func (*NoContent) deleteContentTypeRes()       {}
 func (*NoContent) deleteDeliveryApiKeyRes()    {}
+func (*NoContent) deleteEntryRes()             {}
 func (*NoContent) deleteExtensionRes()         {}
 func (*NoContent) deleteResourceProviderRes()  {}
 func (*NoContent) deleteResourceTypeRes()      {}
@@ -5165,6 +5454,98 @@ func (o OptDateTime) Get() (v time.Time, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEntryFields returns new OptEntryFields with value set to v.
+func NewOptEntryFields(v EntryFields) OptEntryFields {
+	return OptEntryFields{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEntryFields is optional EntryFields.
+type OptEntryFields struct {
+	Value EntryFields
+	Set   bool
+}
+
+// IsSet returns true if OptEntryFields was set.
+func (o OptEntryFields) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEntryFields) Reset() {
+	var v EntryFields
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEntryFields) SetTo(v EntryFields) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEntryFields) Get() (v EntryFields, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEntryFields) Or(d EntryFields) EntryFields {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEntryMetadata returns new OptEntryMetadata with value set to v.
+func NewOptEntryMetadata(v EntryMetadata) OptEntryMetadata {
+	return OptEntryMetadata{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEntryMetadata is optional EntryMetadata.
+type OptEntryMetadata struct {
+	Value EntryMetadata
+	Set   bool
+}
+
+// IsSet returns true if OptEntryMetadata was set.
+func (o OptEntryMetadata) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEntryMetadata) Reset() {
+	var v EntryMetadata
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEntryMetadata) SetTo(v EntryMetadata) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEntryMetadata) Get() (v EntryMetadata, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEntryMetadata) Or(d EntryMetadata) EntryMetadata {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -8766,6 +9147,130 @@ func (s *SpaceLinkSysType) UnmarshalText(data []byte) error {
 	switch SpaceLinkSysType(data) {
 	case SpaceLinkSysTypeLink:
 		*s = SpaceLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/TagLink
+type TagLink struct {
+	Sys TagLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *TagLink) GetSys() TagLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *TagLink) SetSys(val TagLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type TagLinkSys struct {
+	// Merged property.
+	Type TagLinkSysType `json:"type"`
+	ID   string         `json:"id"`
+	// Merged property.
+	LinkType TagLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *TagLinkSys) GetType() TagLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TagLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *TagLinkSys) GetLinkType() TagLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *TagLinkSys) SetType(val TagLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TagLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *TagLinkSys) SetLinkType(val TagLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type TagLinkSysLinkType string
+
+const (
+	TagLinkSysLinkTypeTag TagLinkSysLinkType = "Tag"
+)
+
+// AllValues returns all TagLinkSysLinkType values.
+func (TagLinkSysLinkType) AllValues() []TagLinkSysLinkType {
+	return []TagLinkSysLinkType{
+		TagLinkSysLinkTypeTag,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TagLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case TagLinkSysLinkTypeTag:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TagLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch TagLinkSysLinkType(data) {
+	case TagLinkSysLinkTypeTag:
+		*s = TagLinkSysLinkTypeTag
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type TagLinkSysType string
+
+const (
+	TagLinkSysTypeLink TagLinkSysType = "Link"
+)
+
+// AllValues returns all TagLinkSysType values.
+func (TagLinkSysType) AllValues() []TagLinkSysType {
+	return []TagLinkSysType{
+		TagLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TagLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TagLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TagLinkSysType) UnmarshalText(data []byte) error {
+	switch TagLinkSysType(data) {
+	case TagLinkSysTypeLink:
+		*s = TagLinkSysTypeLink
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

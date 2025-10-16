@@ -630,49 +630,132 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 									}
 
-								case 'e': // Prefix: "extensions/"
+								case 'e': // Prefix: "e"
 
-									if l := len("extensions/"); len(elem) >= l && elem[0:l] == "extensions/" {
+									if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
-									// Param: "extension_id"
-									// Leaf parameter, slashes are prohibited
-									idx := strings.IndexByte(elem, '/')
-									if idx >= 0 {
+									if len(elem) == 0 {
 										break
 									}
-									args[2] = elem
-									elem = ""
+									switch elem[0] {
+									case 'n': // Prefix: "ntries"
 
-									if len(elem) == 0 {
-										// Leaf node.
-										switch r.Method {
-										case "DELETE":
-											s.handleDeleteExtensionRequest([3]string{
-												args[0],
-												args[1],
-												args[2],
-											}, elemIsEscaped, w, r)
-										case "GET":
-											s.handleGetExtensionRequest([3]string{
-												args[0],
-												args[1],
-												args[2],
-											}, elemIsEscaped, w, r)
-										case "PUT":
-											s.handlePutExtensionRequest([3]string{
-												args[0],
-												args[1],
-												args[2],
-											}, elemIsEscaped, w, r)
-										default:
-											s.notAllowed(w, r, "DELETE,GET,PUT")
+										if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
+											elem = elem[l:]
+										} else {
+											break
 										}
 
-										return
+										if len(elem) == 0 {
+											switch r.Method {
+											case "POST":
+												s.handleCreateEntryRequest([2]string{
+													args[0],
+													args[1],
+												}, elemIsEscaped, w, r)
+											default:
+												s.notAllowed(w, r, "POST")
+											}
+
+											return
+										}
+										switch elem[0] {
+										case '/': // Prefix: "/"
+
+											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											// Param: "entry_id"
+											// Leaf parameter, slashes are prohibited
+											idx := strings.IndexByte(elem, '/')
+											if idx >= 0 {
+												break
+											}
+											args[2] = elem
+											elem = ""
+
+											if len(elem) == 0 {
+												// Leaf node.
+												switch r.Method {
+												case "DELETE":
+													s.handleDeleteEntryRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "GET":
+													s.handleGetEntryRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "PUT":
+													s.handlePutEntryRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												default:
+													s.notAllowed(w, r, "DELETE,GET,PUT")
+												}
+
+												return
+											}
+
+										}
+
+									case 'x': // Prefix: "xtensions/"
+
+										if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										// Param: "extension_id"
+										// Leaf parameter, slashes are prohibited
+										idx := strings.IndexByte(elem, '/')
+										if idx >= 0 {
+											break
+										}
+										args[2] = elem
+										elem = ""
+
+										if len(elem) == 0 {
+											// Leaf node.
+											switch r.Method {
+											case "DELETE":
+												s.handleDeleteExtensionRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											case "GET":
+												s.handleGetExtensionRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											case "PUT":
+												s.handlePutExtensionRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											default:
+												s.notAllowed(w, r, "DELETE,GET,PUT")
+											}
+
+											return
+										}
+
 									}
 
 								}
@@ -1664,53 +1747,141 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 									}
 
-								case 'e': // Prefix: "extensions/"
+								case 'e': // Prefix: "e"
 
-									if l := len("extensions/"); len(elem) >= l && elem[0:l] == "extensions/" {
+									if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
-									// Param: "extension_id"
-									// Leaf parameter, slashes are prohibited
-									idx := strings.IndexByte(elem, '/')
-									if idx >= 0 {
+									if len(elem) == 0 {
 										break
 									}
-									args[2] = elem
-									elem = ""
+									switch elem[0] {
+									case 'n': // Prefix: "ntries"
 
-									if len(elem) == 0 {
-										// Leaf node.
-										switch method {
-										case "DELETE":
-											r.name = DeleteExtensionOperation
-											r.summary = "Delete an extension"
-											r.operationID = "deleteExtension"
-											r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
-											r.args = args
-											r.count = 3
-											return r, true
-										case "GET":
-											r.name = GetExtensionOperation
-											r.summary = "Get a single extension"
-											r.operationID = "getExtension"
-											r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
-											r.args = args
-											r.count = 3
-											return r, true
-										case "PUT":
-											r.name = PutExtensionOperation
-											r.summary = "Create or update an extension"
-											r.operationID = "putExtension"
-											r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
-											r.args = args
-											r.count = 3
-											return r, true
-										default:
-											return
+										if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
+											elem = elem[l:]
+										} else {
+											break
 										}
+
+										if len(elem) == 0 {
+											switch method {
+											case "POST":
+												r.name = CreateEntryOperation
+												r.summary = "Create an entry"
+												r.operationID = "createEntry"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
+												r.args = args
+												r.count = 2
+												return r, true
+											default:
+												return
+											}
+										}
+										switch elem[0] {
+										case '/': // Prefix: "/"
+
+											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											// Param: "entry_id"
+											// Leaf parameter, slashes are prohibited
+											idx := strings.IndexByte(elem, '/')
+											if idx >= 0 {
+												break
+											}
+											args[2] = elem
+											elem = ""
+
+											if len(elem) == 0 {
+												// Leaf node.
+												switch method {
+												case "DELETE":
+													r.name = DeleteEntryOperation
+													r.summary = "Delete an entry"
+													r.operationID = "deleteEntry"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "GET":
+													r.name = GetEntryOperation
+													r.summary = "Get a single entry"
+													r.operationID = "getEntry"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "PUT":
+													r.name = PutEntryOperation
+													r.summary = "Create or update an entry"
+													r.operationID = "putEntry"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												default:
+													return
+												}
+											}
+
+										}
+
+									case 'x': // Prefix: "xtensions/"
+
+										if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										// Param: "extension_id"
+										// Leaf parameter, slashes are prohibited
+										idx := strings.IndexByte(elem, '/')
+										if idx >= 0 {
+											break
+										}
+										args[2] = elem
+										elem = ""
+
+										if len(elem) == 0 {
+											// Leaf node.
+											switch method {
+											case "DELETE":
+												r.name = DeleteExtensionOperation
+												r.summary = "Delete an extension"
+												r.operationID = "deleteExtension"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											case "GET":
+												r.name = GetExtensionOperation
+												r.summary = "Get a single extension"
+												r.operationID = "getExtension"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											case "PUT":
+												r.name = PutExtensionOperation
+												r.summary = "Create or update an extension"
+												r.operationID = "putExtension"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											default:
+												return
+											}
+										}
+
 									}
 
 								}
