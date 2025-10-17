@@ -4805,6 +4805,10 @@ func (s *Server) handlePublishEntryRequest(args [3]string, argsEscaped bool, w h
 					Name: "entry_id",
 					In:   "path",
 				}: params.EntryID,
+				{
+					Name: "X-Contentful-Version",
+					In:   "header",
+				}: params.XContentfulVersion,
 			},
 			Raw: r,
 		}
@@ -6587,6 +6591,10 @@ func (s *Server) handleUnpublishEntryRequest(args [3]string, argsEscaped bool, w
 					Name: "entry_id",
 					In:   "path",
 				}: params.EntryID,
+				{
+					Name: "X-Contentful-Version",
+					In:   "header",
+				}: params.XContentfulVersion,
 			},
 			Raw: r,
 		}
