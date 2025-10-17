@@ -224,6 +224,15 @@ components:
             publishedAt:
               type: string
               format: date-time
+    BaseSysWithContentType:
+      allOf:
+        - $ref: "#/components/schemas/BaseSys"
+        - type: object
+          properties:
+            contentType:
+              $ref: "#/components/schemas/ContentTypeLink"
+          required:
+            - contentType
     UserSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
@@ -1381,6 +1390,7 @@ components:
     EntrySys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
+        - $ref: "#/components/schemas/BaseSysWithContentType"
         - $ref: "#/components/schemas/BaseSysWithIdAndVersionAndPublishedVersion"
         - type: object
           properties:

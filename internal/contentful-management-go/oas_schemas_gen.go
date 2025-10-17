@@ -3866,6 +3866,7 @@ type EntrySys struct {
 	Type             EntrySysType    `json:"type"`
 	Space            SpaceLink       `json:"space"`
 	Environment      EnvironmentLink `json:"environment"`
+	ContentType      ContentTypeLink `json:"contentType"`
 	ID               string          `json:"id"`
 	Version          int             `json:"version"`
 	CreatedAt        OptDateTime     `json:"createdAt"`
@@ -3887,6 +3888,11 @@ func (s *EntrySys) GetSpace() SpaceLink {
 // GetEnvironment returns the value of Environment.
 func (s *EntrySys) GetEnvironment() EnvironmentLink {
 	return s.Environment
+}
+
+// GetContentType returns the value of ContentType.
+func (s *EntrySys) GetContentType() ContentTypeLink {
+	return s.ContentType
 }
 
 // GetID returns the value of ID.
@@ -3932,6 +3938,11 @@ func (s *EntrySys) SetSpace(val SpaceLink) {
 // SetEnvironment sets the value of Environment.
 func (s *EntrySys) SetEnvironment(val EnvironmentLink) {
 	s.Environment = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *EntrySys) SetContentType(val ContentTypeLink) {
+	s.ContentType = val
 }
 
 // SetID sets the value of ID.

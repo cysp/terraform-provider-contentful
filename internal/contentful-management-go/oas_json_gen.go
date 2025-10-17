@@ -8742,6 +8742,10 @@ func (s *EntrySys) encodeFields(e *jx.Encoder) {
 		s.Environment.Encode(e)
 	}
 	{
+		e.FieldStart("contentType")
+		s.ContentType.Encode(e)
+	}
+	{
 		e.FieldStart("id")
 		e.Str(s.ID)
 	}
@@ -8775,16 +8779,17 @@ func (s *EntrySys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfEntrySys = [9]string{
+var jsonFieldsNameOfEntrySys = [10]string{
 	0: "type",
 	1: "space",
 	2: "environment",
-	3: "id",
-	4: "version",
-	5: "createdAt",
-	6: "updatedAt",
-	7: "publishedVersion",
-	8: "publishedAt",
+	3: "contentType",
+	4: "id",
+	5: "version",
+	6: "createdAt",
+	7: "updatedAt",
+	8: "publishedVersion",
+	9: "publishedAt",
 }
 
 // Decode decodes EntrySys from json.
@@ -8826,8 +8831,18 @@ func (s *EntrySys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"environment\"")
 			}
-		case "id":
+		case "contentType":
 			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				if err := s.ContentType.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"contentType\"")
+			}
+		case "id":
+			requiredBitSet[0] |= 1 << 4
 			if err := func() error {
 				v, err := d.Str()
 				s.ID = string(v)
@@ -8839,7 +8854,7 @@ func (s *EntrySys) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 4
+			requiredBitSet[0] |= 1 << 5
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -8900,7 +8915,7 @@ func (s *EntrySys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [2]uint8{
-		0b00011111,
+		0b00111111,
 		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
