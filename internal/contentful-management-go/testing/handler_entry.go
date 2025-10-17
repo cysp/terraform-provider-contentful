@@ -90,3 +90,44 @@ func (ts *Handler) DeleteEntry(_ context.Context, params cm.DeleteEntryParams) (
 
 	return &cm.NoContent{}, nil
 }
+
+//nolint:ireturn
+func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams) (cm.PublishEntryRes, error) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.EntryID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
+	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
+	if entry == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Entry not found"), nil), nil
+	}
+
+	publishEntry(entry)
+
+	return &cm.EntryStatusCode{
+		StatusCode: http.StatusOK,
+		Response:   *entry,
+	}, nil
+}
+
+//nolint:ireturn
+func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryParams) (cm.UnpublishEntryRes, error) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.EntryID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
+	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
+	if entry == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Entry not found"), nil), nil
+	}
+
+	entry.Sys.PublishedVersion.Reset()
+
+	return &cm.NoContent{}, nil
+}

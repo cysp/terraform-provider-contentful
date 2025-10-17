@@ -48,3 +48,9 @@ func UpdateEntryFromRequest(entry *cm.Entry, req *cm.EntryRequest) {
 	entry.Fields = req.Fields
 	entry.Metadata = req.Metadata
 }
+
+func publishEntry(entry *cm.Entry) {
+	entry.Sys.PublishedVersion.SetTo(entry.Sys.Version)
+
+	entry.Sys.Version++
+}
