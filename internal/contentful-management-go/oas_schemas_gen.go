@@ -1662,6 +1662,7 @@ func (*ApplicationJSONError) getResourceTypeRes()              {}
 func (*ApplicationJSONError) getRoleRes()                      {}
 func (*ApplicationJSONError) getSpaceEnablementsRes()          {}
 func (*ApplicationJSONError) getWebhookDefinitionRes()         {}
+func (*ApplicationJSONError) publishEntryRes()                 {}
 func (*ApplicationJSONError) putAppDefinitionRes()             {}
 func (*ApplicationJSONError) putAppInstallationRes()           {}
 func (*ApplicationJSONError) putAppSigningSecretRes()          {}
@@ -1673,6 +1674,7 @@ func (*ApplicationJSONError) putResourceProviderRes()          {}
 func (*ApplicationJSONError) putResourceTypeRes()              {}
 func (*ApplicationJSONError) putSpaceEnablementsRes()          {}
 func (*ApplicationJSONError) revokePersonalAccessTokenRes()    {}
+func (*ApplicationJSONError) unpublishEntryRes()               {}
 func (*ApplicationJSONError) updateDeliveryApiKeyRes()         {}
 func (*ApplicationJSONError) updateRoleRes()                   {}
 func (*ApplicationJSONError) updateWebhookDefinitionRes()      {}
@@ -1739,6 +1741,7 @@ func (*ApplicationJSONErrorStatusCode) getResourceTypeRes()              {}
 func (*ApplicationJSONErrorStatusCode) getRoleRes()                      {}
 func (*ApplicationJSONErrorStatusCode) getSpaceEnablementsRes()          {}
 func (*ApplicationJSONErrorStatusCode) getWebhookDefinitionRes()         {}
+func (*ApplicationJSONErrorStatusCode) publishEntryRes()                 {}
 func (*ApplicationJSONErrorStatusCode) putAppDefinitionRes()             {}
 func (*ApplicationJSONErrorStatusCode) putAppInstallationRes()           {}
 func (*ApplicationJSONErrorStatusCode) putAppSigningSecretRes()          {}
@@ -1750,6 +1753,7 @@ func (*ApplicationJSONErrorStatusCode) putResourceProviderRes()          {}
 func (*ApplicationJSONErrorStatusCode) putResourceTypeRes()              {}
 func (*ApplicationJSONErrorStatusCode) putSpaceEnablementsRes()          {}
 func (*ApplicationJSONErrorStatusCode) revokePersonalAccessTokenRes()    {}
+func (*ApplicationJSONErrorStatusCode) unpublishEntryRes()               {}
 func (*ApplicationJSONErrorStatusCode) updateDeliveryApiKeyRes()         {}
 func (*ApplicationJSONErrorStatusCode) updateRoleRes()                   {}
 func (*ApplicationJSONErrorStatusCode) updateWebhookDefinitionRes()      {}
@@ -1831,6 +1835,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getResourceTypeRes()      
 func (*ApplicationVndContentfulManagementV1JSONError) getRoleRes()                      {}
 func (*ApplicationVndContentfulManagementV1JSONError) getSpaceEnablementsRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) getWebhookDefinitionRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONError) publishEntryRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONError) putAppDefinitionRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONError) putAppInstallationRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) putAppSigningSecretRes()          {}
@@ -1842,6 +1847,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) putResourceProviderRes()  
 func (*ApplicationVndContentfulManagementV1JSONError) putResourceTypeRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONError) putSpaceEnablementsRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) revokePersonalAccessTokenRes()    {}
+func (*ApplicationVndContentfulManagementV1JSONError) unpublishEntryRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONError) updateDeliveryApiKeyRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONError) updateRoleRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONError) updateWebhookDefinitionRes()      {}
@@ -1908,6 +1914,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getResourceTypeR
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getRoleRes()                      {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getSpaceEnablementsRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getWebhookDefinitionRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) publishEntryRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppDefinitionRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppInstallationRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppSigningSecretRes()          {}
@@ -1919,6 +1926,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceProvi
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceTypeRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putSpaceEnablementsRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) revokePersonalAccessTokenRes()    {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) unpublishEntryRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateDeliveryApiKeyRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateRoleRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateWebhookDefinitionRes()      {}
@@ -3639,7 +3647,8 @@ func (s *Entry) SetFields(val OptEntryFields) {
 	s.Fields = val
 }
 
-func (*Entry) getEntryRes() {}
+func (*Entry) getEntryRes()       {}
+func (*Entry) unpublishEntryRes() {}
 
 // Ref: #/components/schemas/EntryFields
 type EntryFields map[string]jx.Raw
@@ -3720,8 +3729,9 @@ func (s *EntryStatusCode) SetResponse(val Entry) {
 	s.Response = val
 }
 
-func (*EntryStatusCode) createEntryRes() {}
-func (*EntryStatusCode) putEntryRes()    {}
+func (*EntryStatusCode) createEntryRes()  {}
+func (*EntryStatusCode) publishEntryRes() {}
+func (*EntryStatusCode) putEntryRes()     {}
 
 // Merged schema.
 // Ref: #/components/schemas/EntrySys
@@ -4861,6 +4871,7 @@ func (*NoContent) deleteResourceProviderRes()  {}
 func (*NoContent) deleteResourceTypeRes()      {}
 func (*NoContent) deleteRoleRes()              {}
 func (*NoContent) deleteWebhookDefinitionRes() {}
+func (*NoContent) unpublishEntryRes()          {}
 
 // NewOptApiKeyPreviewAPIKey returns new OptApiKeyPreviewAPIKey with value set to v.
 func NewOptApiKeyPreviewAPIKey(v ApiKeyPreviewAPIKey) OptApiKeyPreviewAPIKey {
