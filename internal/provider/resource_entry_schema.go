@@ -1,0 +1,65 @@
+package provider
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+func EntryResourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed: true,
+			},
+			"space_id": schema.StringAttribute{
+				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"environment_id": schema.StringAttribute{
+				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"entry_id": schema.StringAttribute{
+				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"content_type_id": schema.StringAttribute{
+				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"fields": schema.StringAttribute{
+				CustomType: jsontypes.NormalizedType{},
+				Required:   true,
+			},
+			"metadata": schema.SingleNestedAttribute{
+				Attributes:  EntryMetadataValue{}.SchemaAttributes(ctx),
+				CustomType:  NewTypedObjectNull[EntryMetadataValue]().CustomType(ctx),
+				Description: "Metadata for the entry. Once set, metadata properties may not be removed, but the list of tags may be reduced to the empty list",
+				Optional:    true,
+			},
+		},
+	}
+}
+
+func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"tags": schema.ListAttribute{
+			ElementType: types.StringType,
+			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
+			Optional:    true,
+		},
+	}
+}
