@@ -89,7 +89,7 @@ func (r *EntryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	})
 
 	switch response := response.(type) {
-	case *cm.Entry:
+	case *cm.EntryStatusCode:
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, *response)
 		resp.Diagnostics.Append(responseModelDiags...)
 		data = responseModel
@@ -117,7 +117,7 @@ func (r *EntryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	})
 
 	switch response := publishResponse.(type) {
-	case *cm.Entry:
+	case *cm.EntryStatusCode:
 		currentVersion = response.Sys.Version
 	default:
 		resp.Diagnostics.AddError("Failed to publish entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -203,11 +203,11 @@ func (r *EntryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	params := cm.PutEntryParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		EntryID:            data.EntryID.ValueString(),
-		ContentTypeID:      data.ContentTypeID.ValueString(),
-		XContentfulVersion: currentVersion,
+		SpaceID:                data.SpaceID.ValueString(),
+		EnvironmentID:          data.EnvironmentID.ValueString(),
+		EntryID:                data.EntryID.ValueString(),
+		XContentfulContentType: data.ContentTypeID.ValueString(),
+		XContentfulVersion:     currentVersion,
 	}
 
 	response, err := r.providerData.client.PutEntry(ctx, request, params)
@@ -220,7 +220,7 @@ func (r *EntryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	})
 
 	switch response := response.(type) {
-	case *cm.Entry:
+	case *cm.EntryStatusCode:
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, *response)
 		resp.Diagnostics.Append(responseModelDiags...)
 		data = responseModel
@@ -248,7 +248,7 @@ func (r *EntryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	})
 
 	switch response := publishResponse.(type) {
-	case *cm.Entry:
+	case *cm.EntryStatusCode:
 		currentVersion = response.Sys.Version
 	default:
 		resp.Diagnostics.AddError("Failed to publish entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
