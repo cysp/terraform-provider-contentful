@@ -36,6 +36,7 @@ var operationRolesAccessToken = map[string][]string{
 	ActivateContentTypeOperation:          []string{},
 	CreateAppDefinitionOperation:          []string{},
 	CreateDeliveryApiKeyOperation:         []string{},
+	CreateEntryOperation:                  []string{},
 	CreatePersonalAccessTokenOperation:    []string{},
 	CreateRoleOperation:                   []string{},
 	CreateWebhookDefinitionOperation:      []string{},

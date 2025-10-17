@@ -1,4 +1,3 @@
-//nolint:dupl
 package testing
 
 import (
@@ -7,6 +6,26 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
+
+//nolint:ireturn
+func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params cm.CreateEntryParams) (cm.CreateEntryRes, error) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
+	entryID := generateResourceID()
+
+	newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.XContentfulContentType, entryID, req)
+	ts.entries.Set(params.SpaceID, params.EnvironmentID, entryID, &newEntry)
+
+	return &cm.EntryStatusCode{
+		StatusCode: http.StatusCreated,
+		Response:   newEntry,
+	}, nil
+}
 
 //nolint:ireturn
 func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.GetEntryRes, error) {
@@ -26,7 +45,7 @@ func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.Get
 }
 
 //nolint:ireturn
-func (ts *Handler) PutEntry(_ context.Context, req cm.EntryFields, params cm.PutEntryParams) (cm.PutEntryRes, error) {
+func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.PutEntryParams) (cm.PutEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -36,7 +55,7 @@ func (ts *Handler) PutEntry(_ context.Context, req cm.EntryFields, params cm.Put
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		newEntry := NewEntryFromFields(params.SpaceID, params.EnvironmentID, params.EntryID, req)
+		newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.XContentfulContentType.Value, params.EntryID, req)
 		ts.entries.Set(params.SpaceID, params.EnvironmentID, params.EntryID, &newEntry)
 
 		return &cm.EntryStatusCode{
@@ -45,7 +64,7 @@ func (ts *Handler) PutEntry(_ context.Context, req cm.EntryFields, params cm.Put
 		}, nil
 	}
 
-	UpdateEntryFromFields(entry, req)
+	UpdateEntryFromRequest(entry, req)
 
 	return &cm.EntryStatusCode{
 		StatusCode: http.StatusOK,
@@ -73,7 +92,7 @@ func (ts *Handler) DeleteEntry(_ context.Context, params cm.DeleteEntryParams) (
 }
 
 //nolint:ireturn
-func (ts *Handler) PublishEntry(ctx context.Context, params cm.PublishEntryParams) (cm.PublishEntryRes, error) {
+func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams) (cm.PublishEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -95,7 +114,7 @@ func (ts *Handler) PublishEntry(ctx context.Context, params cm.PublishEntryParam
 }
 
 //nolint:ireturn
-func (ts *Handler) UnpublishEntry(ctx context.Context, params cm.UnpublishEntryParams) (cm.UnpublishEntryRes, error) {
+func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryParams) (cm.UnpublishEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

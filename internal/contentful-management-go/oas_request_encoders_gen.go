@@ -38,6 +38,20 @@ func encodeCreateDeliveryApiKeyRequest(
 	return nil
 }
 
+func encodeCreateEntryRequest(
+	req *EntryRequest,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodeCreatePersonalAccessTokenRequest(
 	req *PersonalAccessTokenRequestFields,
 	r *http.Request,
@@ -151,7 +165,7 @@ func encodePutEditorInterfaceRequest(
 }
 
 func encodePutEntryRequest(
-	req EntryFields,
+	req *EntryRequest,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

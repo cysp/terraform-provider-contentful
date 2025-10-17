@@ -1629,6 +1629,7 @@ func NewErrorApplicationJSONError(v Error) ApplicationJSONError {
 func (*ApplicationJSONError) activateContentTypeRes()          {}
 func (*ApplicationJSONError) createAppDefinitionRes()          {}
 func (*ApplicationJSONError) createDeliveryApiKeyRes()         {}
+func (*ApplicationJSONError) createEntryRes()                  {}
 func (*ApplicationJSONError) createPersonalAccessTokenRes()    {}
 func (*ApplicationJSONError) createRoleRes()                   {}
 func (*ApplicationJSONError) createWebhookDefinitionRes()      {}
@@ -1707,6 +1708,7 @@ func (s *ApplicationJSONErrorStatusCode) SetResponse(val ApplicationJSONError) {
 func (*ApplicationJSONErrorStatusCode) activateContentTypeRes()          {}
 func (*ApplicationJSONErrorStatusCode) createAppDefinitionRes()          {}
 func (*ApplicationJSONErrorStatusCode) createDeliveryApiKeyRes()         {}
+func (*ApplicationJSONErrorStatusCode) createEntryRes()                  {}
 func (*ApplicationJSONErrorStatusCode) createPersonalAccessTokenRes()    {}
 func (*ApplicationJSONErrorStatusCode) createRoleRes()                   {}
 func (*ApplicationJSONErrorStatusCode) createWebhookDefinitionRes()      {}
@@ -1800,6 +1802,7 @@ func NewErrorApplicationVndContentfulManagementV1JSONError(v Error) ApplicationV
 func (*ApplicationVndContentfulManagementV1JSONError) activateContentTypeRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) createAppDefinitionRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) createDeliveryApiKeyRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONError) createEntryRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONError) createPersonalAccessTokenRes()    {}
 func (*ApplicationVndContentfulManagementV1JSONError) createRoleRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONError) createWebhookDefinitionRes()      {}
@@ -1878,6 +1881,7 @@ func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) SetResponse(va
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) activateContentTypeRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createAppDefinitionRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createDeliveryApiKeyRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createEntryRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createPersonalAccessTokenRes()    {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createRoleRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createWebhookDefinitionRes()      {}
@@ -3610,7 +3614,7 @@ func (s *EditorInterfaceSysType) UnmarshalText(data []byte) error {
 type Entry struct {
 	Sys      EntrySys         `json:"sys"`
 	Metadata OptEntryMetadata `json:"metadata"`
-	Fields   EntryFields      `json:"fields"`
+	Fields   OptEntryFields   `json:"fields"`
 }
 
 // GetSys returns the value of Sys.
@@ -3624,7 +3628,7 @@ func (s *Entry) GetMetadata() OptEntryMetadata {
 }
 
 // GetFields returns the value of Fields.
-func (s *Entry) GetFields() EntryFields {
+func (s *Entry) GetFields() OptEntryFields {
 	return s.Fields
 }
 
@@ -3639,7 +3643,7 @@ func (s *Entry) SetMetadata(val OptEntryMetadata) {
 }
 
 // SetFields sets the value of Fields.
-func (s *Entry) SetFields(val EntryFields) {
+func (s *Entry) SetFields(val OptEntryFields) {
 	s.Fields = val
 }
 
@@ -3647,173 +3651,16 @@ func (*Entry) getEntryRes()       {}
 func (*Entry) unpublishEntryRes() {}
 
 // Ref: #/components/schemas/EntryFields
-type EntryFields map[string]EntryFieldsItem
+type EntryFields map[string]jx.Raw
 
 func (s *EntryFields) init() EntryFields {
 	m := *s
 	if m == nil {
-		m = map[string]EntryFieldsItem{}
+		m = map[string]jx.Raw{}
 		*s = m
 	}
 	return m
 }
-
-type EntryFieldsItem map[string]EntryFieldsItemItem
-
-func (s *EntryFieldsItem) init() EntryFieldsItem {
-	m := *s
-	if m == nil {
-		m = map[string]EntryFieldsItemItem{}
-		*s = m
-	}
-	return m
-}
-
-// EntryFieldsItemItem represents sum type.
-type EntryFieldsItemItem struct {
-	Type                 EntryFieldsItemItemType // switch on this field
-	String               string
-	Float64              float64
-	Bool                 bool
-	EntryFieldsItemItem3 EntryFieldsItemItem3
-	AnyArray             []jx.Raw
-}
-
-// EntryFieldsItemItemType is oneOf type of EntryFieldsItemItem.
-type EntryFieldsItemItemType string
-
-// Possible values for EntryFieldsItemItemType.
-const (
-	StringEntryFieldsItemItem               EntryFieldsItemItemType = "string"
-	Float64EntryFieldsItemItem              EntryFieldsItemItemType = "float64"
-	BoolEntryFieldsItemItem                 EntryFieldsItemItemType = "bool"
-	EntryFieldsItemItem3EntryFieldsItemItem EntryFieldsItemItemType = "EntryFieldsItemItem3"
-	AnyArrayEntryFieldsItemItem             EntryFieldsItemItemType = "[]jx.Raw"
-)
-
-// IsString reports whether EntryFieldsItemItem is string.
-func (s EntryFieldsItemItem) IsString() bool { return s.Type == StringEntryFieldsItemItem }
-
-// IsFloat64 reports whether EntryFieldsItemItem is float64.
-func (s EntryFieldsItemItem) IsFloat64() bool { return s.Type == Float64EntryFieldsItemItem }
-
-// IsBool reports whether EntryFieldsItemItem is bool.
-func (s EntryFieldsItemItem) IsBool() bool { return s.Type == BoolEntryFieldsItemItem }
-
-// IsEntryFieldsItemItem3 reports whether EntryFieldsItemItem is EntryFieldsItemItem3.
-func (s EntryFieldsItemItem) IsEntryFieldsItemItem3() bool {
-	return s.Type == EntryFieldsItemItem3EntryFieldsItemItem
-}
-
-// IsAnyArray reports whether EntryFieldsItemItem is []jx.Raw.
-func (s EntryFieldsItemItem) IsAnyArray() bool { return s.Type == AnyArrayEntryFieldsItemItem }
-
-// SetString sets EntryFieldsItemItem to string.
-func (s *EntryFieldsItemItem) SetString(v string) {
-	s.Type = StringEntryFieldsItemItem
-	s.String = v
-}
-
-// GetString returns string and true boolean if EntryFieldsItemItem is string.
-func (s EntryFieldsItemItem) GetString() (v string, ok bool) {
-	if !s.IsString() {
-		return v, false
-	}
-	return s.String, true
-}
-
-// NewStringEntryFieldsItemItem returns new EntryFieldsItemItem from string.
-func NewStringEntryFieldsItemItem(v string) EntryFieldsItemItem {
-	var s EntryFieldsItemItem
-	s.SetString(v)
-	return s
-}
-
-// SetFloat64 sets EntryFieldsItemItem to float64.
-func (s *EntryFieldsItemItem) SetFloat64(v float64) {
-	s.Type = Float64EntryFieldsItemItem
-	s.Float64 = v
-}
-
-// GetFloat64 returns float64 and true boolean if EntryFieldsItemItem is float64.
-func (s EntryFieldsItemItem) GetFloat64() (v float64, ok bool) {
-	if !s.IsFloat64() {
-		return v, false
-	}
-	return s.Float64, true
-}
-
-// NewFloat64EntryFieldsItemItem returns new EntryFieldsItemItem from float64.
-func NewFloat64EntryFieldsItemItem(v float64) EntryFieldsItemItem {
-	var s EntryFieldsItemItem
-	s.SetFloat64(v)
-	return s
-}
-
-// SetBool sets EntryFieldsItemItem to bool.
-func (s *EntryFieldsItemItem) SetBool(v bool) {
-	s.Type = BoolEntryFieldsItemItem
-	s.Bool = v
-}
-
-// GetBool returns bool and true boolean if EntryFieldsItemItem is bool.
-func (s EntryFieldsItemItem) GetBool() (v bool, ok bool) {
-	if !s.IsBool() {
-		return v, false
-	}
-	return s.Bool, true
-}
-
-// NewBoolEntryFieldsItemItem returns new EntryFieldsItemItem from bool.
-func NewBoolEntryFieldsItemItem(v bool) EntryFieldsItemItem {
-	var s EntryFieldsItemItem
-	s.SetBool(v)
-	return s
-}
-
-// SetEntryFieldsItemItem3 sets EntryFieldsItemItem to EntryFieldsItemItem3.
-func (s *EntryFieldsItemItem) SetEntryFieldsItemItem3(v EntryFieldsItemItem3) {
-	s.Type = EntryFieldsItemItem3EntryFieldsItemItem
-	s.EntryFieldsItemItem3 = v
-}
-
-// GetEntryFieldsItemItem3 returns EntryFieldsItemItem3 and true boolean if EntryFieldsItemItem is EntryFieldsItemItem3.
-func (s EntryFieldsItemItem) GetEntryFieldsItemItem3() (v EntryFieldsItemItem3, ok bool) {
-	if !s.IsEntryFieldsItemItem3() {
-		return v, false
-	}
-	return s.EntryFieldsItemItem3, true
-}
-
-// NewEntryFieldsItemItem3EntryFieldsItemItem returns new EntryFieldsItemItem from EntryFieldsItemItem3.
-func NewEntryFieldsItemItem3EntryFieldsItemItem(v EntryFieldsItemItem3) EntryFieldsItemItem {
-	var s EntryFieldsItemItem
-	s.SetEntryFieldsItemItem3(v)
-	return s
-}
-
-// SetAnyArray sets EntryFieldsItemItem to []jx.Raw.
-func (s *EntryFieldsItemItem) SetAnyArray(v []jx.Raw) {
-	s.Type = AnyArrayEntryFieldsItemItem
-	s.AnyArray = v
-}
-
-// GetAnyArray returns []jx.Raw and true boolean if EntryFieldsItemItem is []jx.Raw.
-func (s EntryFieldsItemItem) GetAnyArray() (v []jx.Raw, ok bool) {
-	if !s.IsAnyArray() {
-		return v, false
-	}
-	return s.AnyArray, true
-}
-
-// NewAnyArrayEntryFieldsItemItem returns new EntryFieldsItemItem from []jx.Raw.
-func NewAnyArrayEntryFieldsItemItem(v []jx.Raw) EntryFieldsItemItem {
-	var s EntryFieldsItemItem
-	s.SetAnyArray(v)
-	return s
-}
-
-type EntryFieldsItemItem3 struct{}
 
 // Ref: #/components/schemas/EntryMetadata
 type EntryMetadata struct {
@@ -3828,6 +3675,32 @@ func (s *EntryMetadata) GetTags() []TagLink {
 // SetTags sets the value of Tags.
 func (s *EntryMetadata) SetTags(val []TagLink) {
 	s.Tags = val
+}
+
+// Ref: #/components/schemas/EntryRequest
+type EntryRequest struct {
+	Metadata OptEntryMetadata `json:"metadata"`
+	Fields   OptEntryFields   `json:"fields"`
+}
+
+// GetMetadata returns the value of Metadata.
+func (s *EntryRequest) GetMetadata() OptEntryMetadata {
+	return s.Metadata
+}
+
+// GetFields returns the value of Fields.
+func (s *EntryRequest) GetFields() OptEntryFields {
+	return s.Fields
+}
+
+// SetMetadata sets the value of Metadata.
+func (s *EntryRequest) SetMetadata(val OptEntryMetadata) {
+	s.Metadata = val
+}
+
+// SetFields sets the value of Fields.
+func (s *EntryRequest) SetFields(val OptEntryFields) {
+	s.Fields = val
 }
 
 // EntryStatusCode wraps Entry with StatusCode.
@@ -3856,6 +3729,7 @@ func (s *EntryStatusCode) SetResponse(val Entry) {
 	s.Response = val
 }
 
+func (*EntryStatusCode) createEntryRes()  {}
 func (*EntryStatusCode) publishEntryRes() {}
 func (*EntryStatusCode) putEntryRes()     {}
 
@@ -3866,6 +3740,7 @@ type EntrySys struct {
 	Type             EntrySysType    `json:"type"`
 	Space            SpaceLink       `json:"space"`
 	Environment      EnvironmentLink `json:"environment"`
+	ContentType      ContentTypeLink `json:"contentType"`
 	ID               string          `json:"id"`
 	Version          int             `json:"version"`
 	CreatedAt        OptDateTime     `json:"createdAt"`
@@ -3887,6 +3762,11 @@ func (s *EntrySys) GetSpace() SpaceLink {
 // GetEnvironment returns the value of Environment.
 func (s *EntrySys) GetEnvironment() EnvironmentLink {
 	return s.Environment
+}
+
+// GetContentType returns the value of ContentType.
+func (s *EntrySys) GetContentType() ContentTypeLink {
+	return s.ContentType
 }
 
 // GetID returns the value of ID.
@@ -3932,6 +3812,11 @@ func (s *EntrySys) SetSpace(val SpaceLink) {
 // SetEnvironment sets the value of Environment.
 func (s *EntrySys) SetEnvironment(val EnvironmentLink) {
 	s.Environment = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *EntrySys) SetContentType(val ContentTypeLink) {
+	s.ContentType = val
 }
 
 // SetID sets the value of ID.
@@ -5580,6 +5465,52 @@ func (o OptDateTime) Get() (v time.Time, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEntryFields returns new OptEntryFields with value set to v.
+func NewOptEntryFields(v EntryFields) OptEntryFields {
+	return OptEntryFields{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEntryFields is optional EntryFields.
+type OptEntryFields struct {
+	Value EntryFields
+	Set   bool
+}
+
+// IsSet returns true if OptEntryFields was set.
+func (o OptEntryFields) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEntryFields) Reset() {
+	var v EntryFields
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEntryFields) SetTo(v EntryFields) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEntryFields) Get() (v EntryFields, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEntryFields) Or(d EntryFields) EntryFields {
 	if v, ok := o.Get(); ok {
 		return v
 	}

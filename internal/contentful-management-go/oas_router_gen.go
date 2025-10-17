@@ -642,78 +642,102 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 										break
 									}
 									switch elem[0] {
-									case 'n': // Prefix: "ntries/"
+									case 'n': // Prefix: "ntries"
 
-										if l := len("ntries/"); len(elem) >= l && elem[0:l] == "ntries/" {
+										if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "entry_id"
-										// Match until "/"
-										idx := strings.IndexByte(elem, '/')
-										if idx < 0 {
-											idx = len(elem)
-										}
-										args[2] = elem[:idx]
-										elem = elem[idx:]
-
 										if len(elem) == 0 {
 											switch r.Method {
-											case "DELETE":
-												s.handleDeleteEntryRequest([3]string{
+											case "POST":
+												s.handleCreateEntryRequest([2]string{
 													args[0],
 													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											case "GET":
-												s.handleGetEntryRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											case "PUT":
-												s.handlePutEntryRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
 												}, elemIsEscaped, w, r)
 											default:
-												s.notAllowed(w, r, "DELETE,GET,PUT")
+												s.notAllowed(w, r, "POST")
 											}
 
 											return
 										}
 										switch elem[0] {
-										case '/': // Prefix: "/published"
+										case '/': // Prefix: "/"
 
-											if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 												elem = elem[l:]
 											} else {
 												break
 											}
 
+											// Param: "entry_id"
+											// Match until "/"
+											idx := strings.IndexByte(elem, '/')
+											if idx < 0 {
+												idx = len(elem)
+											}
+											args[2] = elem[:idx]
+											elem = elem[idx:]
+
 											if len(elem) == 0 {
-												// Leaf node.
 												switch r.Method {
 												case "DELETE":
-													s.handleUnpublishEntryRequest([3]string{
+													s.handleDeleteEntryRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "GET":
+													s.handleGetEntryRequest([3]string{
 														args[0],
 														args[1],
 														args[2],
 													}, elemIsEscaped, w, r)
 												case "PUT":
-													s.handlePublishEntryRequest([3]string{
+													s.handlePutEntryRequest([3]string{
 														args[0],
 														args[1],
 														args[2],
 													}, elemIsEscaped, w, r)
 												default:
-													s.notAllowed(w, r, "DELETE,PUT")
+													s.notAllowed(w, r, "DELETE,GET,PUT")
 												}
 
 												return
+											}
+											switch elem[0] {
+											case '/': // Prefix: "/published"
+
+												if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													// Leaf node.
+													switch r.Method {
+													case "DELETE":
+														s.handleUnpublishEntryRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													case "PUT":
+														s.handlePublishEntryRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													default:
+														s.notAllowed(w, r, "DELETE,PUT")
+													}
+
+													return
+												}
+
 											}
 
 										}
@@ -1766,84 +1790,109 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										break
 									}
 									switch elem[0] {
-									case 'n': // Prefix: "ntries/"
+									case 'n': // Prefix: "ntries"
 
-										if l := len("ntries/"); len(elem) >= l && elem[0:l] == "ntries/" {
+										if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "entry_id"
-										// Match until "/"
-										idx := strings.IndexByte(elem, '/')
-										if idx < 0 {
-											idx = len(elem)
-										}
-										args[2] = elem[:idx]
-										elem = elem[idx:]
-
 										if len(elem) == 0 {
 											switch method {
-											case "DELETE":
-												r.name = DeleteEntryOperation
-												r.summary = "Delete an entry"
-												r.operationID = "deleteEntry"
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+											case "POST":
+												r.name = CreateEntryOperation
+												r.summary = "Create an entry"
+												r.operationID = "createEntry"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
 												r.args = args
-												r.count = 3
-												return r, true
-											case "GET":
-												r.name = GetEntryOperation
-												r.summary = "Get a single entry"
-												r.operationID = "getEntry"
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
-												r.args = args
-												r.count = 3
-												return r, true
-											case "PUT":
-												r.name = PutEntryOperation
-												r.summary = "Create or update an entry"
-												r.operationID = "putEntry"
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
-												r.args = args
-												r.count = 3
+												r.count = 2
 												return r, true
 											default:
 												return
 											}
 										}
 										switch elem[0] {
-										case '/': // Prefix: "/published"
+										case '/': // Prefix: "/"
 
-											if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 												elem = elem[l:]
 											} else {
 												break
 											}
 
+											// Param: "entry_id"
+											// Match until "/"
+											idx := strings.IndexByte(elem, '/')
+											if idx < 0 {
+												idx = len(elem)
+											}
+											args[2] = elem[:idx]
+											elem = elem[idx:]
+
 											if len(elem) == 0 {
-												// Leaf node.
 												switch method {
 												case "DELETE":
-													r.name = UnpublishEntryOperation
-													r.summary = "Unpublish an entry"
-													r.operationID = "unpublishEntry"
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+													r.name = DeleteEntryOperation
+													r.summary = "Delete an entry"
+													r.operationID = "deleteEntry"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "GET":
+													r.name = GetEntryOperation
+													r.summary = "Get a single entry"
+													r.operationID = "getEntry"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
 													r.args = args
 													r.count = 3
 													return r, true
 												case "PUT":
-													r.name = PublishEntryOperation
-													r.summary = "Publish an entry"
-													r.operationID = "publishEntry"
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+													r.name = PutEntryOperation
+													r.summary = "Create or update an entry"
+													r.operationID = "putEntry"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
 													r.args = args
 													r.count = 3
 													return r, true
 												default:
 													return
 												}
+											}
+											switch elem[0] {
+											case '/': // Prefix: "/published"
+
+												if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													// Leaf node.
+													switch method {
+													case "DELETE":
+														r.name = UnpublishEntryOperation
+														r.summary = "Unpublish an entry"
+														r.operationID = "unpublishEntry"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+														r.args = args
+														r.count = 3
+														return r, true
+													case "PUT":
+														r.name = PublishEntryOperation
+														r.summary = "Publish an entry"
+														r.operationID = "publishEntry"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+														r.args = args
+														r.count = 3
+														return r, true
+													default:
+														return
+													}
+												}
+
 											}
 
 										}

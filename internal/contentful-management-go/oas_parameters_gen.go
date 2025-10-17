@@ -358,6 +358,167 @@ func decodeCreateDeliveryApiKeyParams(args [1]string, argsEscaped bool, r *http.
 	return params, nil
 }
 
+// CreateEntryParams is parameters of createEntry operation.
+type CreateEntryParams struct {
+	SpaceID                string
+	EnvironmentID          string
+	XContentfulContentType string
+}
+
+func unpackCreateEntryParams(packed middleware.Parameters) (params CreateEntryParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "environment_id",
+			In:   "path",
+		}
+		params.EnvironmentID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Content-Type",
+			In:   "header",
+		}
+		params.XContentfulContentType = packed[key].(string)
+	}
+	return params
+}
+
+func decodeCreateEntryParams(args [2]string, argsEscaped bool, r *http.Request) (params CreateEntryParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: environment_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "environment_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.EnvironmentID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "environment_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Contentful-Content-Type.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Content-Type",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.XContentfulContentType = c
+				return nil
+			}); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Content-Type",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // CreateRoleParams is parameters of createRole operation.
 type CreateRoleParams struct {
 	SpaceID string
@@ -5390,7 +5551,7 @@ type PutEntryParams struct {
 	SpaceID                string
 	EnvironmentID          string
 	EntryID                string
-	XContentfulContentType string
+	XContentfulContentType OptString `json:",omitempty,omitzero"`
 	XContentfulVersion     int
 }
 
@@ -5421,7 +5582,9 @@ func unpackPutEntryParams(packed middleware.Parameters) (params PutEntryParams) 
 			Name: "X-Contentful-Content-Type",
 			In:   "header",
 		}
-		params.XContentfulContentType = packed[key].(string)
+		if v, ok := packed[key]; ok {
+			params.XContentfulContentType = v.(OptString)
+		}
 	}
 	{
 		key := middleware.ParameterKey{
@@ -5578,23 +5741,28 @@ func decodePutEntryParams(args [3]string, argsEscaped bool, r *http.Request) (pa
 		}
 		if err := h.HasParam(cfg); err == nil {
 			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
-				val, err := d.DecodeValue()
-				if err != nil {
+				var paramsDotXContentfulContentTypeVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXContentfulContentTypeVal = c
+					return nil
+				}(); err != nil {
 					return err
 				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.XContentfulContentType = c
+				params.XContentfulContentType.SetTo(paramsDotXContentfulContentTypeVal)
 				return nil
 			}); err != nil {
 				return err
 			}
-		} else {
-			return err
 		}
 		return nil
 	}(); err != nil {
@@ -6319,10 +6487,9 @@ func decodeRevokePersonalAccessTokenParams(args [1]string, argsEscaped bool, r *
 
 // UnpublishEntryParams is parameters of unpublishEntry operation.
 type UnpublishEntryParams struct {
-	SpaceID            string
-	EnvironmentID      string
-	EntryID            string
-	XContentfulVersion int
+	SpaceID       string
+	EnvironmentID string
+	EntryID       string
 }
 
 func unpackUnpublishEntryParams(packed middleware.Parameters) (params UnpublishEntryParams) {
@@ -6347,18 +6514,10 @@ func unpackUnpublishEntryParams(packed middleware.Parameters) (params UnpublishE
 		}
 		params.EntryID = packed[key].(string)
 	}
-	{
-		key := middleware.ParameterKey{
-			Name: "X-Contentful-Version",
-			In:   "header",
-		}
-		params.XContentfulVersion = packed[key].(int)
-	}
 	return params
 }
 
 func decodeUnpublishEntryParams(args [3]string, argsEscaped bool, r *http.Request) (params UnpublishEntryParams, _ error) {
-	h := uri.NewHeaderDecoder(r.Header)
 	// Decode path: space_id.
 	if err := func() error {
 		param := args[0]
@@ -6491,40 +6650,6 @@ func decodeUnpublishEntryParams(args [3]string, argsEscaped bool, r *http.Reques
 		return params, &ogenerrors.DecodeParamError{
 			Name: "entry_id",
 			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode header: X-Contentful-Version.
-	if err := func() error {
-		cfg := uri.HeaderParameterDecodingConfig{
-			Name:    "X-Contentful-Version",
-			Explode: false,
-		}
-		if err := h.HasParam(cfg); err == nil {
-			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToInt(val)
-				if err != nil {
-					return err
-				}
-
-				params.XContentfulVersion = c
-				return nil
-			}); err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "X-Contentful-Version",
-			In:   "header",
 			Err:  err,
 		}
 	}

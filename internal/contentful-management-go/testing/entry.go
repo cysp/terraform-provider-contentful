@@ -4,17 +4,17 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewEntryFromFields(spaceID, environmentID, entryID string, fields cm.EntryFields) cm.Entry {
+func NewEntryFromRequest(spaceID, environmentID, contentTypeID, entryID string, req *cm.EntryRequest) cm.Entry {
 	entry := cm.Entry{
-		Sys: NewEntrySys(spaceID, environmentID, entryID),
+		Sys: NewEntrySys(spaceID, environmentID, contentTypeID, entryID),
 	}
 
-	UpdateEntryFromFields(&entry, fields)
+	UpdateEntryFromRequest(&entry, req)
 
 	return entry
 }
 
-func NewEntrySys(spaceID, environmentID, entryID string) cm.EntrySys {
+func NewEntrySys(spaceID, environmentID, contentTypeID, entryID string) cm.EntrySys {
 	return cm.EntrySys{
 		Type: cm.EntrySysTypeEntry,
 		Space: cm.SpaceLink{
@@ -31,12 +31,22 @@ func NewEntrySys(spaceID, environmentID, entryID string) cm.EntrySys {
 				ID:       environmentID,
 			},
 		},
+		ContentType: cm.ContentTypeLink{
+			Sys: cm.ContentTypeLinkSys{
+				Type:     cm.ContentTypeLinkSysTypeLink,
+				LinkType: cm.ContentTypeLinkSysLinkTypeContentType,
+				ID:       contentTypeID,
+			},
+		},
 		ID: entryID,
 	}
 }
 
-func UpdateEntryFromFields(entry *cm.Entry, fields cm.EntryFields) {
-	entry.Fields = fields
+func UpdateEntryFromRequest(entry *cm.Entry, req *cm.EntryRequest) {
+	entry.Sys.Version++
+
+	entry.Fields = req.Fields
+	entry.Metadata = req.Metadata
 }
 
 func publishEntry(entry *cm.Entry) {
