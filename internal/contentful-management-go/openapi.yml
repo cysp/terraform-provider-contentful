@@ -1381,7 +1381,7 @@ components:
     EntrySys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
-        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
+        - $ref: "#/components/schemas/BaseSysWithIdAndVersionAndPublishedVersion"
         - type: object
           properties:
             type:
@@ -2175,6 +2175,42 @@ paths:
       operationId: deleteEntry
       summary: Delete an entry
       responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/entry_id"
+      - $ref: "#/components/parameters/x-contentful-version"
+    put:
+      operationId: publishEntry
+      summary: Publish an entry
+      responses:
+        2XX:
+          description: An entry
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: unpublishEntry
+      summary: Unpublish an entry
+      responses:
+        200:
+          description: An entry
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/Entry"
         204:
           $ref: "#/components/responses/no-content"
         401:

@@ -218,6 +218,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (GetWebhookDefinitionRes, error)
+	// PublishEntry implements publishEntry operation.
+	//
+	// Publish an entry.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
+	PublishEntry(ctx context.Context, params PublishEntryParams) (PublishEntryRes, error)
 	// PutAppDefinition implements putAppDefinition operation.
 	//
 	// Create or update an app definition.
@@ -284,6 +290,12 @@ type Handler interface {
 	//
 	// PUT /users/me/access_tokens/{access_token_id}/revoked
 	RevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams) (RevokePersonalAccessTokenRes, error)
+	// UnpublishEntry implements unpublishEntry operation.
+	//
+	// Unpublish an entry.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
+	UnpublishEntry(ctx context.Context, params UnpublishEntryParams) (UnpublishEntryRes, error)
 	// UpdateDeliveryApiKey implements updateDeliveryApiKey operation.
 	//
 	// Update a single delivery api key.

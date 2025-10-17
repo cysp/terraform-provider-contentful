@@ -141,6 +141,10 @@ type GetWebhookDefinitionRes interface {
 	getWebhookDefinitionRes()
 }
 
+type PublishEntryRes interface {
+	publishEntryRes()
+}
+
 type PutAppDefinitionRes interface {
 	putAppDefinitionRes()
 }
@@ -183,6 +187,10 @@ type PutSpaceEnablementsRes interface {
 
 type RevokePersonalAccessTokenRes interface {
 	revokePersonalAccessTokenRes()
+}
+
+type UnpublishEntryRes interface {
+	unpublishEntryRes()
 }
 
 type UpdateDeliveryApiKeyRes interface {

@@ -651,16 +651,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 										}
 
 										// Param: "entry_id"
-										// Leaf parameter, slashes are prohibited
+										// Match until "/"
 										idx := strings.IndexByte(elem, '/')
-										if idx >= 0 {
-											break
+										if idx < 0 {
+											idx = len(elem)
 										}
-										args[2] = elem
-										elem = ""
+										args[2] = elem[:idx]
+										elem = elem[idx:]
 
 										if len(elem) == 0 {
-											// Leaf node.
 											switch r.Method {
 											case "DELETE":
 												s.handleDeleteEntryRequest([3]string{
@@ -685,6 +684,38 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 											}
 
 											return
+										}
+										switch elem[0] {
+										case '/': // Prefix: "/published"
+
+											if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											if len(elem) == 0 {
+												// Leaf node.
+												switch r.Method {
+												case "DELETE":
+													s.handleUnpublishEntryRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "PUT":
+													s.handlePublishEntryRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												default:
+													s.notAllowed(w, r, "DELETE,PUT")
+												}
+
+												return
+											}
+
 										}
 
 									case 'x': // Prefix: "xtensions/"
@@ -1744,16 +1775,15 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										}
 
 										// Param: "entry_id"
-										// Leaf parameter, slashes are prohibited
+										// Match until "/"
 										idx := strings.IndexByte(elem, '/')
-										if idx >= 0 {
-											break
+										if idx < 0 {
+											idx = len(elem)
 										}
-										args[2] = elem
-										elem = ""
+										args[2] = elem[:idx]
+										elem = elem[idx:]
 
 										if len(elem) == 0 {
-											// Leaf node.
 											switch method {
 											case "DELETE":
 												r.name = DeleteEntryOperation
@@ -1782,6 +1812,40 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											default:
 												return
 											}
+										}
+										switch elem[0] {
+										case '/': // Prefix: "/published"
+
+											if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											if len(elem) == 0 {
+												// Leaf node.
+												switch method {
+												case "DELETE":
+													r.name = UnpublishEntryOperation
+													r.summary = "Unpublish an entry"
+													r.operationID = "unpublishEntry"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "PUT":
+													r.name = PublishEntryOperation
+													r.summary = "Publish an entry"
+													r.operationID = "publishEntry"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+													r.args = args
+													r.count = 3
+													return r, true
+												default:
+													return
+												}
+											}
+
 										}
 
 									case 'x': // Prefix: "xtensions/"

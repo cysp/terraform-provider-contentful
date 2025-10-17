@@ -38,3 +38,9 @@ func NewEntrySys(spaceID, environmentID, entryID string) cm.EntrySys {
 func UpdateEntryFromFields(entry *cm.Entry, fields cm.EntryFields) {
 	entry.Fields = fields
 }
+
+func publishEntry(entry *cm.Entry) {
+	entry.Sys.PublishedVersion.SetTo(entry.Sys.Version)
+
+	entry.Sys.Version++
+}
