@@ -8761,9 +8761,21 @@ func (s *EntrySys) encodeFields(e *jx.Encoder) {
 			s.UpdatedAt.Encode(e, json.EncodeDateTime)
 		}
 	}
+	{
+		if s.PublishedVersion.Set {
+			e.FieldStart("publishedVersion")
+			s.PublishedVersion.Encode(e)
+		}
+	}
+	{
+		if s.PublishedAt.Set {
+			e.FieldStart("publishedAt")
+			s.PublishedAt.Encode(e, json.EncodeDateTime)
+		}
+	}
 }
 
-var jsonFieldsNameOfEntrySys = [7]string{
+var jsonFieldsNameOfEntrySys = [9]string{
 	0: "type",
 	1: "space",
 	2: "environment",
@@ -8771,6 +8783,8 @@ var jsonFieldsNameOfEntrySys = [7]string{
 	4: "version",
 	5: "createdAt",
 	6: "updatedAt",
+	7: "publishedVersion",
+	8: "publishedAt",
 }
 
 // Decode decodes EntrySys from json.
@@ -8778,7 +8792,7 @@ func (s *EntrySys) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode EntrySys to nil")
 	}
-	var requiredBitSet [1]uint8
+	var requiredBitSet [2]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -8856,6 +8870,26 @@ func (s *EntrySys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
+		case "publishedVersion":
+			if err := func() error {
+				s.PublishedVersion.Reset()
+				if err := s.PublishedVersion.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"publishedVersion\"")
+			}
+		case "publishedAt":
+			if err := func() error {
+				s.PublishedAt.Reset()
+				if err := s.PublishedAt.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"publishedAt\"")
+			}
 		default:
 			return d.Skip()
 		}
@@ -8865,8 +8899,9 @@ func (s *EntrySys) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [1]uint8{
+	for i, mask := range [2]uint8{
 		0b00011111,
+		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
