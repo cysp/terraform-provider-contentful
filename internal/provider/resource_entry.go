@@ -94,13 +94,13 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	})
 
 	switch response := response.(type) {
-	case *cm.Entry:
-		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, *response)
+	case *cm.EntryStatusCode:
+		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		currentVersion = response.Sys.Version
+		currentVersion = response.Response.Sys.Version
 		data = responseModel
 	default:
 		resp.Diagnostics.Append(util.HandleUnexpectedResponse(ctx, response, "create entry"))
@@ -127,12 +127,14 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		})
 
 		switch response := publishResponse.(type) {
-		case *cm.Entry:
-			currentVersion = response.Sys.Version
+		case *cm.EntryStatusCode:
+			currentVersion = response.Response.Sys.Version
 		default:
 			resp.Diagnostics.Append(util.HandleUnexpectedResponse(ctx, response, "publish entry"))
 		}
-	}	var identityModel EntryIdentityModel
+	}
+
+	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -230,7 +232,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	response, err := r.providerData.client.PutEntry(ctx, request, params)
+	response, err := r.providerData.client.PutEntry(ctx, &request, params)
 
 	tflog.Info(ctx, "entry.update", map[string]interface{}{
 		"params":   params,
@@ -240,13 +242,13 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	})
 
 	switch response := response.(type) {
-	case *cm.Entry:
-		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, *response)
+	case *cm.EntryStatusCode:
+		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		currentVersion = response.Sys.Version
+		currentVersion = response.Response.Sys.Version
 		data = responseModel
 	default:
 		resp.Diagnostics.Append(util.HandleUnexpectedResponse(ctx, response, "update entry"))
@@ -273,8 +275,8 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		})
 
 		switch response := publishResponse.(type) {
-		case *cm.Entry:
-			currentVersion = response.Sys.Version
+		case *cm.EntryStatusCode:
+			currentVersion = response.Response.Sys.Version
 		default:
 			resp.Diagnostics.Append(util.HandleUnexpectedResponse(ctx, response, "publish entry"))
 		}

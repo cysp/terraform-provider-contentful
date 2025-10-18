@@ -33,12 +33,9 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 		Published:     types.BoolValue(entry.Sys.PublishedVersion.IsSet()),
 	}
 
-	// Store fields as a map of opaque JSON blobs
-	fieldsMap := map[string]jsontypes.Normalized{}
-	for k, v := range entry.Fields {
-		fieldsMap[k] = jsontypes.NewNormalizedValue(string(v))
-	}
-	model.Fields = NewTypedMap(fieldsMap)
+	fields, fieldsDiags := NewEntryFieldsFromResponse(ctx, path.Root("fields"), entry.Fields)
+	diags.Append(fieldsDiags...)
+	model.Fields = fields
 
 	metadata, metadataDiags := NewEntryMetadataFromResponse(ctx, path.Root("metadata"), entry.Metadata)
 	diags.Append(metadataDiags...)
@@ -47,22 +44,19 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 	return model, diags
 }
 
-// convertToAttrValue converts supported types to attr.Value
-func convertToAttrValue(v any) attr.Value {
-	switch val := v.(type) {
-	case string:
-		return types.StringValue(val)
-	case bool:
-		return types.BoolValue(val)
-	case int:
-		return types.Int64Value(int64(val))
-	case int64:
-		return types.Int64Value(val)
-	case float64:
-		return types.Float64Value(val)
-	default:
-		return types.StringNull() // fallback for unsupported types
+func NewEntryFieldsFromResponse(ctx context.Context, path path.Path, fields cm.OptEntryFields) (TypedMap[jsontypes.Normalized], diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	if !fields.IsSet() {
+		return NewTypedMapNull[jsontypes.Normalized](), diags
 	}
+
+	elements := map[string]jsontypes.Normalized{}
+	for k, v := range fields.Value {
+		elements[k] = jsontypes.NewNormalizedValue(string(v))
+	}
+
+	return NewTypedMap(elements), diags
 }
 
 func NewEntryMetadataFromResponse(ctx context.Context, path path.Path, metadata cm.OptEntryMetadata) (TypedObject[EntryMetadataValue], diag.Diagnostics) {
@@ -79,8 +73,10 @@ func NewEntryMetadataFromResponse(ctx context.Context, path path.Path, metadata 
 		}
 	}
 
-	attrs := map[string]attr.Value{"tags": NewTypedList(tags)}
-	obj, objDiags := NewTypedObjectFromAttributes[EntryMetadataValue](ctx, attrs)
+	obj, objDiags := NewTypedObjectFromAttributes[EntryMetadataValue](ctx, map[string]attr.Value{
+		"tags": NewTypedList(tags),
+	})
 	diags.Append(objDiags...)
+
 	return obj, diags
 }
