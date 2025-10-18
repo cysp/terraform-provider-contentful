@@ -144,6 +144,7 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
+//nolint:dupl
 func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data EntryModel
 
@@ -291,6 +292,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
+//nolint:dupl
 func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data EntryModel
 

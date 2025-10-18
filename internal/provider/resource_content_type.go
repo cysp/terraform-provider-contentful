@@ -292,6 +292,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	r.providerData.editorInterfaceVersionOffset.Increment(data.ContentTypeID.ValueString())
 }
 
+//nolint:dupl
 func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data ContentTypeModel
 
@@ -345,6 +346,7 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 		EnvironmentID: data.EnvironmentID.ValueString(),
 		ContentTypeID: data.ContentTypeID.ValueString(),
 	}
+
 	deleteContentTypeResponse, err := r.providerData.client.DeleteContentType(ctx, deleteContentTypeParams)
 
 	tflog.Info(ctx, "content_type.delete", map[string]interface{}{
