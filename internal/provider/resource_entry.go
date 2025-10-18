@@ -77,14 +77,14 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		XContentfulVersion:     currentVersion,
 	}
 
-	request, requestDiags := data.ToEntryRequestFields(ctx)
+	request, requestDiags := data.ToEntryRequest(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	response, err := r.providerData.client.PutEntry(ctx, request, params)
+	response, err := r.providerData.client.PutEntry(ctx, *request, params)
 
 	tflog.Info(ctx, "entry.create", map[string]interface{}{
 		"params":   params,

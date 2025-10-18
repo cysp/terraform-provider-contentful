@@ -51,6 +51,9 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Description: "Metadata for the entry. Once set, metadata properties may not be removed, but the list of tags may be reduced to the empty list",
 				Optional:    true,
 			},
+			"published": schema.BoolAttribute{
+				Computed: true,
+			},
 		},
 	}
 }

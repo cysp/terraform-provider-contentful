@@ -30,12 +30,13 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 			EntryID:       types.StringValue(entryID),
 		},
 		ContentTypeID: types.StringValue(contentTypeID),
+		Published:     types.BoolValue(entry.Sys.PublishedVersion.IsSet()),
 	}
 
 	// Store fields as a map of opaque JSON blobs
 	fieldsMap := map[string]jsontypes.Normalized{}
 	for k, v := range entry.Fields {
-		fieldsMap[k] = jsontypes.Normalized{}.Wrap(v)
+		fieldsMap[k] = jsontypes.NewNormalizedValue(string(v))
 	}
 	model.Fields = NewTypedMap(fieldsMap)
 
