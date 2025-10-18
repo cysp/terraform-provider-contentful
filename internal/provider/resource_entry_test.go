@@ -140,7 +140,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestNameDirectory(),
+				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -149,7 +149,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 				},
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
+				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -177,20 +177,15 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestNameDirectory(),
+				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
+				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
-			},
-			{
-				ConfigDirectory:    config.TestNameDirectory(),
-				ConfigVariables:    configVariables,
-				ExpectNonEmptyPlan: true,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionCreate),
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionDestroy),
 					},
 				},
 			},
