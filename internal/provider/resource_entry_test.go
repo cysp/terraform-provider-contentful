@@ -23,7 +23,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 		"entry_id":       config.StringVariable("entry"),
 	}
 
-	server.SetEntry("0p38pssr0fi3", "test", "entry", cm.Entry{
+	server.SetEntry("0p38pssr0fi3", "test", "contentType", "entry", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{}),
 	})
 
@@ -117,7 +117,7 @@ func TestAccEntryResourceCreate(t *testing.T) {
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
 			},
 		},
@@ -140,7 +140,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -149,7 +149,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 				},
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -177,15 +177,15 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
 			},
 			{
-				ConfigDirectory:    config.TestStepDirectory(),
+				ConfigDirectory:    config.TestNameDirectory(),
 				ConfigVariables:    configVariables,
 				ExpectNonEmptyPlan: true,
 				ConfigPlanChecks: resource.ConfigPlanChecks{

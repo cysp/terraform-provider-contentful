@@ -62,10 +62,3 @@ func NewHandler() *Handler {
 		webhookDefinitions:             NewSpaceMap[*cm.WebhookDefinition](),
 	}
 }
-
-func (h *Handler) SetEntry(spaceID, environmentID, entryID string, entry cm.Entry) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	h.entries.Set(spaceID, environmentID, entryID, &entry)
-}

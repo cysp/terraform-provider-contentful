@@ -4,9 +4,9 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewEntryFromRequest(spaceID, environmentID, entryID string, req *cm.EntryRequest) cm.Entry {
+func NewEntryFromRequest(spaceID, environmentID, contentTypeID, entryID string, req *cm.EntryRequest) cm.Entry {
 	entry := cm.Entry{
-		Sys: NewEntrySys(spaceID, environmentID, entryID),
+		Sys: NewEntrySys(spaceID, environmentID, contentTypeID, entryID),
 	}
 
 	UpdateEntryFromRequest(&entry, req)
@@ -14,7 +14,7 @@ func NewEntryFromRequest(spaceID, environmentID, entryID string, req *cm.EntryRe
 	return entry
 }
 
-func NewEntrySys(spaceID, environmentID, entryID string) cm.EntrySys {
+func NewEntrySys(spaceID, environmentID, contentTypeID, entryID string) cm.EntrySys {
 	return cm.EntrySys{
 		Type: cm.EntrySysTypeEntry,
 		Space: cm.SpaceLink{
@@ -29,6 +29,13 @@ func NewEntrySys(spaceID, environmentID, entryID string) cm.EntrySys {
 				Type:     cm.EnvironmentLinkSysTypeLink,
 				LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
 				ID:       environmentID,
+			},
+		},
+		ContentType: cm.ContentTypeLink{
+			Sys: cm.ContentTypeLinkSys{
+				Type:     cm.ContentTypeLinkSysTypeLink,
+				LinkType: cm.ContentTypeLinkSysLinkTypeContentType,
+				ID:       contentTypeID,
 			},
 		},
 		ID: entryID,

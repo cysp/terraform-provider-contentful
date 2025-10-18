@@ -35,7 +35,7 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.EntryID, req)
+		newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.XContentfulContentType, params.EntryID, req)
 		ts.entries.Set(params.SpaceID, params.EnvironmentID, params.EntryID, &newEntry)
 
 		return &cm.EntryStatusCode{

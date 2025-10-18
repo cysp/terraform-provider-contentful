@@ -44,7 +44,3 @@ func (s *Server) SecurityHandler() *SecurityHandler {
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.server.ServeHTTP(w, r)
 }
-
-func (s *Server) SetEntry(spaceID, environmentID, entryID string, entry cm.Entry) {
-	s.h.SetEntry(spaceID, environmentID, entryID, entry)
-}
