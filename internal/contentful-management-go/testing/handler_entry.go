@@ -26,7 +26,7 @@ func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.Get
 }
 
 //nolint:ireturn
-func (ts *Handler) PutEntry(_ context.Context, req cm.EntryFields, params cm.PutEntryParams) (cm.PutEntryRes, error) {
+func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.PutEntryParams) (cm.PutEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -36,7 +36,7 @@ func (ts *Handler) PutEntry(_ context.Context, req cm.EntryFields, params cm.Put
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		newEntry := NewEntryFromFields(params.SpaceID, params.EnvironmentID, params.EntryID, req)
+		newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.EntryID, req)
 		ts.entries.Set(params.SpaceID, params.EnvironmentID, params.EntryID, &newEntry)
 
 		return &cm.EntryStatusCode{
@@ -45,7 +45,7 @@ func (ts *Handler) PutEntry(_ context.Context, req cm.EntryFields, params cm.Put
 		}, nil
 	}
 
-	UpdateEntryFromFields(entry, req)
+	UpdateEntryFromRequest(entry, req)
 
 	return &cm.EntryStatusCode{
 		StatusCode: http.StatusOK,
