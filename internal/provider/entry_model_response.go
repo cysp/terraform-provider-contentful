@@ -32,13 +32,8 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 		ContentTypeID: types.StringValue(contentTypeID),
 	}
 
-	// Store fields as a normalized object using NewTypedObjectFromAttributes
-	fieldsAttrs := map[string]attr.Value{}
-	for k, v := range entry.Fields {
-		fieldsAttrs[k] = convertToAttrValue(v)
-	}
-	fieldsObj, fieldsDiags := NewTypedObjectFromAttributes[jsontypes.Normalized](ctx, fieldsAttrs)
-	diags.Append(fieldsDiags...)
+	// Store fields as an opaque JSON blob
+	fieldsObj := jsontypes.Wrap(entry.Fields)
 	model.Fields = fieldsObj
 
 	metadata, metadataDiags := NewEntryMetadataFromResponse(ctx, path.Root("metadata"), entry.Metadata)

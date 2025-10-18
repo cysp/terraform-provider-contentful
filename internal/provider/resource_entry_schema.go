@@ -40,9 +40,10 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"fields": schema.StringAttribute{
-				CustomType: jsontypes.NormalizedType{},
-				Required:   true,
+			"fields": schema.MapAttribute{
+				ElementType: jsontypes.NormalizedType{},
+				CustomType:  NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
+				Required:    true,
 			},
 			"metadata": schema.SingleNestedAttribute{
 				Attributes:  EntryMetadataValue{}.SchemaAttributes(ctx),

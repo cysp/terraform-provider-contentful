@@ -1400,15 +1400,7 @@ components:
                 - Entry
     EntryFields:
       type: object
-      additionalProperties:
-        type: object
-        additionalProperties:
-          oneOf:
-            - type: string
-            - type: number
-            - type: boolean
-            - type: object
-            - type: array
+      additionalProperties: {}
     Entry:
       type: object
       properties:

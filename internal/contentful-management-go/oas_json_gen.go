@@ -8417,7 +8417,9 @@ func (s EntryFields) encodeFields(e *jx.Encoder) {
 	for k, elem := range s {
 		e.FieldStart(k)
 
-		elem.Encode(e)
+		if len(elem) != 0 {
+			e.Raw(elem)
+		}
 	}
 }
 
@@ -8428,9 +8430,11 @@ func (s *EntryFields) Decode(d *jx.Decoder) error {
 	}
 	m := s.init()
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem EntryFieldsItem
+		var elem jx.Raw
 		if err := func() error {
-			if err := elem.Decode(d); err != nil {
+			v, err := d.RawAppend(nil)
+			elem = jx.Raw(v)
+			if err != nil {
 				return err
 			}
 			return nil
@@ -8455,193 +8459,6 @@ func (s EntryFields) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *EntryFields) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
-func (s EntryFieldsItem) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields implements json.Marshaler.
-func (s EntryFieldsItem) encodeFields(e *jx.Encoder) {
-	for k, elem := range s {
-		e.FieldStart(k)
-
-		elem.Encode(e)
-	}
-}
-
-// Decode decodes EntryFieldsItem from json.
-func (s *EntryFieldsItem) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode EntryFieldsItem to nil")
-	}
-	m := s.init()
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem EntryFieldsItemItem
-		if err := func() error {
-			if err := elem.Decode(d); err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrapf(err, "decode field %q", k)
-		}
-		m[string(k)] = elem
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode EntryFieldsItem")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s EntryFieldsItem) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *EntryFieldsItem) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes EntryFieldsItemItem as json.
-func (s EntryFieldsItemItem) Encode(e *jx.Encoder) {
-	switch s.Type {
-	case StringEntryFieldsItemItem:
-		e.Str(s.String)
-	case Float64EntryFieldsItemItem:
-		e.Float64(s.Float64)
-	case BoolEntryFieldsItemItem:
-		e.Bool(s.Bool)
-	case EntryFieldsItemItem3EntryFieldsItemItem:
-		s.EntryFieldsItemItem3.Encode(e)
-	case AnyArrayEntryFieldsItemItem:
-		e.ArrStart()
-		for _, elem := range s.AnyArray {
-			if len(elem) != 0 {
-				e.Raw(elem)
-			}
-		}
-		e.ArrEnd()
-	}
-}
-
-// Decode decodes EntryFieldsItemItem from json.
-func (s *EntryFieldsItemItem) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode EntryFieldsItemItem to nil")
-	}
-	// Sum type type_discriminator.
-	switch t := d.Next(); t {
-	case jx.Array:
-		s.AnyArray = make([]jx.Raw, 0)
-		if err := d.Arr(func(d *jx.Decoder) error {
-			var elem jx.Raw
-			v, err := d.RawAppend(nil)
-			elem = jx.Raw(v)
-			if err != nil {
-				return err
-			}
-			s.AnyArray = append(s.AnyArray, elem)
-			return nil
-		}); err != nil {
-			return err
-		}
-		s.Type = AnyArrayEntryFieldsItemItem
-	case jx.Bool:
-		v, err := d.Bool()
-		s.Bool = bool(v)
-		if err != nil {
-			return err
-		}
-		s.Type = BoolEntryFieldsItemItem
-	case jx.Number:
-		v, err := d.Float64()
-		s.Float64 = float64(v)
-		if err != nil {
-			return err
-		}
-		s.Type = Float64EntryFieldsItemItem
-	case jx.Object:
-		if err := s.EntryFieldsItemItem3.Decode(d); err != nil {
-			return err
-		}
-		s.Type = EntryFieldsItemItem3EntryFieldsItemItem
-	case jx.String:
-		v, err := d.Str()
-		s.String = string(v)
-		if err != nil {
-			return err
-		}
-		s.Type = StringEntryFieldsItemItem
-	default:
-		return errors.Errorf("unexpected json type %q", t)
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s EntryFieldsItemItem) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *EntryFieldsItemItem) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
-func (s *EntryFieldsItemItem3) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields encodes fields.
-func (s *EntryFieldsItemItem3) encodeFields(e *jx.Encoder) {
-}
-
-var jsonFieldsNameOfEntryFieldsItemItem3 = [0]string{}
-
-// Decode decodes EntryFieldsItemItem3 from json.
-func (s *EntryFieldsItemItem3) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode EntryFieldsItemItem3 to nil")
-	}
-
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		switch string(k) {
-		default:
-			return d.Skip()
-		}
-	}); err != nil {
-		return errors.Wrap(err, "decode EntryFieldsItemItem3")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s *EntryFieldsItemItem3) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *EntryFieldsItemItem3) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
