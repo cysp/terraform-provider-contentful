@@ -69,7 +69,7 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	currentVersion := 1
 
-	params := cm.PutEntryParams{
+	putEntryParams := cm.PutEntryParams{
 		SpaceID:                data.SpaceID.ValueString(),
 		EnvironmentID:          data.EnvironmentID.ValueString(),
 		EntryID:                data.EntryID.ValueString(),
@@ -77,23 +77,23 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		XContentfulVersion:     currentVersion,
 	}
 
-	request, requestDiags := data.ToEntryRequestFields(ctx)
-	resp.Diagnostics.Append(requestDiags...)
+	putEntryRequest, putEntryRequestDiags := data.ToEntryRequestFields(ctx)
+	resp.Diagnostics.Append(putEntryRequestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	response, err := r.providerData.client.PutEntry(ctx, &request, params)
+	putEntryResponse, err := r.providerData.client.PutEntry(ctx, &putEntryRequest, putEntryParams)
 
 	tflog.Info(ctx, "entry.create", map[string]interface{}{
-		"params":   params,
-		"request":  request,
-		"response": response,
+		"params":   putEntryParams,
+		"request":  putEntryRequest,
+		"response": putEntryResponse,
 		"err":      err,
 	})
 
-	switch response := response.(type) {
+	switch response := putEntryResponse.(type) {
 	case *cm.EntryStatusCode:
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
@@ -153,23 +153,23 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	params := cm.GetEntryParams{
+	getEntryParams := cm.GetEntryParams{
 		SpaceID:       data.SpaceID.ValueString(),
 		EnvironmentID: data.EnvironmentID.ValueString(),
 		EntryID:       data.EntryID.ValueString(),
 	}
 
-	response, err := r.providerData.client.GetEntry(ctx, params)
+	getEntryResponse, err := r.providerData.client.GetEntry(ctx, getEntryParams)
 
 	tflog.Info(ctx, "entry.read", map[string]interface{}{
-		"params":   params,
-		"response": response,
+		"params":   getEntryParams,
+		"response": getEntryResponse,
 		"err":      err,
 	})
 
 	currentVersion := 0
 
-	switch response := response.(type) {
+	switch response := getEntryResponse.(type) {
 	case *cm.Entry:
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, *response)
 		resp.Diagnostics.Append(responseModelDiags...)
@@ -216,7 +216,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
-	params := cm.PutEntryParams{
+	putEntryParams := cm.PutEntryParams{
 		SpaceID:                data.SpaceID.ValueString(),
 		EnvironmentID:          data.EnvironmentID.ValueString(),
 		EntryID:                data.EntryID.ValueString(),
@@ -224,23 +224,23 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		XContentfulVersion:     currentVersion,
 	}
 
-	request, requestDiags := data.ToEntryRequestFields(ctx)
-	resp.Diagnostics.Append(requestDiags...)
+	putEntryRequest, putEntryRequestDiags := data.ToEntryRequestFields(ctx)
+	resp.Diagnostics.Append(putEntryRequestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	response, err := r.providerData.client.PutEntry(ctx, &request, params)
+	putEntryResponse, err := r.providerData.client.PutEntry(ctx, &putEntryRequest, putEntryParams)
 
 	tflog.Info(ctx, "entry.update", map[string]interface{}{
-		"params":   params,
-		"request":  request,
-		"response": response,
+		"params":   putEntryParams,
+		"request":  putEntryRequest,
+		"response": putEntryResponse,
 		"err":      err,
 	})
 
-	switch response := response.(type) {
+	switch response := putEntryResponse.(type) {
 	case *cm.EntryStatusCode:
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
@@ -300,14 +300,10 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	var currentVersion int
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
-
 	unpublishEntryParams := cm.UnpublishEntryParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		EntryID:            data.EntryID.ValueString(),
-		XContentfulVersion: currentVersion,
+		SpaceID:       data.SpaceID.ValueString(),
+		EnvironmentID: data.EnvironmentID.ValueString(),
+		EntryID:       data.EntryID.ValueString(),
 	}
 
 	unpublishEntryResponse, err := r.providerData.client.UnpublishEntry(ctx, unpublishEntryParams)
@@ -318,14 +314,14 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		"err":      err,
 	})
 
-	switch unpublishEntryResponse.(type) {
+	switch response := unpublishEntryResponse.(type) {
 	case *cm.NoContent:
 	case *cm.Entry:
 
 	default:
 		handled := false
 
-		if response, ok := unpublishEntryResponse.(cm.ErrorStatusCodeResponse); ok {
+		if response, ok := response.(cm.ErrorStatusCodeResponse); ok {
 			responseError, _ := response.GetError()
 			if response.GetStatusCode() == http.StatusNotFound || (responseError.Sys.ID == "BadRequest" && responseError.Message.Value == "Not published") {
 				resp.Diagnostics.AddWarning("Entry already unpublished", "")
@@ -335,7 +331,7 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		}
 
 		if !handled {
-			resp.Diagnostics.AddError("Failed to unpublish entry", util.ErrorDetailFromContentfulManagementResponse(unpublishEntryResponse, err))
+			resp.Diagnostics.AddError("Failed to unpublish entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
 	}
 
