@@ -7,9 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
-func HandleUnexpectedResponse(ctx context.Context, response interface{}, action string) diag.Diagnostic {
+//nolint:ireturn
+func HandleUnexpectedResponse(_ context.Context, response interface{}, action string) diag.Diagnostic {
 	return diag.NewErrorDiagnostic(
-		fmt.Sprintf("Unexpected response from Contentful when %s", action),
+		"Unexpected response from Contentful when "+action,
 		fmt.Sprintf("Unexpected response: %+v", response),
 	)
 }

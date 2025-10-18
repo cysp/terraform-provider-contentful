@@ -1,4 +1,3 @@
-//nolint:dupl
 package testing
 
 import (
@@ -73,7 +72,7 @@ func (ts *Handler) DeleteEntry(_ context.Context, params cm.DeleteEntryParams) (
 }
 
 //nolint:ireturn
-func (ts *Handler) PublishEntry(ctx context.Context, params cm.PublishEntryParams) (cm.PublishEntryRes, error) {
+func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams) (cm.PublishEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -95,7 +94,7 @@ func (ts *Handler) PublishEntry(ctx context.Context, params cm.PublishEntryParam
 }
 
 //nolint:ireturn
-func (ts *Handler) UnpublishEntry(ctx context.Context, params cm.UnpublishEntryParams) (cm.UnpublishEntryRes, error) {
+func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryParams) (cm.UnpublishEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

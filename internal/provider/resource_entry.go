@@ -97,9 +97,11 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	case *cm.EntryStatusCode:
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
+
 		currentVersion = response.Response.Sys.Version
 		data = responseModel
 	default:
@@ -146,7 +148,6 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
-//nolint:dupl
 func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data EntryModel
 
@@ -245,9 +246,11 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	case *cm.EntryStatusCode:
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
+
 		currentVersion = response.Response.Sys.Version
 		data = responseModel
 	default:
@@ -354,8 +357,10 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	default:
 		if res, ok := response.(cm.StatusCodeResponse); ok && res.GetStatusCode() == http.StatusNotFound {
 			resp.Diagnostics.AddWarning("Entry already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
 			return
 		}
+
 		resp.Diagnostics.AddError("Failed to delete entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }

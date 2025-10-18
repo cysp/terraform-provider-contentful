@@ -35,16 +35,18 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 
 	fields, fieldsDiags := NewEntryFieldsFromResponse(ctx, path.Root("fields"), entry.Fields)
 	diags.Append(fieldsDiags...)
+
 	model.Fields = fields
 
 	metadata, metadataDiags := NewEntryMetadataFromResponse(ctx, path.Root("metadata"), entry.Metadata)
 	diags.Append(metadataDiags...)
+
 	model.Metadata = metadata
 
 	return model, diags
 }
 
-func NewEntryFieldsFromResponse(ctx context.Context, path path.Path, fields cm.OptEntryFields) (TypedMap[jsontypes.Normalized], diag.Diagnostics) {
+func NewEntryFieldsFromResponse(_ context.Context, _ path.Path, fields cm.OptEntryFields) (TypedMap[jsontypes.Normalized], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if !fields.IsSet() {
@@ -59,7 +61,7 @@ func NewEntryFieldsFromResponse(ctx context.Context, path path.Path, fields cm.O
 	return NewTypedMap(elements), diags
 }
 
-func NewEntryMetadataFromResponse(ctx context.Context, path path.Path, metadata cm.OptEntryMetadata) (TypedObject[EntryMetadataValue], diag.Diagnostics) {
+func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.OptEntryMetadata) (TypedObject[EntryMetadataValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if !metadata.IsSet() {
@@ -67,6 +69,7 @@ func NewEntryMetadataFromResponse(ctx context.Context, path path.Path, metadata 
 	}
 
 	tags := []types.String{}
+
 	for _, tag := range metadata.Value.Tags {
 		if tag.Sys.ID != "" {
 			tags = append(tags, types.StringValue(tag.Sys.ID))

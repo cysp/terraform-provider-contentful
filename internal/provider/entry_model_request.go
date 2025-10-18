@@ -25,7 +25,7 @@ func (m *EntryModel) ToEntryRequestFields(ctx context.Context) (cm.EntryRequest,
 	}, diags
 }
 
-func (m *EntryModel) toEntryFields(ctx context.Context) (cm.EntryFields, diag.Diagnostics) {
+func (m *EntryModel) toEntryFields(_ context.Context) (cm.EntryFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	// Treat fields as a map of opaque JSON blobs
@@ -43,8 +43,9 @@ func (m *EntryModel) toEntryFields(ctx context.Context) (cm.EntryFields, diag.Di
 	return fields, diags
 }
 
-func (m *EntryModel) toEntryMetadata(ctx context.Context) (cm.OptEntryMetadata, diag.Diagnostics) {
+func (m *EntryModel) toEntryMetadata(_ context.Context) (cm.OptEntryMetadata, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
+
 	var metadata cm.OptEntryMetadata
 	if !m.Metadata.IsNull() {
 		tags := []cm.TagLink{}
@@ -57,9 +58,11 @@ func (m *EntryModel) toEntryMetadata(ctx context.Context) (cm.OptEntryMetadata, 
 				},
 			})
 		}
+
 		metadata.SetTo(cm.EntryMetadata{
 			Tags: tags,
 		})
 	}
+
 	return metadata, diags
 }
