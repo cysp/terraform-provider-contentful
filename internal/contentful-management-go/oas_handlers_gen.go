@@ -6591,10 +6591,6 @@ func (s *Server) handleUnpublishEntryRequest(args [3]string, argsEscaped bool, w
 					Name: "entry_id",
 					In:   "path",
 				}: params.EntryID,
-				{
-					Name: "X-Contentful-Version",
-					In:   "header",
-				}: params.XContentfulVersion,
 			},
 			Raw: r,
 		}

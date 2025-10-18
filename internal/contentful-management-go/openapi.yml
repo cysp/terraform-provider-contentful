@@ -2194,10 +2194,14 @@ paths:
       - $ref: "#/components/parameters/space_id"
       - $ref: "#/components/parameters/environment_id"
       - $ref: "#/components/parameters/entry_id"
-      - $ref: "#/components/parameters/x-contentful-version"
     put:
       operationId: publishEntry
       summary: Publish an entry
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/entry_id"
+        - $ref: "#/components/parameters/x-contentful-version"
       responses:
         2XX:
           description: An entry

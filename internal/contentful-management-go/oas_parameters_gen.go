@@ -6319,10 +6319,9 @@ func decodeRevokePersonalAccessTokenParams(args [1]string, argsEscaped bool, r *
 
 // UnpublishEntryParams is parameters of unpublishEntry operation.
 type UnpublishEntryParams struct {
-	SpaceID            string
-	EnvironmentID      string
-	EntryID            string
-	XContentfulVersion int
+	SpaceID       string
+	EnvironmentID string
+	EntryID       string
 }
 
 func unpackUnpublishEntryParams(packed middleware.Parameters) (params UnpublishEntryParams) {
@@ -6347,18 +6346,10 @@ func unpackUnpublishEntryParams(packed middleware.Parameters) (params UnpublishE
 		}
 		params.EntryID = packed[key].(string)
 	}
-	{
-		key := middleware.ParameterKey{
-			Name: "X-Contentful-Version",
-			In:   "header",
-		}
-		params.XContentfulVersion = packed[key].(int)
-	}
 	return params
 }
 
 func decodeUnpublishEntryParams(args [3]string, argsEscaped bool, r *http.Request) (params UnpublishEntryParams, _ error) {
-	h := uri.NewHeaderDecoder(r.Header)
 	// Decode path: space_id.
 	if err := func() error {
 		param := args[0]
@@ -6491,40 +6482,6 @@ func decodeUnpublishEntryParams(args [3]string, argsEscaped bool, r *http.Reques
 		return params, &ogenerrors.DecodeParamError{
 			Name: "entry_id",
 			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode header: X-Contentful-Version.
-	if err := func() error {
-		cfg := uri.HeaderParameterDecodingConfig{
-			Name:    "X-Contentful-Version",
-			Explode: false,
-		}
-		if err := h.HasParam(cfg); err == nil {
-			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToInt(val)
-				if err != nil {
-					return err
-				}
-
-				params.XContentfulVersion = c
-				return nil
-			}); err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "X-Contentful-Version",
-			In:   "header",
 			Err:  err,
 		}
 	}
