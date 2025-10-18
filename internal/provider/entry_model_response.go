@@ -6,6 +6,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,6 +17,7 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 
 	spaceID := entry.Sys.Space.Sys.ID
 	environmentID := entry.Sys.Environment.Sys.ID
+	contentTypeID := entry.Sys.ContentType.Sys.ID
 	entryID := entry.Sys.ID
 
 	model := EntryModel{
@@ -27,18 +29,41 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 			EnvironmentID: types.StringValue(environmentID),
 			EntryID:       types.StringValue(entryID),
 		},
-		ContentTypeID: types.StringValue(entry.Sys.ContentType.Sys.ID),
+		ContentTypeID: types.StringValue(contentTypeID),
 	}
 
-	fields, fieldsDiags := jsontypes.NewNormalizedValue(string(entry.Fields))
+	// Store fields as a normalized object using NewTypedObjectFromAttributes
+	fieldsAttrs := map[string]attr.Value{}
+	for k, v := range entry.Fields {
+		fieldsAttrs[k] = convertToAttrValue(v)
+	}
+	fieldsObj, fieldsDiags := NewTypedObjectFromAttributes[jsontypes.Normalized](ctx, fieldsAttrs)
 	diags.Append(fieldsDiags...)
-	model.Fields = DiagsMust(NewTypedObjectFromValue[jsontypes.Normalized](ctx, fields))
+	model.Fields = fieldsObj
 
 	metadata, metadataDiags := NewEntryMetadataFromResponse(ctx, path.Root("metadata"), entry.Metadata)
 	diags.Append(metadataDiags...)
 	model.Metadata = metadata
 
 	return model, diags
+}
+
+// convertToAttrValue converts supported types to attr.Value
+func convertToAttrValue(v any) attr.Value {
+	switch val := v.(type) {
+	case string:
+		return types.StringValue(val)
+	case bool:
+		return types.BoolValue(val)
+	case int:
+		return types.Int64Value(int64(val))
+	case int64:
+		return types.Int64Value(val)
+	case float64:
+		return types.Float64Value(val)
+	default:
+		return types.StringNull() // fallback for unsupported types
+	}
 }
 
 func NewEntryMetadataFromResponse(ctx context.Context, path path.Path, metadata cm.OptEntryMetadata) (TypedObject[EntryMetadataValue], diag.Diagnostics) {
@@ -50,10 +75,13 @@ func NewEntryMetadataFromResponse(ctx context.Context, path path.Path, metadata 
 
 	tags := []types.String{}
 	for _, tag := range metadata.Value.Tags {
-		tags = append(tags, types.StringValue(tag.Sys.ID))
+		if tag.Sys.ID != "" {
+			tags = append(tags, types.StringValue(tag.Sys.ID))
+		}
 	}
 
-	return DiagsMust(NewTypedObjectFromAttributes[EntryMetadataValue](ctx, map[string]types.Value{
-		"tags": NewTypedList(tags),
-	})), diags
+	attrs := map[string]attr.Value{"tags": NewTypedList(tags)}
+	obj, objDiags := NewTypedObjectFromAttributes[EntryMetadataValue](ctx, attrs)
+	diags.Append(objDiags...)
+	return obj, diags
 }
