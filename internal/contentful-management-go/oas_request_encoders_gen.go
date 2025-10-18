@@ -151,7 +151,7 @@ func encodePutEditorInterfaceRequest(
 }
 
 func encodePutEntryRequest(
-	req EntryFields,
+	req *EntryRequest,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

@@ -272,7 +272,7 @@ type Invoker interface {
 	// Create or update an entry.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
-	PutEntry(ctx context.Context, request EntryFields, params PutEntryParams) (PutEntryRes, error)
+	PutEntry(ctx context.Context, request *EntryRequest, params PutEntryParams) (PutEntryRes, error)
 	// PutExtension invokes putExtension operation.
 	//
 	// Create or update an extension.
@@ -4962,12 +4962,12 @@ func (c *Client) sendPutEditorInterface(ctx context.Context, request *EditorInte
 // Create or update an entry.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
-func (c *Client) PutEntry(ctx context.Context, request EntryFields, params PutEntryParams) (PutEntryRes, error) {
+func (c *Client) PutEntry(ctx context.Context, request *EntryRequest, params PutEntryParams) (PutEntryRes, error) {
 	res, err := c.sendPutEntry(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutEntry(ctx context.Context, request EntryFields, params PutEntryParams) (res PutEntryRes, err error) {
+func (c *Client) sendPutEntry(ctx context.Context, request *EntryRequest, params PutEntryParams) (res PutEntryRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [6]string

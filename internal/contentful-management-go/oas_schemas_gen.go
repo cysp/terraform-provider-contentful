@@ -3610,7 +3610,7 @@ func (s *EditorInterfaceSysType) UnmarshalText(data []byte) error {
 type Entry struct {
 	Sys      EntrySys         `json:"sys"`
 	Metadata OptEntryMetadata `json:"metadata"`
-	Fields   EntryFields      `json:"fields"`
+	Fields   OptEntryFields   `json:"fields"`
 }
 
 // GetSys returns the value of Sys.
@@ -3624,7 +3624,7 @@ func (s *Entry) GetMetadata() OptEntryMetadata {
 }
 
 // GetFields returns the value of Fields.
-func (s *Entry) GetFields() EntryFields {
+func (s *Entry) GetFields() OptEntryFields {
 	return s.Fields
 }
 
@@ -3639,7 +3639,7 @@ func (s *Entry) SetMetadata(val OptEntryMetadata) {
 }
 
 // SetFields sets the value of Fields.
-func (s *Entry) SetFields(val EntryFields) {
+func (s *Entry) SetFields(val OptEntryFields) {
 	s.Fields = val
 }
 
@@ -3671,6 +3671,32 @@ func (s *EntryMetadata) GetTags() []TagLink {
 // SetTags sets the value of Tags.
 func (s *EntryMetadata) SetTags(val []TagLink) {
 	s.Tags = val
+}
+
+// Ref: #/components/schemas/EntryRequest
+type EntryRequest struct {
+	Metadata OptEntryMetadata `json:"metadata"`
+	Fields   OptEntryFields   `json:"fields"`
+}
+
+// GetMetadata returns the value of Metadata.
+func (s *EntryRequest) GetMetadata() OptEntryMetadata {
+	return s.Metadata
+}
+
+// GetFields returns the value of Fields.
+func (s *EntryRequest) GetFields() OptEntryFields {
+	return s.Fields
+}
+
+// SetMetadata sets the value of Metadata.
+func (s *EntryRequest) SetMetadata(val OptEntryMetadata) {
+	s.Metadata = val
+}
+
+// SetFields sets the value of Fields.
+func (s *EntryRequest) SetFields(val OptEntryFields) {
+	s.Fields = val
 }
 
 // EntryStatusCode wraps Entry with StatusCode.
@@ -5434,6 +5460,52 @@ func (o OptDateTime) Get() (v time.Time, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEntryFields returns new OptEntryFields with value set to v.
+func NewOptEntryFields(v EntryFields) OptEntryFields {
+	return OptEntryFields{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEntryFields is optional EntryFields.
+type OptEntryFields struct {
+	Value EntryFields
+	Set   bool
+}
+
+// IsSet returns true if OptEntryFields was set.
+func (o OptEntryFields) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEntryFields) Reset() {
+	var v EntryFields
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEntryFields) SetTo(v EntryFields) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEntryFields) Get() (v EntryFields, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEntryFields) Or(d EntryFields) EntryFields {
 	if v, ok := o.Get(); ok {
 		return v
 	}

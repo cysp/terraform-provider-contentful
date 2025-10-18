@@ -5732,7 +5732,7 @@ func (s *Server) handlePutEntryRequest(args [3]string, argsEscaped bool, w http.
 		}
 
 		type (
-			Request  = EntryFields
+			Request  = *EntryRequest
 			Params   = PutEntryParams
 			Response = PutEntryRes
 		)

@@ -259,7 +259,7 @@ type Handler interface {
 	// Create or update an entry.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
-	PutEntry(ctx context.Context, req EntryFields, params PutEntryParams) (PutEntryRes, error)
+	PutEntry(ctx context.Context, req *EntryRequest, params PutEntryParams) (PutEntryRes, error)
 	// PutExtension implements putExtension operation.
 	//
 	// Create or update an extension.

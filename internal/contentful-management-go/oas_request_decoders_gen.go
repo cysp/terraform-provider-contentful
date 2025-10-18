@@ -789,7 +789,7 @@ func (s *Server) decodePutEditorInterfaceRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutEntryRequest(r *http.Request) (
-	req EntryFields,
+	req *EntryRequest,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -836,7 +836,7 @@ func (s *Server) decodePutEntryRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request EntryFields
+		var request EntryRequest
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -853,7 +853,15 @@ func (s *Server) decodePutEntryRequest(r *http.Request) (
 			}
 			return req, rawBody, close, err
 		}
-		return request, rawBody, close, nil
+		if err := func() error {
+			if err := request.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return req, rawBody, close, errors.Wrap(err, "validate")
+		}
+		return &request, rawBody, close, nil
 	default:
 		return req, rawBody, close, validate.InvalidContentType(ct)
 	}

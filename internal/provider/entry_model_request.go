@@ -4,10 +4,28 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
-func (m *EntryModel) ToEntryRequest(ctx context.Context) (*cm.PutEntryReq, diag.Diagnostics) {
+func (m *EntryModel) ToEntryRequestFields(ctx context.Context) (cm.EntryRequest, diag.Diagnostics) {
+	fields, diags := m.toEntryFields(ctx)
+	if diags.HasError() {
+		return cm.EntryRequest{}, diags
+	}
+
+	metadata, diags := m.toEntryMetadata(ctx)
+	if diags.HasError() {
+		return cm.EntryRequest{}, diags
+	}
+
+	return cm.EntryRequest{
+		Fields:   cm.NewOptEntryFields(fields),
+		Metadata: metadata,
+	}, diags
+}
+
+func (m *EntryModel) toEntryFields(ctx context.Context) (cm.EntryFields, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	// Treat fields as a map of opaque JSON blobs
@@ -18,13 +36,15 @@ func (m *EntryModel) ToEntryRequest(ctx context.Context) (*cm.PutEntryReq, diag.
 		if v.IsNull() {
 			continue
 		}
-		var val any
-		if err := v.UnmarshalTo(&val); err != nil {
-			continue
-		}
-		fields[k] = val
+
+		fields[k] = jx.Raw(v.ValueString())
 	}
 
+	return fields, diags
+}
+
+func (m *EntryModel) toEntryMetadata(ctx context.Context) (cm.OptEntryMetadata, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
 	var metadata cm.OptEntryMetadata
 	if !m.Metadata.IsNull() {
 		tags := []cm.TagLink{}
@@ -41,9 +61,5 @@ func (m *EntryModel) ToEntryRequest(ctx context.Context) (*cm.PutEntryReq, diag.
 			Tags: tags,
 		})
 	}
-
-	return &cm.PutEntryReq{
-		Fields:   fields,
-		Metadata: metadata,
-	}, diags
+	return metadata, diags
 }
