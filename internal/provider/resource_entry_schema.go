@@ -33,12 +33,14 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					UseStateForUnknown(),
 				},
 			},
 			"content_type_id": schema.StringAttribute{
 				Required: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					UseStateForUnknown(),
 				},
 			},
 			"fields": schema.MapAttribute{
