@@ -107,8 +107,9 @@ func TestAccEntryResourceCreate(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
-		"space_id":       config.StringVariable("0p38pssr0fi3"),
-		"environment_id": config.StringVariable("test"),
+		"space_id":        config.StringVariable("0p38pssr0fi3"),
+		"environment_id":  config.StringVariable("test"),
+		"content_type_id": config.StringVariable("author"),
 	}
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
@@ -128,9 +129,10 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 	entryID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
-		"space_id":       config.StringVariable("0p38pssr0fi3"),
-		"environment_id": config.StringVariable("test"),
-		"entry_id":       config.StringVariable(entryID),
+		"space_id":        config.StringVariable("0p38pssr0fi3"),
+		"environment_id":  config.StringVariable("test"),
+		"content_type_id": config.StringVariable("author"),
+		"entry_id":        config.StringVariable(entryID),
 	}
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{

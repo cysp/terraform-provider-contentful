@@ -19,12 +19,12 @@ description: |-
 
 - `content_type_id` (String)
 - `environment_id` (String)
-- `fields` (Map of String)
 - `space_id` (String)
 
 ### Optional
 
 - `entry_id` (String)
+- `fields` (Map of String)
 - `metadata` (Attributes) Metadata for the entry. Once set, metadata properties may not be removed, but the list of tags may be reduced to the empty list (see [below for nested schema](#nestedatt--metadata))
 
 ### Read-Only
