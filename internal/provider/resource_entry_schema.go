@@ -56,7 +56,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 			"fields": schema.MapAttribute{
 				ElementType: jsontypes.NormalizedType{},
 				CustomType:  NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
-				Optional:    true,
+				Required:    true,
 			},
 			"metadata": schema.SingleNestedAttribute{
 				Attributes:  EntryMetadataValue{}.SchemaAttributes(ctx),

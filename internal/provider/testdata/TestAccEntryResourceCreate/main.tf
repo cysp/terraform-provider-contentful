@@ -11,8 +11,8 @@ variable "content_type_id" {
 }
 
 variable "fields" {
-  type = map(string)
-  default = null
+  type    = map(string)
+  default = {}
 }
 
 resource "contentful_entry" "test" {
