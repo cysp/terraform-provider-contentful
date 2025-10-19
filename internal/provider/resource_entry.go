@@ -77,7 +77,7 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		XContentfulVersion:     currentVersion,
 	}
 
-	putEntryRequest, putEntryRequestDiags := data.ToEntryRequestFields(ctx)
+	putEntryRequest, putEntryRequestDiags := data.ToEntryRequest(ctx)
 	resp.Diagnostics.Append(putEntryRequestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -225,7 +225,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		XContentfulVersion:     currentVersion,
 	}
 
-	putEntryRequest, putEntryRequestDiags := data.ToEntryRequestFields(ctx)
+	putEntryRequest, putEntryRequestDiags := data.ToEntryRequest(ctx)
 	resp.Diagnostics.Append(putEntryRequestDiags...)
 
 	if resp.Diagnostics.HasError() {

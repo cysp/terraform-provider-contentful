@@ -8,27 +8,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
-func (m *EntryModel) ToEntryRequestFields(ctx context.Context) (cm.EntryRequest, diag.Diagnostics) {
-	fields, diags := m.toEntryFields(ctx)
-	if diags.HasError() {
-		return cm.EntryRequest{}, diags
-	}
+func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
 
-	metadata, diags := m.toEntryMetadata(ctx)
-	if diags.HasError() {
-		return cm.EntryRequest{}, diags
-	}
+	fields, fieldsDiags := entryModelToOptEntryFields(ctx, m)
+	diags.Append(fieldsDiags...)
+
+	metadata, metadataDiags := entryModelToOptEntryMetadata(ctx, m)
+	diags.Append(metadataDiags...)
 
 	return cm.EntryRequest{
-		Fields:   cm.NewOptEntryFields(fields),
+		Fields:   fields,
 		Metadata: metadata,
 	}, diags
 }
 
-func (m *EntryModel) toEntryFields(_ context.Context) (cm.EntryFields, diag.Diagnostics) {
+func entryModelToOptEntryFields(_ context.Context, m EntryModel) (cm.OptEntryFields, diag.Diagnostics) {
+	if m.Fields.IsNull() || m.Fields.IsUnknown() {
+		return cm.OptEntryFields{}, nil
+	}
+
 	diags := diag.Diagnostics{}
 
-	// Treat fields as a map of opaque JSON blobs
 	fields := make(cm.EntryFields)
 
 	attrs := m.Fields.Elements()
@@ -40,29 +41,37 @@ func (m *EntryModel) toEntryFields(_ context.Context) (cm.EntryFields, diag.Diag
 		fields[k] = jx.Raw(v.ValueString())
 	}
 
-	return fields, diags
+	return cm.NewOptEntryFields(fields), diags
 }
 
-func (m *EntryModel) toEntryMetadata(_ context.Context) (cm.OptEntryMetadata, diag.Diagnostics) {
+func entryModelToOptEntryMetadata(_ context.Context, m EntryModel) (cm.OptEntryMetadata, diag.Diagnostics) {
+	if m.Metadata.IsNull() || m.Metadata.IsUnknown() {
+		return cm.OptEntryMetadata{}, nil
+	}
+
 	diags := diag.Diagnostics{}
 
-	var metadata cm.OptEntryMetadata
-	if !m.Metadata.IsNull() {
-		tags := []cm.TagLink{}
-		for _, tag := range m.Metadata.Value().Tags.Elements() {
-			tags = append(tags, cm.TagLink{
-				Sys: cm.TagLinkSys{
-					Type:     "Link",
-					LinkType: "Tag",
-					ID:       tag.ValueString(),
-				},
-			})
+	metadata := cm.EntryMetadata{}
+
+	modelTags := m.Metadata.Value().Tags.Elements()
+	tags := make([]cm.TagLink, 0, len(modelTags))
+
+	for _, tag := range modelTags {
+		tagValue := tag.ValueString()
+		if tagValue == "" {
+			continue
 		}
 
-		metadata.SetTo(cm.EntryMetadata{
-			Tags: tags,
+		tags = append(tags, cm.TagLink{
+			Sys: cm.TagLinkSys{
+				Type:     "Link",
+				LinkType: "Tag",
+				ID:       tagValue,
+			},
 		})
 	}
 
-	return metadata, diags
+	metadata.Tags = tags
+
+	return cm.NewOptEntryMetadata(metadata), diags
 }
