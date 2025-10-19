@@ -5,16 +5,26 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func EntryResourceSchema(ctx context.Context) schema.Schema {
+	defaultMetadataObjectValue, _ := NewTypedObject[EntryMetadataValue](EntryMetadataValue{
+		Tags: NewTypedListFromStringSlice([]string{}),
+	}).ToObjectValue(ctx)
+
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					UseStateForUnknown(),
+				},
 			},
 			"space_id": schema.StringAttribute{
 				Required: true,
@@ -53,17 +63,29 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  NewTypedObjectNull[EntryMetadataValue]().CustomType(ctx),
 				Description: "Metadata for the entry. Once set, metadata properties may not be removed, but the list of tags may be reduced to the empty list",
 				Optional:    true,
+				Computed:    true,
+				Default:     objectdefault.StaticValue(defaultMetadataObjectValue),
+				PlanModifiers: []planmodifier.Object{
+					UseStateForUnknown(),
+				},
 			},
 		},
 	}
 }
 
 func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+	defaultTagsListValue, _ := NewTypedListFromStringSlice([]string{}).ToListValue(ctx)
+
 	return map[string]schema.Attribute{
 		"tags": schema.ListAttribute{
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Optional:    true,
+			Computed:    true,
+			Default:     listdefault.StaticValue(defaultTagsListValue),
+			PlanModifiers: []planmodifier.List{
+				UseStateForUnknown(),
+			},
 		},
 	}
 }
