@@ -8,7 +8,7 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) CreateEntry(ctx context.Context, req *cm.EntryRequest, params cm.CreateEntryParams) (cm.CreateEntryRes, error) {
+func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params cm.CreateEntryParams) (cm.CreateEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

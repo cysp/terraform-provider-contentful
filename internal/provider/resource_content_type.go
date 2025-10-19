@@ -292,7 +292,6 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	r.providerData.editorInterfaceVersionOffset.Increment(data.ContentTypeID.ValueString())
 }
 
-//nolint:dupl
 func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data ContentTypeModel
 

@@ -23,8 +23,8 @@ func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.D
 	}, diags
 }
 
-func entryModelToOptEntryFields(_ context.Context, m EntryModel) (cm.OptEntryFields, diag.Diagnostics) {
-	if m.Fields.IsNull() || m.Fields.IsUnknown() {
+func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntryFields, diag.Diagnostics) {
+	if model.Fields.IsNull() || model.Fields.IsUnknown() {
 		return cm.OptEntryFields{}, nil
 	}
 
@@ -32,7 +32,7 @@ func entryModelToOptEntryFields(_ context.Context, m EntryModel) (cm.OptEntryFie
 
 	fields := make(cm.EntryFields)
 
-	attrs := m.Fields.Elements()
+	attrs := model.Fields.Elements()
 	for k, v := range attrs {
 		if v.IsNull() {
 			continue
@@ -44,8 +44,8 @@ func entryModelToOptEntryFields(_ context.Context, m EntryModel) (cm.OptEntryFie
 	return cm.NewOptEntryFields(fields), diags
 }
 
-func entryModelToOptEntryMetadata(_ context.Context, m EntryModel) (cm.OptEntryMetadata, diag.Diagnostics) {
-	if m.Metadata.IsNull() || m.Metadata.IsUnknown() {
+func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEntryMetadata, diag.Diagnostics) {
+	if model.Metadata.IsNull() || model.Metadata.IsUnknown() {
 		return cm.OptEntryMetadata{}, nil
 	}
 
@@ -53,7 +53,7 @@ func entryModelToOptEntryMetadata(_ context.Context, m EntryModel) (cm.OptEntryM
 
 	metadata := cm.EntryMetadata{}
 
-	modelTags := m.Metadata.Value().Tags.Elements()
+	modelTags := model.Metadata.Value().Tags.Elements()
 	tags := make([]cm.TagLink, 0, len(modelTags))
 
 	for _, tag := range modelTags {
