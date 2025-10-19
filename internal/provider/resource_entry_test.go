@@ -29,7 +29,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 		Fields: cm.NewOptEntryFields(cm.EntryFields{}),
 	})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
