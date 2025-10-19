@@ -71,9 +71,9 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	currentVersion := 1
 
 	if data.EntryID.IsNull() || data.EntryID.IsUnknown() {
-		data, currentVersion = r.createEntry(ctx, data, resp.Diagnostics)
+		data, currentVersion = r.createEntry(ctx, data, &resp.Diagnostics)
 	} else {
-		data, currentVersion = r.updateEntry(ctx, data, currentVersion, resp.Diagnostics)
+		data, currentVersion = r.updateEntry(ctx, data, currentVersion, &resp.Diagnostics)
 	}
 
 	var identityModel EntryIdentityModel
@@ -83,21 +83,18 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	// currentVersion = r.publishEntry(ctx, data, currentVersion, resp.Diagnostics)
+	currentVersion = r.publishEntry(ctx, data, currentVersion, &resp.Diagnostics)
 
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	// resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	// resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	// resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	// resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
 //nolint:dupl
@@ -177,13 +174,11 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	data, currentVersion = r.updateEntry(ctx, data, currentVersion, resp.Diagnostics)
+	data, currentVersion = r.updateEntry(ctx, data, currentVersion, &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// currentVersion = r.publishEntry(ctx, data, currentVersion, resp.Diagnostics)
 
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
@@ -193,6 +188,19 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	currentVersion = r.publishEntry(ctx, data, currentVersion, &resp.Diagnostics)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
@@ -206,16 +214,16 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	r.unpublishEntry(ctx, data, resp.Diagnostics)
+	r.unpublishEntry(ctx, data, &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	r.deleteEntry(ctx, data, resp.Diagnostics)
+	r.deleteEntry(ctx, data, &resp.Diagnostics)
 }
 
-func (r *entryResource) createEntry(ctx context.Context, data EntryModel, diags diag.Diagnostics) (EntryModel, int) {
+func (r *entryResource) createEntry(ctx context.Context, data EntryModel, diags *diag.Diagnostics) (EntryModel, int) {
 	createEntryParams := cm.CreateEntryParams{
 		SpaceID:                data.SpaceID.ValueString(),
 		EnvironmentID:          data.EnvironmentID.ValueString(),
@@ -255,7 +263,7 @@ func (r *entryResource) createEntry(ctx context.Context, data EntryModel, diags 
 	return data, currentVersion
 }
 
-func (r *entryResource) updateEntry(ctx context.Context, data EntryModel, currentVersion int, diags diag.Diagnostics) (EntryModel, int) {
+func (r *entryResource) updateEntry(ctx context.Context, data EntryModel, currentVersion int, diags *diag.Diagnostics) (EntryModel, int) {
 	putEntryParams := cm.PutEntryParams{
 		SpaceID:                data.SpaceID.ValueString(),
 		EnvironmentID:          data.EnvironmentID.ValueString(),
@@ -295,7 +303,7 @@ func (r *entryResource) updateEntry(ctx context.Context, data EntryModel, curren
 	return data, currentVersion
 }
 
-func (r *entryResource) deleteEntry(ctx context.Context, data EntryModel, diags diag.Diagnostics) {
+func (r *entryResource) deleteEntry(ctx context.Context, data EntryModel, diags *diag.Diagnostics) {
 	deleteEntryParams := cm.DeleteEntryParams{
 		SpaceID:       data.SpaceID.ValueString(),
 		EnvironmentID: data.EnvironmentID.ValueString(),
@@ -330,7 +338,7 @@ func (r *entryResource) deleteEntry(ctx context.Context, data EntryModel, diags 
 	}
 }
 
-func (r *entryResource) publishEntry(ctx context.Context, data EntryModel, currentVersion int, diags diag.Diagnostics) int {
+func (r *entryResource) publishEntry(ctx context.Context, data EntryModel, currentVersion int, diags *diag.Diagnostics) int {
 	publishEntryParams := cm.PublishEntryParams{
 		SpaceID:            data.SpaceID.ValueString(),
 		EnvironmentID:      data.EnvironmentID.ValueString(),
@@ -357,7 +365,7 @@ func (r *entryResource) publishEntry(ctx context.Context, data EntryModel, curre
 	return currentVersion
 }
 
-func (r *entryResource) unpublishEntry(ctx context.Context, data EntryModel, diags diag.Diagnostics) {
+func (r *entryResource) unpublishEntry(ctx context.Context, data EntryModel, diags *diag.Diagnostics) {
 	unpublishEntryParams := cm.UnpublishEntryParams{
 		SpaceID:       data.SpaceID.ValueString(),
 		EnvironmentID: data.EnvironmentID.ValueString(),

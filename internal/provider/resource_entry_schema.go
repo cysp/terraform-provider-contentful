@@ -30,12 +30,14 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Required: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					UseStateForUnknown(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
 				Required: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					UseStateForUnknown(),
 				},
 			},
 			"entry_id": schema.StringAttribute{
