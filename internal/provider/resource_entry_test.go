@@ -164,7 +164,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 		"fields": config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(`"name"`),
+			"name": config.StringVariable(`{"en-AU":"name"}`),
 		}),
 	}
 

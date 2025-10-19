@@ -76,22 +76,28 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		data, currentVersion = r.updateEntry(ctx, data, currentVersion, resp.Diagnostics)
 	}
 
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	currentVersion = r.publishEntry(ctx, data, currentVersion, resp.Diagnostics)
-
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
+
+	// currentVersion = r.publishEntry(ctx, data, currentVersion, resp.Diagnostics)
+
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
+
+	// resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
+	// resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
+	// resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	// resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
 //nolint:dupl
@@ -177,7 +183,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	currentVersion = r.publishEntry(ctx, data, currentVersion, resp.Diagnostics)
+	// currentVersion = r.publishEntry(ctx, data, currentVersion, resp.Diagnostics)
 
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
