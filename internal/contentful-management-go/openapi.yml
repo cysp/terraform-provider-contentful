@@ -84,7 +84,13 @@ components:
       required: true
       schema:
         type: string
-    x-contentful-content-type:
+    x-contentful-content-type-optional:
+      in: header
+      name: X-Contentful-Content-Type
+      required: false
+      schema:
+        type: string
+    x-contentful-content-type-required:
       in: header
       name: X-Contentful-Content-Type
       required: true
@@ -2134,6 +2140,34 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/entries:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+    post:
+      operationId: createEntry
+      summary: Create an entry
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/x-contentful-content-type-required"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "#/components/schemas/EntryRequest"
+      responses:
+        2XX:
+          description: An entry
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}:
     parameters:
       - $ref: "#/components/parameters/space_id"
@@ -2160,7 +2194,7 @@ paths:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/environment_id"
         - $ref: "#/components/parameters/entry_id"
-        - $ref: "#/components/parameters/x-contentful-content-type"
+        - $ref: "#/components/parameters/x-contentful-content-type-optional"
         - $ref: "#/components/parameters/x-contentful-version"
       requestBody:
         required: true

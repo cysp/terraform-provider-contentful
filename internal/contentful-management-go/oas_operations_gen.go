@@ -9,6 +9,7 @@ const (
 	ActivateContentTypeOperation          OperationName = "ActivateContentType"
 	CreateAppDefinitionOperation          OperationName = "CreateAppDefinition"
 	CreateDeliveryApiKeyOperation         OperationName = "CreateDeliveryApiKey"
+	CreateEntryOperation                  OperationName = "CreateEntry"
 	CreatePersonalAccessTokenOperation    OperationName = "CreatePersonalAccessToken"
 	CreateRoleOperation                   OperationName = "CreateRole"
 	CreateWebhookDefinitionOperation      OperationName = "CreateWebhookDefinition"

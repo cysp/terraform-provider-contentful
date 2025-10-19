@@ -29,7 +29,8 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"entry_id": schema.StringAttribute{
-				Required: true,
+				Optional: true,
+				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -50,9 +51,6 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  NewTypedObjectNull[EntryMetadataValue]().CustomType(ctx),
 				Description: "Metadata for the entry. Once set, metadata properties may not be removed, but the list of tags may be reduced to the empty list",
 				Optional:    true,
-			},
-			"published": schema.BoolAttribute{
-				Computed: true,
 			},
 		},
 	}

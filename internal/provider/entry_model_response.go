@@ -30,7 +30,6 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 			EntryID:       types.StringValue(entryID),
 		},
 		ContentTypeID: types.StringValue(contentTypeID),
-		Published:     types.BoolValue(entry.Sys.PublishedVersion.IsSet()),
 	}
 
 	fields, fieldsDiags := NewEntryFieldsFromResponse(ctx, path.Root("fields"), entry.Fields)

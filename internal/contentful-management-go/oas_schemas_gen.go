@@ -1629,6 +1629,7 @@ func NewErrorApplicationJSONError(v Error) ApplicationJSONError {
 func (*ApplicationJSONError) activateContentTypeRes()          {}
 func (*ApplicationJSONError) createAppDefinitionRes()          {}
 func (*ApplicationJSONError) createDeliveryApiKeyRes()         {}
+func (*ApplicationJSONError) createEntryRes()                  {}
 func (*ApplicationJSONError) createPersonalAccessTokenRes()    {}
 func (*ApplicationJSONError) createRoleRes()                   {}
 func (*ApplicationJSONError) createWebhookDefinitionRes()      {}
@@ -1707,6 +1708,7 @@ func (s *ApplicationJSONErrorStatusCode) SetResponse(val ApplicationJSONError) {
 func (*ApplicationJSONErrorStatusCode) activateContentTypeRes()          {}
 func (*ApplicationJSONErrorStatusCode) createAppDefinitionRes()          {}
 func (*ApplicationJSONErrorStatusCode) createDeliveryApiKeyRes()         {}
+func (*ApplicationJSONErrorStatusCode) createEntryRes()                  {}
 func (*ApplicationJSONErrorStatusCode) createPersonalAccessTokenRes()    {}
 func (*ApplicationJSONErrorStatusCode) createRoleRes()                   {}
 func (*ApplicationJSONErrorStatusCode) createWebhookDefinitionRes()      {}
@@ -1800,6 +1802,7 @@ func NewErrorApplicationVndContentfulManagementV1JSONError(v Error) ApplicationV
 func (*ApplicationVndContentfulManagementV1JSONError) activateContentTypeRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) createAppDefinitionRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) createDeliveryApiKeyRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONError) createEntryRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONError) createPersonalAccessTokenRes()    {}
 func (*ApplicationVndContentfulManagementV1JSONError) createRoleRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONError) createWebhookDefinitionRes()      {}
@@ -1878,6 +1881,7 @@ func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) SetResponse(va
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) activateContentTypeRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createAppDefinitionRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createDeliveryApiKeyRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createEntryRes()                  {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createPersonalAccessTokenRes()    {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createRoleRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createWebhookDefinitionRes()      {}
@@ -3725,6 +3729,7 @@ func (s *EntryStatusCode) SetResponse(val Entry) {
 	s.Response = val
 }
 
+func (*EntryStatusCode) createEntryRes()  {}
 func (*EntryStatusCode) publishEntryRes() {}
 func (*EntryStatusCode) putEntryRes()     {}
 

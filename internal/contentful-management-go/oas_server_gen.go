@@ -26,6 +26,12 @@ type Handler interface {
 	//
 	// POST /spaces/{space_id}/api_keys
 	CreateDeliveryApiKey(ctx context.Context, req *ApiKeyRequestFields, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error)
+	// CreateEntry implements createEntry operation.
+	//
+	// Create an entry.
+	//
+	// POST /spaces/{space_id}/environments/{environment_id}/entries
+	CreateEntry(ctx context.Context, req *EntryRequest, params CreateEntryParams) (CreateEntryRes, error)
 	// CreatePersonalAccessToken implements createPersonalAccessToken operation.
 	//
 	// Create a personal access token.

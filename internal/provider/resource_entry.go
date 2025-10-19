@@ -69,31 +69,64 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	currentVersion := 1
 
-	putEntryParams := cm.PutEntryParams{
-		SpaceID:                data.SpaceID.ValueString(),
-		EnvironmentID:          data.EnvironmentID.ValueString(),
-		EntryID:                data.EntryID.ValueString(),
-		XContentfulContentType: data.ContentTypeID.ValueString(),
-		XContentfulVersion:     currentVersion,
+	var response any
+	var requestErr error
+
+	if data.EntryID.IsNull() || data.EntryID.IsUnknown() {
+		createEntryParams := cm.CreateEntryParams{
+			SpaceID:                data.SpaceID.ValueString(),
+			EnvironmentID:          data.EnvironmentID.ValueString(),
+			XContentfulContentType: data.ContentTypeID.ValueString(),
+		}
+
+		createEntryRequest, createEntryRequestDiags := data.ToEntryRequest(ctx)
+		resp.Diagnostics.Append(createEntryRequestDiags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		createEntryResponse, err := r.providerData.client.CreateEntry(ctx, &createEntryRequest, createEntryParams)
+
+		response = createEntryResponse
+		requestErr = err
+
+		tflog.Info(ctx, "entry.create.post", map[string]interface{}{
+			"params":   createEntryParams,
+			"request":  createEntryRequest,
+			"response": createEntryResponse,
+			"err":      err,
+		})
+	} else {
+		putEntryParams := cm.PutEntryParams{
+			SpaceID:                data.SpaceID.ValueString(),
+			EnvironmentID:          data.EnvironmentID.ValueString(),
+			EntryID:                data.EntryID.ValueString(),
+			XContentfulContentType: cm.NewOptPointerString(data.ContentTypeID.ValueStringPointer()),
+			XContentfulVersion:     currentVersion,
+		}
+
+		putEntryRequest, putEntryRequestDiags := data.ToEntryRequest(ctx)
+		resp.Diagnostics.Append(putEntryRequestDiags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		putEntryResponse, err := r.providerData.client.PutEntry(ctx, &putEntryRequest, putEntryParams)
+
+		response = putEntryResponse
+		requestErr = err
+
+		tflog.Info(ctx, "entry.create.put", map[string]interface{}{
+			"params":   putEntryParams,
+			"request":  putEntryRequest,
+			"response": putEntryResponse,
+			"err":      err,
+		})
 	}
 
-	putEntryRequest, putEntryRequestDiags := data.ToEntryRequest(ctx)
-	resp.Diagnostics.Append(putEntryRequestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	putEntryResponse, err := r.providerData.client.PutEntry(ctx, &putEntryRequest, putEntryParams)
-
-	tflog.Info(ctx, "entry.create", map[string]interface{}{
-		"params":   putEntryParams,
-		"request":  putEntryRequest,
-		"response": putEntryResponse,
-		"err":      err,
-	})
-
-	switch response := putEntryResponse.(type) {
+	switch response := response.(type) {
 	case *cm.EntryStatusCode:
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
@@ -102,7 +135,7 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		currentVersion = response.Response.Sys.Version
 
 	default:
-		resp.Diagnostics.AddError("Failed to create entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to create entry", util.ErrorDetailFromContentfulManagementResponse(response, requestErr))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -221,7 +254,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		SpaceID:                data.SpaceID.ValueString(),
 		EnvironmentID:          data.EnvironmentID.ValueString(),
 		EntryID:                data.EntryID.ValueString(),
-		XContentfulContentType: data.ContentTypeID.ValueString(),
+		XContentfulContentType: cm.NewOptPointerString(data.ContentTypeID.ValueStringPointer()),
 		XContentfulVersion:     currentVersion,
 	}
 

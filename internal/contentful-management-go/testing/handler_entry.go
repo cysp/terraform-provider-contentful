@@ -8,6 +8,26 @@ import (
 )
 
 //nolint:ireturn
+func (ts *Handler) CreateEntry(ctx context.Context, req *cm.EntryRequest, params cm.CreateEntryParams) (cm.CreateEntryRes, error) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
+	entryID := generateResourceID()
+
+	newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.XContentfulContentType, entryID, req)
+	ts.entries.Set(params.SpaceID, params.EnvironmentID, entryID, &newEntry)
+
+	return &cm.EntryStatusCode{
+		StatusCode: http.StatusCreated,
+		Response:   newEntry,
+	}, nil
+}
+
+//nolint:ireturn
 func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.GetEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
@@ -35,7 +55,7 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.XContentfulContentType, params.EntryID, req)
+		newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.XContentfulContentType.Value, params.EntryID, req)
 		ts.entries.Set(params.SpaceID, params.EnvironmentID, params.EntryID, &newEntry)
 
 		return &cm.EntryStatusCode{

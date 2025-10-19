@@ -106,6 +106,25 @@ func TestAccEntryResourceCreate(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	configVariables := config.Variables{
+		"space_id":       config.StringVariable("0p38pssr0fi3"),
+		"environment_id": config.StringVariable("test"),
+	}
+
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+			},
+		},
+	})
+}
+func TestAccEntryResourceCreateWithID(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+
 	entryID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{

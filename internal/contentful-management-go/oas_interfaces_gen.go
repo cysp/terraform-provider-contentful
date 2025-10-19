@@ -13,6 +13,10 @@ type CreateDeliveryApiKeyRes interface {
 	createDeliveryApiKeyRes()
 }
 
+type CreateEntryRes interface {
+	createEntryRes()
+}
+
 type CreatePersonalAccessTokenRes interface {
 	createPersonalAccessTokenRes()
 }
