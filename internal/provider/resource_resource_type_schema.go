@@ -31,6 +31,9 @@ func ResourceTypeResourceSchema(_ context.Context) schema.Schema {
 			},
 			"resource_provider_id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					UseStateForUnknown(),
+				},
 			},
 			"resource_type_id": schema.StringAttribute{
 				Required: true,

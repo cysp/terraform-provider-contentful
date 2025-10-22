@@ -19,6 +19,9 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					UseStateForUnknown(),
+				},
 			},
 			"space_id": schema.StringAttribute{
 				Required: true,
