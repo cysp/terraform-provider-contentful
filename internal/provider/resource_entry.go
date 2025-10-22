@@ -76,6 +76,10 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		data, currentVersion = r.updateEntry(ctx, data, currentVersion, &resp.Diagnostics)
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
