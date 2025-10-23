@@ -13,6 +13,10 @@ type CreateDeliveryApiKeyRes interface {
 	createDeliveryApiKeyRes()
 }
 
+type CreateEntryRes interface {
+	createEntryRes()
+}
+
 type CreatePersonalAccessTokenRes interface {
 	createPersonalAccessTokenRes()
 }
@@ -47,6 +51,10 @@ type DeleteContentTypeRes interface {
 
 type DeleteDeliveryApiKeyRes interface {
 	deleteDeliveryApiKeyRes()
+}
+
+type DeleteEntryRes interface {
+	deleteEntryRes()
 }
 
 type DeleteExtensionRes interface {
@@ -97,6 +105,10 @@ type GetEditorInterfaceRes interface {
 	getEditorInterfaceRes()
 }
 
+type GetEntryRes interface {
+	getEntryRes()
+}
+
 type GetExtensionRes interface {
 	getExtensionRes()
 }
@@ -133,6 +145,10 @@ type GetWebhookDefinitionRes interface {
 	getWebhookDefinitionRes()
 }
 
+type PublishEntryRes interface {
+	publishEntryRes()
+}
+
 type PutAppDefinitionRes interface {
 	putAppDefinitionRes()
 }
@@ -153,6 +169,10 @@ type PutEditorInterfaceRes interface {
 	putEditorInterfaceRes()
 }
 
+type PutEntryRes interface {
+	putEntryRes()
+}
+
 type PutExtensionRes interface {
 	putExtensionRes()
 }
@@ -171,6 +191,10 @@ type PutSpaceEnablementsRes interface {
 
 type RevokePersonalAccessTokenRes interface {
 	revokePersonalAccessTokenRes()
+}
+
+type UnpublishEntryRes interface {
+	unpublishEntryRes()
 }
 
 type UpdateDeliveryApiKeyRes interface {

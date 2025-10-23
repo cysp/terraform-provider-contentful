@@ -24,6 +24,7 @@ var (
 	_ planmodifier.Bool   = useStateForUnknownModifier{}
 	_ planmodifier.List   = useStateForUnknownModifier{}
 	_ planmodifier.Map    = useStateForUnknownModifier{}
+	_ planmodifier.Object = useStateForUnknownModifier{}
 	_ planmodifier.String = useStateForUnknownModifier{}
 )
 
@@ -52,6 +53,14 @@ func (m useStateForUnknownModifier) PlanModifyList(_ context.Context, req planmo
 }
 
 func (m useStateForUnknownModifier) PlanModifyMap(_ context.Context, req planmodifier.MapRequest, resp *planmodifier.MapResponse) {
+	if req.State.Raw.IsNull() || !req.PlanValue.IsUnknown() || req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	resp.PlanValue = req.StateValue
+}
+
+func (m useStateForUnknownModifier) PlanModifyObject(_ context.Context, req planmodifier.ObjectRequest, resp *planmodifier.ObjectResponse) {
 	if req.State.Raw.IsNull() || !req.PlanValue.IsUnknown() || req.ConfigValue.IsUnknown() {
 		return
 	}

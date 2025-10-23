@@ -26,6 +26,12 @@ type Handler interface {
 	//
 	// POST /spaces/{space_id}/api_keys
 	CreateDeliveryApiKey(ctx context.Context, req *ApiKeyRequestFields, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error)
+	// CreateEntry implements createEntry operation.
+	//
+	// Create an entry.
+	//
+	// POST /spaces/{space_id}/environments/{environment_id}/entries
+	CreateEntry(ctx context.Context, req *EntryRequest, params CreateEntryParams) (CreateEntryRes, error)
 	// CreatePersonalAccessToken implements createPersonalAccessToken operation.
 	//
 	// Create a personal access token.
@@ -80,6 +86,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/api_keys/{api_key_id}
 	DeleteDeliveryApiKey(ctx context.Context, params DeleteDeliveryApiKeyParams) (DeleteDeliveryApiKeyRes, error)
+	// DeleteEntry implements deleteEntry operation.
+	//
+	// Delete an entry.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
+	DeleteEntry(ctx context.Context, params DeleteEntryParams) (DeleteEntryRes, error)
 	// DeleteExtension implements deleteExtension operation.
 	//
 	// Delete an extension.
@@ -152,6 +164,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
 	GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (GetEditorInterfaceRes, error)
+	// GetEntry implements getEntry operation.
+	//
+	// Get a single entry.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
+	GetEntry(ctx context.Context, params GetEntryParams) (GetEntryRes, error)
 	// GetExtension implements getExtension operation.
 	//
 	// Get a single extension.
@@ -206,6 +224,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (GetWebhookDefinitionRes, error)
+	// PublishEntry implements publishEntry operation.
+	//
+	// Publish an entry.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
+	PublishEntry(ctx context.Context, params PublishEntryParams) (PublishEntryRes, error)
 	// PutAppDefinition implements putAppDefinition operation.
 	//
 	// Create or update an app definition.
@@ -236,6 +260,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
 	PutEditorInterface(ctx context.Context, req *EditorInterfaceFields, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error)
+	// PutEntry implements putEntry operation.
+	//
+	// Create or update an entry.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
+	PutEntry(ctx context.Context, req *EntryRequest, params PutEntryParams) (PutEntryRes, error)
 	// PutExtension implements putExtension operation.
 	//
 	// Create or update an extension.
@@ -266,6 +296,12 @@ type Handler interface {
 	//
 	// PUT /users/me/access_tokens/{access_token_id}/revoked
 	RevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams) (RevokePersonalAccessTokenRes, error)
+	// UnpublishEntry implements unpublishEntry operation.
+	//
+	// Unpublish an entry.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
+	UnpublishEntry(ctx context.Context, params UnpublishEntryParams) (UnpublishEntryRes, error)
 	// UpdateDeliveryApiKey implements updateDeliveryApiKey operation.
 	//
 	// Update a single delivery api key.
