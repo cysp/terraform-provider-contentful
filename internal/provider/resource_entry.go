@@ -60,9 +60,9 @@ func (r *entryResource) ImportState(ctx context.Context, req resource.ImportStat
 }
 
 func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data EntryModel
+	var plan EntryModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -70,10 +70,12 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	currentVersion := 1
 
-	if data.EntryID.IsNull() || data.EntryID.IsUnknown() {
-		data, currentVersion = r.createEntry(ctx, data, &resp.Diagnostics)
+	var responseModel EntryModel
+
+	if plan.EntryID.IsNull() || plan.EntryID.IsUnknown() {
+		responseModel, currentVersion = r.createEntry(ctx, plan, &resp.Diagnostics)
 	} else {
-		data, currentVersion = r.updateEntry(ctx, data, currentVersion, &resp.Diagnostics)
+		responseModel, currentVersion = r.updateEntry(ctx, plan, currentVersion, &resp.Diagnostics)
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -81,40 +83,46 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	var identityModel EntryIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	currentVersion = r.publishEntry(ctx, data, currentVersion, &resp.Diagnostics)
+	for fieldKey, fieldValue := range plan.Fields.Elements() {
+		if !responseModel.Fields.Has(fieldKey) {
+			responseModel.Fields.Set(fieldKey, fieldValue)
+		}
+	}
+
+	currentVersion = r.publishEntry(ctx, responseModel, currentVersion, &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
 //nolint:dupl
 func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data EntryModel
+	var state EntryModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	getEntryParams := cm.GetEntryParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		EntryID:       data.EntryID.ValueString(),
+		SpaceID:       state.SpaceID.ValueString(),
+		EnvironmentID: state.EnvironmentID.ValueString(),
+		EntryID:       state.EntryID.ValueString(),
 	}
 
 	getEntryResponse, err := r.providerData.client.GetEntry(ctx, getEntryParams)
@@ -126,6 +134,8 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	})
 
 	currentVersion := 0
+
+	var data EntryModel
 
 	switch response := getEntryResponse.(type) {
 	case *cm.Entry:
@@ -153,6 +163,12 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	for fieldKey, fieldValue := range state.Fields.Elements() {
+		if !data.Fields.Has(fieldKey) {
+			data.Fields.Set(fieldKey, fieldValue)
+		}
 	}
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
