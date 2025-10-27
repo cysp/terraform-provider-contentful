@@ -156,3 +156,13 @@ func (v TypedMap[T]) ToMapValue(ctx context.Context) (basetypes.MapValue, diag.D
 func (v TypedMap[T]) Elements() map[string]T {
 	return v.elements
 }
+
+func (v TypedMap[T]) Has(key string) bool {
+	_, exists := v.elements[key]
+
+	return exists
+}
+
+func (v TypedMap[T]) Set(key string, value T) {
+	v.elements[key] = value
+}
