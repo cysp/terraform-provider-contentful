@@ -94,6 +94,18 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	currentVersion = r.publishEntry(ctx, responseModel, currentVersion, &resp.Diagnostics)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
 func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -198,6 +210,18 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	currentVersion = r.publishEntry(ctx, responseModel, currentVersion, &resp.Diagnostics)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
 func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -208,6 +232,8 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	r.unpublishEntry(ctx, state, &resp.Diagnostics)
 
 	r.deleteEntry(ctx, state, &resp.Diagnostics)
 }
@@ -323,6 +349,70 @@ func (r *entryResource) deleteEntry(ctx context.Context, data EntryModel, diags 
 
 		if !handled {
 			diags.AddError("Failed to delete entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		}
+	}
+}
+
+func (r *entryResource) publishEntry(ctx context.Context, data EntryModel, currentVersion int, diags *diag.Diagnostics) int {
+	publishEntryParams := cm.PublishEntryParams{
+		SpaceID:            data.SpaceID.ValueString(),
+		EnvironmentID:      data.EnvironmentID.ValueString(),
+		EntryID:            data.EntryID.ValueString(),
+		XContentfulVersion: currentVersion,
+	}
+
+	publishEntryResponse, err := r.providerData.client.PublishEntry(ctx, publishEntryParams)
+
+	tflog.Info(ctx, "entry.publish", map[string]any{
+		"params":   publishEntryParams,
+		"response": publishEntryResponse,
+		"err":      err,
+	})
+
+	switch response := publishEntryResponse.(type) {
+	case *cm.EntryStatusCode:
+		currentVersion = response.Response.Sys.Version
+
+	default:
+		diags.AddError("Failed to publish entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	}
+
+	return currentVersion
+}
+
+func (r *entryResource) unpublishEntry(ctx context.Context, data EntryModel, diags *diag.Diagnostics) {
+	unpublishEntryParams := cm.UnpublishEntryParams{
+		SpaceID:       data.SpaceID.ValueString(),
+		EnvironmentID: data.EnvironmentID.ValueString(),
+		EntryID:       data.EntryID.ValueString(),
+	}
+
+	unpublishEntryResponse, err := r.providerData.client.UnpublishEntry(ctx, unpublishEntryParams)
+
+	tflog.Info(ctx, "entry.unpublish", map[string]any{
+		"params":   unpublishEntryParams,
+		"response": unpublishEntryResponse,
+		"err":      err,
+	})
+
+	switch response := unpublishEntryResponse.(type) {
+	case *cm.NoContent:
+	case *cm.Entry:
+
+	default:
+		handled := false
+
+		if response, ok := response.(cm.ErrorStatusCodeResponse); ok {
+			responseError, _ := response.GetError()
+			if response.GetStatusCode() == http.StatusNotFound || (responseError.Sys.ID == "BadRequest" && responseError.Message.Value == "Not published") {
+				diags.AddWarning("Entry already unpublished", "")
+
+				handled = true
+			}
+		}
+
+		if !handled {
+			diags.AddError("Failed to unpublish entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
 	}
 }
