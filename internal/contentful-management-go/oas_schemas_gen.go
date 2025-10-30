@@ -1650,6 +1650,7 @@ func (*ApplicationJSONError) getAppInstallationRes()           {}
 func (*ApplicationJSONError) getAppSigningSecretRes()          {}
 func (*ApplicationJSONError) getAuthenticatedUserRes()         {}
 func (*ApplicationJSONError) getContentTypeRes()               {}
+func (*ApplicationJSONError) getContentTypesRes()              {}
 func (*ApplicationJSONError) getDeliveryApiKeyRes()            {}
 func (*ApplicationJSONError) getEditorInterfaceRes()           {}
 func (*ApplicationJSONError) getEntryRes()                     {}
@@ -1729,6 +1730,7 @@ func (*ApplicationJSONErrorStatusCode) getAppInstallationRes()           {}
 func (*ApplicationJSONErrorStatusCode) getAppSigningSecretRes()          {}
 func (*ApplicationJSONErrorStatusCode) getAuthenticatedUserRes()         {}
 func (*ApplicationJSONErrorStatusCode) getContentTypeRes()               {}
+func (*ApplicationJSONErrorStatusCode) getContentTypesRes()              {}
 func (*ApplicationJSONErrorStatusCode) getDeliveryApiKeyRes()            {}
 func (*ApplicationJSONErrorStatusCode) getEditorInterfaceRes()           {}
 func (*ApplicationJSONErrorStatusCode) getEntryRes()                     {}
@@ -1823,6 +1825,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getAppInstallationRes()   
 func (*ApplicationVndContentfulManagementV1JSONError) getAppSigningSecretRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) getAuthenticatedUserRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONError) getContentTypeRes()               {}
+func (*ApplicationVndContentfulManagementV1JSONError) getContentTypesRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryApiKeyRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEditorInterfaceRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEntryRes()                     {}
@@ -1902,6 +1905,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppInstallati
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppSigningSecretRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAuthenticatedUserRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypeRes()               {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypesRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryApiKeyRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEditorInterfaceRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEntryRes()                     {}
@@ -4711,6 +4715,92 @@ func (s *FunctionLinkSysType) UnmarshalText(data []byte) error {
 	switch FunctionLinkSysType(data) {
 	case FunctionLinkSysTypeLink:
 		*s = FunctionLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type GetContentTypesOK struct {
+	Sys   GetContentTypesOKSys `json:"sys"`
+	Total int                  `json:"total"`
+	Items []ContentType        `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *GetContentTypesOK) GetSys() GetContentTypesOKSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *GetContentTypesOK) GetTotal() int {
+	return s.Total
+}
+
+// GetItems returns the value of Items.
+func (s *GetContentTypesOK) GetItems() []ContentType {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *GetContentTypesOK) SetSys(val GetContentTypesOKSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *GetContentTypesOK) SetTotal(val int) {
+	s.Total = val
+}
+
+// SetItems sets the value of Items.
+func (s *GetContentTypesOK) SetItems(val []ContentType) {
+	s.Items = val
+}
+
+func (*GetContentTypesOK) getContentTypesRes() {}
+
+type GetContentTypesOKSys struct {
+	Type GetContentTypesOKSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *GetContentTypesOKSys) GetType() GetContentTypesOKSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *GetContentTypesOKSys) SetType(val GetContentTypesOKSysType) {
+	s.Type = val
+}
+
+type GetContentTypesOKSysType string
+
+const (
+	GetContentTypesOKSysTypeArray GetContentTypesOKSysType = "Array"
+)
+
+// AllValues returns all GetContentTypesOKSysType values.
+func (GetContentTypesOKSysType) AllValues() []GetContentTypesOKSysType {
+	return []GetContentTypesOKSysType{
+		GetContentTypesOKSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s GetContentTypesOKSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case GetContentTypesOKSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *GetContentTypesOKSysType) UnmarshalText(data []byte) error {
+	switch GetContentTypesOKSysType(data) {
+	case GetContentTypesOKSysTypeArray:
+		*s = GetContentTypesOKSysTypeArray
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

@@ -97,6 +97,10 @@ type GetContentTypeRes interface {
 	getContentTypeRes()
 }
 
+type GetContentTypesRes interface {
+	getContentTypesRes()
+}
+
 type GetDeliveryApiKeyRes interface {
 	getDeliveryApiKeyRes()
 }
