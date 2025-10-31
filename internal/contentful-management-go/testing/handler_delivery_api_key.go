@@ -26,10 +26,10 @@ func (ts *Handler) CreateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequest
 		AccessToken: generateResourceID(),
 	}
 
-	apiKey.PreviewAPIKey.SetTo(cm.ApiKeyPreviewAPIKey{
-		Sys: cm.ApiKeyPreviewAPIKeySys{
-			Type:     cm.ApiKeyPreviewAPIKeySysTypeLink,
-			LinkType: cm.ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey,
+	apiKey.PreviewAPIKey.SetTo(cm.PreviewAPIKeyLink{
+		Sys: cm.PreviewAPIKeyLinkSys{
+			Type:     cm.PreviewAPIKeyLinkSysTypeLink,
+			LinkType: cm.PreviewAPIKeyLinkSysLinkTypePreviewApiKey,
 			ID:       previewAPIKeyID,
 		},
 	})

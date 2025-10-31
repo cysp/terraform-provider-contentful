@@ -141,104 +141,27 @@ components:
       anyOf:
         - $ref: "#/components/schemas/Error"
     BaseSys:
-      type: object
-      properties:
-        type:
-          type: string
-      required:
-        - type
+      $ref: "./openapi/schemas/sys/sys.yml"
     BaseSysWithOrganization:
-      allOf:
-        - $ref: "#/components/schemas/BaseSys"
-        - type: object
-          properties:
-            organization:
-              $ref: "#/components/schemas/OrganizationLink"
-          required:
-            - organization
+      $ref: "./openapi/schemas/sys/sys-with-organization.yml"
     BaseSysWithAppDefinition:
-      allOf:
-        - $ref: "#/components/schemas/BaseSys"
-        - type: object
-          properties:
-            appDefinition:
-              $ref: "#/components/schemas/AppDefinitionLink"
-          required:
-            - appDefinition
+      $ref: "./openapi/schemas/sys/sys-with-app-definition.yml"
     BaseSysWithResourceProvider:
-      allOf:
-        - $ref: "#/components/schemas/BaseSys"
-        - type: object
-          properties:
-            resourceProvider:
-              $ref: "#/components/schemas/ResourceProviderLink"
-          required:
-            - resourceProvider
+      $ref: "./openapi/schemas/sys/sys-with-resource-provider.yml"
     BaseSysWithSpace:
-      allOf:
-        - $ref: "#/components/schemas/BaseSys"
-        - type: object
-          properties:
-            space:
-              $ref: "#/components/schemas/SpaceLink"
-          required:
-            - space
+      $ref: "./openapi/schemas/sys/sys-with-space.yml"
     BaseSysWithSpaceEnvironment:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithSpace"
-        - type: object
-          properties:
-            environment:
-              $ref: "#/components/schemas/EnvironmentLink"
-          required:
-            - environment
+      $ref: "./openapi/schemas/sys/sys-with-space-environment.yml"
     BaseSysWithId:
-      allOf:
-        - $ref: "#/components/schemas/BaseSys"
-        - type: object
-          properties:
-            id:
-              type: string
-          required:
-            - id
+      $ref: "./openapi/schemas/sys/sys-with-id.yml"
     BaseSysWithVersion:
-      allOf:
-        - $ref: "#/components/schemas/BaseSys"
-        - type: object
-          properties:
-            version:
-              type: integer
-            createdAt:
-              type: string
-              format: date-time
-            updatedAt:
-              type: string
-              format: date-time
-          required:
-            - version
+      $ref: "./openapi/schemas/sys/sys-with-version.yml"
     BaseSysWithIdAndVersion:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithId"
-        - $ref: "#/components/schemas/BaseSysWithVersion"
+      $ref: "./openapi/schemas/sys/sys-with-id-and-version.yml"
     BaseSysWithIdAndVersionAndPublishedVersion:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
-        - type: object
-          properties:
-            publishedVersion:
-              type: integer
-            publishedAt:
-              type: string
-              format: date-time
+      $ref: "./openapi/schemas/sys/sys-with-id-and-version-and-published-version.yml"
     BaseSysWithContentType:
-      allOf:
-        - $ref: "#/components/schemas/BaseSys"
-        - type: object
-          properties:
-            contentType:
-              $ref: "#/components/schemas/ContentTypeLink"
-          required:
-            - contentType
+      $ref: "./openapi/schemas/sys/sys-with-content-type.yml"
     UserSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
@@ -288,19 +211,7 @@ components:
             accessToken:
               type: string
             preview_api_key:
-              type: object
-              properties:
-                sys:
-                  allOf:
-                    - $ref: "#/components/schemas/LinkSys"
-                    - type: object
-                      properties:
-                        linkType:
-                          type: string
-                          enum:
-                            - PreviewApiKey
-              required:
-                - sys
+              $ref: "./openapi/schemas/links/preview-api-key-link.yml#/PreviewAPIKeyLink"
           required:
             - accessToken
     ApiKeyRequestFields:
@@ -326,20 +237,6 @@ components:
           required:
             - sys
         - $ref: "#/components/schemas/ApiKeyFields"
-    AppBundleLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - AppBundle
-      required:
-        - sys
     AppDefinitionSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithOrganization"
@@ -358,7 +255,7 @@ components:
         src:
           type: string
         bundle:
-          $ref: "#/components/schemas/AppBundleLink"
+          $ref: "./openapi/schemas/links/app-bundle-link.yml#/AppBundleLink"
         locations:
           type: array
           items:
@@ -453,19 +350,7 @@ components:
             - sys
         - $ref: "#/components/schemas/AppDefinitionFields"
     AppDefinitionLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - AppDefinition
-      required:
-        - sys
+      $ref: "./openapi/schemas/links/app-definition-link.yml#/AppDefinitionLink"
     AppInstallationSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
@@ -622,7 +507,7 @@ components:
       properties:
         sys:
           allOf:
-            - $ref: "#/components/schemas/LinkSys"
+            - $ref: "./openapi/schemas/links/sys.yml#/LinkSys"
             - type: object
               properties:
                 linkType:
@@ -807,116 +692,19 @@ components:
             - sys
         - $ref: "#/components/schemas/ExtensionFields"
     LinkSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithId"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - Link
-            linkType:
-              type: string
-          required:
-            - linkType
-    OrganizationLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - Organization
-      required:
-        - sys
+      $ref: "./openapi/schemas/links/sys.yml"
     SpaceLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - Space
-      required:
-        - sys
+      $ref: "./openapi/schemas/links/space-link.yml#/SpaceLink"
     EnvironmentLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - Environment
-      required:
-        - sys
+      $ref: "./openapi/schemas/links/environment-link.yml#/EnvironmentLink"
     AnnotationLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - Annotation
-      required:
-        - sys
+      $ref: "./openapi/schemas/links/annotation-link.yml#/AnnotationLink"
     FunctionLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - Function
-      required:
-        - sys
+      $ref: "./openapi/schemas/links/function-link.yml#/FunctionLink"
     ResourceProviderLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - ResourceProvider
-      required:
-        - sys
+      $ref: "./openapi/schemas/links/resource-provider-link.yml#/ResourceProviderLink"
     ContentTypeLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - ContentType
-      required:
-        - sys
+      $ref: "./openapi/schemas/links/content-type-link.yml#/ContentTypeLink"
     ResourceLink:
       oneOf:
         - $ref: "#/components/schemas/ContentfulEntryResourceLink"
@@ -946,47 +734,7 @@ components:
       required:
         - type
     TagLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - Tag
-      required:
-        - sys
-    TaxonomyConceptLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - TaxonomyConcept
-      required:
-        - sys
-    TaxonomyConceptSchemeLink:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "#/components/schemas/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - TaxonomyConceptScheme
-      required:
-        - sys
+      $ref: "./openapi/schemas/links/tag-link.yml#/TagLink"
     PersonalAccessTokenSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithId"

@@ -1,0 +1,8 @@
+allOf:
+  - $ref: "./sys.yml"
+  - type: object
+    properties:
+      resourceProvider:
+        $ref: "../links/resource-provider-link.yml#/ResourceProviderLink"
+    required:
+      - resourceProvider

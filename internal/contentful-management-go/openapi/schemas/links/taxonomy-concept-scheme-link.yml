@@ -1,0 +1,14 @@
+TaxonomyConceptSchemeLink:
+  type: object
+  properties:
+    sys:
+      allOf:
+        - $ref: "./sys.yml#/LinkSys"
+        - type: object
+          properties:
+            linkType:
+              type: string
+              enum:
+                - TaxonomyConceptScheme
+  required:
+    - sys

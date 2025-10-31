@@ -1,0 +1,8 @@
+allOf:
+  - $ref: "./sys.yml"
+  - type: object
+    properties:
+      contentType:
+        $ref: "../links/content-type-link.yml#/ContentTypeLink"
+    required:
+      - contentType
