@@ -1,4 +1,5 @@
 parser:
+  allow_remote: true
   infer_types: true
 
 generator:

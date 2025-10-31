@@ -37,12 +37,12 @@ func (s *AccessToken) SetRoles(val []string) {
 // Merged schema.
 // Ref: #/components/schemas/ApiKey
 type ApiKey struct {
-	Sys           ApiKeySys              `json:"sys"`
-	Name          string                 `json:"name"`
-	Description   OptNilString           `json:"description"`
-	Environments  []EnvironmentLink      `json:"environments"`
-	AccessToken   string                 `json:"accessToken"`
-	PreviewAPIKey OptApiKeyPreviewAPIKey `json:"preview_api_key"`
+	Sys           ApiKeySys            `json:"sys"`
+	Name          string               `json:"name"`
+	Description   OptNilString         `json:"description"`
+	Environments  []EnvironmentLink    `json:"environments"`
+	AccessToken   string               `json:"accessToken"`
+	PreviewAPIKey OptPreviewAPIKeyLink `json:"preview_api_key"`
 }
 
 // GetSys returns the value of Sys.
@@ -71,7 +71,7 @@ func (s *ApiKey) GetAccessToken() string {
 }
 
 // GetPreviewAPIKey returns the value of PreviewAPIKey.
-func (s *ApiKey) GetPreviewAPIKey() OptApiKeyPreviewAPIKey {
+func (s *ApiKey) GetPreviewAPIKey() OptPreviewAPIKeyLink {
 	return s.PreviewAPIKey
 }
 
@@ -101,134 +101,11 @@ func (s *ApiKey) SetAccessToken(val string) {
 }
 
 // SetPreviewAPIKey sets the value of PreviewAPIKey.
-func (s *ApiKey) SetPreviewAPIKey(val OptApiKeyPreviewAPIKey) {
+func (s *ApiKey) SetPreviewAPIKey(val OptPreviewAPIKeyLink) {
 	s.PreviewAPIKey = val
 }
 
 func (*ApiKey) getDeliveryApiKeyRes() {}
-
-type ApiKeyPreviewAPIKey struct {
-	Sys ApiKeyPreviewAPIKeySys `json:"sys"`
-}
-
-// GetSys returns the value of Sys.
-func (s *ApiKeyPreviewAPIKey) GetSys() ApiKeyPreviewAPIKeySys {
-	return s.Sys
-}
-
-// SetSys sets the value of Sys.
-func (s *ApiKeyPreviewAPIKey) SetSys(val ApiKeyPreviewAPIKeySys) {
-	s.Sys = val
-}
-
-// Merged schema.
-type ApiKeyPreviewAPIKeySys struct {
-	// Merged property.
-	Type ApiKeyPreviewAPIKeySysType `json:"type"`
-	ID   string                     `json:"id"`
-	// Merged property.
-	LinkType ApiKeyPreviewAPIKeySysLinkType `json:"linkType"`
-}
-
-// GetType returns the value of Type.
-func (s *ApiKeyPreviewAPIKeySys) GetType() ApiKeyPreviewAPIKeySysType {
-	return s.Type
-}
-
-// GetID returns the value of ID.
-func (s *ApiKeyPreviewAPIKeySys) GetID() string {
-	return s.ID
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *ApiKeyPreviewAPIKeySys) GetLinkType() ApiKeyPreviewAPIKeySysLinkType {
-	return s.LinkType
-}
-
-// SetType sets the value of Type.
-func (s *ApiKeyPreviewAPIKeySys) SetType(val ApiKeyPreviewAPIKeySysType) {
-	s.Type = val
-}
-
-// SetID sets the value of ID.
-func (s *ApiKeyPreviewAPIKeySys) SetID(val string) {
-	s.ID = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *ApiKeyPreviewAPIKeySys) SetLinkType(val ApiKeyPreviewAPIKeySysLinkType) {
-	s.LinkType = val
-}
-
-// Merged schema.
-type ApiKeyPreviewAPIKeySysLinkType string
-
-const (
-	ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey ApiKeyPreviewAPIKeySysLinkType = "PreviewApiKey"
-)
-
-// AllValues returns all ApiKeyPreviewAPIKeySysLinkType values.
-func (ApiKeyPreviewAPIKeySysLinkType) AllValues() []ApiKeyPreviewAPIKeySysLinkType {
-	return []ApiKeyPreviewAPIKeySysLinkType{
-		ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s ApiKeyPreviewAPIKeySysLinkType) MarshalText() ([]byte, error) {
-	switch s {
-	case ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *ApiKeyPreviewAPIKeySysLinkType) UnmarshalText(data []byte) error {
-	switch ApiKeyPreviewAPIKeySysLinkType(data) {
-	case ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey:
-		*s = ApiKeyPreviewAPIKeySysLinkTypePreviewApiKey
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-// Merged schema.
-type ApiKeyPreviewAPIKeySysType string
-
-const (
-	ApiKeyPreviewAPIKeySysTypeLink ApiKeyPreviewAPIKeySysType = "Link"
-)
-
-// AllValues returns all ApiKeyPreviewAPIKeySysType values.
-func (ApiKeyPreviewAPIKeySysType) AllValues() []ApiKeyPreviewAPIKeySysType {
-	return []ApiKeyPreviewAPIKeySysType{
-		ApiKeyPreviewAPIKeySysTypeLink,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s ApiKeyPreviewAPIKeySysType) MarshalText() ([]byte, error) {
-	switch s {
-	case ApiKeyPreviewAPIKeySysTypeLink:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *ApiKeyPreviewAPIKeySysType) UnmarshalText(data []byte) error {
-	switch ApiKeyPreviewAPIKeySysType(data) {
-	case ApiKeyPreviewAPIKeySysTypeLink:
-		*s = ApiKeyPreviewAPIKeySysTypeLink
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
 
 // Ref: #/components/schemas/ApiKeyRequestFields
 type ApiKeyRequestFields struct {
@@ -403,7 +280,7 @@ func (s *ApiKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/AppBundleLink
+// Ref: #/AppBundleLink
 type AppBundleLink struct {
 	Sys AppBundleLinkSys `json:"sys"`
 }
@@ -781,7 +658,7 @@ func (s *AppDefinitionFieldsLocationsItemNavigationItem) SetPath(val string) {
 	s.Path = val
 }
 
-// Ref: #/components/schemas/AppDefinitionLink
+// Ref: #/AppDefinitionLink
 type AppDefinitionLink struct {
 	Sys AppDefinitionLinkSys `json:"sys"`
 }
@@ -2178,7 +2055,7 @@ func (s *ContentTypeFieldsItemItems) SetValidations(val []jx.Raw) {
 	s.Validations = val
 }
 
-// Ref: #/components/schemas/ContentTypeLink
+// Ref: #/ContentTypeLink
 type ContentTypeLink struct {
 	Sys ContentTypeLinkSys `json:"sys"`
 }
@@ -3884,7 +3761,7 @@ func (s *EntrySysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/EnvironmentLink
+// Ref: #/EnvironmentLink
 type EnvironmentLink struct {
 	Sys EnvironmentLinkSys `json:"sys"`
 }
@@ -4593,7 +4470,7 @@ func (s *ExternalResourceLink) SetType(val string) {
 	s.Type = val
 }
 
-// Ref: #/components/schemas/FunctionLink
+// Ref: #/FunctionLink
 type FunctionLink struct {
 	Sys FunctionLinkSys `json:"sys"`
 }
@@ -4872,52 +4749,6 @@ func (*NoContent) deleteResourceTypeRes()      {}
 func (*NoContent) deleteRoleRes()              {}
 func (*NoContent) deleteWebhookDefinitionRes() {}
 func (*NoContent) unpublishEntryRes()          {}
-
-// NewOptApiKeyPreviewAPIKey returns new OptApiKeyPreviewAPIKey with value set to v.
-func NewOptApiKeyPreviewAPIKey(v ApiKeyPreviewAPIKey) OptApiKeyPreviewAPIKey {
-	return OptApiKeyPreviewAPIKey{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptApiKeyPreviewAPIKey is optional ApiKeyPreviewAPIKey.
-type OptApiKeyPreviewAPIKey struct {
-	Value ApiKeyPreviewAPIKey
-	Set   bool
-}
-
-// IsSet returns true if OptApiKeyPreviewAPIKey was set.
-func (o OptApiKeyPreviewAPIKey) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptApiKeyPreviewAPIKey) Reset() {
-	var v ApiKeyPreviewAPIKey
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptApiKeyPreviewAPIKey) SetTo(v ApiKeyPreviewAPIKey) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptApiKeyPreviewAPIKey) Get() (v ApiKeyPreviewAPIKey, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptApiKeyPreviewAPIKey) Or(d ApiKeyPreviewAPIKey) ApiKeyPreviewAPIKey {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
 
 // NewOptAppBundleLink returns new OptAppBundleLink with value set to v.
 func NewOptAppBundleLink(v AppBundleLink) OptAppBundleLink {
@@ -6583,6 +6414,52 @@ func (o OptNilWebhookDefinitionTransformation) Or(d WebhookDefinitionTransformat
 	return d
 }
 
+// NewOptPreviewAPIKeyLink returns new OptPreviewAPIKeyLink with value set to v.
+func NewOptPreviewAPIKeyLink(v PreviewAPIKeyLink) OptPreviewAPIKeyLink {
+	return OptPreviewAPIKeyLink{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPreviewAPIKeyLink is optional PreviewAPIKeyLink.
+type OptPreviewAPIKeyLink struct {
+	Value PreviewAPIKeyLink
+	Set   bool
+}
+
+// IsSet returns true if OptPreviewAPIKeyLink was set.
+func (o OptPreviewAPIKeyLink) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPreviewAPIKeyLink) Reset() {
+	var v PreviewAPIKeyLink
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPreviewAPIKeyLink) SetTo(v PreviewAPIKeyLink) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPreviewAPIKeyLink) Get() (v PreviewAPIKeyLink, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPreviewAPIKeyLink) Or(d PreviewAPIKeyLink) PreviewAPIKeyLink {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptResourceTypeDefaultFieldMappingBadge returns new OptResourceTypeDefaultFieldMappingBadge with value set to v.
 func NewOptResourceTypeDefaultFieldMappingBadge(v ResourceTypeDefaultFieldMappingBadge) OptResourceTypeDefaultFieldMappingBadge {
 	return OptResourceTypeDefaultFieldMappingBadge{
@@ -6813,7 +6690,7 @@ func (o OptWebhookDefinitionFilterNot) Or(d WebhookDefinitionFilterNot) WebhookD
 	return d
 }
 
-// Ref: #/components/schemas/OrganizationLink
+// Ref: #/OrganizationLink
 type OrganizationLink struct {
 	Sys OrganizationLinkSys `json:"sys"`
 }
@@ -7161,6 +7038,130 @@ func (s *PersonalAccessTokenSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/PreviewAPIKeyLink
+type PreviewAPIKeyLink struct {
+	Sys PreviewAPIKeyLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *PreviewAPIKeyLink) GetSys() PreviewAPIKeyLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *PreviewAPIKeyLink) SetSys(val PreviewAPIKeyLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type PreviewAPIKeyLinkSys struct {
+	// Merged property.
+	Type PreviewAPIKeyLinkSysType `json:"type"`
+	ID   string                   `json:"id"`
+	// Merged property.
+	LinkType PreviewAPIKeyLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *PreviewAPIKeyLinkSys) GetType() PreviewAPIKeyLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *PreviewAPIKeyLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *PreviewAPIKeyLinkSys) GetLinkType() PreviewAPIKeyLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *PreviewAPIKeyLinkSys) SetType(val PreviewAPIKeyLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *PreviewAPIKeyLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *PreviewAPIKeyLinkSys) SetLinkType(val PreviewAPIKeyLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type PreviewAPIKeyLinkSysLinkType string
+
+const (
+	PreviewAPIKeyLinkSysLinkTypePreviewApiKey PreviewAPIKeyLinkSysLinkType = "PreviewApiKey"
+)
+
+// AllValues returns all PreviewAPIKeyLinkSysLinkType values.
+func (PreviewAPIKeyLinkSysLinkType) AllValues() []PreviewAPIKeyLinkSysLinkType {
+	return []PreviewAPIKeyLinkSysLinkType{
+		PreviewAPIKeyLinkSysLinkTypePreviewApiKey,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PreviewAPIKeyLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case PreviewAPIKeyLinkSysLinkTypePreviewApiKey:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PreviewAPIKeyLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch PreviewAPIKeyLinkSysLinkType(data) {
+	case PreviewAPIKeyLinkSysLinkTypePreviewApiKey:
+		*s = PreviewAPIKeyLinkSysLinkTypePreviewApiKey
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type PreviewAPIKeyLinkSysType string
+
+const (
+	PreviewAPIKeyLinkSysTypeLink PreviewAPIKeyLinkSysType = "Link"
+)
+
+// AllValues returns all PreviewAPIKeyLinkSysType values.
+func (PreviewAPIKeyLinkSysType) AllValues() []PreviewAPIKeyLinkSysType {
+	return []PreviewAPIKeyLinkSysType{
+		PreviewAPIKeyLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PreviewAPIKeyLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case PreviewAPIKeyLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PreviewAPIKeyLinkSysType) UnmarshalText(data []byte) error {
+	switch PreviewAPIKeyLinkSysType(data) {
+	case PreviewAPIKeyLinkSysTypeLink:
+		*s = PreviewAPIKeyLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Merged schema.
 // Ref: #/components/schemas/PreviewApiKey
 type PreviewApiKey struct {
@@ -7439,7 +7440,7 @@ func (s *ResourceProvider) SetFunction(val FunctionLink) {
 
 func (*ResourceProvider) getResourceProviderRes() {}
 
-// Ref: #/components/schemas/ResourceProviderLink
+// Ref: #/ResourceProviderLink
 type ResourceProviderLink struct {
 	Sys ResourceProviderLinkSys `json:"sys"`
 }
@@ -9040,7 +9041,7 @@ func (s *SpaceEnablementSysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/SpaceLink
+// Ref: #/SpaceLink
 type SpaceLink struct {
 	Sys SpaceLinkSys `json:"sys"`
 }
@@ -9164,7 +9165,7 @@ func (s *SpaceLinkSysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/TagLink
+// Ref: #/TagLink
 type TagLink struct {
 	Sys TagLinkSys `json:"sys"`
 }

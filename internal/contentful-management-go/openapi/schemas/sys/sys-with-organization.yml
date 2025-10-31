@@ -1,0 +1,8 @@
+allOf:
+  - $ref: "./sys.yml"
+  - type: object
+    properties:
+      organization:
+        $ref: "../links/organization-link.yml#/OrganizationLink"
+    required:
+      - organization

@@ -1,0 +1,3 @@
+allOf:
+  - $ref: "./sys-with-id.yml"
+  - $ref: "./sys-with-version.yml"

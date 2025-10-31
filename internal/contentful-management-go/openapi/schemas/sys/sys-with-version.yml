@@ -1,0 +1,14 @@
+allOf:
+  - $ref: "./sys.yml"
+  - type: object
+    properties:
+      version:
+        type: integer
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+    required:
+      - version
