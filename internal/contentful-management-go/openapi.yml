@@ -182,212 +182,6 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
-  /users/me:
-    get:
-      operationId: getAuthenticatedUser
-      summary: Get the authenticated user
-      responses:
-        200:
-          description: The authenticated user
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/user/user.yml#/User"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-  /users/me/access_tokens:
-    post:
-      operationId: createPersonalAccessToken
-      summary: Create a personal access token
-      requestBody:
-        required: true
-        content:
-          application/vnd.contentful.management.v1+json:
-            schema:
-              $ref: "./openapi/schemas/personal-access-token/request-fields.yml#/PersonalAccessTokenRequestFields"
-      responses:
-        2XX:
-          description: A personal access token
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-  /users/me/access_tokens/{access_token_id}:
-    parameters:
-      - $ref: "#/components/parameters/access_token_id"
-    get:
-      operationId: getPersonalAccessToken
-      summary: Get a single personal access token
-      responses:
-        200:
-          description: Get a single access token
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-  /users/me/access_tokens/{access_token_id}/revoked:
-    parameters:
-      - $ref: "#/components/parameters/access_token_id"
-    put:
-      operationId: revokePersonalAccessToken
-      summary: Revoke a personal access token
-      responses:
-        2XX:
-          description: A personal access token
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-  /spaces/{space_id}/enablements:
-    parameters:
-      - $ref: "#/components/parameters/space_id"
-    get:
-      operationId: getSpaceEnablements
-      summary: Get enablements for a space
-      responses:
-        200:
-          description: Enablements for a space
-          content:
-            application/json:
-              schema:
-                $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-    put:
-      operationId: putSpaceEnablements
-      summary: Update enablements for a space
-      parameters:
-        - $ref: "#/components/parameters/space_id"
-        - $ref: "#/components/parameters/x-contentful-version"
-      requestBody:
-        required: true
-        content:
-          application/vnd.contentful.management.v1+json:
-            schema:
-              $ref: "./openapi/schemas/space-enablement/fields.yml#/SpaceEnablementFields"
-      responses:
-        2XX:
-          description: Enablements for a space
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-  /spaces/{space_id}/api_keys:
-    parameters:
-      - $ref: "#/components/parameters/space_id"
-    post:
-      operationId: createDeliveryApiKey
-      summary: Create a delivery api key
-      requestBody:
-        required: true
-        content:
-          application/vnd.contentful.management.v1+json:
-            schema:
-              $ref: "./openapi/schemas/api-key/request-fields.yml#/ApiKeyRequestFields"
-      responses:
-        2XX:
-          description: A delivery api key
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-  /spaces/{space_id}/api_keys/{api_key_id}:
-    parameters:
-      - $ref: "#/components/parameters/space_id"
-      - $ref: "#/components/parameters/api_key_id"
-    get:
-      operationId: getDeliveryApiKey
-      summary: Get a single delivery api key
-      responses:
-        200:
-          description: A delivery api key
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-    put:
-      operationId: updateDeliveryApiKey
-      summary: Update a single delivery api key
-      parameters:
-        - $ref: "#/components/parameters/space_id"
-        - $ref: "#/components/parameters/api_key_id"
-        - $ref: "#/components/parameters/x-contentful-version"
-      requestBody:
-        required: true
-        content:
-          application/vnd.contentful.management.v1+json:
-            schema:
-              $ref: "./openapi/schemas/api-key/request-fields.yml#/ApiKeyRequestFields"
-      responses:
-        2XX:
-          description: A delivery api key
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-    delete:
-      operationId: deleteDeliveryApiKey
-      summary: Delete a single delivery api key
-      responses:
-        204:
-          $ref: "#/components/responses/no-content"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-  /spaces/{space_id}/preview_api_keys/{preview_api_key_id}:
-    parameters:
-      - $ref: "#/components/parameters/space_id"
-      - $ref: "#/components/parameters/preview_api_key_id"
-    get:
-      operationId: getPreviewApiKey
-      summary: Get a single preview api key
-      responses:
-        200:
-          description: A preview api key
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/preview-api-key/preview-api-key.yml#/PreviewApiKey"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
   /organizations/{organization_id}/app_definitions:
     parameters:
       - $ref: "#/components/parameters/organization_id"
@@ -515,6 +309,59 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+      - $ref: "#/components/parameters/resource_type_id"
+    get:
+      operationId: getResourceType
+      summary: Get one resource type definition
+      responses:
+        200:
+          description: A resource type definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/resource-type/resource-type.yml#/ResourceType"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putResourceType
+      summary: Create or update a resource type definition
+      parameters:
+        - $ref: "#/components/parameters/organization_id"
+        - $ref: "#/components/parameters/app_definition_id"
+        - $ref: "#/components/parameters/resource_type_id"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/resource-type/fields.yml#/ResourceTypeFields"
+      responses:
+        2XX:
+          description: A resource type definition
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/resource-type/resource-type.yml#/ResourceType"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteResourceType
+      summary: Delete a resource type definition
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
   /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret:
     parameters:
       - $ref: "#/components/parameters/organization_id"
@@ -566,55 +413,120 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
-  /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}:
+  /spaces/{space_id}/api_keys:
     parameters:
-      - $ref: "#/components/parameters/organization_id"
-      - $ref: "#/components/parameters/app_definition_id"
-      - $ref: "#/components/parameters/resource_type_id"
-    get:
-      operationId: getResourceType
-      summary: Get one resource type definition
-      responses:
-        200:
-          description: A resource type definition
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/resource-type/resource-type.yml#/ResourceType"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-    put:
-      operationId: putResourceType
-      summary: Create or update a resource type definition
-      parameters:
-        - $ref: "#/components/parameters/organization_id"
-        - $ref: "#/components/parameters/app_definition_id"
-        - $ref: "#/components/parameters/resource_type_id"
+      - $ref: "#/components/parameters/space_id"
+    post:
+      operationId: createDeliveryApiKey
+      summary: Create a delivery api key
       requestBody:
         required: true
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/resource-type/fields.yml#/ResourceTypeFields"
+              $ref: "./openapi/schemas/api-key/request-fields.yml#/ApiKeyRequestFields"
       responses:
         2XX:
-          description: A resource type definition
+          description: A delivery api key
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/resource-type/resource-type.yml#/ResourceType"
+                $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/api_keys/{api_key_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/api_key_id"
+    get:
+      operationId: getDeliveryApiKey
+      summary: Get a single delivery api key
+      responses:
+        200:
+          description: A delivery api key
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: updateDeliveryApiKey
+      summary: Update a single delivery api key
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/api_key_id"
+        - $ref: "#/components/parameters/x-contentful-version"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/api-key/request-fields.yml#/ApiKeyRequestFields"
+      responses:
+        2XX:
+          description: A delivery api key
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
     delete:
-      operationId: deleteResourceType
-      summary: Delete a resource type definition
+      operationId: deleteDeliveryApiKey
+      summary: Delete a single delivery api key
       responses:
         204:
           $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/enablements:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+    get:
+      operationId: getSpaceEnablements
+      summary: Get enablements for a space
+      responses:
+        200:
+          description: Enablements for a space
+          content:
+            application/json:
+              schema:
+                $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putSpaceEnablements
+      summary: Update enablements for a space
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/x-contentful-version"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/space-enablement/fields.yml#/SpaceEnablementFields"
+      responses:
+        2XX:
+          description: Enablements for a space
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -730,46 +642,6 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
-  /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published:
-    parameters:
-      - $ref: "#/components/parameters/space_id"
-      - $ref: "#/components/parameters/environment_id"
-      - $ref: "#/components/parameters/content_type_id"
-    put:
-      operationId: activateContentType
-      summary: Activate a content type
-      parameters:
-        - $ref: "#/components/parameters/space_id"
-        - $ref: "#/components/parameters/environment_id"
-        - $ref: "#/components/parameters/content_type_id"
-        - $ref: "#/components/parameters/x-contentful-version"
-      responses:
-        2XX:
-          description: A content type
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
-    delete:
-      operationId: deactivateContentType
-      summary: Deactivate a content type
-      responses:
-        200:
-          description: A content type
-          content:
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
-        204:
-          $ref: "#/components/responses/no-content"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
   /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface:
     parameters:
       - $ref: "#/components/parameters/space_id"
@@ -810,6 +682,46 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "./openapi/schemas/editor-interface/editor-interface.yml#/EditorInterface"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/content_type_id"
+    put:
+      operationId: activateContentType
+      summary: Activate a content type
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/content_type_id"
+        - $ref: "#/components/parameters/x-contentful-version"
+      responses:
+        2XX:
+          description: A content type
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deactivateContentType
+      summary: Deactivate a content type
+      responses:
+        200:
+          description: A content type
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
+        204:
+          $ref: "#/components/responses/no-content"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -991,6 +903,24 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
+  /spaces/{space_id}/preview_api_keys/{preview_api_key_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/preview_api_key_id"
+    get:
+      operationId: getPreviewApiKey
+      summary: Get a single preview api key
+      responses:
+        200:
+          description: A preview api key
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/preview-api-key/preview-api-key.yml#/PreviewApiKey"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/roles:
     parameters:
       - $ref: "#/components/parameters/space_id"
@@ -1137,6 +1067,76 @@ paths:
       responses:
         204:
           $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /users/me:
+    get:
+      operationId: getAuthenticatedUser
+      summary: Get the authenticated user
+      responses:
+        200:
+          description: The authenticated user
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/user/user.yml#/User"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /users/me/access_tokens:
+    post:
+      operationId: createPersonalAccessToken
+      summary: Create a personal access token
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/personal-access-token/request-fields.yml#/PersonalAccessTokenRequestFields"
+      responses:
+        2XX:
+          description: A personal access token
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /users/me/access_tokens/{access_token_id}:
+    parameters:
+      - $ref: "#/components/parameters/access_token_id"
+    get:
+      operationId: getPersonalAccessToken
+      summary: Get a single personal access token
+      responses:
+        200:
+          description: Get a single access token
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /users/me/access_tokens/{access_token_id}/revoked:
+    parameters:
+      - $ref: "#/components/parameters/access_token_id"
+    put:
+      operationId: revokePersonalAccessToken
+      summary: Revoke a personal access token
+      responses:
+        2XX:
+          description: A personal access token
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
