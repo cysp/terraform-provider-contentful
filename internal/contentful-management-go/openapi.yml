@@ -158,28 +158,11 @@ components:
     AppDefinitionLink:
       $ref: "./openapi/schemas/links/app-definition-link.yml#/AppDefinitionLink"
     AppInstallationSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
-        - $ref: "#/components/schemas/BaseSysWithAppDefinition"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - AppInstallation
+      $ref: "./openapi/schemas/app-installation/sys.yml#/AppInstallationSys"
     AppInstallationFields:
-      type: object
-      properties:
-        parameters: {}
+      $ref: "./openapi/schemas/app-installation/fields.yml#/AppInstallationFields"
     AppInstallation:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/AppInstallationSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/AppInstallationFields"
+      $ref: "./openapi/schemas/app-installation/app-installation.yml#/AppInstallation"
     AppSigningSecretSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithOrganization"

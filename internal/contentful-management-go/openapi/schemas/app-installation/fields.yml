@@ -1,0 +1,4 @@
+AppInstallationFields:
+  type: object
+  properties:
+    parameters: {}

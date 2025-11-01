@@ -1162,7 +1162,7 @@ func (s *AppDefinitionSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/AppInstallation
+// Ref: #/AppInstallation
 type AppInstallation struct {
 	Sys        AppInstallationSys `json:"sys"`
 	Parameters jx.Raw             `json:"parameters"`
@@ -1190,7 +1190,7 @@ func (s *AppInstallation) SetParameters(val jx.Raw) {
 
 func (*AppInstallation) getAppInstallationRes() {}
 
-// Ref: #/components/schemas/AppInstallationFields
+// Ref: #/AppInstallationFields
 type AppInstallationFields struct {
 	Parameters jx.Raw `json:"parameters"`
 }
@@ -1234,7 +1234,7 @@ func (s *AppInstallationStatusCode) SetResponse(val AppInstallation) {
 func (*AppInstallationStatusCode) putAppInstallationRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/AppInstallationSys
+// Ref: #/AppInstallationSys
 type AppInstallationSys struct {
 	// Merged property.
 	Type          AppInstallationSysType `json:"type"`

@@ -1,0 +1,9 @@
+AppInstallation:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/AppInstallationSys"
+      required:
+        - sys
+    - $ref: "./fields.yml#/AppInstallationFields"
