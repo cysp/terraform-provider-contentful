@@ -8795,7 +8795,7 @@ func (s *RoleSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/SpaceEnablement
+// Ref: #/SpaceEnablement
 type SpaceEnablement struct {
 	Sys               SpaceEnablementSys      `json:"sys"`
 	CrossSpaceLinks   OptSpaceEnablementField `json:"crossSpaceLinks"`
@@ -8854,7 +8854,7 @@ func (s *SpaceEnablement) SetSuggestConcepts(val OptSpaceEnablementField) {
 	s.SuggestConcepts = val
 }
 
-// Ref: #/components/schemas/SpaceEnablementField
+// Ref: #/SpaceEnablementField
 type SpaceEnablementField struct {
 	Enabled bool `json:"enabled"`
 }
@@ -8869,7 +8869,7 @@ func (s *SpaceEnablementField) SetEnabled(val bool) {
 	s.Enabled = val
 }
 
-// Ref: #/components/schemas/SpaceEnablementFields
+// Ref: #/SpaceEnablementFields
 type SpaceEnablementFields struct {
 	CrossSpaceLinks   OptSpaceEnablementField `json:"crossSpaceLinks"`
 	SpaceTemplates    OptSpaceEnablementField `json:"spaceTemplates"`
@@ -8946,7 +8946,7 @@ func (s *SpaceEnablementStatusCode) SetResponse(val SpaceEnablement) {
 func (*SpaceEnablementStatusCode) putSpaceEnablementsRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/SpaceEnablementSys
+// Ref: #/SpaceEnablementSys
 type SpaceEnablementSys struct {
 	// Merged property.
 	Type      SpaceEnablementSysType `json:"type"`
