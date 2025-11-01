@@ -1,0 +1,21 @@
+PersonalAccessTokenSys:
+  allOf:
+    - $ref: "../sys/sys-with-id.yml"
+    - type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - PersonalAccessToken
+    - type: object
+      properties:
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+        redactedValue:
+          type: string

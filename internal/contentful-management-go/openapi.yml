@@ -281,68 +281,13 @@ components:
     TagLink:
       $ref: "./openapi/schemas/links/tag-link.yml#/TagLink"
     PersonalAccessTokenSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithId"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - PersonalAccessToken
-        - type: object
-          properties:
-            expiresAt:
-              type: string
-              format: date-time
-              nullable: true
-            lastUsedAt:
-              type: string
-              format: date-time
-              nullable: true
-            redactedValue:
-              type: string
+      $ref: "./openapi/schemas/personal-access-token/sys.yml#/PersonalAccessTokenSys"
     PersonalAccessTokenRequestFields:
-      type: object
-      properties:
-        name:
-          type: string
-        scopes:
-          type: array
-          items:
-            type: string
-        expiresIn:
-          type: integer
-          nullable: true
-      required:
-        - name
-        - scopes
+      $ref: "./openapi/schemas/personal-access-token/request-fields.yml#/PersonalAccessTokenRequestFields"
     PersonalAccessTokenFields:
-      type: object
-      properties:
-        name:
-          type: string
-        scopes:
-          type: array
-          items:
-            type: string
-        token:
-          type: string
-        revokedAt:
-          type: string
-          format: date-time
-          nullable: true
-      required:
-        - name
-        - scopes
+      $ref: "./openapi/schemas/personal-access-token/fields.yml#/PersonalAccessTokenFields"
     PersonalAccessToken:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/PersonalAccessTokenSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/PersonalAccessTokenFields"
+      $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
     PreviewApiKeySys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpace"
