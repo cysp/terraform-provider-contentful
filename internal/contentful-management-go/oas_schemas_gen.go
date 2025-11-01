@@ -35,7 +35,7 @@ func (s *AccessToken) SetRoles(val []string) {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/ApiKey
+// Ref: #/ApiKey
 type ApiKey struct {
 	Sys           ApiKeySys            `json:"sys"`
 	Name          string               `json:"name"`
@@ -107,7 +107,7 @@ func (s *ApiKey) SetPreviewAPIKey(val OptPreviewAPIKeyLink) {
 
 func (*ApiKey) getDeliveryApiKeyRes() {}
 
-// Ref: #/components/schemas/ApiKeyRequestFields
+// Ref: #/ApiKeyRequestFields
 type ApiKeyRequestFields struct {
 	Name         string            `json:"name"`
 	Description  OptNilString      `json:"description"`
@@ -174,7 +174,7 @@ func (*ApiKeyStatusCode) createDeliveryApiKeyRes() {}
 func (*ApiKeyStatusCode) updateDeliveryApiKeyRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/ApiKeySys
+// Ref: #/ApiKeySys
 type ApiKeySys struct {
 	// Merged property.
 	Type      ApiKeySysType `json:"type"`

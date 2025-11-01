@@ -1,0 +1,9 @@
+ApiKey:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/ApiKeySys"
+      required:
+        - sys
+    - $ref: "./fields.yml#/ApiKeyFields"
