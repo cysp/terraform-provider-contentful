@@ -172,126 +172,19 @@ components:
     AppSigningSecret:
       $ref: "./openapi/schemas/app-signing-secret/app-signing-secret.yml#/AppSigningSecret"
     ContentTypeSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
-        - $ref: "#/components/schemas/BaseSysWithIdAndVersionAndPublishedVersion"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - ContentType
+      $ref: "./openapi/schemas/content-type/sys.yml#/ContentTypeSys"
     ContentTypeFields:
-      allOf:
-        - $ref: "#/components/schemas/ContentTypeRequestFields"
-        - type: object
-          properties:
-            description:
-              type: string
-              nullable: true
-            displayField:
-              type: string
-              nullable: true
+      $ref: "./openapi/schemas/content-type/fields.yml#/ContentTypeFields"
     ContentTypeRequestFields:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        displayField:
-          type: string
-        fields:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-              name:
-                type: string
-              type:
-                type: string
-              linkType:
-                type: string
-              items:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  linkType:
-                    type: string
-                  validations:
-                    type: array
-                    items: {}
-              localized:
-                type: boolean
-              omitted:
-                type: boolean
-              required:
-                type: boolean
-              disabled:
-                type: boolean
-              defaultValue: {}
-              validations:
-                type: array
-                items: {}
-              allowedResources:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ResourceLink"
-                nullable: true
-            required:
-              - id
-              - name
-              - type
-        metadata:
-          $ref: "#/components/schemas/ContentTypeMetadata"
-      required:
-        - name
-        - displayField
-        - fields
+      $ref: "./openapi/schemas/content-type/request-fields.yml#/ContentTypeRequestFields"
     ContentTypeMetadata:
-      type: object
-      properties:
-        annotations: {}
-        taxonomy:
-          type: array
-          items:
-            $ref: "#/components/schemas/ContentTypeMetadataTaxonomyItem"
+      $ref: "./openapi/schemas/content-type/metadata.yml#/ContentTypeMetadata"
     ContentTypeMetadataAnnotationAssignment:
-      allOf:
-        - $ref: "#/components/schemas/AnnotationLink"
-        - type: object
-          properties:
-            parameters: {}
+      $ref: "./openapi/schemas/content-type/metadata-annotation-assignment.yml#/ContentTypeMetadataAnnotationAssignment"
     ContentTypeMetadataTaxonomyItem:
-      type: object
-      properties:
-        sys:
-          allOf:
-            - $ref: "./openapi/schemas/links/sys.yml#/LinkSys"
-            - type: object
-              properties:
-                linkType:
-                  type: string
-                  enum:
-                    - TaxonomyConcept
-                    - TaxonomyConceptScheme
-        required:
-          type: boolean
-      required:
-        - sys
+      $ref: "./openapi/schemas/content-type/metadata-taxonomy-item.yml#/ContentTypeMetadataTaxonomyItem"
     ContentType:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/ContentTypeSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/ContentTypeFields"
+      $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
     EditorInterfaceSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
@@ -470,33 +363,11 @@ components:
     ContentTypeLink:
       $ref: "./openapi/schemas/links/content-type-link.yml#/ContentTypeLink"
     ResourceLink:
-      oneOf:
-        - $ref: "#/components/schemas/ContentfulEntryResourceLink"
-        - $ref: "#/components/schemas/ExternalResourceLink"
+      $ref: "./openapi/schemas/content-type/resource-link.yml#/ResourceLink"
     ContentfulEntryResourceLink:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-            - "Contentful:Entry"
-        source:
-          type: string
-        contentTypes:
-          type: array
-          items:
-            type: string
-      required:
-        - type
-        - source
-        - contentTypes
+      $ref: "./openapi/schemas/content-type/resource-link.yml#/ContentfulEntryResourceLink"
     ExternalResourceLink:
-      type: object
-      properties:
-        type:
-          type: string
-      required:
-        - type
+      $ref: "./openapi/schemas/content-type/resource-link.yml#/ExternalResourceLink"
     TagLink:
       $ref: "./openapi/schemas/links/tag-link.yml#/TagLink"
     PersonalAccessTokenSys:

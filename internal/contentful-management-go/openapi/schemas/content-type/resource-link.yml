@@ -1,0 +1,30 @@
+ResourceLink:
+  oneOf:
+    - $ref: "#/ContentfulEntryResourceLink"
+    - $ref: "#/ExternalResourceLink"
+
+ContentfulEntryResourceLink:
+  type: object
+  properties:
+    type:
+      type: string
+      enum:
+        - "Contentful:Entry"
+    source:
+      type: string
+    contentTypes:
+      type: array
+      items:
+        type: string
+  required:
+    - type
+    - source
+    - contentTypes
+
+ExternalResourceLink:
+  type: object
+  properties:
+    type:
+      type: string
+  required:
+    - type

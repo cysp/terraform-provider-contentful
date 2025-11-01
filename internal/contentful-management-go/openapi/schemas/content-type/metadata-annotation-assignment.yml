@@ -1,0 +1,6 @@
+ContentTypeMetadataAnnotationAssignment:
+  allOf:
+    - $ref: "../links/annotation-link.yml#/AnnotationLink"
+    - type: object
+      properties:
+        parameters: {}

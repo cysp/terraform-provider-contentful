@@ -1,0 +1,60 @@
+ContentTypeRequestFields:
+  type: object
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    displayField:
+      type: string
+    fields:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          type:
+            type: string
+          linkType:
+            type: string
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              linkType:
+                type: string
+              validations:
+                type: array
+                items: {}
+          localized:
+            type: boolean
+          omitted:
+            type: boolean
+          required:
+            type: boolean
+          disabled:
+            type: boolean
+          defaultValue: {}
+          validations:
+            type: array
+            items: {}
+          allowedResources:
+            type: array
+            items:
+              $ref: "./resource-link.yml#/ResourceLink"
+            nullable: true
+        required:
+          - id
+          - name
+          - type
+    metadata:
+      $ref: "./metadata.yml#/ContentTypeMetadata"
+  required:
+    - name
+    - displayField
+    - fields
