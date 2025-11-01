@@ -1,0 +1,39 @@
+RoleFields:
+  type: object
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    permissions:
+      type: object
+      additionalProperties:
+        oneOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+    policies:
+      type: array
+      items:
+        type: object
+        properties:
+          effect:
+            type: string
+            enum:
+              - allow
+              - deny
+          actions:
+            oneOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          constraint: {}
+        required:
+          - effect
+          - actions
+  required:
+    - name
+    - permissions

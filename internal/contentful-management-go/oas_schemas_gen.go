@@ -8109,7 +8109,7 @@ func (s *ResourceTypeSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/Role
+// Ref: #/Role
 type Role struct {
 	Sys         RoleSys            `json:"sys"`
 	Name        string             `json:"name"`
@@ -8170,7 +8170,7 @@ func (s *Role) SetPolicies(val []RolePoliciesItem) {
 
 func (*Role) getRoleRes() {}
 
-// Ref: #/components/schemas/RoleFields
+// Ref: #/RoleFields
 type RoleFields struct {
 	Name        string                   `json:"name"`
 	Description OptNilString             `json:"description"`
@@ -8688,7 +8688,7 @@ func (*RoleStatusCode) createRoleRes() {}
 func (*RoleStatusCode) updateRoleRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/RoleSys
+// Ref: #/RoleSys
 type RoleSys struct {
 	// Merged property.
 	Type      RoleSysType `json:"type"`

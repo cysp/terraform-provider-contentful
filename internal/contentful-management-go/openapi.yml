@@ -258,63 +258,11 @@ components:
     ResourceType:
       $ref: "./openapi/schemas/resource-type/resource-type.yml#/ResourceType"
     RoleSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithSpace"
-        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - Role
+      $ref: "./openapi/schemas/role/sys.yml#/RoleSys"
     RoleFields:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        permissions:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: string
-              - type: array
-                items:
-                  type: string
-        policies:
-          type: array
-          items:
-            type: object
-            properties:
-              effect:
-                type: string
-                enum:
-                  - allow
-                  - deny
-              actions:
-                oneOf:
-                  - type: string
-                  - type: array
-                    items:
-                      type: string
-              constraint: {}
-            required:
-              - effect
-              - actions
-      required:
-        - name
-        - permissions
+      $ref: "./openapi/schemas/role/fields.yml#/RoleFields"
     Role:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/RoleSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/RoleFields"
+      $ref: "./openapi/schemas/role/role.yml#/Role"
     SpaceEnablementSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpace"
