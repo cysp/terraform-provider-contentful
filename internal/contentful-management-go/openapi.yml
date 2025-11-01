@@ -240,53 +240,15 @@ components:
     PreviewApiKey:
       $ref: "./openapi/schemas/preview-api-key/preview-api-key.yml#/PreviewApiKey"
     ResourceProviderRequestSys:
-      type: object
-      properties:
-        id:
-          type: string
-      required:
-        - id
+      $ref: "./openapi/schemas/resource-provider/request-sys.yml#/ResourceProviderRequestSys"
     ResourceProviderSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithId"
-        - $ref: "#/components/schemas/BaseSysWithOrganization"
-        - $ref: "#/components/schemas/BaseSysWithAppDefinition"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - ResourceProvider
+      $ref: "./openapi/schemas/resource-provider/sys.yml#/ResourceProviderSys"
     ResourceProviderFields:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-            - function
-        function:
-          $ref: "#/components/schemas/FunctionLink"
-      required:
-        - type
-        - function
+      $ref: "./openapi/schemas/resource-provider/fields.yml#/ResourceProviderFields"
     ResourceProviderRequest:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/ResourceProviderRequestSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/ResourceProviderFields"
+      $ref: "./openapi/schemas/resource-provider/request.yml#/ResourceProviderRequest"
     ResourceProvider:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/ResourceProviderSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/ResourceProviderFields"
+      $ref: "./openapi/schemas/resource-provider/resource-provider.yml#/ResourceProvider"
     ResourceTypeSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithId"
