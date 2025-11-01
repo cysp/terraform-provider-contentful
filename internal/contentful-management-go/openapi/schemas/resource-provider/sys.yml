@@ -1,0 +1,11 @@
+ResourceProviderSys:
+  allOf:
+    - $ref: "../sys/sys-with-id.yml"
+    - $ref: "../sys/sys-with-organization.yml"
+    - $ref: "../sys/sys-with-app-definition.yml"
+    - type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - ResourceProvider

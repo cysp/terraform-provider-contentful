@@ -7401,7 +7401,7 @@ func NewExternalResourceLinkResourceLink(v ExternalResourceLink) ResourceLink {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/ResourceProvider
+// Ref: #/ResourceProvider
 type ResourceProvider struct {
 	Sys      ResourceProviderSys  `json:"sys"`
 	Type     ResourceProviderType `json:"type"`
@@ -7565,7 +7565,7 @@ func (s *ResourceProviderLinkSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/ResourceProviderRequest
+// Ref: #/ResourceProviderRequest
 type ResourceProviderRequest struct {
 	Sys      ResourceProviderRequestSys  `json:"sys"`
 	Type     ResourceProviderRequestType `json:"type"`
@@ -7602,7 +7602,7 @@ func (s *ResourceProviderRequest) SetFunction(val FunctionLink) {
 	s.Function = val
 }
 
-// Ref: #/components/schemas/ResourceProviderRequestSys
+// Ref: #/ResourceProviderRequestSys
 type ResourceProviderRequestSys struct {
 	ID string `json:"id"`
 }
@@ -7680,7 +7680,7 @@ func (s *ResourceProviderStatusCode) SetResponse(val ResourceProvider) {
 func (*ResourceProviderStatusCode) putResourceProviderRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/ResourceProviderSys
+// Ref: #/ResourceProviderSys
 type ResourceProviderSys struct {
 	// Merged property.
 	Type          ResourceProviderSysType `json:"type"`

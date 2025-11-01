@@ -1,0 +1,9 @@
+ResourceProvider:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "sys.yml#/ResourceProviderSys"
+      required:
+        - sys
+    - $ref: "fields.yml#/ResourceProviderFields"
