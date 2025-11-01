@@ -103,43 +103,12 @@ components:
       schema:
         type: integer
   schemas:
-    ErrorSysId:
-      type: string
-      enum:
-        - NotFound
-    ErrorSys:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-            - Error
-        id:
-          type: string
-      required:
-        - type
-        - id
-    ErrorFields:
-      type: object
-      properties:
-        message:
-          type: string
-        details: {}
-    Error:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/ErrorSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/ErrorFields"
     ApplicationJSONError:
       anyOf:
-        - $ref: "#/components/schemas/Error"
+        - $ref: "./openapi/schemas/error/error.yml#/Error"
     ApplicationVndContentfulManagementV1JSONError:
       anyOf:
-        - $ref: "#/components/schemas/Error"
+        - $ref: "./openapi/schemas/error/error.yml#/Error"
     BaseSys:
       $ref: "./openapi/schemas/sys/sys.yml"
     BaseSysWithOrganization:

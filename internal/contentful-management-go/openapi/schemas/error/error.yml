@@ -1,0 +1,9 @@
+Error:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/ErrorSys"
+      required:
+        - sys
+    - $ref: "./fields.yml#/ErrorFields"
