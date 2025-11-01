@@ -1,0 +1,32 @@
+ResourceTypeDefaultFieldMapping:
+  type: object
+  properties:
+    title:
+      type: string
+    subtitle:
+      type: string
+    description:
+      type: string
+    externalUrl:
+      type: string
+    image:
+      type: object
+      properties:
+        url:
+          type: string
+        altText:
+          type: string
+      required:
+        - url
+    badge:
+      type: object
+      properties:
+        label:
+          type: string
+        variant:
+          type: string
+      required:
+        - label
+        - variant
+  required:
+    - title
