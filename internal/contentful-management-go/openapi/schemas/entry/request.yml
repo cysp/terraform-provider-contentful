@@ -1,0 +1,7 @@
+EntryRequest:
+  type: object
+  properties:
+    metadata:
+      $ref: "metadata.yml#/EntryMetadata"
+    fields:
+      $ref: "fields.yml#/EntryFields"
