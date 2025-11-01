@@ -3984,7 +3984,7 @@ func (s *ErrorSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/Extension
+// Ref: #/Extension
 type Extension struct {
 	Sys        ExtensionSys       `json:"sys"`
 	Extension  ExtensionExtension `json:"extension"`
@@ -4153,7 +4153,7 @@ func (s *ExtensionExtensionFieldTypesItemItems) SetLinkType(val OptString) {
 	s.LinkType = val
 }
 
-// Ref: #/components/schemas/ExtensionFields
+// Ref: #/ExtensionFields
 type ExtensionFields struct {
 	Extension  ExtensionFieldsExtension `json:"extension"`
 	Parameters jx.Raw                   `json:"parameters"`
@@ -4338,7 +4338,7 @@ func (s *ExtensionStatusCode) SetResponse(val Extension) {
 func (*ExtensionStatusCode) putExtensionRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/ExtensionSys
+// Ref: #/ExtensionSys
 type ExtensionSys struct {
 	// Merged property.
 	Type        ExtensionSysType `json:"type"`

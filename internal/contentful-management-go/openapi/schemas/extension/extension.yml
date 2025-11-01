@@ -1,0 +1,9 @@
+Extension:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "sys.yml#/ExtensionSys"
+      required:
+        - sys
+    - $ref: "fields.yml#/ExtensionFields"
