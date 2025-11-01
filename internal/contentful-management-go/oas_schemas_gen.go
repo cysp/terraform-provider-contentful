@@ -7163,7 +7163,7 @@ func (s *PreviewAPIKeyLinkSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/PreviewApiKey
+// Ref: #/PreviewApiKey
 type PreviewApiKey struct {
 	Sys          PreviewApiKeySys  `json:"sys"`
 	Name         string            `json:"name"`
@@ -7225,7 +7225,7 @@ func (s *PreviewApiKey) SetEnvironments(val []EnvironmentLink) {
 func (*PreviewApiKey) getPreviewApiKeyRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/PreviewApiKeySys
+// Ref: #/PreviewApiKeySys
 type PreviewApiKeySys struct {
 	// Merged property.
 	Type      PreviewApiKeySysType `json:"type"`
