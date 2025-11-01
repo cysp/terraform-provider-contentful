@@ -9437,7 +9437,7 @@ func (s *UserSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/WebhookDefinition
+// Ref: #/WebhookDefinition
 type WebhookDefinition struct {
 	Sys               WebhookDefinitionSys                  `json:"sys"`
 	Name              string                                `json:"name"`
@@ -9553,7 +9553,7 @@ func (s *WebhookDefinition) SetActive(val OptBool) {
 
 func (*WebhookDefinition) getWebhookDefinitionRes() {}
 
-// Ref: #/components/schemas/WebhookDefinitionFields
+// Ref: #/WebhookDefinitionFields
 type WebhookDefinitionFields struct {
 	Name              string                                      `json:"name"`
 	URL               string                                      `json:"url"`
@@ -9703,7 +9703,7 @@ func (s *WebhookDefinitionFieldsTransformation) SetBody(val jx.Raw) {
 	s.Body = val
 }
 
-// Ref: #/components/schemas/WebhookDefinitionFilter
+// Ref: #/WebhookDefinitionFilter
 type WebhookDefinitionFilter struct {
 	Not    OptWebhookDefinitionFilterNot `json:"not"`
 	Equals WebhookDefinitionFilterEquals `json:"equals"`
@@ -9755,7 +9755,7 @@ type WebhookDefinitionFilterEquals []jx.Raw
 
 type WebhookDefinitionFilterIn []jx.Raw
 
-// Ref: #/components/schemas/WebhookDefinitionFilterNot
+// Ref: #/WebhookDefinitionFilterNot
 type WebhookDefinitionFilterNot struct {
 	Equals WebhookDefinitionFilterEquals `json:"equals"`
 	In     WebhookDefinitionFilterIn     `json:"in"`
@@ -9794,7 +9794,7 @@ func (s *WebhookDefinitionFilterNot) SetRegexp(val WebhookDefinitionFilterRegexp
 
 type WebhookDefinitionFilterRegexp []jx.Raw
 
-// Ref: #/components/schemas/WebhookDefinitionHeader
+// Ref: #/WebhookDefinitionHeader
 type WebhookDefinitionHeader struct {
 	Key    string    `json:"key"`
 	Value  OptString `json:"value"`
@@ -9863,7 +9863,7 @@ func (*WebhookDefinitionStatusCode) createWebhookDefinitionRes() {}
 func (*WebhookDefinitionStatusCode) updateWebhookDefinitionRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/WebhookDefinitionSys
+// Ref: #/WebhookDefinitionSys
 type WebhookDefinitionSys struct {
 	// Merged property.
 	Type      WebhookDefinitionSysType `json:"type"`
