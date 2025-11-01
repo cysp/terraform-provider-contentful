@@ -54,6 +54,12 @@ components:
       required: true
       schema:
         type: string
+    environment_alias_id:
+      in: path
+      name: environment_alias_id
+      required: true
+      schema:
+        type: string
     extension_id:
       in: path
       name: extension_id
@@ -527,6 +533,56 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environment_aliases/{environment_alias_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_alias_id"
+    get:
+      operationId: getEnvironmentAlias
+      summary: Get a single environment alias
+      responses:
+        200:
+          description: An environment alias
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: createOrUpdateEnvironmentAlias
+      summary: Create/Update an environment alias
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/environment-alias/request.yml#/EnvironmentAliasRequest"
+      responses:
+        2XX:
+          description: An environment alias
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteEnvironmentAlias
+      summary: Delete an environment alias
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
         401:
           $ref: "#/components/responses/unauthorized"
         default:

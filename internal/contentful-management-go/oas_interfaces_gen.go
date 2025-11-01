@@ -17,6 +17,10 @@ type CreateEntryRes interface {
 	createEntryRes()
 }
 
+type CreateOrUpdateEnvironmentAliasRes interface {
+	createOrUpdateEnvironmentAliasRes()
+}
+
 type CreatePersonalAccessTokenRes interface {
 	createPersonalAccessTokenRes()
 }
@@ -55,6 +59,10 @@ type DeleteDeliveryApiKeyRes interface {
 
 type DeleteEntryRes interface {
 	deleteEntryRes()
+}
+
+type DeleteEnvironmentAliasRes interface {
+	deleteEnvironmentAliasRes()
 }
 
 type DeleteExtensionRes interface {
@@ -107,6 +115,10 @@ type GetEditorInterfaceRes interface {
 
 type GetEntryRes interface {
 	getEntryRes()
+}
+
+type GetEnvironmentAliasRes interface {
+	getEnvironmentAliasRes()
 }
 
 type GetExtensionRes interface {
