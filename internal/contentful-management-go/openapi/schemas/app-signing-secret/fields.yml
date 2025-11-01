@@ -1,0 +1,7 @@
+AppSigningSecretFields:
+  type: object
+  properties:
+    redactedValue:
+      type: string
+  required:
+    - redactedValue

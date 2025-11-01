@@ -1319,7 +1319,7 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/AppSigningSecret
+// Ref: #/AppSigningSecret
 type AppSigningSecret struct {
 	Sys           AppSigningSecretSys `json:"sys"`
 	RedactedValue string              `json:"redactedValue"`
@@ -1347,7 +1347,7 @@ func (s *AppSigningSecret) SetRedactedValue(val string) {
 
 func (*AppSigningSecret) getAppSigningSecretRes() {}
 
-// Ref: #/components/schemas/AppSigningSecretRequestFields
+// Ref: #/AppSigningSecretRequestFields
 type AppSigningSecretRequestFields struct {
 	Value string `json:"value"`
 }
@@ -1391,7 +1391,7 @@ func (s *AppSigningSecretStatusCode) SetResponse(val AppSigningSecret) {
 func (*AppSigningSecretStatusCode) putAppSigningSecretRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/AppSigningSecretSys
+// Ref: #/AppSigningSecretSys
 type AppSigningSecretSys struct {
 	// Merged property.
 	Type          AppSigningSecretSysType `json:"type"`
