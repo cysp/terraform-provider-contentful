@@ -1,0 +1,10 @@
+AppInstallationSys:
+  allOf:
+    - $ref: "../sys/sys-with-space-environment.yml"
+    - $ref: "../sys/sys-with-app-definition.yml"
+    - type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - AppInstallation
