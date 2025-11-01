@@ -1,0 +1,9 @@
+EditorInterface:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "sys.yml#/EditorInterfaceSys"
+      required:
+        - sys
+    - $ref: "fields.yml#/EditorInterfaceFields"

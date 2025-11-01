@@ -2818,7 +2818,7 @@ func (s *ContentfulEntryResourceLinkType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/EditorInterface
+// Ref: #/EditorInterface
 type EditorInterface struct {
 	Sys           EditorInterfaceSys                          `json:"sys"`
 	EditorLayout  OptNilEditorInterfaceEditorLayoutItemArray  `json:"editorLayout"`
@@ -2926,7 +2926,7 @@ func (s *EditorInterfaceControlsItem) SetSettings(val jx.Raw) {
 	s.Settings = val
 }
 
-// Ref: #/components/schemas/EditorInterfaceEditorLayoutFieldItem
+// Ref: #/EditorInterfaceEditorLayoutFieldItem
 type EditorInterfaceEditorLayoutFieldItem struct {
 	FieldId string `json:"fieldId"`
 }
@@ -2941,7 +2941,7 @@ func (s *EditorInterfaceEditorLayoutFieldItem) SetFieldId(val string) {
 	s.FieldId = val
 }
 
-// Ref: #/components/schemas/EditorInterfaceEditorLayoutGroupItem
+// Ref: #/EditorInterfaceEditorLayoutGroupItem
 type EditorInterfaceEditorLayoutGroupItem struct {
 	GroupId string                            `json:"groupId"`
 	Name    string                            `json:"name"`
@@ -2978,7 +2978,7 @@ func (s *EditorInterfaceEditorLayoutGroupItem) SetItems(val []EditorInterfaceEdi
 	s.Items = val
 }
 
-// Ref: #/components/schemas/EditorInterfaceEditorLayoutItem
+// Ref: #/EditorInterfaceEditorLayoutItem
 // EditorInterfaceEditorLayoutItem represents sum type.
 type EditorInterfaceEditorLayoutItem struct {
 	Type                                 EditorInterfaceEditorLayoutItemType // switch on this field
@@ -3047,7 +3047,7 @@ func NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(v Ed
 	return s
 }
 
-// Ref: #/components/schemas/EditorInterfaceFields
+// Ref: #/EditorInterfaceFields
 type EditorInterfaceFields struct {
 	EditorLayout  OptNilEditorInterfaceEditorLayoutItemArray        `json:"editorLayout"`
 	Controls      OptNilEditorInterfaceFieldsControlsItemArray      `json:"controls"`
@@ -3359,7 +3359,7 @@ func (s *EditorInterfaceStatusCode) SetResponse(val EditorInterface) {
 func (*EditorInterfaceStatusCode) putEditorInterfaceRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/EditorInterfaceSys
+// Ref: #/EditorInterfaceSys
 type EditorInterfaceSys struct {
 	// Merged property.
 	Type        EditorInterfaceSysType `json:"type"`
