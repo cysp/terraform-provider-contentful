@@ -54,6 +54,12 @@ components:
       required: true
       schema:
         type: string
+    environment_alias_id:
+      in: path
+      name: environment_alias_id
+      required: true
+      schema:
+        type: string
     extension_id:
       in: path
       name: extension_id
@@ -96,10 +102,22 @@ components:
       required: true
       schema:
         type: string
-    x-contentful-version:
+    x-contentful-source-environment-optional:
+      in: header
+      name: X-Contentful-Source-Environment
+      required: false
+      schema:
+        type: string
+    x-contentful-version-required:
       in: header
       name: X-Contentful-Version
       required: true
+      schema:
+        type: integer
+    x-contentful-version-optional:
+      in: header
+      name: X-Contentful-Version
+      required: false
       schema:
         type: integer
   schemas:
@@ -460,7 +478,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/api_key_id"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       requestBody:
         required: true
         content:
@@ -513,7 +531,7 @@ paths:
       summary: Update enablements for a space
       parameters:
         - $ref: "#/components/parameters/space_id"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       requestBody:
         required: true
         content:
@@ -527,6 +545,107 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environment_aliases/{environment_alias_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_alias_id"
+    get:
+      operationId: getEnvironmentAlias
+      summary: Get a single environment alias
+      responses:
+        200:
+          description: An environment alias
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: createOrUpdateEnvironmentAlias
+      summary: Create/Update an environment alias
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version-required"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/environment-alias/data.yml#/EnvironmentAliasData"
+      responses:
+        2XX:
+          description: An environment alias
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteEnvironmentAlias
+      summary: Delete an environment alias
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+    get:
+      operationId: getEnvironment
+      summary: Get a single environment
+      responses:
+        200:
+          description: An environment
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/environment/environment.yml#/Environment"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: createOrUpdateEnvironment
+      summary: Create or update an environment
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-source-environment-optional"
+        - $ref: "#/components/parameters/x-contentful-version-optional"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/environment/data.yml#/EnvironmentData"
+      responses:
+        2XX:
+          description: An environment
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/environment/environment.yml#/Environment"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteEnvironment
+      summary: Delete an environment
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -614,7 +733,7 @@ paths:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/environment_id"
         - $ref: "#/components/parameters/content_type_id"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       requestBody:
         required: true
         content:
@@ -668,7 +787,7 @@ paths:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/environment_id"
         - $ref: "#/components/parameters/content_type_id"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       requestBody:
         required: true
         content:
@@ -698,7 +817,7 @@ paths:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/environment_id"
         - $ref: "#/components/parameters/content_type_id"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       responses:
         2XX:
           description: A content type
@@ -781,7 +900,7 @@ paths:
         - $ref: "#/components/parameters/environment_id"
         - $ref: "#/components/parameters/entry_id"
         - $ref: "#/components/parameters/x-contentful-content-type-optional"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       requestBody:
         required: true
         content:
@@ -821,7 +940,7 @@ paths:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/environment_id"
         - $ref: "#/components/parameters/entry_id"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       responses:
         2XX:
           description: An entry
@@ -875,7 +994,7 @@ paths:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/environment_id"
         - $ref: "#/components/parameters/extension_id"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       requestBody:
         required: true
         content:
@@ -968,7 +1087,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/role_id"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       requestBody:
         required: true
         content:
@@ -1043,7 +1162,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/webhook_definition_id"
-        - $ref: "#/components/parameters/x-contentful-version"
+        - $ref: "#/components/parameters/x-contentful-version-required"
       requestBody:
         required: true
         content:

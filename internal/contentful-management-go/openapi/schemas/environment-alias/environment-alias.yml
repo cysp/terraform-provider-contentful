@@ -1,0 +1,9 @@
+EnvironmentAlias:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/EnvironmentAliasSys"
+      required:
+        - sys
+    - $ref: "./data.yml#/EnvironmentAliasData"

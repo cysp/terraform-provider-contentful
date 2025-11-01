@@ -519,6 +519,384 @@ func decodeCreateEntryParams(args [2]string, argsEscaped bool, r *http.Request) 
 	return params, nil
 }
 
+// CreateOrUpdateEnvironmentParams is parameters of createOrUpdateEnvironment operation.
+type CreateOrUpdateEnvironmentParams struct {
+	XContentfulSourceEnvironment OptString `json:",omitempty,omitzero"`
+	XContentfulVersion           OptInt    `json:",omitempty,omitzero"`
+	SpaceID                      string
+	EnvironmentID                string
+}
+
+func unpackCreateOrUpdateEnvironmentParams(packed middleware.Parameters) (params CreateOrUpdateEnvironmentParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Source-Environment",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XContentfulSourceEnvironment = v.(OptString)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Version",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XContentfulVersion = v.(OptInt)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "environment_id",
+			In:   "path",
+		}
+		params.EnvironmentID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeCreateOrUpdateEnvironmentParams(args [2]string, argsEscaped bool, r *http.Request) (params CreateOrUpdateEnvironmentParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Contentful-Source-Environment.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Source-Environment",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXContentfulSourceEnvironmentVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXContentfulSourceEnvironmentVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XContentfulSourceEnvironment.SetTo(paramsDotXContentfulSourceEnvironmentVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Source-Environment",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Contentful-Version.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXContentfulVersionVal int
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXContentfulVersionVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XContentfulVersion.SetTo(paramsDotXContentfulVersionVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Version",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: environment_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "environment_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.EnvironmentID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "environment_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// CreateOrUpdateEnvironmentAliasParams is parameters of createOrUpdateEnvironmentAlias operation.
+type CreateOrUpdateEnvironmentAliasParams struct {
+	XContentfulVersion int
+	SpaceID            string
+	EnvironmentAliasID string
+}
+
+func unpackCreateOrUpdateEnvironmentAliasParams(packed middleware.Parameters) (params CreateOrUpdateEnvironmentAliasParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Version",
+			In:   "header",
+		}
+		params.XContentfulVersion = packed[key].(int)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "environment_alias_id",
+			In:   "path",
+		}
+		params.EnvironmentAliasID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeCreateOrUpdateEnvironmentAliasParams(args [2]string, argsEscaped bool, r *http.Request) (params CreateOrUpdateEnvironmentAliasParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Contentful-Version.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt(val)
+				if err != nil {
+					return err
+				}
+
+				params.XContentfulVersion = c
+				return nil
+			}); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Version",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: environment_alias_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "environment_alias_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.EnvironmentAliasID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "environment_alias_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // CreateRoleParams is parameters of createRole operation.
 type CreateRoleParams struct {
 	SpaceID string
@@ -1680,6 +2058,242 @@ func decodeDeleteEntryParams(args [3]string, argsEscaped bool, r *http.Request) 
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "entry_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// DeleteEnvironmentParams is parameters of deleteEnvironment operation.
+type DeleteEnvironmentParams struct {
+	SpaceID       string
+	EnvironmentID string
+}
+
+func unpackDeleteEnvironmentParams(packed middleware.Parameters) (params DeleteEnvironmentParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "environment_id",
+			In:   "path",
+		}
+		params.EnvironmentID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeDeleteEnvironmentParams(args [2]string, argsEscaped bool, r *http.Request) (params DeleteEnvironmentParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: environment_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "environment_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.EnvironmentID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "environment_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// DeleteEnvironmentAliasParams is parameters of deleteEnvironmentAlias operation.
+type DeleteEnvironmentAliasParams struct {
+	SpaceID            string
+	EnvironmentAliasID string
+}
+
+func unpackDeleteEnvironmentAliasParams(packed middleware.Parameters) (params DeleteEnvironmentAliasParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "environment_alias_id",
+			In:   "path",
+		}
+		params.EnvironmentAliasID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeDeleteEnvironmentAliasParams(args [2]string, argsEscaped bool, r *http.Request) (params DeleteEnvironmentAliasParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: environment_alias_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "environment_alias_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.EnvironmentAliasID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "environment_alias_id",
 			In:   "path",
 			Err:  err,
 		}
@@ -3414,6 +4028,242 @@ func decodeGetEntryParams(args [3]string, argsEscaped bool, r *http.Request) (pa
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "entry_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetEnvironmentParams is parameters of getEnvironment operation.
+type GetEnvironmentParams struct {
+	SpaceID       string
+	EnvironmentID string
+}
+
+func unpackGetEnvironmentParams(packed middleware.Parameters) (params GetEnvironmentParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "environment_id",
+			In:   "path",
+		}
+		params.EnvironmentID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetEnvironmentParams(args [2]string, argsEscaped bool, r *http.Request) (params GetEnvironmentParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: environment_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "environment_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.EnvironmentID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "environment_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetEnvironmentAliasParams is parameters of getEnvironmentAlias operation.
+type GetEnvironmentAliasParams struct {
+	SpaceID            string
+	EnvironmentAliasID string
+}
+
+func unpackGetEnvironmentAliasParams(packed middleware.Parameters) (params GetEnvironmentAliasParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "environment_alias_id",
+			In:   "path",
+		}
+		params.EnvironmentAliasID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetEnvironmentAliasParams(args [2]string, argsEscaped bool, r *http.Request) (params GetEnvironmentAliasParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: environment_alias_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "environment_alias_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.EnvironmentAliasID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "environment_alias_id",
 			In:   "path",
 			Err:  err,
 		}

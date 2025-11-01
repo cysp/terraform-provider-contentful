@@ -32,6 +32,18 @@ type Handler interface {
 	//
 	// POST /spaces/{space_id}/environments/{environment_id}/entries
 	CreateEntry(ctx context.Context, req *EntryRequest, params CreateEntryParams) (CreateEntryRes, error)
+	// CreateOrUpdateEnvironment implements createOrUpdateEnvironment operation.
+	//
+	// Create or update an environment.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}
+	CreateOrUpdateEnvironment(ctx context.Context, req *EnvironmentData, params CreateOrUpdateEnvironmentParams) (CreateOrUpdateEnvironmentRes, error)
+	// CreateOrUpdateEnvironmentAlias implements createOrUpdateEnvironmentAlias operation.
+	//
+	// Create/Update an environment alias.
+	//
+	// PUT /spaces/{space_id}/environment_aliases/{environment_alias_id}
+	CreateOrUpdateEnvironmentAlias(ctx context.Context, req *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams) (CreateOrUpdateEnvironmentAliasRes, error)
 	// CreatePersonalAccessToken implements createPersonalAccessToken operation.
 	//
 	// Create a personal access token.
@@ -92,6 +104,18 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
 	DeleteEntry(ctx context.Context, params DeleteEntryParams) (DeleteEntryRes, error)
+	// DeleteEnvironment implements deleteEnvironment operation.
+	//
+	// Delete an environment.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}
+	DeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams) (DeleteEnvironmentRes, error)
+	// DeleteEnvironmentAlias implements deleteEnvironmentAlias operation.
+	//
+	// Delete an environment alias.
+	//
+	// DELETE /spaces/{space_id}/environment_aliases/{environment_alias_id}
+	DeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams) (DeleteEnvironmentAliasRes, error)
 	// DeleteExtension implements deleteExtension operation.
 	//
 	// Delete an extension.
@@ -170,6 +194,18 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
 	GetEntry(ctx context.Context, params GetEntryParams) (GetEntryRes, error)
+	// GetEnvironment implements getEnvironment operation.
+	//
+	// Get a single environment.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}
+	GetEnvironment(ctx context.Context, params GetEnvironmentParams) (GetEnvironmentRes, error)
+	// GetEnvironmentAlias implements getEnvironmentAlias operation.
+	//
+	// Get a single environment alias.
+	//
+	// GET /spaces/{space_id}/environment_aliases/{environment_alias_id}
+	GetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams) (GetEnvironmentAliasRes, error)
 	// GetExtension implements getExtension operation.
 	//
 	// Get a single extension.
