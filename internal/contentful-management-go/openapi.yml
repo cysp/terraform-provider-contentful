@@ -264,42 +264,13 @@ components:
     Role:
       $ref: "./openapi/schemas/role/role.yml#/Role"
     SpaceEnablementSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithSpace"
-        - $ref: "#/components/schemas/BaseSysWithVersion"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - SpaceEnablement
+      $ref: "./openapi/schemas/space-enablement/sys.yml#/SpaceEnablementSys"
     SpaceEnablementField:
-      type: object
-      properties:
-        enabled:
-          type: boolean
-      required:
-        - enabled
+      $ref: "./openapi/schemas/space-enablement/field.yml#/SpaceEnablementField"
     SpaceEnablementFields:
-      type: object
-      properties:
-        crossSpaceLinks:
-          $ref: "#/components/schemas/SpaceEnablementField"
-        spaceTemplates:
-          $ref: "#/components/schemas/SpaceEnablementField"
-        studioExperiences:
-          $ref: "#/components/schemas/SpaceEnablementField"
-        suggestConcepts:
-          $ref: "#/components/schemas/SpaceEnablementField"
+      $ref: "./openapi/schemas/space-enablement/fields.yml#/SpaceEnablementFields"
     SpaceEnablement:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/SpaceEnablementSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/SpaceEnablementFields"
+      $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
     WebhookDefinitionSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpace"

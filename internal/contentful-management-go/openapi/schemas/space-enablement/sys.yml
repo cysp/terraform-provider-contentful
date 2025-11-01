@@ -1,0 +1,10 @@
+SpaceEnablementSys:
+  allOf:
+    - $ref: "../sys/sys-with-space.yml"
+    - $ref: "../sys/sys-with-version.yml"
+    - type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - SpaceEnablement

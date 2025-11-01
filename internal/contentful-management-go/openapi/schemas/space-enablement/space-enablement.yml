@@ -1,0 +1,9 @@
+SpaceEnablement:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "sys.yml#/SpaceEnablementSys"
+      required:
+        - sys
+    - $ref: "fields.yml#/SpaceEnablementFields"
