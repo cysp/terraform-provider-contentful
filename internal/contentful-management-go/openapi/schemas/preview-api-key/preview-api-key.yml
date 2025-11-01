@@ -1,0 +1,9 @@
+PreviewApiKey:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "sys.yml#/PreviewApiKeySys"
+      required:
+        - sys
+    - $ref: "fields.yml#/PreviewApiKeyFields"

@@ -1,0 +1,10 @@
+PreviewApiKeySys:
+  allOf:
+    - $ref: "../sys/sys-with-space.yml"
+    - $ref: "../sys/sys-with-id-and-version.yml"
+    - type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - PreviewApiKey
