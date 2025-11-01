@@ -1,0 +1,27 @@
+EditorInterfaceEditorLayoutItem:
+  oneOf:
+    - $ref: "#/EditorInterfaceEditorLayoutGroupItem"
+    - $ref: "#/EditorInterfaceEditorLayoutFieldItem"
+
+EditorInterfaceEditorLayoutGroupItem:
+  type: object
+  properties:
+    groupId:
+      type: string
+    name:
+      type: string
+    items:
+      type: array
+      items:
+        $ref: "#/EditorInterfaceEditorLayoutItem"
+  required:
+    - groupId
+    - name
+
+EditorInterfaceEditorLayoutFieldItem:
+  type: object
+  properties:
+    fieldId:
+      type: string
+  required:
+    - fieldId

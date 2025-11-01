@@ -1,0 +1,14 @@
+EditorInterfaceSys:
+  allOf:
+    - $ref: "../sys/sys-with-space-environment.yml"
+    - $ref: "../sys/sys-with-id-and-version.yml"
+    - type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - EditorInterface
+        contentType:
+          $ref: "../links/content-type-link.yml#/ContentTypeLink"
+      required:
+        - contentType
