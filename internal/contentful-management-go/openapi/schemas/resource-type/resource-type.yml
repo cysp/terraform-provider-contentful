@@ -1,0 +1,9 @@
+ResourceType:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "sys.yml#/ResourceTypeSys"
+      required:
+        - sys
+    - $ref: "fields.yml#/ResourceTypeFields"

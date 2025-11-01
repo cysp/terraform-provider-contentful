@@ -1,0 +1,10 @@
+ResourceTypeFields:
+  type: object
+  properties:
+    name:
+      type: string
+    defaultFieldMapping:
+      $ref: "default-field-mapping.yml#/ResourceTypeDefaultFieldMapping"
+  required:
+    - name
+    - defaultFieldMapping

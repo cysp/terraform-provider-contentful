@@ -250,68 +250,13 @@ components:
     ResourceProvider:
       $ref: "./openapi/schemas/resource-provider/resource-provider.yml#/ResourceProvider"
     ResourceTypeSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithId"
-        - $ref: "#/components/schemas/BaseSysWithOrganization"
-        - $ref: "#/components/schemas/BaseSysWithAppDefinition"
-        - $ref: "#/components/schemas/BaseSysWithResourceProvider"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - ResourceType
+      $ref: "./openapi/schemas/resource-type/sys.yml#/ResourceTypeSys"
     ResourceTypeFields:
-      type: object
-      properties:
-        name:
-          type: string
-        defaultFieldMapping:
-          $ref: "#/components/schemas/ResourceTypeDefaultFieldMapping"
-      required:
-        - name
-        - defaultFieldMapping
+      $ref: "./openapi/schemas/resource-type/fields.yml#/ResourceTypeFields"
     ResourceTypeDefaultFieldMapping:
-      type: object
-      properties:
-        title:
-          type: string
-        subtitle:
-          type: string
-        description:
-          type: string
-        externalUrl:
-          type: string
-        image:
-          type: object
-          properties:
-            url:
-              type: string
-            altText:
-              type: string
-          required:
-            - url
-        badge:
-          type: object
-          properties:
-            label:
-              type: string
-            variant:
-              type: string
-          required:
-            - label
-            - variant
-      required:
-        - title
+      $ref: "./openapi/schemas/resource-type/default-field-mapping.yml#/ResourceTypeDefaultFieldMapping"
     ResourceType:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/ResourceTypeSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/ResourceTypeFields"
+      $ref: "./openapi/schemas/resource-type/resource-type.yml#/ResourceType"
     RoleSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpace"

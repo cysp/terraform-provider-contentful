@@ -7799,7 +7799,7 @@ func (s *ResourceProviderType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/ResourceType
+// Ref: #/ResourceType
 type ResourceType struct {
 	Sys                 ResourceTypeSys                 `json:"sys"`
 	Name                string                          `json:"name"`
@@ -7838,7 +7838,7 @@ func (s *ResourceType) SetDefaultFieldMapping(val ResourceTypeDefaultFieldMappin
 
 func (*ResourceType) getResourceTypeRes() {}
 
-// Ref: #/components/schemas/ResourceTypeDefaultFieldMapping
+// Ref: #/ResourceTypeDefaultFieldMapping
 type ResourceTypeDefaultFieldMapping struct {
 	Title       string                                  `json:"title"`
 	Subtitle    OptString                               `json:"subtitle"`
@@ -7958,7 +7958,7 @@ func (s *ResourceTypeDefaultFieldMappingImage) SetAltText(val OptString) {
 	s.AltText = val
 }
 
-// Ref: #/components/schemas/ResourceTypeFields
+// Ref: #/ResourceTypeFields
 type ResourceTypeFields struct {
 	Name                string                          `json:"name"`
 	DefaultFieldMapping ResourceTypeDefaultFieldMapping `json:"defaultFieldMapping"`
@@ -8013,7 +8013,7 @@ func (s *ResourceTypeStatusCode) SetResponse(val ResourceType) {
 func (*ResourceTypeStatusCode) putResourceTypeRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/ResourceTypeSys
+// Ref: #/ResourceTypeSys
 type ResourceTypeSys struct {
 	// Merged property.
 	Type             ResourceTypeSysType  `json:"type"`
