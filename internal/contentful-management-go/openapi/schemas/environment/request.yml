@@ -1,0 +1,4 @@
+EnvironmentRequest:
+  type: object
+  allOf:
+    - $ref: "./fields.yml#/EnvironmentFields"

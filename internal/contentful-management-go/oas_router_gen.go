@@ -504,7 +504,27 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								elem = elem[idx:]
 
 								if len(elem) == 0 {
-									break
+									switch r.Method {
+									case "DELETE":
+										s.handleDeleteEnvironmentRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "GET":
+										s.handleGetEnvironmentRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "PUT":
+										s.handleCreateOrUpdateEnvironmentRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, "DELETE,GET,PUT")
+									}
+
+									return
 								}
 								switch elem[0] {
 								case '/': // Prefix: "/"
@@ -1703,7 +1723,34 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								elem = elem[idx:]
 
 								if len(elem) == 0 {
-									break
+									switch method {
+									case "DELETE":
+										r.name = DeleteEnvironmentOperation
+										r.summary = "Delete an environment"
+										r.operationID = "deleteEnvironment"
+										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "GET":
+										r.name = GetEnvironmentOperation
+										r.summary = "Get a single environment"
+										r.operationID = "getEnvironment"
+										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "PUT":
+										r.name = CreateOrUpdateEnvironmentOperation
+										r.summary = "Create or update an environment"
+										r.operationID = "createOrUpdateEnvironment"
+										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									default:
+										return
+									}
 								}
 								switch elem[0] {
 								case '/': // Prefix: "/"

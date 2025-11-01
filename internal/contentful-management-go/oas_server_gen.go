@@ -32,6 +32,12 @@ type Handler interface {
 	//
 	// POST /spaces/{space_id}/environments/{environment_id}/entries
 	CreateEntry(ctx context.Context, req *EntryRequest, params CreateEntryParams) (CreateEntryRes, error)
+	// CreateOrUpdateEnvironment implements createOrUpdateEnvironment operation.
+	//
+	// Create or update an environment.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}
+	CreateOrUpdateEnvironment(ctx context.Context, req *EnvironmentFields, params CreateOrUpdateEnvironmentParams) (CreateOrUpdateEnvironmentRes, error)
 	// CreateOrUpdateEnvironmentAlias implements createOrUpdateEnvironmentAlias operation.
 	//
 	// Create/Update an environment alias.
@@ -98,6 +104,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
 	DeleteEntry(ctx context.Context, params DeleteEntryParams) (DeleteEntryRes, error)
+	// DeleteEnvironment implements deleteEnvironment operation.
+	//
+	// Delete an environment.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}
+	DeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams) (DeleteEnvironmentRes, error)
 	// DeleteEnvironmentAlias implements deleteEnvironmentAlias operation.
 	//
 	// Delete an environment alias.
@@ -182,6 +194,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
 	GetEntry(ctx context.Context, params GetEntryParams) (GetEntryRes, error)
+	// GetEnvironment implements getEnvironment operation.
+	//
+	// Get a single environment.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}
+	GetEnvironment(ctx context.Context, params GetEnvironmentParams) (GetEnvironmentRes, error)
 	// GetEnvironmentAlias implements getEnvironmentAlias operation.
 	//
 	// Get a single environment alias.

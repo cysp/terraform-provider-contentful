@@ -1276,6 +1276,22 @@ func (s ContentfulEntryResourceLinkType) Validate() error {
 	}
 }
 
+func (s *CreateOrUpdateEnvironmentCreated) Validate() error {
+	alias := (*Environment)(s)
+	if err := alias.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *CreateOrUpdateEnvironmentOK) Validate() error {
+	alias := (*Environment)(s)
+	if err := alias.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *EditorInterface) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -1739,6 +1755,29 @@ func (s EntrySysType) Validate() error {
 	}
 }
 
+func (s *Environment) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Sys.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "sys",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
 func (s *EnvironmentAlias) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -1931,6 +1970,49 @@ func (s EnvironmentLinkSysLinkType) Validate() error {
 func (s EnvironmentLinkSysType) Validate() error {
 	switch s {
 	case "Link":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *EnvironmentSys) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Space.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "space",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s EnvironmentSysType) Validate() error {
+	switch s {
+	case "Environment":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

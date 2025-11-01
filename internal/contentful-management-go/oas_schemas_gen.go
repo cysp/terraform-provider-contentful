@@ -1508,6 +1508,7 @@ func (*ApplicationJSONError) createAppDefinitionRes()            {}
 func (*ApplicationJSONError) createDeliveryApiKeyRes()           {}
 func (*ApplicationJSONError) createEntryRes()                    {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentAliasRes() {}
+func (*ApplicationJSONError) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationJSONError) createPersonalAccessTokenRes()      {}
 func (*ApplicationJSONError) createRoleRes()                     {}
 func (*ApplicationJSONError) createWebhookDefinitionRes()        {}
@@ -1519,6 +1520,7 @@ func (*ApplicationJSONError) deleteContentTypeRes()              {}
 func (*ApplicationJSONError) deleteDeliveryApiKeyRes()           {}
 func (*ApplicationJSONError) deleteEntryRes()                    {}
 func (*ApplicationJSONError) deleteEnvironmentAliasRes()         {}
+func (*ApplicationJSONError) deleteEnvironmentRes()              {}
 func (*ApplicationJSONError) deleteExtensionRes()                {}
 func (*ApplicationJSONError) deleteResourceProviderRes()         {}
 func (*ApplicationJSONError) deleteResourceTypeRes()             {}
@@ -1533,6 +1535,7 @@ func (*ApplicationJSONError) getDeliveryApiKeyRes()              {}
 func (*ApplicationJSONError) getEditorInterfaceRes()             {}
 func (*ApplicationJSONError) getEntryRes()                       {}
 func (*ApplicationJSONError) getEnvironmentAliasRes()            {}
+func (*ApplicationJSONError) getEnvironmentRes()                 {}
 func (*ApplicationJSONError) getExtensionRes()                   {}
 func (*ApplicationJSONError) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationJSONError) getPersonalAccessTokenRes()         {}
@@ -1590,6 +1593,7 @@ func (*ApplicationJSONErrorStatusCode) createAppDefinitionRes()            {}
 func (*ApplicationJSONErrorStatusCode) createDeliveryApiKeyRes()           {}
 func (*ApplicationJSONErrorStatusCode) createEntryRes()                    {}
 func (*ApplicationJSONErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
+func (*ApplicationJSONErrorStatusCode) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationJSONErrorStatusCode) createPersonalAccessTokenRes()      {}
 func (*ApplicationJSONErrorStatusCode) createRoleRes()                     {}
 func (*ApplicationJSONErrorStatusCode) createWebhookDefinitionRes()        {}
@@ -1601,6 +1605,7 @@ func (*ApplicationJSONErrorStatusCode) deleteContentTypeRes()              {}
 func (*ApplicationJSONErrorStatusCode) deleteDeliveryApiKeyRes()           {}
 func (*ApplicationJSONErrorStatusCode) deleteEntryRes()                    {}
 func (*ApplicationJSONErrorStatusCode) deleteEnvironmentAliasRes()         {}
+func (*ApplicationJSONErrorStatusCode) deleteEnvironmentRes()              {}
 func (*ApplicationJSONErrorStatusCode) deleteExtensionRes()                {}
 func (*ApplicationJSONErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ApplicationJSONErrorStatusCode) deleteResourceTypeRes()             {}
@@ -1615,6 +1620,7 @@ func (*ApplicationJSONErrorStatusCode) getDeliveryApiKeyRes()              {}
 func (*ApplicationJSONErrorStatusCode) getEditorInterfaceRes()             {}
 func (*ApplicationJSONErrorStatusCode) getEntryRes()                       {}
 func (*ApplicationJSONErrorStatusCode) getEnvironmentAliasRes()            {}
+func (*ApplicationJSONErrorStatusCode) getEnvironmentRes()                 {}
 func (*ApplicationJSONErrorStatusCode) getExtensionRes()                   {}
 func (*ApplicationJSONErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationJSONErrorStatusCode) getPersonalAccessTokenRes()         {}
@@ -1687,6 +1693,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) createAppDefinitionRes()  
 func (*ApplicationVndContentfulManagementV1JSONError) createDeliveryApiKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) createEntryRes()                    {}
 func (*ApplicationVndContentfulManagementV1JSONError) createOrUpdateEnvironmentAliasRes() {}
+func (*ApplicationVndContentfulManagementV1JSONError) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONError) createPersonalAccessTokenRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONError) createRoleRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONError) createWebhookDefinitionRes()        {}
@@ -1698,6 +1705,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) deleteContentTypeRes()    
 func (*ApplicationVndContentfulManagementV1JSONError) deleteDeliveryApiKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteEntryRes()                    {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteEnvironmentAliasRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteEnvironmentRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteExtensionRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceProviderRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceTypeRes()             {}
@@ -1712,6 +1720,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryApiKeyRes()    
 func (*ApplicationVndContentfulManagementV1JSONError) getEditorInterfaceRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEntryRes()                       {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEnvironmentAliasRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONError) getEnvironmentRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONError) getExtensionRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONError) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationVndContentfulManagementV1JSONError) getPersonalAccessTokenRes()         {}
@@ -1769,6 +1778,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createAppDefinit
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createDeliveryApiKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createEntryRes()                    {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createPersonalAccessTokenRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createRoleRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createWebhookDefinitionRes()        {}
@@ -1780,6 +1790,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteContentTyp
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteDeliveryApiKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEntryRes()                    {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEnvironmentAliasRes()         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEnvironmentRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteExtensionRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceTypeRes()             {}
@@ -1794,6 +1805,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryApiKe
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEditorInterfaceRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEntryRes()                       {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEnvironmentAliasRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEnvironmentRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getExtensionRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPersonalAccessTokenRes()         {}
@@ -2829,6 +2841,14 @@ func (s *ContentfulEntryResourceLinkType) UnmarshalText(data []byte) error {
 	}
 }
 
+type CreateOrUpdateEnvironmentCreated Environment
+
+func (*CreateOrUpdateEnvironmentCreated) createOrUpdateEnvironmentRes() {}
+
+type CreateOrUpdateEnvironmentOK Environment
+
+func (*CreateOrUpdateEnvironmentOK) createOrUpdateEnvironmentRes() {}
+
 // Merged schema.
 // Ref: #/EditorInterface
 type EditorInterface struct {
@@ -3774,6 +3794,36 @@ func (s *EntrySysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
+// Ref: #/Environment
+type Environment struct {
+	Sys EnvironmentSys `json:"sys"`
+	// The name of the environment.
+	Name string `json:"name"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Environment) GetSys() EnvironmentSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Environment) GetName() string {
+	return s.Name
+}
+
+// SetSys sets the value of Sys.
+func (s *Environment) SetSys(val EnvironmentSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Environment) SetName(val string) {
+	s.Name = val
+}
+
+func (*Environment) getEnvironmentRes() {}
+
+// Merged schema.
 // Ref: #/EnvironmentAlias
 type EnvironmentAlias struct {
 	Sys         EnvironmentAliasSys `json:"sys"`
@@ -3952,6 +4002,22 @@ func (s *EnvironmentAliasSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/EnvironmentFields
+type EnvironmentFields struct {
+	// The name of the environment.
+	Name string `json:"name"`
+}
+
+// GetName returns the value of Name.
+func (s *EnvironmentFields) GetName() string {
+	return s.Name
+}
+
+// SetName sets the value of Name.
+func (s *EnvironmentFields) SetName(val string) {
+	s.Name = val
+}
+
 // Ref: #/EnvironmentLink
 type EnvironmentLink struct {
 	Sys EnvironmentLinkSys `json:"sys"`
@@ -4070,6 +4136,113 @@ func (s *EnvironmentLinkSysType) UnmarshalText(data []byte) error {
 	switch EnvironmentLinkSysType(data) {
 	case EnvironmentLinkSysTypeLink:
 		*s = EnvironmentLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/EnvironmentSys
+type EnvironmentSys struct {
+	// Merged property.
+	Type      EnvironmentSysType `json:"type"`
+	Space     SpaceLink          `json:"space"`
+	ID        string             `json:"id"`
+	Version   int                `json:"version"`
+	CreatedAt OptDateTime        `json:"createdAt"`
+	UpdatedAt OptDateTime        `json:"updatedAt"`
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentSys) GetType() EnvironmentSysType {
+	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *EnvironmentSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetID returns the value of ID.
+func (s *EnvironmentSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *EnvironmentSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *EnvironmentSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *EnvironmentSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentSys) SetType(val EnvironmentSysType) {
+	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *EnvironmentSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetID sets the value of ID.
+func (s *EnvironmentSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *EnvironmentSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *EnvironmentSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *EnvironmentSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type EnvironmentSysType string
+
+const (
+	EnvironmentSysTypeEnvironment EnvironmentSysType = "Environment"
+)
+
+// AllValues returns all EnvironmentSysType values.
+func (EnvironmentSysType) AllValues() []EnvironmentSysType {
+	return []EnvironmentSysType{
+		EnvironmentSysTypeEnvironment,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EnvironmentSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case EnvironmentSysTypeEnvironment:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EnvironmentSysType) UnmarshalText(data []byte) error {
+	switch EnvironmentSysType(data) {
+	case EnvironmentSysTypeEnvironment:
+		*s = EnvironmentSysTypeEnvironment
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -4935,6 +5108,7 @@ func (*NoContent) deleteContentTypeRes()       {}
 func (*NoContent) deleteDeliveryApiKeyRes()    {}
 func (*NoContent) deleteEntryRes()             {}
 func (*NoContent) deleteEnvironmentAliasRes()  {}
+func (*NoContent) deleteEnvironmentRes()       {}
 func (*NoContent) deleteExtensionRes()         {}
 func (*NoContent) deleteResourceProviderRes()  {}
 func (*NoContent) deleteResourceTypeRes()      {}
