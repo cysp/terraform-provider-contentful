@@ -1,0 +1,9 @@
+Role:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "sys.yml#/RoleSys"
+      required:
+        - sys
+    - $ref: "fields.yml#/RoleFields"
