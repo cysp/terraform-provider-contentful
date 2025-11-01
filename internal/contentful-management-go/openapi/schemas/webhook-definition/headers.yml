@@ -1,0 +1,16 @@
+WebhookDefinitionHeaders:
+  type: array
+  items:
+    $ref: "#/WebhookDefinitionHeader"
+
+WebhookDefinitionHeader:
+  type: object
+  properties:
+    key:
+      type: string
+    value:
+      type: string
+    secret:
+      type: boolean
+  required:
+    - key

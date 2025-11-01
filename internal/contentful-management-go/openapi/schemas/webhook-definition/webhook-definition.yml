@@ -1,0 +1,9 @@
+WebhookDefinition:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "sys.yml#/WebhookDefinitionSys"
+      required:
+        - sys
+    - $ref: "fields.yml#/WebhookDefinitionFields"

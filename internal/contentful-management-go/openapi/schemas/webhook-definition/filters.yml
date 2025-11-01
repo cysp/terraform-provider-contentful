@@ -1,0 +1,30 @@
+WebhookDefinitionFilter:
+  type: object
+  properties:
+    not:
+      $ref: "#/WebhookDefinitionFilterNot"
+    equals:
+      $ref: "#/WebhookDefinitionFilterEquals"
+    in:
+      $ref: "#/WebhookDefinitionFilterIn"
+    regexp:
+      $ref: "#/WebhookDefinitionFilterRegexp"
+
+WebhookDefinitionFilterNot:
+  type: object
+  properties:
+    equals:
+      $ref: "#/WebhookDefinitionFilterEquals"
+    in:
+      $ref: "#/WebhookDefinitionFilterIn"
+    regexp:
+      $ref: "#/WebhookDefinitionFilterRegexp"
+
+WebhookDefinitionFilterEquals:
+  type: array
+
+WebhookDefinitionFilterIn:
+  type: array
+
+WebhookDefinitionFilterRegexp:
+  type: array

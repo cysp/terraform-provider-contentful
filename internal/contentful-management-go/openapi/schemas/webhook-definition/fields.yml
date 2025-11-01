@@ -1,0 +1,41 @@
+WebhookDefinitionFields:
+  type: object
+  properties:
+    name:
+      type: string
+    url:
+      type: string
+    topics:
+      type: array
+      items:
+        type: string
+    filters:
+      type: array
+      items:
+        $ref: "filters.yml#/WebhookDefinitionFilter"
+      nullable: true
+    httpBasicUsername:
+      type: string
+      nullable: true
+    httpBasicPassword:
+      type: string
+      nullable: true
+    headers:
+      $ref: "headers.yml#/WebhookDefinitionHeaders"
+    transformation:
+      type: object
+      properties:
+        method:
+          type: string
+        contentType:
+          type: string
+        includeContentLength:
+          type: boolean
+        body: {}
+      nullable: true
+    active:
+      type: boolean
+  required:
+    - name
+    - url
+    - topics
