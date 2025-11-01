@@ -138,49 +138,13 @@ components:
     User:
       $ref: "./openapi/schemas/user/user.yml#/User"
     ApiKeySys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithSpace"
-        - $ref: "#/components/schemas/BaseSysWithIdAndVersion"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - ApiKey
+      $ref: "./openapi/schemas/api-key/sys.yml#/ApiKeySys"
     ApiKeyFields:
-      allOf:
-        - $ref: "#/components/schemas/ApiKeyRequestFields"
-        - type: object
-          properties:
-            accessToken:
-              type: string
-            preview_api_key:
-              $ref: "./openapi/schemas/links/preview-api-key-link.yml#/PreviewAPIKeyLink"
-          required:
-            - accessToken
+      $ref: "./openapi/schemas/api-key/fields.yml#/ApiKeyFields"
     ApiKeyRequestFields:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        environments:
-          type: array
-          items:
-            $ref: "#/components/schemas/EnvironmentLink"
-      required:
-        - name
+      $ref: "./openapi/schemas/api-key/request-fields.yml#/ApiKeyRequestFields"
     ApiKey:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/ApiKeySys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/ApiKeyFields"
+      $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
     AppDefinitionSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithOrganization"

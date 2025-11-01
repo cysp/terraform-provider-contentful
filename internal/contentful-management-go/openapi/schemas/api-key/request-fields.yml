@@ -1,0 +1,14 @@
+ApiKeyRequestFields:
+  type: object
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    environments:
+      type: array
+      items:
+        $ref: "../links/environment-link.yml#/EnvironmentLink"
+  required:
+    - name

@@ -1,0 +1,11 @@
+ApiKeyFields:
+  allOf:
+    - $ref: "./request-fields.yml#/ApiKeyRequestFields"
+    - type: object
+      properties:
+        accessToken:
+          type: string
+        preview_api_key:
+          $ref: "../links/preview-api-key-link.yml#/PreviewAPIKeyLink"
+      required:
+        - accessToken
