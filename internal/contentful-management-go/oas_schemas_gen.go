@@ -3886,7 +3886,7 @@ func (s *EnvironmentLinkSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/Error
+// Ref: #/Error
 type Error struct {
 	Sys     ErrorSys  `json:"sys"`
 	Message OptString `json:"message"`
@@ -3923,7 +3923,7 @@ func (s *Error) SetDetails(val jx.Raw) {
 	s.Details = val
 }
 
-// Ref: #/components/schemas/ErrorSys
+// Ref: #/ErrorSys
 type ErrorSys struct {
 	Type ErrorSysType `json:"type"`
 	ID   string       `json:"id"`

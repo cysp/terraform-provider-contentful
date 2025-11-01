@@ -1,0 +1,4 @@
+ErrorSysId:
+  type: string
+  enum:
+    - NotFound

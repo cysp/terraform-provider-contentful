@@ -1,0 +1,6 @@
+ErrorFields:
+  type: object
+  properties:
+    message:
+      type: string
+    details: {}

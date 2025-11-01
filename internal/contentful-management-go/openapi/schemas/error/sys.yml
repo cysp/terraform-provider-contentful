@@ -1,0 +1,12 @@
+ErrorSys:
+  type: object
+  properties:
+    type:
+      type: string
+      enum:
+        - Error
+    id:
+      type: string
+  required:
+    - type
+    - id
