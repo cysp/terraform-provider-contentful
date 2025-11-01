@@ -3487,7 +3487,7 @@ func (s *EditorInterfaceSysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/Entry
+// Ref: #/Entry
 type Entry struct {
 	Sys      EntrySys         `json:"sys"`
 	Metadata OptEntryMetadata `json:"metadata"`
@@ -3527,7 +3527,7 @@ func (s *Entry) SetFields(val OptEntryFields) {
 func (*Entry) getEntryRes()       {}
 func (*Entry) unpublishEntryRes() {}
 
-// Ref: #/components/schemas/EntryFields
+// Ref: #/EntryFields
 type EntryFields map[string]jx.Raw
 
 func (s *EntryFields) init() EntryFields {
@@ -3539,7 +3539,7 @@ func (s *EntryFields) init() EntryFields {
 	return m
 }
 
-// Ref: #/components/schemas/EntryMetadata
+// Ref: #/EntryMetadata
 type EntryMetadata struct {
 	Tags []TagLink `json:"tags"`
 }
@@ -3554,7 +3554,7 @@ func (s *EntryMetadata) SetTags(val []TagLink) {
 	s.Tags = val
 }
 
-// Ref: #/components/schemas/EntryRequest
+// Ref: #/EntryRequest
 type EntryRequest struct {
 	Metadata OptEntryMetadata `json:"metadata"`
 	Fields   OptEntryFields   `json:"fields"`
@@ -3611,7 +3611,7 @@ func (*EntryStatusCode) publishEntryRes() {}
 func (*EntryStatusCode) putEntryRes()     {}
 
 // Merged schema.
-// Ref: #/components/schemas/EntrySys
+// Ref: #/EntrySys
 type EntrySys struct {
 	// Merged property.
 	Type             EntrySysType    `json:"type"`

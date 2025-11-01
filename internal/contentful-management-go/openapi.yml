@@ -777,47 +777,17 @@ components:
             - sys
         - $ref: "#/components/schemas/WebhookDefinitionFields"
     EntrySys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
-        - $ref: "#/components/schemas/BaseSysWithContentType"
-        - $ref: "#/components/schemas/BaseSysWithIdAndVersionAndPublishedVersion"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - Entry
+      $ref: "./openapi/schemas/entry/sys.yml#/EntrySys"
     EntryFields:
-      type: object
-      additionalProperties: {}
+      $ref: "./openapi/schemas/entry/fields.yml#/EntryFields"
     Entry:
-      type: object
-      properties:
-        sys:
-          $ref: "#/components/schemas/EntrySys"
-        metadata:
-          $ref: "#/components/schemas/EntryMetadata"
-        fields:
-          $ref: "#/components/schemas/EntryFields"
-      required:
-        - sys
+      $ref: "./openapi/schemas/entry/entry.yml#/Entry"
     EntryRequest:
-      type: object
-      properties:
-        metadata:
-          $ref: "#/components/schemas/EntryMetadata"
-        fields:
-          $ref: "#/components/schemas/EntryFields"
+      $ref: "./openapi/schemas/entry/request.yml#/EntryRequest"
     EntryMetadata:
-      type: object
-      properties:
-        tags:
-          type: array
-          items:
-            $ref: "#/components/schemas/EntryMetadataTagsItem"
+      $ref: "./openapi/schemas/entry/metadata.yml#/EntryMetadata"
     EntryMetadataTagsItem:
-      allOf:
-        - $ref: "#/components/schemas/TagLink"
+      $ref: "./openapi/schemas/entry/metadata.yml#/EntryMetadataTagsItem"
   securitySchemes:
     accessToken:
       type: http

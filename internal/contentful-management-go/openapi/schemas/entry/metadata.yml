@@ -1,0 +1,11 @@
+EntryMetadata:
+  type: object
+  properties:
+    tags:
+      type: array
+      items:
+        $ref: "#/EntryMetadataTagsItem"
+
+EntryMetadataTagsItem:
+  allOf:
+    - $ref: "../links/tag-link.yml#/TagLink"

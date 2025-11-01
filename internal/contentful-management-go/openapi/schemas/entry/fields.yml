@@ -1,0 +1,3 @@
+EntryFields:
+  type: object
+  additionalProperties: {}
