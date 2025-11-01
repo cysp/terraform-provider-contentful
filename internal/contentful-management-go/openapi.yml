@@ -146,117 +146,15 @@ components:
     ApiKey:
       $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
     AppDefinitionSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithOrganization"
-        - $ref: "#/components/schemas/BaseSysWithId"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - AppDefinition
+      $ref: "./openapi/schemas/app-definition/sys.yml#/AppDefinitionSys"
     AppDefinitionFields:
-      type: object
-      properties:
-        name:
-          type: string
-        src:
-          type: string
-        bundle:
-          $ref: "./openapi/schemas/links/app-bundle-link.yml#/AppBundleLink"
-        locations:
-          type: array
-          items:
-            type: object
-            properties:
-              location:
-                type: string
-              fieldTypes:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type:
-                      type: string
-                    linkType:
-                      type: string
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                        linkType:
-                          type: string
-                      required:
-                        - type
-                  required:
-                    - type
-              navigationItem:
-                type: object
-                properties:
-                  name:
-                    type: string
-                  path:
-                    type: string
-                required:
-                  - name
-                  - path
-            required:
-              - location
-        parameters:
-          $ref: "#/components/schemas/AppDefinitionParameters"
-      required:
-        - name
+      $ref: "./openapi/schemas/app-definition/fields.yml#/AppDefinitionFields"
     AppDefinitionParameters:
-      type: object
-      properties:
-        installation:
-          type: array
-          items:
-            $ref: "#/components/schemas/AppDefinitionParameter"
-        instance:
-          type: array
-          items:
-            $ref: "#/components/schemas/AppDefinitionParameter"
+      $ref: "./openapi/schemas/app-definition/parameters.yml#/AppDefinitionParameters"
     AppDefinitionParameter:
-      type: object
-      properties:
-        id:
-          type: string
-        type:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        required:
-          type: boolean
-        default: {}
-        options:
-          type: array
-          items: {}
-        labels:
-          type: object
-          properties:
-            empty:
-              type: string
-            true:
-              type: string
-            false:
-              type: string
-      required:
-        - id
-        - type
-        - name
+      $ref: "./openapi/schemas/app-definition/parameter.yml#/AppDefinitionParameter"
     AppDefinition:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/AppDefinitionSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/AppDefinitionFields"
+      $ref: "./openapi/schemas/app-definition/app-definition.yml#/AppDefinition"
     AppDefinitionLink:
       $ref: "./openapi/schemas/links/app-definition-link.yml#/AppDefinitionLink"
     AppInstallationSys:

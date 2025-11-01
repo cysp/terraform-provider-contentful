@@ -1,0 +1,11 @@
+AppDefinitionParameters:
+  type: object
+  properties:
+    installation:
+      type: array
+      items:
+        $ref: "./parameter.yml#/AppDefinitionParameter"
+    instance:
+      type: array
+      items:
+        $ref: "./parameter.yml#/AppDefinitionParameter"

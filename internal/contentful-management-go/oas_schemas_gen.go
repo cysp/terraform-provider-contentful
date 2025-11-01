@@ -405,7 +405,7 @@ func (s *AppBundleLinkSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/AppDefinition
+// Ref: #/AppDefinition
 type AppDefinition struct {
 	Sys        AppDefinitionSys             `json:"sys"`
 	Name       string                       `json:"name"`
@@ -477,7 +477,7 @@ func (s *AppDefinition) SetParameters(val OptAppDefinitionParameters) {
 
 func (*AppDefinition) getAppDefinitionRes() {}
 
-// Ref: #/components/schemas/AppDefinitionFields
+// Ref: #/AppDefinitionFields
 type AppDefinitionFields struct {
 	Name       string                             `json:"name"`
 	Src        OptString                          `json:"src"`
@@ -904,7 +904,7 @@ func (s *AppDefinitionLocationsItemNavigationItem) SetPath(val string) {
 	s.Path = val
 }
 
-// Ref: #/components/schemas/AppDefinitionParameter
+// Ref: #/AppDefinitionParameter
 type AppDefinitionParameter struct {
 	ID          string                          `json:"id"`
 	Type        string                          `json:"type"`
@@ -1032,7 +1032,7 @@ func (s *AppDefinitionParameterLabels) SetFalse(val OptString) {
 	s.False = val
 }
 
-// Ref: #/components/schemas/AppDefinitionParameters
+// Ref: #/AppDefinitionParameters
 type AppDefinitionParameters struct {
 	Installation []AppDefinitionParameter `json:"installation"`
 	Instance     []AppDefinitionParameter `json:"instance"`
@@ -1088,7 +1088,7 @@ func (*AppDefinitionStatusCode) createAppDefinitionRes() {}
 func (*AppDefinitionStatusCode) putAppDefinitionRes()    {}
 
 // Merged schema.
-// Ref: #/components/schemas/AppDefinitionSys
+// Ref: #/AppDefinitionSys
 type AppDefinitionSys struct {
 	// Merged property.
 	Type         AppDefinitionSysType `json:"type"`

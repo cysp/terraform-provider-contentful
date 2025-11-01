@@ -1,0 +1,9 @@
+AppDefinition:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/AppDefinitionSys"
+      required:
+        - sys
+    - $ref: "./fields.yml#/AppDefinitionFields"
