@@ -1,0 +1,30 @@
+AppDefinitionParameter:
+  type: object
+  properties:
+    id:
+      type: string
+    type:
+      type: string
+    name:
+      type: string
+    description:
+      type: string
+    required:
+      type: boolean
+    default: {}
+    options:
+      type: array
+      items: {}
+    labels:
+      type: object
+      properties:
+        empty:
+          type: string
+        true:
+          type: string
+        false:
+          type: string
+  required:
+    - id
+    - type
+    - name
