@@ -432,233 +432,197 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								return
 							}
 
-						case 'v': // Prefix: "vironments/"
+						case 'v': // Prefix: "vironment"
 
-							if l := len("vironments/"); len(elem) >= l && elem[0:l] == "vironments/" {
+							if l := len("vironment"); len(elem) >= l && elem[0:l] == "vironment" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
-							// Param: "environment_id"
-							// Match until "/"
-							idx := strings.IndexByte(elem, '/')
-							if idx < 0 {
-								idx = len(elem)
-							}
-							args[1] = elem[:idx]
-							elem = elem[idx:]
-
 							if len(elem) == 0 {
 								break
 							}
 							switch elem[0] {
-							case '/': // Prefix: "/"
+							case '_': // Prefix: "_aliases/"
 
-								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+								if l := len("_aliases/"); len(elem) >= l && elem[0:l] == "_aliases/" {
 									elem = elem[l:]
 								} else {
 									break
 								}
 
-								if len(elem) == 0 {
+								// Param: "environment_alias_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
 									break
 								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch r.Method {
+									case "DELETE":
+										s.handleDeleteEnvironmentAliasRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "GET":
+										s.handleGetEnvironmentAliasRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "PUT":
+										s.handleCreateOrUpdateEnvironmentAliasRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, "DELETE,GET,PUT")
+									}
+
+									return
+								}
+
+							case 's': // Prefix: "s/"
+
+								if l := len("s/"); len(elem) >= l && elem[0:l] == "s/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "environment_id"
+								// Match until "/"
+								idx := strings.IndexByte(elem, '/')
+								if idx < 0 {
+									idx = len(elem)
+								}
+								args[1] = elem[:idx]
+								elem = elem[idx:]
+
+								if len(elem) == 0 {
+									switch r.Method {
+									case "DELETE":
+										s.handleDeleteEnvironmentRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "GET":
+										s.handleGetEnvironmentRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "PUT":
+										s.handleCreateOrUpdateEnvironmentRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, "DELETE,GET,PUT")
+									}
+
+									return
+								}
 								switch elem[0] {
-								case 'a': // Prefix: "app_installations/"
+								case '/': // Prefix: "/"
 
-									if l := len("app_installations/"); len(elem) >= l && elem[0:l] == "app_installations/" {
+									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
-									// Param: "app_definition_id"
-									// Leaf parameter, slashes are prohibited
-									idx := strings.IndexByte(elem, '/')
-									if idx >= 0 {
-										break
-									}
-									args[2] = elem
-									elem = ""
-
 									if len(elem) == 0 {
-										// Leaf node.
-										switch r.Method {
-										case "DELETE":
-											s.handleDeleteAppInstallationRequest([3]string{
-												args[0],
-												args[1],
-												args[2],
-											}, elemIsEscaped, w, r)
-										case "GET":
-											s.handleGetAppInstallationRequest([3]string{
-												args[0],
-												args[1],
-												args[2],
-											}, elemIsEscaped, w, r)
-										case "PUT":
-											s.handlePutAppInstallationRequest([3]string{
-												args[0],
-												args[1],
-												args[2],
-											}, elemIsEscaped, w, r)
-										default:
-											s.notAllowed(w, r, "DELETE,GET,PUT")
-										}
-
-										return
-									}
-
-								case 'c': // Prefix: "content_types/"
-
-									if l := len("content_types/"); len(elem) >= l && elem[0:l] == "content_types/" {
-										elem = elem[l:]
-									} else {
 										break
-									}
-
-									// Param: "content_type_id"
-									// Match until "/"
-									idx := strings.IndexByte(elem, '/')
-									if idx < 0 {
-										idx = len(elem)
-									}
-									args[2] = elem[:idx]
-									elem = elem[idx:]
-
-									if len(elem) == 0 {
-										switch r.Method {
-										case "DELETE":
-											s.handleDeleteContentTypeRequest([3]string{
-												args[0],
-												args[1],
-												args[2],
-											}, elemIsEscaped, w, r)
-										case "GET":
-											s.handleGetContentTypeRequest([3]string{
-												args[0],
-												args[1],
-												args[2],
-											}, elemIsEscaped, w, r)
-										case "PUT":
-											s.handlePutContentTypeRequest([3]string{
-												args[0],
-												args[1],
-												args[2],
-											}, elemIsEscaped, w, r)
-										default:
-											s.notAllowed(w, r, "DELETE,GET,PUT")
-										}
-
-										return
 									}
 									switch elem[0] {
-									case '/': // Prefix: "/"
+									case 'a': // Prefix: "app_installations/"
 
-										if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+										if l := len("app_installations/"); len(elem) >= l && elem[0:l] == "app_installations/" {
 											elem = elem[l:]
 										} else {
 											break
 										}
+
+										// Param: "app_definition_id"
+										// Leaf parameter, slashes are prohibited
+										idx := strings.IndexByte(elem, '/')
+										if idx >= 0 {
+											break
+										}
+										args[2] = elem
+										elem = ""
 
 										if len(elem) == 0 {
-											break
-										}
-										switch elem[0] {
-										case 'e': // Prefix: "editor_interface"
-
-											if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
-												elem = elem[l:]
-											} else {
-												break
+											// Leaf node.
+											switch r.Method {
+											case "DELETE":
+												s.handleDeleteAppInstallationRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											case "GET":
+												s.handleGetAppInstallationRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											case "PUT":
+												s.handlePutAppInstallationRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											default:
+												s.notAllowed(w, r, "DELETE,GET,PUT")
 											}
 
-											if len(elem) == 0 {
-												// Leaf node.
-												switch r.Method {
-												case "GET":
-													s.handleGetEditorInterfaceRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												case "PUT":
-													s.handlePutEditorInterfaceRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												default:
-													s.notAllowed(w, r, "GET,PUT")
-												}
-
-												return
-											}
-
-										case 'p': // Prefix: "published"
-
-											if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
-												elem = elem[l:]
-											} else {
-												break
-											}
-
-											if len(elem) == 0 {
-												// Leaf node.
-												switch r.Method {
-												case "DELETE":
-													s.handleDeactivateContentTypeRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												case "PUT":
-													s.handleActivateContentTypeRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												default:
-													s.notAllowed(w, r, "DELETE,PUT")
-												}
-
-												return
-											}
-
+											return
 										}
 
-									}
+									case 'c': // Prefix: "content_types/"
 
-								case 'e': // Prefix: "e"
-
-									if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
-										elem = elem[l:]
-									} else {
-										break
-									}
-
-									if len(elem) == 0 {
-										break
-									}
-									switch elem[0] {
-									case 'n': // Prefix: "ntries"
-
-										if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
+										if l := len("content_types/"); len(elem) >= l && elem[0:l] == "content_types/" {
 											elem = elem[l:]
 										} else {
 											break
 										}
+
+										// Param: "content_type_id"
+										// Match until "/"
+										idx := strings.IndexByte(elem, '/')
+										if idx < 0 {
+											idx = len(elem)
+										}
+										args[2] = elem[:idx]
+										elem = elem[idx:]
 
 										if len(elem) == 0 {
 											switch r.Method {
-											case "POST":
-												s.handleCreateEntryRequest([2]string{
+											case "DELETE":
+												s.handleDeleteContentTypeRequest([3]string{
 													args[0],
 													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											case "GET":
+												s.handleGetContentTypeRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											case "PUT":
+												s.handlePutContentTypeRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
 												}, elemIsEscaped, w, r)
 											default:
-												s.notAllowed(w, r, "POST")
+												s.notAllowed(w, r, "DELETE,GET,PUT")
 											}
 
 											return
@@ -672,45 +636,43 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 												break
 											}
 
-											// Param: "entry_id"
-											// Match until "/"
-											idx := strings.IndexByte(elem, '/')
-											if idx < 0 {
-												idx = len(elem)
-											}
-											args[2] = elem[:idx]
-											elem = elem[idx:]
-
 											if len(elem) == 0 {
-												switch r.Method {
-												case "DELETE":
-													s.handleDeleteEntryRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												case "GET":
-													s.handleGetEntryRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												case "PUT":
-													s.handlePutEntryRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												default:
-													s.notAllowed(w, r, "DELETE,GET,PUT")
-												}
-
-												return
+												break
 											}
 											switch elem[0] {
-											case '/': // Prefix: "/published"
+											case 'e': // Prefix: "editor_interface"
 
-												if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+												if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													// Leaf node.
+													switch r.Method {
+													case "GET":
+														s.handleGetEditorInterfaceRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													case "PUT":
+														s.handlePutEditorInterfaceRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													default:
+														s.notAllowed(w, r, "GET,PUT")
+													}
+
+													return
+												}
+
+											case 'p': // Prefix: "published"
+
+												if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
 													elem = elem[l:]
 												} else {
 													break
@@ -720,13 +682,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 													// Leaf node.
 													switch r.Method {
 													case "DELETE":
-														s.handleUnpublishEntryRequest([3]string{
+														s.handleDeactivateContentTypeRequest([3]string{
 															args[0],
 															args[1],
 															args[2],
 														}, elemIsEscaped, w, r)
 													case "PUT":
-														s.handlePublishEntryRequest([3]string{
+														s.handleActivateContentTypeRequest([3]string{
 															args[0],
 															args[1],
 															args[2],
@@ -742,49 +704,163 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 										}
 
-									case 'x': // Prefix: "xtensions/"
+									case 'e': // Prefix: "e"
 
-										if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
+										if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "extension_id"
-										// Leaf parameter, slashes are prohibited
-										idx := strings.IndexByte(elem, '/')
-										if idx >= 0 {
+										if len(elem) == 0 {
 											break
 										}
-										args[2] = elem
-										elem = ""
+										switch elem[0] {
+										case 'n': // Prefix: "ntries"
 
-										if len(elem) == 0 {
-											// Leaf node.
-											switch r.Method {
-											case "DELETE":
-												s.handleDeleteExtensionRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											case "GET":
-												s.handleGetExtensionRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											case "PUT":
-												s.handlePutExtensionRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											default:
-												s.notAllowed(w, r, "DELETE,GET,PUT")
+											if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
+												elem = elem[l:]
+											} else {
+												break
 											}
 
-											return
+											if len(elem) == 0 {
+												switch r.Method {
+												case "POST":
+													s.handleCreateEntryRequest([2]string{
+														args[0],
+														args[1],
+													}, elemIsEscaped, w, r)
+												default:
+													s.notAllowed(w, r, "POST")
+												}
+
+												return
+											}
+											switch elem[0] {
+											case '/': // Prefix: "/"
+
+												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												// Param: "entry_id"
+												// Match until "/"
+												idx := strings.IndexByte(elem, '/')
+												if idx < 0 {
+													idx = len(elem)
+												}
+												args[2] = elem[:idx]
+												elem = elem[idx:]
+
+												if len(elem) == 0 {
+													switch r.Method {
+													case "DELETE":
+														s.handleDeleteEntryRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													case "GET":
+														s.handleGetEntryRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													case "PUT":
+														s.handlePutEntryRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													default:
+														s.notAllowed(w, r, "DELETE,GET,PUT")
+													}
+
+													return
+												}
+												switch elem[0] {
+												case '/': // Prefix: "/published"
+
+													if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch r.Method {
+														case "DELETE":
+															s.handleUnpublishEntryRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														case "PUT":
+															s.handlePublishEntryRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														default:
+															s.notAllowed(w, r, "DELETE,PUT")
+														}
+
+														return
+													}
+
+												}
+
+											}
+
+										case 'x': // Prefix: "xtensions/"
+
+											if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											// Param: "extension_id"
+											// Leaf parameter, slashes are prohibited
+											idx := strings.IndexByte(elem, '/')
+											if idx >= 0 {
+												break
+											}
+											args[2] = elem
+											elem = ""
+
+											if len(elem) == 0 {
+												// Leaf node.
+												switch r.Method {
+												case "DELETE":
+													s.handleDeleteExtensionRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "GET":
+													s.handleGetExtensionRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "PUT":
+													s.handlePutExtensionRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												default:
+													s.notAllowed(w, r, "DELETE,GET,PUT")
+												}
+
+												return
+											}
+
 										}
 
 									}
@@ -1568,245 +1644,218 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								}
 							}
 
-						case 'v': // Prefix: "vironments/"
+						case 'v': // Prefix: "vironment"
 
-							if l := len("vironments/"); len(elem) >= l && elem[0:l] == "vironments/" {
+							if l := len("vironment"); len(elem) >= l && elem[0:l] == "vironment" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
-							// Param: "environment_id"
-							// Match until "/"
-							idx := strings.IndexByte(elem, '/')
-							if idx < 0 {
-								idx = len(elem)
-							}
-							args[1] = elem[:idx]
-							elem = elem[idx:]
-
 							if len(elem) == 0 {
 								break
 							}
 							switch elem[0] {
-							case '/': // Prefix: "/"
+							case '_': // Prefix: "_aliases/"
 
-								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+								if l := len("_aliases/"); len(elem) >= l && elem[0:l] == "_aliases/" {
 									elem = elem[l:]
 								} else {
 									break
 								}
 
-								if len(elem) == 0 {
+								// Param: "environment_alias_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
 									break
 								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch method {
+									case "DELETE":
+										r.name = DeleteEnvironmentAliasOperation
+										r.summary = "Delete an environment alias"
+										r.operationID = "deleteEnvironmentAlias"
+										r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "GET":
+										r.name = GetEnvironmentAliasOperation
+										r.summary = "Get a single environment alias"
+										r.operationID = "getEnvironmentAlias"
+										r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "PUT":
+										r.name = CreateOrUpdateEnvironmentAliasOperation
+										r.summary = "Create/Update an environment alias"
+										r.operationID = "createOrUpdateEnvironmentAlias"
+										r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									default:
+										return
+									}
+								}
+
+							case 's': // Prefix: "s/"
+
+								if l := len("s/"); len(elem) >= l && elem[0:l] == "s/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "environment_id"
+								// Match until "/"
+								idx := strings.IndexByte(elem, '/')
+								if idx < 0 {
+									idx = len(elem)
+								}
+								args[1] = elem[:idx]
+								elem = elem[idx:]
+
+								if len(elem) == 0 {
+									switch method {
+									case "DELETE":
+										r.name = DeleteEnvironmentOperation
+										r.summary = "Delete an environment"
+										r.operationID = "deleteEnvironment"
+										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "GET":
+										r.name = GetEnvironmentOperation
+										r.summary = "Get a single environment"
+										r.operationID = "getEnvironment"
+										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "PUT":
+										r.name = CreateOrUpdateEnvironmentOperation
+										r.summary = "Create or update an environment"
+										r.operationID = "createOrUpdateEnvironment"
+										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									default:
+										return
+									}
+								}
 								switch elem[0] {
-								case 'a': // Prefix: "app_installations/"
+								case '/': // Prefix: "/"
 
-									if l := len("app_installations/"); len(elem) >= l && elem[0:l] == "app_installations/" {
+									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
-									// Param: "app_definition_id"
-									// Leaf parameter, slashes are prohibited
-									idx := strings.IndexByte(elem, '/')
-									if idx >= 0 {
-										break
-									}
-									args[2] = elem
-									elem = ""
-
 									if len(elem) == 0 {
-										// Leaf node.
-										switch method {
-										case "DELETE":
-											r.name = DeleteAppInstallationOperation
-											r.summary = "Uninstall an app"
-											r.operationID = "deleteAppInstallation"
-											r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
-											r.args = args
-											r.count = 3
-											return r, true
-										case "GET":
-											r.name = GetAppInstallationOperation
-											r.summary = "Get one app installation"
-											r.operationID = "getAppInstallation"
-											r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
-											r.args = args
-											r.count = 3
-											return r, true
-										case "PUT":
-											r.name = PutAppInstallationOperation
-											r.summary = "Install or update an app"
-											r.operationID = "putAppInstallation"
-											r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
-											r.args = args
-											r.count = 3
-											return r, true
-										default:
-											return
-										}
-									}
-
-								case 'c': // Prefix: "content_types/"
-
-									if l := len("content_types/"); len(elem) >= l && elem[0:l] == "content_types/" {
-										elem = elem[l:]
-									} else {
 										break
-									}
-
-									// Param: "content_type_id"
-									// Match until "/"
-									idx := strings.IndexByte(elem, '/')
-									if idx < 0 {
-										idx = len(elem)
-									}
-									args[2] = elem[:idx]
-									elem = elem[idx:]
-
-									if len(elem) == 0 {
-										switch method {
-										case "DELETE":
-											r.name = DeleteContentTypeOperation
-											r.summary = "Delete a content type"
-											r.operationID = "deleteContentType"
-											r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
-											r.args = args
-											r.count = 3
-											return r, true
-										case "GET":
-											r.name = GetContentTypeOperation
-											r.summary = "Get a content type"
-											r.operationID = "getContentType"
-											r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
-											r.args = args
-											r.count = 3
-											return r, true
-										case "PUT":
-											r.name = PutContentTypeOperation
-											r.summary = "Update a content type"
-											r.operationID = "putContentType"
-											r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
-											r.args = args
-											r.count = 3
-											return r, true
-										default:
-											return
-										}
 									}
 									switch elem[0] {
-									case '/': // Prefix: "/"
+									case 'a': // Prefix: "app_installations/"
 
-										if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+										if l := len("app_installations/"); len(elem) >= l && elem[0:l] == "app_installations/" {
 											elem = elem[l:]
 										} else {
 											break
 										}
+
+										// Param: "app_definition_id"
+										// Leaf parameter, slashes are prohibited
+										idx := strings.IndexByte(elem, '/')
+										if idx >= 0 {
+											break
+										}
+										args[2] = elem
+										elem = ""
 
 										if len(elem) == 0 {
-											break
-										}
-										switch elem[0] {
-										case 'e': // Prefix: "editor_interface"
-
-											if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
-												elem = elem[l:]
-											} else {
-												break
+											// Leaf node.
+											switch method {
+											case "DELETE":
+												r.name = DeleteAppInstallationOperation
+												r.summary = "Uninstall an app"
+												r.operationID = "deleteAppInstallation"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											case "GET":
+												r.name = GetAppInstallationOperation
+												r.summary = "Get one app installation"
+												r.operationID = "getAppInstallation"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											case "PUT":
+												r.name = PutAppInstallationOperation
+												r.summary = "Install or update an app"
+												r.operationID = "putAppInstallation"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											default:
+												return
 											}
-
-											if len(elem) == 0 {
-												// Leaf node.
-												switch method {
-												case "GET":
-													r.name = GetEditorInterfaceOperation
-													r.summary = "Get the editor interface for a content type"
-													r.operationID = "getEditorInterface"
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
-													r.args = args
-													r.count = 3
-													return r, true
-												case "PUT":
-													r.name = PutEditorInterfaceOperation
-													r.summary = "Update the editor interface for a content type"
-													r.operationID = "putEditorInterface"
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
-													r.args = args
-													r.count = 3
-													return r, true
-												default:
-													return
-												}
-											}
-
-										case 'p': // Prefix: "published"
-
-											if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
-												elem = elem[l:]
-											} else {
-												break
-											}
-
-											if len(elem) == 0 {
-												// Leaf node.
-												switch method {
-												case "DELETE":
-													r.name = DeactivateContentTypeOperation
-													r.summary = "Deactivate a content type"
-													r.operationID = "deactivateContentType"
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
-													r.args = args
-													r.count = 3
-													return r, true
-												case "PUT":
-													r.name = ActivateContentTypeOperation
-													r.summary = "Activate a content type"
-													r.operationID = "activateContentType"
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
-													r.args = args
-													r.count = 3
-													return r, true
-												default:
-													return
-												}
-											}
-
 										}
 
-									}
+									case 'c': // Prefix: "content_types/"
 
-								case 'e': // Prefix: "e"
-
-									if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
-										elem = elem[l:]
-									} else {
-										break
-									}
-
-									if len(elem) == 0 {
-										break
-									}
-									switch elem[0] {
-									case 'n': // Prefix: "ntries"
-
-										if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
+										if l := len("content_types/"); len(elem) >= l && elem[0:l] == "content_types/" {
 											elem = elem[l:]
 										} else {
 											break
 										}
+
+										// Param: "content_type_id"
+										// Match until "/"
+										idx := strings.IndexByte(elem, '/')
+										if idx < 0 {
+											idx = len(elem)
+										}
+										args[2] = elem[:idx]
+										elem = elem[idx:]
 
 										if len(elem) == 0 {
 											switch method {
-											case "POST":
-												r.name = CreateEntryOperation
-												r.summary = "Create an entry"
-												r.operationID = "createEntry"
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
+											case "DELETE":
+												r.name = DeleteContentTypeOperation
+												r.summary = "Delete a content type"
+												r.operationID = "deleteContentType"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
 												r.args = args
-												r.count = 2
+												r.count = 3
+												return r, true
+											case "GET":
+												r.name = GetContentTypeOperation
+												r.summary = "Get a content type"
+												r.operationID = "getContentType"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											case "PUT":
+												r.name = PutContentTypeOperation
+												r.summary = "Update a content type"
+												r.operationID = "putContentType"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
+												r.args = args
+												r.count = 3
 												return r, true
 											default:
 												return
@@ -1821,49 +1870,45 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												break
 											}
 
-											// Param: "entry_id"
-											// Match until "/"
-											idx := strings.IndexByte(elem, '/')
-											if idx < 0 {
-												idx = len(elem)
-											}
-											args[2] = elem[:idx]
-											elem = elem[idx:]
-
 											if len(elem) == 0 {
-												switch method {
-												case "DELETE":
-													r.name = DeleteEntryOperation
-													r.summary = "Delete an entry"
-													r.operationID = "deleteEntry"
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
-													r.args = args
-													r.count = 3
-													return r, true
-												case "GET":
-													r.name = GetEntryOperation
-													r.summary = "Get a single entry"
-													r.operationID = "getEntry"
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
-													r.args = args
-													r.count = 3
-													return r, true
-												case "PUT":
-													r.name = PutEntryOperation
-													r.summary = "Create or update an entry"
-													r.operationID = "putEntry"
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
-													r.args = args
-													r.count = 3
-													return r, true
-												default:
-													return
-												}
+												break
 											}
 											switch elem[0] {
-											case '/': // Prefix: "/published"
+											case 'e': // Prefix: "editor_interface"
 
-												if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+												if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													// Leaf node.
+													switch method {
+													case "GET":
+														r.name = GetEditorInterfaceOperation
+														r.summary = "Get the editor interface for a content type"
+														r.operationID = "getEditorInterface"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
+														r.args = args
+														r.count = 3
+														return r, true
+													case "PUT":
+														r.name = PutEditorInterfaceOperation
+														r.summary = "Update the editor interface for a content type"
+														r.operationID = "putEditorInterface"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
+														r.args = args
+														r.count = 3
+														return r, true
+													default:
+														return
+													}
+												}
+
+											case 'p': // Prefix: "published"
+
+												if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
 													elem = elem[l:]
 												} else {
 													break
@@ -1873,18 +1918,18 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 													// Leaf node.
 													switch method {
 													case "DELETE":
-														r.name = UnpublishEntryOperation
-														r.summary = "Unpublish an entry"
-														r.operationID = "unpublishEntry"
-														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+														r.name = DeactivateContentTypeOperation
+														r.summary = "Deactivate a content type"
+														r.operationID = "deactivateContentType"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
 														r.args = args
 														r.count = 3
 														return r, true
 													case "PUT":
-														r.name = PublishEntryOperation
-														r.summary = "Publish an entry"
-														r.operationID = "publishEntry"
-														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+														r.name = ActivateContentTypeOperation
+														r.summary = "Activate a content type"
+														r.operationID = "activateContentType"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
 														r.args = args
 														r.count = 3
 														return r, true
@@ -1897,53 +1942,174 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 										}
 
-									case 'x': // Prefix: "xtensions/"
+									case 'e': // Prefix: "e"
 
-										if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
+										if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "extension_id"
-										// Leaf parameter, slashes are prohibited
-										idx := strings.IndexByte(elem, '/')
-										if idx >= 0 {
+										if len(elem) == 0 {
 											break
 										}
-										args[2] = elem
-										elem = ""
+										switch elem[0] {
+										case 'n': // Prefix: "ntries"
 
-										if len(elem) == 0 {
-											// Leaf node.
-											switch method {
-											case "DELETE":
-												r.name = DeleteExtensionOperation
-												r.summary = "Delete an extension"
-												r.operationID = "deleteExtension"
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
-												r.args = args
-												r.count = 3
-												return r, true
-											case "GET":
-												r.name = GetExtensionOperation
-												r.summary = "Get a single extension"
-												r.operationID = "getExtension"
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
-												r.args = args
-												r.count = 3
-												return r, true
-											case "PUT":
-												r.name = PutExtensionOperation
-												r.summary = "Create or update an extension"
-												r.operationID = "putExtension"
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
-												r.args = args
-												r.count = 3
-												return r, true
-											default:
-												return
+											if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
+												elem = elem[l:]
+											} else {
+												break
 											}
+
+											if len(elem) == 0 {
+												switch method {
+												case "POST":
+													r.name = CreateEntryOperation
+													r.summary = "Create an entry"
+													r.operationID = "createEntry"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
+													r.args = args
+													r.count = 2
+													return r, true
+												default:
+													return
+												}
+											}
+											switch elem[0] {
+											case '/': // Prefix: "/"
+
+												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												// Param: "entry_id"
+												// Match until "/"
+												idx := strings.IndexByte(elem, '/')
+												if idx < 0 {
+													idx = len(elem)
+												}
+												args[2] = elem[:idx]
+												elem = elem[idx:]
+
+												if len(elem) == 0 {
+													switch method {
+													case "DELETE":
+														r.name = DeleteEntryOperation
+														r.summary = "Delete an entry"
+														r.operationID = "deleteEntry"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+														r.args = args
+														r.count = 3
+														return r, true
+													case "GET":
+														r.name = GetEntryOperation
+														r.summary = "Get a single entry"
+														r.operationID = "getEntry"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+														r.args = args
+														r.count = 3
+														return r, true
+													case "PUT":
+														r.name = PutEntryOperation
+														r.summary = "Create or update an entry"
+														r.operationID = "putEntry"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+														r.args = args
+														r.count = 3
+														return r, true
+													default:
+														return
+													}
+												}
+												switch elem[0] {
+												case '/': // Prefix: "/published"
+
+													if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch method {
+														case "DELETE":
+															r.name = UnpublishEntryOperation
+															r.summary = "Unpublish an entry"
+															r.operationID = "unpublishEntry"
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+															r.args = args
+															r.count = 3
+															return r, true
+														case "PUT":
+															r.name = PublishEntryOperation
+															r.summary = "Publish an entry"
+															r.operationID = "publishEntry"
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+															r.args = args
+															r.count = 3
+															return r, true
+														default:
+															return
+														}
+													}
+
+												}
+
+											}
+
+										case 'x': // Prefix: "xtensions/"
+
+											if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											// Param: "extension_id"
+											// Leaf parameter, slashes are prohibited
+											idx := strings.IndexByte(elem, '/')
+											if idx >= 0 {
+												break
+											}
+											args[2] = elem
+											elem = ""
+
+											if len(elem) == 0 {
+												// Leaf node.
+												switch method {
+												case "DELETE":
+													r.name = DeleteExtensionOperation
+													r.summary = "Delete an extension"
+													r.operationID = "deleteExtension"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "GET":
+													r.name = GetExtensionOperation
+													r.summary = "Get a single extension"
+													r.operationID = "getExtension"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "PUT":
+													r.name = PutExtensionOperation
+													r.summary = "Create or update an extension"
+													r.operationID = "putExtension"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												default:
+													return
+												}
+											}
+
 										}
 
 									}

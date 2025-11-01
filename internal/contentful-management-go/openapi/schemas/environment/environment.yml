@@ -1,0 +1,9 @@
+Environment:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/EnvironmentSys"
+      required:
+        - sys
+    - $ref: "./data.yml#/EnvironmentData"

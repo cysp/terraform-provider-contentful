@@ -45,6 +45,18 @@ type Invoker interface {
 	//
 	// POST /spaces/{space_id}/environments/{environment_id}/entries
 	CreateEntry(ctx context.Context, request *EntryRequest, params CreateEntryParams) (CreateEntryRes, error)
+	// CreateOrUpdateEnvironment invokes createOrUpdateEnvironment operation.
+	//
+	// Create or update an environment.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}
+	CreateOrUpdateEnvironment(ctx context.Context, request *EnvironmentData, params CreateOrUpdateEnvironmentParams) (CreateOrUpdateEnvironmentRes, error)
+	// CreateOrUpdateEnvironmentAlias invokes createOrUpdateEnvironmentAlias operation.
+	//
+	// Create/Update an environment alias.
+	//
+	// PUT /spaces/{space_id}/environment_aliases/{environment_alias_id}
+	CreateOrUpdateEnvironmentAlias(ctx context.Context, request *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams) (CreateOrUpdateEnvironmentAliasRes, error)
 	// CreatePersonalAccessToken invokes createPersonalAccessToken operation.
 	//
 	// Create a personal access token.
@@ -105,6 +117,18 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
 	DeleteEntry(ctx context.Context, params DeleteEntryParams) (DeleteEntryRes, error)
+	// DeleteEnvironment invokes deleteEnvironment operation.
+	//
+	// Delete an environment.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}
+	DeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams) (DeleteEnvironmentRes, error)
+	// DeleteEnvironmentAlias invokes deleteEnvironmentAlias operation.
+	//
+	// Delete an environment alias.
+	//
+	// DELETE /spaces/{space_id}/environment_aliases/{environment_alias_id}
+	DeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams) (DeleteEnvironmentAliasRes, error)
 	// DeleteExtension invokes deleteExtension operation.
 	//
 	// Delete an extension.
@@ -183,6 +207,18 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
 	GetEntry(ctx context.Context, params GetEntryParams) (GetEntryRes, error)
+	// GetEnvironment invokes getEnvironment operation.
+	//
+	// Get a single environment.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}
+	GetEnvironment(ctx context.Context, params GetEnvironmentParams) (GetEnvironmentRes, error)
+	// GetEnvironmentAlias invokes getEnvironmentAlias operation.
+	//
+	// Get a single environment alias.
+	//
+	// GET /spaces/{space_id}/environment_aliases/{environment_alias_id}
+	GetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams) (GetEnvironmentAliasRes, error)
 	// GetExtension invokes getExtension operation.
 	//
 	// Get a single extension.
@@ -817,6 +853,267 @@ func (c *Client) sendCreateEntry(ctx context.Context, request *EntryRequest, par
 	defer resp.Body.Close()
 
 	result, err := decodeCreateEntryResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// CreateOrUpdateEnvironment invokes createOrUpdateEnvironment operation.
+//
+// Create or update an environment.
+//
+// PUT /spaces/{space_id}/environments/{environment_id}
+func (c *Client) CreateOrUpdateEnvironment(ctx context.Context, request *EnvironmentData, params CreateOrUpdateEnvironmentParams) (CreateOrUpdateEnvironmentRes, error) {
+	res, err := c.sendCreateOrUpdateEnvironment(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendCreateOrUpdateEnvironment(ctx context.Context, request *EnvironmentData, params CreateOrUpdateEnvironmentParams) (res CreateOrUpdateEnvironmentRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeCreateOrUpdateEnvironmentRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Source-Environment",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.XContentfulSourceEnvironment.Get(); ok {
+				return e.EncodeValue(conv.StringToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.XContentfulVersion.Get(); ok {
+				return e.EncodeValue(conv.IntToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, CreateOrUpdateEnvironmentOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeCreateOrUpdateEnvironmentResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// CreateOrUpdateEnvironmentAlias invokes createOrUpdateEnvironmentAlias operation.
+//
+// Create/Update an environment alias.
+//
+// PUT /spaces/{space_id}/environment_aliases/{environment_alias_id}
+func (c *Client) CreateOrUpdateEnvironmentAlias(ctx context.Context, request *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams) (CreateOrUpdateEnvironmentAliasRes, error) {
+	res, err := c.sendCreateOrUpdateEnvironmentAlias(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendCreateOrUpdateEnvironmentAlias(ctx context.Context, request *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams) (res CreateOrUpdateEnvironmentAliasRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environment_aliases/"
+	{
+		// Encode "environment_alias_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_alias_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentAliasID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeCreateOrUpdateEnvironmentAliasRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, CreateOrUpdateEnvironmentAliasOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeCreateOrUpdateEnvironmentAliasResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -1891,6 +2188,218 @@ func (c *Client) sendDeleteEntry(ctx context.Context, params DeleteEntryParams) 
 	defer resp.Body.Close()
 
 	result, err := decodeDeleteEntryResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// DeleteEnvironment invokes deleteEnvironment operation.
+//
+// Delete an environment.
+//
+// DELETE /spaces/{space_id}/environments/{environment_id}
+func (c *Client) DeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams) (DeleteEnvironmentRes, error) {
+	res, err := c.sendDeleteEnvironment(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams) (res DeleteEnvironmentRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteEnvironmentOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeDeleteEnvironmentResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// DeleteEnvironmentAlias invokes deleteEnvironmentAlias operation.
+//
+// Delete an environment alias.
+//
+// DELETE /spaces/{space_id}/environment_aliases/{environment_alias_id}
+func (c *Client) DeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams) (DeleteEnvironmentAliasRes, error) {
+	res, err := c.sendDeleteEnvironmentAlias(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams) (res DeleteEnvironmentAliasRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environment_aliases/"
+	{
+		// Encode "environment_alias_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_alias_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentAliasID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteEnvironmentAliasOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeDeleteEnvironmentAliasResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -3349,6 +3858,218 @@ func (c *Client) sendGetEntry(ctx context.Context, params GetEntryParams) (res G
 	defer resp.Body.Close()
 
 	result, err := decodeGetEntryResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetEnvironment invokes getEnvironment operation.
+//
+// Get a single environment.
+//
+// GET /spaces/{space_id}/environments/{environment_id}
+func (c *Client) GetEnvironment(ctx context.Context, params GetEnvironmentParams) (GetEnvironmentRes, error) {
+	res, err := c.sendGetEnvironment(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetEnvironment(ctx context.Context, params GetEnvironmentParams) (res GetEnvironmentRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetEnvironmentOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetEnvironmentResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetEnvironmentAlias invokes getEnvironmentAlias operation.
+//
+// Get a single environment alias.
+//
+// GET /spaces/{space_id}/environment_aliases/{environment_alias_id}
+func (c *Client) GetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams) (GetEnvironmentAliasRes, error) {
+	res, err := c.sendGetEnvironmentAlias(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams) (res GetEnvironmentAliasRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environment_aliases/"
+	{
+		// Encode "environment_alias_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_alias_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentAliasID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetEnvironmentAliasOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetEnvironmentAliasResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
