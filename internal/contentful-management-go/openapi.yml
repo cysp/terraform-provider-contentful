@@ -164,38 +164,13 @@ components:
     AppInstallation:
       $ref: "./openapi/schemas/app-installation/app-installation.yml#/AppInstallation"
     AppSigningSecretSys:
-      allOf:
-        - $ref: "#/components/schemas/BaseSysWithOrganization"
-        - $ref: "#/components/schemas/BaseSysWithAppDefinition"
-        - type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - AppSigningSecret
+      $ref: "./openapi/schemas/app-signing-secret/sys.yml#/AppSigningSecretSys"
     AppSigningSecretFields:
-      type: object
-      properties:
-        redactedValue:
-          type: string
-      required:
-        - redactedValue
+      $ref: "./openapi/schemas/app-signing-secret/fields.yml#/AppSigningSecretFields"
     AppSigningSecretRequestFields:
-      type: object
-      properties:
-        value:
-          type: string
-      required:
-        - value
+      $ref: "./openapi/schemas/app-signing-secret/request-fields.yml#/AppSigningSecretRequestFields"
     AppSigningSecret:
-      allOf:
-        - type: object
-          properties:
-            sys:
-              $ref: "#/components/schemas/AppSigningSecretSys"
-          required:
-            - sys
-        - $ref: "#/components/schemas/AppSigningSecretFields"
+      $ref: "./openapi/schemas/app-signing-secret/app-signing-secret.yml#/AppSigningSecret"
     ContentTypeSys:
       allOf:
         - $ref: "#/components/schemas/BaseSysWithSpaceEnvironment"
