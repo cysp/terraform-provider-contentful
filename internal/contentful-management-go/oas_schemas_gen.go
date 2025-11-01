@@ -1809,7 +1809,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateRoleRes() 
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateWebhookDefinitionRes()      {}
 
 // Merged schema.
-// Ref: #/components/schemas/ContentType
+// Ref: #/ContentType
 type ContentType struct {
 	Sys  ContentTypeSys `json:"sys"`
 	Name string         `json:"name"`
@@ -2179,7 +2179,7 @@ func (s *ContentTypeLinkSysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/ContentTypeMetadata
+// Ref: #/ContentTypeMetadata
 type ContentTypeMetadata struct {
 	Annotations jx.Raw                            `json:"annotations"`
 	Taxonomy    []ContentTypeMetadataTaxonomyItem `json:"taxonomy"`
@@ -2205,7 +2205,7 @@ func (s *ContentTypeMetadata) SetTaxonomy(val []ContentTypeMetadataTaxonomyItem)
 	s.Taxonomy = val
 }
 
-// Ref: #/components/schemas/ContentTypeMetadataTaxonomyItem
+// Ref: #/ContentTypeMetadataTaxonomyItem
 type ContentTypeMetadataTaxonomyItem struct {
 	Sys      ContentTypeMetadataTaxonomyItemSys `json:"sys"`
 	Required OptBool                            `json:"required"`
@@ -2347,7 +2347,7 @@ func (s *ContentTypeMetadataTaxonomyItemSysType) UnmarshalText(data []byte) erro
 	}
 }
 
-// Ref: #/components/schemas/ContentTypeRequestFields
+// Ref: #/ContentTypeRequestFields
 type ContentTypeRequestFields struct {
 	Name         string                               `json:"name"`
 	Description  OptNilString                         `json:"description"`
@@ -2607,7 +2607,7 @@ func (*ContentTypeStatusCode) activateContentTypeRes() {}
 func (*ContentTypeStatusCode) putContentTypeRes()      {}
 
 // Merged schema.
-// Ref: #/components/schemas/ContentTypeSys
+// Ref: #/ContentTypeSys
 type ContentTypeSys struct {
 	// Merged property.
 	Type             ContentTypeSysType `json:"type"`
@@ -2746,7 +2746,7 @@ func (s *ContentTypeSysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/ContentfulEntryResourceLink
+// Ref: #/ContentfulEntryResourceLink
 type ContentfulEntryResourceLink struct {
 	Type         ContentfulEntryResourceLinkType `json:"type"`
 	Source       string                          `json:"source"`
@@ -4455,7 +4455,7 @@ func (s *ExtensionSysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/ExternalResourceLink
+// Ref: #/ExternalResourceLink
 type ExternalResourceLink struct {
 	Type string `json:"type"`
 }
@@ -7331,7 +7331,7 @@ func (s *PreviewApiKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/ResourceLink
+// Ref: #/ResourceLink
 // ResourceLink represents sum type.
 type ResourceLink struct {
 	Type                        ResourceLinkType // switch on this field

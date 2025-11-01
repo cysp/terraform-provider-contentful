@@ -1,0 +1,11 @@
+ContentTypeFields:
+  allOf:
+    - $ref: "./request-fields.yml#/ContentTypeRequestFields"
+    - type: object
+      properties:
+        description:
+          type: string
+          nullable: true
+        displayField:
+          type: string
+          nullable: true

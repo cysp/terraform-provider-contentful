@@ -1,0 +1,9 @@
+ContentType:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/ContentTypeSys"
+      required:
+        - sys
+    - $ref: "./fields.yml#/ContentTypeFields"

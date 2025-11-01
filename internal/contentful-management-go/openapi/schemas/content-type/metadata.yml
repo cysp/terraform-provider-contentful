@@ -1,0 +1,8 @@
+ContentTypeMetadata:
+  type: object
+  properties:
+    annotations: {}
+    taxonomy:
+      type: array
+      items:
+        $ref: "./metadata-taxonomy-item.yml#/ContentTypeMetadataTaxonomyItem"

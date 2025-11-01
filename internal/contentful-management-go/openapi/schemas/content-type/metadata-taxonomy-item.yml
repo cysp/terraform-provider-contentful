@@ -1,0 +1,17 @@
+ContentTypeMetadataTaxonomyItem:
+  type: object
+  properties:
+    sys:
+      allOf:
+        - $ref: "../links/sys.yml#/LinkSys"
+        - type: object
+          properties:
+            linkType:
+              type: string
+              enum:
+                - TaxonomyConcept
+                - TaxonomyConceptScheme
+    required:
+      type: boolean
+  required:
+    - sys
