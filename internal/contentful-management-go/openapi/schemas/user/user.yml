@@ -1,0 +1,9 @@
+User:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/UserSys"
+      required:
+        - sys
+    - $ref: "./fields.yml#/UserFields"

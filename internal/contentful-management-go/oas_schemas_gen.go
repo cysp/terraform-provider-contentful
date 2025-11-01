@@ -9290,7 +9290,7 @@ func (s *TagLinkSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/User
+// Ref: #/User
 type User struct {
 	Sys       UserSys `json:"sys"`
 	Email     string  `json:"email"`
@@ -9341,7 +9341,7 @@ func (s *User) SetLastName(val string) {
 func (*User) getAuthenticatedUserRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/UserSys
+// Ref: #/UserSys
 type UserSys struct {
 	// Merged property.
 	Type      UserSysType `json:"type"`
