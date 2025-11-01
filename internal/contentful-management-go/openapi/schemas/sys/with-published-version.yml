@@ -1,0 +1,7 @@
+type: object
+properties:
+  publishedVersion:
+    type: integer
+  publishedAt:
+    type: string
+    format: date-time

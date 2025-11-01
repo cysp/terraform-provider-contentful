@@ -1,8 +1,0 @@
-allOf:
-  - $ref: "./sys-with-space.yml"
-  - type: object
-    properties:
-      environment:
-        $ref: "../links/environment-link.yml#/EnvironmentLink"
-    required:
-      - environment

@@ -1,0 +1,6 @@
+type: object
+properties:
+  appDefinition:
+    $ref: "../links/app-definition-link.yml#/AppDefinitionLink"
+required:
+  - appDefinition

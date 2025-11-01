@@ -1,7 +1,8 @@
 SpaceEnablementSys:
   allOf:
-    - $ref: "../sys/sys-with-space.yml"
-    - $ref: "../sys/sys-with-version.yml"
+    - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-space.yml"
+    - $ref: "../sys/with-version.yml"
     - type: object
       properties:
         type:

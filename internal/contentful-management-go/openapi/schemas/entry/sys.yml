@@ -1,8 +1,12 @@
 EntrySys:
   allOf:
-    - $ref: "../sys/sys-with-space-environment.yml"
-    - $ref: "../sys/sys-with-content-type.yml"
-    - $ref: "../sys/sys-with-id-and-version-and-published-version.yml"
+    - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-space.yml"
+    - $ref: "../sys/with-environment.yml"
+    - $ref: "../sys/with-content-type.yml"
+    - $ref: "../sys/with-id.yml"
+    - $ref: "../sys/with-version.yml"
+    - $ref: "../sys/with-published-version.yml"
     - type: object
       properties:
         type:
