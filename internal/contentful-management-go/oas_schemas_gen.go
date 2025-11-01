@@ -6815,7 +6815,7 @@ func (s *OrganizationLinkSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
-// Ref: #/components/schemas/PersonalAccessToken
+// Ref: #/PersonalAccessToken
 type PersonalAccessToken struct {
 	Sys       PersonalAccessTokenSys `json:"sys"`
 	Name      string                 `json:"name"`
@@ -6876,7 +6876,7 @@ func (s *PersonalAccessToken) SetRevokedAt(val OptNilDateTime) {
 
 func (*PersonalAccessToken) getPersonalAccessTokenRes() {}
 
-// Ref: #/components/schemas/PersonalAccessTokenRequestFields
+// Ref: #/PersonalAccessTokenRequestFields
 type PersonalAccessTokenRequestFields struct {
 	Name      string    `json:"name"`
 	Scopes    []string  `json:"scopes"`
@@ -6943,7 +6943,7 @@ func (*PersonalAccessTokenStatusCode) createPersonalAccessTokenRes() {}
 func (*PersonalAccessTokenStatusCode) revokePersonalAccessTokenRes() {}
 
 // Merged schema.
-// Ref: #/components/schemas/PersonalAccessTokenSys
+// Ref: #/PersonalAccessTokenSys
 type PersonalAccessTokenSys struct {
 	// Merged property.
 	Type          PersonalAccessTokenSysType `json:"type"`

@@ -1,0 +1,18 @@
+PersonalAccessTokenFields:
+  type: object
+  properties:
+    name:
+      type: string
+    scopes:
+      type: array
+      items:
+        type: string
+    token:
+      type: string
+    revokedAt:
+      type: string
+      format: date-time
+      nullable: true
+  required:
+    - name
+    - scopes

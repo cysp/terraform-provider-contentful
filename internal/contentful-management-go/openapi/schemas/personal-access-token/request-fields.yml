@@ -1,0 +1,15 @@
+PersonalAccessTokenRequestFields:
+  type: object
+  properties:
+    name:
+      type: string
+    scopes:
+      type: array
+      items:
+        type: string
+    expiresIn:
+      type: integer
+      nullable: true
+  required:
+    - name
+    - scopes
