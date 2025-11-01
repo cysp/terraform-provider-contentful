@@ -1,8 +1,0 @@
-allOf:
-  - $ref: "./sys.yml"
-  - type: object
-    properties:
-      space:
-        $ref: "../links/space-link.yml#/SpaceLink"
-    required:
-      - space

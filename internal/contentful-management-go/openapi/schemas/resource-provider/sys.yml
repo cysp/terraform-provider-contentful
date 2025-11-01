@@ -1,8 +1,9 @@
 ResourceProviderSys:
   allOf:
-    - $ref: "../sys/sys-with-id.yml"
-    - $ref: "../sys/sys-with-organization.yml"
-    - $ref: "../sys/sys-with-app-definition.yml"
+    - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-id.yml"
+    - $ref: "../sys/with-organization.yml"
+    - $ref: "../sys/with-app-definition.yml"
     - type: object
       properties:
         type:

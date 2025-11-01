@@ -1,6 +1,8 @@
 UserSys:
   allOf:
-    - $ref: "../sys/sys-with-id-and-version.yml"
+    - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-id.yml"
+    - $ref: "../sys/with-version.yml"
     - type: object
       properties:
         type:
