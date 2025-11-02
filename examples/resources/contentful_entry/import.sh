@@ -1,0 +1,1 @@
+terraform import contentful_entry.example $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_ENTRY_ID
