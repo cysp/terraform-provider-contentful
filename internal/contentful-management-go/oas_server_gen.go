@@ -56,6 +56,12 @@ type Handler interface {
 	//
 	// POST /spaces/{space_id}/roles
 	CreateRole(ctx context.Context, req *RoleData, params CreateRoleParams) (CreateRoleRes, error)
+	// CreateTeam implements createTeam operation.
+	//
+	// Create a team.
+	//
+	// POST /organizations/{organization_id}/teams
+	CreateTeam(ctx context.Context, req *TeamData, params CreateTeamParams) (CreateTeamRes, error)
 	// CreateWebhookDefinition implements createWebhookDefinition operation.
 	//
 	// Create a webhook definition.
@@ -140,6 +146,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/roles/{role_id}
 	DeleteRole(ctx context.Context, params DeleteRoleParams) (DeleteRoleRes, error)
+	// DeleteTeam implements deleteTeam operation.
+	//
+	// Delete a team.
+	//
+	// DELETE /organizations/{organization_id}/teams/{team_id}
+	DeleteTeam(ctx context.Context, params DeleteTeamParams) (DeleteTeamRes, error)
 	// DeleteWebhookDefinition implements deleteWebhookDefinition operation.
 	//
 	// Delete a webhook definition.
@@ -254,6 +266,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/enablements
 	GetSpaceEnablements(ctx context.Context, params GetSpaceEnablementsParams) (GetSpaceEnablementsRes, error)
+	// GetTeam implements getTeam operation.
+	//
+	// Get a single team.
+	//
+	// GET /organizations/{organization_id}/teams/{team_id}
+	GetTeam(ctx context.Context, params GetTeamParams) (GetTeamRes, error)
 	// GetWebhookDefinition implements getWebhookDefinition operation.
 	//
 	// Get a webhook definition.
@@ -326,6 +344,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/enablements
 	PutSpaceEnablements(ctx context.Context, req *SpaceEnablementData, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error)
+	// PutTeam implements putTeam operation.
+	//
+	// Update a single team.
+	//
+	// PUT /organizations/{organization_id}/teams/{team_id}
+	PutTeam(ctx context.Context, req *TeamData, params PutTeamParams) (PutTeamRes, error)
 	// RevokePersonalAccessToken implements revokePersonalAccessToken operation.
 	//
 	// Revoke a personal access token.

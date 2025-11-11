@@ -11,6 +11,8 @@ type Handler struct {
 
 	me *cm.User
 
+	teams OrganizationMap[*cm.Team]
+
 	personalAccessTokens map[string]*cm.PersonalAccessToken
 
 	enablements map[string]*cm.SpaceEnablement
@@ -47,6 +49,7 @@ func NewHandler() *Handler {
 	return &Handler{
 		mu: sync.Mutex{},
 
+		teams:                          NewOrganizationMap[*cm.Team](),
 		personalAccessTokens:           make(map[string]*cm.PersonalAccessToken),
 		enablements:                    make(map[string]*cm.SpaceEnablement),
 		apiKeys:                        NewSpaceMap[*cm.ApiKey](),
