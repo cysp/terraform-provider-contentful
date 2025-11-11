@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -17,9 +16,7 @@ func NewEnvironmentAliasResourceModelFromResponse(_ context.Context, environment
 	targetEnvironmentID := environmentAlias.Environment.Sys.ID
 
 	model := EnvironmentAliasModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(strings.Join([]string{spaceID, environmentAliasID}, "/")),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, environmentAliasID}),
 		EnvironmentAliasIdentityModel: EnvironmentAliasIdentityModel{
 			SpaceID:            types.StringValue(spaceID),
 			EnvironmentAliasID: types.StringValue(environmentAliasID),

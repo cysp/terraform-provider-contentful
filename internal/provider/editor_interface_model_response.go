@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -18,9 +17,7 @@ func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 	contentTypeID := editorInterface.Sys.ContentType.Sys.ID
 
 	model := EditorInterfaceModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(strings.Join([]string{spaceID, environmentID, contentTypeID}, "/")),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, environmentID, contentTypeID}),
 		EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
 			SpaceID:       types.StringValue(spaceID),
 			EnvironmentID: types.StringValue(environmentID),

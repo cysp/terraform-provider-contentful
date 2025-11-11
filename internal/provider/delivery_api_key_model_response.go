@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -18,9 +17,7 @@ func NewDeliveryAPIKeyResourceModelFromResponse(ctx context.Context, apiKey cm.A
 	apiKeyID := apiKey.Sys.ID
 
 	model := DeliveryAPIKeyModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(strings.Join([]string{spaceID, apiKeyID}, "/")),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, apiKeyID}),
 		DeliveryAPIKeyIdentityModel: DeliveryAPIKeyIdentityModel{
 			SpaceID:  types.StringValue(spaceID),
 			APIKeyID: types.StringValue(apiKeyID),
