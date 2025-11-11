@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -20,9 +19,7 @@ func NewExtensionModelFromResponse(ctx context.Context, response cm.Extension) (
 	extensionID := response.Sys.ID
 
 	model := ExtensionModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(strings.Join([]string{spaceID, environmentID, extensionID}, "/")),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, environmentID, extensionID}),
 		ExtensionIdentityModel: ExtensionIdentityModel{
 			SpaceID:       types.StringValue(spaceID),
 			EnvironmentID: types.StringValue(environmentID),

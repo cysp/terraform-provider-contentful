@@ -1,8 +1,6 @@
 package provider
 
 import (
-	"strings"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -19,9 +17,7 @@ func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallat
 	appDefinitionID := appInstallation.Sys.AppDefinition.Sys.ID
 
 	model := AppInstallationModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(strings.Join([]string{spaceID, environmentID, appDefinitionID}, "/")),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, environmentID, appDefinitionID}),
 		AppInstallationIdentityModel: AppInstallationIdentityModel{
 			SpaceID:         types.StringValue(spaceID),
 			EnvironmentID:   types.StringValue(environmentID),

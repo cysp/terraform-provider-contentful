@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -21,9 +20,7 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 	entryID := entry.Sys.ID
 
 	model := EntryModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(strings.Join([]string{spaceID, environmentID, entryID}, "/")),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, environmentID, entryID}),
 		EntryIdentityModel: EntryIdentityModel{
 			SpaceID:       types.StringValue(spaceID),
 			EnvironmentID: types.StringValue(environmentID),

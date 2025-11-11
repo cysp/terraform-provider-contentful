@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -17,9 +16,7 @@ func NewRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleMo
 	roleID := role.Sys.ID
 
 	model := RoleModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(strings.Join([]string{spaceID, roleID}, "/")),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, roleID}),
 		RoleIdentityModel: RoleIdentityModel{
 			SpaceID: types.StringValue(spaceID),
 			RoleID:  types.StringValue(roleID),
