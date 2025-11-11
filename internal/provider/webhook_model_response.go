@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -18,9 +17,7 @@ func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 	webhookID := webhookDefinition.Sys.ID
 
 	model := WebhookModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(strings.Join([]string{spaceID, webhookID}, "/")),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, webhookID}),
 		WebhookIdentityModel: WebhookIdentityModel{
 			SpaceID:   types.StringValue(spaceID),
 			WebhookID: types.StringValue(webhookID),

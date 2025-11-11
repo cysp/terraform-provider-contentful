@@ -16,9 +16,7 @@ func NewResourceProviderResourceModelFromResponse(_ context.Context, res cm.Reso
 	resourceProviderID := res.Sys.ID
 
 	model := ResourceProviderModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(organizationID + "/" + appDefinitionID),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{organizationID, appDefinitionID}),
 		ResourceProviderIdentityModel: ResourceProviderIdentityModel{
 			OrganizationID:  types.StringValue(organizationID),
 			AppDefinitionID: types.StringValue(appDefinitionID),

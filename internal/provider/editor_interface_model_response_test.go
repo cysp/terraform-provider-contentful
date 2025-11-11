@@ -21,9 +21,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				Sys: cm.NewEditorInterfaceSys("space", "environment", "content_type", "null"),
 			},
 			expectedModel: EditorInterfaceModel{
-				IDIdentityModel: IDIdentityModel{
-					ID: types.StringValue("space/environment/content_type"),
-				},
+				IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{"space", "environment", "content_type"}),
 				EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
 					SpaceID:       types.StringValue("space"),
 					EnvironmentID: types.StringValue("environment"),
@@ -44,9 +42,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 				Sidebar:       cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{}),
 			},
 			expectedModel: EditorInterfaceModel{
-				IDIdentityModel: IDIdentityModel{
-					ID: types.StringValue("space/environment/content_type"),
-				},
+				IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{"space", "environment", "content_type"}),
 				EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
 					SpaceID:       types.StringValue("space"),
 					EnvironmentID: types.StringValue("environment"),

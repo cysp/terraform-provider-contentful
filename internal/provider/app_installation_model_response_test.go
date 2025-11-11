@@ -19,9 +19,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		"null": {
 			appInstallation: cm.AppInstallation{},
 			expectedModel: AppInstallationModel{
-				IDIdentityModel: IDIdentityModel{
-					ID: types.StringValue("//"),
-				},
+				IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{"", "", ""}),
 				AppInstallationIdentityModel: AppInstallationIdentityModel{
 					SpaceID:         types.StringValue(""),
 					EnvironmentID:   types.StringValue(""),
@@ -35,9 +33,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				Parameters: []byte("{}"),
 			},
 			expectedModel: AppInstallationModel{
-				IDIdentityModel: IDIdentityModel{
-					ID: types.StringValue("//"),
-				},
+				IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{"", "", ""}),
 				AppInstallationIdentityModel: AppInstallationIdentityModel{
 					SpaceID:         types.StringValue(""),
 					EnvironmentID:   types.StringValue(""),
@@ -52,9 +48,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				Parameters: []byte("{\"foo\":\"bar\"}"),
 			},
 			expectedModel: AppInstallationModel{
-				IDIdentityModel: IDIdentityModel{
-					ID: types.StringValue("//"),
-				},
+				IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{"", "", ""}),
 				AppInstallationIdentityModel: AppInstallationIdentityModel{
 					SpaceID:         types.StringValue(""),
 					EnvironmentID:   types.StringValue(""),

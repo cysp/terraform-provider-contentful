@@ -16,9 +16,7 @@ func NewAppDefinitionResourceModelFromResponse(ctx context.Context, response cm.
 	appDefinitionID := response.Sys.ID
 
 	model := AppDefinitionModel{
-		IDIdentityModel: IDIdentityModel{
-			ID: types.StringValue(organizationID + "/" + appDefinitionID),
-		},
+		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{organizationID, appDefinitionID}),
 		AppDefinitionIdentityModel: AppDefinitionIdentityModel{
 			OrganizationID:  types.StringValue(organizationID),
 			AppDefinitionID: types.StringValue(appDefinitionID),
