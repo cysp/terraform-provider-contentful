@@ -102,63 +102,34 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 				switch elem[0] {
-				case '/': // Prefix: "/app_definitions"
+				case '/': // Prefix: "/"
 
-					if l := len("/app_definitions"); len(elem) >= l && elem[0:l] == "/app_definitions" {
+					if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 						elem = elem[l:]
 					} else {
 						break
 					}
 
 					if len(elem) == 0 {
-						switch r.Method {
-						case "POST":
-							s.handleCreateAppDefinitionRequest([1]string{
-								args[0],
-							}, elemIsEscaped, w, r)
-						default:
-							s.notAllowed(w, r, "POST")
-						}
-
-						return
+						break
 					}
 					switch elem[0] {
-					case '/': // Prefix: "/"
+					case 'a': // Prefix: "app_definitions"
 
-						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+						if l := len("app_definitions"); len(elem) >= l && elem[0:l] == "app_definitions" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
-						// Param: "app_definition_id"
-						// Match until "/"
-						idx := strings.IndexByte(elem, '/')
-						if idx < 0 {
-							idx = len(elem)
-						}
-						args[1] = elem[:idx]
-						elem = elem[idx:]
-
 						if len(elem) == 0 {
 							switch r.Method {
-							case "DELETE":
-								s.handleDeleteAppDefinitionRequest([2]string{
+							case "POST":
+								s.handleCreateAppDefinitionRequest([1]string{
 									args[0],
-									args[1],
-								}, elemIsEscaped, w, r)
-							case "GET":
-								s.handleGetAppDefinitionRequest([2]string{
-									args[0],
-									args[1],
-								}, elemIsEscaped, w, r)
-							case "PUT":
-								s.handlePutAppDefinitionRequest([2]string{
-									args[0],
-									args[1],
 								}, elemIsEscaped, w, r)
 							default:
-								s.notAllowed(w, r, "DELETE,GET,PUT")
+								s.notAllowed(w, r, "POST")
 							}
 
 							return
@@ -172,79 +143,155 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								break
 							}
 
+							// Param: "app_definition_id"
+							// Match until "/"
+							idx := strings.IndexByte(elem, '/')
+							if idx < 0 {
+								idx = len(elem)
+							}
+							args[1] = elem[:idx]
+							elem = elem[idx:]
+
 							if len(elem) == 0 {
-								break
+								switch r.Method {
+								case "DELETE":
+									s.handleDeleteAppDefinitionRequest([2]string{
+										args[0],
+										args[1],
+									}, elemIsEscaped, w, r)
+								case "GET":
+									s.handleGetAppDefinitionRequest([2]string{
+										args[0],
+										args[1],
+									}, elemIsEscaped, w, r)
+								case "PUT":
+									s.handlePutAppDefinitionRequest([2]string{
+										args[0],
+										args[1],
+									}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "DELETE,GET,PUT")
+								}
+
+								return
 							}
 							switch elem[0] {
-							case 'r': // Prefix: "resource_provider"
+							case '/': // Prefix: "/"
 
-								if l := len("resource_provider"); len(elem) >= l && elem[0:l] == "resource_provider" {
+								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 									elem = elem[l:]
 								} else {
 									break
 								}
 
 								if len(elem) == 0 {
-									switch r.Method {
-									case "DELETE":
-										s.handleDeleteResourceProviderRequest([2]string{
-											args[0],
-											args[1],
-										}, elemIsEscaped, w, r)
-									case "GET":
-										s.handleGetResourceProviderRequest([2]string{
-											args[0],
-											args[1],
-										}, elemIsEscaped, w, r)
-									case "PUT":
-										s.handlePutResourceProviderRequest([2]string{
-											args[0],
-											args[1],
-										}, elemIsEscaped, w, r)
-									default:
-										s.notAllowed(w, r, "DELETE,GET,PUT")
-									}
-
-									return
+									break
 								}
 								switch elem[0] {
-								case '/': // Prefix: "/resource_types/"
+								case 'r': // Prefix: "resource_provider"
 
-									if l := len("/resource_types/"); len(elem) >= l && elem[0:l] == "/resource_types/" {
+									if l := len("resource_provider"); len(elem) >= l && elem[0:l] == "resource_provider" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
-									// Param: "resource_type_id"
-									// Leaf parameter, slashes are prohibited
-									idx := strings.IndexByte(elem, '/')
-									if idx >= 0 {
+									if len(elem) == 0 {
+										switch r.Method {
+										case "DELETE":
+											s.handleDeleteResourceProviderRequest([2]string{
+												args[0],
+												args[1],
+											}, elemIsEscaped, w, r)
+										case "GET":
+											s.handleGetResourceProviderRequest([2]string{
+												args[0],
+												args[1],
+											}, elemIsEscaped, w, r)
+										case "PUT":
+											s.handlePutResourceProviderRequest([2]string{
+												args[0],
+												args[1],
+											}, elemIsEscaped, w, r)
+										default:
+											s.notAllowed(w, r, "DELETE,GET,PUT")
+										}
+
+										return
+									}
+									switch elem[0] {
+									case '/': // Prefix: "/resource_types/"
+
+										if l := len("/resource_types/"); len(elem) >= l && elem[0:l] == "/resource_types/" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										// Param: "resource_type_id"
+										// Leaf parameter, slashes are prohibited
+										idx := strings.IndexByte(elem, '/')
+										if idx >= 0 {
+											break
+										}
+										args[2] = elem
+										elem = ""
+
+										if len(elem) == 0 {
+											// Leaf node.
+											switch r.Method {
+											case "DELETE":
+												s.handleDeleteResourceTypeRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											case "GET":
+												s.handleGetResourceTypeRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											case "PUT":
+												s.handlePutResourceTypeRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
+											default:
+												s.notAllowed(w, r, "DELETE,GET,PUT")
+											}
+
+											return
+										}
+
+									}
+
+								case 's': // Prefix: "signing_secret"
+
+									if l := len("signing_secret"); len(elem) >= l && elem[0:l] == "signing_secret" {
+										elem = elem[l:]
+									} else {
 										break
 									}
-									args[2] = elem
-									elem = ""
 
 									if len(elem) == 0 {
 										// Leaf node.
 										switch r.Method {
 										case "DELETE":
-											s.handleDeleteResourceTypeRequest([3]string{
+											s.handleDeleteAppSigningSecretRequest([2]string{
 												args[0],
 												args[1],
-												args[2],
 											}, elemIsEscaped, w, r)
 										case "GET":
-											s.handleGetResourceTypeRequest([3]string{
+											s.handleGetAppSigningSecretRequest([2]string{
 												args[0],
 												args[1],
-												args[2],
 											}, elemIsEscaped, w, r)
 										case "PUT":
-											s.handlePutResourceTypeRequest([3]string{
+											s.handlePutAppSigningSecretRequest([2]string{
 												args[0],
 												args[1],
-												args[2],
 											}, elemIsEscaped, w, r)
 										default:
 											s.notAllowed(w, r, "DELETE,GET,PUT")
@@ -255,39 +302,71 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 								}
 
-							case 's': // Prefix: "signing_secret"
+							}
 
-								if l := len("signing_secret"); len(elem) >= l && elem[0:l] == "signing_secret" {
-									elem = elem[l:]
-								} else {
-									break
+						}
+
+					case 't': // Prefix: "teams"
+
+						if l := len("teams"); len(elem) >= l && elem[0:l] == "teams" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							switch r.Method {
+							case "POST":
+								s.handleCreateTeamRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, "POST")
+							}
+
+							return
+						}
+						switch elem[0] {
+						case '/': // Prefix: "/"
+
+							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							// Param: "team_id"
+							// Leaf parameter, slashes are prohibited
+							idx := strings.IndexByte(elem, '/')
+							if idx >= 0 {
+								break
+							}
+							args[1] = elem
+							elem = ""
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "DELETE":
+									s.handleDeleteTeamRequest([2]string{
+										args[0],
+										args[1],
+									}, elemIsEscaped, w, r)
+								case "GET":
+									s.handleGetTeamRequest([2]string{
+										args[0],
+										args[1],
+									}, elemIsEscaped, w, r)
+								case "PUT":
+									s.handlePutTeamRequest([2]string{
+										args[0],
+										args[1],
+									}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "DELETE,GET,PUT")
 								}
 
-								if len(elem) == 0 {
-									// Leaf node.
-									switch r.Method {
-									case "DELETE":
-										s.handleDeleteAppSigningSecretRequest([2]string{
-											args[0],
-											args[1],
-										}, elemIsEscaped, w, r)
-									case "GET":
-										s.handleGetAppSigningSecretRequest([2]string{
-											args[0],
-											args[1],
-										}, elemIsEscaped, w, r)
-									case "PUT":
-										s.handlePutAppSigningSecretRequest([2]string{
-											args[0],
-											args[1],
-										}, elemIsEscaped, w, r)
-									default:
-										s.notAllowed(w, r, "DELETE,GET,PUT")
-									}
-
-									return
-								}
-
+								return
 							}
 
 						}
@@ -1272,71 +1351,35 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					break
 				}
 				switch elem[0] {
-				case '/': // Prefix: "/app_definitions"
+				case '/': // Prefix: "/"
 
-					if l := len("/app_definitions"); len(elem) >= l && elem[0:l] == "/app_definitions" {
+					if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 						elem = elem[l:]
 					} else {
 						break
 					}
 
 					if len(elem) == 0 {
-						switch method {
-						case "POST":
-							r.name = CreateAppDefinitionOperation
-							r.summary = "Create an app definition"
-							r.operationID = "createAppDefinition"
-							r.pathPattern = "/organizations/{organization_id}/app_definitions"
-							r.args = args
-							r.count = 1
-							return r, true
-						default:
-							return
-						}
+						break
 					}
 					switch elem[0] {
-					case '/': // Prefix: "/"
+					case 'a': // Prefix: "app_definitions"
 
-						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+						if l := len("app_definitions"); len(elem) >= l && elem[0:l] == "app_definitions" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
-						// Param: "app_definition_id"
-						// Match until "/"
-						idx := strings.IndexByte(elem, '/')
-						if idx < 0 {
-							idx = len(elem)
-						}
-						args[1] = elem[:idx]
-						elem = elem[idx:]
-
 						if len(elem) == 0 {
 							switch method {
-							case "DELETE":
-								r.name = DeleteAppDefinitionOperation
-								r.summary = "Delete an app definition"
-								r.operationID = "deleteAppDefinition"
-								r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}"
+							case "POST":
+								r.name = CreateAppDefinitionOperation
+								r.summary = "Create an app definition"
+								r.operationID = "createAppDefinition"
+								r.pathPattern = "/organizations/{organization_id}/app_definitions"
 								r.args = args
-								r.count = 2
-								return r, true
-							case "GET":
-								r.name = GetAppDefinitionOperation
-								r.summary = "Get one app definition"
-								r.operationID = "getAppDefinition"
-								r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}"
-								r.args = args
-								r.count = 2
-								return r, true
-							case "PUT":
-								r.name = PutAppDefinitionOperation
-								r.summary = "Create or update an app definition"
-								r.operationID = "putAppDefinition"
-								r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}"
-								r.args = args
-								r.count = 2
+								r.count = 1
 								return r, true
 							default:
 								return
@@ -1351,92 +1394,182 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								break
 							}
 
+							// Param: "app_definition_id"
+							// Match until "/"
+							idx := strings.IndexByte(elem, '/')
+							if idx < 0 {
+								idx = len(elem)
+							}
+							args[1] = elem[:idx]
+							elem = elem[idx:]
+
 							if len(elem) == 0 {
-								break
+								switch method {
+								case "DELETE":
+									r.name = DeleteAppDefinitionOperation
+									r.summary = "Delete an app definition"
+									r.operationID = "deleteAppDefinition"
+									r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}"
+									r.args = args
+									r.count = 2
+									return r, true
+								case "GET":
+									r.name = GetAppDefinitionOperation
+									r.summary = "Get one app definition"
+									r.operationID = "getAppDefinition"
+									r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}"
+									r.args = args
+									r.count = 2
+									return r, true
+								case "PUT":
+									r.name = PutAppDefinitionOperation
+									r.summary = "Create or update an app definition"
+									r.operationID = "putAppDefinition"
+									r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}"
+									r.args = args
+									r.count = 2
+									return r, true
+								default:
+									return
+								}
 							}
 							switch elem[0] {
-							case 'r': // Prefix: "resource_provider"
+							case '/': // Prefix: "/"
 
-								if l := len("resource_provider"); len(elem) >= l && elem[0:l] == "resource_provider" {
+								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 									elem = elem[l:]
 								} else {
 									break
 								}
 
 								if len(elem) == 0 {
-									switch method {
-									case "DELETE":
-										r.name = DeleteResourceProviderOperation
-										r.summary = "Delete a resource provider definition"
-										r.operationID = "deleteResourceProvider"
-										r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider"
-										r.args = args
-										r.count = 2
-										return r, true
-									case "GET":
-										r.name = GetResourceProviderOperation
-										r.summary = "Get one resource provider definition"
-										r.operationID = "getResourceProvider"
-										r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider"
-										r.args = args
-										r.count = 2
-										return r, true
-									case "PUT":
-										r.name = PutResourceProviderOperation
-										r.summary = "Create or update a resource provider definition"
-										r.operationID = "putResourceProvider"
-										r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider"
-										r.args = args
-										r.count = 2
-										return r, true
-									default:
-										return
-									}
+									break
 								}
 								switch elem[0] {
-								case '/': // Prefix: "/resource_types/"
+								case 'r': // Prefix: "resource_provider"
 
-									if l := len("/resource_types/"); len(elem) >= l && elem[0:l] == "/resource_types/" {
+									if l := len("resource_provider"); len(elem) >= l && elem[0:l] == "resource_provider" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
-									// Param: "resource_type_id"
-									// Leaf parameter, slashes are prohibited
-									idx := strings.IndexByte(elem, '/')
-									if idx >= 0 {
+									if len(elem) == 0 {
+										switch method {
+										case "DELETE":
+											r.name = DeleteResourceProviderOperation
+											r.summary = "Delete a resource provider definition"
+											r.operationID = "deleteResourceProvider"
+											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider"
+											r.args = args
+											r.count = 2
+											return r, true
+										case "GET":
+											r.name = GetResourceProviderOperation
+											r.summary = "Get one resource provider definition"
+											r.operationID = "getResourceProvider"
+											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider"
+											r.args = args
+											r.count = 2
+											return r, true
+										case "PUT":
+											r.name = PutResourceProviderOperation
+											r.summary = "Create or update a resource provider definition"
+											r.operationID = "putResourceProvider"
+											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider"
+											r.args = args
+											r.count = 2
+											return r, true
+										default:
+											return
+										}
+									}
+									switch elem[0] {
+									case '/': // Prefix: "/resource_types/"
+
+										if l := len("/resource_types/"); len(elem) >= l && elem[0:l] == "/resource_types/" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										// Param: "resource_type_id"
+										// Leaf parameter, slashes are prohibited
+										idx := strings.IndexByte(elem, '/')
+										if idx >= 0 {
+											break
+										}
+										args[2] = elem
+										elem = ""
+
+										if len(elem) == 0 {
+											// Leaf node.
+											switch method {
+											case "DELETE":
+												r.name = DeleteResourceTypeOperation
+												r.summary = "Delete a resource type definition"
+												r.operationID = "deleteResourceType"
+												r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											case "GET":
+												r.name = GetResourceTypeOperation
+												r.summary = "Get one resource type definition"
+												r.operationID = "getResourceType"
+												r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											case "PUT":
+												r.name = PutResourceTypeOperation
+												r.summary = "Create or update a resource type definition"
+												r.operationID = "putResourceType"
+												r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
+												r.args = args
+												r.count = 3
+												return r, true
+											default:
+												return
+											}
+										}
+
+									}
+
+								case 's': // Prefix: "signing_secret"
+
+									if l := len("signing_secret"); len(elem) >= l && elem[0:l] == "signing_secret" {
+										elem = elem[l:]
+									} else {
 										break
 									}
-									args[2] = elem
-									elem = ""
 
 									if len(elem) == 0 {
 										// Leaf node.
 										switch method {
 										case "DELETE":
-											r.name = DeleteResourceTypeOperation
-											r.summary = "Delete a resource type definition"
-											r.operationID = "deleteResourceType"
-											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
+											r.name = DeleteAppSigningSecretOperation
+											r.summary = "Delete an app signing secret"
+											r.operationID = "deleteAppSigningSecret"
+											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret"
 											r.args = args
-											r.count = 3
+											r.count = 2
 											return r, true
 										case "GET":
-											r.name = GetResourceTypeOperation
-											r.summary = "Get one resource type definition"
-											r.operationID = "getResourceType"
-											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
+											r.name = GetAppSigningSecretOperation
+											r.summary = "Get one app signing secret"
+											r.operationID = "getAppSigningSecret"
+											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret"
 											r.args = args
-											r.count = 3
+											r.count = 2
 											return r, true
 										case "PUT":
-											r.name = PutResourceTypeOperation
-											r.summary = "Create or update a resource type definition"
-											r.operationID = "putResourceType"
-											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
+											r.name = PutAppSigningSecretOperation
+											r.summary = "Create or update an app signing secret"
+											r.operationID = "putAppSigningSecret"
+											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret"
 											r.args = args
-											r.count = 3
+											r.count = 2
 											return r, true
 										default:
 											return
@@ -1445,46 +1578,80 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 								}
 
-							case 's': // Prefix: "signing_secret"
+							}
 
-								if l := len("signing_secret"); len(elem) >= l && elem[0:l] == "signing_secret" {
-									elem = elem[l:]
-								} else {
-									break
+						}
+
+					case 't': // Prefix: "teams"
+
+						if l := len("teams"); len(elem) >= l && elem[0:l] == "teams" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							switch method {
+							case "POST":
+								r.name = CreateTeamOperation
+								r.summary = "Create a team"
+								r.operationID = "createTeam"
+								r.pathPattern = "/organizations/{organization_id}/teams"
+								r.args = args
+								r.count = 1
+								return r, true
+							default:
+								return
+							}
+						}
+						switch elem[0] {
+						case '/': // Prefix: "/"
+
+							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							// Param: "team_id"
+							// Leaf parameter, slashes are prohibited
+							idx := strings.IndexByte(elem, '/')
+							if idx >= 0 {
+								break
+							}
+							args[1] = elem
+							elem = ""
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "DELETE":
+									r.name = DeleteTeamOperation
+									r.summary = "Delete a team"
+									r.operationID = "deleteTeam"
+									r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
+									r.args = args
+									r.count = 2
+									return r, true
+								case "GET":
+									r.name = GetTeamOperation
+									r.summary = "Get a single team"
+									r.operationID = "getTeam"
+									r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
+									r.args = args
+									r.count = 2
+									return r, true
+								case "PUT":
+									r.name = PutTeamOperation
+									r.summary = "Update a single team"
+									r.operationID = "putTeam"
+									r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
+									r.args = args
+									r.count = 2
+									return r, true
+								default:
+									return
 								}
-
-								if len(elem) == 0 {
-									// Leaf node.
-									switch method {
-									case "DELETE":
-										r.name = DeleteAppSigningSecretOperation
-										r.summary = "Delete an app signing secret"
-										r.operationID = "deleteAppSigningSecret"
-										r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret"
-										r.args = args
-										r.count = 2
-										return r, true
-									case "GET":
-										r.name = GetAppSigningSecretOperation
-										r.summary = "Get one app signing secret"
-										r.operationID = "getAppSigningSecret"
-										r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret"
-										r.args = args
-										r.count = 2
-										return r, true
-									case "PUT":
-										r.name = PutAppSigningSecretOperation
-										r.summary = "Create or update an app signing secret"
-										r.operationID = "putAppSigningSecret"
-										r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret"
-										r.args = args
-										r.count = 2
-										return r, true
-									default:
-										return
-									}
-								}
-
 							}
 
 						}
