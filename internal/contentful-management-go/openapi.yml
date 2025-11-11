@@ -84,6 +84,12 @@ components:
       required: true
       schema:
         type: string
+    team_id:
+      in: path
+      name: team_id
+      required: true
+      schema:
+        type: string
     webhook_definition_id:
       in: path
       name: webhook_definition_id
@@ -424,6 +430,83 @@ paths:
     delete:
       operationId: deleteAppSigningSecret
       summary: Delete an app signing secret
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/teams:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+    post:
+      operationId: createTeam
+      summary: Create a team
+      parameters:
+        - $ref: "#/components/parameters/organization_id"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/team/data.yml#/TeamData"
+      responses:
+        2XX:
+          description: A team
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/team/team.yml#/Team"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/teams/{team_id}:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/team_id"
+    get:
+      operationId: getTeam
+      summary: Get a single team
+      responses:
+        200:
+          description: A team
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/team/team.yml#/Team"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putTeam
+      summary: Update a single team
+      parameters:
+        - $ref: "#/components/parameters/organization_id"
+        - $ref: "#/components/parameters/team_id"
+        - $ref: "#/components/parameters/x-contentful-version-required"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/team/data.yml#/TeamData"
+      responses:
+        2XX:
+          description: A team
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/team/team.yml#/Team"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteTeam
+      summary: Delete a team
       responses:
         204:
           $ref: "#/components/responses/no-content"

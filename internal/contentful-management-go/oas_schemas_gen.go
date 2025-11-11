@@ -1511,6 +1511,7 @@ func (*ApplicationJSONError) createOrUpdateEnvironmentAliasRes() {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationJSONError) createPersonalAccessTokenRes()      {}
 func (*ApplicationJSONError) createRoleRes()                     {}
+func (*ApplicationJSONError) createTeamRes()                     {}
 func (*ApplicationJSONError) createWebhookDefinitionRes()        {}
 func (*ApplicationJSONError) deactivateContentTypeRes()          {}
 func (*ApplicationJSONError) deleteAppDefinitionRes()            {}
@@ -1525,6 +1526,7 @@ func (*ApplicationJSONError) deleteExtensionRes()                {}
 func (*ApplicationJSONError) deleteResourceProviderRes()         {}
 func (*ApplicationJSONError) deleteResourceTypeRes()             {}
 func (*ApplicationJSONError) deleteRoleRes()                     {}
+func (*ApplicationJSONError) deleteTeamRes()                     {}
 func (*ApplicationJSONError) deleteWebhookDefinitionRes()        {}
 func (*ApplicationJSONError) getAppDefinitionRes()               {}
 func (*ApplicationJSONError) getAppInstallationRes()             {}
@@ -1544,6 +1546,7 @@ func (*ApplicationJSONError) getResourceProviderRes()            {}
 func (*ApplicationJSONError) getResourceTypeRes()                {}
 func (*ApplicationJSONError) getRoleRes()                        {}
 func (*ApplicationJSONError) getSpaceEnablementsRes()            {}
+func (*ApplicationJSONError) getTeamRes()                        {}
 func (*ApplicationJSONError) getWebhookDefinitionRes()           {}
 func (*ApplicationJSONError) publishEntryRes()                   {}
 func (*ApplicationJSONError) putAppDefinitionRes()               {}
@@ -1556,6 +1559,7 @@ func (*ApplicationJSONError) putExtensionRes()                   {}
 func (*ApplicationJSONError) putResourceProviderRes()            {}
 func (*ApplicationJSONError) putResourceTypeRes()                {}
 func (*ApplicationJSONError) putSpaceEnablementsRes()            {}
+func (*ApplicationJSONError) putTeamRes()                        {}
 func (*ApplicationJSONError) revokePersonalAccessTokenRes()      {}
 func (*ApplicationJSONError) unpublishEntryRes()                 {}
 func (*ApplicationJSONError) updateDeliveryAPIKeyRes()           {}
@@ -1596,6 +1600,7 @@ func (*ApplicationJSONErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
 func (*ApplicationJSONErrorStatusCode) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationJSONErrorStatusCode) createPersonalAccessTokenRes()      {}
 func (*ApplicationJSONErrorStatusCode) createRoleRes()                     {}
+func (*ApplicationJSONErrorStatusCode) createTeamRes()                     {}
 func (*ApplicationJSONErrorStatusCode) createWebhookDefinitionRes()        {}
 func (*ApplicationJSONErrorStatusCode) deactivateContentTypeRes()          {}
 func (*ApplicationJSONErrorStatusCode) deleteAppDefinitionRes()            {}
@@ -1610,6 +1615,7 @@ func (*ApplicationJSONErrorStatusCode) deleteExtensionRes()                {}
 func (*ApplicationJSONErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ApplicationJSONErrorStatusCode) deleteResourceTypeRes()             {}
 func (*ApplicationJSONErrorStatusCode) deleteRoleRes()                     {}
+func (*ApplicationJSONErrorStatusCode) deleteTeamRes()                     {}
 func (*ApplicationJSONErrorStatusCode) deleteWebhookDefinitionRes()        {}
 func (*ApplicationJSONErrorStatusCode) getAppDefinitionRes()               {}
 func (*ApplicationJSONErrorStatusCode) getAppInstallationRes()             {}
@@ -1629,6 +1635,7 @@ func (*ApplicationJSONErrorStatusCode) getResourceProviderRes()            {}
 func (*ApplicationJSONErrorStatusCode) getResourceTypeRes()                {}
 func (*ApplicationJSONErrorStatusCode) getRoleRes()                        {}
 func (*ApplicationJSONErrorStatusCode) getSpaceEnablementsRes()            {}
+func (*ApplicationJSONErrorStatusCode) getTeamRes()                        {}
 func (*ApplicationJSONErrorStatusCode) getWebhookDefinitionRes()           {}
 func (*ApplicationJSONErrorStatusCode) publishEntryRes()                   {}
 func (*ApplicationJSONErrorStatusCode) putAppDefinitionRes()               {}
@@ -1641,6 +1648,7 @@ func (*ApplicationJSONErrorStatusCode) putExtensionRes()                   {}
 func (*ApplicationJSONErrorStatusCode) putResourceProviderRes()            {}
 func (*ApplicationJSONErrorStatusCode) putResourceTypeRes()                {}
 func (*ApplicationJSONErrorStatusCode) putSpaceEnablementsRes()            {}
+func (*ApplicationJSONErrorStatusCode) putTeamRes()                        {}
 func (*ApplicationJSONErrorStatusCode) revokePersonalAccessTokenRes()      {}
 func (*ApplicationJSONErrorStatusCode) unpublishEntryRes()                 {}
 func (*ApplicationJSONErrorStatusCode) updateDeliveryAPIKeyRes()           {}
@@ -1696,6 +1704,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) createOrUpdateEnvironmentA
 func (*ApplicationVndContentfulManagementV1JSONError) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONError) createPersonalAccessTokenRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONError) createRoleRes()                     {}
+func (*ApplicationVndContentfulManagementV1JSONError) createTeamRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONError) createWebhookDefinitionRes()        {}
 func (*ApplicationVndContentfulManagementV1JSONError) deactivateContentTypeRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteAppDefinitionRes()            {}
@@ -1710,6 +1719,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) deleteExtensionRes()      
 func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceProviderRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceTypeRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteRoleRes()                     {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteTeamRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteWebhookDefinitionRes()        {}
 func (*ApplicationVndContentfulManagementV1JSONError) getAppDefinitionRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONError) getAppInstallationRes()             {}
@@ -1729,6 +1739,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getResourceProviderRes()  
 func (*ApplicationVndContentfulManagementV1JSONError) getResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) getRoleRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONError) getSpaceEnablementsRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONError) getTeamRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONError) getWebhookDefinitionRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) publishEntryRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONError) putAppDefinitionRes()               {}
@@ -1741,6 +1752,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) putExtensionRes()         
 func (*ApplicationVndContentfulManagementV1JSONError) putResourceProviderRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) putResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) putSpaceEnablementsRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONError) putTeamRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONError) revokePersonalAccessTokenRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONError) unpublishEntryRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONError) updateDeliveryAPIKeyRes()           {}
@@ -1781,6 +1793,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createOrUpdateEn
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createPersonalAccessTokenRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createRoleRes()                     {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createTeamRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createWebhookDefinitionRes()        {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deactivateContentTypeRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppDefinitionRes()            {}
@@ -1795,6 +1808,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteExtensionR
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceTypeRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteRoleRes()                     {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteTeamRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteWebhookDefinitionRes()        {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppDefinitionRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppInstallationRes()             {}
@@ -1814,6 +1828,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getResourceProvi
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getRoleRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getSpaceEnablementsRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getTeamRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getWebhookDefinitionRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) publishEntryRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppDefinitionRes()               {}
@@ -1826,6 +1841,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putExtensionRes(
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceProviderRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putSpaceEnablementsRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putTeamRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) revokePersonalAccessTokenRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) unpublishEntryRes()                 {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateDeliveryAPIKeyRes()           {}
@@ -5133,6 +5149,7 @@ func (*NoContent) deleteExtensionRes()         {}
 func (*NoContent) deleteResourceProviderRes()  {}
 func (*NoContent) deleteResourceTypeRes()      {}
 func (*NoContent) deleteRoleRes()              {}
+func (*NoContent) deleteTeamRes()              {}
 func (*NoContent) deleteWebhookDefinitionRes() {}
 func (*NoContent) unpublishEntryRes()          {}
 
@@ -9669,6 +9686,208 @@ func (s *TagLinkSysType) UnmarshalText(data []byte) error {
 	switch TagLinkSysType(data) {
 	case TagLinkSysTypeLink:
 		*s = TagLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/Team
+type Team struct {
+	Sys         TeamSys   `json:"sys"`
+	Name        string    `json:"name"`
+	Description NilString `json:"description"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Team) GetSys() TeamSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Team) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *Team) GetDescription() NilString {
+	return s.Description
+}
+
+// SetSys sets the value of Sys.
+func (s *Team) SetSys(val TeamSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Team) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *Team) SetDescription(val NilString) {
+	s.Description = val
+}
+
+func (*Team) getTeamRes() {}
+
+// Ref: #/TeamData
+type TeamData struct {
+	Name        string    `json:"name"`
+	Description NilString `json:"description"`
+}
+
+// GetName returns the value of Name.
+func (s *TeamData) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *TeamData) GetDescription() NilString {
+	return s.Description
+}
+
+// SetName sets the value of Name.
+func (s *TeamData) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *TeamData) SetDescription(val NilString) {
+	s.Description = val
+}
+
+// TeamStatusCode wraps Team with StatusCode.
+type TeamStatusCode struct {
+	StatusCode int
+	Response   Team
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *TeamStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *TeamStatusCode) GetResponse() Team {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *TeamStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *TeamStatusCode) SetResponse(val Team) {
+	s.Response = val
+}
+
+func (*TeamStatusCode) createTeamRes() {}
+func (*TeamStatusCode) putTeamRes()    {}
+
+// Merged schema.
+// Ref: #/TeamSys
+type TeamSys struct {
+	Organization OrganizationLink `json:"organization"`
+	// Merged property.
+	Type      TeamSysType `json:"type"`
+	ID        string      `json:"id"`
+	Version   int         `json:"version"`
+	CreatedAt OptDateTime `json:"createdAt"`
+	UpdatedAt OptDateTime `json:"updatedAt"`
+}
+
+// GetOrganization returns the value of Organization.
+func (s *TeamSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetType returns the value of Type.
+func (s *TeamSys) GetType() TeamSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TeamSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *TeamSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *TeamSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *TeamSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// SetOrganization sets the value of Organization.
+func (s *TeamSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetType sets the value of Type.
+func (s *TeamSys) SetType(val TeamSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TeamSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *TeamSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *TeamSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *TeamSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// Merged schema.
+type TeamSysType string
+
+const (
+	TeamSysTypeTeam TeamSysType = "Team"
+)
+
+// AllValues returns all TeamSysType values.
+func (TeamSysType) AllValues() []TeamSysType {
+	return []TeamSysType{
+		TeamSysTypeTeam,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TeamSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TeamSysTypeTeam:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TeamSysType) UnmarshalText(data []byte) error {
+	switch TeamSysType(data) {
+	case TeamSysTypeTeam:
+		*s = TeamSysTypeTeam
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
