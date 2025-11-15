@@ -40,32 +40,32 @@ func NewTypedMap[T attr.Value](elements map[string]T) TypedMap[T] {
 var _ attr.Value = (*TypedMap[attr.Value])(nil)
 
 //nolint:ireturn
-func (v TypedMap[T]) Type(ctx context.Context) attr.Type {
+func (tm TypedMap[T]) Type(ctx context.Context) attr.Type {
 	var t T
 
 	return TypedMapType[T]{elementType: t.Type(ctx)}
 }
 
-func (v TypedMap[T]) CustomType(ctx context.Context) TypedMapType[T] {
+func (tm TypedMap[T]) CustomType(ctx context.Context) TypedMapType[T] {
 	var t T
 
 	return TypedMapType[T]{elementType: t.Type(ctx)}
 }
 
-func (v TypedMap[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := v.Type(ctx).TerraformType(ctx)
+func (tm TypedMap[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	tft := tm.Type(ctx).TerraformType(ctx)
 
-	if v.IsNull() {
+	if tm.IsNull() {
 		return tftypes.NewValue(tft, nil), nil
 	}
 
-	if v.IsUnknown() {
+	if tm.IsUnknown() {
 		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
 	}
 
-	tfval := make(map[string]tftypes.Value, len(v.elements))
+	tfval := make(map[string]tftypes.Value, len(tm.elements))
 
-	for key, element := range v.elements {
+	for key, element := range tm.elements {
 		tfvalelem, err := element.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(tft, tftypes.UnknownValue), err
@@ -77,41 +77,41 @@ func (v TypedMap[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 	return tftypes.NewValue(tft, tfval), nil
 }
 
-func (v TypedMap[T]) Equal(o attr.Value) bool {
-	other, ok := o.(TypedMap[T])
+func (tm TypedMap[T]) Equal(other attr.Value) bool {
+	otherMap, ok := other.(TypedMap[T])
 	if !ok {
 		return false
 	}
 
-	if v.state != other.state {
+	if tm.state != otherMap.state {
 		return false
 	}
 
-	if v.elements == nil && other.elements == nil {
+	if tm.elements == nil && otherMap.elements == nil {
 		return true
 	}
 
-	keys := make(map[string]struct{}, len(v.elements))
-	for k := range v.elements {
+	keys := make(map[string]struct{}, len(tm.elements))
+	for k := range tm.elements {
 		keys[k] = struct{}{}
 	}
 
-	for k := range other.elements {
+	for k := range otherMap.elements {
 		keys[k] = struct{}{}
 	}
 
 	for k := range keys {
-		aElementK, aElementKFound := v.elements[k]
-		if !aElementKFound {
+		thisElement, thisElementFound := tm.elements[k]
+		if !thisElementFound {
 			return false
 		}
 
-		bElementK, bElementKFound := other.elements[k]
-		if !bElementKFound {
+		otherElement, otherElementFound := otherMap.elements[k]
+		if !otherElementFound {
 			return false
 		}
 
-		if !aElementK.Equal(bElementK) {
+		if !thisElement.Equal(otherElement) {
 			return false
 		}
 	}
@@ -119,15 +119,15 @@ func (v TypedMap[T]) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v TypedMap[T]) IsNull() bool {
-	return v.state == attr.ValueStateNull
+func (tm TypedMap[T]) IsNull() bool {
+	return tm.state == attr.ValueStateNull
 }
 
-func (v TypedMap[T]) IsUnknown() bool {
-	return v.state == attr.ValueStateUnknown
+func (tm TypedMap[T]) IsUnknown() bool {
+	return tm.state == attr.ValueStateUnknown
 }
 
-func (v TypedMap[T]) String() string {
+func (tm TypedMap[T]) String() string {
 	var t T
 
 	return fmt.Sprintf("TypedMap[%T]", t)
@@ -135,34 +135,34 @@ func (v TypedMap[T]) String() string {
 
 var _ basetypes.MapValuable = (*TypedMap[attr.Value])(nil)
 
-func (v TypedMap[T]) ToMapValue(ctx context.Context) (basetypes.MapValue, diag.Diagnostics) {
+func (tm TypedMap[T]) ToMapValue(ctx context.Context) (basetypes.MapValue, diag.Diagnostics) {
 	var t T
 
 	elementType := t.Type(ctx)
 
-	if v.IsNull() {
+	if tm.IsNull() {
 		return types.MapNull(elementType), nil
 	}
 
-	if v.IsUnknown() {
+	if tm.IsUnknown() {
 		return types.MapUnknown(elementType), nil
 	}
 
-	return types.MapValueFrom(ctx, elementType, v.elements)
+	return types.MapValueFrom(ctx, elementType, tm.elements)
 }
 
 // ---
 
-func (v TypedMap[T]) Elements() map[string]T {
-	return v.elements
+func (tm TypedMap[T]) Elements() map[string]T {
+	return tm.elements
 }
 
-func (v TypedMap[T]) Has(key string) bool {
-	_, exists := v.elements[key]
+func (tm TypedMap[T]) Has(key string) bool {
+	_, exists := tm.elements[key]
 
 	return exists
 }
 
-func (v TypedMap[T]) Set(key string, value T) {
-	v.elements[key] = value
+func (tm TypedMap[T]) Set(key string, value T) {
+	tm.elements[key] = value
 }

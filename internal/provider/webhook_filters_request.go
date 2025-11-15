@@ -190,9 +190,9 @@ func toWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.Pat
 		values := make([]string, len(value.Elements()))
 		diags.Append(tfsdk.ValueAs(ctx, value, &values)...)
 
-		for index, v := range values {
+		for index, stringValue := range values {
 			path := path.AtListIndex(index)
-			if encoder.Str(v) {
+			if encoder.Str(stringValue) {
 				diags.AddAttributeError(path, "failed to encode value", "")
 			}
 		}
