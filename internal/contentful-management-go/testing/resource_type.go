@@ -6,40 +6,12 @@ import (
 
 func NewResourceTypeFromRequest(organizationID, appDefinitionID, resourceProviderID, resourceTypeID string, fields cm.ResourceTypeData) cm.ResourceType {
 	resourceProvider := cm.ResourceType{
-		Sys: NewResourceTypeSys(organizationID, appDefinitionID, resourceProviderID, resourceTypeID),
+		Sys: cm.NewResourceTypeSys(organizationID, appDefinitionID, resourceProviderID, resourceTypeID),
 	}
 
 	UpdateResourceTypeFromFields(&resourceProvider, organizationID, appDefinitionID, resourceProviderID, resourceTypeID, fields)
 
 	return resourceProvider
-}
-
-func NewResourceTypeSys(organizationID, appDefinitionID, resourceProviderID, resourceTypeID string) cm.ResourceTypeSys {
-	return cm.ResourceTypeSys{
-		Type: cm.ResourceTypeSysTypeResourceType,
-		Organization: cm.OrganizationLink{
-			Sys: cm.OrganizationLinkSys{
-				Type:     cm.OrganizationLinkSysTypeLink,
-				LinkType: cm.OrganizationLinkSysLinkTypeOrganization,
-				ID:       organizationID,
-			},
-		},
-		AppDefinition: cm.AppDefinitionLink{
-			Sys: cm.AppDefinitionLinkSys{
-				Type:     cm.AppDefinitionLinkSysTypeLink,
-				LinkType: cm.AppDefinitionLinkSysLinkTypeAppDefinition,
-				ID:       appDefinitionID,
-			},
-		},
-		ResourceProvider: cm.ResourceProviderLink{
-			Sys: cm.ResourceProviderLinkSys{
-				Type:     cm.ResourceProviderLinkSysTypeLink,
-				LinkType: cm.ResourceProviderLinkSysLinkTypeResourceProvider,
-				ID:       resourceProviderID,
-			},
-		},
-		ID: resourceTypeID,
-	}
 }
 
 func UpdateResourceTypeFromFields(resourceType *cm.ResourceType, organizationID, appDefinitionID, resourceProviderID, resourceTypeID string, fields cm.ResourceTypeData) {

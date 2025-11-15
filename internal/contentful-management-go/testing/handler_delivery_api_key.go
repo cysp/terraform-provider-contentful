@@ -22,17 +22,11 @@ func (ts *Handler) CreateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequest
 
 	previewAPIKeyID := generateResourceID()
 	previewAPIKey := cm.PreviewApiKey{
-		Sys:         NewPreviewAPIKeySys(params.SpaceID, previewAPIKeyID),
+		Sys:         cm.NewPreviewAPIKeySys(params.SpaceID, previewAPIKeyID),
 		AccessToken: generateResourceID(),
 	}
 
-	apiKey.PreviewAPIKey.SetTo(cm.PreviewAPIKeyLink{
-		Sys: cm.PreviewAPIKeyLinkSys{
-			Type:     cm.PreviewAPIKeyLinkSysTypeLink,
-			LinkType: cm.PreviewAPIKeyLinkSysLinkTypePreviewApiKey,
-			ID:       previewAPIKeyID,
-		},
-	})
+	apiKey.PreviewAPIKey.SetTo(cm.NewPreviewAPIKeyLink(previewAPIKeyID))
 
 	ts.apiKeys.Set(params.SpaceID, apiKeyID, &apiKey)
 	ts.previewAPIKeys.Set(params.SpaceID, previewAPIKeyID, &previewAPIKey)

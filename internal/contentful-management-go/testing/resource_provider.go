@@ -6,33 +6,12 @@ import (
 
 func NewResourceProviderFromRequest(organizationID, appDefinitionID string, resourceProviderRequest cm.ResourceProviderRequest) cm.ResourceProvider {
 	resourceProvider := cm.ResourceProvider{
-		Sys: NewResourceProviderSys(organizationID, appDefinitionID, resourceProviderRequest.Sys.ID),
+		Sys: cm.NewResourceProviderSys(organizationID, appDefinitionID, resourceProviderRequest.Sys.ID),
 	}
 
 	UpdateResourceProviderFromRequest(&resourceProvider, organizationID, appDefinitionID, resourceProviderRequest)
 
 	return resourceProvider
-}
-
-func NewResourceProviderSys(organizationID, appDefinitionID, resourceProviderID string) cm.ResourceProviderSys {
-	return cm.ResourceProviderSys{
-		Type: cm.ResourceProviderSysTypeResourceProvider,
-		Organization: cm.OrganizationLink{
-			Sys: cm.OrganizationLinkSys{
-				Type:     cm.OrganizationLinkSysTypeLink,
-				LinkType: cm.OrganizationLinkSysLinkTypeOrganization,
-				ID:       organizationID,
-			},
-		},
-		AppDefinition: cm.AppDefinitionLink{
-			Sys: cm.AppDefinitionLinkSys{
-				Type:     cm.AppDefinitionLinkSysTypeLink,
-				LinkType: cm.AppDefinitionLinkSysLinkTypeAppDefinition,
-				ID:       appDefinitionID,
-			},
-		},
-		ID: resourceProviderID,
-	}
 }
 
 func UpdateResourceProviderFromRequest(resourceProvider *cm.ResourceProvider, organizationID, appDefinitionID string, resourceProviderRequest cm.ResourceProviderRequest) {

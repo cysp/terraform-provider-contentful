@@ -41,14 +41,8 @@ func TestAccAppDefinitionResourceImport(t *testing.T) {
 	}
 
 	server.SetAppDefinition("2zuSjSO4A0e6GKBrhJRe2m", "app-definition-id", cm.AppDefinitionData{
-		Name: "Test App",
-		Bundle: cm.NewOptAppBundleLink(cm.AppBundleLink{
-			Sys: cm.AppBundleLinkSys{
-				Type:     cm.AppBundleLinkSysTypeLink,
-				LinkType: cm.AppBundleLinkSysLinkTypeAppBundle,
-				ID:       "app-bundle-id",
-			},
-		}),
+		Name:   "Test App",
+		Bundle: cm.NewOptAppBundleLink(cm.NewAppBundleLink("app-bundle-id")),
 	})
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{

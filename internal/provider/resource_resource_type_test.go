@@ -25,17 +25,9 @@ func TestAccResourceTypeResource(t *testing.T) {
 	})
 
 	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
-		Sys: cm.ResourceProviderRequestSys{
-			ID: "resource-provider",
-		},
-		Type: cm.ResourceProviderRequestTypeFunction,
-		Function: cm.FunctionLink{
-			Sys: cm.FunctionLinkSys{
-				Type:     cm.FunctionLinkSysTypeLink,
-				LinkType: cm.FunctionLinkSysLinkTypeFunction,
-				ID:       "function-id",
-			},
-		},
+		Sys:      cm.NewResourceProviderRequestSys("resource-provider"),
+		Type:     cm.ResourceProviderRequestTypeFunction,
+		Function: cm.NewFunctionLink("function-id"),
 	})
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
@@ -67,17 +59,9 @@ func TestAccResourceTypeResourceImport(t *testing.T) {
 	})
 
 	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
-		Sys: cm.ResourceProviderRequestSys{
-			ID: "resource-provider",
-		},
-		Type: cm.ResourceProviderRequestTypeFunction,
-		Function: cm.FunctionLink{
-			Sys: cm.FunctionLinkSys{
-				Type:     cm.FunctionLinkSysTypeLink,
-				LinkType: cm.FunctionLinkSysLinkTypeFunction,
-				ID:       "function-id",
-			},
-		},
+		Sys:      cm.NewResourceProviderRequestSys("resource-provider"),
+		Type:     cm.ResourceProviderRequestTypeFunction,
+		Function: cm.NewFunctionLink("function-id"),
 	})
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
@@ -108,17 +92,9 @@ func TestAccResourceTypeResourceMovedFromAppDefinitionResourceType(t *testing.T)
 	})
 
 	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
-		Sys: cm.ResourceProviderRequestSys{
-			ID: "resource-provider",
-		},
-		Type: cm.ResourceProviderRequestTypeFunction,
-		Function: cm.FunctionLink{
-			Sys: cm.FunctionLinkSys{
-				Type:     cm.FunctionLinkSysTypeLink,
-				LinkType: cm.FunctionLinkSysLinkTypeFunction,
-				ID:       "function-id",
-			},
-		},
+		Sys:      cm.NewResourceProviderRequestSys("resource-provider"),
+		Type:     cm.ResourceProviderRequestTypeFunction,
+		Function: cm.NewFunctionLink("function-id"),
 	})
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{

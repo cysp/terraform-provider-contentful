@@ -6,26 +6,12 @@ import (
 
 func NewAppDefinitionFromFields(organizationID, appDefinitionID string, fields cm.AppDefinitionData) cm.AppDefinition {
 	appDefinition := cm.AppDefinition{
-		Sys: NewAppDefinitionSys(organizationID, appDefinitionID),
+		Sys: cm.NewAppDefinitionSys(organizationID, appDefinitionID),
 	}
 
 	UpdateAppDefinitionFromFields(&appDefinition, organizationID, appDefinitionID, fields)
 
 	return appDefinition
-}
-
-func NewAppDefinitionSys(organizationID, appDefinitionID string) cm.AppDefinitionSys {
-	return cm.AppDefinitionSys{
-		Type: cm.AppDefinitionSysTypeAppDefinition,
-		Organization: cm.OrganizationLink{
-			Sys: cm.OrganizationLinkSys{
-				Type:     cm.OrganizationLinkSysTypeLink,
-				LinkType: cm.OrganizationLinkSysLinkTypeOrganization,
-				ID:       organizationID,
-			},
-		},
-		ID: appDefinitionID,
-	}
 }
 
 func UpdateAppDefinitionFromFields(appDefinition *cm.AppDefinition, organizationID, appDefinitionID string, fields cm.AppDefinitionData) {

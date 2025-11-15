@@ -6,33 +6,12 @@ import (
 
 func NewExtensionFromFields(spaceID, environmentID, extensionID string, fields cm.ExtensionData) cm.Extension {
 	extension := cm.Extension{
-		Sys: NewExtensionSys(spaceID, environmentID, extensionID),
+		Sys: cm.NewExtensionSys(spaceID, environmentID, extensionID),
 	}
 
 	UpdateExtensionFromFields(&extension, fields)
 
 	return extension
-}
-
-func NewExtensionSys(spaceID, environmentID, extensionID string) cm.ExtensionSys {
-	return cm.ExtensionSys{
-		Type: cm.ExtensionSysTypeExtension,
-		Space: cm.SpaceLink{
-			Sys: cm.SpaceLinkSys{
-				Type:     cm.SpaceLinkSysTypeLink,
-				LinkType: cm.SpaceLinkSysLinkTypeSpace,
-				ID:       spaceID,
-			},
-		},
-		Environment: cm.EnvironmentLink{
-			Sys: cm.EnvironmentLinkSys{
-				Type:     cm.EnvironmentLinkSysTypeLink,
-				LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-				ID:       environmentID,
-			},
-		},
-		ID: extensionID,
-	}
 }
 
 func UpdateExtensionFromFields(extension *cm.Extension, fields cm.ExtensionData) {

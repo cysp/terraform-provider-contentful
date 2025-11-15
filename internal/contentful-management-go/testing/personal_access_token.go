@@ -8,19 +8,12 @@ import (
 
 func NewPersonalAccessTokenFromRequestFields(personalAccessTokenID string, personalAccessTokenFields cm.PersonalAccessTokenRequestData) cm.PersonalAccessToken {
 	personalAccessToken := cm.PersonalAccessToken{
-		Sys: NewPersonalAccessTokenSys(personalAccessTokenID),
+		Sys: cm.NewPersonalAccessTokenSys(personalAccessTokenID),
 	}
 
 	UpdatePersonalAccessTokenFromRequestFields(&personalAccessToken, personalAccessTokenFields)
 
 	return personalAccessToken
-}
-
-func NewPersonalAccessTokenSys(personalAccessTokenID string) cm.PersonalAccessTokenSys {
-	return cm.PersonalAccessTokenSys{
-		Type: cm.PersonalAccessTokenSysTypePersonalAccessToken,
-		ID:   personalAccessTokenID,
-	}
 }
 
 func UpdatePersonalAccessTokenFromRequestFields(personalAccessToken *cm.PersonalAccessToken, personalAccessTokenFields cm.PersonalAccessTokenRequestData) {

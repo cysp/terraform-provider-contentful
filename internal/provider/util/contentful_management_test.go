@@ -20,10 +20,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 	}{
 		"Error": {
 			response: cm.Error{
-				Sys: cm.ErrorSys{
-					Type: cm.ErrorSysTypeError,
-					ID:   "UnknownError",
-				},
+				Sys: cm.NewErrorSys("UnknownError"),
 			},
 			expected: "Error: UnknownError",
 		},
@@ -31,10 +28,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			response: &cm.ApplicationVndContentfulManagementV1JSONError{
 				Type: cm.ErrorApplicationVndContentfulManagementV1JSONError,
 				Error: cm.Error{
-					Sys: cm.ErrorSys{
-						Type: cm.ErrorSysTypeError,
-						ID:   "Unauthorized",
-					},
+					Sys:     cm.NewErrorSys("Unauthorized"),
 					Message: cm.NewOptString("Unauthorized"),
 				},
 			},
@@ -43,10 +37,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 		"ApplicationVndContentfulManagementV1JSONErrorStatusCode": {
 			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
-					Sys: cm.ErrorSys{
-						Type: cm.ErrorSysTypeError,
-						ID:   "UnknownError",
-					},
+					Sys: cm.NewErrorSys("UnknownError"),
 				}),
 			},
 			expected: "Error: UnknownError",
@@ -54,10 +45,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessage": {
 			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
-					Sys: cm.ErrorSys{
-						Type: cm.ErrorSysTypeError,
-						ID:   "UnknownError",
-					},
+					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
 				}),
 			},
@@ -66,10 +54,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessageAndUnsupportedDetails": {
 			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
-					Sys: cm.ErrorSys{
-						Type: cm.ErrorSysTypeError,
-						ID:   "UnknownError",
-					},
+					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
 					Details: []byte(`"Detailed reason for error"`),
 				}),
@@ -79,10 +64,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessageAndReasons": {
 			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
-					Sys: cm.ErrorSys{
-						Type: cm.ErrorSysTypeError,
-						ID:   "UnknownError",
-					},
+					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
 					Details: []byte(`{"reasons":"Detailed reason for error"}`),
 				}),
@@ -92,10 +74,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessageAndUnsupportedReason": {
 			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
-					Sys: cm.ErrorSys{
-						Type: cm.ErrorSysTypeError,
-						ID:   "UnknownError",
-					},
+					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
 					Details: []byte(`{"reasons":["Reason 1", "Reason 2"]}`),
 				}),
@@ -114,10 +93,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: 422,
 				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
-					Sys: cm.ErrorSys{
-						Type: cm.ErrorSysTypeError,
-						ID:   "ValidationFailed",
-					},
+					Sys:     cm.NewErrorSys("ValidationFailed"),
 					Message: cm.NewOptString("Validation error"),
 					Details: []byte("{\"errors\":[{\"name\":\"required\",\"details\":\"The property \\\"annotations\\\" is required here\",\"path\":[\"metadata\",\"annotations\"]},{\"name\":\"required\",\"details\":\"The property \\\"taxonomy\\\" is required here\",\"path\":[\"metadata\",\"taxonomy\"]},{\"name\":\"in\",\"details\":\"Value must be one of expected values\",\"path\":[\"metadata\"],\"value\": {},\"expected\":[{\"required\":[\"annotations\"]},{\"required\":[\"taxonomy\"]}]}]}"),
 				}),
@@ -128,10 +104,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 				StatusCode: 422,
 				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
-					Sys: cm.ErrorSys{
-						Type: cm.ErrorSysTypeError,
-						ID:   "ValidationFailed",
-					},
+					Sys:     cm.NewErrorSys("ValidationFailed"),
 					Message: cm.NewOptString("Validation error"),
 					Details: []byte("{\"errors\":[{\"name\":\"type\",\"details\":\"The type of \\\"required\\\" is incorrect, expected type: Boolean\",\"path\":[\"fields\",0,\"required\"],\"type\":\"Boolean\",\"value\":\"true\"}]}"),
 				}),

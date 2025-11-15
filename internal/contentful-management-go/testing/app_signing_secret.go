@@ -8,32 +8,12 @@ import (
 
 func NewAppSigningSecretFromRequest(organizationID, appDefinitionID string, request cm.AppSigningSecretRequestData) cm.AppSigningSecret {
 	resourceProvider := cm.AppSigningSecret{
-		Sys: NewAppSigningSecretSys(organizationID, appDefinitionID),
+		Sys: cm.NewAppSigningSecretSys(organizationID, appDefinitionID),
 	}
 
 	UpdateAppSigningSecretFromRequest(&resourceProvider, organizationID, appDefinitionID, request)
 
 	return resourceProvider
-}
-
-func NewAppSigningSecretSys(organizationID, appDefinitionID string) cm.AppSigningSecretSys {
-	return cm.AppSigningSecretSys{
-		Type: cm.AppSigningSecretSysTypeAppSigningSecret,
-		Organization: cm.OrganizationLink{
-			Sys: cm.OrganizationLinkSys{
-				Type:     cm.OrganizationLinkSysTypeLink,
-				LinkType: cm.OrganizationLinkSysLinkTypeOrganization,
-				ID:       organizationID,
-			},
-		},
-		AppDefinition: cm.AppDefinitionLink{
-			Sys: cm.AppDefinitionLinkSys{
-				Type:     cm.AppDefinitionLinkSysTypeLink,
-				LinkType: cm.AppDefinitionLinkSysLinkTypeAppDefinition,
-				ID:       appDefinitionID,
-			},
-		},
-	}
 }
 
 func UpdateAppSigningSecretFromRequest(appSigningSecret *cm.AppSigningSecret, organizationID, appDefinitionID string, request cm.AppSigningSecretRequestData) {

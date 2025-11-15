@@ -11,13 +11,7 @@ func (model *EnvironmentAliasModel) ToEnvironmentAliasData(_ context.Context) (c
 	diags := diag.Diagnostics{}
 
 	environmentAliasRequest := cm.EnvironmentAliasData{
-		Environment: cm.EnvironmentLink{
-			Sys: cm.EnvironmentLinkSys{
-				Type:     cm.EnvironmentLinkSysTypeLink,
-				LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-				ID:       model.TargetEnvironmentID.ValueString(),
-			},
-		},
+		Environment: cm.NewEnvironmentLink(model.TargetEnvironmentID.ValueString()),
 	}
 
 	return environmentAliasRequest, diags

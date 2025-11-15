@@ -29,10 +29,7 @@ func NewContentfulManagementErrorStatusCode(statusCode int, id string, message *
 
 func NewContentfulManagementError(id string, message *string, details []byte) cm.Error {
 	return cm.Error{
-		Sys: cm.ErrorSys{
-			Type: cm.ErrorSysTypeError,
-			ID:   id,
-		},
+		Sys:     cm.NewErrorSys(id),
 		Message: cm.NewOptPointerString(message),
 		Details: details,
 	}

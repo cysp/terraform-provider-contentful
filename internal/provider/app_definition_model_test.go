@@ -15,16 +15,14 @@ import (
 func FuzzAppDefinitionResourceModelRoundtrip(f *testing.F) {
 	corpus := []cm.AppDefinition{
 		{
-			Sys:  cm.AppDefinitionSys{Type: "AppDefinition", Organization: cm.OrganizationLink{Sys: cm.OrganizationLinkSys{Type: "Link", LinkType: "Organization", ID: "organization-id"}}, ID: "app-definition-id"},
+			Sys:  cm.NewAppDefinitionSys("organization-id", "app-definition-id"),
 			Name: "App Definition Name",
 		},
 		{
-			Sys:  cm.AppDefinitionSys{Type: "AppDefinition", Organization: cm.OrganizationLink{Sys: cm.OrganizationLinkSys{Type: "Link", LinkType: "Organization", ID: "organization-id"}}, ID: "app-definition-id"},
-			Name: "App Definition Name",
-			Src:  cm.NewOptString("https://example.com/app-definition.js"),
-			Bundle: cm.NewOptAppBundleLink(cm.AppBundleLink{
-				Sys: cm.AppBundleLinkSys{Type: cm.AppBundleLinkSysTypeLink, LinkType: cm.AppBundleLinkSysLinkTypeAppBundle, ID: "app-bundle-id"},
-			}),
+			Sys:    cm.NewAppDefinitionSys("organization-id", "app-definition-id"),
+			Name:   "App Definition Name",
+			Src:    cm.NewOptString("https://example.com/app-definition.js"),
+			Bundle: cm.NewOptAppBundleLink(cm.NewAppBundleLink("app-bundle-id")),
 			Locations: []cm.AppDefinitionLocationsItem{
 				{
 					Location: "app-config",

@@ -25,7 +25,7 @@ func TestContentfulManagementServerGetAuthenticatedUserFound(t *testing.T) {
 		cm.WithClient(hts.Client()),
 	)
 
-	server.Handler().SetMe(&cm.User{Sys: cm.UserSys{Type: cm.UserSysTypeUser, ID: "user123"}})
+	server.Handler().SetMe(cm.NewUser("user123"))
 
 	res, err := client.GetAuthenticatedUser(t.Context())
 	assert.NotNil(t, res)

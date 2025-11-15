@@ -14,20 +14,7 @@ func NewSpaceEnablementFromRequestFields(spaceID string, spaceEnablementFields c
 
 func NewSpaceEnablement(spaceID string) cm.SpaceEnablement {
 	return cm.SpaceEnablement{
-		Sys: NewSpaceEnablementSys(spaceID),
-	}
-}
-
-func NewSpaceEnablementSys(spaceID string) cm.SpaceEnablementSys {
-	return cm.SpaceEnablementSys{
-		Type: cm.SpaceEnablementSysTypeSpaceEnablement,
-		Space: cm.SpaceLink{
-			Sys: cm.SpaceLinkSys{
-				Type:     cm.SpaceLinkSysTypeLink,
-				LinkType: cm.SpaceLinkSysLinkTypeSpace,
-				ID:       spaceID,
-			},
-		},
+		Sys: cm.NewSpaceEnablementSys(spaceID),
 	}
 }
 
