@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewSpaceEnablementFromRequestFields(spaceID string, spaceEnablementFields cm.SpaceEnablementFields) cm.SpaceEnablement {
+func NewSpaceEnablementFromRequestFields(spaceID string, spaceEnablementFields cm.SpaceEnablementData) cm.SpaceEnablement {
 	spaceEnablement := NewSpaceEnablement(spaceID)
 
 	UpdateSpaceEnablementFromRequestFields(&spaceEnablement, spaceEnablementFields)
@@ -31,7 +31,7 @@ func NewSpaceEnablementSys(spaceID string) cm.SpaceEnablementSys {
 	}
 }
 
-func UpdateSpaceEnablementFromRequestFields(spaceEnablement *cm.SpaceEnablement, spaceEnablementFields cm.SpaceEnablementFields) {
+func UpdateSpaceEnablementFromRequestFields(spaceEnablement *cm.SpaceEnablement, spaceEnablementFields cm.SpaceEnablementData) {
 	spaceEnablement.Sys.Version++
 
 	spaceEnablement.CrossSpaceLinks = spaceEnablementFields.CrossSpaceLinks

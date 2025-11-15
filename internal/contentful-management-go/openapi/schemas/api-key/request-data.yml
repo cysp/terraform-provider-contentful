@@ -1,4 +1,4 @@
-ApiKeyRequestFields:
+ApiKeyRequestData:
   type: object
   properties:
     name:

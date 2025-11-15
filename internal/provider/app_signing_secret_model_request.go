@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (m *AppSigningSecretModel) ToAppSigningSecretRequest(_ context.Context, _ path.Path) (cm.AppSigningSecretRequestFields, diag.Diagnostics) {
+func (m *AppSigningSecretModel) ToAppSigningSecretRequest(_ context.Context, _ path.Path) (cm.AppSigningSecretRequestData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.AppSigningSecretRequestFields{
+	req := cm.AppSigningSecretRequestData{
 		Value: m.Value.ValueString(),
 	}
 

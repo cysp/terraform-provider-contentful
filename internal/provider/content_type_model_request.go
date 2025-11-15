@@ -12,16 +12,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
-func (m *ContentTypeModel) ToContentTypeRequestFields(ctx context.Context) (cm.ContentTypeRequestFields, diag.Diagnostics) {
+func (m *ContentTypeModel) ToContentTypeRequestData(ctx context.Context) (cm.ContentTypeRequestData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	request := cm.ContentTypeRequestFields{
+	request := cm.ContentTypeRequestData{
 		Name:         m.Name.ValueString(),
 		Description:  cm.NewOptNilPointerString(m.Description.ValueStringPointer()),
 		DisplayField: m.DisplayField.ValueString(),
 	}
 
-	fields, fieldsDiags := FieldsListToContentTypeRequestFieldsFields(ctx, path.Root("fields"), m.Fields)
+	fields, fieldsDiags := FieldsListToContentTypeRequestDataFields(ctx, path.Root("fields"), m.Fields)
 	diags.Append(fieldsDiags...)
 
 	request.Fields = fields
@@ -34,17 +34,17 @@ func (m *ContentTypeModel) ToContentTypeRequestFields(ctx context.Context) (cm.C
 	return request, diags
 }
 
-func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.Path, fieldsList TypedList[TypedObject[ContentTypeFieldValue]]) ([]cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
+func FieldsListToContentTypeRequestDataFields(ctx context.Context, path path.Path, fieldsList TypedList[TypedObject[ContentTypeFieldValue]]) ([]cm.ContentTypeRequestDataFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldsValues := fieldsList.Elements()
 
-	fieldsItems := make([]cm.ContentTypeRequestFieldsFieldsItem, len(fieldsValues))
+	fieldsItems := make([]cm.ContentTypeRequestDataFieldsItem, len(fieldsValues))
 
 	for index, fieldsValue := range fieldsValues {
 		path := path.AtListIndex(index)
 
-		fieldsItem, fieldsItemDiags := ToContentTypeRequestFieldsFieldsItem(ctx, path, fieldsValue.Value())
+		fieldsItem, fieldsItemDiags := ToContentTypeRequestDataFieldsItem(ctx, path, fieldsValue.Value())
 		diags.Append(fieldsItemDiags...)
 
 		fieldsItems[index] = fieldsItem
@@ -53,16 +53,16 @@ func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.P
 	return fieldsItems, diags
 }
 
-func ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path, v ContentTypeFieldValue) (cm.ContentTypeRequestFieldsFieldsItem, diag.Diagnostics) {
+func ToContentTypeRequestDataFieldsItem(ctx context.Context, path path.Path, v ContentTypeFieldValue) (cm.ContentTypeRequestDataFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx, path.AtName("items"), v.Items)
+	fieldsItemItems, fieldsItemItemsDiags := ItemsObjectToOptContentTypeRequestDataFieldsItemItems(ctx, path.AtName("items"), v.Items)
 	diags.Append(fieldsItemItemsDiags...)
 
-	fieldsItemValidations, fieldsItemValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), v.Validations)
+	fieldsItemValidations, fieldsItemValidationsDiags := ValidationsListToContentTypeRequestDataFieldValidations(ctx, path.AtName("validations"), v.Validations)
 	diags.Append(fieldsItemValidationsDiags...)
 
-	fieldsItem := cm.ContentTypeRequestFieldsFieldsItem{
+	fieldsItem := cm.ContentTypeRequestDataFieldsItem{
 		ID:          v.ID.ValueString(),
 		Name:        v.Name.ValueString(),
 		Type:        v.FieldType.ValueString(),
@@ -81,7 +81,7 @@ func ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path, v
 	}
 
 	if !v.AllowedResources.IsUnknown() && !v.AllowedResources.IsNull() {
-		fieldsItemAllowedResources, fieldsItemAllowedResourcesDiags := AllowedResourceListToContentTypeRequestFieldsFieldAllowedResources(ctx, path.AtName("allowed_resources"), v.AllowedResources)
+		fieldsItemAllowedResources, fieldsItemAllowedResourcesDiags := AllowedResourceListToContentTypeRequestDataFieldAllowedResources(ctx, path.AtName("allowed_resources"), v.AllowedResources)
 		diags.Append(fieldsItemAllowedResourcesDiags...)
 
 		fieldsItem.AllowedResources.SetTo(fieldsItemAllowedResources)
@@ -90,14 +90,14 @@ func ToContentTypeRequestFieldsFieldsItem(ctx context.Context, path path.Path, v
 	return fieldsItem, diags
 }
 
-func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path, itemsObject TypedObject[ContentTypeFieldItemsValue]) (cm.OptContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
+func ItemsObjectToOptContentTypeRequestDataFieldsItemItems(ctx context.Context, path path.Path, itemsObject TypedObject[ContentTypeFieldItemsValue]) (cm.OptContentTypeRequestDataFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldsItemItems := cm.OptContentTypeRequestFieldsFieldsItemItems{}
+	fieldsItemItems := cm.OptContentTypeRequestDataFieldsItemItems{}
 
 	itemsValue, itemsValueOk := itemsObject.GetValue()
 	if itemsValueOk {
-		items, itemsDiags := itemsValue.ToContentTypeRequestFieldsFieldsItemItems(ctx, path)
+		items, itemsDiags := itemsValue.ToContentTypeRequestDataFieldsItemItems(ctx, path)
 		diags.Append(itemsDiags...)
 
 		fieldsItemItems.SetTo(items)
@@ -106,13 +106,13 @@ func ItemsObjectToOptContentTypeRequestFieldsFieldsItemItems(ctx context.Context
 	return fieldsItemItems, diags
 }
 
-func (v ContentTypeFieldItemsValue) ToContentTypeRequestFieldsFieldsItemItems(ctx context.Context, path path.Path) (cm.ContentTypeRequestFieldsFieldsItemItems, diag.Diagnostics) {
+func (v ContentTypeFieldItemsValue) ToContentTypeRequestDataFieldsItemItems(ctx context.Context, path path.Path) (cm.ContentTypeRequestDataFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	itemsValidations, itemsValidationsDiags := ValidationsListToContentTypeRequestFieldsFieldValidations(ctx, path.AtName("validations"), v.Validations)
+	itemsValidations, itemsValidationsDiags := ValidationsListToContentTypeRequestDataFieldValidations(ctx, path.AtName("validations"), v.Validations)
 	diags.Append(itemsValidationsDiags...)
 
-	items := cm.ContentTypeRequestFieldsFieldsItemItems{
+	items := cm.ContentTypeRequestDataFieldsItemItems{
 		Type:        util.StringValueToOptString(v.ItemsType),
 		LinkType:    util.StringValueToOptString(v.LinkType),
 		Validations: itemsValidations,
@@ -121,7 +121,7 @@ func (v ContentTypeFieldItemsValue) ToContentTypeRequestFieldsFieldsItemItems(ct
 	return items, diags
 }
 
-func ValidationsListToContentTypeRequestFieldsFieldValidations(ctx context.Context, _ path.Path, validationsList TypedList[jsontypes.Normalized]) ([]jx.Raw, diag.Diagnostics) {
+func ValidationsListToContentTypeRequestDataFieldValidations(ctx context.Context, _ path.Path, validationsList TypedList[jsontypes.Normalized]) ([]jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	validationsStrings := []string{}
@@ -137,7 +137,7 @@ func ValidationsListToContentTypeRequestFieldsFieldValidations(ctx context.Conte
 	return validations, diags
 }
 
-func AllowedResourceListToContentTypeRequestFieldsFieldAllowedResources(ctx context.Context, path path.Path, allowedResourcesList TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]]) ([]cm.ResourceLink, diag.Diagnostics) {
+func AllowedResourceListToContentTypeRequestDataFieldAllowedResources(ctx context.Context, path path.Path, allowedResourcesList TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]]) ([]cm.ResourceLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	allowedResources := allowedResourcesList.Elements()

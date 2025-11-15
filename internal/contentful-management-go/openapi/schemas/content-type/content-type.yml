@@ -6,4 +6,4 @@ ContentType:
           $ref: "./sys.yml#/ContentTypeSys"
       required:
         - sys
-    - $ref: "./fields.yml#/ContentTypeFields"
+    - $ref: "./data.yml#/ContentTypeData"

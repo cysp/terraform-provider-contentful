@@ -12,10 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v EditorInterfaceControlValue) ToEditorInterfaceFieldsControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsControlsItem, diag.Diagnostics) {
+func (v EditorInterfaceControlValue) ToEditorInterfaceDataControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceDataControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.EditorInterfaceFieldsControlsItem{
+	item := cm.EditorInterfaceDataControlsItem{
 		FieldId:         v.FieldID.ValueString(),
 		WidgetNamespace: util.StringValueToOptString(v.WidgetNamespace),
 		WidgetId:        util.StringValueToOptString(v.WidgetID),

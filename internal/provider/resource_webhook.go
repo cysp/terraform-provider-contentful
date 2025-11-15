@@ -71,7 +71,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		SpaceID: data.SpaceID.ValueString(),
 	}
 
-	request, requestDiags := data.ToWebhookDefinitionFields(ctx, path.Empty())
+	request, requestDiags := data.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -188,7 +188,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		XContentfulVersion:  currentVersion,
 	}
 
-	request, requestDiags := data.ToWebhookDefinitionFields(ctx, path.Empty())
+	request, requestDiags := data.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

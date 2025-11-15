@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v EditorInterfaceSidebarValue) ToEditorInterfaceFieldsSidebarItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsSidebarItem, diag.Diagnostics) {
+func (v EditorInterfaceSidebarValue) ToEditorInterfaceDataSidebarItem(_ context.Context, _ path.Path) (cm.EditorInterfaceDataSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.EditorInterfaceFieldsSidebarItem{
+	item := cm.EditorInterfaceDataSidebarItem{
 		WidgetNamespace: v.WidgetNamespace.ValueString(),
 		WidgetId:        v.WidgetID.ValueString(),
 	}

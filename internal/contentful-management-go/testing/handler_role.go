@@ -9,7 +9,7 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) CreateRole(_ context.Context, req *cm.RoleFields, params cm.CreateRoleParams) (cm.CreateRoleRes, error) {
+func (ts *Handler) CreateRole(_ context.Context, req *cm.RoleData, params cm.CreateRoleParams) (cm.CreateRoleRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -44,7 +44,7 @@ func (ts *Handler) GetRole(_ context.Context, params cm.GetRoleParams) (cm.GetRo
 }
 
 //nolint:ireturn
-func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleFields, params cm.UpdateRoleParams) (cm.UpdateRoleRes, error) {
+func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleData, params cm.UpdateRoleParams) (cm.UpdateRoleRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

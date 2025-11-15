@@ -11,7 +11,7 @@ import (
 )
 
 func encodeCreateAppDefinitionRequest(
-	req *AppDefinitionFields,
+	req *AppDefinitionData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -25,7 +25,7 @@ func encodeCreateAppDefinitionRequest(
 }
 
 func encodeCreateDeliveryApiKeyRequest(
-	req *ApiKeyRequestFields,
+	req *ApiKeyRequestData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -81,7 +81,7 @@ func encodeCreateOrUpdateEnvironmentAliasRequest(
 }
 
 func encodeCreatePersonalAccessTokenRequest(
-	req *PersonalAccessTokenRequestFields,
+	req *PersonalAccessTokenRequestData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -95,7 +95,7 @@ func encodeCreatePersonalAccessTokenRequest(
 }
 
 func encodeCreateRoleRequest(
-	req *RoleFields,
+	req *RoleData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -109,7 +109,7 @@ func encodeCreateRoleRequest(
 }
 
 func encodeCreateWebhookDefinitionRequest(
-	req *WebhookDefinitionFields,
+	req *WebhookDefinitionData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -123,7 +123,7 @@ func encodeCreateWebhookDefinitionRequest(
 }
 
 func encodePutAppDefinitionRequest(
-	req *AppDefinitionFields,
+	req *AppDefinitionData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -137,7 +137,7 @@ func encodePutAppDefinitionRequest(
 }
 
 func encodePutAppInstallationRequest(
-	req *AppInstallationFields,
+	req *AppInstallationData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -151,7 +151,7 @@ func encodePutAppInstallationRequest(
 }
 
 func encodePutAppSigningSecretRequest(
-	req *AppSigningSecretRequestFields,
+	req *AppSigningSecretRequestData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -165,7 +165,7 @@ func encodePutAppSigningSecretRequest(
 }
 
 func encodePutContentTypeRequest(
-	req *ContentTypeRequestFields,
+	req *ContentTypeRequestData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -179,7 +179,7 @@ func encodePutContentTypeRequest(
 }
 
 func encodePutEditorInterfaceRequest(
-	req *EditorInterfaceFields,
+	req *EditorInterfaceData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -207,7 +207,7 @@ func encodePutEntryRequest(
 }
 
 func encodePutExtensionRequest(
-	req *ExtensionFields,
+	req *ExtensionData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -235,7 +235,7 @@ func encodePutResourceProviderRequest(
 }
 
 func encodePutResourceTypeRequest(
-	req *ResourceTypeFields,
+	req *ResourceTypeData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -249,7 +249,7 @@ func encodePutResourceTypeRequest(
 }
 
 func encodePutSpaceEnablementsRequest(
-	req *SpaceEnablementFields,
+	req *SpaceEnablementData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -263,7 +263,7 @@ func encodePutSpaceEnablementsRequest(
 }
 
 func encodeUpdateDeliveryApiKeyRequest(
-	req *ApiKeyRequestFields,
+	req *ApiKeyRequestData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -277,7 +277,7 @@ func encodeUpdateDeliveryApiKeyRequest(
 }
 
 func encodeUpdateRoleRequest(
-	req *RoleFields,
+	req *RoleData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
@@ -291,7 +291,7 @@ func encodeUpdateRoleRequest(
 }
 
 func encodeUpdateWebhookDefinitionRequest(
-	req *WebhookDefinitionFields,
+	req *WebhookDefinitionData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

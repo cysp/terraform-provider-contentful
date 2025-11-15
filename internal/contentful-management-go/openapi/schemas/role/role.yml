@@ -3,7 +3,7 @@ Role:
     - type: object
       properties:
         sys:
-          $ref: "sys.yml#/RoleSys"
+          $ref: "./sys.yml#/RoleSys"
       required:
         - sys
-    - $ref: "fields.yml#/RoleFields"
+    - $ref: "./data.yml#/RoleData"

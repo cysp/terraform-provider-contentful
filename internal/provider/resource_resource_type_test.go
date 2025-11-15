@@ -20,7 +20,7 @@ func TestAccResourceTypeResource(t *testing.T) {
 		"resource_type_id":  config.StringVariable("resource-provider:test"),
 	}
 
-	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
 	})
 
@@ -62,7 +62,7 @@ func TestAccResourceTypeResourceImport(t *testing.T) {
 		"resource_type_id":  config.StringVariable("resource-provider:test"),
 	}
 
-	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
 	})
 
@@ -103,7 +103,7 @@ func TestAccResourceTypeResourceImport(t *testing.T) {
 func TestAccResourceTypeResourceMovedFromAppDefinitionResourceType(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
-	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
 	})
 

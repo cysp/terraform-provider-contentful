@@ -1,4 +1,4 @@
-UserFields:
+UserData:
   type: object
   properties:
     email:

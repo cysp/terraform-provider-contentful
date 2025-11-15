@@ -69,7 +69,7 @@ func (r *appDefinitionAppDefinitionResource) Create(ctx context.Context, req res
 		OrganizationID: data.OrganizationID.ValueString(),
 	}
 
-	request, requestDiags := data.ToAppDefinitionFields(ctx, path.Empty())
+	request, requestDiags := data.ToAppDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -176,7 +176,7 @@ func (r *appDefinitionAppDefinitionResource) Update(ctx context.Context, req res
 		AppDefinitionID: data.AppDefinitionID.ValueString(),
 	}
 
-	request, requestDiags := data.ToAppDefinitionFields(ctx, path.Empty())
+	request, requestDiags := data.ToAppDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

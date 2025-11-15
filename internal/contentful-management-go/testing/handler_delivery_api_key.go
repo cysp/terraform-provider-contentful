@@ -8,7 +8,7 @@ import (
 )
 
 //nolint:ireturn,revive
-func (ts *Handler) CreateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequestFields, params cm.CreateDeliveryApiKeyParams) (cm.CreateDeliveryApiKeyRes, error) {
+func (ts *Handler) CreateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequestData, params cm.CreateDeliveryApiKeyParams) (cm.CreateDeliveryApiKeyRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -61,7 +61,7 @@ func (ts *Handler) GetDeliveryApiKey(_ context.Context, params cm.GetDeliveryApi
 }
 
 //nolint:ireturn,revive
-func (ts *Handler) UpdateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequestFields, params cm.UpdateDeliveryApiKeyParams) (cm.UpdateDeliveryApiKeyRes, error) {
+func (ts *Handler) UpdateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequestData, params cm.UpdateDeliveryApiKeyParams) (cm.UpdateDeliveryApiKeyRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

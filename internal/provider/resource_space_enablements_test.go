@@ -18,7 +18,7 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	server.SetSpaceEnablements("0p38pssr0fi3", cm.SpaceEnablementFields{
+	server.SetSpaceEnablements("0p38pssr0fi3", cm.SpaceEnablementData{
 		CrossSpaceLinks: cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
 	})
 

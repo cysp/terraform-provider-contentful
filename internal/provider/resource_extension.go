@@ -75,7 +75,7 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 		ExtensionID:   data.ExtensionID.ValueString(),
 	}
 
-	request, requestDiags := data.ToExtensionFields(ctx, path.Empty())
+	request, requestDiags := data.ToExtensionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -195,7 +195,7 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToExtensionFields(ctx, path.Empty())
+	request, requestDiags := data.ToExtensionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

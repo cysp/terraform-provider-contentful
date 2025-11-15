@@ -12,10 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v EditorInterfaceGroupControlValue) ToEditorInterfaceFieldsGroupControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceFieldsGroupControlsItem, diag.Diagnostics) {
+func (v EditorInterfaceGroupControlValue) ToEditorInterfaceDataGroupControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceDataGroupControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.EditorInterfaceFieldsGroupControlsItem{
+	item := cm.EditorInterfaceDataGroupControlsItem{
 		GroupId:         v.GroupID.ValueString(),
 		WidgetNamespace: util.StringValueToOptString(v.WidgetNamespace),
 		WidgetId:        util.StringValueToOptString(v.WidgetID),

@@ -6,4 +6,4 @@ User:
           $ref: "./sys.yml#/UserSys"
       required:
         - sys
-    - $ref: "./fields.yml#/UserFields"
+    - $ref: "./data.yml#/UserData"

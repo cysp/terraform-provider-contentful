@@ -1,4 +1,4 @@
-AppSigningSecretRequestFields:
+AppSigningSecretRequestData:
   type: object
   properties:
     value:

@@ -1,4 +1,4 @@
-ResourceProviderFields:
+ResourceProviderData:
   type: object
   properties:
     type:

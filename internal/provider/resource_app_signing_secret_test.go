@@ -13,7 +13,7 @@ import (
 func TestAccAppSigningSecretResource(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
-	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
 	})
 
@@ -48,11 +48,11 @@ func TestAccAppSigningSecretImport(t *testing.T) {
 		"app_definition_id": config.StringVariable("app-definition-id"),
 	}
 
-	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
 	})
 
-	server.SetAppSigningSecret("organization-id", "app-definition-id", cm.AppSigningSecretRequestFields{
+	server.SetAppSigningSecret("organization-id", "app-definition-id", cm.AppSigningSecretRequestData{
 		Value: "secret",
 	})
 

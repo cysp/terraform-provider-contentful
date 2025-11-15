@@ -2,7 +2,7 @@ package testing
 
 import cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 
-func NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID string, webhookDefinitionFields cm.WebhookDefinitionFields) cm.WebhookDefinition {
+func NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID string, webhookDefinitionFields cm.WebhookDefinitionData) cm.WebhookDefinition {
 	webhookDefinition := cm.WebhookDefinition{
 		Sys: NewWebhookDefinitionSys(spaceID, webhookDefinitionID),
 	}
@@ -26,7 +26,7 @@ func NewWebhookDefinitionSys(spaceID, webhookDefinitionID string) cm.WebhookDefi
 	}
 }
 
-func UpdateWebhookDefinitionFromFields(webhookDefinition *cm.WebhookDefinition, webhookDefinitionFields cm.WebhookDefinitionFields) {
+func UpdateWebhookDefinitionFromFields(webhookDefinition *cm.WebhookDefinition, webhookDefinitionFields cm.WebhookDefinitionData) {
 	webhookDefinition.Sys.Version++
 	webhookDefinition.Name = webhookDefinitionFields.Name
 	webhookDefinition.URL = webhookDefinitionFields.URL
@@ -36,7 +36,7 @@ func UpdateWebhookDefinitionFromFields(webhookDefinition *cm.WebhookDefinition, 
 	webhookDefinition.Topics = webhookDefinitionFields.Topics
 	webhookDefinition.Filters = webhookDefinitionFields.Filters
 	webhookDefinition.Active = webhookDefinitionFields.Active
-	convertOptNil(&webhookDefinition.Transformation, &webhookDefinitionFields.Transformation, func(transformation cm.WebhookDefinitionFieldsTransformation) cm.WebhookDefinitionTransformation {
+	convertOptNil(&webhookDefinition.Transformation, &webhookDefinitionFields.Transformation, func(transformation cm.WebhookDefinitionDataTransformation) cm.WebhookDefinitionTransformation {
 		return cm.WebhookDefinitionTransformation(transformation)
 	})
 }

@@ -3,7 +3,7 @@ WebhookDefinition:
     - type: object
       properties:
         sys:
-          $ref: "sys.yml#/WebhookDefinitionSys"
+          $ref: "./sys.yml#/WebhookDefinitionSys"
       required:
         - sys
-    - $ref: "fields.yml#/WebhookDefinitionFields"
+    - $ref: "./data.yml#/WebhookDefinitionData"

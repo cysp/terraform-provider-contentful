@@ -25,7 +25,7 @@ func (ts *Handler) GetEditorInterface(_ context.Context, params cm.GetEditorInte
 }
 
 //nolint:ireturn
-func (ts *Handler) PutEditorInterface(_ context.Context, req *cm.EditorInterfaceFields, params cm.PutEditorInterfaceParams) (cm.PutEditorInterfaceRes, error) {
+func (ts *Handler) PutEditorInterface(_ context.Context, req *cm.EditorInterfaceData, params cm.PutEditorInterfaceParams) (cm.PutEditorInterfaceRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

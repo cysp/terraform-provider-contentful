@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *SpaceEnablementsModel) ToSpaceEnablementFields(_ context.Context) (cm.SpaceEnablementFields, diag.Diagnostics) {
-	fields := cm.SpaceEnablementFields{}
+func (m *SpaceEnablementsModel) ToSpaceEnablementData(_ context.Context) (cm.SpaceEnablementData, diag.Diagnostics) {
+	fields := cm.SpaceEnablementData{}
 
 	setOptSpaceEnablementFieldFromBoolValue(&fields.CrossSpaceLinks, m.CrossSpaceLinks)
 	setOptSpaceEnablementFieldFromBoolValue(&fields.SpaceTemplates, m.SpaceTemplates)

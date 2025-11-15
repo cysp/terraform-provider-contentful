@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *AppDefinitionModel) ToAppDefinitionFields(ctx context.Context, path path.Path) (cm.AppDefinitionFields, diag.Diagnostics) {
+func (model *AppDefinitionModel) ToAppDefinitionData(ctx context.Context, path path.Path) (cm.AppDefinitionData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fields := cm.AppDefinitionFields{
+	fields := cm.AppDefinitionData{
 		Name: model.Name.ValueString(),
 	}
 
@@ -33,11 +33,11 @@ func (model *AppDefinitionModel) ToAppDefinitionFields(ctx context.Context, path
 	if model.Locations != nil {
 		path := path.AtName("locations")
 
-		locations := make([]cm.AppDefinitionFieldsLocationsItem, 0, len(model.Locations))
+		locations := make([]cm.AppDefinitionDataLocationsItem, 0, len(model.Locations))
 		for _, location := range model.Locations {
 			path := path.AtListIndex(len(locations))
 
-			locationsItem := location.ToAppDefinitionFieldsLocationsItem(ctx, path)
+			locationsItem := location.ToAppDefinitionDataLocationsItem(ctx, path)
 
 			locations = append(locations, locationsItem)
 		}
@@ -85,22 +85,22 @@ func (model *AppDefinitionModel) ToAppDefinitionFields(ctx context.Context, path
 	return fields, diags
 }
 
-func (model AppDefinitionLocationsItem) ToAppDefinitionFieldsLocationsItem(_ context.Context, _ path.Path) cm.AppDefinitionFieldsLocationsItem {
-	item := cm.AppDefinitionFieldsLocationsItem{
+func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(_ context.Context, _ path.Path) cm.AppDefinitionDataLocationsItem {
+	item := cm.AppDefinitionDataLocationsItem{
 		Location: model.Location.ValueString(),
 	}
 
 	if model.FieldTypes != nil {
-		fieldTypes := make([]cm.AppDefinitionFieldsLocationsItemFieldTypesItem, 0, len(model.FieldTypes))
+		fieldTypes := make([]cm.AppDefinitionDataLocationsItemFieldTypesItem, 0, len(model.FieldTypes))
 
 		for _, fieldType := range model.FieldTypes {
-			fieldTypesItem := cm.AppDefinitionFieldsLocationsItemFieldTypesItem{
+			fieldTypesItem := cm.AppDefinitionDataLocationsItemFieldTypesItem{
 				Type:     fieldType.Type.ValueString(),
 				LinkType: cm.NewOptPointerString(fieldType.LinkType.ValueStringPointer()),
 			}
 
 			if fieldType.Items != nil {
-				fieldTypesItem.Items.SetTo(cm.AppDefinitionFieldsLocationsItemFieldTypesItemItems{
+				fieldTypesItem.Items.SetTo(cm.AppDefinitionDataLocationsItemFieldTypesItemItems{
 					Type:     fieldType.Items.Type.ValueString(),
 					LinkType: cm.NewOptPointerString(fieldType.Items.LinkType.ValueStringPointer()),
 				})
@@ -113,7 +113,7 @@ func (model AppDefinitionLocationsItem) ToAppDefinitionFieldsLocationsItem(_ con
 	}
 
 	if model.NavigationItem != nil {
-		item.NavigationItem.SetTo(cm.AppDefinitionFieldsLocationsItemNavigationItem{
+		item.NavigationItem.SetTo(cm.AppDefinitionDataLocationsItemNavigationItem{
 			Name: model.NavigationItem.Name.ValueString(),
 			Path: model.NavigationItem.Path.ValueString(),
 		})

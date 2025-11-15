@@ -6,4 +6,4 @@ AppInstallation:
           $ref: "./sys.yml#/AppInstallationSys"
       required:
         - sys
-    - $ref: "./fields.yml#/AppInstallationFields"
+    - $ref: "./data.yml#/AppInstallationData"

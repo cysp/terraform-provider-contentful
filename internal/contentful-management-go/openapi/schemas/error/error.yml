@@ -6,4 +6,4 @@ Error:
           $ref: "./sys.yml#/ErrorSys"
       required:
         - sys
-    - $ref: "./fields.yml#/ErrorFields"
+    - $ref: "./data.yml#/ErrorData"

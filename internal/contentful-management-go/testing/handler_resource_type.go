@@ -30,7 +30,7 @@ func (ts *Handler) GetResourceType(_ context.Context, params cm.GetResourceTypeP
 }
 
 //nolint:ireturn
-func (ts *Handler) PutResourceType(_ context.Context, req *cm.ResourceTypeFields, params cm.PutResourceTypeParams) (cm.PutResourceTypeRes, error) {
+func (ts *Handler) PutResourceType(_ context.Context, req *cm.ResourceTypeData, params cm.PutResourceTypeParams) (cm.PutResourceTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

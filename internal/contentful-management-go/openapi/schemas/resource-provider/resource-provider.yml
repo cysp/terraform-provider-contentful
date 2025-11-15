@@ -3,7 +3,7 @@ ResourceProvider:
     - type: object
       properties:
         sys:
-          $ref: "sys.yml#/ResourceProviderSys"
+          $ref: "./sys.yml#/ResourceProviderSys"
       required:
         - sys
-    - $ref: "fields.yml#/ResourceProviderFields"
+    - $ref: "./data.yml#/ResourceProviderData"

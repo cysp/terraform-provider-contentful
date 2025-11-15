@@ -70,7 +70,7 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToSpaceEnablementFields(ctx)
+	request, requestDiags := data.ToSpaceEnablementData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -192,7 +192,7 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToSpaceEnablementFields(ctx)
+	request, requestDiags := data.ToSpaceEnablementData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

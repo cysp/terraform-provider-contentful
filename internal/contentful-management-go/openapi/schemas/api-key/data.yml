@@ -1,6 +1,6 @@
-ApiKeyFields:
+ApiKeyData:
   allOf:
-    - $ref: "./request-fields.yml#/ApiKeyRequestFields"
+    - $ref: "./request-data.yml#/ApiKeyRequestData"
     - type: object
       properties:
         accessToken:

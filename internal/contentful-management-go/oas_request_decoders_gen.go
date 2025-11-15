@@ -15,7 +15,7 @@ import (
 )
 
 func (s *Server) decodeCreateAppDefinitionRequest(r *http.Request) (
-	req *AppDefinitionFields,
+	req *AppDefinitionData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -62,7 +62,7 @@ func (s *Server) decodeCreateAppDefinitionRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request AppDefinitionFields
+		var request AppDefinitionData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -94,7 +94,7 @@ func (s *Server) decodeCreateAppDefinitionRequest(r *http.Request) (
 }
 
 func (s *Server) decodeCreateDeliveryApiKeyRequest(r *http.Request) (
-	req *ApiKeyRequestFields,
+	req *ApiKeyRequestData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -141,7 +141,7 @@ func (s *Server) decodeCreateDeliveryApiKeyRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request ApiKeyRequestFields
+		var request ApiKeyRequestData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -402,7 +402,7 @@ func (s *Server) decodeCreateOrUpdateEnvironmentAliasRequest(r *http.Request) (
 }
 
 func (s *Server) decodeCreatePersonalAccessTokenRequest(r *http.Request) (
-	req *PersonalAccessTokenRequestFields,
+	req *PersonalAccessTokenRequestData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -449,7 +449,7 @@ func (s *Server) decodeCreatePersonalAccessTokenRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request PersonalAccessTokenRequestFields
+		var request PersonalAccessTokenRequestData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -481,7 +481,7 @@ func (s *Server) decodeCreatePersonalAccessTokenRequest(r *http.Request) (
 }
 
 func (s *Server) decodeCreateRoleRequest(r *http.Request) (
-	req *RoleFields,
+	req *RoleData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -528,7 +528,7 @@ func (s *Server) decodeCreateRoleRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request RoleFields
+		var request RoleData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -560,7 +560,7 @@ func (s *Server) decodeCreateRoleRequest(r *http.Request) (
 }
 
 func (s *Server) decodeCreateWebhookDefinitionRequest(r *http.Request) (
-	req *WebhookDefinitionFields,
+	req *WebhookDefinitionData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -607,7 +607,7 @@ func (s *Server) decodeCreateWebhookDefinitionRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request WebhookDefinitionFields
+		var request WebhookDefinitionData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -639,7 +639,7 @@ func (s *Server) decodeCreateWebhookDefinitionRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutAppDefinitionRequest(r *http.Request) (
-	req *AppDefinitionFields,
+	req *AppDefinitionData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -686,7 +686,7 @@ func (s *Server) decodePutAppDefinitionRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request AppDefinitionFields
+		var request AppDefinitionData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -718,7 +718,7 @@ func (s *Server) decodePutAppDefinitionRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutAppInstallationRequest(r *http.Request) (
-	req *AppInstallationFields,
+	req *AppInstallationData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -765,7 +765,7 @@ func (s *Server) decodePutAppInstallationRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request AppInstallationFields
+		var request AppInstallationData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -789,7 +789,7 @@ func (s *Server) decodePutAppInstallationRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutAppSigningSecretRequest(r *http.Request) (
-	req *AppSigningSecretRequestFields,
+	req *AppSigningSecretRequestData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -836,7 +836,7 @@ func (s *Server) decodePutAppSigningSecretRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request AppSigningSecretRequestFields
+		var request AppSigningSecretRequestData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -860,7 +860,7 @@ func (s *Server) decodePutAppSigningSecretRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutContentTypeRequest(r *http.Request) (
-	req *ContentTypeRequestFields,
+	req *ContentTypeRequestData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -907,7 +907,7 @@ func (s *Server) decodePutContentTypeRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request ContentTypeRequestFields
+		var request ContentTypeRequestData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -939,7 +939,7 @@ func (s *Server) decodePutContentTypeRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutEditorInterfaceRequest(r *http.Request) (
-	req *EditorInterfaceFields,
+	req *EditorInterfaceData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -986,7 +986,7 @@ func (s *Server) decodePutEditorInterfaceRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request EditorInterfaceFields
+		var request EditorInterfaceData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -1097,7 +1097,7 @@ func (s *Server) decodePutEntryRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutExtensionRequest(r *http.Request) (
-	req *ExtensionFields,
+	req *ExtensionData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -1144,7 +1144,7 @@ func (s *Server) decodePutExtensionRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request ExtensionFields
+		var request ExtensionData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -1255,7 +1255,7 @@ func (s *Server) decodePutResourceProviderRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutResourceTypeRequest(r *http.Request) (
-	req *ResourceTypeFields,
+	req *ResourceTypeData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -1302,7 +1302,7 @@ func (s *Server) decodePutResourceTypeRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request ResourceTypeFields
+		var request ResourceTypeData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -1326,7 +1326,7 @@ func (s *Server) decodePutResourceTypeRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutSpaceEnablementsRequest(r *http.Request) (
-	req *SpaceEnablementFields,
+	req *SpaceEnablementData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -1373,7 +1373,7 @@ func (s *Server) decodePutSpaceEnablementsRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request SpaceEnablementFields
+		var request SpaceEnablementData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -1397,7 +1397,7 @@ func (s *Server) decodePutSpaceEnablementsRequest(r *http.Request) (
 }
 
 func (s *Server) decodeUpdateDeliveryApiKeyRequest(r *http.Request) (
-	req *ApiKeyRequestFields,
+	req *ApiKeyRequestData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -1444,7 +1444,7 @@ func (s *Server) decodeUpdateDeliveryApiKeyRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request ApiKeyRequestFields
+		var request ApiKeyRequestData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -1476,7 +1476,7 @@ func (s *Server) decodeUpdateDeliveryApiKeyRequest(r *http.Request) (
 }
 
 func (s *Server) decodeUpdateRoleRequest(r *http.Request) (
-	req *RoleFields,
+	req *RoleData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -1523,7 +1523,7 @@ func (s *Server) decodeUpdateRoleRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request RoleFields
+		var request RoleData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
@@ -1555,7 +1555,7 @@ func (s *Server) decodeUpdateRoleRequest(r *http.Request) (
 }
 
 func (s *Server) decodeUpdateWebhookDefinitionRequest(r *http.Request) (
-	req *WebhookDefinitionFields,
+	req *WebhookDefinitionData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -1602,7 +1602,7 @@ func (s *Server) decodeUpdateWebhookDefinitionRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request WebhookDefinitionFields
+		var request WebhookDefinitionData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

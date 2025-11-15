@@ -272,7 +272,7 @@ func (s *Server) handleCreateAppDefinitionRequest(args [1]string, argsEscaped bo
 		}
 
 		type (
-			Request  = *AppDefinitionFields
+			Request  = *AppDefinitionData
 			Params   = CreateAppDefinitionParams
 			Response = CreateAppDefinitionRes
 		)
@@ -415,7 +415,7 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 		}
 
 		type (
-			Request  = *ApiKeyRequestFields
+			Request  = *ApiKeyRequestData
 			Params   = CreateDeliveryApiKeyParams
 			Response = CreateDeliveryApiKeyRes
 		)
@@ -1000,7 +1000,7 @@ func (s *Server) handleCreatePersonalAccessTokenRequest(args [0]string, argsEsca
 		}
 
 		type (
-			Request  = *PersonalAccessTokenRequestFields
+			Request  = *PersonalAccessTokenRequestData
 			Params   = struct{}
 			Response = CreatePersonalAccessTokenRes
 		)
@@ -1143,7 +1143,7 @@ func (s *Server) handleCreateRoleRequest(args [1]string, argsEscaped bool, w htt
 		}
 
 		type (
-			Request  = *RoleFields
+			Request  = *RoleData
 			Params   = CreateRoleParams
 			Response = CreateRoleRes
 		)
@@ -1286,7 +1286,7 @@ func (s *Server) handleCreateWebhookDefinitionRequest(args [1]string, argsEscape
 		}
 
 		type (
-			Request  = *WebhookDefinitionFields
+			Request  = *WebhookDefinitionData
 			Params   = CreateWebhookDefinitionParams
 			Response = CreateWebhookDefinitionRes
 		)
@@ -5946,7 +5946,7 @@ func (s *Server) handlePutAppDefinitionRequest(args [2]string, argsEscaped bool,
 		}
 
 		type (
-			Request  = *AppDefinitionFields
+			Request  = *AppDefinitionData
 			Params   = PutAppDefinitionParams
 			Response = PutAppDefinitionRes
 		)
@@ -6101,7 +6101,7 @@ func (s *Server) handlePutAppInstallationRequest(args [3]string, argsEscaped boo
 		}
 
 		type (
-			Request  = *AppInstallationFields
+			Request  = *AppInstallationData
 			Params   = PutAppInstallationParams
 			Response = PutAppInstallationRes
 		)
@@ -6248,7 +6248,7 @@ func (s *Server) handlePutAppSigningSecretRequest(args [2]string, argsEscaped bo
 		}
 
 		type (
-			Request  = *AppSigningSecretRequestFields
+			Request  = *AppSigningSecretRequestData
 			Params   = PutAppSigningSecretParams
 			Response = PutAppSigningSecretRes
 		)
@@ -6403,7 +6403,7 @@ func (s *Server) handlePutContentTypeRequest(args [3]string, argsEscaped bool, w
 		}
 
 		type (
-			Request  = *ContentTypeRequestFields
+			Request  = *ContentTypeRequestData
 			Params   = PutContentTypeParams
 			Response = PutContentTypeRes
 		)
@@ -6558,7 +6558,7 @@ func (s *Server) handlePutEditorInterfaceRequest(args [3]string, argsEscaped boo
 		}
 
 		type (
-			Request  = *EditorInterfaceFields
+			Request  = *EditorInterfaceData
 			Params   = PutEditorInterfaceParams
 			Response = PutEditorInterfaceRes
 		)
@@ -6872,7 +6872,7 @@ func (s *Server) handlePutExtensionRequest(args [3]string, argsEscaped bool, w h
 		}
 
 		type (
-			Request  = *ExtensionFields
+			Request  = *ExtensionData
 			Params   = PutExtensionParams
 			Response = PutExtensionRes
 		)
@@ -7170,7 +7170,7 @@ func (s *Server) handlePutResourceTypeRequest(args [3]string, argsEscaped bool, 
 		}
 
 		type (
-			Request  = *ResourceTypeFields
+			Request  = *ResourceTypeData
 			Params   = PutResourceTypeParams
 			Response = PutResourceTypeRes
 		)
@@ -7317,7 +7317,7 @@ func (s *Server) handlePutSpaceEnablementsRequest(args [1]string, argsEscaped bo
 		}
 
 		type (
-			Request  = *SpaceEnablementFields
+			Request  = *SpaceEnablementData
 			Params   = PutSpaceEnablementsParams
 			Response = PutSpaceEnablementsRes
 		)
@@ -7732,7 +7732,7 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 		}
 
 		type (
-			Request  = *ApiKeyRequestFields
+			Request  = *ApiKeyRequestData
 			Params   = UpdateDeliveryApiKeyParams
 			Response = UpdateDeliveryApiKeyRes
 		)
@@ -7883,7 +7883,7 @@ func (s *Server) handleUpdateRoleRequest(args [2]string, argsEscaped bool, w htt
 		}
 
 		type (
-			Request  = *RoleFields
+			Request  = *RoleData
 			Params   = UpdateRoleParams
 			Response = UpdateRoleRes
 		)
@@ -8034,7 +8034,7 @@ func (s *Server) handleUpdateWebhookDefinitionRequest(args [2]string, argsEscape
 		}
 
 		type (
-			Request  = *WebhookDefinitionFields
+			Request  = *WebhookDefinitionData
 			Params   = UpdateWebhookDefinitionParams
 			Response = UpdateWebhookDefinitionRes
 		)

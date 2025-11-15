@@ -26,7 +26,7 @@ func (ts *Handler) GetAppInstallation(_ context.Context, params cm.GetAppInstall
 }
 
 //nolint:ireturn
-func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallationFields, params cm.PutAppInstallationParams) (cm.PutAppInstallationRes, error) {
+func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallationData, params cm.PutAppInstallationParams) (cm.PutAppInstallationRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

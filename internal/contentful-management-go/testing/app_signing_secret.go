@@ -6,7 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewAppSigningSecretFromRequest(organizationID, appDefinitionID string, request cm.AppSigningSecretRequestFields) cm.AppSigningSecret {
+func NewAppSigningSecretFromRequest(organizationID, appDefinitionID string, request cm.AppSigningSecretRequestData) cm.AppSigningSecret {
 	resourceProvider := cm.AppSigningSecret{
 		Sys: NewAppSigningSecretSys(organizationID, appDefinitionID),
 	}
@@ -36,7 +36,7 @@ func NewAppSigningSecretSys(organizationID, appDefinitionID string) cm.AppSignin
 	}
 }
 
-func UpdateAppSigningSecretFromRequest(appSigningSecret *cm.AppSigningSecret, organizationID, appDefinitionID string, request cm.AppSigningSecretRequestFields) {
+func UpdateAppSigningSecretFromRequest(appSigningSecret *cm.AppSigningSecret, organizationID, appDefinitionID string, request cm.AppSigningSecretRequestData) {
 	appSigningSecret.Sys.Organization.Sys.ID = organizationID
 	appSigningSecret.Sys.AppDefinition.Sys.ID = appDefinitionID
 

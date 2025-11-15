@@ -3,7 +3,7 @@ PersonalAccessToken:
     - type: object
       properties:
         sys:
-          $ref: "sys.yml#/PersonalAccessTokenSys"
+          $ref: "./sys.yml#/PersonalAccessTokenSys"
       required:
         - sys
-    - $ref: "fields.yml#/PersonalAccessTokenFields"
+    - $ref: "./data.yml#/PersonalAccessTokenData"

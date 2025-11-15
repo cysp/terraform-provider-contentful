@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewRoleFromFields(spaceID, roleID string, roleFields cm.RoleFields) cm.Role {
+func NewRoleFromFields(spaceID, roleID string, roleFields cm.RoleData) cm.Role {
 	role := cm.Role{
 		Sys: NewRoleSys(spaceID, roleID),
 	}
@@ -28,16 +28,16 @@ func NewRoleSys(spaceID, roleID string) cm.RoleSys {
 	}
 }
 
-func UpdateRoleFromFields(role *cm.Role, roleFields cm.RoleFields) {
+func UpdateRoleFromFields(role *cm.Role, roleFields cm.RoleData) {
 	role.Name = roleFields.Name
-	role.Permissions = convertMap(roleFields.Permissions, func(permission cm.RoleFieldsPermissionsItem) cm.RolePermissionsItem {
+	role.Permissions = convertMap(roleFields.Permissions, func(permission cm.RoleDataPermissionsItem) cm.RolePermissionsItem {
 		return cm.RolePermissionsItem{
 			Type:        cm.RolePermissionsItemType(permission.Type),
 			String:      permission.String,
 			StringArray: permission.StringArray,
 		}
 	})
-	role.Policies = convertSlice(roleFields.Policies, func(policy cm.RoleFieldsPoliciesItem) cm.RolePoliciesItem {
+	role.Policies = convertSlice(roleFields.Policies, func(policy cm.RoleDataPoliciesItem) cm.RolePoliciesItem {
 		return cm.RolePoliciesItem{
 			Effect: cm.RolePoliciesItemEffect(policy.Effect),
 			Actions: cm.RolePoliciesItemActions{

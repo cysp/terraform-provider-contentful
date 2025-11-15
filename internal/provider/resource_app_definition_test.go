@@ -40,7 +40,7 @@ func TestAccAppDefinitionResourceImport(t *testing.T) {
 		"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
 	}
 
-	server.SetAppDefinition("2zuSjSO4A0e6GKBrhJRe2m", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("2zuSjSO4A0e6GKBrhJRe2m", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
 		Bundle: cm.NewOptAppBundleLink(cm.AppBundleLink{
 			Sys: cm.AppBundleLinkSys{

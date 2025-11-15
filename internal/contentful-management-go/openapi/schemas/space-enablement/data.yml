@@ -1,0 +1,11 @@
+SpaceEnablementData:
+  type: object
+  properties:
+    crossSpaceLinks:
+      $ref: "./field.yml#/SpaceEnablementField"
+    spaceTemplates:
+      $ref: "./field.yml#/SpaceEnablementField"
+    studioExperiences:
+      $ref: "./field.yml#/SpaceEnablementField"
+    suggestConcepts:
+      $ref: "./field.yml#/SpaceEnablementField"

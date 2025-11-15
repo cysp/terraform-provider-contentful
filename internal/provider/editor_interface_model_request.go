@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) (cm.EditorInterfaceFields, diag.Diagnostics) {
+func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (cm.EditorInterfaceData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	request := cm.EditorInterfaceFields{}
+	request := cm.EditorInterfaceData{}
 
 	if model.EditorLayout.IsNull() || model.EditorLayout.IsUnknown() {
 		request.EditorLayout.Reset()
@@ -41,12 +41,12 @@ func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) 
 
 		controlsElementValues := model.Controls.Elements()
 
-		requestControlsItems := make([]cm.EditorInterfaceFieldsControlsItem, len(controlsElementValues))
+		requestControlsItems := make([]cm.EditorInterfaceDataControlsItem, len(controlsElementValues))
 
 		for index, controlsElement := range controlsElementValues {
 			path := controlsPath.AtListIndex(index)
 
-			requestControlsItem, requestControlsItemDiags := controlsElement.Value().ToEditorInterfaceFieldsControlsItem(ctx, path)
+			requestControlsItem, requestControlsItemDiags := controlsElement.Value().ToEditorInterfaceDataControlsItem(ctx, path)
 			diags.Append(requestControlsItemDiags...)
 
 			requestControlsItems[index] = requestControlsItem
@@ -62,12 +62,12 @@ func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) 
 
 		groupControlsElementValues := model.GroupControls.Elements()
 
-		requestGroupControlsItems := make([]cm.EditorInterfaceFieldsGroupControlsItem, len(groupControlsElementValues))
+		requestGroupControlsItems := make([]cm.EditorInterfaceDataGroupControlsItem, len(groupControlsElementValues))
 
 		for index, groupControlsElement := range groupControlsElementValues {
 			path := controlsPath.AtListIndex(index)
 
-			requestGroupControlsItem, requestGroupControlsItemDiags := groupControlsElement.Value().ToEditorInterfaceFieldsGroupControlsItem(ctx, path)
+			requestGroupControlsItem, requestGroupControlsItemDiags := groupControlsElement.Value().ToEditorInterfaceDataGroupControlsItem(ctx, path)
 			diags.Append(requestGroupControlsItemDiags...)
 
 			requestGroupControlsItems[index] = requestGroupControlsItem
@@ -83,12 +83,12 @@ func (model *EditorInterfaceModel) ToEditorInterfaceFields(ctx context.Context) 
 
 		sidebarElementValues := model.Sidebar.Elements()
 
-		requestSidebarItems := make([]cm.EditorInterfaceFieldsSidebarItem, len(sidebarElementValues))
+		requestSidebarItems := make([]cm.EditorInterfaceDataSidebarItem, len(sidebarElementValues))
 
 		for index, sidebarElement := range sidebarElementValues {
 			path := sidebarPath.AtListIndex(index)
 
-			requestSidebarItem, requestSidebarItemDiags := sidebarElement.Value().ToEditorInterfaceFieldsSidebarItem(ctx, path)
+			requestSidebarItem, requestSidebarItemDiags := sidebarElement.Value().ToEditorInterfaceDataSidebarItem(ctx, path)
 			diags.Append(requestSidebarItemDiags...)
 
 			requestSidebarItems[index] = requestSidebarItem

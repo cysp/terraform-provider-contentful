@@ -3,7 +3,7 @@ SpaceEnablement:
     - type: object
       properties:
         sys:
-          $ref: "sys.yml#/SpaceEnablementSys"
+          $ref: "./sys.yml#/SpaceEnablementSys"
       required:
         - sys
-    - $ref: "fields.yml#/SpaceEnablementFields"
+    - $ref: "./data.yml#/SpaceEnablementData"

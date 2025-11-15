@@ -76,7 +76,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToContentTypeRequestFields(ctx)
+	request, requestDiags := data.ToContentTypeRequestData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -223,7 +223,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 		XContentfulVersion: currentVersion,
 	}
 
-	putContentTypeRequest, putContentTypeRequestDiags := data.ToContentTypeRequestFields(ctx)
+	putContentTypeRequest, putContentTypeRequestDiags := data.ToContentTypeRequestData(ctx)
 	resp.Diagnostics.Append(putContentTypeRequestDiags...)
 
 	if resp.Diagnostics.HasError() {

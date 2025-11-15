@@ -72,7 +72,7 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 	}
 }
 
-func TestToAppInstallationFields(t *testing.T) {
+func TestToAppInstallationData(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -118,7 +118,7 @@ func TestToAppInstallationFields(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			req, diags := test.model.ToAppInstallationFields()
+			req, diags := test.model.ToAppInstallationData()
 
 			requestBody, _ := req.MarshalJSON()
 

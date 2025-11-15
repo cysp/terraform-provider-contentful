@@ -1,6 +1,6 @@
-ContentTypeFields:
+ContentTypeData:
   allOf:
-    - $ref: "./request-fields.yml#/ContentTypeRequestFields"
+    - $ref: "./request-data.yml#/ContentTypeRequestData"
     - type: object
       properties:
         description:

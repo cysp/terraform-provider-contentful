@@ -26,7 +26,7 @@ func (ts *Handler) GetSpaceEnablements(_ context.Context, params cm.GetSpaceEnab
 }
 
 //nolint:ireturn
-func (ts *Handler) PutSpaceEnablements(_ context.Context, req *cm.SpaceEnablementFields, params cm.PutSpaceEnablementsParams) (cm.PutSpaceEnablementsRes, error) {
+func (ts *Handler) PutSpaceEnablements(_ context.Context, req *cm.SpaceEnablementData, params cm.PutSpaceEnablementsParams) (cm.PutSpaceEnablementsRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID string, contentTypeFields cm.ContentTypeRequestFields) cm.ContentType {
+func NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID string, contentTypeFields cm.ContentTypeRequestData) cm.ContentType {
 	contentType := cm.ContentType{
 		Sys: NewContentTypeSys(spaceID, environmentID, contentTypeID),
 	}
@@ -35,16 +35,16 @@ func NewContentTypeSys(spaceID, environmentID, contentTypeID string) cm.ContentT
 	}
 }
 
-func UpdateContentTypeFromRequestFields(contentType *cm.ContentType, contentTypeFields cm.ContentTypeRequestFields) {
+func UpdateContentTypeFromRequestFields(contentType *cm.ContentType, contentTypeFields cm.ContentTypeRequestData) {
 	contentType.Sys.Version++
 
 	contentType.Name = contentTypeFields.Name
 
 	contentType.Description = contentTypeFields.Description
 
-	contentType.Fields = convertSlice(contentTypeFields.Fields, func(field cm.ContentTypeRequestFieldsFieldsItem) cm.ContentTypeFieldsItem {
+	contentType.Fields = convertSlice(contentTypeFields.Fields, func(field cm.ContentTypeRequestDataFieldsItem) cm.ContentTypeFieldsItem {
 		contentTypeFieldItems := cm.OptContentTypeFieldsItemItems{}
-		convertOptNil(&contentTypeFieldItems, &field.Items, func(fieldItems cm.ContentTypeRequestFieldsFieldsItemItems) cm.ContentTypeFieldsItemItems {
+		convertOptNil(&contentTypeFieldItems, &field.Items, func(fieldItems cm.ContentTypeRequestDataFieldsItemItems) cm.ContentTypeFieldsItemItems {
 			return cm.ContentTypeFieldsItemItems(fieldItems)
 		})
 

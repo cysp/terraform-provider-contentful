@@ -1,4 +1,4 @@
-RoleFields:
+RoleData:
   type: object
   properties:
     name:

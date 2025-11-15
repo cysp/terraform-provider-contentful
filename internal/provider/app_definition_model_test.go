@@ -110,9 +110,9 @@ func FuzzAppDefinitionResourceModelRoundtrip(f *testing.F) {
 			t.Fatalf("Failed to convert AppDefinition to AppDefinitionResourceModel: %v", modelDiags)
 		}
 
-		appDefinitionFields, appDefinitionFieldsDiags := model.ToAppDefinitionFields(t.Context(), path.Empty())
+		appDefinitionFields, appDefinitionFieldsDiags := model.ToAppDefinitionData(t.Context(), path.Empty())
 		if appDefinitionFieldsDiags.HasError() {
-			t.Fatalf("Failed to convert AppDefinitionResourceModel to AppDefinitionFields: %v", appDefinitionFieldsDiags)
+			t.Fatalf("Failed to convert AppDefinitionResourceModel to AppDefinitionData: %v", appDefinitionFieldsDiags)
 		}
 
 		output := cmt.NewAppDefinitionFromFields(input.Sys.Organization.Sys.ID, input.Sys.ID, appDefinitionFields)

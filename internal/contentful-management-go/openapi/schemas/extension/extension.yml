@@ -3,7 +3,7 @@ Extension:
     - type: object
       properties:
         sys:
-          $ref: "sys.yml#/ExtensionSys"
+          $ref: "./sys.yml#/ExtensionSys"
       required:
         - sys
-    - $ref: "fields.yml#/ExtensionFields"
+    - $ref: "./data.yml#/ExtensionData"

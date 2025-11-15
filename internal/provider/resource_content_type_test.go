@@ -22,9 +22,9 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 		"environment_id": config.StringVariable("test"),
 	}
 
-	server.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestFields{
+	server.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestData{
 		Name:   "Author",
-		Fields: []cm.ContentTypeRequestFieldsFieldsItem{},
+		Fields: []cm.ContentTypeRequestDataFieldsItem{},
 	})
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{

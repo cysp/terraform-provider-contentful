@@ -9,7 +9,7 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) CreateWebhookDefinition(_ context.Context, req *cm.WebhookDefinitionFields, params cm.CreateWebhookDefinitionParams) (cm.CreateWebhookDefinitionRes, error) {
+func (ts *Handler) CreateWebhookDefinition(_ context.Context, req *cm.WebhookDefinitionData, params cm.CreateWebhookDefinitionParams) (cm.CreateWebhookDefinitionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -44,7 +44,7 @@ func (ts *Handler) GetWebhookDefinition(_ context.Context, params cm.GetWebhookD
 }
 
 //nolint:ireturn
-func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDefinitionFields, params cm.UpdateWebhookDefinitionParams) (cm.UpdateWebhookDefinitionRes, error) {
+func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDefinitionData, params cm.UpdateWebhookDefinitionParams) (cm.UpdateWebhookDefinitionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

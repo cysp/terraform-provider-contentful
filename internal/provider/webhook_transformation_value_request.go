@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func ToOptNilWebhookDefinitionFieldsTransformation(_ context.Context, _ path.Path, value TypedObject[WebhookTransformationValue]) (cm.OptNilWebhookDefinitionFieldsTransformation, diag.Diagnostics) {
+func ToOptNilWebhookDefinitionDataTransformation(_ context.Context, _ path.Path, value TypedObject[WebhookTransformationValue]) (cm.OptNilWebhookDefinitionDataTransformation, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	optNilTransformation := cm.OptNilWebhookDefinitionFieldsTransformation{}
+	optNilTransformation := cm.OptNilWebhookDefinitionDataTransformation{}
 
 	switch {
 	case value.IsUnknown():
@@ -19,7 +19,7 @@ func ToOptNilWebhookDefinitionFieldsTransformation(_ context.Context, _ path.Pat
 	case value.IsNull():
 		optNilTransformation.SetToNull()
 	default:
-		transformation := cm.WebhookDefinitionFieldsTransformation{}
+		transformation := cm.WebhookDefinitionDataTransformation{}
 
 		value := value.Value()
 

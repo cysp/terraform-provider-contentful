@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewAppInstallationFromFields(spaceID, environmentID, appDefinitionID string, appInstallationFields cm.AppInstallationFields) cm.AppInstallation {
+func NewAppInstallationFromFields(spaceID, environmentID, appDefinitionID string, appInstallationFields cm.AppInstallationData) cm.AppInstallation {
 	appInstallation := cm.AppInstallation{
 		Sys: NewAppInstallationSys(spaceID, environmentID, appDefinitionID),
 	}
@@ -41,6 +41,6 @@ func NewAppInstallationSys(spaceID, environmentID, appDefinitionID string) cm.Ap
 	}
 }
 
-func UpdateAppInstallationFromFields(appInstallation *cm.AppInstallation, appInstallationFields cm.AppInstallationFields) {
+func UpdateAppInstallationFromFields(appInstallation *cm.AppInstallation, appInstallationFields cm.AppInstallationData) {
 	appInstallation.Parameters = appInstallationFields.Parameters
 }

@@ -20,7 +20,7 @@ func TestAccWebhookResourceImport(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	server.SetWebhookDefinition("0p38pssr0fi3", "6umfVRwmSpcSRdc1jSW6qQ", cm.WebhookDefinitionFields{
+	server.SetWebhookDefinition("0p38pssr0fi3", "6umfVRwmSpcSRdc1jSW6qQ", cm.WebhookDefinitionData{
 		Name: "test",
 		URL:  "https://example.com",
 		Headers: []cm.WebhookDefinitionHeader{

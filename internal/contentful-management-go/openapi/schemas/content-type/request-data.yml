@@ -1,4 +1,4 @@
-ContentTypeRequestFields:
+ContentTypeRequestData:
   type: object
   properties:
     name:

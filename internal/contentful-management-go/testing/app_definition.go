@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewAppDefinitionFromFields(organizationID, appDefinitionID string, fields cm.AppDefinitionFields) cm.AppDefinition {
+func NewAppDefinitionFromFields(organizationID, appDefinitionID string, fields cm.AppDefinitionData) cm.AppDefinition {
 	appDefinition := cm.AppDefinition{
 		Sys: NewAppDefinitionSys(organizationID, appDefinitionID),
 	}
@@ -28,7 +28,7 @@ func NewAppDefinitionSys(organizationID, appDefinitionID string) cm.AppDefinitio
 	}
 }
 
-func UpdateAppDefinitionFromFields(appDefinition *cm.AppDefinition, organizationID, appDefinitionID string, fields cm.AppDefinitionFields) {
+func UpdateAppDefinitionFromFields(appDefinition *cm.AppDefinition, organizationID, appDefinitionID string, fields cm.AppDefinitionData) {
 	appDefinition.Sys.ID = appDefinitionID
 	appDefinition.Sys.Organization.Sys.ID = organizationID
 
@@ -37,15 +37,15 @@ func UpdateAppDefinitionFromFields(appDefinition *cm.AppDefinition, organization
 	appDefinition.Src = fields.Src
 	appDefinition.Bundle = fields.Bundle
 
-	appDefinition.Locations = convertSlice(fields.Locations, func(item cm.AppDefinitionFieldsLocationsItem) cm.AppDefinitionLocationsItem {
+	appDefinition.Locations = convertSlice(fields.Locations, func(item cm.AppDefinitionDataLocationsItem) cm.AppDefinitionLocationsItem {
 		locationsItem := cm.AppDefinitionLocationsItem{
 			Location: item.Location,
-			FieldTypes: convertSlice(item.FieldTypes, func(fieldType cm.AppDefinitionFieldsLocationsItemFieldTypesItem) cm.AppDefinitionLocationsItemFieldTypesItem {
+			FieldTypes: convertSlice(item.FieldTypes, func(fieldType cm.AppDefinitionDataLocationsItemFieldTypesItem) cm.AppDefinitionLocationsItemFieldTypesItem {
 				fieldTypesItem := cm.AppDefinitionLocationsItemFieldTypesItem{
 					Type:     fieldType.Type,
 					LinkType: fieldType.LinkType,
 				}
-				convertOptNil(&fieldTypesItem.Items, &fieldType.Items, func(items cm.AppDefinitionFieldsLocationsItemFieldTypesItemItems) cm.AppDefinitionLocationsItemFieldTypesItemItems {
+				convertOptNil(&fieldTypesItem.Items, &fieldType.Items, func(items cm.AppDefinitionDataLocationsItemFieldTypesItemItems) cm.AppDefinitionLocationsItemFieldTypesItemItems {
 					return cm.AppDefinitionLocationsItemFieldTypesItemItems(items)
 				})
 
@@ -53,7 +53,7 @@ func UpdateAppDefinitionFromFields(appDefinition *cm.AppDefinition, organization
 			}),
 		}
 
-		convertOptNil(&locationsItem.NavigationItem, &item.NavigationItem, func(navigationItem cm.AppDefinitionFieldsLocationsItemNavigationItem) cm.AppDefinitionLocationsItemNavigationItem {
+		convertOptNil(&locationsItem.NavigationItem, &item.NavigationItem, func(navigationItem cm.AppDefinitionDataLocationsItemNavigationItem) cm.AppDefinitionLocationsItemNavigationItem {
 			return cm.AppDefinitionLocationsItemNavigationItem(navigationItem)
 		})
 

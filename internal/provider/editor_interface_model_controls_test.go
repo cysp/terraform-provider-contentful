@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItem(t *testing.T) {
+func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItem(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -25,7 +25,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItem(t *testi
 		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
 	}))
 
-	item, diags := model.Value().ToEditorInterfaceFieldsControlsItem(ctx, path)
+	item, diags := model.Value().ToEditorInterfaceDataControlsItem(ctx, path)
 
 	assert.Equal(t, "field_id", item.FieldId)
 	assert.Equal(t, cm.NewOptString("widget_namespace"), item.WidgetNamespace)
@@ -35,7 +35,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItem(t *testi
 	assert.Empty(t, diags)
 }
 
-func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItemInvalidSettings(t *testing.T) {
+func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItemInvalidSettings(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -48,7 +48,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceFieldsControlsItemInvalidSe
 		"settings":         jsontypes.NewNormalizedValue(`invalid json`),
 	}))
 
-	controlsItem, diags := model.Value().ToEditorInterfaceFieldsControlsItem(ctx, path)
+	controlsItem, diags := model.Value().ToEditorInterfaceDataControlsItem(ctx, path)
 
 	assert.NotNil(t, controlsItem)
 	assert.Empty(t, diags)

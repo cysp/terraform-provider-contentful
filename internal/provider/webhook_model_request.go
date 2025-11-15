@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
-func (model *WebhookModel) ToWebhookDefinitionFields(ctx context.Context, path path.Path) (cm.WebhookDefinitionFields, diag.Diagnostics) {
+func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.WebhookDefinitionFields{
+	req := cm.WebhookDefinitionData{
 		Name:              model.Name.ValueString(),
 		URL:               model.URL.ValueString(),
 		Active:            util.BoolValueToOptBool(model.Active),
@@ -57,7 +57,7 @@ func (model *WebhookModel) ToWebhookDefinitionFields(ctx context.Context, path p
 
 	req.Headers = headersList
 
-	transformation, transformationDiags := ToOptNilWebhookDefinitionFieldsTransformation(ctx, path.AtName("transformation"), model.Transformation)
+	transformation, transformationDiags := ToOptNilWebhookDefinitionDataTransformation(ctx, path.AtName("transformation"), model.Transformation)
 	diags.Append(transformationDiags...)
 
 	req.Transformation = transformation
