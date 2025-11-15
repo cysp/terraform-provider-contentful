@@ -62,6 +62,12 @@ type Handler interface {
 	//
 	// POST /organizations/{organization_id}/teams
 	CreateTeam(ctx context.Context, req *TeamData, params CreateTeamParams) (CreateTeamRes, error)
+	// CreateTeamSpaceMembership implements createTeamSpaceMembership operation.
+	//
+	// Create a team space membership.
+	//
+	// POST /spaces/{space_id}/team_space_memberships
+	CreateTeamSpaceMembership(ctx context.Context, req *TeamSpaceMembershipData, params CreateTeamSpaceMembershipParams) (CreateTeamSpaceMembershipRes, error)
 	// CreateWebhookDefinition implements createWebhookDefinition operation.
 	//
 	// Create a webhook definition.
@@ -152,6 +158,12 @@ type Handler interface {
 	//
 	// DELETE /organizations/{organization_id}/teams/{team_id}
 	DeleteTeam(ctx context.Context, params DeleteTeamParams) (DeleteTeamRes, error)
+	// DeleteTeamSpaceMembership implements deleteTeamSpaceMembership operation.
+	//
+	// Delete a team space membership.
+	//
+	// DELETE /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
+	DeleteTeamSpaceMembership(ctx context.Context, params DeleteTeamSpaceMembershipParams) (DeleteTeamSpaceMembershipRes, error)
 	// DeleteWebhookDefinition implements deleteWebhookDefinition operation.
 	//
 	// Delete a webhook definition.
@@ -272,6 +284,12 @@ type Handler interface {
 	//
 	// GET /organizations/{organization_id}/teams/{team_id}
 	GetTeam(ctx context.Context, params GetTeamParams) (GetTeamRes, error)
+	// GetTeamSpaceMembership implements getTeamSpaceMembership operation.
+	//
+	// Get a single team space membership.
+	//
+	// GET /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
+	GetTeamSpaceMembership(ctx context.Context, params GetTeamSpaceMembershipParams) (GetTeamSpaceMembershipRes, error)
 	// GetWebhookDefinition implements getWebhookDefinition operation.
 	//
 	// Get a webhook definition.
@@ -350,6 +368,12 @@ type Handler interface {
 	//
 	// PUT /organizations/{organization_id}/teams/{team_id}
 	PutTeam(ctx context.Context, req *TeamData, params PutTeamParams) (PutTeamRes, error)
+	// PutTeamSpaceMembership implements putTeamSpaceMembership operation.
+	//
+	// Update a single team space membership.
+	//
+	// PUT /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
+	PutTeamSpaceMembership(ctx context.Context, req *TeamSpaceMembershipData, params PutTeamSpaceMembershipParams) (PutTeamSpaceMembershipRes, error)
 	// RevokePersonalAccessToken implements revokePersonalAccessToken operation.
 	//
 	// Revoke a personal access token.

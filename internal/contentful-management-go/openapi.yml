@@ -90,6 +90,12 @@ components:
       required: true
       schema:
         type: string
+    team_space_membership_id:
+      in: path
+      name: team_space_membership_id
+      required: true
+      schema:
+        type: string
     webhook_definition_id:
       in: path
       name: webhook_definition_id
@@ -507,6 +513,87 @@ paths:
     delete:
       operationId: deleteTeam
       summary: Delete a team
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/team_space_memberships:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+    post:
+      operationId: createTeamSpaceMembership
+      summary: Create a team space membership
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - name: X-Contentful-Team
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/team-space-membership/data.yml#/TeamSpaceMembershipData"
+      responses:
+        2XX:
+          description: A team space membership
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/team_space_memberships/{team_space_membership_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/team_space_membership_id"
+    get:
+      operationId: getTeamSpaceMembership
+      summary: Get a single team space membership
+      responses:
+        200:
+          description: A team space membership
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putTeamSpaceMembership
+      summary: Update a single team space membership
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/team_space_membership_id"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./openapi/schemas/team-space-membership/data.yml#/TeamSpaceMembershipData"
+      responses:
+        2XX:
+          description: A team space membership
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteTeamSpaceMembership
+      summary: Delete a team space membership
       responses:
         204:
           $ref: "#/components/responses/no-content"
