@@ -14,9 +14,9 @@ func NewEditorInterfaceEditorLayoutItemGroupItemValueListFromResponse(ctx contex
 	listElementValues := make([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue], len(items))
 
 	for index, item := range items {
-		path := path.AtListIndex(index)
+		itemPath := path.AtListIndex(index)
 
-		editorLayoutValue, editorLayoutValueDiags := NewEditorInterfaceEditorLayoutItemValueFromResponse(ctx, path, item)
+		editorLayoutValue, editorLayoutValueDiags := NewEditorInterfaceEditorLayoutItemValueFromResponse(ctx, itemPath, item)
 		diags.Append(editorLayoutValueDiags...)
 
 		listElementValues[index] = editorLayoutValue

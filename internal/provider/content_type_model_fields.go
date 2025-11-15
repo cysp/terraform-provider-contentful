@@ -19,9 +19,9 @@ func NewFieldsListFromResponse(ctx context.Context, path path.Path, items []cm.C
 	listElementValues := make([]TypedObject[ContentTypeFieldValue], len(items))
 
 	for index, item := range items {
-		path := path.AtListIndex(index)
+		itemPath := path.AtListIndex(index)
 
-		listElementValue, listElementValueDiags := NewFieldsValueFromResponse(ctx, path, item)
+		listElementValue, listElementValueDiags := NewFieldsValueFromResponse(ctx, itemPath, item)
 		diags.Append(listElementValueDiags...)
 
 		listElementValues[index] = listElementValue
@@ -118,13 +118,13 @@ func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, pa
 	allowedResourceElements := make([]TypedObject[ContentTypeFieldAllowedResourceItemValue], len(resourceLinks))
 
 	for i, resourceLink := range resourceLinks {
-		path := path.AtListIndex(i)
+		resourcePath := path.AtListIndex(i)
 
 		switch resourceLink.Type {
 		case cm.ContentfulEntryResourceLinkResourceLink:
 			contentfulEntryResourceLink, contentfulEntryResourceLinkOk := resourceLink.GetContentfulEntryResourceLink()
 			if !contentfulEntryResourceLinkOk {
-				diags.AddAttributeError(path, "Invalid data", "Expected contentful entry resource link")
+				diags.AddAttributeError(resourcePath, "Invalid data", "Expected contentful entry resource link")
 
 				break
 			}
@@ -148,7 +148,7 @@ func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, pa
 		case cm.ExternalResourceLinkResourceLink:
 			externalResourceLink, externalResourceLinkOk := resourceLink.GetExternalResourceLink()
 			if !externalResourceLinkOk {
-				diags.AddAttributeError(path, "Invalid data", "Expected external resource link")
+				diags.AddAttributeError(resourcePath, "Invalid data", "Expected external resource link")
 
 				break
 			}

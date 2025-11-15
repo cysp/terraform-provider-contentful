@@ -33,7 +33,7 @@ func (model *WebhookModel) ToWebhookDefinitionFields(ctx context.Context, path p
 	if model.Filters.IsNull() || model.Filters.IsUnknown() {
 		req.Filters = cm.NewOptNilWebhookDefinitionFilterArrayNull()
 	} else {
-		path := path.AtName("filters")
+		filtersPath := path.AtName("filters")
 
 		modelFilters := make([]WebhookFilterValue, len(model.Filters.Elements()))
 		diags.Append(tfsdk.ValueAs(ctx, model.Filters, &modelFilters)...)
@@ -41,9 +41,9 @@ func (model *WebhookModel) ToWebhookDefinitionFields(ctx context.Context, path p
 		filters := make([]cm.WebhookDefinitionFilter, len(modelFilters))
 
 		for index, modelFilter := range modelFilters {
-			path := path.AtListIndex(index)
+			filterPath := filtersPath.AtListIndex(index)
 
-			filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, modelFilter)
+			filter, filterDiags := ToWebhookDefinitionFilter(ctx, filterPath, modelFilter)
 			diags.Append(filterDiags...)
 
 			filters[index] = filter
