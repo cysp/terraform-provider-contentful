@@ -39,13 +39,7 @@ func ToEnvironmentLinks(ctx context.Context, path path.Path, value TypedList[typ
 func ToEnvironmentLink(_ context.Context, _ path.Path, environmentID string) (cm.EnvironmentLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.EnvironmentLink{
-		Sys: cm.EnvironmentLinkSys{
-			Type:     cm.EnvironmentLinkSysTypeLink,
-			LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-			ID:       environmentID,
-		},
-	}
+	item := cm.NewEnvironmentLink(environmentID)
 
 	return item, diags
 }

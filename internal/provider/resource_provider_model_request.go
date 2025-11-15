@@ -12,17 +12,9 @@ func (m *ResourceProviderModel) ToResourceProviderRequest(_ context.Context, _ p
 	diags := diag.Diagnostics{}
 
 	req := cm.ResourceProviderRequest{
-		Sys: cm.ResourceProviderRequestSys{
-			ID: m.ResourceProviderID.ValueString(),
-		},
-		Type: cm.ResourceProviderRequestTypeFunction,
-		Function: cm.FunctionLink{
-			Sys: cm.FunctionLinkSys{
-				Type:     cm.FunctionLinkSysTypeLink,
-				LinkType: cm.FunctionLinkSysLinkTypeFunction,
-				ID:       m.FunctionID.ValueString(),
-			},
-		},
+		Sys:      cm.NewResourceProviderRequestSys(m.ResourceProviderID.ValueString()),
+		Type:     cm.ResourceProviderRequestTypeFunction,
+		Function: cm.NewFunctionLink(m.FunctionID.ValueString()),
 	}
 
 	return req, diags

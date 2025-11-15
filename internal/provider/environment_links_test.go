@@ -30,13 +30,7 @@ func TestToEnvironmentLinks(t *testing.T) {
 				types.StringUnknown(),
 			}),
 			expected: []cm.EnvironmentLink{
-				{
-					Sys: cm.EnvironmentLinkSys{
-						Type:     cm.EnvironmentLinkSysTypeLink,
-						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-						ID:       "",
-					},
-				},
+				cm.NewEnvironmentLink(""),
 			},
 			expectedDiags: true,
 		},
@@ -47,27 +41,9 @@ func TestToEnvironmentLinks(t *testing.T) {
 				types.StringValue("c"),
 			}),
 			expected: []cm.EnvironmentLink{
-				{
-					Sys: cm.EnvironmentLinkSys{
-						Type:     cm.EnvironmentLinkSysTypeLink,
-						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-						ID:       "a",
-					},
-				},
-				{
-					Sys: cm.EnvironmentLinkSys{
-						Type:     cm.EnvironmentLinkSysTypeLink,
-						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-						ID:       "",
-					},
-				},
-				{
-					Sys: cm.EnvironmentLinkSys{
-						Type:     cm.EnvironmentLinkSysTypeLink,
-						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-						ID:       "c",
-					},
-				},
+				cm.NewEnvironmentLink("a"),
+				cm.NewEnvironmentLink(""),
+				cm.NewEnvironmentLink("c"),
 			},
 			expectedDiags: true,
 		},
@@ -81,20 +57,8 @@ func TestToEnvironmentLinks(t *testing.T) {
 				types.StringValue("env2"),
 			}),
 			expected: []cm.EnvironmentLink{
-				{
-					Sys: cm.EnvironmentLinkSys{
-						Type:     cm.EnvironmentLinkSysTypeLink,
-						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-						ID:       "env1",
-					},
-				},
-				{
-					Sys: cm.EnvironmentLinkSys{
-						Type:     cm.EnvironmentLinkSysTypeLink,
-						LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-						ID:       "env2",
-					},
-				},
+				cm.NewEnvironmentLink("env1"),
+				cm.NewEnvironmentLink("env2"),
 			},
 		},
 	}
@@ -123,20 +87,8 @@ func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 	path := path.Root("test")
 
 	environmentLinks := []cm.EnvironmentLink{
-		{
-			Sys: cm.EnvironmentLinkSys{
-				Type:     cm.EnvironmentLinkSysTypeLink,
-				LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-				ID:       "env1",
-			},
-		},
-		{
-			Sys: cm.EnvironmentLinkSys{
-				Type:     cm.EnvironmentLinkSysTypeLink,
-				LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-				ID:       "env2",
-			},
-		},
+		cm.NewEnvironmentLink("env1"),
+		cm.NewEnvironmentLink("env2"),
 	}
 
 	expected := NewTypedList([]types.String{

@@ -6,26 +6,12 @@ import (
 
 func NewRoleFromFields(spaceID, roleID string, roleFields cm.RoleData) cm.Role {
 	role := cm.Role{
-		Sys: NewRoleSys(spaceID, roleID),
+		Sys: cm.NewRoleSys(spaceID, roleID),
 	}
 
 	UpdateRoleFromFields(&role, roleFields)
 
 	return role
-}
-
-func NewRoleSys(spaceID, roleID string) cm.RoleSys {
-	return cm.RoleSys{
-		Type: cm.RoleSysTypeRole,
-		Space: cm.SpaceLink{
-			Sys: cm.SpaceLinkSys{
-				Type:     cm.SpaceLinkSysTypeLink,
-				LinkType: cm.SpaceLinkSysLinkTypeSpace,
-				ID:       spaceID,
-			},
-		},
-		ID: roleID,
-	}
 }
 
 func UpdateRoleFromFields(role *cm.Role, roleFields cm.RoleData) {

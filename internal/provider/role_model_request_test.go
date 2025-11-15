@@ -14,9 +14,7 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 	ctx := t.Context()
 
 	model := DiagsNoErrorsMust(NewRoleResourceModelFromResponse(ctx, cm.Role{
-		Sys: cm.RoleSys{
-			ID: "abcdef",
-		},
+		Sys:         cm.NewRoleSys("space", "abcdef"),
 		Name:        "Reader",
 		Description: cm.NewOptNilString("Read access to content"),
 		Permissions: map[string]cm.RolePermissionsItem{

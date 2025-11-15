@@ -62,13 +62,7 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 			continue
 		}
 
-		tags = append(tags, cm.TagLink{
-			Sys: cm.TagLinkSys{
-				Type:     "Link",
-				LinkType: "Tag",
-				ID:       tagValue,
-			},
-		})
+		tags = append(tags, cm.NewTagLink(tagValue))
 	}
 
 	metadata.Tags = tags

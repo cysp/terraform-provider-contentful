@@ -15,13 +15,13 @@ import (
 func FuzzExtensionModelRoundtrip(f *testing.F) {
 	corpus := []cm.Extension{
 		{
-			Sys: cm.ExtensionSys{Type: "Extension", Space: cm.SpaceLink{Sys: cm.SpaceLinkSys{Type: "Link", LinkType: "Space", ID: "space-id"}}, Environment: cm.EnvironmentLink{Sys: cm.EnvironmentLinkSys{Type: "Link", LinkType: "Environment", ID: "environment-id"}}, ID: "extension-id"},
+			Sys: cm.NewExtensionSys("space-id", "environment-id", "extension-id"),
 			Extension: cm.ExtensionExtension{
 				Name: "Extension Name",
 			},
 		},
 		{
-			Sys: cm.ExtensionSys{Type: "Extension", Space: cm.SpaceLink{Sys: cm.SpaceLinkSys{Type: "Link", LinkType: "Space", ID: "space-id"}}, Environment: cm.EnvironmentLink{Sys: cm.EnvironmentLinkSys{Type: "Link", LinkType: "Environment", ID: "environment-id"}}, ID: "extension-id"},
+			Sys: cm.NewExtensionSys("space-id", "environment-id", "extension-id"),
 			Extension: cm.ExtensionExtension{
 				Name:   "Extension Name",
 				Src:    cm.NewOptString("https://example.com/extension.js"),

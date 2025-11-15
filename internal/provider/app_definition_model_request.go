@@ -21,13 +21,7 @@ func (model *AppDefinitionModel) ToAppDefinitionData(ctx context.Context, path p
 	}
 
 	if !model.BundleID.IsNull() && !model.BundleID.IsUnknown() {
-		fields.Bundle.SetTo(cm.AppBundleLink{
-			Sys: cm.AppBundleLinkSys{
-				Type:     cm.AppBundleLinkSysTypeLink,
-				LinkType: cm.AppBundleLinkSysLinkTypeAppBundle,
-				ID:       model.BundleID.ValueString(),
-			},
-		})
+		fields.Bundle.SetTo(cm.NewAppBundleLink(model.BundleID.ValueString()))
 	}
 
 	if model.Locations != nil {

@@ -6,33 +6,12 @@ import (
 
 func NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID string, contentTypeFields cm.ContentTypeRequestData) cm.ContentType {
 	contentType := cm.ContentType{
-		Sys: NewContentTypeSys(spaceID, environmentID, contentTypeID),
+		Sys: cm.NewContentTypeSys(spaceID, environmentID, contentTypeID),
 	}
 
 	UpdateContentTypeFromRequestFields(&contentType, contentTypeFields)
 
 	return contentType
-}
-
-func NewContentTypeSys(spaceID, environmentID, contentTypeID string) cm.ContentTypeSys {
-	return cm.ContentTypeSys{
-		Type: cm.ContentTypeSysTypeContentType,
-		Space: cm.SpaceLink{
-			Sys: cm.SpaceLinkSys{
-				Type:     cm.SpaceLinkSysTypeLink,
-				LinkType: cm.SpaceLinkSysLinkTypeSpace,
-				ID:       spaceID,
-			},
-		},
-		Environment: cm.EnvironmentLink{
-			Sys: cm.EnvironmentLinkSys{
-				Type:     cm.EnvironmentLinkSysTypeLink,
-				LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-				ID:       environmentID,
-			},
-		},
-		ID: contentTypeID,
-	}
 }
 
 func UpdateContentTypeFromRequestFields(contentType *cm.ContentType, contentTypeFields cm.ContentTypeRequestData) {

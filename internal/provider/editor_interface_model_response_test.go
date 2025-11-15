@@ -18,24 +18,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 	}{
 		"null": {
 			editorInterface: cm.EditorInterface{
-				Sys: cm.EditorInterfaceSys{
-					Space: cm.SpaceLink{
-						Sys: cm.SpaceLinkSys{
-							ID: "space",
-						},
-					},
-					Environment: cm.EnvironmentLink{
-						Sys: cm.EnvironmentLinkSys{
-							ID: "environment",
-						},
-					},
-					ContentType: cm.ContentTypeLink{
-						Sys: cm.ContentTypeLinkSys{
-							ID: "content_type",
-						},
-					},
-					ID: "null",
-				},
+				Sys: cm.NewEditorInterfaceSys("space", "environment", "content_type", "null"),
 			},
 			expectedModel: EditorInterfaceModel{
 				IDIdentityModel: IDIdentityModel{
@@ -54,24 +37,7 @@ func TestEditorInterfaceModelReadFromResponse(t *testing.T) {
 		},
 		"empty": {
 			editorInterface: cm.EditorInterface{
-				Sys: cm.EditorInterfaceSys{
-					Space: cm.SpaceLink{
-						Sys: cm.SpaceLinkSys{
-							ID: "space",
-						},
-					},
-					Environment: cm.EnvironmentLink{
-						Sys: cm.EnvironmentLinkSys{
-							ID: "environment",
-						},
-					},
-					ContentType: cm.ContentTypeLink{
-						Sys: cm.ContentTypeLinkSys{
-							ID: "content_type",
-						},
-					},
-					ID: "empty",
-				},
+				Sys:           cm.NewEditorInterfaceSys("space", "environment", "content_type", "empty"),
 				EditorLayout:  cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{}),
 				Controls:      cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{}),
 				GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray([]cm.EditorInterfaceGroupControlsItem{}),

@@ -37,7 +37,7 @@ func TestAccResourceProviderResource(t *testing.T) {
 	})
 }
 
-//nolint:dupl,paralleltest
+//nolint:paralleltest
 func TestAccResourceProviderResourceImport(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -51,17 +51,9 @@ func TestAccResourceProviderResourceImport(t *testing.T) {
 	})
 
 	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
-		Sys: cm.ResourceProviderRequestSys{
-			ID: "resource-provider",
-		},
-		Type: cm.ResourceProviderRequestTypeFunction,
-		Function: cm.FunctionLink{
-			Sys: cm.FunctionLinkSys{
-				Type:     cm.FunctionLinkSysTypeLink,
-				LinkType: cm.FunctionLinkSysLinkTypeFunction,
-				ID:       "function-id",
-			},
-		},
+		Sys:      cm.NewResourceProviderRequestSys("resource-provider"),
+		Type:     cm.ResourceProviderRequestTypeFunction,
+		Function: cm.NewFunctionLink("function-id"),
 	})
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
@@ -97,17 +89,9 @@ func TestAccResourceProviderResourceMovedFromAppDefinitionResourceProvider(t *te
 	})
 
 	server.SetResourceProvider("organization-id", "app-definition-id", cm.ResourceProviderRequest{
-		Sys: cm.ResourceProviderRequestSys{
-			ID: "resource-provider-id",
-		},
-		Type: cm.ResourceProviderRequestTypeFunction,
-		Function: cm.FunctionLink{
-			Sys: cm.FunctionLinkSys{
-				Type:     cm.FunctionLinkSysTypeLink,
-				LinkType: cm.FunctionLinkSysLinkTypeFunction,
-				ID:       "function-id",
-			},
-		},
+		Sys:      cm.NewResourceProviderRequestSys("resource-provider-id"),
+		Type:     cm.ResourceProviderRequestTypeFunction,
+		Function: cm.NewFunctionLink("function-id"),
 	})
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{

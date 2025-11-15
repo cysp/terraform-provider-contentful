@@ -4,26 +4,12 @@ import cm "github.com/cysp/terraform-provider-contentful/internal/contentful-man
 
 func NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID string, webhookDefinitionFields cm.WebhookDefinitionData) cm.WebhookDefinition {
 	webhookDefinition := cm.WebhookDefinition{
-		Sys: NewWebhookDefinitionSys(spaceID, webhookDefinitionID),
+		Sys: cm.NewWebhookDefinitionSys(spaceID, webhookDefinitionID),
 	}
 
 	UpdateWebhookDefinitionFromFields(&webhookDefinition, webhookDefinitionFields)
 
 	return webhookDefinition
-}
-
-func NewWebhookDefinitionSys(spaceID, webhookDefinitionID string) cm.WebhookDefinitionSys {
-	return cm.WebhookDefinitionSys{
-		Type: cm.WebhookDefinitionSysTypeWebhookDefinition,
-		ID:   webhookDefinitionID,
-		Space: cm.SpaceLink{
-			Sys: cm.SpaceLinkSys{
-				Type:     cm.SpaceLinkSysTypeLink,
-				LinkType: cm.SpaceLinkSysLinkTypeSpace,
-				ID:       spaceID,
-			},
-		},
-	}
 }
 
 func UpdateWebhookDefinitionFromFields(webhookDefinition *cm.WebhookDefinition, webhookDefinitionFields cm.WebhookDefinitionData) {

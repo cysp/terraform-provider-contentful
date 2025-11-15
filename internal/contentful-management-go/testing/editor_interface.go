@@ -6,40 +6,12 @@ import (
 
 func NewEditorInterfaceFromFields(spaceID, environmentID, contentTypeID string, editorInterfaceFields cm.EditorInterfaceData) cm.EditorInterface {
 	editorInterface := cm.EditorInterface{
-		Sys: NewEditorInterfaceSys(spaceID, environmentID, contentTypeID),
+		Sys: cm.NewEditorInterfaceSys(spaceID, environmentID, contentTypeID, "default"),
 	}
 
 	UpdateEditorInterfaceFromFields(&editorInterface, editorInterfaceFields)
 
 	return editorInterface
-}
-
-func NewEditorInterfaceSys(spaceID, environmentID, contentTypeID string) cm.EditorInterfaceSys {
-	return cm.EditorInterfaceSys{
-		Type: cm.EditorInterfaceSysTypeEditorInterface,
-		ID:   "default",
-		Space: cm.SpaceLink{
-			Sys: cm.SpaceLinkSys{
-				Type:     cm.SpaceLinkSysTypeLink,
-				LinkType: cm.SpaceLinkSysLinkTypeSpace,
-				ID:       spaceID,
-			},
-		},
-		Environment: cm.EnvironmentLink{
-			Sys: cm.EnvironmentLinkSys{
-				Type:     cm.EnvironmentLinkSysTypeLink,
-				LinkType: cm.EnvironmentLinkSysLinkTypeEnvironment,
-				ID:       environmentID,
-			},
-		},
-		ContentType: cm.ContentTypeLink{
-			Sys: cm.ContentTypeLinkSys{
-				Type:     cm.ContentTypeLinkSysTypeLink,
-				LinkType: cm.ContentTypeLinkSysLinkTypeContentType,
-				ID:       contentTypeID,
-			},
-		},
-	}
 }
 
 func UpdateEditorInterfaceFromFields(editorInterface *cm.EditorInterface, editorInterfaceFields cm.EditorInterfaceData) {
