@@ -23,9 +23,9 @@ func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, f
 	filters := make([]cm.WebhookDefinitionFilter, len(filterValues))
 
 	for index, filterValue := range filterValues {
-		path := path.AtListIndex(index)
+		filterPath := path.AtListIndex(index)
 
-		filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, filterValue.Value())
+		filter, filterDiags := ToWebhookDefinitionFilter(ctx, filterPath, filterValue.Value())
 		diags.Append(filterDiags...)
 
 		filters[index] = filter
@@ -41,9 +41,9 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	notValue, notValueOk := value.Not.GetValue()
 	if notValueOk {
-		path := path.AtName("not")
+		notPath := path.AtName("not")
 
-		filterNot, filterNotDiags := ToWebhookDefinitionFilterNot(ctx, path, notValue)
+		filterNot, filterNotDiags := ToWebhookDefinitionFilterNot(ctx, notPath, notValue)
 		diags.Append(filterNotDiags...)
 
 		filter.Not = filterNot
@@ -51,9 +51,9 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	equalsValue, equalsValueOk := value.Equals.GetValue()
 	if equalsValueOk {
-		path := path.AtName("equals")
+		equalsPath := path.AtName("equals")
 
-		filterEquals, filterEqualsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
+		filterEquals, filterEqualsDiags := ToWebhookDefinitionFilterEquals(ctx, equalsPath, equalsValue)
 		diags.Append(filterEqualsDiags...)
 
 		filter.Equals = filterEquals
@@ -61,9 +61,9 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	inValue, inValueOk := value.In.GetValue()
 	if inValueOk {
-		path := path.AtName("in")
+		inPath := path.AtName("in")
 
-		filterIn, filterInDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
+		filterIn, filterInDiags := ToWebhookDefinitionFilterIn(ctx, inPath, inValue)
 		diags.Append(filterInDiags...)
 
 		filter.In = filterIn
@@ -71,9 +71,9 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	regexpValue, regexpValueOk := value.Regexp.GetValue()
 	if regexpValueOk {
-		path := path.AtName("regexp")
+		regexpPath := path.AtName("regexp")
 
-		filterRegexp, filterRegexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
+		filterRegexp, filterRegexpDiags := ToWebhookDefinitionFilterRegexp(ctx, regexpPath, regexpValue)
 		diags.Append(filterRegexpDiags...)
 
 		filter.Regexp = filterRegexp
@@ -88,27 +88,27 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 	filterNot := cm.WebhookDefinitionFilterNot{}
 
 	if equalsValue, equalsValueOk := value.Equals.GetValue(); equalsValueOk {
-		path := path.AtName("equals")
+		equalsPath := path.AtName("equals")
 
-		equals, equalsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
+		equals, equalsDiags := ToWebhookDefinitionFilterEquals(ctx, equalsPath, equalsValue)
 		diags.Append(equalsDiags...)
 
 		filterNot.Equals = equals
 	}
 
 	if inValue, inValueOk := value.In.GetValue(); inValueOk {
-		path := path.AtName("in")
+		inPath := path.AtName("in")
 
-		in, inDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
+		in, inDiags := ToWebhookDefinitionFilterIn(ctx, inPath, inValue)
 		diags.Append(inDiags...)
 
 		filterNot.In = in
 	}
 
 	if regexpValue, regexpValueOk := value.Regexp.GetValue(); regexpValueOk {
-		path := path.AtName("regexp")
+		regexpPath := path.AtName("regexp")
 
-		regexp, regexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
+		regexp, regexpDiags := ToWebhookDefinitionFilterRegexp(ctx, regexpPath, regexpValue)
 		diags.Append(regexpDiags...)
 
 		filterNot.Regexp = regexp
@@ -191,9 +191,9 @@ func toWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.Pat
 		diags.Append(tfsdk.ValueAs(ctx, value, &values)...)
 
 		for index, v := range values {
-			path := path.AtListIndex(index)
+			indexPath := path.AtListIndex(index)
 			if encoder.Str(v) {
-				diags.AddAttributeError(path, "failed to encode value", "")
+				diags.AddAttributeError(indexPath, "failed to encode value", "")
 			}
 		}
 	}) {

@@ -17,9 +17,9 @@ func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, polic
 	policiesValues := make([]TypedObject[RolePolicyValue], len(policies))
 
 	for index, item := range policies {
-		path := path.AtListIndex(index)
+		policyPath := path.AtListIndex(index)
 
-		policiesValue, actionsListValueDiags := NewPoliciesValueFromResponse(ctx, path, item)
+		policiesValue, actionsListValueDiags := NewPoliciesValueFromResponse(ctx, policyPath, item)
 		diags.Append(actionsListValueDiags...)
 
 		policiesValues[index] = policiesValue

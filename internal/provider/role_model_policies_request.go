@@ -25,9 +25,9 @@ func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies TypedLis
 	rolePoliciesItems := make([]cm.RoleFieldsPoliciesItem, len(policiesValues))
 
 	for index, policiesValueElement := range policiesValues {
-		path := path.AtListIndex(index)
+		policyPath := path.AtListIndex(index)
 
-		policiesItem, policiesItemDiags := ToRoleFieldsPoliciesItem(ctx, path, policiesValueElement)
+		policiesItem, policiesItemDiags := ToRoleFieldsPoliciesItem(ctx, policyPath, policiesValueElement)
 		diags.Append(policiesItemDiags...)
 
 		rolePoliciesItems[index] = policiesItem

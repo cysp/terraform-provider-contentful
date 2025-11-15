@@ -35,9 +35,9 @@ func NewEditorInterfaceGroupControlListValueFromResponse(_ context.Context, path
 	listElementValues := make([]TypedObject[EditorInterfaceGroupControlValue], len(groupControlsItems))
 
 	for index, item := range groupControlsItems {
-		path := path.AtListIndex(index)
+		controlPath := path.AtListIndex(index)
 
-		groupControlValue, groupControlValueDiags := NewEditorInterfaceGroupControlValueFromResponse(path, item)
+		groupControlValue, groupControlValueDiags := NewEditorInterfaceGroupControlValueFromResponse(controlPath, item)
 		diags.Append(groupControlValueDiags...)
 
 		listElementValues[index] = groupControlValue

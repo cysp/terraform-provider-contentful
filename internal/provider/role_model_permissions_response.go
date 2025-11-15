@@ -15,9 +15,9 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 	permissionsValuesMap := make(map[string]TypedList[types.String], len(permissions))
 
 	for permission, item := range permissions {
-		path := path.AtMapKey(permission)
+		permissionPath := path.AtMapKey(permission)
 
-		permissionActionsListValue, permissionActionsListValueDiags := NewPermissionActionsListValueFromResponse(ctx, path, item)
+		permissionActionsListValue, permissionActionsListValueDiags := NewPermissionActionsListValueFromResponse(ctx, permissionPath, item)
 		diags.Append(permissionActionsListValueDiags...)
 
 		permissionsValuesMap[permission] = permissionActionsListValue
