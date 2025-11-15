@@ -23,9 +23,9 @@ func ToRoleFieldsPermissions(ctx context.Context, path path.Path, permissions Ty
 	rolePermissionsItems := make(cm.RoleFieldsPermissions, len(permissions.Elements()))
 
 	for key, permissionsValueElement := range permissionsValues {
-		path := path.AtMapKey(key)
+		permissionPath := path.AtMapKey(key)
 
-		permissionsItem, permissionsItemDiags := ToRoleFieldsPermissionsItem(ctx, path, permissionsValueElement)
+		permissionsItem, permissionsItemDiags := ToRoleFieldsPermissionsItem(ctx, permissionPath, permissionsValueElement)
 		diags.Append(permissionsItemDiags...)
 
 		rolePermissionsItems[key] = permissionsItem

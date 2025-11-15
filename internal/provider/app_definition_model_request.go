@@ -31,13 +31,13 @@ func (model *AppDefinitionModel) ToAppDefinitionFields(ctx context.Context, path
 	}
 
 	if model.Locations != nil {
-		path := path.AtName("locations")
+		locationsPath := path.AtName("locations")
 
 		locations := make([]cm.AppDefinitionFieldsLocationsItem, 0, len(model.Locations))
 		for _, location := range model.Locations {
-			path := path.AtListIndex(len(locations))
+			locationPath := locationsPath.AtListIndex(len(locations))
 
-			locationsItem := location.ToAppDefinitionFieldsLocationsItem(ctx, path)
+			locationsItem := location.ToAppDefinitionFieldsLocationsItem(ctx, locationPath)
 
 			locations = append(locations, locationsItem)
 		}
@@ -46,17 +46,17 @@ func (model *AppDefinitionModel) ToAppDefinitionFields(ctx context.Context, path
 	}
 
 	if model.Parameters != nil {
-		path := path.AtName("parameters")
+		parametersPath := path.AtName("parameters")
 
 		var installationParameters, instanceParameters []cm.AppDefinitionParameter
 
 		if model.Parameters.Installation != nil {
-			path := path.AtName("installation")
+			installationPath := parametersPath.AtName("installation")
 
 			installationParameters = make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Installation))
 
 			for index, element := range model.Parameters.Installation {
-				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, path.AtListIndex(index))
+				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, installationPath.AtListIndex(index))
 				diags.Append(parameterDiags...)
 
 				installationParameters = append(installationParameters, parameter)
@@ -64,12 +64,12 @@ func (model *AppDefinitionModel) ToAppDefinitionFields(ctx context.Context, path
 		}
 
 		if model.Parameters.Instance != nil {
-			path := path.AtName("instance")
+			instancePath := parametersPath.AtName("instance")
 
 			instanceParameters = make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Instance))
 
 			for index, element := range model.Parameters.Instance {
-				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, path.AtListIndex(index))
+				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, instancePath.AtListIndex(index))
 				diags.Append(parameterDiags...)
 
 				instanceParameters = append(instanceParameters, parameter)

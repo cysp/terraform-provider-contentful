@@ -42,9 +42,9 @@ func FieldsListToContentTypeRequestFieldsFields(ctx context.Context, path path.P
 	fieldsItems := make([]cm.ContentTypeRequestFieldsFieldsItem, len(fieldsValues))
 
 	for index, fieldsValue := range fieldsValues {
-		path := path.AtListIndex(index)
+		fieldPath := path.AtListIndex(index)
 
-		fieldsItem, fieldsItemDiags := ToContentTypeRequestFieldsFieldsItem(ctx, path, fieldsValue.Value())
+		fieldsItem, fieldsItemDiags := ToContentTypeRequestFieldsFieldsItem(ctx, fieldPath, fieldsValue.Value())
 		diags.Append(fieldsItemDiags...)
 
 		fieldsItems[index] = fieldsItem

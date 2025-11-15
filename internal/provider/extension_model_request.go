@@ -54,19 +54,19 @@ func (model *ExtensionModelExtension) ToExtensionExtensionFields(ctx context.Con
 	}
 
 	if model.Parameters != nil {
-		path := path.AtName("parameters")
+		parametersPath := path.AtName("parameters")
 
 		parameters := cm.AppDefinitionParameters{}
 
 		if model.Parameters.Installation != nil {
-			path := path.AtName("installation")
+			installationPath := parametersPath.AtName("installation")
 
 			installationParameters := make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Installation))
 
 			for index, parameter := range model.Parameters.Installation {
-				path := path.AtListIndex(index)
+				parameterPath := installationPath.AtListIndex(index)
 
-				installationParameter, parameterDiags := parameter.ToAppDefinitionParameter(ctx, path)
+				installationParameter, parameterDiags := parameter.ToAppDefinitionParameter(ctx, parameterPath)
 				diags.Append(parameterDiags...)
 
 				installationParameters = append(installationParameters, installationParameter)
@@ -76,14 +76,14 @@ func (model *ExtensionModelExtension) ToExtensionExtensionFields(ctx context.Con
 		}
 
 		if model.Parameters.Instance != nil {
-			path := path.AtName("instance")
+			instancePath := parametersPath.AtName("instance")
 
 			instanceParameters := make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Instance))
 
 			for index, parameter := range model.Parameters.Instance {
-				path := path.AtListIndex(index)
+				parameterPath := instancePath.AtListIndex(index)
 
-				instanceParameter, parameterDiags := parameter.ToAppDefinitionParameter(ctx, path)
+				instanceParameter, parameterDiags := parameter.ToAppDefinitionParameter(ctx, parameterPath)
 				diags.Append(parameterDiags...)
 
 				instanceParameters = append(instanceParameters, instanceParameter)
