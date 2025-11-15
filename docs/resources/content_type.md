@@ -3,12 +3,12 @@
 page_title: "contentful_content_type Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful Content Type.
 ---
 
 # contentful_content_type (Resource)
 
-
+Manages a Contentful Content Type.
 
 ## Example Usage
 
@@ -53,13 +53,13 @@ resource "contentful_content_type" "author" {
 
 ### Required
 
-- `content_type_id` (String)
-- `description` (String)
-- `display_field` (String)
-- `environment_id` (String)
-- `fields` (Attributes List) (see [below for nested schema](#nestedatt--fields))
-- `name` (String)
-- `space_id` (String)
+- `content_type_id` (String) The unique identifier for this content type.
+- `description` (String) Description of the content type.
+- `display_field` (String) Field ID to use as the display field for entries of this content type.
+- `environment_id` (String) The ID of the environment this content type belongs to.
+- `fields` (Attributes List) List of fields that belong to this content type. (see [below for nested schema](#nestedatt--fields))
+- `name` (String) Name of the content type.
+- `space_id` (String) The ID of the space this content type belongs to.
 
 ### Optional
 
@@ -74,20 +74,20 @@ resource "contentful_content_type" "author" {
 
 Required:
 
-- `id` (String)
-- `localized` (Boolean)
-- `name` (String)
+- `id` (String) The unique ID of this field within the content type.
+- `localized` (Boolean) Whether the field can have different values for different locales.
+- `name` (String) The human-readable name of the field.
 - `required` (Boolean)
-- `type` (String)
+- `type` (String) The field's data type.
 
 Optional:
 
-- `allowed_resources` (Attributes List) (see [below for nested schema](#nestedatt--fields--allowed_resources))
-- `default_value` (String)
-- `disabled` (Boolean)
-- `items` (Attributes) (see [below for nested schema](#nestedatt--fields--items))
-- `link_type` (String)
-- `omitted` (Boolean)
+- `allowed_resources` (Attributes List) For Resource Link fields, defines the allowed resource types that can be linked. (see [below for nested schema](#nestedatt--fields--allowed_resources))
+- `default_value` (String) Default value for the field in JSON format.
+- `disabled` (Boolean) Whether the field is disabled (not editable in the UI).
+- `items` (Attributes) For Array fields, defines the type of items in the array. (see [below for nested schema](#nestedatt--fields--items))
+- `link_type` (String) For Link or Array of Links fields, specifies the type of resource being linked to (e.g., Entry, Asset).
+- `omitted` (Boolean) Whether the field is omitted from API responses.
 - `validations` (List of String)
 
 <a id="nestedatt--fields--allowed_resources"></a>
@@ -95,16 +95,16 @@ Optional:
 
 Optional:
 
-- `contentful_entry` (Attributes) (see [below for nested schema](#nestedatt--fields--allowed_resources--contentful_entry))
-- `external` (Attributes) (see [below for nested schema](#nestedatt--fields--allowed_resources--external))
+- `contentful_entry` (Attributes) Configuration for allowing Contentful entry resources. (see [below for nested schema](#nestedatt--fields--allowed_resources--contentful_entry))
+- `external` (Attributes) Configuration for allowing external resources. (see [below for nested schema](#nestedatt--fields--allowed_resources--external))
 
 <a id="nestedatt--fields--allowed_resources--contentful_entry"></a>
 ### Nested Schema for `fields.allowed_resources.contentful_entry`
 
 Required:
 
-- `content_types` (List of String)
-- `source` (String)
+- `content_types` (List of String) List of content type IDs that are allowed to be linked.
+- `source` (String) The source for allowed Contentful entry resources.
 
 
 <a id="nestedatt--fields--allowed_resources--external"></a>
@@ -112,7 +112,7 @@ Required:
 
 Required:
 
-- `type` (String)
+- `type` (String) The type of external resource.
 
 
 
@@ -121,11 +121,11 @@ Required:
 
 Required:
 
-- `type` (String)
+- `type` (String) The type of items in the array.
 
 Optional:
 
-- `link_type` (String)
+- `link_type` (String) For arrays of Links, specifies the type of resource being linked to.
 - `validations` (List of String)
 
 
@@ -143,19 +143,19 @@ Optional:
 
 Optional:
 
-- `taxonomy_concept` (Attributes) (see [below for nested schema](#nestedatt--metadata--taxonomy--taxonomy_concept))
-- `taxonomy_concept_scheme` (Attributes) (see [below for nested schema](#nestedatt--metadata--taxonomy--taxonomy_concept_scheme))
+- `taxonomy_concept` (Attributes) A specific taxonomy concept to associate with this content type. (see [below for nested schema](#nestedatt--metadata--taxonomy--taxonomy_concept))
+- `taxonomy_concept_scheme` (Attributes) A taxonomy concept scheme to associate with this content type. (see [below for nested schema](#nestedatt--metadata--taxonomy--taxonomy_concept_scheme))
 
 <a id="nestedatt--metadata--taxonomy--taxonomy_concept"></a>
 ### Nested Schema for `metadata.taxonomy.taxonomy_concept`
 
 Required:
 
-- `id` (String)
+- `id` (String) ID of the taxonomy concept.
 
 Optional:
 
-- `required` (Boolean)
+- `required` (Boolean) Whether this taxonomy concept is required.
 
 
 <a id="nestedatt--metadata--taxonomy--taxonomy_concept_scheme"></a>
@@ -163,11 +163,11 @@ Optional:
 
 Required:
 
-- `id` (String)
+- `id` (String) ID of the taxonomy concept scheme.
 
 Optional:
 
-- `required` (Boolean)
+- `required` (Boolean) Whether this taxonomy concept scheme is required.
 
 ## Import
 

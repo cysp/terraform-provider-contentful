@@ -3,12 +3,12 @@
 page_title: "contentful_resource_provider Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful App Resource Provider.
 ---
 
 # contentful_resource_provider (Resource)
 
-
+Manages a Contentful App Resource Provider.
 
 ## Example Usage
 
@@ -26,10 +26,10 @@ resource "contentful_resource_provider" "this" {
 
 ### Required
 
-- `app_definition_id` (String)
-- `function_id` (String)
-- `organization_id` (String)
-- `resource_provider_id` (String)
+- `app_definition_id` (String) ID of the app definition for which the resource provider is created.
+- `function_id` (String) ID of the function that provides resources.
+- `organization_id` (String) ID of the organization.
+- `resource_provider_id` (String) ID of the resource provider.
 
 ### Read-Only
 

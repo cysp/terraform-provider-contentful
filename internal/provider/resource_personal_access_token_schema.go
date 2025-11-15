@@ -14,6 +14,7 @@ import (
 
 func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "Manages a Contentful Personal Access Token.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -22,26 +23,31 @@ func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Name of the token.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"expires_in": schema.Int64Attribute{
-				Optional: true,
+				Description: "Time-to-live (TTL) of the token expressed in seconds. If not provided, the token will not auto-expire.",
+				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"expires_at": schema.StringAttribute{
-				CustomType: timetypes.RFC3339Type{},
-				Computed:   true,
+				Description: "Timestamp when the token expires.",
+				CustomType:  timetypes.RFC3339Type{},
+				Computed:    true,
 			},
 			"revoked_at": schema.StringAttribute{
-				CustomType: timetypes.RFC3339Type{},
-				Computed:   true,
+				Description: "Timestamp when the token was revoked.",
+				CustomType:  timetypes.RFC3339Type{},
+				Computed:    true,
 			},
 			"scopes": schema.ListAttribute{
+				Description: "Scopes used to limit a token's access. Supported scopes are 'content_management_read' (Read-only access) and 'content_management_manage' (Read and write access).",
 				ElementType: types.StringType,
 				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Required:    true,
@@ -50,8 +56,9 @@ func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"token": schema.StringAttribute{
-				Computed:  true,
-				Sensitive: true,
+				Description: "The access token for the Content Management API. This is only available immediately after creation.",
+				Computed:    true,
+				Sensitive:   true,
 			},
 		},
 	}

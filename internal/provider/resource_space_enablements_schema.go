@@ -10,6 +10,7 @@ import (
 
 func SpaceEnablementsResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "Manages Contentful Space Enablements.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -18,35 +19,40 @@ func SpaceEnablementsResourceSchema(_ context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the space for which enablements are configured.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"cross_space_links": schema.BoolAttribute{
-				Computed: true,
-				Optional: true,
+				Description: "Enable cross-space references to link content across multiple spaces. Must be set together with space_templates.",
+				Computed:    true,
+				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
 					UseStateForUnknown(),
 				},
 			},
 			"space_templates": schema.BoolAttribute{
-				Computed: true,
-				Optional: true,
+				Description: "Enable space templates feature. Must be set together with cross_space_links.",
+				Computed:    true,
+				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
 					UseStateForUnknown(),
 				},
 			},
 			"studio_experiences": schema.BoolAttribute{
-				Computed: true,
-				Optional: true,
+				Description: "Enable Studio Experiences feature.",
+				Computed:    true,
+				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
 					UseStateForUnknown(),
 				},
 			},
 			"suggest_concepts": schema.BoolAttribute{
-				Computed: true,
-				Optional: true,
+				Description: "Enable concept suggestions feature.",
+				Computed:    true,
+				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
 					UseStateForUnknown(),
 				},

@@ -13,6 +13,7 @@ import (
 
 func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "Manages a Contentful UI Extension.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -21,32 +22,37 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the space containing the extension.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the environment where the extension is installed.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"extension_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the extension.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 					UseStateForUnknown(),
 				},
 			},
 			"extension": schema.SingleNestedAttribute{
-				Attributes: ExtensionResourceExtensionSchemaAttributes(ctx),
-				Required:   true,
+				Description: "Extension configuration.",
+				Attributes:  ExtensionResourceExtensionSchemaAttributes(ctx),
+				Required:    true,
 			},
 			"parameters": schema.StringAttribute{
-				CustomType: jsontypes.NormalizedType{},
-				Optional:   true,
-				Computed:   true,
+				Description: "Definitions of configuration parameters.",
+				CustomType:  jsontypes.NormalizedType{},
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					UseStateForUnknown(),
 				},
@@ -58,40 +64,49 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"name": schema.StringAttribute{
-			Required: true,
+			Description: "Extension name.",
+			Required:    true,
 		},
 		"src": schema.StringAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  stringdefault.StaticString(""),
+			Description: "URL where the root HTML document of the extension can be found. Must be HTTPS.",
+			Optional:    true,
+			Computed:    true,
+			Default:     stringdefault.StaticString(""),
 			PlanModifiers: []planmodifier.String{
 				UseStateForUnknown(),
 			},
 		},
 		"srcdoc": schema.StringAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  stringdefault.StaticString(""),
+			Description: "String representation of the extension (e.g. inline HTML code).",
+			Optional:    true,
+			Computed:    true,
+			Default:     stringdefault.StaticString(""),
 			PlanModifiers: []planmodifier.String{
 				UseStateForUnknown(),
 			},
 		},
 		"field_types": schema.ListNestedAttribute{
+			Description: "Field types where an extension can be used.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Required: true,
+						Description: "Field type (e.g., Symbol, Text, Integer).",
+						Required:    true,
 					},
 					"link_type": schema.StringAttribute{
-						Optional: true,
+						Description: "Type of linked resource (Entry or Asset).",
+						Optional:    true,
 					},
 					"items": schema.SingleNestedAttribute{
+						Description: "Item type definition for Array fields.",
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
-								Required: true,
+								Description: "Type of array items.",
+								Required:    true,
 							},
 							"link_type": schema.StringAttribute{
-								Optional: true,
+								Description: "Link type for array items.",
+								Optional:    true,
 							},
 						},
 						Optional: true,

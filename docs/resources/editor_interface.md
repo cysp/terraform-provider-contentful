@@ -3,12 +3,12 @@
 page_title: "contentful_editor_interface Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful Editor Interface configuration.
 ---
 
 # contentful_editor_interface (Resource)
 
-
+Manages a Contentful Editor Interface configuration.
 
 ## Example Usage
 
@@ -72,16 +72,16 @@ resource "contentful_editor_interface" "author" {
 
 ### Required
 
-- `content_type_id` (String)
-- `environment_id` (String)
-- `space_id` (String)
+- `content_type_id` (String) The ID of the content type this editor interface configures.
+- `environment_id` (String) The ID of the environment this editor interface belongs to.
+- `space_id` (String) The ID of the space this editor interface belongs to.
 
 ### Optional
 
-- `controls` (Attributes List) (see [below for nested schema](#nestedatt--controls))
-- `editor_layout` (Attributes List) (see [below for nested schema](#nestedatt--editor_layout))
-- `group_controls` (Attributes List) (see [below for nested schema](#nestedatt--group_controls))
-- `sidebar` (Attributes List) (see [below for nested schema](#nestedatt--sidebar))
+- `controls` (Attributes List) Field-level controls that specify which widget to use for editing each field. (see [below for nested schema](#nestedatt--controls))
+- `editor_layout` (Attributes List) Layout configuration for the editor interface, defining how fields and groups are organized. (see [below for nested schema](#nestedatt--editor_layout))
+- `group_controls` (Attributes List) Group-level controls that specify widgets for field groups. (see [below for nested schema](#nestedatt--group_controls))
+- `sidebar` (Attributes List) Configuration for sidebar widgets in the editor. (see [below for nested schema](#nestedatt--sidebar))
 
 ### Read-Only
 
@@ -92,13 +92,13 @@ resource "contentful_editor_interface" "author" {
 
 Required:
 
-- `field_id` (String)
+- `field_id` (String) ID of the field this control configures.
 
 Optional:
 
-- `settings` (String)
-- `widget_id` (String)
-- `widget_namespace` (String)
+- `settings` (String) Widget-specific settings in JSON format.
+- `widget_id` (String) ID of the widget to use for this field.
+- `widget_namespace` (String) Namespace of the widget (e.g., 'builtin', 'extension', 'app').
 
 
 <a id="nestedatt--editor_layout"></a>
@@ -106,31 +106,31 @@ Optional:
 
 Required:
 
-- `group` (Attributes) (see [below for nested schema](#nestedatt--editor_layout--group))
+- `group` (Attributes) Group definition for this editor layout item. (see [below for nested schema](#nestedatt--editor_layout--group))
 
 <a id="nestedatt--editor_layout--group"></a>
 ### Nested Schema for `editor_layout.group`
 
 Required:
 
-- `group_id` (String)
-- `items` (Attributes List) (see [below for nested schema](#nestedatt--editor_layout--group--items))
-- `name` (String)
+- `group_id` (String) ID of the layout group.
+- `items` (Attributes List) Items within this layout group. (see [below for nested schema](#nestedatt--editor_layout--group--items))
+- `name` (String) Name of the layout group.
 
 <a id="nestedatt--editor_layout--group--items"></a>
 ### Nested Schema for `editor_layout.group.items`
 
 Optional:
 
-- `field` (Attributes) (see [below for nested schema](#nestedatt--editor_layout--group--items--field))
-- `group` (Attributes) (see [below for nested schema](#nestedatt--editor_layout--group--items--group))
+- `field` (Attributes) Field to include in this group item. (see [below for nested schema](#nestedatt--editor_layout--group--items--field))
+- `group` (Attributes) Nested group within this group item. (see [below for nested schema](#nestedatt--editor_layout--group--items--group))
 
 <a id="nestedatt--editor_layout--group--items--field"></a>
 ### Nested Schema for `editor_layout.group.items.field`
 
 Required:
 
-- `field_id` (String)
+- `field_id` (String) ID of the field to include in this group item.
 
 
 <a id="nestedatt--editor_layout--group--items--group"></a>
@@ -138,23 +138,23 @@ Required:
 
 Required:
 
-- `group_id` (String)
-- `items` (Attributes List) (see [below for nested schema](#nestedatt--editor_layout--group--items--group--items))
-- `name` (String)
+- `group_id` (String) ID of the nested group.
+- `items` (Attributes List) Items within this nested group. (see [below for nested schema](#nestedatt--editor_layout--group--items--group--items))
+- `name` (String) Name of the nested group.
 
 <a id="nestedatt--editor_layout--group--items--group--items"></a>
 ### Nested Schema for `editor_layout.group.items.group.items`
 
 Required:
 
-- `field` (Attributes) (see [below for nested schema](#nestedatt--editor_layout--group--items--group--items--field))
+- `field` (Attributes) Field configuration for this nested group item. (see [below for nested schema](#nestedatt--editor_layout--group--items--group--items--field))
 
 <a id="nestedatt--editor_layout--group--items--group--items--field"></a>
 ### Nested Schema for `editor_layout.group.items.group.items.field`
 
 Required:
 
-- `field_id` (String)
+- `field_id` (String) ID of the field to include in this nested group item.
 
 
 
@@ -167,13 +167,13 @@ Required:
 
 Required:
 
-- `group_id` (String)
+- `group_id` (String) ID of the group this control configures.
 
 Optional:
 
-- `settings` (String)
-- `widget_id` (String)
-- `widget_namespace` (String)
+- `settings` (String) Widget-specific settings in JSON format.
+- `widget_id` (String) ID of the widget to use for this group.
+- `widget_namespace` (String) Namespace of the widget.
 
 
 <a id="nestedatt--sidebar"></a>
@@ -181,13 +181,13 @@ Optional:
 
 Required:
 
-- `widget_id` (String)
-- `widget_namespace` (String)
+- `widget_id` (String) ID of the sidebar widget.
+- `widget_namespace` (String) Namespace of the sidebar widget.
 
 Optional:
 
-- `disabled` (Boolean)
-- `settings` (String)
+- `disabled` (Boolean) Whether this sidebar widget is disabled.
+- `settings` (String) Widget-specific settings in JSON format.
 
 ## Import
 

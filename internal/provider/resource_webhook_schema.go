@@ -12,6 +12,7 @@ import (
 
 func WebhookResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "Manages a Contentful Webhook.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -20,39 +21,47 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the space containing the webhook.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"webhook_id": schema.StringAttribute{
-				Computed: true,
+				Description: "System ID of the webhook.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					UseStateForUnknown(),
 				},
 			},
 			"active": schema.BoolAttribute{
-				Optional: true,
-				Computed: true,
-				Default:  booldefault.StaticBool(true),
+				Description: "Whether the webhook is active.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Name of the webhook.",
+				Required:    true,
 			},
 			"url": schema.StringAttribute{
-				Required: true,
+				Description: "Preconfigured HTTP endpoint that is called when content has changed.",
+				Required:    true,
 			},
 			"topics": schema.ListAttribute{
+				Description: "List of event topics to which the webhook subscribes.",
 				ElementType: types.StringType,
 				CustomType:  TypedList[types.String]{}.CustomType(ctx),
 				Optional:    true,
 			},
 			"filters": WebhookFiltersSchema(ctx, true),
 			"http_basic_password": schema.StringAttribute{
-				Optional: true,
+				Description: "HTTP Basic authentication password.",
+				Optional:    true,
 			},
 			"http_basic_username": schema.StringAttribute{
-				Optional: true,
+				Description: "HTTP Basic authentication username.",
+				Optional:    true,
 			},
 			"headers":        WebhookHeadersSchema(ctx, true),
 			"transformation": WebhookTransformationSchema(ctx, true),

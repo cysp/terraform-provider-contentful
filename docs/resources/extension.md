@@ -3,12 +3,12 @@
 page_title: "contentful_extension Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful UI Extension.
 ---
 
 # contentful_extension (Resource)
 
-
+Manages a Contentful UI Extension.
 
 ## Example Usage
 
@@ -59,14 +59,14 @@ resource "contentful_extension" "example" {
 
 ### Required
 
-- `environment_id` (String)
-- `extension` (Attributes) (see [below for nested schema](#nestedatt--extension))
-- `extension_id` (String)
-- `space_id` (String)
+- `environment_id` (String) ID of the environment where the extension is installed.
+- `extension` (Attributes) Extension configuration. (see [below for nested schema](#nestedatt--extension))
+- `extension_id` (String) ID of the extension.
+- `space_id` (String) ID of the space containing the extension.
 
 ### Optional
 
-- `parameters` (String)
+- `parameters` (String) Definitions of configuration parameters.
 
 ### Read-Only
 
@@ -77,38 +77,38 @@ resource "contentful_extension" "example" {
 
 Required:
 
-- `field_types` (Attributes List) (see [below for nested schema](#nestedatt--extension--field_types))
-- `name` (String)
+- `field_types` (Attributes List) Field types where an extension can be used. (see [below for nested schema](#nestedatt--extension--field_types))
+- `name` (String) Extension name.
 
 Optional:
 
 - `parameters` (Attributes) (see [below for nested schema](#nestedatt--extension--parameters))
 - `sidebar` (Boolean)
-- `src` (String)
-- `srcdoc` (String)
+- `src` (String) URL where the root HTML document of the extension can be found. Must be HTTPS.
+- `srcdoc` (String) String representation of the extension (e.g. inline HTML code).
 
 <a id="nestedatt--extension--field_types"></a>
 ### Nested Schema for `extension.field_types`
 
 Required:
 
-- `type` (String)
+- `type` (String) Field type (e.g., Symbol, Text, Integer).
 
 Optional:
 
-- `items` (Attributes) (see [below for nested schema](#nestedatt--extension--field_types--items))
-- `link_type` (String)
+- `items` (Attributes) Item type definition for Array fields. (see [below for nested schema](#nestedatt--extension--field_types--items))
+- `link_type` (String) Type of linked resource (Entry or Asset).
 
 <a id="nestedatt--extension--field_types--items"></a>
 ### Nested Schema for `extension.field_types.items`
 
 Required:
 
-- `type` (String)
+- `type` (String) Type of array items.
 
 Optional:
 
-- `link_type` (String)
+- `link_type` (String) Link type for array items.
 
 
 
@@ -125,26 +125,26 @@ Optional:
 
 Required:
 
-- `id` (String)
-- `name` (String)
-- `type` (String)
+- `id` (String) Unique identifier for the parameter.
+- `name` (String) Display name for the parameter.
+- `type` (String) Parameter type (e.g., Symbol, Enum, Boolean).
 
 Optional:
 
-- `default` (String)
-- `description` (String)
-- `labels` (Attributes) (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
-- `options` (List of String)
-- `required` (Boolean)
+- `default` (String) Default value for the parameter.
+- `description` (String) Help text describing the parameter.
+- `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
+- `options` (List of String) List of allowed values for Enum parameters.
+- `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--installation--labels"></a>
 ### Nested Schema for `extension.parameters.installation.labels`
 
 Optional:
 
-- `empty` (String)
-- `false` (String)
-- `true` (String)
+- `empty` (String) Label when no value is set.
+- `false` (String) Label for false value.
+- `true` (String) Label for true value.
 
 
 
@@ -153,26 +153,26 @@ Optional:
 
 Required:
 
-- `id` (String)
-- `name` (String)
-- `type` (String)
+- `id` (String) Unique identifier for the parameter.
+- `name` (String) Display name for the parameter.
+- `type` (String) Parameter type (e.g., Symbol, Enum, Boolean).
 
 Optional:
 
-- `default` (String)
-- `description` (String)
-- `labels` (Attributes) (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
-- `options` (List of String)
-- `required` (Boolean)
+- `default` (String) Default value for the parameter.
+- `description` (String) Help text describing the parameter.
+- `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
+- `options` (List of String) List of allowed values for Enum parameters.
+- `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--instance--labels"></a>
 ### Nested Schema for `extension.parameters.instance.labels`
 
 Optional:
 
-- `empty` (String)
-- `false` (String)
-- `true` (String)
+- `empty` (String) Label when no value is set.
+- `false` (String) Label for false value.
+- `true` (String) Label for true value.
 
 ## Import
 

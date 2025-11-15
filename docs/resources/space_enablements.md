@@ -3,12 +3,12 @@
 page_title: "contentful_space_enablements Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages Contentful Space Enablements.
 ---
 
 # contentful_space_enablements (Resource)
 
-
+Manages Contentful Space Enablements.
 
 ## Example Usage
 
@@ -25,14 +25,14 @@ resource "contentful_space_enablements" "this" {
 
 ### Required
 
-- `space_id` (String)
+- `space_id` (String) ID of the space for which enablements are configured.
 
 ### Optional
 
-- `cross_space_links` (Boolean)
-- `space_templates` (Boolean)
-- `studio_experiences` (Boolean)
-- `suggest_concepts` (Boolean)
+- `cross_space_links` (Boolean) Enable cross-space references to link content across multiple spaces. Must be set together with space_templates.
+- `space_templates` (Boolean) Enable space templates feature. Must be set together with cross_space_links.
+- `studio_experiences` (Boolean) Enable Studio Experiences feature.
+- `suggest_concepts` (Boolean) Enable concept suggestions feature.
 
 ### Read-Only
 

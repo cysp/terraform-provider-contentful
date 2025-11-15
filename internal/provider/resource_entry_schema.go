@@ -18,6 +18,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 	}).ToObjectValue(ctx)
 
 	return schema.Schema{
+		Description: "Manages a Contentful Entry.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -27,35 +28,40 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the space containing the entry.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					UseStateForUnknown(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the environment containing the entry.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					UseStateForUnknown(),
 				},
 			},
 			"entry_id": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Description: "ID of the entry.",
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					UseStateForUnknown(),
 				},
 			},
 			"content_type_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the content type for this entry.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					UseStateForUnknown(),
 				},
 			},
 			"fields": schema.MapAttribute{
+				Description: "Fields that are custom defined by a user through the definition of content types. Fields object always includes locale.",
 				ElementType: jsontypes.NormalizedType{},
 				CustomType:  NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
 				Required:    true,

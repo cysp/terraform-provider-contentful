@@ -3,12 +3,12 @@
 page_title: "contentful_marketplace_app_definition Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Retrieves a Contentful Marketplace App Definition.
 ---
 
 # contentful_marketplace_app_definition (Data Source)
 
-
+Retrieves a Contentful Marketplace App Definition.
 
 ## Example Usage
 
@@ -23,43 +23,43 @@ data "contentful_marketplace_app_definition" "this" {
 
 ### Required
 
-- `app_definition_id` (String)
+- `app_definition_id` (String) The unique identifier for the marketplace app definition.
 
 ### Read-Only
 
-- `bundle_id` (String)
+- `bundle_id` (String) The bundle identifier for the marketplace app.
 - `id` (String) The ID of this resource.
-- `locations` (Attributes List) (see [below for nested schema](#nestedatt--locations))
-- `name` (String)
+- `locations` (Attributes List) Locations where the marketplace app can be rendered in the Contentful web app. (see [below for nested schema](#nestedatt--locations))
+- `name` (String) The name of the marketplace app.
 - `organization_id` (String)
-- `parameters` (Attributes) (see [below for nested schema](#nestedatt--parameters))
-- `src` (String)
+- `parameters` (Attributes) Configuration parameters for the marketplace app. (see [below for nested schema](#nestedatt--parameters))
+- `src` (String) The URL where the marketplace app is hosted.
 
 <a id="nestedatt--locations"></a>
 ### Nested Schema for `locations`
 
 Read-Only:
 
-- `field_types` (Attributes List) (see [below for nested schema](#nestedatt--locations--field_types))
-- `location` (String)
-- `navigation_item` (Attributes) (see [below for nested schema](#nestedatt--locations--navigation_item))
+- `field_types` (Attributes List) Field types that this location supports. (see [below for nested schema](#nestedatt--locations--field_types))
+- `location` (String) The location where the app can be rendered.
+- `navigation_item` (Attributes) Navigation item configuration for this location. (see [below for nested schema](#nestedatt--locations--navigation_item))
 
 <a id="nestedatt--locations--field_types"></a>
 ### Nested Schema for `locations.field_types`
 
 Read-Only:
 
-- `items` (Attributes List) (see [below for nested schema](#nestedatt--locations--field_types--items))
-- `link_type` (String)
-- `type` (String)
+- `items` (Attributes List) For Array fields, the type of items in the array. (see [below for nested schema](#nestedatt--locations--field_types--items))
+- `link_type` (String) For Link fields, the type of linked resource.
+- `type` (String) The field type.
 
 <a id="nestedatt--locations--field_types--items"></a>
 ### Nested Schema for `locations.field_types.items`
 
 Read-Only:
 
-- `link_type` (String)
-- `type` (String)
+- `link_type` (String) For arrays of Links, the type of linked resource.
+- `type` (String) The type of array items.
 
 
 
@@ -68,8 +68,8 @@ Read-Only:
 
 Read-Only:
 
-- `name` (String)
-- `path` (String)
+- `name` (String) Display name for the navigation item.
+- `path` (String) Path for the navigation item.
 
 
 
@@ -78,31 +78,31 @@ Read-Only:
 
 Read-Only:
 
-- `installation` (Attributes List) (see [below for nested schema](#nestedatt--parameters--installation))
-- `instance` (Attributes List) (see [below for nested schema](#nestedatt--parameters--instance))
+- `installation` (Attributes List) Installation-level parameters for the app. (see [below for nested schema](#nestedatt--parameters--installation))
+- `instance` (Attributes List) Instance-level parameters for the app. (see [below for nested schema](#nestedatt--parameters--instance))
 
 <a id="nestedatt--parameters--installation"></a>
 ### Nested Schema for `parameters.installation`
 
 Read-Only:
 
-- `default` (String)
-- `description` (String)
+- `default` (String) Default value for this parameter in JSON format.
+- `description` (String) Description of this parameter.
 - `id` (String)
-- `labels` (Attributes) (see [below for nested schema](#nestedatt--parameters--installation--labels))
-- `name` (String)
-- `options` (List of String)
-- `required` (Boolean)
-- `type` (String)
+- `labels` (Attributes) Labels for boolean parameter values. (see [below for nested schema](#nestedatt--parameters--installation--labels))
+- `name` (String) The name of this parameter.
+- `options` (List of String) Available options for this parameter.
+- `required` (Boolean) Whether this parameter is required.
+- `type` (String) The type of this parameter.
 
 <a id="nestedatt--parameters--installation--labels"></a>
 ### Nested Schema for `parameters.installation.labels`
 
 Read-Only:
 
-- `empty` (String)
-- `false` (String)
-- `true` (String)
+- `empty` (String) Label for empty value.
+- `false` (String) Label for false value.
+- `true` (String) Label for true value.
 
 
 
@@ -111,22 +111,22 @@ Read-Only:
 
 Read-Only:
 
-- `default` (String)
-- `description` (String)
+- `default` (String) Default value for this parameter in JSON format.
+- `description` (String) Description of this parameter.
 - `id` (String)
-- `labels` (Attributes) (see [below for nested schema](#nestedatt--parameters--instance--labels))
-- `name` (String)
-- `options` (List of String)
-- `required` (Boolean)
-- `type` (String)
+- `labels` (Attributes) Labels for boolean parameter values. (see [below for nested schema](#nestedatt--parameters--instance--labels))
+- `name` (String) The name of this parameter.
+- `options` (List of String) Available options for this parameter.
+- `required` (Boolean) Whether this parameter is required.
+- `type` (String) The type of this parameter.
 
 <a id="nestedatt--parameters--instance--labels"></a>
 ### Nested Schema for `parameters.instance.labels`
 
 Read-Only:
 
-- `empty` (String)
-- `false` (String)
-- `true` (String)
+- `empty` (String) Label for empty value.
+- `false` (String) Label for false value.
+- `true` (String) Label for true value.
 
 

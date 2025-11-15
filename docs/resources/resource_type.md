@@ -3,12 +3,12 @@
 page_title: "contentful_resource_type Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful App Resource Type.
 ---
 
 # contentful_resource_type (Resource)
 
-
+Manages a Contentful App Resource Type.
 
 ## Example Usage
 
@@ -32,39 +32,39 @@ resource "contentful_resource_type" "this" {
 
 ### Required
 
-- `app_definition_id` (String)
-- `default_field_mapping` (Attributes) (see [below for nested schema](#nestedatt--default_field_mapping))
-- `name` (String)
-- `organization_id` (String)
-- `resource_type_id` (String)
+- `app_definition_id` (String) ID of the app definition.
+- `default_field_mapping` (Attributes) Default field mapping configuration for the resource type. (see [below for nested schema](#nestedatt--default_field_mapping))
+- `name` (String) Name of the resource type.
+- `organization_id` (String) ID of the organization.
+- `resource_type_id` (String) ID of the resource type.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `resource_provider_id` (String)
+- `resource_provider_id` (String) ID of the parent resource provider.
 
 <a id="nestedatt--default_field_mapping"></a>
 ### Nested Schema for `default_field_mapping`
 
 Required:
 
-- `title` (String)
+- `title` (String) Field path for the title.
 
 Optional:
 
-- `badge` (Attributes) (see [below for nested schema](#nestedatt--default_field_mapping--badge))
-- `description` (String)
-- `external_url` (String)
-- `image` (Attributes) (see [below for nested schema](#nestedatt--default_field_mapping--image))
-- `subtitle` (String)
+- `badge` (Attributes) Badge field mapping. (see [below for nested schema](#nestedatt--default_field_mapping--badge))
+- `description` (String) Field path for the description.
+- `external_url` (String) Field path for the external URL.
+- `image` (Attributes) Image field mapping. (see [below for nested schema](#nestedatt--default_field_mapping--image))
+- `subtitle` (String) Field path for the subtitle.
 
 <a id="nestedatt--default_field_mapping--badge"></a>
 ### Nested Schema for `default_field_mapping.badge`
 
 Required:
 
-- `label` (String)
-- `variant` (String)
+- `label` (String) Field path for the badge label.
+- `variant` (String) Field path for the badge variant.
 
 
 <a id="nestedatt--default_field_mapping--image"></a>
@@ -72,11 +72,11 @@ Required:
 
 Required:
 
-- `url` (String)
+- `url` (String) Field path for the image URL.
 
 Optional:
 
-- `alt_text` (String)
+- `alt_text` (String) Field path for the image alt text.
 
 ## Import
 

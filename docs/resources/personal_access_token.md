@@ -3,12 +3,12 @@
 page_title: "contentful_personal_access_token Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful Personal Access Token.
 ---
 
 # contentful_personal_access_token (Resource)
 
-
+Manages a Contentful Personal Access Token.
 
 ## Example Usage
 
@@ -25,19 +25,19 @@ resource "contentful_personal_access_token" "this" {
 
 ### Required
 
-- `name` (String)
-- `scopes` (List of String)
+- `name` (String) Name of the token.
+- `scopes` (List of String) Scopes used to limit a token's access. Supported scopes are 'content_management_read' (Read-only access) and 'content_management_manage' (Read and write access).
 
 ### Optional
 
-- `expires_in` (Number)
+- `expires_in` (Number) Time-to-live (TTL) of the token expressed in seconds. If not provided, the token will not auto-expire.
 
 ### Read-Only
 
-- `expires_at` (String)
+- `expires_at` (String) Timestamp when the token expires.
 - `id` (String) The ID of this resource.
-- `revoked_at` (String)
-- `token` (String, Sensitive)
+- `revoked_at` (String) Timestamp when the token was revoked.
+- `token` (String, Sensitive) The access token for the Content Management API. This is only available immediately after creation.
 
 ## Import
 

@@ -20,6 +20,7 @@ import (
 
 func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "Manages a Contentful Content Type.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -28,33 +29,40 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Required: true,
+				Description: "The ID of the space this content type belongs to.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Required: true,
+				Description: "The ID of the environment this content type belongs to.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"content_type_id": schema.StringAttribute{
-				Required: true,
+				Description: "The unique identifier for this content type.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Name of the content type.",
+				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Required: true,
+				Description: "Description of the content type.",
+				Required:    true,
 			},
 			"display_field": schema.StringAttribute{
-				Required: true,
+				Description: "Field ID to use as the display field for entries of this content type.",
+				Required:    true,
 			},
 			"fields": schema.ListNestedAttribute{
+				Description: "List of fields that belong to this content type.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: ContentTypeFieldValue{}.SchemaAttributes(ctx),
 					CustomType: NewTypedObjectNull[ContentTypeFieldValue]().CustomType(ctx),
@@ -75,9 +83,11 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"source": schema.StringAttribute{
-			Required: true,
+			Description: "The source for allowed Contentful entry resources.",
+			Required:    true,
 		},
 		"content_types": schema.ListAttribute{
+			Description: "List of content type IDs that are allowed to be linked.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Required:    true,
@@ -88,7 +98,8 @@ func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SchemaAttribute
 func (v ContentTypeFieldAllowedResourceItemExternalValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"type": schema.StringAttribute{
-			Required: true,
+			Description: "The type of external resource.",
+			Required:    true,
 		},
 	}
 }
@@ -96,9 +107,10 @@ func (v ContentTypeFieldAllowedResourceItemExternalValue) SchemaAttributes(_ con
 func (v ContentTypeFieldAllowedResourceItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"contentful_entry": schema.SingleNestedAttribute{
-			Attributes: ContentTypeFieldAllowedResourceItemContentfulEntryValue{}.SchemaAttributes(ctx),
-			CustomType: NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue]().CustomType(ctx),
-			Optional:   true,
+			Description: "Configuration for allowing Contentful entry resources.",
+			Attributes:  ContentTypeFieldAllowedResourceItemContentfulEntryValue{}.SchemaAttributes(ctx),
+			CustomType:  NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue]().CustomType(ctx),
+			Optional:    true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
 					path.MatchRelative().AtParent().AtName("contentful_entry"),
@@ -107,9 +119,10 @@ func (v ContentTypeFieldAllowedResourceItemValue) SchemaAttributes(ctx context.C
 			},
 		},
 		"external": schema.SingleNestedAttribute{
-			Attributes: ContentTypeFieldAllowedResourceItemExternalValue{}.SchemaAttributes(ctx),
-			CustomType: NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue]().CustomType(ctx),
-			Optional:   true,
+			Description: "Configuration for allowing external resources.",
+			Attributes:  ContentTypeFieldAllowedResourceItemExternalValue{}.SchemaAttributes(ctx),
+			CustomType:  NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue]().CustomType(ctx),
+			Optional:    true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
 					path.MatchRelative().AtParent().AtName("contentful_entry"),
@@ -123,10 +136,12 @@ func (v ContentTypeFieldAllowedResourceItemValue) SchemaAttributes(ctx context.C
 func (v ContentTypeFieldItemsValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"type": schema.StringAttribute{
-			Required: true,
+			Description: "The type of items in the array.",
+			Required:    true,
 		},
 		"link_type": schema.StringAttribute{
-			Optional: true,
+			Description: "For arrays of Links, specifies the type of resource being linked to.",
+			Optional:    true,
 		},
 		"validations": schema.ListAttribute{
 			ElementType: jsontypes.NormalizedType{},
@@ -141,39 +156,48 @@ func (v ContentTypeFieldItemsValue) SchemaAttributes(ctx context.Context) map[st
 func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Required: true,
+			Description: "The unique ID of this field within the content type.",
+			Required:    true,
 		},
 		"name": schema.StringAttribute{
-			Required: true,
+			Description: "The human-readable name of the field.",
+			Required:    true,
 		},
 		"type": schema.StringAttribute{
-			Required: true,
+			Description: "The field's data type.",
+			Required:    true,
 		},
 		"link_type": schema.StringAttribute{
-			Optional: true,
+			Description: "For Link or Array of Links fields, specifies the type of resource being linked to (e.g., Entry, Asset).",
+			Optional:    true,
 		},
 		"items": schema.SingleNestedAttribute{
-			Attributes: ContentTypeFieldItemsValue{}.SchemaAttributes(ctx),
-			CustomType: NewTypedObjectNull[ContentTypeFieldItemsValue]().CustomType(ctx),
-			Optional:   true,
+			Description: "For Array fields, defines the type of items in the array.",
+			Attributes:  ContentTypeFieldItemsValue{}.SchemaAttributes(ctx),
+			CustomType:  NewTypedObjectNull[ContentTypeFieldItemsValue]().CustomType(ctx),
+			Optional:    true,
 		},
 		"default_value": schema.StringAttribute{
-			CustomType: jsontypes.NormalizedType{},
-			Optional:   true,
-			Computed:   true,
+			Description: "Default value for the field in JSON format.",
+			CustomType:  jsontypes.NormalizedType{},
+			Optional:    true,
+			Computed:    true,
 		},
 		"localized": schema.BoolAttribute{
-			Required: true,
+			Description: "Whether the field can have different values for different locales.",
+			Required:    true,
 		},
 		"disabled": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
+			Description: "Whether the field is disabled (not editable in the UI).",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 		"omitted": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
+			Description: "Whether the field is omitted from API responses.",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 		"required": schema.BoolAttribute{
 			Required: true,
@@ -186,6 +210,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
 		},
 		"allowed_resources": schema.ListNestedAttribute{
+			Description: "For Resource Link fields, defines the allowed resource types that can be linked.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: ContentTypeFieldAllowedResourceItemValue{}.SchemaAttributes(ctx),
 				CustomType: NewTypedObjectNull[ContentTypeFieldAllowedResourceItemValue]().CustomType(ctx),
@@ -199,12 +224,14 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 func (v ContentTypeMetadataTaxonomyItemConceptSchemeValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Required: true,
+			Description: "ID of the taxonomy concept scheme.",
+			Required:    true,
 		},
 		"required": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
+			Description: "Whether this taxonomy concept scheme is required.",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 	}
 }
@@ -212,12 +239,14 @@ func (v ContentTypeMetadataTaxonomyItemConceptSchemeValue) SchemaAttributes(_ co
 func (v ContentTypeMetadataTaxonomyItemConceptValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Required: true,
+			Description: "ID of the taxonomy concept.",
+			Required:    true,
 		},
 		"required": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
+			Description: "Whether this taxonomy concept is required.",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 	}
 }
@@ -225,9 +254,10 @@ func (v ContentTypeMetadataTaxonomyItemConceptValue) SchemaAttributes(_ context.
 func (v ContentTypeMetadataTaxonomyItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"taxonomy_concept": schema.SingleNestedAttribute{
-			Attributes: ContentTypeMetadataTaxonomyItemConceptValue{}.SchemaAttributes(ctx),
-			CustomType: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue]().CustomType(ctx),
-			Optional:   true,
+			Description: "A specific taxonomy concept to associate with this content type.",
+			Attributes:  ContentTypeMetadataTaxonomyItemConceptValue{}.SchemaAttributes(ctx),
+			CustomType:  NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue]().CustomType(ctx),
+			Optional:    true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
 					path.MatchRelative().AtParent().AtName("taxonomy_concept"),
@@ -236,9 +266,10 @@ func (v ContentTypeMetadataTaxonomyItemValue) SchemaAttributes(ctx context.Conte
 			},
 		},
 		"taxonomy_concept_scheme": schema.SingleNestedAttribute{
-			Attributes: ContentTypeMetadataTaxonomyItemConceptSchemeValue{}.SchemaAttributes(ctx),
-			CustomType: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue]().CustomType(ctx),
-			Optional:   true,
+			Description: "A taxonomy concept scheme to associate with this content type.",
+			Attributes:  ContentTypeMetadataTaxonomyItemConceptSchemeValue{}.SchemaAttributes(ctx),
+			CustomType:  NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue]().CustomType(ctx),
+			Optional:    true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
 					path.MatchRelative().AtParent().AtName("taxonomy_concept"),

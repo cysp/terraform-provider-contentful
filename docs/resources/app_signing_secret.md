@@ -3,12 +3,12 @@
 page_title: "contentful_app_signing_secret Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful App Signing Secret.
 ---
 
 # contentful_app_signing_secret (Resource)
 
-
+Manages a Contentful App Signing Secret.
 
 ## Example Usage
 
@@ -32,9 +32,9 @@ resource "random_password" "contentful_app_signing_secret" {
 
 ### Required
 
-- `app_definition_id` (String)
-- `organization_id` (String)
-- `value` (String, Sensitive)
+- `app_definition_id` (String) ID of the app definition for which the signing secret is created.
+- `organization_id` (String) ID of the organization that owns the app.
+- `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters long and contain only alphanumeric characters (a-z, A-Z, 0-9).
 
 ### Read-Only
 

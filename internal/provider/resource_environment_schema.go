@@ -10,6 +10,7 @@ import (
 
 func EnvironmentResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "Manages a Contentful Environment.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -18,22 +19,26 @@ func EnvironmentResourceSchema(_ context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the space containing the environment.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the environment.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Name of the environment.",
+				Required:    true,
 			},
 			"source_environment_id": schema.StringAttribute{
-				Optional: true,
+				Description: "ID of the source environment from which to copy content. Environments are created as a copy of an existing environment.",
+				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},

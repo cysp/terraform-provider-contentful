@@ -12,6 +12,7 @@ import (
 
 func AppInstallationResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "Manages a Contentful App Installation.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -20,30 +21,35 @@ func AppInstallationResourceSchema(_ context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the space where the app is installed.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the environment where the app is installed.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"app_definition_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the app definition being installed.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"marketplace": schema.SetAttribute{
+				Description: "Marketplace information for the app.",
 				ElementType: types.StringType,
 				Optional:    true,
 			},
 			"parameters": schema.StringAttribute{
-				CustomType: jsontypes.NormalizedType{},
-				Optional:   true,
+				Description: "App-specific configuration variables. Optional free-form object with values managed by the app. The stringified value cannot be longer than 16kB.",
+				CustomType:  jsontypes.NormalizedType{},
+				Optional:    true,
 			},
 		},
 	}
