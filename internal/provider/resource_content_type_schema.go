@@ -104,6 +104,7 @@ func (v ContentTypeFieldAllowedResourceItemExternalValue) SchemaAttributes(_ con
 	}
 }
 
+//nolint:dupl
 func (v ContentTypeFieldAllowedResourceItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"contentful_entry": schema.SingleNestedAttribute{
@@ -251,6 +252,7 @@ func (v ContentTypeMetadataTaxonomyItemConceptValue) SchemaAttributes(_ context.
 	}
 }
 
+//nolint:dupl
 func (v ContentTypeMetadataTaxonomyItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"taxonomy_concept": schema.SingleNestedAttribute{
