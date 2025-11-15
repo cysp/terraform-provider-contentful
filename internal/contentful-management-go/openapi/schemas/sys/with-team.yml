@@ -1,0 +1,6 @@
+type: object
+properties:
+  team:
+    $ref: "../links/team-link.yml#/TeamLink"
+required:
+  - team

@@ -122,6 +122,20 @@ func encodeCreateTeamRequest(
 	return nil
 }
 
+func encodeCreateTeamSpaceMembershipRequest(
+	req *TeamSpaceMembershipData,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodeCreateWebhookDefinitionRequest(
 	req *WebhookDefinitionData,
 	r *http.Request,
@@ -278,6 +292,20 @@ func encodePutSpaceEnablementsRequest(
 
 func encodePutTeamRequest(
 	req *TeamData,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodePutTeamSpaceMembershipRequest(
+	req *TeamSpaceMembershipData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
