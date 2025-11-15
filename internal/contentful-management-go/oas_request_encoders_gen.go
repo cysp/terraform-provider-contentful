@@ -24,7 +24,7 @@ func encodeCreateAppDefinitionRequest(
 	return nil
 }
 
-func encodeCreateDeliveryApiKeyRequest(
+func encodeCreateDeliveryAPIKeyRequest(
 	req *ApiKeyRequestData,
 	r *http.Request,
 ) error {
@@ -262,7 +262,7 @@ func encodePutSpaceEnablementsRequest(
 	return nil
 }
 
-func encodeUpdateDeliveryApiKeyRequest(
+func encodeUpdateDeliveryAPIKeyRequest(
 	req *ApiKeyRequestData,
 	r *http.Request,
 ) error {

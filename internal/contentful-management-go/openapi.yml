@@ -435,7 +435,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/space_id"
     post:
-      operationId: createDeliveryApiKey
+      operationId: createDeliveryAPIKey
       summary: Create a delivery api key
       requestBody:
         required: true
@@ -459,7 +459,7 @@ paths:
       - $ref: "#/components/parameters/space_id"
       - $ref: "#/components/parameters/api_key_id"
     get:
-      operationId: getDeliveryApiKey
+      operationId: getDeliveryAPIKey
       summary: Get a single delivery api key
       responses:
         200:
@@ -473,7 +473,7 @@ paths:
         default:
           $ref: "#/components/responses/error"
     put:
-      operationId: updateDeliveryApiKey
+      operationId: updateDeliveryAPIKey
       summary: Update a single delivery api key
       parameters:
         - $ref: "#/components/parameters/space_id"
@@ -497,7 +497,7 @@ paths:
         default:
           $ref: "#/components/responses/error"
     delete:
-      operationId: deleteDeliveryApiKey
+      operationId: deleteDeliveryAPIKey
       summary: Delete a single delivery api key
       responses:
         204:
@@ -1027,7 +1027,7 @@ paths:
       - $ref: "#/components/parameters/space_id"
       - $ref: "#/components/parameters/preview_api_key_id"
     get:
-      operationId: getPreviewApiKey
+      operationId: getPreviewAPIKey
       summary: Get a single preview api key
       responses:
         200:

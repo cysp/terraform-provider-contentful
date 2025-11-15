@@ -13,35 +13,34 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*deliveryApiKeyResource)(nil)
-	_ resource.ResourceWithConfigure   = (*deliveryApiKeyResource)(nil)
-	_ resource.ResourceWithIdentity    = (*deliveryApiKeyResource)(nil)
-	_ resource.ResourceWithImportState = (*deliveryApiKeyResource)(nil)
+	_ resource.Resource                = (*deliveryAPIKeyResource)(nil)
+	_ resource.ResourceWithConfigure   = (*deliveryAPIKeyResource)(nil)
+	_ resource.ResourceWithIdentity    = (*deliveryAPIKeyResource)(nil)
+	_ resource.ResourceWithImportState = (*deliveryAPIKeyResource)(nil)
 )
 
-//nolint:ireturn,revive
-func NewDeliveryApiKeyResource() resource.Resource {
-	return &deliveryApiKeyResource{}
+//nolint:ireturn
+func NewDeliveryAPIKeyResource() resource.Resource {
+	return &deliveryAPIKeyResource{}
 }
 
-//nolint:revive
-type deliveryApiKeyResource struct {
+type deliveryAPIKeyResource struct {
 	providerData ContentfulProviderData
 }
 
-func (r *deliveryApiKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *deliveryAPIKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_delivery_api_key"
 }
 
-func (r *deliveryApiKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *deliveryAPIKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = DeliveryAPIKeyResourceSchema(ctx)
 }
 
-func (r *deliveryApiKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *deliveryAPIKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
 
-func (r *deliveryApiKeyResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+func (r *deliveryAPIKeyResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
 	resp.IdentitySchema = identityschema.Schema{
 		Attributes: map[string]identityschema.Attribute{
 			"space_id":   identityschema.StringAttribute{RequiredForImport: true},
@@ -50,7 +49,7 @@ func (r *deliveryApiKeyResource) IdentitySchema(_ context.Context, _ resource.Id
 	}
 }
 
-func (r *deliveryApiKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *deliveryAPIKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	ImportStatePassthroughMultipartID(ctx, []path.Path{
 		path.Root("space_id"),
 		path.Root("api_key_id"),
@@ -58,7 +57,7 @@ func (r *deliveryApiKeyResource) ImportState(ctx context.Context, req resource.I
 }
 
 //nolint:dupl
-func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data DeliveryAPIKeyModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -69,7 +68,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 
 	currentVersion := 1
 
-	params := cm.CreateDeliveryApiKeyParams{
+	params := cm.CreateDeliveryAPIKeyParams{
 		SpaceID: data.SpaceID.ValueString(),
 	}
 
@@ -80,7 +79,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	response, err := r.providerData.client.CreateDeliveryApiKey(ctx, &request, params)
+	response, err := r.providerData.client.CreateDeliveryAPIKey(ctx, &request, params)
 
 	tflog.Info(ctx, "delivery_api_key.create", map[string]any{
 		"params":   params,
@@ -113,7 +112,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
-func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data DeliveryAPIKeyModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -122,12 +121,12 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	params := cm.GetDeliveryApiKeyParams{
+	params := cm.GetDeliveryAPIKeyParams{
 		SpaceID:  data.SpaceID.ValueString(),
 		APIKeyID: data.APIKeyID.ValueString(),
 	}
 
-	response, err := r.providerData.client.GetDeliveryApiKey(ctx, params)
+	response, err := r.providerData.client.GetDeliveryAPIKey(ctx, params)
 
 	tflog.Info(ctx, "delivery_api_key.read", map[string]any{
 		"params":   params,
@@ -170,7 +169,7 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
-func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data DeliveryAPIKeyModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -184,7 +183,7 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
-	params := cm.UpdateDeliveryApiKeyParams{
+	params := cm.UpdateDeliveryAPIKeyParams{
 		SpaceID:            data.SpaceID.ValueString(),
 		APIKeyID:           data.APIKeyID.ValueString(),
 		XContentfulVersion: currentVersion,
@@ -197,7 +196,7 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	response, err := r.providerData.client.UpdateDeliveryApiKey(ctx, &request, params)
+	response, err := r.providerData.client.UpdateDeliveryAPIKey(ctx, &request, params)
 
 	tflog.Info(ctx, "delivery_api_key.update", map[string]any{
 		"params":   params,
@@ -231,7 +230,7 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 }
 
 //nolint:dupl
-func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *deliveryAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data DeliveryAPIKeyModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -240,12 +239,12 @@ func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	params := cm.DeleteDeliveryApiKeyParams{
+	params := cm.DeleteDeliveryAPIKeyParams{
 		SpaceID:  data.SpaceID.ValueString(),
 		APIKeyID: data.APIKeyID.ValueString(),
 	}
 
-	response, err := r.providerData.client.DeleteDeliveryApiKey(ctx, params)
+	response, err := r.providerData.client.DeleteDeliveryAPIKey(ctx, params)
 
 	tflog.Info(ctx, "delivery_api_key.delete", map[string]any{
 		"params":   params,

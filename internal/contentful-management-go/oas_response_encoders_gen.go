@@ -192,7 +192,7 @@ func encodeCreateAppDefinitionResponse(response CreateAppDefinitionRes, w http.R
 	}
 }
 
-func encodeCreateDeliveryApiKeyResponse(response CreateDeliveryApiKeyRes, w http.ResponseWriter) error {
+func encodeCreateDeliveryAPIKeyResponse(response CreateDeliveryAPIKeyRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ApplicationJSONError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -1221,7 +1221,7 @@ func encodeDeleteContentTypeResponse(response DeleteContentTypeRes, w http.Respo
 	}
 }
 
-func encodeDeleteDeliveryApiKeyResponse(response DeleteDeliveryApiKeyRes, w http.ResponseWriter) error {
+func encodeDeleteDeliveryAPIKeyResponse(response DeleteDeliveryAPIKeyRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *NoContent:
 		w.WriteHeader(204)
@@ -2320,7 +2320,7 @@ func encodeGetContentTypeResponse(response GetContentTypeRes, w http.ResponseWri
 	}
 }
 
-func encodeGetDeliveryApiKeyResponse(response GetDeliveryApiKeyRes, w http.ResponseWriter) error {
+func encodeGetDeliveryAPIKeyResponse(response GetDeliveryAPIKeyRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ApiKey:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
@@ -2984,7 +2984,7 @@ func encodeGetPersonalAccessTokenResponse(response GetPersonalAccessTokenRes, w 
 	}
 }
 
-func encodeGetPreviewApiKeyResponse(response GetPreviewApiKeyRes, w http.ResponseWriter) error {
+func encodeGetPreviewAPIKeyResponse(response GetPreviewAPIKeyRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *PreviewApiKey:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
@@ -4674,7 +4674,7 @@ func encodeUnpublishEntryResponse(response UnpublishEntryRes, w http.ResponseWri
 	}
 }
 
-func encodeUpdateDeliveryApiKeyResponse(response UpdateDeliveryApiKeyRes, w http.ResponseWriter) error {
+func encodeUpdateDeliveryAPIKeyResponse(response UpdateDeliveryAPIKeyRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ApplicationJSONError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")

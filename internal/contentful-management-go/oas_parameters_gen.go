@@ -293,12 +293,12 @@ func decodeCreateAppDefinitionParams(args [1]string, argsEscaped bool, r *http.R
 	return params, nil
 }
 
-// CreateDeliveryApiKeyParams is parameters of createDeliveryApiKey operation.
-type CreateDeliveryApiKeyParams struct {
+// CreateDeliveryAPIKeyParams is parameters of createDeliveryAPIKey operation.
+type CreateDeliveryAPIKeyParams struct {
 	SpaceID string
 }
 
-func unpackCreateDeliveryApiKeyParams(packed middleware.Parameters) (params CreateDeliveryApiKeyParams) {
+func unpackCreateDeliveryAPIKeyParams(packed middleware.Parameters) (params CreateDeliveryAPIKeyParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "space_id",
@@ -309,7 +309,7 @@ func unpackCreateDeliveryApiKeyParams(packed middleware.Parameters) (params Crea
 	return params
 }
 
-func decodeCreateDeliveryApiKeyParams(args [1]string, argsEscaped bool, r *http.Request) (params CreateDeliveryApiKeyParams, _ error) {
+func decodeCreateDeliveryAPIKeyParams(args [1]string, argsEscaped bool, r *http.Request) (params CreateDeliveryAPIKeyParams, _ error) {
 	// Decode path: space_id.
 	if err := func() error {
 		param := args[0]
@@ -1776,13 +1776,13 @@ func decodeDeleteContentTypeParams(args [3]string, argsEscaped bool, r *http.Req
 	return params, nil
 }
 
-// DeleteDeliveryApiKeyParams is parameters of deleteDeliveryApiKey operation.
-type DeleteDeliveryApiKeyParams struct {
+// DeleteDeliveryAPIKeyParams is parameters of deleteDeliveryAPIKey operation.
+type DeleteDeliveryAPIKeyParams struct {
 	SpaceID  string
 	APIKeyID string
 }
 
-func unpackDeleteDeliveryApiKeyParams(packed middleware.Parameters) (params DeleteDeliveryApiKeyParams) {
+func unpackDeleteDeliveryAPIKeyParams(packed middleware.Parameters) (params DeleteDeliveryAPIKeyParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "space_id",
@@ -1800,7 +1800,7 @@ func unpackDeleteDeliveryApiKeyParams(packed middleware.Parameters) (params Dele
 	return params
 }
 
-func decodeDeleteDeliveryApiKeyParams(args [2]string, argsEscaped bool, r *http.Request) (params DeleteDeliveryApiKeyParams, _ error) {
+func decodeDeleteDeliveryAPIKeyParams(args [2]string, argsEscaped bool, r *http.Request) (params DeleteDeliveryAPIKeyParams, _ error) {
 	// Decode path: space_id.
 	if err := func() error {
 		param := args[0]
@@ -3575,13 +3575,13 @@ func decodeGetContentTypeParams(args [3]string, argsEscaped bool, r *http.Reques
 	return params, nil
 }
 
-// GetDeliveryApiKeyParams is parameters of getDeliveryApiKey operation.
-type GetDeliveryApiKeyParams struct {
+// GetDeliveryAPIKeyParams is parameters of getDeliveryAPIKey operation.
+type GetDeliveryAPIKeyParams struct {
 	SpaceID  string
 	APIKeyID string
 }
 
-func unpackGetDeliveryApiKeyParams(packed middleware.Parameters) (params GetDeliveryApiKeyParams) {
+func unpackGetDeliveryAPIKeyParams(packed middleware.Parameters) (params GetDeliveryAPIKeyParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "space_id",
@@ -3599,7 +3599,7 @@ func unpackGetDeliveryApiKeyParams(packed middleware.Parameters) (params GetDeli
 	return params
 }
 
-func decodeGetDeliveryApiKeyParams(args [2]string, argsEscaped bool, r *http.Request) (params GetDeliveryApiKeyParams, _ error) {
+func decodeGetDeliveryAPIKeyParams(args [2]string, argsEscaped bool, r *http.Request) (params GetDeliveryAPIKeyParams, _ error) {
 	// Decode path: space_id.
 	if err := func() error {
 		param := args[0]
@@ -4589,13 +4589,13 @@ func decodeGetPersonalAccessTokenParams(args [1]string, argsEscaped bool, r *htt
 	return params, nil
 }
 
-// GetPreviewApiKeyParams is parameters of getPreviewApiKey operation.
-type GetPreviewApiKeyParams struct {
+// GetPreviewAPIKeyParams is parameters of getPreviewAPIKey operation.
+type GetPreviewAPIKeyParams struct {
 	SpaceID         string
 	PreviewAPIKeyID string
 }
 
-func unpackGetPreviewApiKeyParams(packed middleware.Parameters) (params GetPreviewApiKeyParams) {
+func unpackGetPreviewAPIKeyParams(packed middleware.Parameters) (params GetPreviewAPIKeyParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "space_id",
@@ -4613,7 +4613,7 @@ func unpackGetPreviewApiKeyParams(packed middleware.Parameters) (params GetPrevi
 	return params
 }
 
-func decodeGetPreviewApiKeyParams(args [2]string, argsEscaped bool, r *http.Request) (params GetPreviewApiKeyParams, _ error) {
+func decodeGetPreviewAPIKeyParams(args [2]string, argsEscaped bool, r *http.Request) (params GetPreviewAPIKeyParams, _ error) {
 	// Decode path: space_id.
 	if err := func() error {
 		param := args[0]
@@ -7506,14 +7506,14 @@ func decodeUnpublishEntryParams(args [3]string, argsEscaped bool, r *http.Reques
 	return params, nil
 }
 
-// UpdateDeliveryApiKeyParams is parameters of updateDeliveryApiKey operation.
-type UpdateDeliveryApiKeyParams struct {
+// UpdateDeliveryAPIKeyParams is parameters of updateDeliveryAPIKey operation.
+type UpdateDeliveryAPIKeyParams struct {
 	SpaceID            string
 	APIKeyID           string
 	XContentfulVersion int
 }
 
-func unpackUpdateDeliveryApiKeyParams(packed middleware.Parameters) (params UpdateDeliveryApiKeyParams) {
+func unpackUpdateDeliveryAPIKeyParams(packed middleware.Parameters) (params UpdateDeliveryAPIKeyParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "space_id",
@@ -7538,7 +7538,7 @@ func unpackUpdateDeliveryApiKeyParams(packed middleware.Parameters) (params Upda
 	return params
 }
 
-func decodeUpdateDeliveryApiKeyParams(args [2]string, argsEscaped bool, r *http.Request) (params UpdateDeliveryApiKeyParams, _ error) {
+func decodeUpdateDeliveryAPIKeyParams(args [2]string, argsEscaped bool, r *http.Request) (params UpdateDeliveryAPIKeyParams, _ error) {
 	h := uri.NewHeaderDecoder(r.Header)
 	// Decode path: space_id.
 	if err := func() error {

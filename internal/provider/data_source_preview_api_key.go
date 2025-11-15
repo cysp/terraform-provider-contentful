@@ -11,33 +11,32 @@ import (
 )
 
 var (
-	_ datasource.DataSource              = (*previewApiKeyDataSource)(nil)
-	_ datasource.DataSourceWithConfigure = (*previewApiKeyDataSource)(nil)
+	_ datasource.DataSource              = (*previewAPIKeyDataSource)(nil)
+	_ datasource.DataSourceWithConfigure = (*previewAPIKeyDataSource)(nil)
 )
 
-//nolint:ireturn,revive
-func NewPreviewApiKeyDataSource() datasource.DataSource {
-	return &previewApiKeyDataSource{}
+//nolint:ireturn
+func NewPreviewAPIKeyDataSource() datasource.DataSource {
+	return &previewAPIKeyDataSource{}
 }
 
-//nolint:revive
-type previewApiKeyDataSource struct {
+type previewAPIKeyDataSource struct {
 	providerData ContentfulProviderData
 }
 
-func (d *previewApiKeyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *previewAPIKeyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_preview_api_key"
 }
 
-func (d *previewApiKeyDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *previewAPIKeyDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = PreviewAPIKeyDataSourceSchema(ctx)
 }
 
-func (d *previewApiKeyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *previewAPIKeyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromDataSourceConfigureRequest(req, &d.providerData)...)
 }
 
-func (d *previewApiKeyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *previewAPIKeyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data PreviewAPIKeyModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -46,12 +45,12 @@ func (d *previewApiKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	params := cm.GetPreviewApiKeyParams{
+	params := cm.GetPreviewAPIKeyParams{
 		SpaceID:         data.SpaceID.ValueString(),
 		PreviewAPIKeyID: data.PreviewAPIKeyID.ValueString(),
 	}
 
-	response, err := d.providerData.client.GetPreviewApiKey(ctx, params)
+	response, err := d.providerData.client.GetPreviewAPIKey(ctx, params)
 
 	tflog.Info(ctx, "preview_api_key.read", map[string]any{
 		"params":   params,

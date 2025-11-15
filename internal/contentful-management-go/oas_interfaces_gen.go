@@ -9,8 +9,8 @@ type CreateAppDefinitionRes interface {
 	createAppDefinitionRes()
 }
 
-type CreateDeliveryApiKeyRes interface {
-	createDeliveryApiKeyRes()
+type CreateDeliveryAPIKeyRes interface {
+	createDeliveryAPIKeyRes()
 }
 
 type CreateEntryRes interface {
@@ -57,8 +57,8 @@ type DeleteContentTypeRes interface {
 	deleteContentTypeRes()
 }
 
-type DeleteDeliveryApiKeyRes interface {
-	deleteDeliveryApiKeyRes()
+type DeleteDeliveryAPIKeyRes interface {
+	deleteDeliveryAPIKeyRes()
 }
 
 type DeleteEntryRes interface {
@@ -113,8 +113,8 @@ type GetContentTypeRes interface {
 	getContentTypeRes()
 }
 
-type GetDeliveryApiKeyRes interface {
-	getDeliveryApiKeyRes()
+type GetDeliveryAPIKeyRes interface {
+	getDeliveryAPIKeyRes()
 }
 
 type GetEditorInterfaceRes interface {
@@ -145,8 +145,8 @@ type GetPersonalAccessTokenRes interface {
 	getPersonalAccessTokenRes()
 }
 
-type GetPreviewApiKeyRes interface {
-	getPreviewApiKeyRes()
+type GetPreviewAPIKeyRes interface {
+	getPreviewAPIKeyRes()
 }
 
 type GetResourceProviderRes interface {
@@ -221,8 +221,8 @@ type UnpublishEntryRes interface {
 	unpublishEntryRes()
 }
 
-type UpdateDeliveryApiKeyRes interface {
-	updateDeliveryApiKeyRes()
+type UpdateDeliveryAPIKeyRes interface {
+	updateDeliveryAPIKeyRes()
 }
 
 type UpdateRoleRes interface {

@@ -6,8 +6,8 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-//nolint:ireturn,revive
-func (ts *Handler) GetPreviewApiKey(_ context.Context, params cm.GetPreviewApiKeyParams) (cm.GetPreviewApiKeyRes, error) {
+//nolint:ireturn
+func (ts *Handler) GetPreviewAPIKey(_ context.Context, params cm.GetPreviewAPIKeyParams) (cm.GetPreviewAPIKeyRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

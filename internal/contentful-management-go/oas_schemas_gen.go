@@ -105,7 +105,7 @@ func (s *ApiKey) SetPreviewAPIKey(val OptPreviewAPIKeyLink) {
 	s.PreviewAPIKey = val
 }
 
-func (*ApiKey) getDeliveryApiKeyRes() {}
+func (*ApiKey) getDeliveryAPIKeyRes() {}
 
 // Ref: #/ApiKeyRequestData
 type ApiKeyRequestData struct {
@@ -170,8 +170,8 @@ func (s *ApiKeyStatusCode) SetResponse(val ApiKey) {
 	s.Response = val
 }
 
-func (*ApiKeyStatusCode) createDeliveryApiKeyRes() {}
-func (*ApiKeyStatusCode) updateDeliveryApiKeyRes() {}
+func (*ApiKeyStatusCode) createDeliveryAPIKeyRes() {}
+func (*ApiKeyStatusCode) updateDeliveryAPIKeyRes() {}
 
 // Merged schema.
 // Ref: #/ApiKeySys
@@ -1505,7 +1505,7 @@ func NewErrorApplicationJSONError(v Error) ApplicationJSONError {
 
 func (*ApplicationJSONError) activateContentTypeRes()            {}
 func (*ApplicationJSONError) createAppDefinitionRes()            {}
-func (*ApplicationJSONError) createDeliveryApiKeyRes()           {}
+func (*ApplicationJSONError) createDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONError) createEntryRes()                    {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentAliasRes() {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentRes()      {}
@@ -1517,7 +1517,7 @@ func (*ApplicationJSONError) deleteAppDefinitionRes()            {}
 func (*ApplicationJSONError) deleteAppInstallationRes()          {}
 func (*ApplicationJSONError) deleteAppSigningSecretRes()         {}
 func (*ApplicationJSONError) deleteContentTypeRes()              {}
-func (*ApplicationJSONError) deleteDeliveryApiKeyRes()           {}
+func (*ApplicationJSONError) deleteDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONError) deleteEntryRes()                    {}
 func (*ApplicationJSONError) deleteEnvironmentAliasRes()         {}
 func (*ApplicationJSONError) deleteEnvironmentRes()              {}
@@ -1531,7 +1531,7 @@ func (*ApplicationJSONError) getAppInstallationRes()             {}
 func (*ApplicationJSONError) getAppSigningSecretRes()            {}
 func (*ApplicationJSONError) getAuthenticatedUserRes()           {}
 func (*ApplicationJSONError) getContentTypeRes()                 {}
-func (*ApplicationJSONError) getDeliveryApiKeyRes()              {}
+func (*ApplicationJSONError) getDeliveryAPIKeyRes()              {}
 func (*ApplicationJSONError) getEditorInterfaceRes()             {}
 func (*ApplicationJSONError) getEntryRes()                       {}
 func (*ApplicationJSONError) getEnvironmentAliasRes()            {}
@@ -1539,7 +1539,7 @@ func (*ApplicationJSONError) getEnvironmentRes()                 {}
 func (*ApplicationJSONError) getExtensionRes()                   {}
 func (*ApplicationJSONError) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationJSONError) getPersonalAccessTokenRes()         {}
-func (*ApplicationJSONError) getPreviewApiKeyRes()               {}
+func (*ApplicationJSONError) getPreviewAPIKeyRes()               {}
 func (*ApplicationJSONError) getResourceProviderRes()            {}
 func (*ApplicationJSONError) getResourceTypeRes()                {}
 func (*ApplicationJSONError) getRoleRes()                        {}
@@ -1558,7 +1558,7 @@ func (*ApplicationJSONError) putResourceTypeRes()                {}
 func (*ApplicationJSONError) putSpaceEnablementsRes()            {}
 func (*ApplicationJSONError) revokePersonalAccessTokenRes()      {}
 func (*ApplicationJSONError) unpublishEntryRes()                 {}
-func (*ApplicationJSONError) updateDeliveryApiKeyRes()           {}
+func (*ApplicationJSONError) updateDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONError) updateRoleRes()                     {}
 func (*ApplicationJSONError) updateWebhookDefinitionRes()        {}
 
@@ -1590,7 +1590,7 @@ func (s *ApplicationJSONErrorStatusCode) SetResponse(val ApplicationJSONError) {
 
 func (*ApplicationJSONErrorStatusCode) activateContentTypeRes()            {}
 func (*ApplicationJSONErrorStatusCode) createAppDefinitionRes()            {}
-func (*ApplicationJSONErrorStatusCode) createDeliveryApiKeyRes()           {}
+func (*ApplicationJSONErrorStatusCode) createDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONErrorStatusCode) createEntryRes()                    {}
 func (*ApplicationJSONErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
 func (*ApplicationJSONErrorStatusCode) createOrUpdateEnvironmentRes()      {}
@@ -1602,7 +1602,7 @@ func (*ApplicationJSONErrorStatusCode) deleteAppDefinitionRes()            {}
 func (*ApplicationJSONErrorStatusCode) deleteAppInstallationRes()          {}
 func (*ApplicationJSONErrorStatusCode) deleteAppSigningSecretRes()         {}
 func (*ApplicationJSONErrorStatusCode) deleteContentTypeRes()              {}
-func (*ApplicationJSONErrorStatusCode) deleteDeliveryApiKeyRes()           {}
+func (*ApplicationJSONErrorStatusCode) deleteDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONErrorStatusCode) deleteEntryRes()                    {}
 func (*ApplicationJSONErrorStatusCode) deleteEnvironmentAliasRes()         {}
 func (*ApplicationJSONErrorStatusCode) deleteEnvironmentRes()              {}
@@ -1616,7 +1616,7 @@ func (*ApplicationJSONErrorStatusCode) getAppInstallationRes()             {}
 func (*ApplicationJSONErrorStatusCode) getAppSigningSecretRes()            {}
 func (*ApplicationJSONErrorStatusCode) getAuthenticatedUserRes()           {}
 func (*ApplicationJSONErrorStatusCode) getContentTypeRes()                 {}
-func (*ApplicationJSONErrorStatusCode) getDeliveryApiKeyRes()              {}
+func (*ApplicationJSONErrorStatusCode) getDeliveryAPIKeyRes()              {}
 func (*ApplicationJSONErrorStatusCode) getEditorInterfaceRes()             {}
 func (*ApplicationJSONErrorStatusCode) getEntryRes()                       {}
 func (*ApplicationJSONErrorStatusCode) getEnvironmentAliasRes()            {}
@@ -1624,7 +1624,7 @@ func (*ApplicationJSONErrorStatusCode) getEnvironmentRes()                 {}
 func (*ApplicationJSONErrorStatusCode) getExtensionRes()                   {}
 func (*ApplicationJSONErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationJSONErrorStatusCode) getPersonalAccessTokenRes()         {}
-func (*ApplicationJSONErrorStatusCode) getPreviewApiKeyRes()               {}
+func (*ApplicationJSONErrorStatusCode) getPreviewAPIKeyRes()               {}
 func (*ApplicationJSONErrorStatusCode) getResourceProviderRes()            {}
 func (*ApplicationJSONErrorStatusCode) getResourceTypeRes()                {}
 func (*ApplicationJSONErrorStatusCode) getRoleRes()                        {}
@@ -1643,7 +1643,7 @@ func (*ApplicationJSONErrorStatusCode) putResourceTypeRes()                {}
 func (*ApplicationJSONErrorStatusCode) putSpaceEnablementsRes()            {}
 func (*ApplicationJSONErrorStatusCode) revokePersonalAccessTokenRes()      {}
 func (*ApplicationJSONErrorStatusCode) unpublishEntryRes()                 {}
-func (*ApplicationJSONErrorStatusCode) updateDeliveryApiKeyRes()           {}
+func (*ApplicationJSONErrorStatusCode) updateDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONErrorStatusCode) updateRoleRes()                     {}
 func (*ApplicationJSONErrorStatusCode) updateWebhookDefinitionRes()        {}
 
@@ -1690,7 +1690,7 @@ func NewErrorApplicationVndContentfulManagementV1JSONError(v Error) ApplicationV
 
 func (*ApplicationVndContentfulManagementV1JSONError) activateContentTypeRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) createAppDefinitionRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) createDeliveryApiKeyRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONError) createDeliveryAPIKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) createEntryRes()                    {}
 func (*ApplicationVndContentfulManagementV1JSONError) createOrUpdateEnvironmentAliasRes() {}
 func (*ApplicationVndContentfulManagementV1JSONError) createOrUpdateEnvironmentRes()      {}
@@ -1702,7 +1702,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) deleteAppDefinitionRes()  
 func (*ApplicationVndContentfulManagementV1JSONError) deleteAppInstallationRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteAppSigningSecretRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteContentTypeRes()              {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteDeliveryApiKeyRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteDeliveryAPIKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteEntryRes()                    {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteEnvironmentAliasRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteEnvironmentRes()              {}
@@ -1716,7 +1716,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getAppInstallationRes()   
 func (*ApplicationVndContentfulManagementV1JSONError) getAppSigningSecretRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) getAuthenticatedUserRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) getContentTypeRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryApiKeyRes()              {}
+func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryAPIKeyRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEditorInterfaceRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEntryRes()                       {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEnvironmentAliasRes()            {}
@@ -1724,7 +1724,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getEnvironmentRes()       
 func (*ApplicationVndContentfulManagementV1JSONError) getExtensionRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONError) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationVndContentfulManagementV1JSONError) getPersonalAccessTokenRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONError) getPreviewApiKeyRes()               {}
+func (*ApplicationVndContentfulManagementV1JSONError) getPreviewAPIKeyRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONError) getResourceProviderRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) getResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) getRoleRes()                        {}
@@ -1743,7 +1743,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) putResourceTypeRes()      
 func (*ApplicationVndContentfulManagementV1JSONError) putSpaceEnablementsRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) revokePersonalAccessTokenRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONError) unpublishEntryRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONError) updateDeliveryApiKeyRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONError) updateDeliveryAPIKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONError) updateRoleRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONError) updateWebhookDefinitionRes()        {}
 
@@ -1775,7 +1775,7 @@ func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) SetResponse(va
 
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) activateContentTypeRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createAppDefinitionRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createDeliveryApiKeyRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createDeliveryAPIKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createEntryRes()                    {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createOrUpdateEnvironmentRes()      {}
@@ -1787,7 +1787,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppDefinit
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppInstallationRes()          {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppSigningSecretRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteContentTypeRes()              {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteDeliveryApiKeyRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteDeliveryAPIKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEntryRes()                    {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEnvironmentAliasRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEnvironmentRes()              {}
@@ -1801,7 +1801,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppInstallati
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppSigningSecretRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAuthenticatedUserRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypeRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryApiKeyRes()              {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryAPIKeyRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEditorInterfaceRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEntryRes()                       {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEnvironmentAliasRes()            {}
@@ -1809,7 +1809,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEnvironmentRe
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getExtensionRes()                   {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPersonalAccessTokenRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPreviewApiKeyRes()               {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPreviewAPIKeyRes()               {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getResourceProviderRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getRoleRes()                        {}
@@ -1828,7 +1828,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceTypeR
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putSpaceEnablementsRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) revokePersonalAccessTokenRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) unpublishEntryRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateDeliveryApiKeyRes()           {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateDeliveryAPIKeyRes()           {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateRoleRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateWebhookDefinitionRes()        {}
 
@@ -5125,7 +5125,7 @@ func (*NoContent) deleteAppDefinitionRes()     {}
 func (*NoContent) deleteAppInstallationRes()   {}
 func (*NoContent) deleteAppSigningSecretRes()  {}
 func (*NoContent) deleteContentTypeRes()       {}
-func (*NoContent) deleteDeliveryApiKeyRes()    {}
+func (*NoContent) deleteDeliveryAPIKeyRes()    {}
 func (*NoContent) deleteEntryRes()             {}
 func (*NoContent) deleteEnvironmentAliasRes()  {}
 func (*NoContent) deleteEnvironmentRes()       {}
@@ -7608,7 +7608,7 @@ func (s *PreviewApiKey) SetEnvironments(val []EnvironmentLink) {
 	s.Environments = val
 }
 
-func (*PreviewApiKey) getPreviewApiKeyRes() {}
+func (*PreviewApiKey) getPreviewAPIKeyRes() {}
 
 // Merged schema.
 // Ref: #/PreviewApiKeySys
