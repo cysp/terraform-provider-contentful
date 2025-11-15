@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-func SetProviderDataFromDataSourceConfigureRequest[ProviderData interface{}](req datasource.ConfigureRequest, out *ProviderData) diag.Diagnostics {
+func SetProviderDataFromDataSourceConfigureRequest[ProviderData any](req datasource.ConfigureRequest, out *ProviderData) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	if req.ProviderData == nil {
@@ -24,7 +24,7 @@ func SetProviderDataFromDataSourceConfigureRequest[ProviderData interface{}](req
 	return diags
 }
 
-func SetProviderDataFromResourceConfigureRequest[ProviderData interface{}](req resource.ConfigureRequest, out *ProviderData) diag.Diagnostics {
+func SetProviderDataFromResourceConfigureRequest[ProviderData any](req resource.ConfigureRequest, out *ProviderData) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	if req.ProviderData == nil {

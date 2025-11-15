@@ -81,7 +81,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	response, err := r.providerData.client.CreateRole(ctx, &request, params)
 
-	tflog.Info(ctx, "role.create", map[string]interface{}{
+	tflog.Info(ctx, "role.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -128,7 +128,7 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	response, err := r.providerData.client.GetRole(ctx, params)
 
-	tflog.Info(ctx, "role.read", map[string]interface{}{
+	tflog.Info(ctx, "role.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -198,7 +198,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	response, err := r.providerData.client.UpdateRole(ctx, &request, params)
 
-	tflog.Info(ctx, "role.update", map[string]interface{}{
+	tflog.Info(ctx, "role.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -249,7 +249,7 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	response, err := r.providerData.client.DeleteRole(ctx, params)
 
-	tflog.Info(ctx, "role.delete", map[string]interface{}{
+	tflog.Info(ctx, "role.delete", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,

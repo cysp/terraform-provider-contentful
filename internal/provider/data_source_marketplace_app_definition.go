@@ -50,7 +50,7 @@ func (d *marketplaceAppDefinitionDataSource) Read(ctx context.Context, req datas
 
 	response, err := d.providerData.client.GetMarketplaceAppDefinitions(ctx, params)
 
-	tflog.Info(ctx, "marketplace_app_definition.read", map[string]interface{}{
+	tflog.Info(ctx, "marketplace_app_definition.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,

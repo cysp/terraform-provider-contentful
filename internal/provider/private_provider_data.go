@@ -12,7 +12,7 @@ type PrivateProviderData interface {
 	SetKey(ctx context.Context, key string, value []byte) diag.Diagnostics
 }
 
-func SetPrivateProviderData[T interface{}](ctx context.Context, providerData PrivateProviderData, key string, value T) diag.Diagnostics {
+func SetPrivateProviderData[T any](ctx context.Context, providerData PrivateProviderData, key string, value T) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	valueBytes, err := json.Marshal(value)
@@ -27,7 +27,7 @@ func SetPrivateProviderData[T interface{}](ctx context.Context, providerData Pri
 	return providerData.SetKey(ctx, key, valueBytes)
 }
 
-func GetPrivateProviderData[T interface{}](ctx context.Context, providerData PrivateProviderData, key string, value *T) diag.Diagnostics {
+func GetPrivateProviderData[T any](ctx context.Context, providerData PrivateProviderData, key string, value *T) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	valueBytes, getDiags := providerData.GetKey(ctx, key)

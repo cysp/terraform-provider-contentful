@@ -83,7 +83,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Create(ctx context.Cont
 
 	response, err := r.providerData.client.PutResourceType(ctx, &request, params)
 
-	tflog.Info(ctx, "app_definition_resource_type.create", map[string]interface{}{
+	tflog.Info(ctx, "app_definition_resource_type.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -129,7 +129,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Read(ctx context.Contex
 
 	response, err := r.providerData.client.GetResourceType(ctx, params)
 
-	tflog.Info(ctx, "app_definition_resource_type.read", map[string]interface{}{
+	tflog.Info(ctx, "app_definition_resource_type.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -190,7 +190,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Update(ctx context.Cont
 
 	response, err := r.providerData.client.PutResourceType(ctx, &request, params)
 
-	tflog.Info(ctx, "app_definition_resource_type.update", map[string]interface{}{
+	tflog.Info(ctx, "app_definition_resource_type.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,

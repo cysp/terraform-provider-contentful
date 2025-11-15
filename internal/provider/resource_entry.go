@@ -125,7 +125,7 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	getEntryResponse, err := r.providerData.client.GetEntry(ctx, getEntryParams)
 
-	tflog.Info(ctx, "entry.read", map[string]interface{}{
+	tflog.Info(ctx, "entry.read", map[string]any{
 		"params":   getEntryParams,
 		"response": getEntryResponse,
 		"err":      err,

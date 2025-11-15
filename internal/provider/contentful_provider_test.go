@@ -22,7 +22,7 @@ func makeTestAccProtoV6ProviderFactories(options ...Option) map[string]func() (t
 //nolint:gochecknoglobals
 var testAccProtoV6ProviderFactories = makeTestAccProtoV6ProviderFactories()
 
-func providerConfigDynamicValue(config map[string]interface{}) (tfprotov6.DynamicValue, error) {
+func providerConfigDynamicValue(config map[string]any) (tfprotov6.DynamicValue, error) {
 	providerConfigTypes := map[string]tftypes.Type{
 		"url":          tftypes.String,
 		"access_token": tftypes.String,
@@ -63,31 +63,31 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 	}
 
 	tests := map[string]struct {
-		config          map[string]interface{}
+		config          map[string]any
 		env             map[string]string
 		expectedSuccess bool
 	}{
 		"config: url": {
-			config: map[string]interface{}{
+			config: map[string]any{
 				"url": "https://api.test.contentful.com",
 			},
 			expectedSuccess: false,
 		},
 		"config: access_token": {
-			config: map[string]interface{}{
+			config: map[string]any{
 				"access_token": "CFPAT-12345",
 			},
 			expectedSuccess: true,
 		},
 		"config: url,access_token": {
-			config: map[string]interface{}{
+			config: map[string]any{
 				"url":          "https://api.test.contentful.com",
 				"access_token": "CFPAT-12345",
 			},
 			expectedSuccess: true,
 		},
 		"config: url(invalid),access_token": {
-			config: map[string]interface{}{
+			config: map[string]any{
 				"url":          "url://an invalid url %/",
 				"access_token": "CFPAT-12345",
 			},
@@ -107,7 +107,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			expectedSuccess: true,
 		},
 		"config: url env: access_token": {
-			config: map[string]interface{}{
+			config: map[string]any{
 				"url": "https://api.test.contentful.com",
 			},
 			env: map[string]string{

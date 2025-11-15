@@ -84,7 +84,7 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 
 	response, err := r.providerData.client.PutExtension(ctx, &request, params)
 
-	tflog.Info(ctx, "extension.create", map[string]interface{}{
+	tflog.Info(ctx, "extension.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -133,7 +133,7 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 	response, err := r.providerData.client.GetExtension(ctx, params)
 
-	tflog.Info(ctx, "extension.read", map[string]interface{}{
+	tflog.Info(ctx, "extension.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -204,7 +204,7 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 
 	response, err := r.providerData.client.PutExtension(ctx, &request, params)
 
-	tflog.Info(ctx, "extension.update", map[string]interface{}{
+	tflog.Info(ctx, "extension.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -253,7 +253,7 @@ func (r *extensionResource) Delete(ctx context.Context, req resource.DeleteReque
 
 	response, err := r.providerData.client.DeleteExtension(ctx, params)
 
-	tflog.Info(ctx, "extension.delete", map[string]interface{}{
+	tflog.Info(ctx, "extension.delete", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
