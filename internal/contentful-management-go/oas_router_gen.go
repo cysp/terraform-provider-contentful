@@ -1047,6 +1047,71 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 						}
 
+					case 't': // Prefix: "team_space_memberships"
+
+						if l := len("team_space_memberships"); len(elem) >= l && elem[0:l] == "team_space_memberships" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							switch r.Method {
+							case "POST":
+								s.handleCreateTeamSpaceMembershipRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, "POST")
+							}
+
+							return
+						}
+						switch elem[0] {
+						case '/': // Prefix: "/"
+
+							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							// Param: "team_space_membership_id"
+							// Leaf parameter, slashes are prohibited
+							idx := strings.IndexByte(elem, '/')
+							if idx >= 0 {
+								break
+							}
+							args[1] = elem
+							elem = ""
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "DELETE":
+									s.handleDeleteTeamSpaceMembershipRequest([2]string{
+										args[0],
+										args[1],
+									}, elemIsEscaped, w, r)
+								case "GET":
+									s.handleGetTeamSpaceMembershipRequest([2]string{
+										args[0],
+										args[1],
+									}, elemIsEscaped, w, r)
+								case "PUT":
+									s.handlePutTeamSpaceMembershipRequest([2]string{
+										args[0],
+										args[1],
+									}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "DELETE,GET,PUT")
+								}
+
+								return
+							}
+
+						}
+
 					case 'w': // Prefix: "webhook_definitions"
 
 						if l := len("webhook_definitions"); len(elem) >= l && elem[0:l] == "webhook_definitions" {
@@ -2384,6 +2449,80 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.summary = "Update a role"
 									r.operationID = "updateRole"
 									r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
+									r.args = args
+									r.count = 2
+									return r, true
+								default:
+									return
+								}
+							}
+
+						}
+
+					case 't': // Prefix: "team_space_memberships"
+
+						if l := len("team_space_memberships"); len(elem) >= l && elem[0:l] == "team_space_memberships" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							switch method {
+							case "POST":
+								r.name = CreateTeamSpaceMembershipOperation
+								r.summary = "Create a team space membership"
+								r.operationID = "createTeamSpaceMembership"
+								r.pathPattern = "/spaces/{space_id}/team_space_memberships"
+								r.args = args
+								r.count = 1
+								return r, true
+							default:
+								return
+							}
+						}
+						switch elem[0] {
+						case '/': // Prefix: "/"
+
+							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							// Param: "team_space_membership_id"
+							// Leaf parameter, slashes are prohibited
+							idx := strings.IndexByte(elem, '/')
+							if idx >= 0 {
+								break
+							}
+							args[1] = elem
+							elem = ""
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "DELETE":
+									r.name = DeleteTeamSpaceMembershipOperation
+									r.summary = "Delete a team space membership"
+									r.operationID = "deleteTeamSpaceMembership"
+									r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
+									r.args = args
+									r.count = 2
+									return r, true
+								case "GET":
+									r.name = GetTeamSpaceMembershipOperation
+									r.summary = "Get a single team space membership"
+									r.operationID = "getTeamSpaceMembership"
+									r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
+									r.args = args
+									r.count = 2
+									return r, true
+								case "PUT":
+									r.name = PutTeamSpaceMembershipOperation
+									r.summary = "Update a single team space membership"
+									r.operationID = "putTeamSpaceMembership"
+									r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
 									r.args = args
 									r.count = 2
 									return r, true

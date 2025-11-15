@@ -37,6 +37,10 @@ type CreateTeamRes interface {
 	createTeamRes()
 }
 
+type CreateTeamSpaceMembershipRes interface {
+	createTeamSpaceMembershipRes()
+}
+
 type CreateWebhookDefinitionRes interface {
 	createWebhookDefinitionRes()
 }
@@ -95,6 +99,10 @@ type DeleteRoleRes interface {
 
 type DeleteTeamRes interface {
 	deleteTeamRes()
+}
+
+type DeleteTeamSpaceMembershipRes interface {
+	deleteTeamSpaceMembershipRes()
 }
 
 type DeleteWebhookDefinitionRes interface {
@@ -177,6 +185,10 @@ type GetTeamRes interface {
 	getTeamRes()
 }
 
+type GetTeamSpaceMembershipRes interface {
+	getTeamSpaceMembershipRes()
+}
+
 type GetWebhookDefinitionRes interface {
 	getWebhookDefinitionRes()
 }
@@ -227,6 +239,10 @@ type PutSpaceEnablementsRes interface {
 
 type PutTeamRes interface {
 	putTeamRes()
+}
+
+type PutTeamSpaceMembershipRes interface {
+	putTeamSpaceMembershipRes()
 }
 
 type RevokePersonalAccessTokenRes interface {

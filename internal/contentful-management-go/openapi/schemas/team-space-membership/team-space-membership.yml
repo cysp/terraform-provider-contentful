@@ -1,0 +1,9 @@
+TeamSpaceMembership:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/TeamSpaceMembershipSys"
+      required:
+        - sys
+    - $ref: "./data.yml#/TeamSpaceMembershipData"
