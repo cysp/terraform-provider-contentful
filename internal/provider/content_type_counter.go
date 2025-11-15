@@ -5,46 +5,42 @@ import (
 )
 
 type ContentfulContentTypeCounter struct {
-	m  map[string]int
 	mu sync.RWMutex
+
+	countByContentType map[string]int
 }
 
 func (c *ContentfulContentTypeCounter) Get(contentTypeID string) int {
-	return c.withReadMap(func(m map[string]int) int {
-		return m[contentTypeID]
-	})
-}
-
-func (c *ContentfulContentTypeCounter) Reset(contentTypeID string) {
-	c.withWriteMap(func(m map[string]int) {
-		delete(m, contentTypeID)
-	})
-}
-
-func (c *ContentfulContentTypeCounter) Increment(contentTypeID string) {
-	c.withWriteMap(func(m map[string]int) {
-		m[contentTypeID]++
-	})
-}
-
-func (c *ContentfulContentTypeCounter) withReadMap(operation func(map[string]int) int) int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	if c.m == nil {
-		return 0 // Default value if map hasn't been created yet
+	if c.countByContentType == nil {
+		return 0
 	}
 
-	return operation(c.m)
+	return c.countByContentType[contentTypeID]
 }
 
-func (c *ContentfulContentTypeCounter) withWriteMap(operation func(map[string]int)) {
+func (c *ContentfulContentTypeCounter) Reset(contentTypeID string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if c.m == nil {
-		c.m = make(map[string]int)
+	countByContentType := c.getOrCreateCountByContentTypeMap()
+	delete(countByContentType, contentTypeID)
+}
+
+func (c *ContentfulContentTypeCounter) Increment(contentTypeID string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	countByContentType := c.getOrCreateCountByContentTypeMap()
+	countByContentType[contentTypeID]++
+}
+
+func (c *ContentfulContentTypeCounter) getOrCreateCountByContentTypeMap() map[string]int {
+	if c.countByContentType == nil {
+		c.countByContentType = make(map[string]int)
 	}
 
-	operation(c.m)
+	return c.countByContentType
 }
