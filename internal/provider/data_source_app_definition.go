@@ -51,7 +51,7 @@ func (d *appDefinitionDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	response, err := d.providerData.client.GetAppDefinition(ctx, params)
 
-	tflog.Info(ctx, "app_definition.read", map[string]interface{}{
+	tflog.Info(ctx, "app_definition.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,

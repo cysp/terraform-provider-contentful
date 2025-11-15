@@ -82,7 +82,7 @@ func (r *deliveryApiKeyResource) Create(ctx context.Context, req resource.Create
 
 	response, err := r.providerData.client.CreateDeliveryApiKey(ctx, &request, params)
 
-	tflog.Info(ctx, "delivery_api_key.create", map[string]interface{}{
+	tflog.Info(ctx, "delivery_api_key.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -129,7 +129,7 @@ func (r *deliveryApiKeyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	response, err := r.providerData.client.GetDeliveryApiKey(ctx, params)
 
-	tflog.Info(ctx, "delivery_api_key.read", map[string]interface{}{
+	tflog.Info(ctx, "delivery_api_key.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -199,7 +199,7 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 
 	response, err := r.providerData.client.UpdateDeliveryApiKey(ctx, &request, params)
 
-	tflog.Info(ctx, "delivery_api_key.update", map[string]interface{}{
+	tflog.Info(ctx, "delivery_api_key.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -230,6 +230,7 @@ func (r *deliveryApiKeyResource) Update(ctx context.Context, req resource.Update
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
+//nolint:dupl
 func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data DeliveryAPIKeyModel
 
@@ -246,7 +247,7 @@ func (r *deliveryApiKeyResource) Delete(ctx context.Context, req resource.Delete
 
 	response, err := r.providerData.client.DeleteDeliveryApiKey(ctx, params)
 
-	tflog.Info(ctx, "delivery_api_key.delete", map[string]interface{}{
+	tflog.Info(ctx, "delivery_api_key.delete", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,

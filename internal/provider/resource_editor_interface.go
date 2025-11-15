@@ -86,7 +86,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	response, err := r.providerData.client.PutEditorInterface(ctx, &request, params)
 
-	tflog.Info(ctx, "editor_interface.create", map[string]interface{}{
+	tflog.Info(ctx, "editor_interface.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -136,7 +136,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 
 	response, err := r.providerData.client.GetEditorInterface(ctx, params)
 
-	tflog.Info(ctx, "editor_interface.read", map[string]interface{}{
+	tflog.Info(ctx, "editor_interface.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -211,7 +211,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	response, err := r.providerData.client.PutEditorInterface(ctx, &request, params)
 
-	tflog.Info(ctx, "editor_interface.update", map[string]interface{}{
+	tflog.Info(ctx, "editor_interface.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,

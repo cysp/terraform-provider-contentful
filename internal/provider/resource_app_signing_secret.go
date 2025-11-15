@@ -79,7 +79,7 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	response, err := r.providerData.client.PutAppSigningSecret(ctx, &request, params)
 
-	tflog.Info(ctx, "resource_provider.create", map[string]interface{}{
+	tflog.Info(ctx, "resource_provider.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -128,7 +128,7 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 	response, err := r.providerData.client.GetAppSigningSecret(ctx, params)
 
-	tflog.Info(ctx, "resource_provider.read", map[string]interface{}{
+	tflog.Info(ctx, "resource_provider.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -193,7 +193,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	response, err := r.providerData.client.PutAppSigningSecret(ctx, &request, params)
 
-	tflog.Info(ctx, "resource_provider.update", map[string]interface{}{
+	tflog.Info(ctx, "resource_provider.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,

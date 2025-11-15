@@ -14,7 +14,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		response interface{}
+		response any
 		err      error
 		expected string
 	}{

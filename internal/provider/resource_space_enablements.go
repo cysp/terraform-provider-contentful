@@ -79,7 +79,7 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 
 	response, err := r.providerData.client.PutSpaceEnablements(ctx, &request, params)
 
-	tflog.Info(ctx, "space_enablements.create", map[string]interface{}{
+	tflog.Info(ctx, "space_enablements.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -125,7 +125,7 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 
 	response, err := r.providerData.client.GetSpaceEnablements(ctx, params)
 
-	tflog.Info(ctx, "space_enablements.read", map[string]interface{}{
+	tflog.Info(ctx, "space_enablements.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -201,7 +201,7 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 
 	response, err := r.providerData.client.PutSpaceEnablements(ctx, &request, params)
 
-	tflog.Info(ctx, "space_enablements.update", map[string]interface{}{
+	tflog.Info(ctx, "space_enablements.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,

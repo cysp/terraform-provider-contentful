@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ErrorDetailFromContentfulManagementResponse(response interface{}, err error) string {
+func ErrorDetailFromContentfulManagementResponse(response any, err error) string {
 	if response, ok := response.(cm.ErrorStatusCodeResponse); ok {
 		if detail := ErrorDetailFromContentfulManagementErrorStatusCode(response); detail != "" {
 			return detail
@@ -67,25 +68,27 @@ func ErrorDetailFromContentfulManagementError(response cm.Error) string {
 		return ""
 	}
 
-	detail := string(responseType) + ": " + response.Sys.ID
+	var detailStringBuilder strings.Builder
+
+	detailStringBuilder.WriteString(string(responseType) + ": " + response.Sys.ID)
 
 	if responseMessage, ok := response.Message.Get(); ok {
-		detail += ": " + responseMessage
+		detailStringBuilder.WriteString(": " + responseMessage)
 	}
 
 	if reasons := ContentfulManagementErrorDetailReasons(response.Details); reasons != "" {
-		detail += ": " + reasons
+		detailStringBuilder.WriteString(": " + reasons)
 	}
 
 	if response.Sys.ID == "ValidationFailed" {
 		if details, ok := ContentfulManagementValidationFailedErrorDetails(response.Details); ok {
 			for _, s := range details {
-				detail += "\n  " + s
+				detailStringBuilder.WriteString("\n  " + s)
 			}
 		}
 	}
 
-	return detail
+	return detailStringBuilder.String()
 }
 
 func ContentfulManagementErrorDetailReasons(detailsJSONBytes []byte) string {

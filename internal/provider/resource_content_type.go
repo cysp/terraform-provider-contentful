@@ -85,7 +85,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 
 	response, err := r.providerData.client.PutContentType(ctx, &request, params)
 
-	tflog.Info(ctx, "content_type.create", map[string]interface{}{
+	tflog.Info(ctx, "content_type.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -117,7 +117,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 
 	activateContentTypeResponse, err := r.providerData.client.ActivateContentType(ctx, activateContentTypeParams)
 
-	tflog.Info(ctx, "content_type.create.activate", map[string]interface{}{
+	tflog.Info(ctx, "content_type.create.activate", map[string]any{
 		"params":   activateContentTypeParams,
 		"response": activateContentTypeResponse,
 		"err":      err,
@@ -161,7 +161,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 
 	response, err := r.providerData.client.GetContentType(ctx, params)
 
-	tflog.Info(ctx, "content_type.read", map[string]interface{}{
+	tflog.Info(ctx, "content_type.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -232,7 +232,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 
 	putContentTypeResponse, err := r.providerData.client.PutContentType(ctx, &putContentTypeRequest, putContentTypeParams)
 
-	tflog.Info(ctx, "content_type.update", map[string]interface{}{
+	tflog.Info(ctx, "content_type.update", map[string]any{
 		"params":   putContentTypeParams,
 		"request":  putContentTypeRequest,
 		"response": putContentTypeResponse,
@@ -264,7 +264,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 
 	activateContentTypeResponse, err := r.providerData.client.ActivateContentType(ctx, activateContentTypeParams)
 
-	tflog.Info(ctx, "content_type.update.activate", map[string]interface{}{
+	tflog.Info(ctx, "content_type.update.activate", map[string]any{
 		"params":   activateContentTypeParams,
 		"response": activateContentTypeResponse,
 		"err":      err,
@@ -309,7 +309,7 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	deactivateContentTypeResponse, err := r.providerData.client.DeactivateContentType(ctx, deactivateContentTypeParams)
 
-	tflog.Info(ctx, "content_type.delete.deactivate", map[string]interface{}{
+	tflog.Info(ctx, "content_type.delete.deactivate", map[string]any{
 		"params":   deactivateContentTypeParams,
 		"response": deactivateContentTypeResponse,
 		"err":      err,
@@ -348,7 +348,7 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	deleteContentTypeResponse, err := r.providerData.client.DeleteContentType(ctx, deleteContentTypeParams)
 
-	tflog.Info(ctx, "content_type.delete", map[string]interface{}{
+	tflog.Info(ctx, "content_type.delete", map[string]any{
 		"params":   deleteContentTypeParams,
 		"response": deleteContentTypeResponse,
 		"err":      err,

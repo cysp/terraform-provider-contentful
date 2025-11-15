@@ -25,10 +25,10 @@ func JxNormalizeOpaqueBytes(bytes []byte, options JxEncodeOpaqueOptions) ([]byte
 }
 
 //nolint:wrapcheck
-func JxDecodeOpaque(decoder *jx.Decoder) (interface{}, error) {
+func JxDecodeOpaque(decoder *jx.Decoder) (any, error) {
 	switch decoder.Next() {
 	case jx.Object:
-		value := make(map[string]interface{})
+		value := make(map[string]any)
 		err := decoder.ObjBytes(func(d *jx.Decoder, key []byte) error {
 			element, err := JxDecodeOpaque(d)
 			if err == nil {
@@ -41,7 +41,7 @@ func JxDecodeOpaque(decoder *jx.Decoder) (interface{}, error) {
 		return value, err
 
 	case jx.Array:
-		value := make([]interface{}, 0)
+		value := make([]any, 0)
 		err := decoder.Arr(func(d *jx.Decoder) error {
 			element, err := JxDecodeOpaque(d)
 			if err == nil {
@@ -76,12 +76,12 @@ type JxEncodeOpaqueOptions struct {
 	EscapeStrings bool
 }
 
-func JxEncodeOpaqueOrdered(encoder *jx.Encoder, value interface{}, options JxEncodeOpaqueOptions) error {
+func JxEncodeOpaqueOrdered(encoder *jx.Encoder, value any, options JxEncodeOpaqueOptions) error {
 	switch value := value.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		return jxEncodeOpaqueOrderedObject(encoder, value, options)
 
-	case []interface{}:
+	case []any:
 		return jxEncodeOpaqueOrderedArray(encoder, value, options)
 
 	case string:
@@ -162,7 +162,7 @@ func JxEncodeOpaqueOrdered(encoder *jx.Encoder, value interface{}, options JxEnc
 	}
 }
 
-func jxEncodeOpaqueOrderedObject(encoder *jx.Encoder, value map[string]interface{}, options JxEncodeOpaqueOptions) error {
+func jxEncodeOpaqueOrderedObject(encoder *jx.Encoder, value map[string]any, options JxEncodeOpaqueOptions) error {
 	encoder.ObjStart()
 
 	keys := make([]string, 0, len(value))
@@ -188,7 +188,7 @@ func jxEncodeOpaqueOrderedObject(encoder *jx.Encoder, value map[string]interface
 	return nil
 }
 
-func jxEncodeOpaqueOrderedArray(encoder *jx.Encoder, value []interface{}, options JxEncodeOpaqueOptions) error {
+func jxEncodeOpaqueOrderedArray(encoder *jx.Encoder, value []any, options JxEncodeOpaqueOptions) error {
 	encoder.ArrStart()
 
 	for _, element := range value {

@@ -98,7 +98,7 @@ func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req 
 
 	response, err := r.providerData.client.PutResourceProvider(ctx, &request, params)
 
-	tflog.Info(ctx, "resource_provider.create", map[string]interface{}{
+	tflog.Info(ctx, "resource_provider.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -144,7 +144,7 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 
 	response, err := r.providerData.client.GetResourceProvider(ctx, params)
 
-	tflog.Info(ctx, "resource_provider.read", map[string]interface{}{
+	tflog.Info(ctx, "resource_provider.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -204,7 +204,7 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 
 	response, err := r.providerData.client.PutResourceProvider(ctx, &request, params)
 
-	tflog.Info(ctx, "resource_provider.update", map[string]interface{}{
+	tflog.Info(ctx, "resource_provider.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,

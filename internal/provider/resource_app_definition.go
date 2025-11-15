@@ -78,7 +78,7 @@ func (r *appDefinitionAppDefinitionResource) Create(ctx context.Context, req res
 
 	response, err := r.providerData.client.CreateAppDefinition(ctx, &request, params)
 
-	tflog.Info(ctx, "app_definition.create", map[string]interface{}{
+	tflog.Info(ctx, "app_definition.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -124,7 +124,7 @@ func (r *appDefinitionAppDefinitionResource) Read(ctx context.Context, req resou
 
 	response, err := r.providerData.client.GetAppDefinition(ctx, params)
 
-	tflog.Info(ctx, "app_definition.read", map[string]interface{}{
+	tflog.Info(ctx, "app_definition.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -185,7 +185,7 @@ func (r *appDefinitionAppDefinitionResource) Update(ctx context.Context, req res
 
 	response, err := r.providerData.client.PutAppDefinition(ctx, &request, params)
 
-	tflog.Info(ctx, "app_definition.update", map[string]interface{}{
+	tflog.Info(ctx, "app_definition.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,

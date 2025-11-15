@@ -80,7 +80,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	response, err := r.providerData.client.CreateWebhookDefinition(ctx, &request, params)
 
-	tflog.Info(ctx, "webhook.create", map[string]interface{}{
+	tflog.Info(ctx, "webhook.create", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -127,7 +127,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	response, err := r.providerData.client.GetWebhookDefinition(ctx, params)
 
-	tflog.Info(ctx, "webhook.read", map[string]interface{}{
+	tflog.Info(ctx, "webhook.read", map[string]any{
 		"params":   params,
 		"response": response,
 		"err":      err,
@@ -197,7 +197,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	response, err := r.providerData.client.UpdateWebhookDefinition(ctx, &request, params)
 
-	tflog.Info(ctx, "webhook.update", map[string]interface{}{
+	tflog.Info(ctx, "webhook.update", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
