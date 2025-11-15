@@ -133,7 +133,6 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-//nolint:dupl
 func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{

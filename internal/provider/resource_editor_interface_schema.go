@@ -158,6 +158,7 @@ func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) SchemaAttributes(ctx
 	}
 }
 
+//nolint:dupl
 func (v EditorInterfaceEditorLayoutItemGroupItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"field": schema.SingleNestedAttribute{
