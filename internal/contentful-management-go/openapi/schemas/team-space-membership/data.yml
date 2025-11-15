@@ -1,0 +1,12 @@
+TeamSpaceMembershipData:
+  type: object
+  properties:
+    admin:
+      type: boolean
+    roles:
+      type: array
+      items:
+        $ref: "../links/role-link.yml#/RoleLink"
+  required:
+    - admin
+    - roles
