@@ -15,7 +15,8 @@ import (
 
 func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Version: 1,
+		Version:     1,
+		Description: "Manages a Contentful Editor Interface configuration.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -24,24 +25,28 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Required: true,
+				Description: "The ID of the space this editor interface belongs to.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Required: true,
+				Description: "The ID of the environment this editor interface belongs to.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"content_type_id": schema.StringAttribute{
-				Required: true,
+				Description: "The ID of the content type this editor interface configures.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"editor_layout": schema.ListNestedAttribute{
+				Description: "Layout configuration for the editor interface, defining how fields and groups are organized.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceEditorLayoutItemValue{}.SchemaAttributes(ctx),
 					CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemValue]().CustomType(ctx),
@@ -50,6 +55,7 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				Optional:   true,
 			},
 			"controls": schema.ListNestedAttribute{
+				Description: "Field-level controls that specify which widget to use for editing each field.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceControlValue{}.SchemaAttributes(ctx),
 					CustomType: NewTypedObjectNull[EditorInterfaceControlValue]().CustomType(ctx),
@@ -58,6 +64,7 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				Optional:   true,
 			},
 			"group_controls": schema.ListNestedAttribute{
+				Description: "Group-level controls that specify widgets for field groups.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceGroupControlValue{}.SchemaAttributes(ctx),
 					CustomType: NewTypedObjectNull[EditorInterfaceGroupControlValue]().CustomType(ctx),
@@ -66,6 +73,7 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				Optional:   true,
 			},
 			"sidebar": schema.ListNestedAttribute{
+				Description: "Configuration for sidebar widgets in the editor.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceSidebarValue{}.SchemaAttributes(ctx),
 					CustomType: NewTypedObjectNull[EditorInterfaceSidebarValue]().CustomType(ctx),
@@ -80,17 +88,21 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 func (v EditorInterfaceControlValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"field_id": schema.StringAttribute{
-			Required: true,
+			Description: "ID of the field this control configures.",
+			Required:    true,
 		},
 		"widget_namespace": schema.StringAttribute{
-			Optional: true,
+			Description: "Namespace of the widget (e.g., 'builtin', 'extension', 'app').",
+			Optional:    true,
 		},
 		"widget_id": schema.StringAttribute{
-			Optional: true,
+			Description: "ID of the widget to use for this field.",
+			Optional:    true,
 		},
 		"settings": schema.StringAttribute{
-			CustomType: jsontypes.NormalizedType{},
-			Optional:   true,
+			Description: "Widget-specific settings in JSON format.",
+			CustomType:  jsontypes.NormalizedType{},
+			Optional:    true,
 		},
 	}
 }
@@ -98,7 +110,8 @@ func (v EditorInterfaceControlValue) SchemaAttributes(_ context.Context) map[str
 func (v EditorInterfaceEditorLayoutItemGroupItemFieldValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"field_id": schema.StringAttribute{
-			Required: true,
+			Description: "ID of the field to include in this group item.",
+			Required:    true,
 		},
 	}
 }
@@ -106,7 +119,8 @@ func (v EditorInterfaceEditorLayoutItemGroupItemFieldValue) SchemaAttributes(_ c
 func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"field_id": schema.StringAttribute{
-			Required: true,
+			Description: "ID of the field to include in this nested group item.",
+			Required:    true,
 		},
 	}
 }
@@ -114,9 +128,10 @@ func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue) SchemaAttri
 func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"field": schema.SingleNestedAttribute{
-			Attributes: EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}.SchemaAttributes(ctx),
-			CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue]().CustomType(ctx),
-			Required:   true,
+			Description: "Field configuration for this nested group item.",
+			Attributes:  EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}.SchemaAttributes(ctx),
+			CustomType:  NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue]().CustomType(ctx),
+			Required:    true,
 		},
 	}
 }
@@ -124,12 +139,15 @@ func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) SchemaAttributes
 func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"group_id": schema.StringAttribute{
-			Required: true,
+			Description: "ID of the nested group.",
+			Required:    true,
 		},
 		"name": schema.StringAttribute{
-			Required: true,
+			Description: "Name of the nested group.",
+			Required:    true,
 		},
 		"items": schema.ListNestedAttribute{
+			Description: "Items within this nested group.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{}.SchemaAttributes(ctx),
 				CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]().CustomType(ctx),
@@ -143,9 +161,10 @@ func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) SchemaAttributes(ctx
 func (v EditorInterfaceEditorLayoutItemGroupItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"field": schema.SingleNestedAttribute{
-			Attributes: EditorInterfaceEditorLayoutItemGroupItemFieldValue{}.SchemaAttributes(ctx),
-			CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue]().CustomType(ctx),
-			Optional:   true,
+			Description: "Field to include in this group item.",
+			Attributes:  EditorInterfaceEditorLayoutItemGroupItemFieldValue{}.SchemaAttributes(ctx),
+			CustomType:  NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue]().CustomType(ctx),
+			Optional:    true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
 					path.MatchRelative().AtParent().AtName("field"),
@@ -154,9 +173,10 @@ func (v EditorInterfaceEditorLayoutItemGroupItemValue) SchemaAttributes(ctx cont
 			},
 		},
 		"group": schema.SingleNestedAttribute{
-			Attributes: EditorInterfaceEditorLayoutItemGroupItemGroupValue{}.SchemaAttributes(ctx),
-			CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue]().CustomType(ctx),
-			Optional:   true,
+			Description: "Nested group within this group item.",
+			Attributes:  EditorInterfaceEditorLayoutItemGroupItemGroupValue{}.SchemaAttributes(ctx),
+			CustomType:  NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue]().CustomType(ctx),
+			Optional:    true,
 			Validators: []validator.Object{
 				objectvalidator.ExactlyOneOf(
 					path.MatchRelative().AtParent().AtName("field"),
@@ -170,12 +190,15 @@ func (v EditorInterfaceEditorLayoutItemGroupItemValue) SchemaAttributes(ctx cont
 func (v EditorInterfaceEditorLayoutItemGroupValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"group_id": schema.StringAttribute{
-			Required: true,
+			Description: "ID of the layout group.",
+			Required:    true,
 		},
 		"name": schema.StringAttribute{
-			Required: true,
+			Description: "Name of the layout group.",
+			Required:    true,
 		},
 		"items": schema.ListNestedAttribute{
+			Description: "Items within this layout group.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: EditorInterfaceEditorLayoutItemGroupItemValue{}.SchemaAttributes(ctx),
 				CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue]().CustomType(ctx),
@@ -189,9 +212,10 @@ func (v EditorInterfaceEditorLayoutItemGroupValue) SchemaAttributes(ctx context.
 func (v EditorInterfaceEditorLayoutItemValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"group": schema.SingleNestedAttribute{
-			Attributes: EditorInterfaceEditorLayoutItemGroupValue{}.SchemaAttributes(ctx),
-			CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue]().CustomType(ctx),
-			Required:   true,
+			Description: "Group definition for this editor layout item.",
+			Attributes:  EditorInterfaceEditorLayoutItemGroupValue{}.SchemaAttributes(ctx),
+			CustomType:  NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue]().CustomType(ctx),
+			Required:    true,
 		},
 	}
 }
@@ -199,17 +223,21 @@ func (v EditorInterfaceEditorLayoutItemValue) SchemaAttributes(ctx context.Conte
 func (v EditorInterfaceGroupControlValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"group_id": schema.StringAttribute{
-			Required: true,
+			Description: "ID of the group this control configures.",
+			Required:    true,
 		},
 		"widget_namespace": schema.StringAttribute{
-			Optional: true,
+			Description: "Namespace of the widget.",
+			Optional:    true,
 		},
 		"widget_id": schema.StringAttribute{
-			Optional: true,
+			Description: "ID of the widget to use for this group.",
+			Optional:    true,
 		},
 		"settings": schema.StringAttribute{
-			CustomType: jsontypes.NormalizedType{},
-			Optional:   true,
+			Description: "Widget-specific settings in JSON format.",
+			CustomType:  jsontypes.NormalizedType{},
+			Optional:    true,
 		},
 	}
 }
@@ -217,19 +245,23 @@ func (v EditorInterfaceGroupControlValue) SchemaAttributes(_ context.Context) ma
 func (v EditorInterfaceSidebarValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"widget_namespace": schema.StringAttribute{
-			Required: true,
+			Description: "Namespace of the sidebar widget.",
+			Required:    true,
 		},
 		"widget_id": schema.StringAttribute{
-			Required: true,
+			Description: "ID of the sidebar widget.",
+			Required:    true,
 		},
 		"settings": schema.StringAttribute{
-			CustomType: jsontypes.NormalizedType{},
-			Optional:   true,
+			Description: "Widget-specific settings in JSON format.",
+			CustomType:  jsontypes.NormalizedType{},
+			Optional:    true,
 		},
 		"disabled": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
+			Description: "Whether this sidebar widget is disabled.",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 	}
 }

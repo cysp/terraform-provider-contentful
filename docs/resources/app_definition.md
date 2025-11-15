@@ -3,12 +3,12 @@
 page_title: "contentful_app_definition Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful App Definition.
 ---
 
 # contentful_app_definition (Resource)
 
-
+Manages a Contentful App Definition.
 
 ## Example Usage
 
@@ -39,19 +39,19 @@ resource "contentful_app_definition" "this" {
 
 ### Required
 
-- `locations` (Attributes List) (see [below for nested schema](#nestedatt--locations))
-- `name` (String)
-- `organization_id` (String)
+- `locations` (Attributes List) List of places in the web app where the app can be rendered. (see [below for nested schema](#nestedatt--locations))
+- `name` (String) A human-readable name of the app.
+- `organization_id` (String) ID of the organization that owns the app definition.
 
 ### Optional
 
-- `bundle_id` (String)
-- `parameters` (Attributes) (see [below for nested schema](#nestedatt--parameters))
-- `src` (String)
+- `bundle_id` (String) Link to an AppBundle if hosted on Contentful.
+- `parameters` (Attributes) Definitions of configuration parameters. (see [below for nested schema](#nestedatt--parameters))
+- `src` (String) Publicly available source URL of the app. Requires HTTPS with exception of localhost (for development).
 
 ### Read-Only
 
-- `app_definition_id` (String)
+- `app_definition_id` (String) System ID of the app definition.
 - `id` (String) The ID of this resource.
 
 <a id="nestedatt--locations"></a>
@@ -59,35 +59,35 @@ resource "contentful_app_definition" "this" {
 
 Required:
 
-- `location` (String)
+- `location` (String) Location identifier (e.g., entry-field, entry-sidebar, app-config).
 
 Optional:
 
-- `field_types` (Attributes List) (see [below for nested schema](#nestedatt--locations--field_types))
-- `navigation_item` (Attributes) (see [below for nested schema](#nestedatt--locations--navigation_item))
+- `field_types` (Attributes List) Field types where an extension can be used. (see [below for nested schema](#nestedatt--locations--field_types))
+- `navigation_item` (Attributes) Navigation item configuration for page locations. (see [below for nested schema](#nestedatt--locations--navigation_item))
 
 <a id="nestedatt--locations--field_types"></a>
 ### Nested Schema for `locations.field_types`
 
 Required:
 
-- `type` (String)
+- `type` (String) Field type (e.g., Symbol, Text, Integer, Link, Array).
 
 Optional:
 
-- `items` (Attributes) (see [below for nested schema](#nestedatt--locations--field_types--items))
-- `link_type` (String)
+- `items` (Attributes) Item type definition for Array fields. (see [below for nested schema](#nestedatt--locations--field_types--items))
+- `link_type` (String) Type of linked resource (Entry or Asset).
 
 <a id="nestedatt--locations--field_types--items"></a>
 ### Nested Schema for `locations.field_types.items`
 
 Required:
 
-- `type` (String)
+- `type` (String) Type of array items.
 
 Optional:
 
-- `link_type` (String)
+- `link_type` (String) Link type for array items (Entry or Asset).
 
 
 
@@ -96,8 +96,8 @@ Optional:
 
 Required:
 
-- `name` (String)
-- `path` (String)
+- `name` (String) Display name for the navigation item.
+- `path` (String) URL path for the navigation item.
 
 
 
@@ -106,34 +106,34 @@ Required:
 
 Optional:
 
-- `installation` (Attributes List) (see [below for nested schema](#nestedatt--parameters--installation))
-- `instance` (Attributes List) (see [below for nested schema](#nestedatt--parameters--instance))
+- `installation` (Attributes List) Installation-level parameter definitions. (see [below for nested schema](#nestedatt--parameters--installation))
+- `instance` (Attributes List) Instance-level parameter definitions. (see [below for nested schema](#nestedatt--parameters--instance))
 
 <a id="nestedatt--parameters--installation"></a>
 ### Nested Schema for `parameters.installation`
 
 Required:
 
-- `id` (String)
-- `name` (String)
-- `type` (String)
+- `id` (String) Unique identifier for the parameter.
+- `name` (String) Display name for the parameter.
+- `type` (String) Parameter type (e.g., Symbol, Enum, Boolean).
 
 Optional:
 
-- `default` (String)
-- `description` (String)
-- `labels` (Attributes) (see [below for nested schema](#nestedatt--parameters--installation--labels))
-- `options` (List of String)
-- `required` (Boolean)
+- `default` (String) Default value for the parameter.
+- `description` (String) Help text describing the parameter.
+- `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--parameters--installation--labels))
+- `options` (List of String) List of allowed values for Enum parameters.
+- `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--parameters--installation--labels"></a>
 ### Nested Schema for `parameters.installation.labels`
 
 Optional:
 
-- `empty` (String)
-- `false` (String)
-- `true` (String)
+- `empty` (String) Label when no value is set.
+- `false` (String) Label for false value.
+- `true` (String) Label for true value.
 
 
 
@@ -142,26 +142,26 @@ Optional:
 
 Required:
 
-- `id` (String)
-- `name` (String)
-- `type` (String)
+- `id` (String) Unique identifier for the parameter.
+- `name` (String) Display name for the parameter.
+- `type` (String) Parameter type (e.g., Symbol, Enum, Boolean).
 
 Optional:
 
-- `default` (String)
-- `description` (String)
-- `labels` (Attributes) (see [below for nested schema](#nestedatt--parameters--instance--labels))
-- `options` (List of String)
-- `required` (Boolean)
+- `default` (String) Default value for the parameter.
+- `description` (String) Help text describing the parameter.
+- `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--parameters--instance--labels))
+- `options` (List of String) List of allowed values for Enum parameters.
+- `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--parameters--instance--labels"></a>
 ### Nested Schema for `parameters.instance.labels`
 
 Optional:
 
-- `empty` (String)
-- `false` (String)
-- `true` (String)
+- `empty` (String) Label when no value is set.
+- `false` (String) Label for false value.
+- `true` (String) Label for true value.
 
 ## Import
 

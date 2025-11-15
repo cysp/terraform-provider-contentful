@@ -3,12 +3,12 @@
 page_title: "contentful_environment_alias Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful Environment Alias.
 ---
 
 # contentful_environment_alias (Resource)
 
-
+Manages a Contentful Environment Alias.
 
 ## Example Usage
 
@@ -25,9 +25,9 @@ resource "contentful_environment_alias" "example" {
 
 ### Required
 
-- `environment_alias_id` (String)
-- `space_id` (String)
-- `target_environment_id` (String)
+- `environment_alias_id` (String) ID of the environment alias.
+- `space_id` (String) ID of the space containing the environment alias.
+- `target_environment_id` (String) ID of the environment which the environment alias references. Allows you to access and modify the data of this target environment through a different static identifier.
 
 ### Read-Only
 

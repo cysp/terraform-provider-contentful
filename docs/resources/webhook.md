@@ -3,12 +3,12 @@
 page_title: "contentful_webhook Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful Webhook.
 ---
 
 # contentful_webhook (Resource)
 
-
+Manages a Contentful Webhook.
 
 ## Example Usage
 
@@ -52,24 +52,24 @@ resource "contentful_webhook" "this" {
 
 ### Required
 
-- `name` (String)
-- `space_id` (String)
-- `url` (String)
+- `name` (String) Name of the webhook.
+- `space_id` (String) ID of the space containing the webhook.
+- `url` (String) Preconfigured HTTP endpoint that is called when content has changed.
 
 ### Optional
 
-- `active` (Boolean)
+- `active` (Boolean) Whether the webhook is active.
 - `filters` (Attributes List) (see [below for nested schema](#nestedatt--filters))
 - `headers` (Attributes Map) (see [below for nested schema](#nestedatt--headers))
-- `http_basic_password` (String)
-- `http_basic_username` (String)
-- `topics` (List of String)
+- `http_basic_password` (String) HTTP Basic authentication password.
+- `http_basic_username` (String) HTTP Basic authentication username.
+- `topics` (List of String) List of event topics to which the webhook subscribes.
 - `transformation` (Attributes) (see [below for nested schema](#nestedatt--transformation))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `webhook_id` (String)
+- `webhook_id` (String) System ID of the webhook.
 
 <a id="nestedatt--filters"></a>
 ### Nested Schema for `filters`

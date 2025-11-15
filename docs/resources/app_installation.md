@@ -3,12 +3,12 @@
 page_title: "contentful_app_installation Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful App Installation.
 ---
 
 # contentful_app_installation (Resource)
 
-
+Manages a Contentful App Installation.
 
 ## Example Usage
 
@@ -39,14 +39,14 @@ resource "contentful_app_installation" "cool_marketplace_app" {
 
 ### Required
 
-- `app_definition_id` (String)
-- `environment_id` (String)
-- `space_id` (String)
+- `app_definition_id` (String) ID of the app definition being installed.
+- `environment_id` (String) ID of the environment where the app is installed.
+- `space_id` (String) ID of the space where the app is installed.
 
 ### Optional
 
-- `marketplace` (Set of String)
-- `parameters` (String)
+- `marketplace` (Set of String) Marketplace information for the app.
+- `parameters` (String) App-specific configuration variables. Optional free-form object with values managed by the app. The stringified value cannot be longer than 16kB.
 
 ### Read-Only
 

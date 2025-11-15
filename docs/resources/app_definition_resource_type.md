@@ -3,12 +3,12 @@
 page_title: "contentful_app_definition_resource_type Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  DEPRECATED: Manages a Contentful App Resource Type. Use contentful_resource_type instead.
 ---
 
 # contentful_app_definition_resource_type (Resource)
 
-
+DEPRECATED: Manages a Contentful App Resource Type. Use contentful_resource_type instead.
 
 ## Example Usage
 
@@ -33,12 +33,12 @@ resource "contentful_app_definition_resource_type" "this" {
 
 ### Required
 
-- `app_definition_id` (String)
-- `default_field_mapping` (Attributes) (see [below for nested schema](#nestedatt--default_field_mapping))
-- `name` (String)
-- `organization_id` (String)
-- `resource_provider_id` (String)
-- `resource_type_id` (String)
+- `app_definition_id` (String) The ID of the app definition.
+- `default_field_mapping` (Attributes) Default field mappings for displaying resource instances. (see [below for nested schema](#nestedatt--default_field_mapping))
+- `name` (String) The name of the resource type.
+- `organization_id` (String) The ID of the organization.
+- `resource_provider_id` (String) The ID of the resource provider.
+- `resource_type_id` (String) The unique identifier for this resource type.
 
 ### Read-Only
 

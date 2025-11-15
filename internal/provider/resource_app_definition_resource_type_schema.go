@@ -10,6 +10,7 @@ import (
 
 func AppDefinitionResourceTypeResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "DEPRECATED: Manages a Contentful App Resource Type. Use contentful_resource_type instead.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -18,34 +19,40 @@ func AppDefinitionResourceTypeResourceSchema(_ context.Context) schema.Schema {
 				},
 			},
 			"organization_id": schema.StringAttribute{
-				Required: true,
+				Description: "The ID of the organization.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"app_definition_id": schema.StringAttribute{
-				Required: true,
+				Description: "The ID of the app definition.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"resource_provider_id": schema.StringAttribute{
-				Required: true,
+				Description: "The ID of the resource provider.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"resource_type_id": schema.StringAttribute{
-				Required: true,
+				Description: "The unique identifier for this resource type.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "The name of the resource type.",
+				Required:    true,
 			},
 			"default_field_mapping": schema.SingleNestedAttribute{
-				Required: true,
+				Description: "Default field mappings for displaying resource instances.",
+				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"title": schema.StringAttribute{
 						Required: true,

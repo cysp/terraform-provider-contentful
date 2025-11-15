@@ -11,6 +11,7 @@ import (
 
 func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "Manages a Contentful Delivery API Key.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -19,24 +20,29 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the space for the API key.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"api_key_id": schema.StringAttribute{
-				Computed: true,
+				Description: "System ID of the API key.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Human-readable name for the API key.",
+				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
+				Description: "Description of the API key.",
+				Optional:    true,
 			},
 			"environments": schema.ListAttribute{
+				Description: "List of environment IDs that the token can access. Only the environments specified in this property can be accessed using this token.",
 				ElementType: types.StringType,
 				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Optional:    true,
@@ -46,14 +52,16 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"access_token": schema.StringAttribute{
-				Computed:  true,
-				Sensitive: true,
+				Description: "The delivery API access token.",
+				Computed:    true,
+				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					UseStateForUnknown(),
 				},
 			},
 			"preview_api_key_id": schema.StringAttribute{
-				Computed: true,
+				Description: "ID of the corresponding preview API key.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					UseStateForUnknown(),
 				},

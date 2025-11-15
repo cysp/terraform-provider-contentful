@@ -3,12 +3,12 @@
 page_title: "contentful_role Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful Role.
 ---
 
 # contentful_role (Resource)
 
-
+Manages a Contentful Role.
 
 ## Example Usage
 
@@ -56,31 +56,31 @@ resource "contentful_role" "editor" {
 
 ### Required
 
-- `name` (String)
-- `permissions` (Map of List of String)
-- `policies` (Attributes List) (see [below for nested schema](#nestedatt--policies))
-- `space_id` (String)
+- `name` (String) Name of the role.
+- `permissions` (Map of List of String) Basic rules which define whether a user can read or create content types, settings and entries.
+- `policies` (Attributes List) Policies allow or deny access to resources in fine-grained detail. For example, limit read access to only entries of a specific content type or write access to only certain parts of an entry (e.g. a specific locale). (see [below for nested schema](#nestedatt--policies))
+- `space_id` (String) ID of the space where the role exists.
 
 ### Optional
 
-- `description` (String)
+- `description` (String) Description of the role.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `role_id` (String)
+- `role_id` (String) System ID of the role.
 
 <a id="nestedatt--policies"></a>
 ### Nested Schema for `policies`
 
 Required:
 
-- `actions` (List of String)
-- `effect` (String)
+- `actions` (List of String) Actions that the policy allows or denies (e.g., read, create, update, delete, publish).
+- `effect` (String) Whether the policy allows or denies the specified actions.
 
 Optional:
 
-- `constraint` (String)
+- `constraint` (String) JSON constraint that defines the scope of the policy.
 
 ## Import
 

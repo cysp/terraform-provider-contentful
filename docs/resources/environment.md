@@ -3,12 +3,12 @@
 page_title: "contentful_environment Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful Environment.
 ---
 
 # contentful_environment (Resource)
 
-
+Manages a Contentful Environment.
 
 ## Example Usage
 
@@ -26,13 +26,13 @@ resource "contentful_environment" "example" {
 
 ### Required
 
-- `environment_id` (String)
-- `name` (String)
-- `space_id` (String)
+- `environment_id` (String) ID of the environment.
+- `name` (String) Name of the environment.
+- `space_id` (String) ID of the space containing the environment.
 
 ### Optional
 
-- `source_environment_id` (String)
+- `source_environment_id` (String) ID of the source environment from which to copy content. Environments are created as a copy of an existing environment.
 
 ### Read-Only
 

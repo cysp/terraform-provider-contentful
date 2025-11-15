@@ -3,12 +3,12 @@
 page_title: "contentful_entry Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful Entry.
 ---
 
 # contentful_entry (Resource)
 
-
+Manages a Contentful Entry.
 
 ## Example Usage
 
@@ -41,14 +41,14 @@ resource "contentful_entry" "example" {
 
 ### Required
 
-- `content_type_id` (String)
-- `environment_id` (String)
-- `fields` (Map of String)
-- `space_id` (String)
+- `content_type_id` (String) ID of the content type for this entry.
+- `environment_id` (String) ID of the environment containing the entry.
+- `fields` (Map of String) Fields that are custom defined by a user through the definition of content types. Fields object always includes locale.
+- `space_id` (String) ID of the space containing the entry.
 
 ### Optional
 
-- `entry_id` (String)
+- `entry_id` (String) ID of the entry.
 - `metadata` (Attributes) Metadata for the entry. Once set, metadata properties may not be removed, but the list of tags may be reduced to the empty list (see [below for nested schema](#nestedatt--metadata))
 
 ### Read-Only

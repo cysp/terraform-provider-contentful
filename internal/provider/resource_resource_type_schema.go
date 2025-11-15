@@ -10,6 +10,7 @@ import (
 
 func ResourceTypeResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "Manages a Contentful App Resource Type.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -18,66 +19,82 @@ func ResourceTypeResourceSchema(_ context.Context) schema.Schema {
 				},
 			},
 			"organization_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the organization.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"app_definition_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the app definition.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"resource_provider_id": schema.StringAttribute{
-				Computed: true,
+				Description: "ID of the parent resource provider.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					UseStateForUnknown(),
 				},
 			},
 			"resource_type_id": schema.StringAttribute{
-				Required: true,
+				Description: "ID of the resource type.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Name of the resource type.",
+				Required:    true,
 			},
 			"default_field_mapping": schema.SingleNestedAttribute{
-				Required: true,
+				Description: "Default field mapping configuration for the resource type.",
+				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"title": schema.StringAttribute{
-						Required: true,
+						Description: "Field path for the title.",
+						Required:    true,
 					},
 					"subtitle": schema.StringAttribute{
-						Optional: true,
+						Description: "Field path for the subtitle.",
+						Optional:    true,
 					},
 					"description": schema.StringAttribute{
-						Optional: true,
+						Description: "Field path for the description.",
+						Optional:    true,
 					},
 					"external_url": schema.StringAttribute{
-						Optional: true,
+						Description: "Field path for the external URL.",
+						Optional:    true,
 					},
 					"image": schema.SingleNestedAttribute{
-						Optional: true,
+						Description: "Image field mapping.",
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"url": schema.StringAttribute{
-								Required: true,
+								Description: "Field path for the image URL.",
+								Required:    true,
 							},
 							"alt_text": schema.StringAttribute{
-								Optional: true,
+								Description: "Field path for the image alt text.",
+								Optional:    true,
 							},
 						},
 					},
 					"badge": schema.SingleNestedAttribute{
-						Optional: true,
+						Description: "Badge field mapping.",
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"label": schema.StringAttribute{
-								Required: true,
+								Description: "Field path for the badge label.",
+								Required:    true,
 							},
 							"variant": schema.StringAttribute{
-								Required: true,
+								Description: "Field path for the badge variant.",
+								Required:    true,
 							},
 						},
 					},

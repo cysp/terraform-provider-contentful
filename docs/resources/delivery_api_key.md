@@ -3,12 +3,12 @@
 page_title: "contentful_delivery_api_key Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  
+  Manages a Contentful Delivery API Key.
 ---
 
 # contentful_delivery_api_key (Resource)
 
-
+Manages a Contentful Delivery API Key.
 
 ## Example Usage
 
@@ -25,20 +25,20 @@ resource "contentful_delivery_api_key" "this" {
 
 ### Required
 
-- `name` (String)
-- `space_id` (String)
+- `name` (String) Human-readable name for the API key.
+- `space_id` (String) ID of the space for the API key.
 
 ### Optional
 
-- `description` (String)
-- `environments` (List of String)
+- `description` (String) Description of the API key.
+- `environments` (List of String) List of environment IDs that the token can access. Only the environments specified in this property can be accessed using this token.
 
 ### Read-Only
 
-- `access_token` (String, Sensitive)
-- `api_key_id` (String)
+- `access_token` (String, Sensitive) The delivery API access token.
+- `api_key_id` (String) System ID of the API key.
 - `id` (String) The ID of this resource.
-- `preview_api_key_id` (String)
+- `preview_api_key_id` (String) ID of the corresponding preview API key.
 
 ## Import
 
