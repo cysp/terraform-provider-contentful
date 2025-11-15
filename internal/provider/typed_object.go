@@ -50,30 +50,30 @@ func NewTypedObjectFromAttributes[T any](ctx context.Context, attributes map[str
 var _ attr.Value = (*TypedObject[any])(nil)
 
 //nolint:ireturn
-func (v TypedObject[T]) Type(ctx context.Context) attr.Type {
+func (to TypedObject[T]) Type(ctx context.Context) attr.Type {
 	attributeTypes := tpfr.AttributeTypesFor[T](ctx)
 
 	return TypedObjectType[T]{attributeTypes: attributeTypes}
 }
 
-func (v TypedObject[T]) CustomType(ctx context.Context) TypedObjectType[T] {
+func (to TypedObject[T]) CustomType(ctx context.Context) TypedObjectType[T] {
 	attributeTypes := tpfr.AttributeTypesFor[T](ctx)
 
 	return TypedObjectType[T]{attributeTypes: attributeTypes}
 }
 
-func (v TypedObject[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := v.Type(ctx).TerraformType(ctx)
+func (to TypedObject[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	tft := to.Type(ctx).TerraformType(ctx)
 
-	if v.IsNull() {
+	if to.IsNull() {
 		return tftypes.NewValue(tft, nil), nil
 	}
 
-	if v.IsUnknown() {
+	if to.IsUnknown() {
 		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
 	}
 
-	attributeValues := tpfr.AttributeValuesOf(v.Value())
+	attributeValues := tpfr.AttributeValuesOf(to.Value())
 
 	tfval := make(map[string]tftypes.Value, len(attributeValues))
 
@@ -89,23 +89,23 @@ func (v TypedObject[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 	return tftypes.NewValue(tft, tfval), nil
 }
 
-func (v TypedObject[T]) Equal(o attr.Value) bool {
-	other, ok := o.(TypedObject[T])
+func (to TypedObject[T]) Equal(other attr.Value) bool {
+	otherObject, ok := other.(TypedObject[T])
 	if !ok {
 		return false
 	}
 
-	if v.state != other.state {
+	if to.state != otherObject.state {
 		return false
 	}
 
-	vValue := v.Value()
-	otherValue := other.Value()
+	thisValue := to.Value()
+	otherValue := otherObject.Value()
 
-	attributeTypes := tpfr.AttributeTypesOf(context.Background(), vValue)
+	attributeTypes := tpfr.AttributeTypesOf(context.Background(), thisValue)
 	keys := make(map[string]struct{}, len(attributeTypes))
 
-	attributeValues := tpfr.AttributeValuesOf(vValue)
+	attributeValues := tpfr.AttributeValuesOf(thisValue)
 	for k := range attributeValues {
 		keys[k] = struct{}{}
 	}
@@ -116,17 +116,17 @@ func (v TypedObject[T]) Equal(o attr.Value) bool {
 	}
 
 	for k := range keys {
-		aElementK, aElementKFound := attributeValues[k]
-		if !aElementKFound {
+		thisAttribute, thisAttributeFound := attributeValues[k]
+		if !thisAttributeFound {
 			return false
 		}
 
-		bElementK, bElementKFound := otherAttributeValues[k]
-		if !bElementKFound {
+		otherAttribute, otherAttributeFound := otherAttributeValues[k]
+		if !otherAttributeFound {
 			return false
 		}
 
-		if !aElementK.Equal(bElementK) {
+		if !thisAttribute.Equal(otherAttribute) {
 			return false
 		}
 	}
@@ -134,15 +134,15 @@ func (v TypedObject[T]) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v TypedObject[T]) IsNull() bool {
-	return v.state == attr.ValueStateNull
+func (to TypedObject[T]) IsNull() bool {
+	return to.state == attr.ValueStateNull
 }
 
-func (v TypedObject[T]) IsUnknown() bool {
-	return v.state == attr.ValueStateUnknown
+func (to TypedObject[T]) IsUnknown() bool {
+	return to.state == attr.ValueStateUnknown
 }
 
-func (v TypedObject[T]) String() string {
+func (to TypedObject[T]) String() string {
 	var t T
 
 	return fmt.Sprintf("TypedObject[%T]", t)
@@ -150,18 +150,18 @@ func (v TypedObject[T]) String() string {
 
 var _ basetypes.ObjectValuable = (*TypedObject[struct{}])(nil)
 
-func (v TypedObject[T]) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (to TypedObject[T]) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	attributeTypes := tpfr.AttributeTypesFor[T](ctx)
 
-	if v.IsNull() {
+	if to.IsNull() {
 		return types.ObjectNull(attributeTypes), nil
 	}
 
-	if v.IsUnknown() {
+	if to.IsUnknown() {
 		return types.ObjectUnknown(attributeTypes), nil
 	}
 
-	attributes := tpfr.AttributeValuesOf(v.Value())
+	attributes := tpfr.AttributeValuesOf(to.Value())
 
 	return types.ObjectValue(attributeTypes, attributes)
 }
@@ -169,17 +169,17 @@ func (v TypedObject[T]) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 // ---
 
 //nolint:ireturn
-func (v TypedObject[T]) Value() T {
-	return v.value
+func (to TypedObject[T]) Value() T {
+	return to.value
 }
 
 //nolint:ireturn
-func (v TypedObject[T]) GetValue() (T, bool) {
-	if v.IsNull() || v.IsUnknown() {
+func (to TypedObject[T]) GetValue() (T, bool) {
+	if to.IsNull() || to.IsUnknown() {
 		var zero T
 
 		return zero, false
 	}
 
-	return v.value, true
+	return to.value, true
 }
