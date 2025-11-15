@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func (s *Server) SetAppSigningSecret(organizationID, appDefinitionID string, fields cm.AppSigningSecretRequestFields) {
+func (s *Server) SetAppSigningSecret(organizationID, appDefinitionID string, fields cm.AppSigningSecretRequestData) {
 	s.h.mu.Lock()
 	defer s.h.mu.Unlock()
 

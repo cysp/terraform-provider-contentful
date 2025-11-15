@@ -3,7 +3,7 @@ ResourceType:
     - type: object
       properties:
         sys:
-          $ref: "sys.yml#/ResourceTypeSys"
+          $ref: "./sys.yml#/ResourceTypeSys"
       required:
         - sys
-    - $ref: "fields.yml#/ResourceTypeFields"
+    - $ref: "./data.yml#/ResourceTypeData"

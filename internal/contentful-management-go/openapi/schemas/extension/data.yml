@@ -1,4 +1,4 @@
-ExtensionFields:
+ExtensionData:
   type: object
   properties:
     extension:

@@ -26,7 +26,7 @@ func (ts *Handler) GetExtension(_ context.Context, params cm.GetExtensionParams)
 }
 
 //nolint:ireturn
-func (ts *Handler) PutExtension(_ context.Context, req *cm.ExtensionFields, params cm.PutExtensionParams) (cm.PutExtensionRes, error) {
+func (ts *Handler) PutExtension(_ context.Context, req *cm.ExtensionData, params cm.PutExtensionParams) (cm.PutExtensionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

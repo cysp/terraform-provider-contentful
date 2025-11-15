@@ -3,7 +3,7 @@ PreviewApiKey:
     - type: object
       properties:
         sys:
-          $ref: "sys.yml#/PreviewApiKeySys"
+          $ref: "./sys.yml#/PreviewApiKeySys"
       required:
         - sys
-    - $ref: "fields.yml#/PreviewApiKeyFields"
+    - $ref: "./data.yml#/PreviewApiKeyData"

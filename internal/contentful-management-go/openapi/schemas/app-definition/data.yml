@@ -1,4 +1,4 @@
-AppDefinitionFields:
+AppDefinitionData:
   type: object
   properties:
     name:

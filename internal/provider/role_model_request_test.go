@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRoleModelRoundTripToRoleFields(t *testing.T) {
+func TestRoleModelRoundTripToRoleData(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -45,30 +45,30 @@ func TestRoleModelRoundTripToRoleFields(t *testing.T) {
 	assert.Equal(t, "Read access to content", model.Description.ValueString())
 	assert.Equal(t, "abcdef", model.RoleID.ValueString())
 
-	req, diags := model.ToRoleFields(ctx)
+	req, diags := model.ToRoleData(ctx)
 
 	assert.Equal(t, "Reader", req.Name)
 	assert.True(t, req.Description.Set)
 	assert.Equal(t, "Read access to content", req.Description.Value)
 
 	assert.Len(t, req.Permissions, 2)
-	assert.Equal(t, cm.NewStringRoleFieldsPermissionsItem("all"), req.Permissions["ContentDelivery"])
-	assert.Equal(t, cm.NewStringArrayRoleFieldsPermissionsItem([]string{"read"}), req.Permissions["ContentManagement"])
+	assert.Equal(t, cm.NewStringRoleDataPermissionsItem("all"), req.Permissions["ContentDelivery"])
+	assert.Equal(t, cm.NewStringArrayRoleDataPermissionsItem([]string{"read"}), req.Permissions["ContentManagement"])
 
 	assert.Len(t, req.Policies, 3)
-	assert.Equal(t, cm.RoleFieldsPoliciesItem{
+	assert.Equal(t, cm.RoleDataPoliciesItem{
 		Effect:     "allow",
-		Actions:    cm.NewStringRoleFieldsPoliciesItemActions("all"),
+		Actions:    cm.NewStringRoleDataPoliciesItemActions("all"),
 		Constraint: []byte("{\"sys.type\":\"Entry\"}"),
 	}, req.Policies[0])
-	assert.Equal(t, cm.RoleFieldsPoliciesItem{
+	assert.Equal(t, cm.RoleDataPoliciesItem{
 		Effect:     "deny",
-		Actions:    cm.NewStringArrayRoleFieldsPoliciesItemActions([]string{"delete"}),
+		Actions:    cm.NewStringArrayRoleDataPoliciesItemActions([]string{"delete"}),
 		Constraint: []byte("{\"sys.type\":\"Entry\"}"),
 	}, req.Policies[1])
-	assert.Equal(t, cm.RoleFieldsPoliciesItem{
+	assert.Equal(t, cm.RoleDataPoliciesItem{
 		Effect:  "allow",
-		Actions: cm.NewStringRoleFieldsPoliciesItemActions("all"),
+		Actions: cm.NewStringRoleDataPoliciesItemActions("all"),
 	}, req.Policies[2])
 
 	assert.Empty(t, diags)

@@ -8,7 +8,7 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) CreateAppDefinition(_ context.Context, req *cm.AppDefinitionFields, params cm.CreateAppDefinitionParams) (cm.CreateAppDefinitionRes, error) {
+func (ts *Handler) CreateAppDefinition(_ context.Context, req *cm.AppDefinitionData, params cm.CreateAppDefinitionParams) (cm.CreateAppDefinitionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -44,7 +44,7 @@ func (ts *Handler) GetAppDefinition(_ context.Context, params cm.GetAppDefinitio
 }
 
 //nolint:ireturn
-func (ts *Handler) PutAppDefinition(_ context.Context, req *cm.AppDefinitionFields, params cm.PutAppDefinitionParams) (cm.PutAppDefinitionRes, error) {
+func (ts *Handler) PutAppDefinition(_ context.Context, req *cm.AppDefinitionData, params cm.PutAppDefinitionParams) (cm.PutAppDefinitionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
-func (model *PersonalAccessTokenModel) ToPersonalAccessTokenRequestFields(ctx context.Context) (cm.PersonalAccessTokenRequestFields, diag.Diagnostics) {
+func (model *PersonalAccessTokenModel) ToPersonalAccessTokenRequestData(ctx context.Context) (cm.PersonalAccessTokenRequestData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.PersonalAccessTokenRequestFields{
+	req := cm.PersonalAccessTokenRequestData{
 		Name: model.Name.ValueString(),
 	}
 

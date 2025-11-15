@@ -74,7 +74,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Create(ctx context.Cont
 		ResourceTypeID:  data.ResourceTypeID.ValueString(),
 	}
 
-	request, requestDiags := data.ToResourceTypeFields(ctx, path.Empty())
+	request, requestDiags := data.ToResourceTypeData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -181,7 +181,7 @@ func (r *appDefinitionAppDefinitionResourceTypeResource) Update(ctx context.Cont
 		ResourceTypeID:  data.ResourceTypeID.ValueString(),
 	}
 
-	request, requestDiags := data.ToResourceTypeFields(ctx, path.Empty())
+	request, requestDiags := data.ToResourceTypeData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

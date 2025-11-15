@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewAPIKeyFromRequestFields(spaceID, apiKeyID string, apiKeyFields cm.ApiKeyRequestFields) cm.ApiKey {
+func NewAPIKeyFromRequestFields(spaceID, apiKeyID string, apiKeyFields cm.ApiKeyRequestData) cm.ApiKey {
 	apiKey := cm.ApiKey{
 		Sys: NewAPIKeySys(spaceID, apiKeyID),
 	}
@@ -28,7 +28,7 @@ func NewAPIKeySys(spaceID string, apiKeyID string) cm.ApiKeySys {
 	}
 }
 
-func UpdateAPIKeyFromRequestFields(apiKey *cm.ApiKey, apiKeyFields cm.ApiKeyRequestFields) {
+func UpdateAPIKeyFromRequestFields(apiKey *cm.ApiKey, apiKeyFields cm.ApiKeyRequestData) {
 	apiKey.Name = apiKeyFields.Name
 	apiKey.Description = apiKeyFields.Description
 	apiKey.Environments = apiKeyFields.Environments

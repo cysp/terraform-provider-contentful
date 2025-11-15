@@ -8,12 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *ExtensionModel) ToExtensionFields(ctx context.Context, path path.Path) (cm.ExtensionFields, diag.Diagnostics) {
+func (model *ExtensionModel) ToExtensionData(ctx context.Context, path path.Path) (cm.ExtensionData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fields := cm.ExtensionFields{}
+	fields := cm.ExtensionData{}
 
-	fieldsExtension, fieldsExtensionDiags := model.Extension.ToExtensionExtensionFields(ctx, path.AtName("extension"))
+	fieldsExtension, fieldsExtensionDiags := model.Extension.ToExtensionExtensionData(ctx, path.AtName("extension"))
 	diags.Append(fieldsExtensionDiags...)
 
 	fields.Extension = fieldsExtension
@@ -25,10 +25,10 @@ func (model *ExtensionModel) ToExtensionFields(ctx context.Context, path path.Pa
 	return fields, diags
 }
 
-func (model *ExtensionModelExtension) ToExtensionExtensionFields(ctx context.Context, path path.Path) (cm.ExtensionFieldsExtension, diag.Diagnostics) {
+func (model *ExtensionModelExtension) ToExtensionExtensionData(ctx context.Context, path path.Path) (cm.ExtensionDataExtension, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fields := cm.ExtensionFieldsExtension{
+	fields := cm.ExtensionDataExtension{
 		Name:    model.Name.ValueString(),
 		Sidebar: cm.NewOptPointerBool(model.Sidebar.ValueBoolPointer()),
 	}
@@ -44,10 +44,10 @@ func (model *ExtensionModelExtension) ToExtensionExtensionFields(ctx context.Con
 	}
 
 	if model.FieldTypes != nil {
-		fieldTypes := make([]cm.ExtensionFieldsExtensionFieldTypesItem, 0, len(model.FieldTypes))
+		fieldTypes := make([]cm.ExtensionDataExtensionFieldTypesItem, 0, len(model.FieldTypes))
 
 		for _, fieldType := range model.FieldTypes {
-			fieldTypes = append(fieldTypes, AppDefinitionLocationFieldTypesItemToExtensionFieldsExtensionFieldTypesItem(fieldType))
+			fieldTypes = append(fieldTypes, AppDefinitionLocationFieldTypesItemToExtensionDataExtensionFieldTypesItem(fieldType))
 		}
 
 		fields.FieldTypes = fieldTypes
@@ -98,16 +98,16 @@ func (model *ExtensionModelExtension) ToExtensionExtensionFields(ctx context.Con
 	return fields, diags
 }
 
-func AppDefinitionLocationFieldTypesItemToExtensionFieldsExtensionFieldTypesItem(
+func AppDefinitionLocationFieldTypesItemToExtensionDataExtensionFieldTypesItem(
 	fieldType AppDefinitionLocationFieldTypesItem,
-) cm.ExtensionFieldsExtensionFieldTypesItem {
-	fieldTypesItem := cm.ExtensionFieldsExtensionFieldTypesItem{
+) cm.ExtensionDataExtensionFieldTypesItem {
+	fieldTypesItem := cm.ExtensionDataExtensionFieldTypesItem{
 		Type:     fieldType.Type.ValueString(),
 		LinkType: cm.NewOptPointerString(fieldType.LinkType.ValueStringPointer()),
 	}
 
 	if fieldType.Items != nil {
-		fieldTypesItem.Items.SetTo(cm.ExtensionFieldsExtensionFieldTypesItemItems{
+		fieldTypesItem.Items.SetTo(cm.ExtensionDataExtensionFieldTypesItemItems{
 			Type:     fieldType.Items.Type.ValueString(),
 			LinkType: cm.NewOptPointerString(fieldType.Items.LinkType.ValueStringPointer()),
 		})

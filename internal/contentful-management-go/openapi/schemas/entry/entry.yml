@@ -2,10 +2,10 @@ Entry:
   type: object
   properties:
     sys:
-      $ref: "sys.yml#/EntrySys"
+      $ref: "./sys.yml#/EntrySys"
     metadata:
-      $ref: "metadata.yml#/EntryMetadata"
+      $ref: "./metadata.yml#/EntryMetadata"
     fields:
-      $ref: "fields.yml#/EntryFields"
+      $ref: "./fields.yml#/EntryFields"
   required:
     - sys

@@ -77,7 +77,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToEditorInterfaceFields(ctx)
+	request, requestDiags := data.ToEditorInterfaceData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -202,7 +202,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToEditorInterfaceFields(ctx)
+	request, requestDiags := data.ToEditorInterfaceData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

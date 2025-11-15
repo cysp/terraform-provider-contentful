@@ -1,6 +1,7 @@
 LinkSys:
   allOf:
     - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-type.yml"
     - $ref: "../sys/with-id.yml"
     - type: object
       properties:

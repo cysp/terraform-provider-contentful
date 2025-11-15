@@ -107,40 +107,40 @@ func (s *ApiKey) SetPreviewAPIKey(val OptPreviewAPIKeyLink) {
 
 func (*ApiKey) getDeliveryApiKeyRes() {}
 
-// Ref: #/ApiKeyRequestFields
-type ApiKeyRequestFields struct {
+// Ref: #/ApiKeyRequestData
+type ApiKeyRequestData struct {
 	Name         string            `json:"name"`
 	Description  OptNilString      `json:"description"`
 	Environments []EnvironmentLink `json:"environments"`
 }
 
 // GetName returns the value of Name.
-func (s *ApiKeyRequestFields) GetName() string {
+func (s *ApiKeyRequestData) GetName() string {
 	return s.Name
 }
 
 // GetDescription returns the value of Description.
-func (s *ApiKeyRequestFields) GetDescription() OptNilString {
+func (s *ApiKeyRequestData) GetDescription() OptNilString {
 	return s.Description
 }
 
 // GetEnvironments returns the value of Environments.
-func (s *ApiKeyRequestFields) GetEnvironments() []EnvironmentLink {
+func (s *ApiKeyRequestData) GetEnvironments() []EnvironmentLink {
 	return s.Environments
 }
 
 // SetName sets the value of Name.
-func (s *ApiKeyRequestFields) SetName(val string) {
+func (s *ApiKeyRequestData) SetName(val string) {
 	s.Name = val
 }
 
 // SetDescription sets the value of Description.
-func (s *ApiKeyRequestFields) SetDescription(val OptNilString) {
+func (s *ApiKeyRequestData) SetDescription(val OptNilString) {
 	s.Description = val
 }
 
 // SetEnvironments sets the value of Environments.
-func (s *ApiKeyRequestFields) SetEnvironments(val []EnvironmentLink) {
+func (s *ApiKeyRequestData) SetEnvironments(val []EnvironmentLink) {
 	s.Environments = val
 }
 
@@ -176,23 +176,23 @@ func (*ApiKeyStatusCode) updateDeliveryApiKeyRes() {}
 // Merged schema.
 // Ref: #/ApiKeySys
 type ApiKeySys struct {
+	Space SpaceLink `json:"space"`
 	// Merged property.
 	Type      ApiKeySysType `json:"type"`
-	Space     SpaceLink     `json:"space"`
 	ID        string        `json:"id"`
 	Version   int           `json:"version"`
 	CreatedAt OptDateTime   `json:"createdAt"`
 	UpdatedAt OptDateTime   `json:"updatedAt"`
 }
 
-// GetType returns the value of Type.
-func (s *ApiKeySys) GetType() ApiKeySysType {
-	return s.Type
-}
-
 // GetSpace returns the value of Space.
 func (s *ApiKeySys) GetSpace() SpaceLink {
 	return s.Space
+}
+
+// GetType returns the value of Type.
+func (s *ApiKeySys) GetType() ApiKeySysType {
+	return s.Type
 }
 
 // GetID returns the value of ID.
@@ -215,14 +215,14 @@ func (s *ApiKeySys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
-// SetType sets the value of Type.
-func (s *ApiKeySys) SetType(val ApiKeySysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *ApiKeySys) SetSpace(val SpaceLink) {
 	s.Space = val
+}
+
+// SetType sets the value of Type.
+func (s *ApiKeySys) SetType(val ApiKeySysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.
@@ -477,184 +477,184 @@ func (s *AppDefinition) SetParameters(val OptAppDefinitionParameters) {
 
 func (*AppDefinition) getAppDefinitionRes() {}
 
-// Ref: #/AppDefinitionFields
-type AppDefinitionFields struct {
-	Name       string                             `json:"name"`
-	Src        OptString                          `json:"src"`
-	Bundle     OptAppBundleLink                   `json:"bundle"`
-	Locations  []AppDefinitionFieldsLocationsItem `json:"locations"`
-	Parameters OptAppDefinitionParameters         `json:"parameters"`
+// Ref: #/AppDefinitionData
+type AppDefinitionData struct {
+	Name       string                           `json:"name"`
+	Src        OptString                        `json:"src"`
+	Bundle     OptAppBundleLink                 `json:"bundle"`
+	Locations  []AppDefinitionDataLocationsItem `json:"locations"`
+	Parameters OptAppDefinitionParameters       `json:"parameters"`
 }
 
 // GetName returns the value of Name.
-func (s *AppDefinitionFields) GetName() string {
+func (s *AppDefinitionData) GetName() string {
 	return s.Name
 }
 
 // GetSrc returns the value of Src.
-func (s *AppDefinitionFields) GetSrc() OptString {
+func (s *AppDefinitionData) GetSrc() OptString {
 	return s.Src
 }
 
 // GetBundle returns the value of Bundle.
-func (s *AppDefinitionFields) GetBundle() OptAppBundleLink {
+func (s *AppDefinitionData) GetBundle() OptAppBundleLink {
 	return s.Bundle
 }
 
 // GetLocations returns the value of Locations.
-func (s *AppDefinitionFields) GetLocations() []AppDefinitionFieldsLocationsItem {
+func (s *AppDefinitionData) GetLocations() []AppDefinitionDataLocationsItem {
 	return s.Locations
 }
 
 // GetParameters returns the value of Parameters.
-func (s *AppDefinitionFields) GetParameters() OptAppDefinitionParameters {
+func (s *AppDefinitionData) GetParameters() OptAppDefinitionParameters {
 	return s.Parameters
 }
 
 // SetName sets the value of Name.
-func (s *AppDefinitionFields) SetName(val string) {
+func (s *AppDefinitionData) SetName(val string) {
 	s.Name = val
 }
 
 // SetSrc sets the value of Src.
-func (s *AppDefinitionFields) SetSrc(val OptString) {
+func (s *AppDefinitionData) SetSrc(val OptString) {
 	s.Src = val
 }
 
 // SetBundle sets the value of Bundle.
-func (s *AppDefinitionFields) SetBundle(val OptAppBundleLink) {
+func (s *AppDefinitionData) SetBundle(val OptAppBundleLink) {
 	s.Bundle = val
 }
 
 // SetLocations sets the value of Locations.
-func (s *AppDefinitionFields) SetLocations(val []AppDefinitionFieldsLocationsItem) {
+func (s *AppDefinitionData) SetLocations(val []AppDefinitionDataLocationsItem) {
 	s.Locations = val
 }
 
 // SetParameters sets the value of Parameters.
-func (s *AppDefinitionFields) SetParameters(val OptAppDefinitionParameters) {
+func (s *AppDefinitionData) SetParameters(val OptAppDefinitionParameters) {
 	s.Parameters = val
 }
 
-type AppDefinitionFieldsLocationsItem struct {
-	Location       string                                            `json:"location"`
-	FieldTypes     []AppDefinitionFieldsLocationsItemFieldTypesItem  `json:"fieldTypes"`
-	NavigationItem OptAppDefinitionFieldsLocationsItemNavigationItem `json:"navigationItem"`
+type AppDefinitionDataLocationsItem struct {
+	Location       string                                          `json:"location"`
+	FieldTypes     []AppDefinitionDataLocationsItemFieldTypesItem  `json:"fieldTypes"`
+	NavigationItem OptAppDefinitionDataLocationsItemNavigationItem `json:"navigationItem"`
 }
 
 // GetLocation returns the value of Location.
-func (s *AppDefinitionFieldsLocationsItem) GetLocation() string {
+func (s *AppDefinitionDataLocationsItem) GetLocation() string {
 	return s.Location
 }
 
 // GetFieldTypes returns the value of FieldTypes.
-func (s *AppDefinitionFieldsLocationsItem) GetFieldTypes() []AppDefinitionFieldsLocationsItemFieldTypesItem {
+func (s *AppDefinitionDataLocationsItem) GetFieldTypes() []AppDefinitionDataLocationsItemFieldTypesItem {
 	return s.FieldTypes
 }
 
 // GetNavigationItem returns the value of NavigationItem.
-func (s *AppDefinitionFieldsLocationsItem) GetNavigationItem() OptAppDefinitionFieldsLocationsItemNavigationItem {
+func (s *AppDefinitionDataLocationsItem) GetNavigationItem() OptAppDefinitionDataLocationsItemNavigationItem {
 	return s.NavigationItem
 }
 
 // SetLocation sets the value of Location.
-func (s *AppDefinitionFieldsLocationsItem) SetLocation(val string) {
+func (s *AppDefinitionDataLocationsItem) SetLocation(val string) {
 	s.Location = val
 }
 
 // SetFieldTypes sets the value of FieldTypes.
-func (s *AppDefinitionFieldsLocationsItem) SetFieldTypes(val []AppDefinitionFieldsLocationsItemFieldTypesItem) {
+func (s *AppDefinitionDataLocationsItem) SetFieldTypes(val []AppDefinitionDataLocationsItemFieldTypesItem) {
 	s.FieldTypes = val
 }
 
 // SetNavigationItem sets the value of NavigationItem.
-func (s *AppDefinitionFieldsLocationsItem) SetNavigationItem(val OptAppDefinitionFieldsLocationsItemNavigationItem) {
+func (s *AppDefinitionDataLocationsItem) SetNavigationItem(val OptAppDefinitionDataLocationsItemNavigationItem) {
 	s.NavigationItem = val
 }
 
-type AppDefinitionFieldsLocationsItemFieldTypesItem struct {
-	Type     string                                                 `json:"type"`
-	LinkType OptString                                              `json:"linkType"`
-	Items    OptAppDefinitionFieldsLocationsItemFieldTypesItemItems `json:"items"`
+type AppDefinitionDataLocationsItemFieldTypesItem struct {
+	Type     string                                               `json:"type"`
+	LinkType OptString                                            `json:"linkType"`
+	Items    OptAppDefinitionDataLocationsItemFieldTypesItemItems `json:"items"`
 }
 
 // GetType returns the value of Type.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) GetType() string {
+func (s *AppDefinitionDataLocationsItemFieldTypesItem) GetType() string {
 	return s.Type
 }
 
 // GetLinkType returns the value of LinkType.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) GetLinkType() OptString {
+func (s *AppDefinitionDataLocationsItemFieldTypesItem) GetLinkType() OptString {
 	return s.LinkType
 }
 
 // GetItems returns the value of Items.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) GetItems() OptAppDefinitionFieldsLocationsItemFieldTypesItemItems {
+func (s *AppDefinitionDataLocationsItemFieldTypesItem) GetItems() OptAppDefinitionDataLocationsItemFieldTypesItemItems {
 	return s.Items
 }
 
 // SetType sets the value of Type.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) SetType(val string) {
+func (s *AppDefinitionDataLocationsItemFieldTypesItem) SetType(val string) {
 	s.Type = val
 }
 
 // SetLinkType sets the value of LinkType.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) SetLinkType(val OptString) {
+func (s *AppDefinitionDataLocationsItemFieldTypesItem) SetLinkType(val OptString) {
 	s.LinkType = val
 }
 
 // SetItems sets the value of Items.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItem) SetItems(val OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) {
+func (s *AppDefinitionDataLocationsItemFieldTypesItem) SetItems(val OptAppDefinitionDataLocationsItemFieldTypesItemItems) {
 	s.Items = val
 }
 
-type AppDefinitionFieldsLocationsItemFieldTypesItemItems struct {
+type AppDefinitionDataLocationsItemFieldTypesItemItems struct {
 	Type     string    `json:"type"`
 	LinkType OptString `json:"linkType"`
 }
 
 // GetType returns the value of Type.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) GetType() string {
+func (s *AppDefinitionDataLocationsItemFieldTypesItemItems) GetType() string {
 	return s.Type
 }
 
 // GetLinkType returns the value of LinkType.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) GetLinkType() OptString {
+func (s *AppDefinitionDataLocationsItemFieldTypesItemItems) GetLinkType() OptString {
 	return s.LinkType
 }
 
 // SetType sets the value of Type.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) SetType(val string) {
+func (s *AppDefinitionDataLocationsItemFieldTypesItemItems) SetType(val string) {
 	s.Type = val
 }
 
 // SetLinkType sets the value of LinkType.
-func (s *AppDefinitionFieldsLocationsItemFieldTypesItemItems) SetLinkType(val OptString) {
+func (s *AppDefinitionDataLocationsItemFieldTypesItemItems) SetLinkType(val OptString) {
 	s.LinkType = val
 }
 
-type AppDefinitionFieldsLocationsItemNavigationItem struct {
+type AppDefinitionDataLocationsItemNavigationItem struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
 }
 
 // GetName returns the value of Name.
-func (s *AppDefinitionFieldsLocationsItemNavigationItem) GetName() string {
+func (s *AppDefinitionDataLocationsItemNavigationItem) GetName() string {
 	return s.Name
 }
 
 // GetPath returns the value of Path.
-func (s *AppDefinitionFieldsLocationsItemNavigationItem) GetPath() string {
+func (s *AppDefinitionDataLocationsItemNavigationItem) GetPath() string {
 	return s.Path
 }
 
 // SetName sets the value of Name.
-func (s *AppDefinitionFieldsLocationsItemNavigationItem) SetName(val string) {
+func (s *AppDefinitionDataLocationsItemNavigationItem) SetName(val string) {
 	s.Name = val
 }
 
 // SetPath sets the value of Path.
-func (s *AppDefinitionFieldsLocationsItemNavigationItem) SetPath(val string) {
+func (s *AppDefinitionDataLocationsItemNavigationItem) SetPath(val string) {
 	s.Path = val
 }
 
@@ -1090,15 +1090,10 @@ func (*AppDefinitionStatusCode) putAppDefinitionRes()    {}
 // Merged schema.
 // Ref: #/AppDefinitionSys
 type AppDefinitionSys struct {
+	Organization OrganizationLink `json:"organization"`
 	// Merged property.
-	Type         AppDefinitionSysType `json:"type"`
-	Organization OrganizationLink     `json:"organization"`
-	ID           string               `json:"id"`
-}
-
-// GetType returns the value of Type.
-func (s *AppDefinitionSys) GetType() AppDefinitionSysType {
-	return s.Type
+	Type AppDefinitionSysType `json:"type"`
+	ID   string               `json:"id"`
 }
 
 // GetOrganization returns the value of Organization.
@@ -1106,19 +1101,24 @@ func (s *AppDefinitionSys) GetOrganization() OrganizationLink {
 	return s.Organization
 }
 
+// GetType returns the value of Type.
+func (s *AppDefinitionSys) GetType() AppDefinitionSysType {
+	return s.Type
+}
+
 // GetID returns the value of ID.
 func (s *AppDefinitionSys) GetID() string {
 	return s.ID
 }
 
-// SetType sets the value of Type.
-func (s *AppDefinitionSys) SetType(val AppDefinitionSysType) {
-	s.Type = val
-}
-
 // SetOrganization sets the value of Organization.
 func (s *AppDefinitionSys) SetOrganization(val OrganizationLink) {
 	s.Organization = val
+}
+
+// SetType sets the value of Type.
+func (s *AppDefinitionSys) SetType(val AppDefinitionSysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.
@@ -1190,18 +1190,18 @@ func (s *AppInstallation) SetParameters(val jx.Raw) {
 
 func (*AppInstallation) getAppInstallationRes() {}
 
-// Ref: #/AppInstallationFields
-type AppInstallationFields struct {
+// Ref: #/AppInstallationData
+type AppInstallationData struct {
 	Parameters jx.Raw `json:"parameters"`
 }
 
 // GetParameters returns the value of Parameters.
-func (s *AppInstallationFields) GetParameters() jx.Raw {
+func (s *AppInstallationData) GetParameters() jx.Raw {
 	return s.Parameters
 }
 
 // SetParameters sets the value of Parameters.
-func (s *AppInstallationFields) SetParameters(val jx.Raw) {
+func (s *AppInstallationData) SetParameters(val jx.Raw) {
 	s.Parameters = val
 }
 
@@ -1236,16 +1236,11 @@ func (*AppInstallationStatusCode) putAppInstallationRes() {}
 // Merged schema.
 // Ref: #/AppInstallationSys
 type AppInstallationSys struct {
+	Space       SpaceLink       `json:"space"`
+	Environment EnvironmentLink `json:"environment"`
 	// Merged property.
 	Type          AppInstallationSysType `json:"type"`
-	Space         SpaceLink              `json:"space"`
-	Environment   EnvironmentLink        `json:"environment"`
 	AppDefinition AppDefinitionLink      `json:"appDefinition"`
-}
-
-// GetType returns the value of Type.
-func (s *AppInstallationSys) GetType() AppInstallationSysType {
-	return s.Type
 }
 
 // GetSpace returns the value of Space.
@@ -1258,14 +1253,14 @@ func (s *AppInstallationSys) GetEnvironment() EnvironmentLink {
 	return s.Environment
 }
 
+// GetType returns the value of Type.
+func (s *AppInstallationSys) GetType() AppInstallationSysType {
+	return s.Type
+}
+
 // GetAppDefinition returns the value of AppDefinition.
 func (s *AppInstallationSys) GetAppDefinition() AppDefinitionLink {
 	return s.AppDefinition
-}
-
-// SetType sets the value of Type.
-func (s *AppInstallationSys) SetType(val AppInstallationSysType) {
-	s.Type = val
 }
 
 // SetSpace sets the value of Space.
@@ -1276,6 +1271,11 @@ func (s *AppInstallationSys) SetSpace(val SpaceLink) {
 // SetEnvironment sets the value of Environment.
 func (s *AppInstallationSys) SetEnvironment(val EnvironmentLink) {
 	s.Environment = val
+}
+
+// SetType sets the value of Type.
+func (s *AppInstallationSys) SetType(val AppInstallationSysType) {
+	s.Type = val
 }
 
 // SetAppDefinition sets the value of AppDefinition.
@@ -1347,18 +1347,18 @@ func (s *AppSigningSecret) SetRedactedValue(val string) {
 
 func (*AppSigningSecret) getAppSigningSecretRes() {}
 
-// Ref: #/AppSigningSecretRequestFields
-type AppSigningSecretRequestFields struct {
+// Ref: #/AppSigningSecretRequestData
+type AppSigningSecretRequestData struct {
 	Value string `json:"value"`
 }
 
 // GetValue returns the value of Value.
-func (s *AppSigningSecretRequestFields) GetValue() string {
+func (s *AppSigningSecretRequestData) GetValue() string {
 	return s.Value
 }
 
 // SetValue sets the value of Value.
-func (s *AppSigningSecretRequestFields) SetValue(val string) {
+func (s *AppSigningSecretRequestData) SetValue(val string) {
 	s.Value = val
 }
 
@@ -1393,15 +1393,10 @@ func (*AppSigningSecretStatusCode) putAppSigningSecretRes() {}
 // Merged schema.
 // Ref: #/AppSigningSecretSys
 type AppSigningSecretSys struct {
+	Organization OrganizationLink `json:"organization"`
 	// Merged property.
 	Type          AppSigningSecretSysType `json:"type"`
-	Organization  OrganizationLink        `json:"organization"`
 	AppDefinition AppDefinitionLink       `json:"appDefinition"`
-}
-
-// GetType returns the value of Type.
-func (s *AppSigningSecretSys) GetType() AppSigningSecretSysType {
-	return s.Type
 }
 
 // GetOrganization returns the value of Organization.
@@ -1409,19 +1404,24 @@ func (s *AppSigningSecretSys) GetOrganization() OrganizationLink {
 	return s.Organization
 }
 
+// GetType returns the value of Type.
+func (s *AppSigningSecretSys) GetType() AppSigningSecretSysType {
+	return s.Type
+}
+
 // GetAppDefinition returns the value of AppDefinition.
 func (s *AppSigningSecretSys) GetAppDefinition() AppDefinitionLink {
 	return s.AppDefinition
 }
 
-// SetType sets the value of Type.
-func (s *AppSigningSecretSys) SetType(val AppSigningSecretSysType) {
-	s.Type = val
-}
-
 // SetOrganization sets the value of Organization.
 func (s *AppSigningSecretSys) SetOrganization(val OrganizationLink) {
 	s.Organization = val
+}
+
+// SetType sets the value of Type.
+func (s *AppSigningSecretSys) SetType(val AppSigningSecretSysType) {
+	s.Type = val
 }
 
 // SetAppDefinition sets the value of AppDefinition.
@@ -2371,233 +2371,233 @@ func (s *ContentTypeMetadataTaxonomyItemSysType) UnmarshalText(data []byte) erro
 	}
 }
 
-// Ref: #/ContentTypeRequestFields
-type ContentTypeRequestFields struct {
-	Name         string                               `json:"name"`
-	Description  OptNilString                         `json:"description"`
-	DisplayField string                               `json:"displayField"`
-	Fields       []ContentTypeRequestFieldsFieldsItem `json:"fields"`
-	Metadata     OptContentTypeMetadata               `json:"metadata"`
+// Ref: #/ContentTypeRequestData
+type ContentTypeRequestData struct {
+	Name         string                             `json:"name"`
+	Description  OptNilString                       `json:"description"`
+	DisplayField string                             `json:"displayField"`
+	Fields       []ContentTypeRequestDataFieldsItem `json:"fields"`
+	Metadata     OptContentTypeMetadata             `json:"metadata"`
 }
 
 // GetName returns the value of Name.
-func (s *ContentTypeRequestFields) GetName() string {
+func (s *ContentTypeRequestData) GetName() string {
 	return s.Name
 }
 
 // GetDescription returns the value of Description.
-func (s *ContentTypeRequestFields) GetDescription() OptNilString {
+func (s *ContentTypeRequestData) GetDescription() OptNilString {
 	return s.Description
 }
 
 // GetDisplayField returns the value of DisplayField.
-func (s *ContentTypeRequestFields) GetDisplayField() string {
+func (s *ContentTypeRequestData) GetDisplayField() string {
 	return s.DisplayField
 }
 
 // GetFields returns the value of Fields.
-func (s *ContentTypeRequestFields) GetFields() []ContentTypeRequestFieldsFieldsItem {
+func (s *ContentTypeRequestData) GetFields() []ContentTypeRequestDataFieldsItem {
 	return s.Fields
 }
 
 // GetMetadata returns the value of Metadata.
-func (s *ContentTypeRequestFields) GetMetadata() OptContentTypeMetadata {
+func (s *ContentTypeRequestData) GetMetadata() OptContentTypeMetadata {
 	return s.Metadata
 }
 
 // SetName sets the value of Name.
-func (s *ContentTypeRequestFields) SetName(val string) {
+func (s *ContentTypeRequestData) SetName(val string) {
 	s.Name = val
 }
 
 // SetDescription sets the value of Description.
-func (s *ContentTypeRequestFields) SetDescription(val OptNilString) {
+func (s *ContentTypeRequestData) SetDescription(val OptNilString) {
 	s.Description = val
 }
 
 // SetDisplayField sets the value of DisplayField.
-func (s *ContentTypeRequestFields) SetDisplayField(val string) {
+func (s *ContentTypeRequestData) SetDisplayField(val string) {
 	s.DisplayField = val
 }
 
 // SetFields sets the value of Fields.
-func (s *ContentTypeRequestFields) SetFields(val []ContentTypeRequestFieldsFieldsItem) {
+func (s *ContentTypeRequestData) SetFields(val []ContentTypeRequestDataFieldsItem) {
 	s.Fields = val
 }
 
 // SetMetadata sets the value of Metadata.
-func (s *ContentTypeRequestFields) SetMetadata(val OptContentTypeMetadata) {
+func (s *ContentTypeRequestData) SetMetadata(val OptContentTypeMetadata) {
 	s.Metadata = val
 }
 
-type ContentTypeRequestFieldsFieldsItem struct {
-	ID               string                                     `json:"id"`
-	Name             string                                     `json:"name"`
-	Type             string                                     `json:"type"`
-	LinkType         OptString                                  `json:"linkType"`
-	Items            OptContentTypeRequestFieldsFieldsItemItems `json:"items"`
-	Localized        OptBool                                    `json:"localized"`
-	Omitted          OptBool                                    `json:"omitted"`
-	Required         OptBool                                    `json:"required"`
-	Disabled         OptBool                                    `json:"disabled"`
-	DefaultValue     jx.Raw                                     `json:"defaultValue"`
-	Validations      []jx.Raw                                   `json:"validations"`
-	AllowedResources OptNilResourceLinkArray                    `json:"allowedResources"`
+type ContentTypeRequestDataFieldsItem struct {
+	ID               string                                   `json:"id"`
+	Name             string                                   `json:"name"`
+	Type             string                                   `json:"type"`
+	LinkType         OptString                                `json:"linkType"`
+	Items            OptContentTypeRequestDataFieldsItemItems `json:"items"`
+	Localized        OptBool                                  `json:"localized"`
+	Omitted          OptBool                                  `json:"omitted"`
+	Required         OptBool                                  `json:"required"`
+	Disabled         OptBool                                  `json:"disabled"`
+	DefaultValue     jx.Raw                                   `json:"defaultValue"`
+	Validations      []jx.Raw                                 `json:"validations"`
+	AllowedResources OptNilResourceLinkArray                  `json:"allowedResources"`
 }
 
 // GetID returns the value of ID.
-func (s *ContentTypeRequestFieldsFieldsItem) GetID() string {
+func (s *ContentTypeRequestDataFieldsItem) GetID() string {
 	return s.ID
 }
 
 // GetName returns the value of Name.
-func (s *ContentTypeRequestFieldsFieldsItem) GetName() string {
+func (s *ContentTypeRequestDataFieldsItem) GetName() string {
 	return s.Name
 }
 
 // GetType returns the value of Type.
-func (s *ContentTypeRequestFieldsFieldsItem) GetType() string {
+func (s *ContentTypeRequestDataFieldsItem) GetType() string {
 	return s.Type
 }
 
 // GetLinkType returns the value of LinkType.
-func (s *ContentTypeRequestFieldsFieldsItem) GetLinkType() OptString {
+func (s *ContentTypeRequestDataFieldsItem) GetLinkType() OptString {
 	return s.LinkType
 }
 
 // GetItems returns the value of Items.
-func (s *ContentTypeRequestFieldsFieldsItem) GetItems() OptContentTypeRequestFieldsFieldsItemItems {
+func (s *ContentTypeRequestDataFieldsItem) GetItems() OptContentTypeRequestDataFieldsItemItems {
 	return s.Items
 }
 
 // GetLocalized returns the value of Localized.
-func (s *ContentTypeRequestFieldsFieldsItem) GetLocalized() OptBool {
+func (s *ContentTypeRequestDataFieldsItem) GetLocalized() OptBool {
 	return s.Localized
 }
 
 // GetOmitted returns the value of Omitted.
-func (s *ContentTypeRequestFieldsFieldsItem) GetOmitted() OptBool {
+func (s *ContentTypeRequestDataFieldsItem) GetOmitted() OptBool {
 	return s.Omitted
 }
 
 // GetRequired returns the value of Required.
-func (s *ContentTypeRequestFieldsFieldsItem) GetRequired() OptBool {
+func (s *ContentTypeRequestDataFieldsItem) GetRequired() OptBool {
 	return s.Required
 }
 
 // GetDisabled returns the value of Disabled.
-func (s *ContentTypeRequestFieldsFieldsItem) GetDisabled() OptBool {
+func (s *ContentTypeRequestDataFieldsItem) GetDisabled() OptBool {
 	return s.Disabled
 }
 
 // GetDefaultValue returns the value of DefaultValue.
-func (s *ContentTypeRequestFieldsFieldsItem) GetDefaultValue() jx.Raw {
+func (s *ContentTypeRequestDataFieldsItem) GetDefaultValue() jx.Raw {
 	return s.DefaultValue
 }
 
 // GetValidations returns the value of Validations.
-func (s *ContentTypeRequestFieldsFieldsItem) GetValidations() []jx.Raw {
+func (s *ContentTypeRequestDataFieldsItem) GetValidations() []jx.Raw {
 	return s.Validations
 }
 
 // GetAllowedResources returns the value of AllowedResources.
-func (s *ContentTypeRequestFieldsFieldsItem) GetAllowedResources() OptNilResourceLinkArray {
+func (s *ContentTypeRequestDataFieldsItem) GetAllowedResources() OptNilResourceLinkArray {
 	return s.AllowedResources
 }
 
 // SetID sets the value of ID.
-func (s *ContentTypeRequestFieldsFieldsItem) SetID(val string) {
+func (s *ContentTypeRequestDataFieldsItem) SetID(val string) {
 	s.ID = val
 }
 
 // SetName sets the value of Name.
-func (s *ContentTypeRequestFieldsFieldsItem) SetName(val string) {
+func (s *ContentTypeRequestDataFieldsItem) SetName(val string) {
 	s.Name = val
 }
 
 // SetType sets the value of Type.
-func (s *ContentTypeRequestFieldsFieldsItem) SetType(val string) {
+func (s *ContentTypeRequestDataFieldsItem) SetType(val string) {
 	s.Type = val
 }
 
 // SetLinkType sets the value of LinkType.
-func (s *ContentTypeRequestFieldsFieldsItem) SetLinkType(val OptString) {
+func (s *ContentTypeRequestDataFieldsItem) SetLinkType(val OptString) {
 	s.LinkType = val
 }
 
 // SetItems sets the value of Items.
-func (s *ContentTypeRequestFieldsFieldsItem) SetItems(val OptContentTypeRequestFieldsFieldsItemItems) {
+func (s *ContentTypeRequestDataFieldsItem) SetItems(val OptContentTypeRequestDataFieldsItemItems) {
 	s.Items = val
 }
 
 // SetLocalized sets the value of Localized.
-func (s *ContentTypeRequestFieldsFieldsItem) SetLocalized(val OptBool) {
+func (s *ContentTypeRequestDataFieldsItem) SetLocalized(val OptBool) {
 	s.Localized = val
 }
 
 // SetOmitted sets the value of Omitted.
-func (s *ContentTypeRequestFieldsFieldsItem) SetOmitted(val OptBool) {
+func (s *ContentTypeRequestDataFieldsItem) SetOmitted(val OptBool) {
 	s.Omitted = val
 }
 
 // SetRequired sets the value of Required.
-func (s *ContentTypeRequestFieldsFieldsItem) SetRequired(val OptBool) {
+func (s *ContentTypeRequestDataFieldsItem) SetRequired(val OptBool) {
 	s.Required = val
 }
 
 // SetDisabled sets the value of Disabled.
-func (s *ContentTypeRequestFieldsFieldsItem) SetDisabled(val OptBool) {
+func (s *ContentTypeRequestDataFieldsItem) SetDisabled(val OptBool) {
 	s.Disabled = val
 }
 
 // SetDefaultValue sets the value of DefaultValue.
-func (s *ContentTypeRequestFieldsFieldsItem) SetDefaultValue(val jx.Raw) {
+func (s *ContentTypeRequestDataFieldsItem) SetDefaultValue(val jx.Raw) {
 	s.DefaultValue = val
 }
 
 // SetValidations sets the value of Validations.
-func (s *ContentTypeRequestFieldsFieldsItem) SetValidations(val []jx.Raw) {
+func (s *ContentTypeRequestDataFieldsItem) SetValidations(val []jx.Raw) {
 	s.Validations = val
 }
 
 // SetAllowedResources sets the value of AllowedResources.
-func (s *ContentTypeRequestFieldsFieldsItem) SetAllowedResources(val OptNilResourceLinkArray) {
+func (s *ContentTypeRequestDataFieldsItem) SetAllowedResources(val OptNilResourceLinkArray) {
 	s.AllowedResources = val
 }
 
-type ContentTypeRequestFieldsFieldsItemItems struct {
+type ContentTypeRequestDataFieldsItemItems struct {
 	Type        OptString `json:"type"`
 	LinkType    OptString `json:"linkType"`
 	Validations []jx.Raw  `json:"validations"`
 }
 
 // GetType returns the value of Type.
-func (s *ContentTypeRequestFieldsFieldsItemItems) GetType() OptString {
+func (s *ContentTypeRequestDataFieldsItemItems) GetType() OptString {
 	return s.Type
 }
 
 // GetLinkType returns the value of LinkType.
-func (s *ContentTypeRequestFieldsFieldsItemItems) GetLinkType() OptString {
+func (s *ContentTypeRequestDataFieldsItemItems) GetLinkType() OptString {
 	return s.LinkType
 }
 
 // GetValidations returns the value of Validations.
-func (s *ContentTypeRequestFieldsFieldsItemItems) GetValidations() []jx.Raw {
+func (s *ContentTypeRequestDataFieldsItemItems) GetValidations() []jx.Raw {
 	return s.Validations
 }
 
 // SetType sets the value of Type.
-func (s *ContentTypeRequestFieldsFieldsItemItems) SetType(val OptString) {
+func (s *ContentTypeRequestDataFieldsItemItems) SetType(val OptString) {
 	s.Type = val
 }
 
 // SetLinkType sets the value of LinkType.
-func (s *ContentTypeRequestFieldsFieldsItemItems) SetLinkType(val OptString) {
+func (s *ContentTypeRequestDataFieldsItemItems) SetLinkType(val OptString) {
 	s.LinkType = val
 }
 
 // SetValidations sets the value of Validations.
-func (s *ContentTypeRequestFieldsFieldsItemItems) SetValidations(val []jx.Raw) {
+func (s *ContentTypeRequestDataFieldsItemItems) SetValidations(val []jx.Raw) {
 	s.Validations = val
 }
 
@@ -2633,21 +2633,16 @@ func (*ContentTypeStatusCode) putContentTypeRes()      {}
 // Merged schema.
 // Ref: #/ContentTypeSys
 type ContentTypeSys struct {
+	Space       SpaceLink       `json:"space"`
+	Environment EnvironmentLink `json:"environment"`
 	// Merged property.
 	Type             ContentTypeSysType `json:"type"`
-	Space            SpaceLink          `json:"space"`
-	Environment      EnvironmentLink    `json:"environment"`
 	ID               string             `json:"id"`
 	Version          int                `json:"version"`
 	CreatedAt        OptDateTime        `json:"createdAt"`
 	UpdatedAt        OptDateTime        `json:"updatedAt"`
 	PublishedVersion OptInt             `json:"publishedVersion"`
 	PublishedAt      OptDateTime        `json:"publishedAt"`
-}
-
-// GetType returns the value of Type.
-func (s *ContentTypeSys) GetType() ContentTypeSysType {
-	return s.Type
 }
 
 // GetSpace returns the value of Space.
@@ -2658,6 +2653,11 @@ func (s *ContentTypeSys) GetSpace() SpaceLink {
 // GetEnvironment returns the value of Environment.
 func (s *ContentTypeSys) GetEnvironment() EnvironmentLink {
 	return s.Environment
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeSys) GetType() ContentTypeSysType {
+	return s.Type
 }
 
 // GetID returns the value of ID.
@@ -2690,11 +2690,6 @@ func (s *ContentTypeSys) GetPublishedAt() OptDateTime {
 	return s.PublishedAt
 }
 
-// SetType sets the value of Type.
-func (s *ContentTypeSys) SetType(val ContentTypeSysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *ContentTypeSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -2703,6 +2698,11 @@ func (s *ContentTypeSys) SetSpace(val SpaceLink) {
 // SetEnvironment sets the value of Environment.
 func (s *ContentTypeSys) SetEnvironment(val EnvironmentLink) {
 	s.Environment = val
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeSys) SetType(val ContentTypeSysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.
@@ -2950,6 +2950,195 @@ func (s *EditorInterfaceControlsItem) SetSettings(val jx.Raw) {
 	s.Settings = val
 }
 
+// Ref: #/EditorInterfaceData
+type EditorInterfaceData struct {
+	EditorLayout  OptNilEditorInterfaceEditorLayoutItemArray      `json:"editorLayout"`
+	Controls      OptNilEditorInterfaceDataControlsItemArray      `json:"controls"`
+	GroupControls OptNilEditorInterfaceDataGroupControlsItemArray `json:"groupControls"`
+	Sidebar       OptNilEditorInterfaceDataSidebarItemArray       `json:"sidebar"`
+}
+
+// GetEditorLayout returns the value of EditorLayout.
+func (s *EditorInterfaceData) GetEditorLayout() OptNilEditorInterfaceEditorLayoutItemArray {
+	return s.EditorLayout
+}
+
+// GetControls returns the value of Controls.
+func (s *EditorInterfaceData) GetControls() OptNilEditorInterfaceDataControlsItemArray {
+	return s.Controls
+}
+
+// GetGroupControls returns the value of GroupControls.
+func (s *EditorInterfaceData) GetGroupControls() OptNilEditorInterfaceDataGroupControlsItemArray {
+	return s.GroupControls
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *EditorInterfaceData) GetSidebar() OptNilEditorInterfaceDataSidebarItemArray {
+	return s.Sidebar
+}
+
+// SetEditorLayout sets the value of EditorLayout.
+func (s *EditorInterfaceData) SetEditorLayout(val OptNilEditorInterfaceEditorLayoutItemArray) {
+	s.EditorLayout = val
+}
+
+// SetControls sets the value of Controls.
+func (s *EditorInterfaceData) SetControls(val OptNilEditorInterfaceDataControlsItemArray) {
+	s.Controls = val
+}
+
+// SetGroupControls sets the value of GroupControls.
+func (s *EditorInterfaceData) SetGroupControls(val OptNilEditorInterfaceDataGroupControlsItemArray) {
+	s.GroupControls = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *EditorInterfaceData) SetSidebar(val OptNilEditorInterfaceDataSidebarItemArray) {
+	s.Sidebar = val
+}
+
+type EditorInterfaceDataControlsItem struct {
+	FieldId         string    `json:"fieldId"`
+	WidgetNamespace OptString `json:"widgetNamespace"`
+	WidgetId        OptString `json:"widgetId"`
+	Settings        jx.Raw    `json:"settings"`
+}
+
+// GetFieldId returns the value of FieldId.
+func (s *EditorInterfaceDataControlsItem) GetFieldId() string {
+	return s.FieldId
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *EditorInterfaceDataControlsItem) GetWidgetNamespace() OptString {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *EditorInterfaceDataControlsItem) GetWidgetId() OptString {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *EditorInterfaceDataControlsItem) GetSettings() jx.Raw {
+	return s.Settings
+}
+
+// SetFieldId sets the value of FieldId.
+func (s *EditorInterfaceDataControlsItem) SetFieldId(val string) {
+	s.FieldId = val
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *EditorInterfaceDataControlsItem) SetWidgetNamespace(val OptString) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *EditorInterfaceDataControlsItem) SetWidgetId(val OptString) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *EditorInterfaceDataControlsItem) SetSettings(val jx.Raw) {
+	s.Settings = val
+}
+
+type EditorInterfaceDataGroupControlsItem struct {
+	GroupId         string    `json:"groupId"`
+	WidgetNamespace OptString `json:"widgetNamespace"`
+	WidgetId        OptString `json:"widgetId"`
+	Settings        jx.Raw    `json:"settings"`
+}
+
+// GetGroupId returns the value of GroupId.
+func (s *EditorInterfaceDataGroupControlsItem) GetGroupId() string {
+	return s.GroupId
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *EditorInterfaceDataGroupControlsItem) GetWidgetNamespace() OptString {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *EditorInterfaceDataGroupControlsItem) GetWidgetId() OptString {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *EditorInterfaceDataGroupControlsItem) GetSettings() jx.Raw {
+	return s.Settings
+}
+
+// SetGroupId sets the value of GroupId.
+func (s *EditorInterfaceDataGroupControlsItem) SetGroupId(val string) {
+	s.GroupId = val
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *EditorInterfaceDataGroupControlsItem) SetWidgetNamespace(val OptString) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *EditorInterfaceDataGroupControlsItem) SetWidgetId(val OptString) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *EditorInterfaceDataGroupControlsItem) SetSettings(val jx.Raw) {
+	s.Settings = val
+}
+
+type EditorInterfaceDataSidebarItem struct {
+	WidgetNamespace string  `json:"widgetNamespace"`
+	WidgetId        string  `json:"widgetId"`
+	Settings        jx.Raw  `json:"settings"`
+	Disabled        OptBool `json:"disabled"`
+}
+
+// GetWidgetNamespace returns the value of WidgetNamespace.
+func (s *EditorInterfaceDataSidebarItem) GetWidgetNamespace() string {
+	return s.WidgetNamespace
+}
+
+// GetWidgetId returns the value of WidgetId.
+func (s *EditorInterfaceDataSidebarItem) GetWidgetId() string {
+	return s.WidgetId
+}
+
+// GetSettings returns the value of Settings.
+func (s *EditorInterfaceDataSidebarItem) GetSettings() jx.Raw {
+	return s.Settings
+}
+
+// GetDisabled returns the value of Disabled.
+func (s *EditorInterfaceDataSidebarItem) GetDisabled() OptBool {
+	return s.Disabled
+}
+
+// SetWidgetNamespace sets the value of WidgetNamespace.
+func (s *EditorInterfaceDataSidebarItem) SetWidgetNamespace(val string) {
+	s.WidgetNamespace = val
+}
+
+// SetWidgetId sets the value of WidgetId.
+func (s *EditorInterfaceDataSidebarItem) SetWidgetId(val string) {
+	s.WidgetId = val
+}
+
+// SetSettings sets the value of Settings.
+func (s *EditorInterfaceDataSidebarItem) SetSettings(val jx.Raw) {
+	s.Settings = val
+}
+
+// SetDisabled sets the value of Disabled.
+func (s *EditorInterfaceDataSidebarItem) SetDisabled(val OptBool) {
+	s.Disabled = val
+}
+
 // Ref: #/EditorInterfaceEditorLayoutFieldItem
 type EditorInterfaceEditorLayoutFieldItem struct {
 	FieldId string `json:"fieldId"`
@@ -3069,195 +3258,6 @@ func NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(v Ed
 	var s EditorInterfaceEditorLayoutItem
 	s.SetEditorInterfaceEditorLayoutFieldItem(v)
 	return s
-}
-
-// Ref: #/EditorInterfaceFields
-type EditorInterfaceFields struct {
-	EditorLayout  OptNilEditorInterfaceEditorLayoutItemArray        `json:"editorLayout"`
-	Controls      OptNilEditorInterfaceFieldsControlsItemArray      `json:"controls"`
-	GroupControls OptNilEditorInterfaceFieldsGroupControlsItemArray `json:"groupControls"`
-	Sidebar       OptNilEditorInterfaceFieldsSidebarItemArray       `json:"sidebar"`
-}
-
-// GetEditorLayout returns the value of EditorLayout.
-func (s *EditorInterfaceFields) GetEditorLayout() OptNilEditorInterfaceEditorLayoutItemArray {
-	return s.EditorLayout
-}
-
-// GetControls returns the value of Controls.
-func (s *EditorInterfaceFields) GetControls() OptNilEditorInterfaceFieldsControlsItemArray {
-	return s.Controls
-}
-
-// GetGroupControls returns the value of GroupControls.
-func (s *EditorInterfaceFields) GetGroupControls() OptNilEditorInterfaceFieldsGroupControlsItemArray {
-	return s.GroupControls
-}
-
-// GetSidebar returns the value of Sidebar.
-func (s *EditorInterfaceFields) GetSidebar() OptNilEditorInterfaceFieldsSidebarItemArray {
-	return s.Sidebar
-}
-
-// SetEditorLayout sets the value of EditorLayout.
-func (s *EditorInterfaceFields) SetEditorLayout(val OptNilEditorInterfaceEditorLayoutItemArray) {
-	s.EditorLayout = val
-}
-
-// SetControls sets the value of Controls.
-func (s *EditorInterfaceFields) SetControls(val OptNilEditorInterfaceFieldsControlsItemArray) {
-	s.Controls = val
-}
-
-// SetGroupControls sets the value of GroupControls.
-func (s *EditorInterfaceFields) SetGroupControls(val OptNilEditorInterfaceFieldsGroupControlsItemArray) {
-	s.GroupControls = val
-}
-
-// SetSidebar sets the value of Sidebar.
-func (s *EditorInterfaceFields) SetSidebar(val OptNilEditorInterfaceFieldsSidebarItemArray) {
-	s.Sidebar = val
-}
-
-type EditorInterfaceFieldsControlsItem struct {
-	FieldId         string    `json:"fieldId"`
-	WidgetNamespace OptString `json:"widgetNamespace"`
-	WidgetId        OptString `json:"widgetId"`
-	Settings        jx.Raw    `json:"settings"`
-}
-
-// GetFieldId returns the value of FieldId.
-func (s *EditorInterfaceFieldsControlsItem) GetFieldId() string {
-	return s.FieldId
-}
-
-// GetWidgetNamespace returns the value of WidgetNamespace.
-func (s *EditorInterfaceFieldsControlsItem) GetWidgetNamespace() OptString {
-	return s.WidgetNamespace
-}
-
-// GetWidgetId returns the value of WidgetId.
-func (s *EditorInterfaceFieldsControlsItem) GetWidgetId() OptString {
-	return s.WidgetId
-}
-
-// GetSettings returns the value of Settings.
-func (s *EditorInterfaceFieldsControlsItem) GetSettings() jx.Raw {
-	return s.Settings
-}
-
-// SetFieldId sets the value of FieldId.
-func (s *EditorInterfaceFieldsControlsItem) SetFieldId(val string) {
-	s.FieldId = val
-}
-
-// SetWidgetNamespace sets the value of WidgetNamespace.
-func (s *EditorInterfaceFieldsControlsItem) SetWidgetNamespace(val OptString) {
-	s.WidgetNamespace = val
-}
-
-// SetWidgetId sets the value of WidgetId.
-func (s *EditorInterfaceFieldsControlsItem) SetWidgetId(val OptString) {
-	s.WidgetId = val
-}
-
-// SetSettings sets the value of Settings.
-func (s *EditorInterfaceFieldsControlsItem) SetSettings(val jx.Raw) {
-	s.Settings = val
-}
-
-type EditorInterfaceFieldsGroupControlsItem struct {
-	GroupId         string    `json:"groupId"`
-	WidgetNamespace OptString `json:"widgetNamespace"`
-	WidgetId        OptString `json:"widgetId"`
-	Settings        jx.Raw    `json:"settings"`
-}
-
-// GetGroupId returns the value of GroupId.
-func (s *EditorInterfaceFieldsGroupControlsItem) GetGroupId() string {
-	return s.GroupId
-}
-
-// GetWidgetNamespace returns the value of WidgetNamespace.
-func (s *EditorInterfaceFieldsGroupControlsItem) GetWidgetNamespace() OptString {
-	return s.WidgetNamespace
-}
-
-// GetWidgetId returns the value of WidgetId.
-func (s *EditorInterfaceFieldsGroupControlsItem) GetWidgetId() OptString {
-	return s.WidgetId
-}
-
-// GetSettings returns the value of Settings.
-func (s *EditorInterfaceFieldsGroupControlsItem) GetSettings() jx.Raw {
-	return s.Settings
-}
-
-// SetGroupId sets the value of GroupId.
-func (s *EditorInterfaceFieldsGroupControlsItem) SetGroupId(val string) {
-	s.GroupId = val
-}
-
-// SetWidgetNamespace sets the value of WidgetNamespace.
-func (s *EditorInterfaceFieldsGroupControlsItem) SetWidgetNamespace(val OptString) {
-	s.WidgetNamespace = val
-}
-
-// SetWidgetId sets the value of WidgetId.
-func (s *EditorInterfaceFieldsGroupControlsItem) SetWidgetId(val OptString) {
-	s.WidgetId = val
-}
-
-// SetSettings sets the value of Settings.
-func (s *EditorInterfaceFieldsGroupControlsItem) SetSettings(val jx.Raw) {
-	s.Settings = val
-}
-
-type EditorInterfaceFieldsSidebarItem struct {
-	WidgetNamespace string  `json:"widgetNamespace"`
-	WidgetId        string  `json:"widgetId"`
-	Settings        jx.Raw  `json:"settings"`
-	Disabled        OptBool `json:"disabled"`
-}
-
-// GetWidgetNamespace returns the value of WidgetNamespace.
-func (s *EditorInterfaceFieldsSidebarItem) GetWidgetNamespace() string {
-	return s.WidgetNamespace
-}
-
-// GetWidgetId returns the value of WidgetId.
-func (s *EditorInterfaceFieldsSidebarItem) GetWidgetId() string {
-	return s.WidgetId
-}
-
-// GetSettings returns the value of Settings.
-func (s *EditorInterfaceFieldsSidebarItem) GetSettings() jx.Raw {
-	return s.Settings
-}
-
-// GetDisabled returns the value of Disabled.
-func (s *EditorInterfaceFieldsSidebarItem) GetDisabled() OptBool {
-	return s.Disabled
-}
-
-// SetWidgetNamespace sets the value of WidgetNamespace.
-func (s *EditorInterfaceFieldsSidebarItem) SetWidgetNamespace(val string) {
-	s.WidgetNamespace = val
-}
-
-// SetWidgetId sets the value of WidgetId.
-func (s *EditorInterfaceFieldsSidebarItem) SetWidgetId(val string) {
-	s.WidgetId = val
-}
-
-// SetSettings sets the value of Settings.
-func (s *EditorInterfaceFieldsSidebarItem) SetSettings(val jx.Raw) {
-	s.Settings = val
-}
-
-// SetDisabled sets the value of Disabled.
-func (s *EditorInterfaceFieldsSidebarItem) SetDisabled(val OptBool) {
-	s.Disabled = val
 }
 
 type EditorInterfaceGroupControlsItem struct {
@@ -3385,20 +3385,15 @@ func (*EditorInterfaceStatusCode) putEditorInterfaceRes() {}
 // Merged schema.
 // Ref: #/EditorInterfaceSys
 type EditorInterfaceSys struct {
+	Space       SpaceLink       `json:"space"`
+	Environment EnvironmentLink `json:"environment"`
 	// Merged property.
 	Type        EditorInterfaceSysType `json:"type"`
-	Space       SpaceLink              `json:"space"`
-	Environment EnvironmentLink        `json:"environment"`
 	ID          string                 `json:"id"`
+	ContentType ContentTypeLink        `json:"contentType"`
 	Version     int                    `json:"version"`
 	CreatedAt   OptDateTime            `json:"createdAt"`
 	UpdatedAt   OptDateTime            `json:"updatedAt"`
-	ContentType ContentTypeLink        `json:"contentType"`
-}
-
-// GetType returns the value of Type.
-func (s *EditorInterfaceSys) GetType() EditorInterfaceSysType {
-	return s.Type
 }
 
 // GetSpace returns the value of Space.
@@ -3411,9 +3406,19 @@ func (s *EditorInterfaceSys) GetEnvironment() EnvironmentLink {
 	return s.Environment
 }
 
+// GetType returns the value of Type.
+func (s *EditorInterfaceSys) GetType() EditorInterfaceSysType {
+	return s.Type
+}
+
 // GetID returns the value of ID.
 func (s *EditorInterfaceSys) GetID() string {
 	return s.ID
+}
+
+// GetContentType returns the value of ContentType.
+func (s *EditorInterfaceSys) GetContentType() ContentTypeLink {
+	return s.ContentType
 }
 
 // GetVersion returns the value of Version.
@@ -3431,16 +3436,6 @@ func (s *EditorInterfaceSys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
-// GetContentType returns the value of ContentType.
-func (s *EditorInterfaceSys) GetContentType() ContentTypeLink {
-	return s.ContentType
-}
-
-// SetType sets the value of Type.
-func (s *EditorInterfaceSys) SetType(val EditorInterfaceSysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *EditorInterfaceSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -3451,9 +3446,19 @@ func (s *EditorInterfaceSys) SetEnvironment(val EnvironmentLink) {
 	s.Environment = val
 }
 
+// SetType sets the value of Type.
+func (s *EditorInterfaceSys) SetType(val EditorInterfaceSysType) {
+	s.Type = val
+}
+
 // SetID sets the value of ID.
 func (s *EditorInterfaceSys) SetID(val string) {
 	s.ID = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *EditorInterfaceSys) SetContentType(val ContentTypeLink) {
+	s.ContentType = val
 }
 
 // SetVersion sets the value of Version.
@@ -3469,11 +3474,6 @@ func (s *EditorInterfaceSys) SetCreatedAt(val OptDateTime) {
 // SetUpdatedAt sets the value of UpdatedAt.
 func (s *EditorInterfaceSys) SetUpdatedAt(val OptDateTime) {
 	s.UpdatedAt = val
-}
-
-// SetContentType sets the value of ContentType.
-func (s *EditorInterfaceSys) SetContentType(val ContentTypeLink) {
-	s.ContentType = val
 }
 
 // Merged schema.
@@ -3637,22 +3637,17 @@ func (*EntryStatusCode) putEntryRes()     {}
 // Merged schema.
 // Ref: #/EntrySys
 type EntrySys struct {
+	Space       SpaceLink       `json:"space"`
+	Environment EnvironmentLink `json:"environment"`
 	// Merged property.
 	Type             EntrySysType    `json:"type"`
-	Space            SpaceLink       `json:"space"`
-	Environment      EnvironmentLink `json:"environment"`
-	ContentType      ContentTypeLink `json:"contentType"`
 	ID               string          `json:"id"`
+	ContentType      ContentTypeLink `json:"contentType"`
 	Version          int             `json:"version"`
 	CreatedAt        OptDateTime     `json:"createdAt"`
 	UpdatedAt        OptDateTime     `json:"updatedAt"`
 	PublishedVersion OptInt          `json:"publishedVersion"`
 	PublishedAt      OptDateTime     `json:"publishedAt"`
-}
-
-// GetType returns the value of Type.
-func (s *EntrySys) GetType() EntrySysType {
-	return s.Type
 }
 
 // GetSpace returns the value of Space.
@@ -3665,14 +3660,19 @@ func (s *EntrySys) GetEnvironment() EnvironmentLink {
 	return s.Environment
 }
 
-// GetContentType returns the value of ContentType.
-func (s *EntrySys) GetContentType() ContentTypeLink {
-	return s.ContentType
+// GetType returns the value of Type.
+func (s *EntrySys) GetType() EntrySysType {
+	return s.Type
 }
 
 // GetID returns the value of ID.
 func (s *EntrySys) GetID() string {
 	return s.ID
+}
+
+// GetContentType returns the value of ContentType.
+func (s *EntrySys) GetContentType() ContentTypeLink {
+	return s.ContentType
 }
 
 // GetVersion returns the value of Version.
@@ -3700,11 +3700,6 @@ func (s *EntrySys) GetPublishedAt() OptDateTime {
 	return s.PublishedAt
 }
 
-// SetType sets the value of Type.
-func (s *EntrySys) SetType(val EntrySysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *EntrySys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -3715,14 +3710,19 @@ func (s *EntrySys) SetEnvironment(val EnvironmentLink) {
 	s.Environment = val
 }
 
-// SetContentType sets the value of ContentType.
-func (s *EntrySys) SetContentType(val ContentTypeLink) {
-	s.ContentType = val
+// SetType sets the value of Type.
+func (s *EntrySys) SetType(val EntrySysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.
 func (s *EntrySys) SetID(val string) {
 	s.ID = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *EntrySys) SetContentType(val ContentTypeLink) {
+	s.ContentType = val
 }
 
 // SetVersion sets the value of Version.
@@ -3890,23 +3890,23 @@ func (*EnvironmentAliasStatusCode) createOrUpdateEnvironmentAliasRes() {}
 // Merged schema.
 // Ref: #/EnvironmentAliasSys
 type EnvironmentAliasSys struct {
+	Space SpaceLink `json:"space"`
 	// Merged property.
 	Type      EnvironmentAliasSysType `json:"type"`
-	Space     SpaceLink               `json:"space"`
 	ID        string                  `json:"id"`
 	Version   int                     `json:"version"`
 	CreatedAt OptDateTime             `json:"createdAt"`
 	UpdatedAt OptDateTime             `json:"updatedAt"`
 }
 
-// GetType returns the value of Type.
-func (s *EnvironmentAliasSys) GetType() EnvironmentAliasSysType {
-	return s.Type
-}
-
 // GetSpace returns the value of Space.
 func (s *EnvironmentAliasSys) GetSpace() SpaceLink {
 	return s.Space
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentAliasSys) GetType() EnvironmentAliasSysType {
+	return s.Type
 }
 
 // GetID returns the value of ID.
@@ -3929,14 +3929,14 @@ func (s *EnvironmentAliasSys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
-// SetType sets the value of Type.
-func (s *EnvironmentAliasSys) SetType(val EnvironmentAliasSysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *EnvironmentAliasSys) SetSpace(val SpaceLink) {
 	s.Space = val
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentAliasSys) SetType(val EnvironmentAliasSysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.
@@ -4165,23 +4165,23 @@ func (*EnvironmentStatusCode) createOrUpdateEnvironmentRes() {}
 // Merged schema.
 // Ref: #/EnvironmentSys
 type EnvironmentSys struct {
+	Space SpaceLink `json:"space"`
 	// Merged property.
 	Type      EnvironmentSysType `json:"type"`
-	Space     SpaceLink          `json:"space"`
 	ID        string             `json:"id"`
 	Version   int                `json:"version"`
 	CreatedAt OptDateTime        `json:"createdAt"`
 	UpdatedAt OptDateTime        `json:"updatedAt"`
 }
 
-// GetType returns the value of Type.
-func (s *EnvironmentSys) GetType() EnvironmentSysType {
-	return s.Type
-}
-
 // GetSpace returns the value of Space.
 func (s *EnvironmentSys) GetSpace() SpaceLink {
 	return s.Space
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentSys) GetType() EnvironmentSysType {
+	return s.Type
 }
 
 // GetID returns the value of ID.
@@ -4204,14 +4204,14 @@ func (s *EnvironmentSys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
-// SetType sets the value of Type.
-func (s *EnvironmentSys) SetType(val EnvironmentSysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *EnvironmentSys) SetSpace(val SpaceLink) {
 	s.Space = val
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentSys) SetType(val EnvironmentSysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.
@@ -4407,6 +4407,162 @@ func (s *Extension) SetParameters(val jx.Raw) {
 
 func (*Extension) getExtensionRes() {}
 
+// Ref: #/ExtensionData
+type ExtensionData struct {
+	Extension  ExtensionDataExtension `json:"extension"`
+	Parameters jx.Raw                 `json:"parameters"`
+}
+
+// GetExtension returns the value of Extension.
+func (s *ExtensionData) GetExtension() ExtensionDataExtension {
+	return s.Extension
+}
+
+// GetParameters returns the value of Parameters.
+func (s *ExtensionData) GetParameters() jx.Raw {
+	return s.Parameters
+}
+
+// SetExtension sets the value of Extension.
+func (s *ExtensionData) SetExtension(val ExtensionDataExtension) {
+	s.Extension = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *ExtensionData) SetParameters(val jx.Raw) {
+	s.Parameters = val
+}
+
+type ExtensionDataExtension struct {
+	Name       string                                 `json:"name"`
+	Src        OptString                              `json:"src"`
+	Srcdoc     OptString                              `json:"srcdoc"`
+	FieldTypes []ExtensionDataExtensionFieldTypesItem `json:"fieldTypes"`
+	Sidebar    OptBool                                `json:"sidebar"`
+	Parameters OptAppDefinitionParameters             `json:"parameters"`
+}
+
+// GetName returns the value of Name.
+func (s *ExtensionDataExtension) GetName() string {
+	return s.Name
+}
+
+// GetSrc returns the value of Src.
+func (s *ExtensionDataExtension) GetSrc() OptString {
+	return s.Src
+}
+
+// GetSrcdoc returns the value of Srcdoc.
+func (s *ExtensionDataExtension) GetSrcdoc() OptString {
+	return s.Srcdoc
+}
+
+// GetFieldTypes returns the value of FieldTypes.
+func (s *ExtensionDataExtension) GetFieldTypes() []ExtensionDataExtensionFieldTypesItem {
+	return s.FieldTypes
+}
+
+// GetSidebar returns the value of Sidebar.
+func (s *ExtensionDataExtension) GetSidebar() OptBool {
+	return s.Sidebar
+}
+
+// GetParameters returns the value of Parameters.
+func (s *ExtensionDataExtension) GetParameters() OptAppDefinitionParameters {
+	return s.Parameters
+}
+
+// SetName sets the value of Name.
+func (s *ExtensionDataExtension) SetName(val string) {
+	s.Name = val
+}
+
+// SetSrc sets the value of Src.
+func (s *ExtensionDataExtension) SetSrc(val OptString) {
+	s.Src = val
+}
+
+// SetSrcdoc sets the value of Srcdoc.
+func (s *ExtensionDataExtension) SetSrcdoc(val OptString) {
+	s.Srcdoc = val
+}
+
+// SetFieldTypes sets the value of FieldTypes.
+func (s *ExtensionDataExtension) SetFieldTypes(val []ExtensionDataExtensionFieldTypesItem) {
+	s.FieldTypes = val
+}
+
+// SetSidebar sets the value of Sidebar.
+func (s *ExtensionDataExtension) SetSidebar(val OptBool) {
+	s.Sidebar = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *ExtensionDataExtension) SetParameters(val OptAppDefinitionParameters) {
+	s.Parameters = val
+}
+
+type ExtensionDataExtensionFieldTypesItem struct {
+	Type     string                                       `json:"type"`
+	LinkType OptString                                    `json:"linkType"`
+	Items    OptExtensionDataExtensionFieldTypesItemItems `json:"items"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionDataExtensionFieldTypesItem) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ExtensionDataExtensionFieldTypesItem) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// GetItems returns the value of Items.
+func (s *ExtensionDataExtensionFieldTypesItem) GetItems() OptExtensionDataExtensionFieldTypesItemItems {
+	return s.Items
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionDataExtensionFieldTypesItem) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ExtensionDataExtensionFieldTypesItem) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
+// SetItems sets the value of Items.
+func (s *ExtensionDataExtensionFieldTypesItem) SetItems(val OptExtensionDataExtensionFieldTypesItemItems) {
+	s.Items = val
+}
+
+type ExtensionDataExtensionFieldTypesItemItems struct {
+	Type     string    `json:"type"`
+	LinkType OptString `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionDataExtensionFieldTypesItemItems) GetType() string {
+	return s.Type
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *ExtensionDataExtensionFieldTypesItemItems) GetLinkType() OptString {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionDataExtensionFieldTypesItemItems) SetType(val string) {
+	s.Type = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *ExtensionDataExtensionFieldTypesItemItems) SetLinkType(val OptString) {
+	s.LinkType = val
+}
+
 type ExtensionExtension struct {
 	Name       string                             `json:"name"`
 	Src        OptString                          `json:"src"`
@@ -4537,162 +4693,6 @@ func (s *ExtensionExtensionFieldTypesItemItems) SetLinkType(val OptString) {
 	s.LinkType = val
 }
 
-// Ref: #/ExtensionFields
-type ExtensionFields struct {
-	Extension  ExtensionFieldsExtension `json:"extension"`
-	Parameters jx.Raw                   `json:"parameters"`
-}
-
-// GetExtension returns the value of Extension.
-func (s *ExtensionFields) GetExtension() ExtensionFieldsExtension {
-	return s.Extension
-}
-
-// GetParameters returns the value of Parameters.
-func (s *ExtensionFields) GetParameters() jx.Raw {
-	return s.Parameters
-}
-
-// SetExtension sets the value of Extension.
-func (s *ExtensionFields) SetExtension(val ExtensionFieldsExtension) {
-	s.Extension = val
-}
-
-// SetParameters sets the value of Parameters.
-func (s *ExtensionFields) SetParameters(val jx.Raw) {
-	s.Parameters = val
-}
-
-type ExtensionFieldsExtension struct {
-	Name       string                                   `json:"name"`
-	Src        OptString                                `json:"src"`
-	Srcdoc     OptString                                `json:"srcdoc"`
-	FieldTypes []ExtensionFieldsExtensionFieldTypesItem `json:"fieldTypes"`
-	Sidebar    OptBool                                  `json:"sidebar"`
-	Parameters OptAppDefinitionParameters               `json:"parameters"`
-}
-
-// GetName returns the value of Name.
-func (s *ExtensionFieldsExtension) GetName() string {
-	return s.Name
-}
-
-// GetSrc returns the value of Src.
-func (s *ExtensionFieldsExtension) GetSrc() OptString {
-	return s.Src
-}
-
-// GetSrcdoc returns the value of Srcdoc.
-func (s *ExtensionFieldsExtension) GetSrcdoc() OptString {
-	return s.Srcdoc
-}
-
-// GetFieldTypes returns the value of FieldTypes.
-func (s *ExtensionFieldsExtension) GetFieldTypes() []ExtensionFieldsExtensionFieldTypesItem {
-	return s.FieldTypes
-}
-
-// GetSidebar returns the value of Sidebar.
-func (s *ExtensionFieldsExtension) GetSidebar() OptBool {
-	return s.Sidebar
-}
-
-// GetParameters returns the value of Parameters.
-func (s *ExtensionFieldsExtension) GetParameters() OptAppDefinitionParameters {
-	return s.Parameters
-}
-
-// SetName sets the value of Name.
-func (s *ExtensionFieldsExtension) SetName(val string) {
-	s.Name = val
-}
-
-// SetSrc sets the value of Src.
-func (s *ExtensionFieldsExtension) SetSrc(val OptString) {
-	s.Src = val
-}
-
-// SetSrcdoc sets the value of Srcdoc.
-func (s *ExtensionFieldsExtension) SetSrcdoc(val OptString) {
-	s.Srcdoc = val
-}
-
-// SetFieldTypes sets the value of FieldTypes.
-func (s *ExtensionFieldsExtension) SetFieldTypes(val []ExtensionFieldsExtensionFieldTypesItem) {
-	s.FieldTypes = val
-}
-
-// SetSidebar sets the value of Sidebar.
-func (s *ExtensionFieldsExtension) SetSidebar(val OptBool) {
-	s.Sidebar = val
-}
-
-// SetParameters sets the value of Parameters.
-func (s *ExtensionFieldsExtension) SetParameters(val OptAppDefinitionParameters) {
-	s.Parameters = val
-}
-
-type ExtensionFieldsExtensionFieldTypesItem struct {
-	Type     string                                         `json:"type"`
-	LinkType OptString                                      `json:"linkType"`
-	Items    OptExtensionFieldsExtensionFieldTypesItemItems `json:"items"`
-}
-
-// GetType returns the value of Type.
-func (s *ExtensionFieldsExtensionFieldTypesItem) GetType() string {
-	return s.Type
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *ExtensionFieldsExtensionFieldTypesItem) GetLinkType() OptString {
-	return s.LinkType
-}
-
-// GetItems returns the value of Items.
-func (s *ExtensionFieldsExtensionFieldTypesItem) GetItems() OptExtensionFieldsExtensionFieldTypesItemItems {
-	return s.Items
-}
-
-// SetType sets the value of Type.
-func (s *ExtensionFieldsExtensionFieldTypesItem) SetType(val string) {
-	s.Type = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *ExtensionFieldsExtensionFieldTypesItem) SetLinkType(val OptString) {
-	s.LinkType = val
-}
-
-// SetItems sets the value of Items.
-func (s *ExtensionFieldsExtensionFieldTypesItem) SetItems(val OptExtensionFieldsExtensionFieldTypesItemItems) {
-	s.Items = val
-}
-
-type ExtensionFieldsExtensionFieldTypesItemItems struct {
-	Type     string    `json:"type"`
-	LinkType OptString `json:"linkType"`
-}
-
-// GetType returns the value of Type.
-func (s *ExtensionFieldsExtensionFieldTypesItemItems) GetType() string {
-	return s.Type
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *ExtensionFieldsExtensionFieldTypesItemItems) GetLinkType() OptString {
-	return s.LinkType
-}
-
-// SetType sets the value of Type.
-func (s *ExtensionFieldsExtensionFieldTypesItemItems) SetType(val string) {
-	s.Type = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *ExtensionFieldsExtensionFieldTypesItemItems) SetLinkType(val OptString) {
-	s.LinkType = val
-}
-
 // ExtensionStatusCode wraps Extension with StatusCode.
 type ExtensionStatusCode struct {
 	StatusCode int
@@ -4724,19 +4724,14 @@ func (*ExtensionStatusCode) putExtensionRes() {}
 // Merged schema.
 // Ref: #/ExtensionSys
 type ExtensionSys struct {
+	Space       SpaceLink       `json:"space"`
+	Environment EnvironmentLink `json:"environment"`
 	// Merged property.
-	Type        ExtensionSysType `json:"type"`
-	Space       SpaceLink        `json:"space"`
-	Environment EnvironmentLink  `json:"environment"`
-	ID          string           `json:"id"`
-	Version     int              `json:"version"`
-	CreatedAt   OptDateTime      `json:"createdAt"`
-	UpdatedAt   OptDateTime      `json:"updatedAt"`
-}
-
-// GetType returns the value of Type.
-func (s *ExtensionSys) GetType() ExtensionSysType {
-	return s.Type
+	Type      ExtensionSysType `json:"type"`
+	ID        string           `json:"id"`
+	Version   int              `json:"version"`
+	CreatedAt OptDateTime      `json:"createdAt"`
+	UpdatedAt OptDateTime      `json:"updatedAt"`
 }
 
 // GetSpace returns the value of Space.
@@ -4747,6 +4742,11 @@ func (s *ExtensionSys) GetSpace() SpaceLink {
 // GetEnvironment returns the value of Environment.
 func (s *ExtensionSys) GetEnvironment() EnvironmentLink {
 	return s.Environment
+}
+
+// GetType returns the value of Type.
+func (s *ExtensionSys) GetType() ExtensionSysType {
+	return s.Type
 }
 
 // GetID returns the value of ID.
@@ -4769,11 +4769,6 @@ func (s *ExtensionSys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
-// SetType sets the value of Type.
-func (s *ExtensionSys) SetType(val ExtensionSysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *ExtensionSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -4782,6 +4777,11 @@ func (s *ExtensionSys) SetSpace(val SpaceLink) {
 // SetEnvironment sets the value of Environment.
 func (s *ExtensionSys) SetEnvironment(val EnvironmentLink) {
 	s.Environment = val
+}
+
+// SetType sets the value of Type.
+func (s *ExtensionSys) SetType(val ExtensionSysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.
@@ -5182,38 +5182,38 @@ func (o OptAppBundleLink) Or(d AppBundleLink) AppBundleLink {
 	return d
 }
 
-// NewOptAppDefinitionFieldsLocationsItemFieldTypesItemItems returns new OptAppDefinitionFieldsLocationsItemFieldTypesItemItems with value set to v.
-func NewOptAppDefinitionFieldsLocationsItemFieldTypesItemItems(v AppDefinitionFieldsLocationsItemFieldTypesItemItems) OptAppDefinitionFieldsLocationsItemFieldTypesItemItems {
-	return OptAppDefinitionFieldsLocationsItemFieldTypesItemItems{
+// NewOptAppDefinitionDataLocationsItemFieldTypesItemItems returns new OptAppDefinitionDataLocationsItemFieldTypesItemItems with value set to v.
+func NewOptAppDefinitionDataLocationsItemFieldTypesItemItems(v AppDefinitionDataLocationsItemFieldTypesItemItems) OptAppDefinitionDataLocationsItemFieldTypesItemItems {
+	return OptAppDefinitionDataLocationsItemFieldTypesItemItems{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptAppDefinitionFieldsLocationsItemFieldTypesItemItems is optional AppDefinitionFieldsLocationsItemFieldTypesItemItems.
-type OptAppDefinitionFieldsLocationsItemFieldTypesItemItems struct {
-	Value AppDefinitionFieldsLocationsItemFieldTypesItemItems
+// OptAppDefinitionDataLocationsItemFieldTypesItemItems is optional AppDefinitionDataLocationsItemFieldTypesItemItems.
+type OptAppDefinitionDataLocationsItemFieldTypesItemItems struct {
+	Value AppDefinitionDataLocationsItemFieldTypesItemItems
 	Set   bool
 }
 
-// IsSet returns true if OptAppDefinitionFieldsLocationsItemFieldTypesItemItems was set.
-func (o OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) IsSet() bool { return o.Set }
+// IsSet returns true if OptAppDefinitionDataLocationsItemFieldTypesItemItems was set.
+func (o OptAppDefinitionDataLocationsItemFieldTypesItemItems) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) Reset() {
-	var v AppDefinitionFieldsLocationsItemFieldTypesItemItems
+func (o *OptAppDefinitionDataLocationsItemFieldTypesItemItems) Reset() {
+	var v AppDefinitionDataLocationsItemFieldTypesItemItems
 	o.Value = v
 	o.Set = false
 }
 
 // SetTo sets value to v.
-func (o *OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) SetTo(v AppDefinitionFieldsLocationsItemFieldTypesItemItems) {
+func (o *OptAppDefinitionDataLocationsItemFieldTypesItemItems) SetTo(v AppDefinitionDataLocationsItemFieldTypesItemItems) {
 	o.Set = true
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) Get() (v AppDefinitionFieldsLocationsItemFieldTypesItemItems, ok bool) {
+func (o OptAppDefinitionDataLocationsItemFieldTypesItemItems) Get() (v AppDefinitionDataLocationsItemFieldTypesItemItems, ok bool) {
 	if !o.Set {
 		return v, false
 	}
@@ -5221,45 +5221,45 @@ func (o OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) Get() (v AppDefi
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptAppDefinitionFieldsLocationsItemFieldTypesItemItems) Or(d AppDefinitionFieldsLocationsItemFieldTypesItemItems) AppDefinitionFieldsLocationsItemFieldTypesItemItems {
+func (o OptAppDefinitionDataLocationsItemFieldTypesItemItems) Or(d AppDefinitionDataLocationsItemFieldTypesItemItems) AppDefinitionDataLocationsItemFieldTypesItemItems {
 	if v, ok := o.Get(); ok {
 		return v
 	}
 	return d
 }
 
-// NewOptAppDefinitionFieldsLocationsItemNavigationItem returns new OptAppDefinitionFieldsLocationsItemNavigationItem with value set to v.
-func NewOptAppDefinitionFieldsLocationsItemNavigationItem(v AppDefinitionFieldsLocationsItemNavigationItem) OptAppDefinitionFieldsLocationsItemNavigationItem {
-	return OptAppDefinitionFieldsLocationsItemNavigationItem{
+// NewOptAppDefinitionDataLocationsItemNavigationItem returns new OptAppDefinitionDataLocationsItemNavigationItem with value set to v.
+func NewOptAppDefinitionDataLocationsItemNavigationItem(v AppDefinitionDataLocationsItemNavigationItem) OptAppDefinitionDataLocationsItemNavigationItem {
+	return OptAppDefinitionDataLocationsItemNavigationItem{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptAppDefinitionFieldsLocationsItemNavigationItem is optional AppDefinitionFieldsLocationsItemNavigationItem.
-type OptAppDefinitionFieldsLocationsItemNavigationItem struct {
-	Value AppDefinitionFieldsLocationsItemNavigationItem
+// OptAppDefinitionDataLocationsItemNavigationItem is optional AppDefinitionDataLocationsItemNavigationItem.
+type OptAppDefinitionDataLocationsItemNavigationItem struct {
+	Value AppDefinitionDataLocationsItemNavigationItem
 	Set   bool
 }
 
-// IsSet returns true if OptAppDefinitionFieldsLocationsItemNavigationItem was set.
-func (o OptAppDefinitionFieldsLocationsItemNavigationItem) IsSet() bool { return o.Set }
+// IsSet returns true if OptAppDefinitionDataLocationsItemNavigationItem was set.
+func (o OptAppDefinitionDataLocationsItemNavigationItem) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptAppDefinitionFieldsLocationsItemNavigationItem) Reset() {
-	var v AppDefinitionFieldsLocationsItemNavigationItem
+func (o *OptAppDefinitionDataLocationsItemNavigationItem) Reset() {
+	var v AppDefinitionDataLocationsItemNavigationItem
 	o.Value = v
 	o.Set = false
 }
 
 // SetTo sets value to v.
-func (o *OptAppDefinitionFieldsLocationsItemNavigationItem) SetTo(v AppDefinitionFieldsLocationsItemNavigationItem) {
+func (o *OptAppDefinitionDataLocationsItemNavigationItem) SetTo(v AppDefinitionDataLocationsItemNavigationItem) {
 	o.Set = true
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptAppDefinitionFieldsLocationsItemNavigationItem) Get() (v AppDefinitionFieldsLocationsItemNavigationItem, ok bool) {
+func (o OptAppDefinitionDataLocationsItemNavigationItem) Get() (v AppDefinitionDataLocationsItemNavigationItem, ok bool) {
 	if !o.Set {
 		return v, false
 	}
@@ -5267,7 +5267,7 @@ func (o OptAppDefinitionFieldsLocationsItemNavigationItem) Get() (v AppDefinitio
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptAppDefinitionFieldsLocationsItemNavigationItem) Or(d AppDefinitionFieldsLocationsItemNavigationItem) AppDefinitionFieldsLocationsItemNavigationItem {
+func (o OptAppDefinitionDataLocationsItemNavigationItem) Or(d AppDefinitionDataLocationsItemNavigationItem) AppDefinitionDataLocationsItemNavigationItem {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -5596,38 +5596,38 @@ func (o OptContentTypeMetadata) Or(d ContentTypeMetadata) ContentTypeMetadata {
 	return d
 }
 
-// NewOptContentTypeRequestFieldsFieldsItemItems returns new OptContentTypeRequestFieldsFieldsItemItems with value set to v.
-func NewOptContentTypeRequestFieldsFieldsItemItems(v ContentTypeRequestFieldsFieldsItemItems) OptContentTypeRequestFieldsFieldsItemItems {
-	return OptContentTypeRequestFieldsFieldsItemItems{
+// NewOptContentTypeRequestDataFieldsItemItems returns new OptContentTypeRequestDataFieldsItemItems with value set to v.
+func NewOptContentTypeRequestDataFieldsItemItems(v ContentTypeRequestDataFieldsItemItems) OptContentTypeRequestDataFieldsItemItems {
+	return OptContentTypeRequestDataFieldsItemItems{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptContentTypeRequestFieldsFieldsItemItems is optional ContentTypeRequestFieldsFieldsItemItems.
-type OptContentTypeRequestFieldsFieldsItemItems struct {
-	Value ContentTypeRequestFieldsFieldsItemItems
+// OptContentTypeRequestDataFieldsItemItems is optional ContentTypeRequestDataFieldsItemItems.
+type OptContentTypeRequestDataFieldsItemItems struct {
+	Value ContentTypeRequestDataFieldsItemItems
 	Set   bool
 }
 
-// IsSet returns true if OptContentTypeRequestFieldsFieldsItemItems was set.
-func (o OptContentTypeRequestFieldsFieldsItemItems) IsSet() bool { return o.Set }
+// IsSet returns true if OptContentTypeRequestDataFieldsItemItems was set.
+func (o OptContentTypeRequestDataFieldsItemItems) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptContentTypeRequestFieldsFieldsItemItems) Reset() {
-	var v ContentTypeRequestFieldsFieldsItemItems
+func (o *OptContentTypeRequestDataFieldsItemItems) Reset() {
+	var v ContentTypeRequestDataFieldsItemItems
 	o.Value = v
 	o.Set = false
 }
 
 // SetTo sets value to v.
-func (o *OptContentTypeRequestFieldsFieldsItemItems) SetTo(v ContentTypeRequestFieldsFieldsItemItems) {
+func (o *OptContentTypeRequestDataFieldsItemItems) SetTo(v ContentTypeRequestDataFieldsItemItems) {
 	o.Set = true
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptContentTypeRequestFieldsFieldsItemItems) Get() (v ContentTypeRequestFieldsFieldsItemItems, ok bool) {
+func (o OptContentTypeRequestDataFieldsItemItems) Get() (v ContentTypeRequestDataFieldsItemItems, ok bool) {
 	if !o.Set {
 		return v, false
 	}
@@ -5635,7 +5635,7 @@ func (o OptContentTypeRequestFieldsFieldsItemItems) Get() (v ContentTypeRequestF
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptContentTypeRequestFieldsFieldsItemItems) Or(d ContentTypeRequestFieldsFieldsItemItems) ContentTypeRequestFieldsFieldsItemItems {
+func (o OptContentTypeRequestDataFieldsItemItems) Or(d ContentTypeRequestDataFieldsItemItems) ContentTypeRequestDataFieldsItemItems {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -5780,6 +5780,52 @@ func (o OptEntryMetadata) Or(d EntryMetadata) EntryMetadata {
 	return d
 }
 
+// NewOptExtensionDataExtensionFieldTypesItemItems returns new OptExtensionDataExtensionFieldTypesItemItems with value set to v.
+func NewOptExtensionDataExtensionFieldTypesItemItems(v ExtensionDataExtensionFieldTypesItemItems) OptExtensionDataExtensionFieldTypesItemItems {
+	return OptExtensionDataExtensionFieldTypesItemItems{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptExtensionDataExtensionFieldTypesItemItems is optional ExtensionDataExtensionFieldTypesItemItems.
+type OptExtensionDataExtensionFieldTypesItemItems struct {
+	Value ExtensionDataExtensionFieldTypesItemItems
+	Set   bool
+}
+
+// IsSet returns true if OptExtensionDataExtensionFieldTypesItemItems was set.
+func (o OptExtensionDataExtensionFieldTypesItemItems) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptExtensionDataExtensionFieldTypesItemItems) Reset() {
+	var v ExtensionDataExtensionFieldTypesItemItems
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptExtensionDataExtensionFieldTypesItemItems) SetTo(v ExtensionDataExtensionFieldTypesItemItems) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptExtensionDataExtensionFieldTypesItemItems) Get() (v ExtensionDataExtensionFieldTypesItemItems, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptExtensionDataExtensionFieldTypesItemItems) Or(d ExtensionDataExtensionFieldTypesItemItems) ExtensionDataExtensionFieldTypesItemItems {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptExtensionExtensionFieldTypesItemItems returns new OptExtensionExtensionFieldTypesItemItems with value set to v.
 func NewOptExtensionExtensionFieldTypesItemItems(v ExtensionExtensionFieldTypesItemItems) OptExtensionExtensionFieldTypesItemItems {
 	return OptExtensionExtensionFieldTypesItemItems{
@@ -5820,52 +5866,6 @@ func (o OptExtensionExtensionFieldTypesItemItems) Get() (v ExtensionExtensionFie
 
 // Or returns value if set, or given parameter if does not.
 func (o OptExtensionExtensionFieldTypesItemItems) Or(d ExtensionExtensionFieldTypesItemItems) ExtensionExtensionFieldTypesItemItems {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptExtensionFieldsExtensionFieldTypesItemItems returns new OptExtensionFieldsExtensionFieldTypesItemItems with value set to v.
-func NewOptExtensionFieldsExtensionFieldTypesItemItems(v ExtensionFieldsExtensionFieldTypesItemItems) OptExtensionFieldsExtensionFieldTypesItemItems {
-	return OptExtensionFieldsExtensionFieldTypesItemItems{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptExtensionFieldsExtensionFieldTypesItemItems is optional ExtensionFieldsExtensionFieldTypesItemItems.
-type OptExtensionFieldsExtensionFieldTypesItemItems struct {
-	Value ExtensionFieldsExtensionFieldTypesItemItems
-	Set   bool
-}
-
-// IsSet returns true if OptExtensionFieldsExtensionFieldTypesItemItems was set.
-func (o OptExtensionFieldsExtensionFieldTypesItemItems) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptExtensionFieldsExtensionFieldTypesItemItems) Reset() {
-	var v ExtensionFieldsExtensionFieldTypesItemItems
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptExtensionFieldsExtensionFieldTypesItemItems) SetTo(v ExtensionFieldsExtensionFieldTypesItemItems) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptExtensionFieldsExtensionFieldTypesItemItems) Get() (v ExtensionFieldsExtensionFieldTypesItemItems, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptExtensionFieldsExtensionFieldTypesItemItems) Or(d ExtensionFieldsExtensionFieldTypesItemItems) ExtensionFieldsExtensionFieldTypesItemItems {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -6044,6 +6044,195 @@ func (o OptNilEditorInterfaceControlsItemArray) Or(d []EditorInterfaceControlsIt
 	return d
 }
 
+// NewOptNilEditorInterfaceDataControlsItemArray returns new OptNilEditorInterfaceDataControlsItemArray with value set to v.
+func NewOptNilEditorInterfaceDataControlsItemArray(v []EditorInterfaceDataControlsItem) OptNilEditorInterfaceDataControlsItemArray {
+	return OptNilEditorInterfaceDataControlsItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceDataControlsItemArray is optional nullable []EditorInterfaceDataControlsItem.
+type OptNilEditorInterfaceDataControlsItemArray struct {
+	Value []EditorInterfaceDataControlsItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceDataControlsItemArray was set.
+func (o OptNilEditorInterfaceDataControlsItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceDataControlsItemArray) Reset() {
+	var v []EditorInterfaceDataControlsItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceDataControlsItemArray) SetTo(v []EditorInterfaceDataControlsItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilEditorInterfaceDataControlsItemArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilEditorInterfaceDataControlsItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceDataControlsItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceDataControlsItemArray) Get() (v []EditorInterfaceDataControlsItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceDataControlsItemArray) Or(d []EditorInterfaceDataControlsItem) []EditorInterfaceDataControlsItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilEditorInterfaceDataGroupControlsItemArray returns new OptNilEditorInterfaceDataGroupControlsItemArray with value set to v.
+func NewOptNilEditorInterfaceDataGroupControlsItemArray(v []EditorInterfaceDataGroupControlsItem) OptNilEditorInterfaceDataGroupControlsItemArray {
+	return OptNilEditorInterfaceDataGroupControlsItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceDataGroupControlsItemArray is optional nullable []EditorInterfaceDataGroupControlsItem.
+type OptNilEditorInterfaceDataGroupControlsItemArray struct {
+	Value []EditorInterfaceDataGroupControlsItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceDataGroupControlsItemArray was set.
+func (o OptNilEditorInterfaceDataGroupControlsItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceDataGroupControlsItemArray) Reset() {
+	var v []EditorInterfaceDataGroupControlsItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceDataGroupControlsItemArray) SetTo(v []EditorInterfaceDataGroupControlsItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilEditorInterfaceDataGroupControlsItemArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilEditorInterfaceDataGroupControlsItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceDataGroupControlsItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceDataGroupControlsItemArray) Get() (v []EditorInterfaceDataGroupControlsItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceDataGroupControlsItemArray) Or(d []EditorInterfaceDataGroupControlsItem) []EditorInterfaceDataGroupControlsItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilEditorInterfaceDataSidebarItemArray returns new OptNilEditorInterfaceDataSidebarItemArray with value set to v.
+func NewOptNilEditorInterfaceDataSidebarItemArray(v []EditorInterfaceDataSidebarItem) OptNilEditorInterfaceDataSidebarItemArray {
+	return OptNilEditorInterfaceDataSidebarItemArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilEditorInterfaceDataSidebarItemArray is optional nullable []EditorInterfaceDataSidebarItem.
+type OptNilEditorInterfaceDataSidebarItemArray struct {
+	Value []EditorInterfaceDataSidebarItem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilEditorInterfaceDataSidebarItemArray was set.
+func (o OptNilEditorInterfaceDataSidebarItemArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilEditorInterfaceDataSidebarItemArray) Reset() {
+	var v []EditorInterfaceDataSidebarItem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilEditorInterfaceDataSidebarItemArray) SetTo(v []EditorInterfaceDataSidebarItem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilEditorInterfaceDataSidebarItemArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilEditorInterfaceDataSidebarItemArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []EditorInterfaceDataSidebarItem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilEditorInterfaceDataSidebarItemArray) Get() (v []EditorInterfaceDataSidebarItem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilEditorInterfaceDataSidebarItemArray) Or(d []EditorInterfaceDataSidebarItem) []EditorInterfaceDataSidebarItem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilEditorInterfaceEditorLayoutItemArray returns new OptNilEditorInterfaceEditorLayoutItemArray with value set to v.
 func NewOptNilEditorInterfaceEditorLayoutItemArray(v []EditorInterfaceEditorLayoutItem) OptNilEditorInterfaceEditorLayoutItemArray {
 	return OptNilEditorInterfaceEditorLayoutItemArray{
@@ -6101,195 +6290,6 @@ func (o OptNilEditorInterfaceEditorLayoutItemArray) Get() (v []EditorInterfaceEd
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilEditorInterfaceEditorLayoutItemArray) Or(d []EditorInterfaceEditorLayoutItem) []EditorInterfaceEditorLayoutItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilEditorInterfaceFieldsControlsItemArray returns new OptNilEditorInterfaceFieldsControlsItemArray with value set to v.
-func NewOptNilEditorInterfaceFieldsControlsItemArray(v []EditorInterfaceFieldsControlsItem) OptNilEditorInterfaceFieldsControlsItemArray {
-	return OptNilEditorInterfaceFieldsControlsItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilEditorInterfaceFieldsControlsItemArray is optional nullable []EditorInterfaceFieldsControlsItem.
-type OptNilEditorInterfaceFieldsControlsItemArray struct {
-	Value []EditorInterfaceFieldsControlsItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilEditorInterfaceFieldsControlsItemArray was set.
-func (o OptNilEditorInterfaceFieldsControlsItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilEditorInterfaceFieldsControlsItemArray) Reset() {
-	var v []EditorInterfaceFieldsControlsItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilEditorInterfaceFieldsControlsItemArray) SetTo(v []EditorInterfaceFieldsControlsItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilEditorInterfaceFieldsControlsItemArray) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilEditorInterfaceFieldsControlsItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []EditorInterfaceFieldsControlsItem
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilEditorInterfaceFieldsControlsItemArray) Get() (v []EditorInterfaceFieldsControlsItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilEditorInterfaceFieldsControlsItemArray) Or(d []EditorInterfaceFieldsControlsItem) []EditorInterfaceFieldsControlsItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilEditorInterfaceFieldsGroupControlsItemArray returns new OptNilEditorInterfaceFieldsGroupControlsItemArray with value set to v.
-func NewOptNilEditorInterfaceFieldsGroupControlsItemArray(v []EditorInterfaceFieldsGroupControlsItem) OptNilEditorInterfaceFieldsGroupControlsItemArray {
-	return OptNilEditorInterfaceFieldsGroupControlsItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilEditorInterfaceFieldsGroupControlsItemArray is optional nullable []EditorInterfaceFieldsGroupControlsItem.
-type OptNilEditorInterfaceFieldsGroupControlsItemArray struct {
-	Value []EditorInterfaceFieldsGroupControlsItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilEditorInterfaceFieldsGroupControlsItemArray was set.
-func (o OptNilEditorInterfaceFieldsGroupControlsItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilEditorInterfaceFieldsGroupControlsItemArray) Reset() {
-	var v []EditorInterfaceFieldsGroupControlsItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilEditorInterfaceFieldsGroupControlsItemArray) SetTo(v []EditorInterfaceFieldsGroupControlsItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilEditorInterfaceFieldsGroupControlsItemArray) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilEditorInterfaceFieldsGroupControlsItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []EditorInterfaceFieldsGroupControlsItem
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilEditorInterfaceFieldsGroupControlsItemArray) Get() (v []EditorInterfaceFieldsGroupControlsItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilEditorInterfaceFieldsGroupControlsItemArray) Or(d []EditorInterfaceFieldsGroupControlsItem) []EditorInterfaceFieldsGroupControlsItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilEditorInterfaceFieldsSidebarItemArray returns new OptNilEditorInterfaceFieldsSidebarItemArray with value set to v.
-func NewOptNilEditorInterfaceFieldsSidebarItemArray(v []EditorInterfaceFieldsSidebarItem) OptNilEditorInterfaceFieldsSidebarItemArray {
-	return OptNilEditorInterfaceFieldsSidebarItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilEditorInterfaceFieldsSidebarItemArray is optional nullable []EditorInterfaceFieldsSidebarItem.
-type OptNilEditorInterfaceFieldsSidebarItemArray struct {
-	Value []EditorInterfaceFieldsSidebarItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilEditorInterfaceFieldsSidebarItemArray was set.
-func (o OptNilEditorInterfaceFieldsSidebarItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilEditorInterfaceFieldsSidebarItemArray) Reset() {
-	var v []EditorInterfaceFieldsSidebarItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilEditorInterfaceFieldsSidebarItemArray) SetTo(v []EditorInterfaceFieldsSidebarItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilEditorInterfaceFieldsSidebarItemArray) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilEditorInterfaceFieldsSidebarItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []EditorInterfaceFieldsSidebarItem
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilEditorInterfaceFieldsSidebarItemArray) Get() (v []EditorInterfaceFieldsSidebarItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilEditorInterfaceFieldsSidebarItemArray) Or(d []EditorInterfaceFieldsSidebarItem) []EditorInterfaceFieldsSidebarItem {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -6611,52 +6611,52 @@ func (o OptNilString) Or(d string) string {
 	return d
 }
 
-// NewOptNilWebhookDefinitionFieldsTransformation returns new OptNilWebhookDefinitionFieldsTransformation with value set to v.
-func NewOptNilWebhookDefinitionFieldsTransformation(v WebhookDefinitionFieldsTransformation) OptNilWebhookDefinitionFieldsTransformation {
-	return OptNilWebhookDefinitionFieldsTransformation{
+// NewOptNilWebhookDefinitionDataTransformation returns new OptNilWebhookDefinitionDataTransformation with value set to v.
+func NewOptNilWebhookDefinitionDataTransformation(v WebhookDefinitionDataTransformation) OptNilWebhookDefinitionDataTransformation {
+	return OptNilWebhookDefinitionDataTransformation{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptNilWebhookDefinitionFieldsTransformation is optional nullable WebhookDefinitionFieldsTransformation.
-type OptNilWebhookDefinitionFieldsTransformation struct {
-	Value WebhookDefinitionFieldsTransformation
+// OptNilWebhookDefinitionDataTransformation is optional nullable WebhookDefinitionDataTransformation.
+type OptNilWebhookDefinitionDataTransformation struct {
+	Value WebhookDefinitionDataTransformation
 	Set   bool
 	Null  bool
 }
 
-// IsSet returns true if OptNilWebhookDefinitionFieldsTransformation was set.
-func (o OptNilWebhookDefinitionFieldsTransformation) IsSet() bool { return o.Set }
+// IsSet returns true if OptNilWebhookDefinitionDataTransformation was set.
+func (o OptNilWebhookDefinitionDataTransformation) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptNilWebhookDefinitionFieldsTransformation) Reset() {
-	var v WebhookDefinitionFieldsTransformation
+func (o *OptNilWebhookDefinitionDataTransformation) Reset() {
+	var v WebhookDefinitionDataTransformation
 	o.Value = v
 	o.Set = false
 	o.Null = false
 }
 
 // SetTo sets value to v.
-func (o *OptNilWebhookDefinitionFieldsTransformation) SetTo(v WebhookDefinitionFieldsTransformation) {
+func (o *OptNilWebhookDefinitionDataTransformation) SetTo(v WebhookDefinitionDataTransformation) {
 	o.Set = true
 	o.Null = false
 	o.Value = v
 }
 
 // IsNull returns true if value is Null.
-func (o OptNilWebhookDefinitionFieldsTransformation) IsNull() bool { return o.Null }
+func (o OptNilWebhookDefinitionDataTransformation) IsNull() bool { return o.Null }
 
 // SetToNull sets value to null.
-func (o *OptNilWebhookDefinitionFieldsTransformation) SetToNull() {
+func (o *OptNilWebhookDefinitionDataTransformation) SetToNull() {
 	o.Set = true
 	o.Null = true
-	var v WebhookDefinitionFieldsTransformation
+	var v WebhookDefinitionDataTransformation
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptNilWebhookDefinitionFieldsTransformation) Get() (v WebhookDefinitionFieldsTransformation, ok bool) {
+func (o OptNilWebhookDefinitionDataTransformation) Get() (v WebhookDefinitionDataTransformation, ok bool) {
 	if o.Null {
 		return v, false
 	}
@@ -6667,7 +6667,7 @@ func (o OptNilWebhookDefinitionFieldsTransformation) Get() (v WebhookDefinitionF
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptNilWebhookDefinitionFieldsTransformation) Or(d WebhookDefinitionFieldsTransformation) WebhookDefinitionFieldsTransformation {
+func (o OptNilWebhookDefinitionDataTransformation) Or(d WebhookDefinitionDataTransformation) WebhookDefinitionDataTransformation {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -7262,40 +7262,40 @@ func (s *PersonalAccessToken) SetRevokedAt(val OptNilDateTime) {
 
 func (*PersonalAccessToken) getPersonalAccessTokenRes() {}
 
-// Ref: #/PersonalAccessTokenRequestFields
-type PersonalAccessTokenRequestFields struct {
+// Ref: #/PersonalAccessTokenRequestData
+type PersonalAccessTokenRequestData struct {
 	Name      string    `json:"name"`
 	Scopes    []string  `json:"scopes"`
 	ExpiresIn OptNilInt `json:"expiresIn"`
 }
 
 // GetName returns the value of Name.
-func (s *PersonalAccessTokenRequestFields) GetName() string {
+func (s *PersonalAccessTokenRequestData) GetName() string {
 	return s.Name
 }
 
 // GetScopes returns the value of Scopes.
-func (s *PersonalAccessTokenRequestFields) GetScopes() []string {
+func (s *PersonalAccessTokenRequestData) GetScopes() []string {
 	return s.Scopes
 }
 
 // GetExpiresIn returns the value of ExpiresIn.
-func (s *PersonalAccessTokenRequestFields) GetExpiresIn() OptNilInt {
+func (s *PersonalAccessTokenRequestData) GetExpiresIn() OptNilInt {
 	return s.ExpiresIn
 }
 
 // SetName sets the value of Name.
-func (s *PersonalAccessTokenRequestFields) SetName(val string) {
+func (s *PersonalAccessTokenRequestData) SetName(val string) {
 	s.Name = val
 }
 
 // SetScopes sets the value of Scopes.
-func (s *PersonalAccessTokenRequestFields) SetScopes(val []string) {
+func (s *PersonalAccessTokenRequestData) SetScopes(val []string) {
 	s.Scopes = val
 }
 
 // SetExpiresIn sets the value of ExpiresIn.
-func (s *PersonalAccessTokenRequestFields) SetExpiresIn(val OptNilInt) {
+func (s *PersonalAccessTokenRequestData) SetExpiresIn(val OptNilInt) {
 	s.ExpiresIn = val
 }
 
@@ -7613,23 +7613,23 @@ func (*PreviewApiKey) getPreviewApiKeyRes() {}
 // Merged schema.
 // Ref: #/PreviewApiKeySys
 type PreviewApiKeySys struct {
+	Space SpaceLink `json:"space"`
 	// Merged property.
 	Type      PreviewApiKeySysType `json:"type"`
-	Space     SpaceLink            `json:"space"`
 	ID        string               `json:"id"`
 	Version   int                  `json:"version"`
 	CreatedAt OptDateTime          `json:"createdAt"`
 	UpdatedAt OptDateTime          `json:"updatedAt"`
 }
 
-// GetType returns the value of Type.
-func (s *PreviewApiKeySys) GetType() PreviewApiKeySysType {
-	return s.Type
-}
-
 // GetSpace returns the value of Space.
 func (s *PreviewApiKeySys) GetSpace() SpaceLink {
 	return s.Space
+}
+
+// GetType returns the value of Type.
+func (s *PreviewApiKeySys) GetType() PreviewApiKeySysType {
+	return s.Type
 }
 
 // GetID returns the value of ID.
@@ -7652,14 +7652,14 @@ func (s *PreviewApiKeySys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
-// SetType sets the value of Type.
-func (s *PreviewApiKeySys) SetType(val PreviewApiKeySysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *PreviewApiKeySys) SetSpace(val SpaceLink) {
 	s.Space = val
+}
+
+// SetType sets the value of Type.
+func (s *PreviewApiKeySys) SetType(val PreviewApiKeySysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.
@@ -8068,11 +8068,16 @@ func (*ResourceProviderStatusCode) putResourceProviderRes() {}
 // Merged schema.
 // Ref: #/ResourceProviderSys
 type ResourceProviderSys struct {
+	Organization OrganizationLink `json:"organization"`
 	// Merged property.
 	Type          ResourceProviderSysType `json:"type"`
 	ID            string                  `json:"id"`
-	Organization  OrganizationLink        `json:"organization"`
 	AppDefinition AppDefinitionLink       `json:"appDefinition"`
+}
+
+// GetOrganization returns the value of Organization.
+func (s *ResourceProviderSys) GetOrganization() OrganizationLink {
+	return s.Organization
 }
 
 // GetType returns the value of Type.
@@ -8085,14 +8090,14 @@ func (s *ResourceProviderSys) GetID() string {
 	return s.ID
 }
 
-// GetOrganization returns the value of Organization.
-func (s *ResourceProviderSys) GetOrganization() OrganizationLink {
-	return s.Organization
-}
-
 // GetAppDefinition returns the value of AppDefinition.
 func (s *ResourceProviderSys) GetAppDefinition() AppDefinitionLink {
 	return s.AppDefinition
+}
+
+// SetOrganization sets the value of Organization.
+func (s *ResourceProviderSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
 }
 
 // SetType sets the value of Type.
@@ -8103,11 +8108,6 @@ func (s *ResourceProviderSys) SetType(val ResourceProviderSysType) {
 // SetID sets the value of ID.
 func (s *ResourceProviderSys) SetID(val string) {
 	s.ID = val
-}
-
-// SetOrganization sets the value of Organization.
-func (s *ResourceProviderSys) SetOrganization(val OrganizationLink) {
-	s.Organization = val
 }
 
 // SetAppDefinition sets the value of AppDefinition.
@@ -8223,6 +8223,32 @@ func (s *ResourceType) SetDefaultFieldMapping(val ResourceTypeDefaultFieldMappin
 }
 
 func (*ResourceType) getResourceTypeRes() {}
+
+// Ref: #/ResourceTypeData
+type ResourceTypeData struct {
+	Name                string                          `json:"name"`
+	DefaultFieldMapping ResourceTypeDefaultFieldMapping `json:"defaultFieldMapping"`
+}
+
+// GetName returns the value of Name.
+func (s *ResourceTypeData) GetName() string {
+	return s.Name
+}
+
+// GetDefaultFieldMapping returns the value of DefaultFieldMapping.
+func (s *ResourceTypeData) GetDefaultFieldMapping() ResourceTypeDefaultFieldMapping {
+	return s.DefaultFieldMapping
+}
+
+// SetName sets the value of Name.
+func (s *ResourceTypeData) SetName(val string) {
+	s.Name = val
+}
+
+// SetDefaultFieldMapping sets the value of DefaultFieldMapping.
+func (s *ResourceTypeData) SetDefaultFieldMapping(val ResourceTypeDefaultFieldMapping) {
+	s.DefaultFieldMapping = val
+}
 
 // Ref: #/ResourceTypeDefaultFieldMapping
 type ResourceTypeDefaultFieldMapping struct {
@@ -8344,32 +8370,6 @@ func (s *ResourceTypeDefaultFieldMappingImage) SetAltText(val OptString) {
 	s.AltText = val
 }
 
-// Ref: #/ResourceTypeFields
-type ResourceTypeFields struct {
-	Name                string                          `json:"name"`
-	DefaultFieldMapping ResourceTypeDefaultFieldMapping `json:"defaultFieldMapping"`
-}
-
-// GetName returns the value of Name.
-func (s *ResourceTypeFields) GetName() string {
-	return s.Name
-}
-
-// GetDefaultFieldMapping returns the value of DefaultFieldMapping.
-func (s *ResourceTypeFields) GetDefaultFieldMapping() ResourceTypeDefaultFieldMapping {
-	return s.DefaultFieldMapping
-}
-
-// SetName sets the value of Name.
-func (s *ResourceTypeFields) SetName(val string) {
-	s.Name = val
-}
-
-// SetDefaultFieldMapping sets the value of DefaultFieldMapping.
-func (s *ResourceTypeFields) SetDefaultFieldMapping(val ResourceTypeDefaultFieldMapping) {
-	s.DefaultFieldMapping = val
-}
-
 // ResourceTypeStatusCode wraps ResourceType with StatusCode.
 type ResourceTypeStatusCode struct {
 	StatusCode int
@@ -8401,12 +8401,17 @@ func (*ResourceTypeStatusCode) putResourceTypeRes() {}
 // Merged schema.
 // Ref: #/ResourceTypeSys
 type ResourceTypeSys struct {
+	Organization OrganizationLink `json:"organization"`
 	// Merged property.
 	Type             ResourceTypeSysType  `json:"type"`
 	ID               string               `json:"id"`
-	Organization     OrganizationLink     `json:"organization"`
 	AppDefinition    AppDefinitionLink    `json:"appDefinition"`
 	ResourceProvider ResourceProviderLink `json:"resourceProvider"`
+}
+
+// GetOrganization returns the value of Organization.
+func (s *ResourceTypeSys) GetOrganization() OrganizationLink {
+	return s.Organization
 }
 
 // GetType returns the value of Type.
@@ -8419,11 +8424,6 @@ func (s *ResourceTypeSys) GetID() string {
 	return s.ID
 }
 
-// GetOrganization returns the value of Organization.
-func (s *ResourceTypeSys) GetOrganization() OrganizationLink {
-	return s.Organization
-}
-
 // GetAppDefinition returns the value of AppDefinition.
 func (s *ResourceTypeSys) GetAppDefinition() AppDefinitionLink {
 	return s.AppDefinition
@@ -8434,6 +8434,11 @@ func (s *ResourceTypeSys) GetResourceProvider() ResourceProviderLink {
 	return s.ResourceProvider
 }
 
+// SetOrganization sets the value of Organization.
+func (s *ResourceTypeSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
 // SetType sets the value of Type.
 func (s *ResourceTypeSys) SetType(val ResourceTypeSysType) {
 	s.Type = val
@@ -8442,11 +8447,6 @@ func (s *ResourceTypeSys) SetType(val ResourceTypeSysType) {
 // SetID sets the value of ID.
 func (s *ResourceTypeSys) SetID(val string) {
 	s.ID = val
-}
-
-// SetOrganization sets the value of Organization.
-func (s *ResourceTypeSys) SetOrganization(val OrganizationLink) {
-	s.Organization = val
 }
 
 // SetAppDefinition sets the value of AppDefinition.
@@ -8556,256 +8556,256 @@ func (s *Role) SetPolicies(val []RolePoliciesItem) {
 
 func (*Role) getRoleRes() {}
 
-// Ref: #/RoleFields
-type RoleFields struct {
-	Name        string                   `json:"name"`
-	Description OptNilString             `json:"description"`
-	Permissions RoleFieldsPermissions    `json:"permissions"`
-	Policies    []RoleFieldsPoliciesItem `json:"policies"`
+// Ref: #/RoleData
+type RoleData struct {
+	Name        string                 `json:"name"`
+	Description OptNilString           `json:"description"`
+	Permissions RoleDataPermissions    `json:"permissions"`
+	Policies    []RoleDataPoliciesItem `json:"policies"`
 }
 
 // GetName returns the value of Name.
-func (s *RoleFields) GetName() string {
+func (s *RoleData) GetName() string {
 	return s.Name
 }
 
 // GetDescription returns the value of Description.
-func (s *RoleFields) GetDescription() OptNilString {
+func (s *RoleData) GetDescription() OptNilString {
 	return s.Description
 }
 
 // GetPermissions returns the value of Permissions.
-func (s *RoleFields) GetPermissions() RoleFieldsPermissions {
+func (s *RoleData) GetPermissions() RoleDataPermissions {
 	return s.Permissions
 }
 
 // GetPolicies returns the value of Policies.
-func (s *RoleFields) GetPolicies() []RoleFieldsPoliciesItem {
+func (s *RoleData) GetPolicies() []RoleDataPoliciesItem {
 	return s.Policies
 }
 
 // SetName sets the value of Name.
-func (s *RoleFields) SetName(val string) {
+func (s *RoleData) SetName(val string) {
 	s.Name = val
 }
 
 // SetDescription sets the value of Description.
-func (s *RoleFields) SetDescription(val OptNilString) {
+func (s *RoleData) SetDescription(val OptNilString) {
 	s.Description = val
 }
 
 // SetPermissions sets the value of Permissions.
-func (s *RoleFields) SetPermissions(val RoleFieldsPermissions) {
+func (s *RoleData) SetPermissions(val RoleDataPermissions) {
 	s.Permissions = val
 }
 
 // SetPolicies sets the value of Policies.
-func (s *RoleFields) SetPolicies(val []RoleFieldsPoliciesItem) {
+func (s *RoleData) SetPolicies(val []RoleDataPoliciesItem) {
 	s.Policies = val
 }
 
-type RoleFieldsPermissions map[string]RoleFieldsPermissionsItem
+type RoleDataPermissions map[string]RoleDataPermissionsItem
 
-func (s *RoleFieldsPermissions) init() RoleFieldsPermissions {
+func (s *RoleDataPermissions) init() RoleDataPermissions {
 	m := *s
 	if m == nil {
-		m = map[string]RoleFieldsPermissionsItem{}
+		m = map[string]RoleDataPermissionsItem{}
 		*s = m
 	}
 	return m
 }
 
-// RoleFieldsPermissionsItem represents sum type.
-type RoleFieldsPermissionsItem struct {
-	Type        RoleFieldsPermissionsItemType // switch on this field
+// RoleDataPermissionsItem represents sum type.
+type RoleDataPermissionsItem struct {
+	Type        RoleDataPermissionsItemType // switch on this field
 	String      string
 	StringArray []string
 }
 
-// RoleFieldsPermissionsItemType is oneOf type of RoleFieldsPermissionsItem.
-type RoleFieldsPermissionsItemType string
+// RoleDataPermissionsItemType is oneOf type of RoleDataPermissionsItem.
+type RoleDataPermissionsItemType string
 
-// Possible values for RoleFieldsPermissionsItemType.
+// Possible values for RoleDataPermissionsItemType.
 const (
-	StringRoleFieldsPermissionsItem      RoleFieldsPermissionsItemType = "string"
-	StringArrayRoleFieldsPermissionsItem RoleFieldsPermissionsItemType = "[]string"
+	StringRoleDataPermissionsItem      RoleDataPermissionsItemType = "string"
+	StringArrayRoleDataPermissionsItem RoleDataPermissionsItemType = "[]string"
 )
 
-// IsString reports whether RoleFieldsPermissionsItem is string.
-func (s RoleFieldsPermissionsItem) IsString() bool { return s.Type == StringRoleFieldsPermissionsItem }
+// IsString reports whether RoleDataPermissionsItem is string.
+func (s RoleDataPermissionsItem) IsString() bool { return s.Type == StringRoleDataPermissionsItem }
 
-// IsStringArray reports whether RoleFieldsPermissionsItem is []string.
-func (s RoleFieldsPermissionsItem) IsStringArray() bool {
-	return s.Type == StringArrayRoleFieldsPermissionsItem
+// IsStringArray reports whether RoleDataPermissionsItem is []string.
+func (s RoleDataPermissionsItem) IsStringArray() bool {
+	return s.Type == StringArrayRoleDataPermissionsItem
 }
 
-// SetString sets RoleFieldsPermissionsItem to string.
-func (s *RoleFieldsPermissionsItem) SetString(v string) {
-	s.Type = StringRoleFieldsPermissionsItem
+// SetString sets RoleDataPermissionsItem to string.
+func (s *RoleDataPermissionsItem) SetString(v string) {
+	s.Type = StringRoleDataPermissionsItem
 	s.String = v
 }
 
-// GetString returns string and true boolean if RoleFieldsPermissionsItem is string.
-func (s RoleFieldsPermissionsItem) GetString() (v string, ok bool) {
+// GetString returns string and true boolean if RoleDataPermissionsItem is string.
+func (s RoleDataPermissionsItem) GetString() (v string, ok bool) {
 	if !s.IsString() {
 		return v, false
 	}
 	return s.String, true
 }
 
-// NewStringRoleFieldsPermissionsItem returns new RoleFieldsPermissionsItem from string.
-func NewStringRoleFieldsPermissionsItem(v string) RoleFieldsPermissionsItem {
-	var s RoleFieldsPermissionsItem
+// NewStringRoleDataPermissionsItem returns new RoleDataPermissionsItem from string.
+func NewStringRoleDataPermissionsItem(v string) RoleDataPermissionsItem {
+	var s RoleDataPermissionsItem
 	s.SetString(v)
 	return s
 }
 
-// SetStringArray sets RoleFieldsPermissionsItem to []string.
-func (s *RoleFieldsPermissionsItem) SetStringArray(v []string) {
-	s.Type = StringArrayRoleFieldsPermissionsItem
+// SetStringArray sets RoleDataPermissionsItem to []string.
+func (s *RoleDataPermissionsItem) SetStringArray(v []string) {
+	s.Type = StringArrayRoleDataPermissionsItem
 	s.StringArray = v
 }
 
-// GetStringArray returns []string and true boolean if RoleFieldsPermissionsItem is []string.
-func (s RoleFieldsPermissionsItem) GetStringArray() (v []string, ok bool) {
+// GetStringArray returns []string and true boolean if RoleDataPermissionsItem is []string.
+func (s RoleDataPermissionsItem) GetStringArray() (v []string, ok bool) {
 	if !s.IsStringArray() {
 		return v, false
 	}
 	return s.StringArray, true
 }
 
-// NewStringArrayRoleFieldsPermissionsItem returns new RoleFieldsPermissionsItem from []string.
-func NewStringArrayRoleFieldsPermissionsItem(v []string) RoleFieldsPermissionsItem {
-	var s RoleFieldsPermissionsItem
+// NewStringArrayRoleDataPermissionsItem returns new RoleDataPermissionsItem from []string.
+func NewStringArrayRoleDataPermissionsItem(v []string) RoleDataPermissionsItem {
+	var s RoleDataPermissionsItem
 	s.SetStringArray(v)
 	return s
 }
 
-type RoleFieldsPoliciesItem struct {
-	Effect     RoleFieldsPoliciesItemEffect  `json:"effect"`
-	Actions    RoleFieldsPoliciesItemActions `json:"actions"`
-	Constraint jx.Raw                        `json:"constraint"`
+type RoleDataPoliciesItem struct {
+	Effect     RoleDataPoliciesItemEffect  `json:"effect"`
+	Actions    RoleDataPoliciesItemActions `json:"actions"`
+	Constraint jx.Raw                      `json:"constraint"`
 }
 
 // GetEffect returns the value of Effect.
-func (s *RoleFieldsPoliciesItem) GetEffect() RoleFieldsPoliciesItemEffect {
+func (s *RoleDataPoliciesItem) GetEffect() RoleDataPoliciesItemEffect {
 	return s.Effect
 }
 
 // GetActions returns the value of Actions.
-func (s *RoleFieldsPoliciesItem) GetActions() RoleFieldsPoliciesItemActions {
+func (s *RoleDataPoliciesItem) GetActions() RoleDataPoliciesItemActions {
 	return s.Actions
 }
 
 // GetConstraint returns the value of Constraint.
-func (s *RoleFieldsPoliciesItem) GetConstraint() jx.Raw {
+func (s *RoleDataPoliciesItem) GetConstraint() jx.Raw {
 	return s.Constraint
 }
 
 // SetEffect sets the value of Effect.
-func (s *RoleFieldsPoliciesItem) SetEffect(val RoleFieldsPoliciesItemEffect) {
+func (s *RoleDataPoliciesItem) SetEffect(val RoleDataPoliciesItemEffect) {
 	s.Effect = val
 }
 
 // SetActions sets the value of Actions.
-func (s *RoleFieldsPoliciesItem) SetActions(val RoleFieldsPoliciesItemActions) {
+func (s *RoleDataPoliciesItem) SetActions(val RoleDataPoliciesItemActions) {
 	s.Actions = val
 }
 
 // SetConstraint sets the value of Constraint.
-func (s *RoleFieldsPoliciesItem) SetConstraint(val jx.Raw) {
+func (s *RoleDataPoliciesItem) SetConstraint(val jx.Raw) {
 	s.Constraint = val
 }
 
-// RoleFieldsPoliciesItemActions represents sum type.
-type RoleFieldsPoliciesItemActions struct {
-	Type        RoleFieldsPoliciesItemActionsType // switch on this field
+// RoleDataPoliciesItemActions represents sum type.
+type RoleDataPoliciesItemActions struct {
+	Type        RoleDataPoliciesItemActionsType // switch on this field
 	String      string
 	StringArray []string
 }
 
-// RoleFieldsPoliciesItemActionsType is oneOf type of RoleFieldsPoliciesItemActions.
-type RoleFieldsPoliciesItemActionsType string
+// RoleDataPoliciesItemActionsType is oneOf type of RoleDataPoliciesItemActions.
+type RoleDataPoliciesItemActionsType string
 
-// Possible values for RoleFieldsPoliciesItemActionsType.
+// Possible values for RoleDataPoliciesItemActionsType.
 const (
-	StringRoleFieldsPoliciesItemActions      RoleFieldsPoliciesItemActionsType = "string"
-	StringArrayRoleFieldsPoliciesItemActions RoleFieldsPoliciesItemActionsType = "[]string"
+	StringRoleDataPoliciesItemActions      RoleDataPoliciesItemActionsType = "string"
+	StringArrayRoleDataPoliciesItemActions RoleDataPoliciesItemActionsType = "[]string"
 )
 
-// IsString reports whether RoleFieldsPoliciesItemActions is string.
-func (s RoleFieldsPoliciesItemActions) IsString() bool {
-	return s.Type == StringRoleFieldsPoliciesItemActions
+// IsString reports whether RoleDataPoliciesItemActions is string.
+func (s RoleDataPoliciesItemActions) IsString() bool {
+	return s.Type == StringRoleDataPoliciesItemActions
 }
 
-// IsStringArray reports whether RoleFieldsPoliciesItemActions is []string.
-func (s RoleFieldsPoliciesItemActions) IsStringArray() bool {
-	return s.Type == StringArrayRoleFieldsPoliciesItemActions
+// IsStringArray reports whether RoleDataPoliciesItemActions is []string.
+func (s RoleDataPoliciesItemActions) IsStringArray() bool {
+	return s.Type == StringArrayRoleDataPoliciesItemActions
 }
 
-// SetString sets RoleFieldsPoliciesItemActions to string.
-func (s *RoleFieldsPoliciesItemActions) SetString(v string) {
-	s.Type = StringRoleFieldsPoliciesItemActions
+// SetString sets RoleDataPoliciesItemActions to string.
+func (s *RoleDataPoliciesItemActions) SetString(v string) {
+	s.Type = StringRoleDataPoliciesItemActions
 	s.String = v
 }
 
-// GetString returns string and true boolean if RoleFieldsPoliciesItemActions is string.
-func (s RoleFieldsPoliciesItemActions) GetString() (v string, ok bool) {
+// GetString returns string and true boolean if RoleDataPoliciesItemActions is string.
+func (s RoleDataPoliciesItemActions) GetString() (v string, ok bool) {
 	if !s.IsString() {
 		return v, false
 	}
 	return s.String, true
 }
 
-// NewStringRoleFieldsPoliciesItemActions returns new RoleFieldsPoliciesItemActions from string.
-func NewStringRoleFieldsPoliciesItemActions(v string) RoleFieldsPoliciesItemActions {
-	var s RoleFieldsPoliciesItemActions
+// NewStringRoleDataPoliciesItemActions returns new RoleDataPoliciesItemActions from string.
+func NewStringRoleDataPoliciesItemActions(v string) RoleDataPoliciesItemActions {
+	var s RoleDataPoliciesItemActions
 	s.SetString(v)
 	return s
 }
 
-// SetStringArray sets RoleFieldsPoliciesItemActions to []string.
-func (s *RoleFieldsPoliciesItemActions) SetStringArray(v []string) {
-	s.Type = StringArrayRoleFieldsPoliciesItemActions
+// SetStringArray sets RoleDataPoliciesItemActions to []string.
+func (s *RoleDataPoliciesItemActions) SetStringArray(v []string) {
+	s.Type = StringArrayRoleDataPoliciesItemActions
 	s.StringArray = v
 }
 
-// GetStringArray returns []string and true boolean if RoleFieldsPoliciesItemActions is []string.
-func (s RoleFieldsPoliciesItemActions) GetStringArray() (v []string, ok bool) {
+// GetStringArray returns []string and true boolean if RoleDataPoliciesItemActions is []string.
+func (s RoleDataPoliciesItemActions) GetStringArray() (v []string, ok bool) {
 	if !s.IsStringArray() {
 		return v, false
 	}
 	return s.StringArray, true
 }
 
-// NewStringArrayRoleFieldsPoliciesItemActions returns new RoleFieldsPoliciesItemActions from []string.
-func NewStringArrayRoleFieldsPoliciesItemActions(v []string) RoleFieldsPoliciesItemActions {
-	var s RoleFieldsPoliciesItemActions
+// NewStringArrayRoleDataPoliciesItemActions returns new RoleDataPoliciesItemActions from []string.
+func NewStringArrayRoleDataPoliciesItemActions(v []string) RoleDataPoliciesItemActions {
+	var s RoleDataPoliciesItemActions
 	s.SetStringArray(v)
 	return s
 }
 
-type RoleFieldsPoliciesItemEffect string
+type RoleDataPoliciesItemEffect string
 
 const (
-	RoleFieldsPoliciesItemEffectAllow RoleFieldsPoliciesItemEffect = "allow"
-	RoleFieldsPoliciesItemEffectDeny  RoleFieldsPoliciesItemEffect = "deny"
+	RoleDataPoliciesItemEffectAllow RoleDataPoliciesItemEffect = "allow"
+	RoleDataPoliciesItemEffectDeny  RoleDataPoliciesItemEffect = "deny"
 )
 
-// AllValues returns all RoleFieldsPoliciesItemEffect values.
-func (RoleFieldsPoliciesItemEffect) AllValues() []RoleFieldsPoliciesItemEffect {
-	return []RoleFieldsPoliciesItemEffect{
-		RoleFieldsPoliciesItemEffectAllow,
-		RoleFieldsPoliciesItemEffectDeny,
+// AllValues returns all RoleDataPoliciesItemEffect values.
+func (RoleDataPoliciesItemEffect) AllValues() []RoleDataPoliciesItemEffect {
+	return []RoleDataPoliciesItemEffect{
+		RoleDataPoliciesItemEffectAllow,
+		RoleDataPoliciesItemEffectDeny,
 	}
 }
 
 // MarshalText implements encoding.TextMarshaler.
-func (s RoleFieldsPoliciesItemEffect) MarshalText() ([]byte, error) {
+func (s RoleDataPoliciesItemEffect) MarshalText() ([]byte, error) {
 	switch s {
-	case RoleFieldsPoliciesItemEffectAllow:
+	case RoleDataPoliciesItemEffectAllow:
 		return []byte(s), nil
-	case RoleFieldsPoliciesItemEffectDeny:
+	case RoleDataPoliciesItemEffectDeny:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -8813,13 +8813,13 @@ func (s RoleFieldsPoliciesItemEffect) MarshalText() ([]byte, error) {
 }
 
 // UnmarshalText implements encoding.TextUnmarshaler.
-func (s *RoleFieldsPoliciesItemEffect) UnmarshalText(data []byte) error {
-	switch RoleFieldsPoliciesItemEffect(data) {
-	case RoleFieldsPoliciesItemEffectAllow:
-		*s = RoleFieldsPoliciesItemEffectAllow
+func (s *RoleDataPoliciesItemEffect) UnmarshalText(data []byte) error {
+	switch RoleDataPoliciesItemEffect(data) {
+	case RoleDataPoliciesItemEffectAllow:
+		*s = RoleDataPoliciesItemEffectAllow
 		return nil
-	case RoleFieldsPoliciesItemEffectDeny:
-		*s = RoleFieldsPoliciesItemEffectDeny
+	case RoleDataPoliciesItemEffectDeny:
+		*s = RoleDataPoliciesItemEffectDeny
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -9076,23 +9076,23 @@ func (*RoleStatusCode) updateRoleRes() {}
 // Merged schema.
 // Ref: #/RoleSys
 type RoleSys struct {
+	Space SpaceLink `json:"space"`
 	// Merged property.
 	Type      RoleSysType `json:"type"`
-	Space     SpaceLink   `json:"space"`
 	ID        string      `json:"id"`
 	Version   int         `json:"version"`
 	CreatedAt OptDateTime `json:"createdAt"`
 	UpdatedAt OptDateTime `json:"updatedAt"`
 }
 
-// GetType returns the value of Type.
-func (s *RoleSys) GetType() RoleSysType {
-	return s.Type
-}
-
 // GetSpace returns the value of Space.
 func (s *RoleSys) GetSpace() SpaceLink {
 	return s.Space
+}
+
+// GetType returns the value of Type.
+func (s *RoleSys) GetType() RoleSysType {
+	return s.Type
 }
 
 // GetID returns the value of ID.
@@ -9115,14 +9115,14 @@ func (s *RoleSys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
-// SetType sets the value of Type.
-func (s *RoleSys) SetType(val RoleSysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *RoleSys) SetSpace(val SpaceLink) {
 	s.Space = val
+}
+
+// SetType sets the value of Type.
+func (s *RoleSys) SetType(val RoleSysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.
@@ -9240,6 +9240,54 @@ func (s *SpaceEnablement) SetSuggestConcepts(val OptSpaceEnablementField) {
 	s.SuggestConcepts = val
 }
 
+// Ref: #/SpaceEnablementData
+type SpaceEnablementData struct {
+	CrossSpaceLinks   OptSpaceEnablementField `json:"crossSpaceLinks"`
+	SpaceTemplates    OptSpaceEnablementField `json:"spaceTemplates"`
+	StudioExperiences OptSpaceEnablementField `json:"studioExperiences"`
+	SuggestConcepts   OptSpaceEnablementField `json:"suggestConcepts"`
+}
+
+// GetCrossSpaceLinks returns the value of CrossSpaceLinks.
+func (s *SpaceEnablementData) GetCrossSpaceLinks() OptSpaceEnablementField {
+	return s.CrossSpaceLinks
+}
+
+// GetSpaceTemplates returns the value of SpaceTemplates.
+func (s *SpaceEnablementData) GetSpaceTemplates() OptSpaceEnablementField {
+	return s.SpaceTemplates
+}
+
+// GetStudioExperiences returns the value of StudioExperiences.
+func (s *SpaceEnablementData) GetStudioExperiences() OptSpaceEnablementField {
+	return s.StudioExperiences
+}
+
+// GetSuggestConcepts returns the value of SuggestConcepts.
+func (s *SpaceEnablementData) GetSuggestConcepts() OptSpaceEnablementField {
+	return s.SuggestConcepts
+}
+
+// SetCrossSpaceLinks sets the value of CrossSpaceLinks.
+func (s *SpaceEnablementData) SetCrossSpaceLinks(val OptSpaceEnablementField) {
+	s.CrossSpaceLinks = val
+}
+
+// SetSpaceTemplates sets the value of SpaceTemplates.
+func (s *SpaceEnablementData) SetSpaceTemplates(val OptSpaceEnablementField) {
+	s.SpaceTemplates = val
+}
+
+// SetStudioExperiences sets the value of StudioExperiences.
+func (s *SpaceEnablementData) SetStudioExperiences(val OptSpaceEnablementField) {
+	s.StudioExperiences = val
+}
+
+// SetSuggestConcepts sets the value of SuggestConcepts.
+func (s *SpaceEnablementData) SetSuggestConcepts(val OptSpaceEnablementField) {
+	s.SuggestConcepts = val
+}
+
 // Ref: #/SpaceEnablementField
 type SpaceEnablementField struct {
 	Enabled bool `json:"enabled"`
@@ -9253,54 +9301,6 @@ func (s *SpaceEnablementField) GetEnabled() bool {
 // SetEnabled sets the value of Enabled.
 func (s *SpaceEnablementField) SetEnabled(val bool) {
 	s.Enabled = val
-}
-
-// Ref: #/SpaceEnablementFields
-type SpaceEnablementFields struct {
-	CrossSpaceLinks   OptSpaceEnablementField `json:"crossSpaceLinks"`
-	SpaceTemplates    OptSpaceEnablementField `json:"spaceTemplates"`
-	StudioExperiences OptSpaceEnablementField `json:"studioExperiences"`
-	SuggestConcepts   OptSpaceEnablementField `json:"suggestConcepts"`
-}
-
-// GetCrossSpaceLinks returns the value of CrossSpaceLinks.
-func (s *SpaceEnablementFields) GetCrossSpaceLinks() OptSpaceEnablementField {
-	return s.CrossSpaceLinks
-}
-
-// GetSpaceTemplates returns the value of SpaceTemplates.
-func (s *SpaceEnablementFields) GetSpaceTemplates() OptSpaceEnablementField {
-	return s.SpaceTemplates
-}
-
-// GetStudioExperiences returns the value of StudioExperiences.
-func (s *SpaceEnablementFields) GetStudioExperiences() OptSpaceEnablementField {
-	return s.StudioExperiences
-}
-
-// GetSuggestConcepts returns the value of SuggestConcepts.
-func (s *SpaceEnablementFields) GetSuggestConcepts() OptSpaceEnablementField {
-	return s.SuggestConcepts
-}
-
-// SetCrossSpaceLinks sets the value of CrossSpaceLinks.
-func (s *SpaceEnablementFields) SetCrossSpaceLinks(val OptSpaceEnablementField) {
-	s.CrossSpaceLinks = val
-}
-
-// SetSpaceTemplates sets the value of SpaceTemplates.
-func (s *SpaceEnablementFields) SetSpaceTemplates(val OptSpaceEnablementField) {
-	s.SpaceTemplates = val
-}
-
-// SetStudioExperiences sets the value of StudioExperiences.
-func (s *SpaceEnablementFields) SetStudioExperiences(val OptSpaceEnablementField) {
-	s.StudioExperiences = val
-}
-
-// SetSuggestConcepts sets the value of SuggestConcepts.
-func (s *SpaceEnablementFields) SetSuggestConcepts(val OptSpaceEnablementField) {
-	s.SuggestConcepts = val
 }
 
 // SpaceEnablementStatusCode wraps SpaceEnablement with StatusCode.
@@ -9334,22 +9334,22 @@ func (*SpaceEnablementStatusCode) putSpaceEnablementsRes() {}
 // Merged schema.
 // Ref: #/SpaceEnablementSys
 type SpaceEnablementSys struct {
+	Space SpaceLink `json:"space"`
 	// Merged property.
 	Type      SpaceEnablementSysType `json:"type"`
-	Space     SpaceLink              `json:"space"`
 	Version   int                    `json:"version"`
 	CreatedAt OptDateTime            `json:"createdAt"`
 	UpdatedAt OptDateTime            `json:"updatedAt"`
 }
 
-// GetType returns the value of Type.
-func (s *SpaceEnablementSys) GetType() SpaceEnablementSysType {
-	return s.Type
-}
-
 // GetSpace returns the value of Space.
 func (s *SpaceEnablementSys) GetSpace() SpaceLink {
 	return s.Space
+}
+
+// GetType returns the value of Type.
+func (s *SpaceEnablementSys) GetType() SpaceEnablementSysType {
+	return s.Type
 }
 
 // GetVersion returns the value of Version.
@@ -9367,14 +9367,14 @@ func (s *SpaceEnablementSys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
-// SetType sets the value of Type.
-func (s *SpaceEnablementSys) SetType(val SpaceEnablementSysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *SpaceEnablementSys) SetSpace(val SpaceLink) {
 	s.Space = val
+}
+
+// SetType sets the value of Type.
+func (s *SpaceEnablementSys) SetType(val SpaceEnablementSysType) {
+	s.Type = val
 }
 
 // SetVersion sets the value of Version.
@@ -9939,110 +9939,110 @@ func (s *WebhookDefinition) SetActive(val OptBool) {
 
 func (*WebhookDefinition) getWebhookDefinitionRes() {}
 
-// Ref: #/WebhookDefinitionFields
-type WebhookDefinitionFields struct {
-	Name              string                                      `json:"name"`
-	URL               string                                      `json:"url"`
-	Topics            []string                                    `json:"topics"`
-	Filters           OptNilWebhookDefinitionFilterArray          `json:"filters"`
-	HttpBasicUsername OptNilString                                `json:"httpBasicUsername"`
-	HttpBasicPassword OptNilString                                `json:"httpBasicPassword"`
-	Headers           WebhookDefinitionHeaders                    `json:"headers"`
-	Transformation    OptNilWebhookDefinitionFieldsTransformation `json:"transformation"`
-	Active            OptBool                                     `json:"active"`
+// Ref: #/WebhookDefinitionData
+type WebhookDefinitionData struct {
+	Name              string                                    `json:"name"`
+	URL               string                                    `json:"url"`
+	Topics            []string                                  `json:"topics"`
+	Filters           OptNilWebhookDefinitionFilterArray        `json:"filters"`
+	HttpBasicUsername OptNilString                              `json:"httpBasicUsername"`
+	HttpBasicPassword OptNilString                              `json:"httpBasicPassword"`
+	Headers           WebhookDefinitionHeaders                  `json:"headers"`
+	Transformation    OptNilWebhookDefinitionDataTransformation `json:"transformation"`
+	Active            OptBool                                   `json:"active"`
 }
 
 // GetName returns the value of Name.
-func (s *WebhookDefinitionFields) GetName() string {
+func (s *WebhookDefinitionData) GetName() string {
 	return s.Name
 }
 
 // GetURL returns the value of URL.
-func (s *WebhookDefinitionFields) GetURL() string {
+func (s *WebhookDefinitionData) GetURL() string {
 	return s.URL
 }
 
 // GetTopics returns the value of Topics.
-func (s *WebhookDefinitionFields) GetTopics() []string {
+func (s *WebhookDefinitionData) GetTopics() []string {
 	return s.Topics
 }
 
 // GetFilters returns the value of Filters.
-func (s *WebhookDefinitionFields) GetFilters() OptNilWebhookDefinitionFilterArray {
+func (s *WebhookDefinitionData) GetFilters() OptNilWebhookDefinitionFilterArray {
 	return s.Filters
 }
 
 // GetHttpBasicUsername returns the value of HttpBasicUsername.
-func (s *WebhookDefinitionFields) GetHttpBasicUsername() OptNilString {
+func (s *WebhookDefinitionData) GetHttpBasicUsername() OptNilString {
 	return s.HttpBasicUsername
 }
 
 // GetHttpBasicPassword returns the value of HttpBasicPassword.
-func (s *WebhookDefinitionFields) GetHttpBasicPassword() OptNilString {
+func (s *WebhookDefinitionData) GetHttpBasicPassword() OptNilString {
 	return s.HttpBasicPassword
 }
 
 // GetHeaders returns the value of Headers.
-func (s *WebhookDefinitionFields) GetHeaders() WebhookDefinitionHeaders {
+func (s *WebhookDefinitionData) GetHeaders() WebhookDefinitionHeaders {
 	return s.Headers
 }
 
 // GetTransformation returns the value of Transformation.
-func (s *WebhookDefinitionFields) GetTransformation() OptNilWebhookDefinitionFieldsTransformation {
+func (s *WebhookDefinitionData) GetTransformation() OptNilWebhookDefinitionDataTransformation {
 	return s.Transformation
 }
 
 // GetActive returns the value of Active.
-func (s *WebhookDefinitionFields) GetActive() OptBool {
+func (s *WebhookDefinitionData) GetActive() OptBool {
 	return s.Active
 }
 
 // SetName sets the value of Name.
-func (s *WebhookDefinitionFields) SetName(val string) {
+func (s *WebhookDefinitionData) SetName(val string) {
 	s.Name = val
 }
 
 // SetURL sets the value of URL.
-func (s *WebhookDefinitionFields) SetURL(val string) {
+func (s *WebhookDefinitionData) SetURL(val string) {
 	s.URL = val
 }
 
 // SetTopics sets the value of Topics.
-func (s *WebhookDefinitionFields) SetTopics(val []string) {
+func (s *WebhookDefinitionData) SetTopics(val []string) {
 	s.Topics = val
 }
 
 // SetFilters sets the value of Filters.
-func (s *WebhookDefinitionFields) SetFilters(val OptNilWebhookDefinitionFilterArray) {
+func (s *WebhookDefinitionData) SetFilters(val OptNilWebhookDefinitionFilterArray) {
 	s.Filters = val
 }
 
 // SetHttpBasicUsername sets the value of HttpBasicUsername.
-func (s *WebhookDefinitionFields) SetHttpBasicUsername(val OptNilString) {
+func (s *WebhookDefinitionData) SetHttpBasicUsername(val OptNilString) {
 	s.HttpBasicUsername = val
 }
 
 // SetHttpBasicPassword sets the value of HttpBasicPassword.
-func (s *WebhookDefinitionFields) SetHttpBasicPassword(val OptNilString) {
+func (s *WebhookDefinitionData) SetHttpBasicPassword(val OptNilString) {
 	s.HttpBasicPassword = val
 }
 
 // SetHeaders sets the value of Headers.
-func (s *WebhookDefinitionFields) SetHeaders(val WebhookDefinitionHeaders) {
+func (s *WebhookDefinitionData) SetHeaders(val WebhookDefinitionHeaders) {
 	s.Headers = val
 }
 
 // SetTransformation sets the value of Transformation.
-func (s *WebhookDefinitionFields) SetTransformation(val OptNilWebhookDefinitionFieldsTransformation) {
+func (s *WebhookDefinitionData) SetTransformation(val OptNilWebhookDefinitionDataTransformation) {
 	s.Transformation = val
 }
 
 // SetActive sets the value of Active.
-func (s *WebhookDefinitionFields) SetActive(val OptBool) {
+func (s *WebhookDefinitionData) SetActive(val OptBool) {
 	s.Active = val
 }
 
-type WebhookDefinitionFieldsTransformation struct {
+type WebhookDefinitionDataTransformation struct {
 	Method               OptString `json:"method"`
 	ContentType          OptString `json:"contentType"`
 	IncludeContentLength OptBool   `json:"includeContentLength"`
@@ -10050,42 +10050,42 @@ type WebhookDefinitionFieldsTransformation struct {
 }
 
 // GetMethod returns the value of Method.
-func (s *WebhookDefinitionFieldsTransformation) GetMethod() OptString {
+func (s *WebhookDefinitionDataTransformation) GetMethod() OptString {
 	return s.Method
 }
 
 // GetContentType returns the value of ContentType.
-func (s *WebhookDefinitionFieldsTransformation) GetContentType() OptString {
+func (s *WebhookDefinitionDataTransformation) GetContentType() OptString {
 	return s.ContentType
 }
 
 // GetIncludeContentLength returns the value of IncludeContentLength.
-func (s *WebhookDefinitionFieldsTransformation) GetIncludeContentLength() OptBool {
+func (s *WebhookDefinitionDataTransformation) GetIncludeContentLength() OptBool {
 	return s.IncludeContentLength
 }
 
 // GetBody returns the value of Body.
-func (s *WebhookDefinitionFieldsTransformation) GetBody() jx.Raw {
+func (s *WebhookDefinitionDataTransformation) GetBody() jx.Raw {
 	return s.Body
 }
 
 // SetMethod sets the value of Method.
-func (s *WebhookDefinitionFieldsTransformation) SetMethod(val OptString) {
+func (s *WebhookDefinitionDataTransformation) SetMethod(val OptString) {
 	s.Method = val
 }
 
 // SetContentType sets the value of ContentType.
-func (s *WebhookDefinitionFieldsTransformation) SetContentType(val OptString) {
+func (s *WebhookDefinitionDataTransformation) SetContentType(val OptString) {
 	s.ContentType = val
 }
 
 // SetIncludeContentLength sets the value of IncludeContentLength.
-func (s *WebhookDefinitionFieldsTransformation) SetIncludeContentLength(val OptBool) {
+func (s *WebhookDefinitionDataTransformation) SetIncludeContentLength(val OptBool) {
 	s.IncludeContentLength = val
 }
 
 // SetBody sets the value of Body.
-func (s *WebhookDefinitionFieldsTransformation) SetBody(val jx.Raw) {
+func (s *WebhookDefinitionDataTransformation) SetBody(val jx.Raw) {
 	s.Body = val
 }
 
@@ -10251,23 +10251,23 @@ func (*WebhookDefinitionStatusCode) updateWebhookDefinitionRes() {}
 // Merged schema.
 // Ref: #/WebhookDefinitionSys
 type WebhookDefinitionSys struct {
+	Space SpaceLink `json:"space"`
 	// Merged property.
 	Type      WebhookDefinitionSysType `json:"type"`
-	Space     SpaceLink                `json:"space"`
 	ID        string                   `json:"id"`
 	Version   int                      `json:"version"`
 	CreatedAt OptDateTime              `json:"createdAt"`
 	UpdatedAt OptDateTime              `json:"updatedAt"`
 }
 
-// GetType returns the value of Type.
-func (s *WebhookDefinitionSys) GetType() WebhookDefinitionSysType {
-	return s.Type
-}
-
 // GetSpace returns the value of Space.
 func (s *WebhookDefinitionSys) GetSpace() SpaceLink {
 	return s.Space
+}
+
+// GetType returns the value of Type.
+func (s *WebhookDefinitionSys) GetType() WebhookDefinitionSysType {
+	return s.Type
 }
 
 // GetID returns the value of ID.
@@ -10290,14 +10290,14 @@ func (s *WebhookDefinitionSys) GetUpdatedAt() OptDateTime {
 	return s.UpdatedAt
 }
 
-// SetType sets the value of Type.
-func (s *WebhookDefinitionSys) SetType(val WebhookDefinitionSysType) {
-	s.Type = val
-}
-
 // SetSpace sets the value of Space.
 func (s *WebhookDefinitionSys) SetSpace(val SpaceLink) {
 	s.Space = val
+}
+
+// SetType sets the value of Type.
+func (s *WebhookDefinitionSys) SetType(val WebhookDefinitionSysType) {
+	s.Type = val
 }
 
 // SetID sets the value of ID.

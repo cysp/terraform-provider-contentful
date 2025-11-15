@@ -6,4 +6,4 @@ ApiKey:
           $ref: "./sys.yml#/ApiKeySys"
       required:
         - sys
-    - $ref: "./fields.yml#/ApiKeyFields"
+    - $ref: "./data.yml#/ApiKeyData"

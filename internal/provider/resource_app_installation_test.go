@@ -24,7 +24,7 @@ func TestAccAppInstallationResource(t *testing.T) {
 		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
-	server.SetAppDefinition("organization-id", "1WkQ2J9LERPtbMTdUfSHka", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "1WkQ2J9LERPtbMTdUfSHka", cm.AppDefinitionData{
 		Name: "Test App",
 	})
 

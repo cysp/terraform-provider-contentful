@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRoundTripToEditorInterfaceFields(t *testing.T) {
+func TestRoundTripToEditorInterfaceData(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -50,7 +50,7 @@ func TestRoundTripToEditorInterfaceFields(t *testing.T) {
 	model, modelDiags := NewEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
 	assert.Empty(t, modelDiags)
 
-	req, diags := model.ToEditorInterfaceFields(ctx)
+	req, diags := model.ToEditorInterfaceData(ctx)
 	assert.Empty(t, diags)
 
 	assert.True(t, req.EditorLayout.Set)
@@ -71,7 +71,7 @@ func TestRoundTripToEditorInterfaceFields(t *testing.T) {
 
 	assert.True(t, req.Controls.Set)
 	assert.Len(t, req.Controls.Value, 1)
-	assert.Equal(t, cm.EditorInterfaceFieldsControlsItem{
+	assert.Equal(t, cm.EditorInterfaceDataControlsItem{
 		FieldId:         "field_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
 		WidgetId:        cm.NewOptString("widget_id"),
@@ -80,7 +80,7 @@ func TestRoundTripToEditorInterfaceFields(t *testing.T) {
 
 	assert.True(t, req.GroupControls.Set)
 	assert.Len(t, req.GroupControls.Value, 1)
-	assert.Equal(t, cm.EditorInterfaceFieldsGroupControlsItem{
+	assert.Equal(t, cm.EditorInterfaceDataGroupControlsItem{
 		GroupId:         "group_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
 		WidgetId:        cm.NewOptString("widget_id"),
@@ -89,14 +89,14 @@ func TestRoundTripToEditorInterfaceFields(t *testing.T) {
 
 	assert.True(t, req.Sidebar.Set)
 	assert.Len(t, req.Sidebar.Value, 1)
-	assert.Equal(t, cm.EditorInterfaceFieldsSidebarItem{
+	assert.Equal(t, cm.EditorInterfaceDataSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
 		Settings:        []byte(`{"foo":"bar"}`),
 	}, req.Sidebar.Value[0])
 }
 
-func TestToEditorInterfaceFields(t *testing.T) {
+func TestToEditorInterfaceData(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -134,12 +134,12 @@ func TestToEditorInterfaceFields(t *testing.T) {
 		Sidebar:  sidebar,
 	}
 
-	req, diags := model.ToEditorInterfaceFields(ctx)
+	req, diags := model.ToEditorInterfaceData(ctx)
 
 	assert.Empty(t, diags)
 
-	assert.Equal(t, cm.EditorInterfaceFields{
-		Controls: cm.NewOptNilEditorInterfaceFieldsControlsItemArray([]cm.EditorInterfaceFieldsControlsItem{
+	assert.Equal(t, cm.EditorInterfaceData{
+		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{
 			{
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
@@ -147,7 +147,7 @@ func TestToEditorInterfaceFields(t *testing.T) {
 				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
-		Sidebar: cm.NewOptNilEditorInterfaceFieldsSidebarItemArray([]cm.EditorInterfaceFieldsSidebarItem{
+		Sidebar: cm.NewOptNilEditorInterfaceDataSidebarItemArray([]cm.EditorInterfaceDataSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
@@ -157,7 +157,7 @@ func TestToEditorInterfaceFields(t *testing.T) {
 	}, req)
 }
 
-func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
+func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -227,10 +227,10 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 		Sidebar:  sidebar,
 	}
 
-	req, diags := model.ToEditorInterfaceFields(ctx)
+	req, diags := model.ToEditorInterfaceData(ctx)
 
-	assert.Equal(t, cm.EditorInterfaceFields{
-		Controls: cm.NewOptNilEditorInterfaceFieldsControlsItemArray([]cm.EditorInterfaceFieldsControlsItem{
+	assert.Equal(t, cm.EditorInterfaceData{
+		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{
 			{
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
@@ -249,7 +249,7 @@ func TestToEditorInterfaceFieldsErrorHandling(t *testing.T) {
 				Settings:        []byte(`{"foo":"bar"}`),
 			},
 		}),
-		Sidebar: cm.NewOptNilEditorInterfaceFieldsSidebarItemArray([]cm.EditorInterfaceFieldsSidebarItem{
+		Sidebar: cm.NewOptNilEditorInterfaceDataSidebarItemArray([]cm.EditorInterfaceDataSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",

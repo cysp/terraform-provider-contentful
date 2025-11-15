@@ -1,4 +1,4 @@
-ErrorFields:
+ErrorData:
   type: object
   properties:
     message:

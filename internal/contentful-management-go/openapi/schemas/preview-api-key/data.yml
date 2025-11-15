@@ -1,4 +1,4 @@
-PreviewApiKeyFields:
+PreviewApiKeyData:
   type: object
   properties:
     name:

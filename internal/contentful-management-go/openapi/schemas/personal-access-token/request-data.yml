@@ -1,4 +1,4 @@
-PersonalAccessTokenFields:
+PersonalAccessTokenRequestData:
   type: object
   properties:
     name:
@@ -7,11 +7,8 @@ PersonalAccessTokenFields:
       type: array
       items:
         type: string
-    token:
-      type: string
-    revokedAt:
-      type: string
-      format: date-time
+    expiresIn:
+      type: integer
       nullable: true
   required:
     - name

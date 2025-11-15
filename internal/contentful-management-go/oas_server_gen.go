@@ -19,13 +19,13 @@ type Handler interface {
 	// Create an app definition.
 	//
 	// POST /organizations/{organization_id}/app_definitions
-	CreateAppDefinition(ctx context.Context, req *AppDefinitionFields, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error)
+	CreateAppDefinition(ctx context.Context, req *AppDefinitionData, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error)
 	// CreateDeliveryApiKey implements createDeliveryApiKey operation.
 	//
 	// Create a delivery api key.
 	//
 	// POST /spaces/{space_id}/api_keys
-	CreateDeliveryApiKey(ctx context.Context, req *ApiKeyRequestFields, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error)
+	CreateDeliveryApiKey(ctx context.Context, req *ApiKeyRequestData, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error)
 	// CreateEntry implements createEntry operation.
 	//
 	// Create an entry.
@@ -49,19 +49,19 @@ type Handler interface {
 	// Create a personal access token.
 	//
 	// POST /users/me/access_tokens
-	CreatePersonalAccessToken(ctx context.Context, req *PersonalAccessTokenRequestFields) (CreatePersonalAccessTokenRes, error)
+	CreatePersonalAccessToken(ctx context.Context, req *PersonalAccessTokenRequestData) (CreatePersonalAccessTokenRes, error)
 	// CreateRole implements createRole operation.
 	//
 	// Create a role.
 	//
 	// POST /spaces/{space_id}/roles
-	CreateRole(ctx context.Context, req *RoleFields, params CreateRoleParams) (CreateRoleRes, error)
+	CreateRole(ctx context.Context, req *RoleData, params CreateRoleParams) (CreateRoleRes, error)
 	// CreateWebhookDefinition implements createWebhookDefinition operation.
 	//
 	// Create a webhook definition.
 	//
 	// POST /spaces/{space_id}/webhook_definitions
-	CreateWebhookDefinition(ctx context.Context, req *WebhookDefinitionFields, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error)
+	CreateWebhookDefinition(ctx context.Context, req *WebhookDefinitionData, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error)
 	// DeactivateContentType implements deactivateContentType operation.
 	//
 	// Deactivate a content type.
@@ -271,31 +271,31 @@ type Handler interface {
 	// Create or update an app definition.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}
-	PutAppDefinition(ctx context.Context, req *AppDefinitionFields, params PutAppDefinitionParams) (PutAppDefinitionRes, error)
+	PutAppDefinition(ctx context.Context, req *AppDefinitionData, params PutAppDefinitionParams) (PutAppDefinitionRes, error)
 	// PutAppInstallation implements putAppInstallation operation.
 	//
 	// Install or update an app.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
-	PutAppInstallation(ctx context.Context, req *AppInstallationFields, params PutAppInstallationParams) (PutAppInstallationRes, error)
+	PutAppInstallation(ctx context.Context, req *AppInstallationData, params PutAppInstallationParams) (PutAppInstallationRes, error)
 	// PutAppSigningSecret implements putAppSigningSecret operation.
 	//
 	// Create or update an app signing secret.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
-	PutAppSigningSecret(ctx context.Context, req *AppSigningSecretRequestFields, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error)
+	PutAppSigningSecret(ctx context.Context, req *AppSigningSecretRequestData, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error)
 	// PutContentType implements putContentType operation.
 	//
 	// Update a content type.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
-	PutContentType(ctx context.Context, req *ContentTypeRequestFields, params PutContentTypeParams) (PutContentTypeRes, error)
+	PutContentType(ctx context.Context, req *ContentTypeRequestData, params PutContentTypeParams) (PutContentTypeRes, error)
 	// PutEditorInterface implements putEditorInterface operation.
 	//
 	// Update the editor interface for a content type.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
-	PutEditorInterface(ctx context.Context, req *EditorInterfaceFields, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error)
+	PutEditorInterface(ctx context.Context, req *EditorInterfaceData, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error)
 	// PutEntry implements putEntry operation.
 	//
 	// Create or update an entry.
@@ -307,7 +307,7 @@ type Handler interface {
 	// Create or update an extension.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
-	PutExtension(ctx context.Context, req *ExtensionFields, params PutExtensionParams) (PutExtensionRes, error)
+	PutExtension(ctx context.Context, req *ExtensionData, params PutExtensionParams) (PutExtensionRes, error)
 	// PutResourceProvider implements putResourceProvider operation.
 	//
 	// Create or update a resource provider definition.
@@ -319,13 +319,13 @@ type Handler interface {
 	// Create or update a resource type definition.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-	PutResourceType(ctx context.Context, req *ResourceTypeFields, params PutResourceTypeParams) (PutResourceTypeRes, error)
+	PutResourceType(ctx context.Context, req *ResourceTypeData, params PutResourceTypeParams) (PutResourceTypeRes, error)
 	// PutSpaceEnablements implements putSpaceEnablements operation.
 	//
 	// Update enablements for a space.
 	//
 	// PUT /spaces/{space_id}/enablements
-	PutSpaceEnablements(ctx context.Context, req *SpaceEnablementFields, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error)
+	PutSpaceEnablements(ctx context.Context, req *SpaceEnablementData, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error)
 	// RevokePersonalAccessToken implements revokePersonalAccessToken operation.
 	//
 	// Revoke a personal access token.
@@ -343,19 +343,19 @@ type Handler interface {
 	// Update a single delivery api key.
 	//
 	// PUT /spaces/{space_id}/api_keys/{api_key_id}
-	UpdateDeliveryApiKey(ctx context.Context, req *ApiKeyRequestFields, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error)
+	UpdateDeliveryApiKey(ctx context.Context, req *ApiKeyRequestData, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error)
 	// UpdateRole implements updateRole operation.
 	//
 	// Update a role.
 	//
 	// PUT /spaces/{space_id}/roles/{role_id}
-	UpdateRole(ctx context.Context, req *RoleFields, params UpdateRoleParams) (UpdateRoleRes, error)
+	UpdateRole(ctx context.Context, req *RoleData, params UpdateRoleParams) (UpdateRoleRes, error)
 	// UpdateWebhookDefinition implements updateWebhookDefinition operation.
 	//
 	// Update a webhook definition.
 	//
 	// PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
-	UpdateWebhookDefinition(ctx context.Context, req *WebhookDefinitionFields, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error)
+	UpdateWebhookDefinition(ctx context.Context, req *WebhookDefinitionData, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and

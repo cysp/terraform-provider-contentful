@@ -6,7 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewPersonalAccessTokenFromRequestFields(personalAccessTokenID string, personalAccessTokenFields cm.PersonalAccessTokenRequestFields) cm.PersonalAccessToken {
+func NewPersonalAccessTokenFromRequestFields(personalAccessTokenID string, personalAccessTokenFields cm.PersonalAccessTokenRequestData) cm.PersonalAccessToken {
 	personalAccessToken := cm.PersonalAccessToken{
 		Sys: NewPersonalAccessTokenSys(personalAccessTokenID),
 	}
@@ -23,7 +23,7 @@ func NewPersonalAccessTokenSys(personalAccessTokenID string) cm.PersonalAccessTo
 	}
 }
 
-func UpdatePersonalAccessTokenFromRequestFields(personalAccessToken *cm.PersonalAccessToken, personalAccessTokenFields cm.PersonalAccessTokenRequestFields) {
+func UpdatePersonalAccessTokenFromRequestFields(personalAccessToken *cm.PersonalAccessToken, personalAccessTokenFields cm.PersonalAccessTokenRequestData) {
 	personalAccessToken.Name = personalAccessTokenFields.Name
 	personalAccessToken.Scopes = personalAccessTokenFields.Scopes
 }
@@ -37,7 +37,7 @@ func (e personalAccessTokenValidationError) Error() string {
 	return e.field + ": " + e.description
 }
 
-func ValidatePersonalAccessTokenRequestFields(pat *cm.PersonalAccessTokenRequestFields) error {
+func ValidatePersonalAccessTokenRequestData(pat *cm.PersonalAccessTokenRequestData) error {
 	if pat.Name == "" {
 		return personalAccessTokenValidationError{
 			field:       "name",

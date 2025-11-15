@@ -18,7 +18,7 @@ func TestAccAppDefinitionDataSource(t *testing.T) {
 		"app_definition_id": config.StringVariable("2fxGxOcam8Fo5m1wC11fhn"),
 	}
 
-	server.SetAppDefinition("2zuSjSO4A0e6GKBrhJRe2m", "2fxGxOcam8Fo5m1wC11fhn", cm.AppDefinitionFields{
+	server.SetAppDefinition("2zuSjSO4A0e6GKBrhJRe2m", "2fxGxOcam8Fo5m1wC11fhn", cm.AppDefinitionData{
 		Name: "Test App",
 		Bundle: cm.NewOptAppBundleLink(cm.AppBundleLink{
 			Sys: cm.AppBundleLinkSys{

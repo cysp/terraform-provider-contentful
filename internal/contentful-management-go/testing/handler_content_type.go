@@ -25,7 +25,7 @@ func (ts *Handler) GetContentType(_ context.Context, params cm.GetContentTypePar
 }
 
 //nolint:ireturn
-func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestFields, params cm.PutContentTypeParams) (cm.PutContentTypeRes, error) {
+func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestData, params cm.PutContentTypeParams) (cm.PutContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

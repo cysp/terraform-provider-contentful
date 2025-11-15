@@ -26,7 +26,7 @@ func (ts *Handler) GetAppSigningSecret(_ context.Context, params cm.GetAppSignin
 }
 
 //nolint:ireturn
-func (ts *Handler) PutAppSigningSecret(_ context.Context, req *cm.AppSigningSecretRequestFields, params cm.PutAppSigningSecretParams) (cm.PutAppSigningSecretRes, error) {
+func (ts *Handler) PutAppSigningSecret(_ context.Context, req *cm.AppSigningSecretRequestData, params cm.PutAppSigningSecretParams) (cm.PutAppSigningSecretRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies TypedList[TypedObject[RolePolicyValue]]) ([]cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
+func ToRoleDataPolicies(ctx context.Context, path path.Path, policies TypedList[TypedObject[RolePolicyValue]]) ([]cm.RoleDataPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if policies.IsUnknown() {
@@ -22,12 +22,12 @@ func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies TypedLis
 
 	policiesValues := policies.Elements()
 
-	rolePoliciesItems := make([]cm.RoleFieldsPoliciesItem, len(policiesValues))
+	rolePoliciesItems := make([]cm.RoleDataPoliciesItem, len(policiesValues))
 
 	for index, policiesValueElement := range policiesValues {
 		path := path.AtListIndex(index)
 
-		policiesItem, policiesItemDiags := ToRoleFieldsPoliciesItem(ctx, path, policiesValueElement)
+		policiesItem, policiesItemDiags := ToRoleDataPoliciesItem(ctx, path, policiesValueElement)
 		diags.Append(policiesItemDiags...)
 
 		rolePoliciesItems[index] = policiesItem
@@ -36,44 +36,44 @@ func ToRoleFieldsPolicies(ctx context.Context, path path.Path, policies TypedLis
 	return rolePoliciesItems, diags
 }
 
-func ToRoleFieldsPoliciesItem(ctx context.Context, path path.Path, policy TypedObject[RolePolicyValue]) (cm.RoleFieldsPoliciesItem, diag.Diagnostics) {
+func ToRoleDataPoliciesItem(ctx context.Context, path path.Path, policy TypedObject[RolePolicyValue]) (cm.RoleDataPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	effect := policy.Value().Effect.ValueString()
 
-	actions, actionsDiags := ToRoleFieldsPoliciesItemActions(ctx, path.AtName("actions"), policy.Value().Actions)
+	actions, actionsDiags := ToRoleDataPoliciesItemActions(ctx, path.AtName("actions"), policy.Value().Actions)
 	diags.Append(actionsDiags...)
 
-	constraint, constraintDiags := ToOptRoleFieldsPoliciesItemConstraint(ctx, path.AtName("constraint"), policy.Value().Constraint)
+	constraint, constraintDiags := ToOptRoleDataPoliciesItemConstraint(ctx, path.AtName("constraint"), policy.Value().Constraint)
 	diags.Append(constraintDiags...)
 
-	return cm.RoleFieldsPoliciesItem{
-		Effect:     cm.RoleFieldsPoliciesItemEffect(effect),
+	return cm.RoleDataPoliciesItem{
+		Effect:     cm.RoleDataPoliciesItemEffect(effect),
 		Actions:    actions,
 		Constraint: constraint,
 	}, diags
 }
 
-func ToRoleFieldsPoliciesItemActions(ctx context.Context, _ path.Path, actions TypedList[types.String]) (cm.RoleFieldsPoliciesItemActions, diag.Diagnostics) {
+func ToRoleDataPoliciesItemActions(ctx context.Context, _ path.Path, actions TypedList[types.String]) (cm.RoleDataPoliciesItemActions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	actionsStrings := make([]string, len(actions.Elements()))
 	diags.Append(tfsdk.ValueAs(ctx, actions, &actionsStrings)...)
 
 	if slices.Contains(actionsStrings, "all") {
-		return cm.RoleFieldsPoliciesItemActions{
-			Type:   cm.StringRoleFieldsPoliciesItemActions,
+		return cm.RoleDataPoliciesItemActions{
+			Type:   cm.StringRoleDataPoliciesItemActions,
 			String: "all",
 		}, diags
 	}
 
-	return cm.RoleFieldsPoliciesItemActions{
-		Type:        cm.StringArrayRoleFieldsPoliciesItemActions,
+	return cm.RoleDataPoliciesItemActions{
+		Type:        cm.StringArrayRoleDataPoliciesItemActions,
 		StringArray: actionsStrings,
 	}, diags
 }
 
-func ToOptRoleFieldsPoliciesItemConstraint(_ context.Context, _ path.Path, constraint jsontypes.Normalized) (jx.Raw, diag.Diagnostics) {
+func ToOptRoleDataPoliciesItemConstraint(_ context.Context, _ path.Path, constraint jsontypes.Normalized) (jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if constraint.IsNull() {

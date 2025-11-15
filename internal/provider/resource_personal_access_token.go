@@ -63,7 +63,7 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	request, requestDiags := data.ToPersonalAccessTokenRequestFields(ctx)
+	request, requestDiags := data.ToPersonalAccessTokenRequestData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

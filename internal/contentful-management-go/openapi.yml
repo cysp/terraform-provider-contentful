@@ -213,7 +213,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/app-definition/fields.yml#/AppDefinitionFields"
+              $ref: "./openapi/schemas/app-definition/data.yml#/AppDefinitionData"
       responses:
         2XX:
           description: An app definition
@@ -254,7 +254,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/app-definition/fields.yml#/AppDefinitionFields"
+              $ref: "./openapi/schemas/app-definition/data.yml#/AppDefinitionData"
       responses:
         2XX:
           description: An app definition
@@ -358,7 +358,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/resource-type/fields.yml#/ResourceTypeFields"
+              $ref: "./openapi/schemas/resource-type/data.yml#/ResourceTypeData"
       responses:
         2XX:
           description: A resource type definition
@@ -409,7 +409,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/app-signing-secret/request-fields.yml#/AppSigningSecretRequestFields"
+              $ref: "./openapi/schemas/app-signing-secret/request-data.yml#/AppSigningSecretRequestData"
       responses:
         2XX:
           description: An app signing secret
@@ -442,7 +442,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/api-key/request-fields.yml#/ApiKeyRequestFields"
+              $ref: "./openapi/schemas/api-key/request-data.yml#/ApiKeyRequestData"
       responses:
         2XX:
           description: A delivery api key
@@ -484,7 +484,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/api-key/request-fields.yml#/ApiKeyRequestFields"
+              $ref: "./openapi/schemas/api-key/request-data.yml#/ApiKeyRequestData"
       responses:
         2XX:
           description: A delivery api key
@@ -537,7 +537,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/space-enablement/fields.yml#/SpaceEnablementFields"
+              $ref: "./openapi/schemas/space-enablement/data.yml#/SpaceEnablementData"
       responses:
         2XX:
           description: Enablements for a space
@@ -685,7 +685,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/app-installation/fields.yml#/AppInstallationFields"
+              $ref: "./openapi/schemas/app-installation/data.yml#/AppInstallationData"
       responses:
         2XX:
           description: An app installation
@@ -739,7 +739,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/content-type/request-fields.yml#/ContentTypeRequestFields"
+              $ref: "./openapi/schemas/content-type/request-data.yml#/ContentTypeRequestData"
       responses:
         2XX:
           description: A content type
@@ -793,7 +793,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/editor-interface/fields.yml#/EditorInterfaceFields"
+              $ref: "./openapi/schemas/editor-interface/data.yml#/EditorInterfaceData"
       responses:
         2XX:
           description: An editor interface
@@ -1000,7 +1000,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/extension/fields.yml#/ExtensionFields"
+              $ref: "./openapi/schemas/extension/data.yml#/ExtensionData"
       responses:
         2XX:
           description: An extension
@@ -1051,7 +1051,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/role/fields.yml#/RoleFields"
+              $ref: "./openapi/schemas/role/data.yml#/RoleData"
       responses:
         2XX:
           description: A role
@@ -1093,7 +1093,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/role/fields.yml#/RoleFields"
+              $ref: "./openapi/schemas/role/data.yml#/RoleData"
       responses:
         2XX:
           description: A role
@@ -1126,7 +1126,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/webhook-definition/fields.yml#/WebhookDefinitionFields"
+              $ref: "./openapi/schemas/webhook-definition/data.yml#/WebhookDefinitionData"
       responses:
         2XX:
           description: A webhook definition
@@ -1168,7 +1168,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/webhook-definition/fields.yml#/WebhookDefinitionFields"
+              $ref: "./openapi/schemas/webhook-definition/data.yml#/WebhookDefinitionData"
       responses:
         2XX:
           description: A webhook definition
@@ -1214,7 +1214,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/personal-access-token/request-fields.yml#/PersonalAccessTokenRequestFields"
+              $ref: "./openapi/schemas/personal-access-token/request-data.yml#/PersonalAccessTokenRequestData"
       responses:
         2XX:
           description: A personal access token

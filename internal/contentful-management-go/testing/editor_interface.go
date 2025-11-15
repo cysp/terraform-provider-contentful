@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewEditorInterfaceFromFields(spaceID, environmentID, contentTypeID string, editorInterfaceFields cm.EditorInterfaceFields) cm.EditorInterface {
+func NewEditorInterfaceFromFields(spaceID, environmentID, contentTypeID string, editorInterfaceFields cm.EditorInterfaceData) cm.EditorInterface {
 	editorInterface := cm.EditorInterface{
 		Sys: NewEditorInterfaceSys(spaceID, environmentID, contentTypeID),
 	}
@@ -42,25 +42,25 @@ func NewEditorInterfaceSys(spaceID, environmentID, contentTypeID string) cm.Edit
 	}
 }
 
-func UpdateEditorInterfaceFromFields(editorInterface *cm.EditorInterface, editorInterfaceFields cm.EditorInterfaceFields) {
+func UpdateEditorInterfaceFromFields(editorInterface *cm.EditorInterface, editorInterfaceFields cm.EditorInterfaceData) {
 	convertOptNil(&editorInterface.EditorLayout, &editorInterfaceFields.EditorLayout, func(editorLayout []cm.EditorInterfaceEditorLayoutItem) []cm.EditorInterfaceEditorLayoutItem {
 		return editorLayout
 	})
 
-	convertOptNil(&editorInterface.Controls, &editorInterfaceFields.Controls, func(controls []cm.EditorInterfaceFieldsControlsItem) []cm.EditorInterfaceControlsItem {
-		return convertSlice(controls, func(control cm.EditorInterfaceFieldsControlsItem) cm.EditorInterfaceControlsItem {
+	convertOptNil(&editorInterface.Controls, &editorInterfaceFields.Controls, func(controls []cm.EditorInterfaceDataControlsItem) []cm.EditorInterfaceControlsItem {
+		return convertSlice(controls, func(control cm.EditorInterfaceDataControlsItem) cm.EditorInterfaceControlsItem {
 			return cm.EditorInterfaceControlsItem(control)
 		})
 	})
 
-	convertOptNil(&editorInterface.GroupControls, &editorInterfaceFields.GroupControls, func(groupControl []cm.EditorInterfaceFieldsGroupControlsItem) []cm.EditorInterfaceGroupControlsItem {
-		return convertSlice(groupControl, func(groupControlItem cm.EditorInterfaceFieldsGroupControlsItem) cm.EditorInterfaceGroupControlsItem {
+	convertOptNil(&editorInterface.GroupControls, &editorInterfaceFields.GroupControls, func(groupControl []cm.EditorInterfaceDataGroupControlsItem) []cm.EditorInterfaceGroupControlsItem {
+		return convertSlice(groupControl, func(groupControlItem cm.EditorInterfaceDataGroupControlsItem) cm.EditorInterfaceGroupControlsItem {
 			return cm.EditorInterfaceGroupControlsItem(groupControlItem)
 		})
 	})
 
-	convertOptNil(&editorInterface.Sidebar, &editorInterfaceFields.Sidebar, func(sidebar []cm.EditorInterfaceFieldsSidebarItem) []cm.EditorInterfaceSidebarItem {
-		return convertSlice(sidebar, func(sidebarItem cm.EditorInterfaceFieldsSidebarItem) cm.EditorInterfaceSidebarItem {
+	convertOptNil(&editorInterface.Sidebar, &editorInterfaceFields.Sidebar, func(sidebar []cm.EditorInterfaceDataSidebarItem) []cm.EditorInterfaceSidebarItem {
+		return convertSlice(sidebar, func(sidebarItem cm.EditorInterfaceDataSidebarItem) cm.EditorInterfaceSidebarItem {
 			return cm.EditorInterfaceSidebarItem(sidebarItem)
 		})
 	})

@@ -9,11 +9,11 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) CreatePersonalAccessToken(_ context.Context, req *cm.PersonalAccessTokenRequestFields) (cm.CreatePersonalAccessTokenRes, error) {
+func (ts *Handler) CreatePersonalAccessToken(_ context.Context, req *cm.PersonalAccessTokenRequestData) (cm.CreatePersonalAccessTokenRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	err := ValidatePersonalAccessTokenRequestFields(req)
+	err := ValidatePersonalAccessTokenRequestData(req)
 	if err != nil {
 		return NewContentfulManagementErrorStatusCodeBadRequest(pointerTo(err.Error()), nil), nil
 	}

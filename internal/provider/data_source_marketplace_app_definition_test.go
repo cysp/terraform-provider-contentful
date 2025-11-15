@@ -17,15 +17,15 @@ func TestAccMarketplaceAppDefinitionDataSource(t *testing.T) {
 		"app_definition_id": config.StringVariable("5KySdUzG7OWuCE2V3fgtIa"),
 	}
 
-	server.SetMarketplaceAppDefinition("5EJGHo8tYJcjnEhYWDxivp", "5KySdUzG7OWuCE2V3fgtIa", cm.AppDefinitionFields{
+	server.SetMarketplaceAppDefinition("5EJGHo8tYJcjnEhYWDxivp", "5KySdUzG7OWuCE2V3fgtIa", cm.AppDefinitionData{
 		Name: "Bynder",
-		Locations: []cm.AppDefinitionFieldsLocationsItem{
+		Locations: []cm.AppDefinitionDataLocationsItem{
 			{
 				Location: "app-config",
 			},
 			{
 				Location: "entry-field",
-				FieldTypes: []cm.AppDefinitionFieldsLocationsItemFieldTypesItem{
+				FieldTypes: []cm.AppDefinitionDataLocationsItemFieldTypesItem{
 					{
 						Type: "Object",
 					},

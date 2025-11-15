@@ -19,7 +19,7 @@ func TestAccAppDefinitionResourceTypeResource(t *testing.T) {
 		"resource_provider_id": config.StringVariable("resource-provider-id"),
 	}
 
-	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
 	})
 
@@ -61,7 +61,7 @@ func TestAccAppDefinitionResourceTypeImport(t *testing.T) {
 		"resource_provider_id": config.StringVariable("resource-provider-id"),
 	}
 
-	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionFields{
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
 	})
 

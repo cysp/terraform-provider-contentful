@@ -6,4 +6,4 @@ AppDefinition:
           $ref: "./sys.yml#/AppDefinitionSys"
       required:
         - sys
-    - $ref: "./fields.yml#/AppDefinitionFields"
+    - $ref: "./data.yml#/AppDefinitionData"

@@ -1,11 +1,11 @@
-EditorInterfaceFields:
+EditorInterfaceData:
   type: object
   properties:
     editorLayout:
       type: array
       nullable: true
       items:
-        $ref: "layout-items.yml#/EditorInterfaceEditorLayoutItem"
+        $ref: "./layout-items.yml#/EditorInterfaceEditorLayoutItem"
     controls:
       type: array
       nullable: true

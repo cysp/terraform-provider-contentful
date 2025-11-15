@@ -72,7 +72,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		SpaceID: data.SpaceID.ValueString(),
 	}
 
-	request, requestDiags := data.ToRoleFields(ctx)
+	request, requestDiags := data.ToRoleData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -189,7 +189,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToRoleFields(ctx)
+	request, requestDiags := data.ToRoleData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

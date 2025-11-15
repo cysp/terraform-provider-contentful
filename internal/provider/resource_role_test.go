@@ -19,7 +19,7 @@ func TestAccRoleResourceImport(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	server.SetRole("0p38pssr0fi3", "2EZrF9oDqi4AnsLNy21n6z", cm.RoleFields{
+	server.SetRole("0p38pssr0fi3", "2EZrF9oDqi4AnsLNy21n6z", cm.RoleData{
 		Name: "author",
 	})
 
@@ -102,7 +102,7 @@ func TestAccRoleResourceDeleted(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	server.SetRole("0p38pssr0fi3", "test", cm.RoleFields{
+	server.SetRole("0p38pssr0fi3", "test", cm.RoleData{
 		Name: "Test",
 	})
 

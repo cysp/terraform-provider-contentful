@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewExtensionFromFields(spaceID, environmentID, extensionID string, fields cm.ExtensionFields) cm.Extension {
+func NewExtensionFromFields(spaceID, environmentID, extensionID string, fields cm.ExtensionData) cm.Extension {
 	extension := cm.Extension{
 		Sys: NewExtensionSys(spaceID, environmentID, extensionID),
 	}
@@ -35,7 +35,7 @@ func NewExtensionSys(spaceID, environmentID, extensionID string) cm.ExtensionSys
 	}
 }
 
-func UpdateExtensionFromFields(extension *cm.Extension, fields cm.ExtensionFields) {
+func UpdateExtensionFromFields(extension *cm.Extension, fields cm.ExtensionData) {
 	extensionExtension := cm.ExtensionExtension{
 		Name:       fields.Extension.Name,
 		Src:        fields.Extension.Src,

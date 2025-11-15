@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *DeliveryAPIKeyModel) ToAPIKeyRequestFields(ctx context.Context) (cm.ApiKeyRequestFields, diag.Diagnostics) {
+func (model *DeliveryAPIKeyModel) ToAPIKeyRequestFields(ctx context.Context) (cm.ApiKeyRequestData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	req := cm.ApiKeyRequestFields{
+	req := cm.ApiKeyRequestData{
 		Name:        model.Name.ValueString(),
 		Description: util.StringValueToOptNilString(model.Description),
 	}

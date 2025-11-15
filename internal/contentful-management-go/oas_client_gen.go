@@ -32,13 +32,13 @@ type Invoker interface {
 	// Create an app definition.
 	//
 	// POST /organizations/{organization_id}/app_definitions
-	CreateAppDefinition(ctx context.Context, request *AppDefinitionFields, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error)
+	CreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error)
 	// CreateDeliveryApiKey invokes createDeliveryApiKey operation.
 	//
 	// Create a delivery api key.
 	//
 	// POST /spaces/{space_id}/api_keys
-	CreateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestFields, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error)
+	CreateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error)
 	// CreateEntry invokes createEntry operation.
 	//
 	// Create an entry.
@@ -62,19 +62,19 @@ type Invoker interface {
 	// Create a personal access token.
 	//
 	// POST /users/me/access_tokens
-	CreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestFields) (CreatePersonalAccessTokenRes, error)
+	CreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData) (CreatePersonalAccessTokenRes, error)
 	// CreateRole invokes createRole operation.
 	//
 	// Create a role.
 	//
 	// POST /spaces/{space_id}/roles
-	CreateRole(ctx context.Context, request *RoleFields, params CreateRoleParams) (CreateRoleRes, error)
+	CreateRole(ctx context.Context, request *RoleData, params CreateRoleParams) (CreateRoleRes, error)
 	// CreateWebhookDefinition invokes createWebhookDefinition operation.
 	//
 	// Create a webhook definition.
 	//
 	// POST /spaces/{space_id}/webhook_definitions
-	CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionFields, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error)
+	CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error)
 	// DeactivateContentType invokes deactivateContentType operation.
 	//
 	// Deactivate a content type.
@@ -284,31 +284,31 @@ type Invoker interface {
 	// Create or update an app definition.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}
-	PutAppDefinition(ctx context.Context, request *AppDefinitionFields, params PutAppDefinitionParams) (PutAppDefinitionRes, error)
+	PutAppDefinition(ctx context.Context, request *AppDefinitionData, params PutAppDefinitionParams) (PutAppDefinitionRes, error)
 	// PutAppInstallation invokes putAppInstallation operation.
 	//
 	// Install or update an app.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
-	PutAppInstallation(ctx context.Context, request *AppInstallationFields, params PutAppInstallationParams) (PutAppInstallationRes, error)
+	PutAppInstallation(ctx context.Context, request *AppInstallationData, params PutAppInstallationParams) (PutAppInstallationRes, error)
 	// PutAppSigningSecret invokes putAppSigningSecret operation.
 	//
 	// Create or update an app signing secret.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
-	PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestFields, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error)
+	PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error)
 	// PutContentType invokes putContentType operation.
 	//
 	// Update a content type.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
-	PutContentType(ctx context.Context, request *ContentTypeRequestFields, params PutContentTypeParams) (PutContentTypeRes, error)
+	PutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams) (PutContentTypeRes, error)
 	// PutEditorInterface invokes putEditorInterface operation.
 	//
 	// Update the editor interface for a content type.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
-	PutEditorInterface(ctx context.Context, request *EditorInterfaceFields, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error)
+	PutEditorInterface(ctx context.Context, request *EditorInterfaceData, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error)
 	// PutEntry invokes putEntry operation.
 	//
 	// Create or update an entry.
@@ -320,7 +320,7 @@ type Invoker interface {
 	// Create or update an extension.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
-	PutExtension(ctx context.Context, request *ExtensionFields, params PutExtensionParams) (PutExtensionRes, error)
+	PutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams) (PutExtensionRes, error)
 	// PutResourceProvider invokes putResourceProvider operation.
 	//
 	// Create or update a resource provider definition.
@@ -332,13 +332,13 @@ type Invoker interface {
 	// Create or update a resource type definition.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-	PutResourceType(ctx context.Context, request *ResourceTypeFields, params PutResourceTypeParams) (PutResourceTypeRes, error)
+	PutResourceType(ctx context.Context, request *ResourceTypeData, params PutResourceTypeParams) (PutResourceTypeRes, error)
 	// PutSpaceEnablements invokes putSpaceEnablements operation.
 	//
 	// Update enablements for a space.
 	//
 	// PUT /spaces/{space_id}/enablements
-	PutSpaceEnablements(ctx context.Context, request *SpaceEnablementFields, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error)
+	PutSpaceEnablements(ctx context.Context, request *SpaceEnablementData, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error)
 	// RevokePersonalAccessToken invokes revokePersonalAccessToken operation.
 	//
 	// Revoke a personal access token.
@@ -356,19 +356,19 @@ type Invoker interface {
 	// Update a single delivery api key.
 	//
 	// PUT /spaces/{space_id}/api_keys/{api_key_id}
-	UpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestFields, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error)
+	UpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error)
 	// UpdateRole invokes updateRole operation.
 	//
 	// Update a role.
 	//
 	// PUT /spaces/{space_id}/roles/{role_id}
-	UpdateRole(ctx context.Context, request *RoleFields, params UpdateRoleParams) (UpdateRoleRes, error)
+	UpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams) (UpdateRoleRes, error)
 	// UpdateWebhookDefinition invokes updateWebhookDefinition operation.
 	//
 	// Update a webhook definition.
 	//
 	// PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
-	UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionFields, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error)
+	UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error)
 }
 
 // Client implements OAS client.
@@ -560,12 +560,12 @@ func (c *Client) sendActivateContentType(ctx context.Context, params ActivateCon
 // Create an app definition.
 //
 // POST /organizations/{organization_id}/app_definitions
-func (c *Client) CreateAppDefinition(ctx context.Context, request *AppDefinitionFields, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error) {
+func (c *Client) CreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error) {
 	res, err := c.sendCreateAppDefinition(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefinitionFields, params CreateAppDefinitionParams) (res CreateAppDefinitionRes, err error) {
+func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams) (res CreateAppDefinitionRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [3]string
@@ -651,12 +651,12 @@ func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefini
 // Create a delivery api key.
 //
 // POST /spaces/{space_id}/api_keys
-func (c *Client) CreateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestFields, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error) {
+func (c *Client) CreateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error) {
 	res, err := c.sendCreateDeliveryApiKey(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendCreateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestFields, params CreateDeliveryApiKeyParams) (res CreateDeliveryApiKeyRes, err error) {
+func (c *Client) sendCreateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryApiKeyParams) (res CreateDeliveryApiKeyRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [3]string
@@ -1126,12 +1126,12 @@ func (c *Client) sendCreateOrUpdateEnvironmentAlias(ctx context.Context, request
 // Create a personal access token.
 //
 // POST /users/me/access_tokens
-func (c *Client) CreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestFields) (CreatePersonalAccessTokenRes, error) {
+func (c *Client) CreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData) (CreatePersonalAccessTokenRes, error) {
 	res, err := c.sendCreatePersonalAccessToken(ctx, request)
 	return res, err
 }
 
-func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestFields) (res CreatePersonalAccessTokenRes, err error) {
+func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData) (res CreatePersonalAccessTokenRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [1]string
@@ -1198,12 +1198,12 @@ func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *Per
 // Create a role.
 //
 // POST /spaces/{space_id}/roles
-func (c *Client) CreateRole(ctx context.Context, request *RoleFields, params CreateRoleParams) (CreateRoleRes, error) {
+func (c *Client) CreateRole(ctx context.Context, request *RoleData, params CreateRoleParams) (CreateRoleRes, error) {
 	res, err := c.sendCreateRole(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendCreateRole(ctx context.Context, request *RoleFields, params CreateRoleParams) (res CreateRoleRes, err error) {
+func (c *Client) sendCreateRole(ctx context.Context, request *RoleData, params CreateRoleParams) (res CreateRoleRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [3]string
@@ -1289,12 +1289,12 @@ func (c *Client) sendCreateRole(ctx context.Context, request *RoleFields, params
 // Create a webhook definition.
 //
 // POST /spaces/{space_id}/webhook_definitions
-func (c *Client) CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionFields, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error) {
+func (c *Client) CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error) {
 	res, err := c.sendCreateWebhookDefinition(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionFields, params CreateWebhookDefinitionParams) (res CreateWebhookDefinitionRes, err error) {
+func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams) (res CreateWebhookDefinitionRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [3]string
@@ -5166,12 +5166,12 @@ func (c *Client) sendPublishEntry(ctx context.Context, params PublishEntryParams
 // Create or update an app definition.
 //
 // PUT /organizations/{organization_id}/app_definitions/{app_definition_id}
-func (c *Client) PutAppDefinition(ctx context.Context, request *AppDefinitionFields, params PutAppDefinitionParams) (PutAppDefinitionRes, error) {
+func (c *Client) PutAppDefinition(ctx context.Context, request *AppDefinitionData, params PutAppDefinitionParams) (PutAppDefinitionRes, error) {
 	res, err := c.sendPutAppDefinition(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutAppDefinition(ctx context.Context, request *AppDefinitionFields, params PutAppDefinitionParams) (res PutAppDefinitionRes, err error) {
+func (c *Client) sendPutAppDefinition(ctx context.Context, request *AppDefinitionData, params PutAppDefinitionParams) (res PutAppDefinitionRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [4]string
@@ -5275,12 +5275,12 @@ func (c *Client) sendPutAppDefinition(ctx context.Context, request *AppDefinitio
 // Install or update an app.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
-func (c *Client) PutAppInstallation(ctx context.Context, request *AppInstallationFields, params PutAppInstallationParams) (PutAppInstallationRes, error) {
+func (c *Client) PutAppInstallation(ctx context.Context, request *AppInstallationData, params PutAppInstallationParams) (PutAppInstallationRes, error) {
 	res, err := c.sendPutAppInstallation(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutAppInstallation(ctx context.Context, request *AppInstallationFields, params PutAppInstallationParams) (res PutAppInstallationRes, err error) {
+func (c *Client) sendPutAppInstallation(ctx context.Context, request *AppInstallationData, params PutAppInstallationParams) (res PutAppInstallationRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [6]string
@@ -5419,12 +5419,12 @@ func (c *Client) sendPutAppInstallation(ctx context.Context, request *AppInstall
 // Create or update an app signing secret.
 //
 // PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
-func (c *Client) PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestFields, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error) {
+func (c *Client) PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error) {
 	res, err := c.sendPutAppSigningSecret(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestFields, params PutAppSigningSecretParams) (res PutAppSigningSecretRes, err error) {
+func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams) (res PutAppSigningSecretRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [5]string
@@ -5529,12 +5529,12 @@ func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSignin
 // Update a content type.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
-func (c *Client) PutContentType(ctx context.Context, request *ContentTypeRequestFields, params PutContentTypeParams) (PutContentTypeRes, error) {
+func (c *Client) PutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams) (PutContentTypeRes, error) {
 	res, err := c.sendPutContentType(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutContentType(ctx context.Context, request *ContentTypeRequestFields, params PutContentTypeParams) (res PutContentTypeRes, err error) {
+func (c *Client) sendPutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams) (res PutContentTypeRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [6]string
@@ -5670,12 +5670,12 @@ func (c *Client) sendPutContentType(ctx context.Context, request *ContentTypeReq
 // Update the editor interface for a content type.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
-func (c *Client) PutEditorInterface(ctx context.Context, request *EditorInterfaceFields, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error) {
+func (c *Client) PutEditorInterface(ctx context.Context, request *EditorInterfaceData, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error) {
 	res, err := c.sendPutEditorInterface(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutEditorInterface(ctx context.Context, request *EditorInterfaceFields, params PutEditorInterfaceParams) (res PutEditorInterfaceRes, err error) {
+func (c *Client) sendPutEditorInterface(ctx context.Context, request *EditorInterfaceData, params PutEditorInterfaceParams) (res PutEditorInterfaceRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [7]string
@@ -5967,12 +5967,12 @@ func (c *Client) sendPutEntry(ctx context.Context, request *EntryRequest, params
 // Create or update an extension.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
-func (c *Client) PutExtension(ctx context.Context, request *ExtensionFields, params PutExtensionParams) (PutExtensionRes, error) {
+func (c *Client) PutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams) (PutExtensionRes, error) {
 	res, err := c.sendPutExtension(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutExtension(ctx context.Context, request *ExtensionFields, params PutExtensionParams) (res PutExtensionRes, err error) {
+func (c *Client) sendPutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams) (res PutExtensionRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [6]string
@@ -6218,12 +6218,12 @@ func (c *Client) sendPutResourceProvider(ctx context.Context, request *ResourceP
 // Create or update a resource type definition.
 //
 // PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (c *Client) PutResourceType(ctx context.Context, request *ResourceTypeFields, params PutResourceTypeParams) (PutResourceTypeRes, error) {
+func (c *Client) PutResourceType(ctx context.Context, request *ResourceTypeData, params PutResourceTypeParams) (PutResourceTypeRes, error) {
 	res, err := c.sendPutResourceType(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutResourceType(ctx context.Context, request *ResourceTypeFields, params PutResourceTypeParams) (res PutResourceTypeRes, err error) {
+func (c *Client) sendPutResourceType(ctx context.Context, request *ResourceTypeData, params PutResourceTypeParams) (res PutResourceTypeRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [6]string
@@ -6346,12 +6346,12 @@ func (c *Client) sendPutResourceType(ctx context.Context, request *ResourceTypeF
 // Update enablements for a space.
 //
 // PUT /spaces/{space_id}/enablements
-func (c *Client) PutSpaceEnablements(ctx context.Context, request *SpaceEnablementFields, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error) {
+func (c *Client) PutSpaceEnablements(ctx context.Context, request *SpaceEnablementData, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error) {
 	res, err := c.sendPutSpaceEnablements(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutSpaceEnablements(ctx context.Context, request *SpaceEnablementFields, params PutSpaceEnablementsParams) (res PutSpaceEnablementsRes, err error) {
+func (c *Client) sendPutSpaceEnablements(ctx context.Context, request *SpaceEnablementData, params PutSpaceEnablementsParams) (res PutSpaceEnablementsRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [3]string
@@ -6664,12 +6664,12 @@ func (c *Client) sendUnpublishEntry(ctx context.Context, params UnpublishEntryPa
 // Update a single delivery api key.
 //
 // PUT /spaces/{space_id}/api_keys/{api_key_id}
-func (c *Client) UpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestFields, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error) {
+func (c *Client) UpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error) {
 	res, err := c.sendUpdateDeliveryApiKey(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendUpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestFields, params UpdateDeliveryApiKeyParams) (res UpdateDeliveryApiKeyRes, err error) {
+func (c *Client) sendUpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryApiKeyParams) (res UpdateDeliveryApiKeyRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [4]string
@@ -6786,12 +6786,12 @@ func (c *Client) sendUpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRe
 // Update a role.
 //
 // PUT /spaces/{space_id}/roles/{role_id}
-func (c *Client) UpdateRole(ctx context.Context, request *RoleFields, params UpdateRoleParams) (UpdateRoleRes, error) {
+func (c *Client) UpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams) (UpdateRoleRes, error) {
 	res, err := c.sendUpdateRole(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendUpdateRole(ctx context.Context, request *RoleFields, params UpdateRoleParams) (res UpdateRoleRes, err error) {
+func (c *Client) sendUpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams) (res UpdateRoleRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [4]string
@@ -6908,12 +6908,12 @@ func (c *Client) sendUpdateRole(ctx context.Context, request *RoleFields, params
 // Update a webhook definition.
 //
 // PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
-func (c *Client) UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionFields, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error) {
+func (c *Client) UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error) {
 	res, err := c.sendUpdateWebhookDefinition(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendUpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionFields, params UpdateWebhookDefinitionParams) (res UpdateWebhookDefinitionRes, err error) {
+func (c *Client) sendUpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams) (res UpdateWebhookDefinitionRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [4]string

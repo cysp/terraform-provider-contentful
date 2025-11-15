@@ -4,7 +4,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func (s *Server) SetWebhookDefinition(spaceID string, webhookID string, fields cm.WebhookDefinitionFields) {
+func (s *Server) SetWebhookDefinition(spaceID string, webhookID string, fields cm.WebhookDefinitionData) {
 	s.h.mu.Lock()
 	defer s.h.mu.Unlock()
 

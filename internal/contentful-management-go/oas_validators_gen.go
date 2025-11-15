@@ -75,7 +75,7 @@ func (s *ApiKey) Validate() error {
 	return nil
 }
 
-func (s *ApiKeyRequestFields) Validate() error {
+func (s *ApiKeyRequestData) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -142,17 +142,6 @@ func (s *ApiKeySys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -160,6 +149,17 @@ func (s *ApiKeySys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "space",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -294,7 +294,7 @@ func (s *AppDefinition) Validate() error {
 	return nil
 }
 
-func (s *AppDefinitionFields) Validate() error {
+func (s *AppDefinitionData) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -429,17 +429,6 @@ func (s *AppDefinitionSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Organization.Validate(); err != nil {
 			return err
 		}
@@ -447,6 +436,17 @@ func (s *AppDefinitionSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "organization",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -518,17 +518,6 @@ func (s *AppInstallationSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -547,6 +536,17 @@ func (s *AppInstallationSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "environment",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -629,17 +629,6 @@ func (s *AppSigningSecretSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Organization.Validate(); err != nil {
 			return err
 		}
@@ -647,6 +636,17 @@ func (s *AppSigningSecretSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "organization",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -1051,7 +1051,7 @@ func (s ContentTypeMetadataTaxonomyItemSysType) Validate() error {
 	}
 }
 
-func (s *ContentTypeRequestFields) Validate() error {
+func (s *ContentTypeRequestData) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -1109,7 +1109,7 @@ func (s *ContentTypeRequestFields) Validate() error {
 	return nil
 }
 
-func (s *ContentTypeRequestFieldsFieldsItem) Validate() error {
+func (s *ContentTypeRequestDataFieldsItem) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -1186,17 +1186,6 @@ func (s *ContentTypeSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -1215,6 +1204,17 @@ func (s *ContentTypeSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "environment",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -1371,7 +1371,7 @@ func (s *EditorInterface) Validate() error {
 	return nil
 }
 
-func (s *EditorInterfaceFields) Validate() error {
+func (s *EditorInterfaceData) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -1485,17 +1485,6 @@ func (s *EditorInterfaceSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -1514,6 +1503,17 @@ func (s *EditorInterfaceSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "environment",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -1681,17 +1681,6 @@ func (s *EntrySys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -1710,6 +1699,17 @@ func (s *EntrySys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "environment",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -1849,17 +1849,6 @@ func (s *EnvironmentAliasSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -1867,6 +1856,17 @@ func (s *EnvironmentAliasSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "space",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -1990,17 +1990,6 @@ func (s *EnvironmentSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -2008,6 +1997,17 @@ func (s *EnvironmentSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "space",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -2115,30 +2115,7 @@ func (s *Extension) Validate() error {
 	return nil
 }
 
-func (s *ExtensionExtension) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if s.FieldTypes == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "fieldTypes",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s *ExtensionFields) Validate() error {
+func (s *ExtensionData) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -2161,7 +2138,30 @@ func (s *ExtensionFields) Validate() error {
 	return nil
 }
 
-func (s *ExtensionFieldsExtension) Validate() error {
+func (s *ExtensionDataExtension) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if s.FieldTypes == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "fieldTypes",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *ExtensionExtension) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -2214,17 +2214,6 @@ func (s *ExtensionSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -2243,6 +2232,17 @@ func (s *ExtensionSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "environment",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -2544,7 +2544,7 @@ func (s *PersonalAccessToken) Validate() error {
 	return nil
 }
 
-func (s *PersonalAccessTokenRequestFields) Validate() error {
+func (s *PersonalAccessTokenRequestData) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -2752,17 +2752,6 @@ func (s *PreviewApiKeySys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -2770,6 +2759,17 @@ func (s *PreviewApiKeySys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "space",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -2995,17 +2995,6 @@ func (s *ResourceProviderSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Organization.Validate(); err != nil {
 			return err
 		}
@@ -3013,6 +3002,17 @@ func (s *ResourceProviderSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "organization",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -3104,17 +3104,6 @@ func (s *ResourceTypeSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Organization.Validate(); err != nil {
 			return err
 		}
@@ -3122,6 +3111,17 @@ func (s *ResourceTypeSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "organization",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -3221,7 +3221,7 @@ func (s *Role) Validate() error {
 	return nil
 }
 
-func (s *RoleFields) Validate() error {
+func (s *RoleData) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -3269,7 +3269,7 @@ func (s *RoleFields) Validate() error {
 	return nil
 }
 
-func (s RoleFieldsPermissions) Validate() error {
+func (s RoleDataPermissions) Validate() error {
 	var failures []validate.FieldError
 	for key, elem := range s {
 		if err := func() error {
@@ -3291,11 +3291,11 @@ func (s RoleFieldsPermissions) Validate() error {
 	return nil
 }
 
-func (s RoleFieldsPermissionsItem) Validate() error {
+func (s RoleDataPermissionsItem) Validate() error {
 	switch s.Type {
-	case StringRoleFieldsPermissionsItem:
+	case StringRoleDataPermissionsItem:
 		return nil // no validation needed
-	case StringArrayRoleFieldsPermissionsItem:
+	case StringArrayRoleDataPermissionsItem:
 		if s.StringArray == nil {
 			return errors.New("nil is invalid value")
 		}
@@ -3305,7 +3305,7 @@ func (s RoleFieldsPermissionsItem) Validate() error {
 	}
 }
 
-func (s *RoleFieldsPoliciesItem) Validate() error {
+func (s *RoleDataPoliciesItem) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -3339,11 +3339,11 @@ func (s *RoleFieldsPoliciesItem) Validate() error {
 	return nil
 }
 
-func (s RoleFieldsPoliciesItemActions) Validate() error {
+func (s RoleDataPoliciesItemActions) Validate() error {
 	switch s.Type {
-	case StringRoleFieldsPoliciesItemActions:
+	case StringRoleDataPoliciesItemActions:
 		return nil // no validation needed
-	case StringArrayRoleFieldsPoliciesItemActions:
+	case StringArrayRoleDataPoliciesItemActions:
 		if s.StringArray == nil {
 			return errors.New("nil is invalid value")
 		}
@@ -3353,7 +3353,7 @@ func (s RoleFieldsPoliciesItemActions) Validate() error {
 	}
 }
 
-func (s RoleFieldsPoliciesItemEffect) Validate() error {
+func (s RoleDataPoliciesItemEffect) Validate() error {
 	switch s {
 	case "allow":
 		return nil
@@ -3489,17 +3489,6 @@ func (s *RoleSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -3507,6 +3496,17 @@ func (s *RoleSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "space",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -3578,17 +3578,6 @@ func (s *SpaceEnablementSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -3596,6 +3585,17 @@ func (s *SpaceEnablementSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "space",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}
@@ -3871,7 +3871,7 @@ func (s *WebhookDefinition) Validate() error {
 	return nil
 }
 
-func (s *WebhookDefinitionFields) Validate() error {
+func (s *WebhookDefinitionData) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -3942,17 +3942,6 @@ func (s *WebhookDefinitionSys) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if err := s.Space.Validate(); err != nil {
 			return err
 		}
@@ -3960,6 +3949,17 @@ func (s *WebhookDefinitionSys) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "space",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
 			Error: err,
 		})
 	}

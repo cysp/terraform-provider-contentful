@@ -1,4 +1,4 @@
-WebhookDefinitionFields:
+WebhookDefinitionData:
   type: object
   properties:
     name:
@@ -12,7 +12,7 @@ WebhookDefinitionFields:
     filters:
       type: array
       items:
-        $ref: "filters.yml#/WebhookDefinitionFilter"
+        $ref: "./filters.yml#/WebhookDefinitionFilter"
       nullable: true
     httpBasicUsername:
       type: string
@@ -21,7 +21,7 @@ WebhookDefinitionFields:
       type: string
       nullable: true
     headers:
-      $ref: "headers.yml#/WebhookDefinitionHeaders"
+      $ref: "./headers.yml#/WebhookDefinitionHeaders"
     transformation:
       type: object
       properties:
