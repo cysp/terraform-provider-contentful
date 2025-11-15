@@ -20,12 +20,12 @@ type Handler interface {
 	//
 	// POST /organizations/{organization_id}/app_definitions
 	CreateAppDefinition(ctx context.Context, req *AppDefinitionData, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error)
-	// CreateDeliveryApiKey implements createDeliveryApiKey operation.
+	// CreateDeliveryAPIKey implements createDeliveryAPIKey operation.
 	//
 	// Create a delivery api key.
 	//
 	// POST /spaces/{space_id}/api_keys
-	CreateDeliveryApiKey(ctx context.Context, req *ApiKeyRequestData, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error)
+	CreateDeliveryAPIKey(ctx context.Context, req *ApiKeyRequestData, params CreateDeliveryAPIKeyParams) (CreateDeliveryAPIKeyRes, error)
 	// CreateEntry implements createEntry operation.
 	//
 	// Create an entry.
@@ -92,12 +92,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
 	DeleteContentType(ctx context.Context, params DeleteContentTypeParams) (DeleteContentTypeRes, error)
-	// DeleteDeliveryApiKey implements deleteDeliveryApiKey operation.
+	// DeleteDeliveryAPIKey implements deleteDeliveryAPIKey operation.
 	//
 	// Delete a single delivery api key.
 	//
 	// DELETE /spaces/{space_id}/api_keys/{api_key_id}
-	DeleteDeliveryApiKey(ctx context.Context, params DeleteDeliveryApiKeyParams) (DeleteDeliveryApiKeyRes, error)
+	DeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams) (DeleteDeliveryAPIKeyRes, error)
 	// DeleteEntry implements deleteEntry operation.
 	//
 	// Delete an entry.
@@ -176,12 +176,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
 	GetContentType(ctx context.Context, params GetContentTypeParams) (GetContentTypeRes, error)
-	// GetDeliveryApiKey implements getDeliveryApiKey operation.
+	// GetDeliveryAPIKey implements getDeliveryAPIKey operation.
 	//
 	// Get a single delivery api key.
 	//
 	// GET /spaces/{space_id}/api_keys/{api_key_id}
-	GetDeliveryApiKey(ctx context.Context, params GetDeliveryApiKeyParams) (GetDeliveryApiKeyRes, error)
+	GetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams) (GetDeliveryAPIKeyRes, error)
 	// GetEditorInterface implements getEditorInterface operation.
 	//
 	// Get the editor interface for a content type.
@@ -224,12 +224,12 @@ type Handler interface {
 	//
 	// GET /users/me/access_tokens/{access_token_id}
 	GetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams) (GetPersonalAccessTokenRes, error)
-	// GetPreviewApiKey implements getPreviewApiKey operation.
+	// GetPreviewAPIKey implements getPreviewAPIKey operation.
 	//
 	// Get a single preview api key.
 	//
 	// GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
-	GetPreviewApiKey(ctx context.Context, params GetPreviewApiKeyParams) (GetPreviewApiKeyRes, error)
+	GetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams) (GetPreviewAPIKeyRes, error)
 	// GetResourceProvider implements getResourceProvider operation.
 	//
 	// Get one resource provider definition.
@@ -338,12 +338,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
 	UnpublishEntry(ctx context.Context, params UnpublishEntryParams) (UnpublishEntryRes, error)
-	// UpdateDeliveryApiKey implements updateDeliveryApiKey operation.
+	// UpdateDeliveryAPIKey implements updateDeliveryAPIKey operation.
 	//
 	// Update a single delivery api key.
 	//
 	// PUT /spaces/{space_id}/api_keys/{api_key_id}
-	UpdateDeliveryApiKey(ctx context.Context, req *ApiKeyRequestData, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error)
+	UpdateDeliveryAPIKey(ctx context.Context, req *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams) (UpdateDeliveryAPIKeyRes, error)
 	// UpdateRole implements updateRole operation.
 	//
 	// Update a role.

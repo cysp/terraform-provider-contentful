@@ -307,12 +307,12 @@ func (s *Server) handleCreateAppDefinitionRequest(args [1]string, argsEscaped bo
 	}
 }
 
-// handleCreateDeliveryApiKeyRequest handles createDeliveryApiKey operation.
+// handleCreateDeliveryAPIKeyRequest handles createDeliveryAPIKey operation.
 //
 // Create a delivery api key.
 //
 // POST /spaces/{space_id}/api_keys
-func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleCreateDeliveryAPIKeyRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	ctx := r.Context()
@@ -320,15 +320,15 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 	var (
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: CreateDeliveryApiKeyOperation,
-			ID:   "createDeliveryApiKey",
+			Name: CreateDeliveryAPIKeyOperation,
+			ID:   "createDeliveryAPIKey",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityAccessToken(ctx, CreateDeliveryApiKeyOperation, r)
+			sctx, ok, err := s.securityAccessToken(ctx, CreateDeliveryAPIKeyOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -368,7 +368,7 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 			return
 		}
 	}
-	params, err := decodeCreateDeliveryApiKeyParams(args, argsEscaped, r)
+	params, err := decodeCreateDeliveryAPIKeyParams(args, argsEscaped, r)
 	if err != nil {
 		err = &ogenerrors.DecodeParamsError{
 			OperationContext: opErrContext,
@@ -380,7 +380,7 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 	}
 
 	var rawBody []byte
-	request, rawBody, close, err := s.decodeCreateDeliveryApiKeyRequest(r)
+	request, rawBody, close, err := s.decodeCreateDeliveryAPIKeyRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -396,13 +396,13 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 		}
 	}()
 
-	var response CreateDeliveryApiKeyRes
+	var response CreateDeliveryAPIKeyRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    CreateDeliveryApiKeyOperation,
+			OperationName:    CreateDeliveryAPIKeyOperation,
 			OperationSummary: "Create a delivery api key",
-			OperationID:      "createDeliveryApiKey",
+			OperationID:      "createDeliveryAPIKey",
 			Body:             request,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
@@ -416,8 +416,8 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 
 		type (
 			Request  = *ApiKeyRequestData
-			Params   = CreateDeliveryApiKeyParams
-			Response = CreateDeliveryApiKeyRes
+			Params   = CreateDeliveryAPIKeyParams
+			Response = CreateDeliveryAPIKeyRes
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -426,14 +426,14 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 		](
 			m,
 			mreq,
-			unpackCreateDeliveryApiKeyParams,
+			unpackCreateDeliveryAPIKeyParams,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.CreateDeliveryApiKey(ctx, request, params)
+				response, err = s.h.CreateDeliveryAPIKey(ctx, request, params)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.CreateDeliveryApiKey(ctx, request, params)
+		response, err = s.h.CreateDeliveryAPIKey(ctx, request, params)
 	}
 	if err != nil {
 		defer recordError("Internal", err)
@@ -441,7 +441,7 @@ func (s *Server) handleCreateDeliveryApiKeyRequest(args [1]string, argsEscaped b
 		return
 	}
 
-	if err := encodeCreateDeliveryApiKeyResponse(response, w); err != nil {
+	if err := encodeCreateDeliveryAPIKeyResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
@@ -1993,12 +1993,12 @@ func (s *Server) handleDeleteContentTypeRequest(args [3]string, argsEscaped bool
 	}
 }
 
-// handleDeleteDeliveryApiKeyRequest handles deleteDeliveryApiKey operation.
+// handleDeleteDeliveryAPIKeyRequest handles deleteDeliveryAPIKey operation.
 //
 // Delete a single delivery api key.
 //
 // DELETE /spaces/{space_id}/api_keys/{api_key_id}
-func (s *Server) handleDeleteDeliveryApiKeyRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleDeleteDeliveryAPIKeyRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	ctx := r.Context()
@@ -2006,15 +2006,15 @@ func (s *Server) handleDeleteDeliveryApiKeyRequest(args [2]string, argsEscaped b
 	var (
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: DeleteDeliveryApiKeyOperation,
-			ID:   "deleteDeliveryApiKey",
+			Name: DeleteDeliveryAPIKeyOperation,
+			ID:   "deleteDeliveryAPIKey",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityAccessToken(ctx, DeleteDeliveryApiKeyOperation, r)
+			sctx, ok, err := s.securityAccessToken(ctx, DeleteDeliveryAPIKeyOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -2054,7 +2054,7 @@ func (s *Server) handleDeleteDeliveryApiKeyRequest(args [2]string, argsEscaped b
 			return
 		}
 	}
-	params, err := decodeDeleteDeliveryApiKeyParams(args, argsEscaped, r)
+	params, err := decodeDeleteDeliveryAPIKeyParams(args, argsEscaped, r)
 	if err != nil {
 		err = &ogenerrors.DecodeParamsError{
 			OperationContext: opErrContext,
@@ -2067,13 +2067,13 @@ func (s *Server) handleDeleteDeliveryApiKeyRequest(args [2]string, argsEscaped b
 
 	var rawBody []byte
 
-	var response DeleteDeliveryApiKeyRes
+	var response DeleteDeliveryAPIKeyRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    DeleteDeliveryApiKeyOperation,
+			OperationName:    DeleteDeliveryAPIKeyOperation,
 			OperationSummary: "Delete a single delivery api key",
-			OperationID:      "deleteDeliveryApiKey",
+			OperationID:      "deleteDeliveryAPIKey",
 			Body:             nil,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
@@ -2091,8 +2091,8 @@ func (s *Server) handleDeleteDeliveryApiKeyRequest(args [2]string, argsEscaped b
 
 		type (
 			Request  = struct{}
-			Params   = DeleteDeliveryApiKeyParams
-			Response = DeleteDeliveryApiKeyRes
+			Params   = DeleteDeliveryAPIKeyParams
+			Response = DeleteDeliveryAPIKeyRes
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -2101,14 +2101,14 @@ func (s *Server) handleDeleteDeliveryApiKeyRequest(args [2]string, argsEscaped b
 		](
 			m,
 			mreq,
-			unpackDeleteDeliveryApiKeyParams,
+			unpackDeleteDeliveryAPIKeyParams,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.DeleteDeliveryApiKey(ctx, params)
+				response, err = s.h.DeleteDeliveryAPIKey(ctx, params)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.DeleteDeliveryApiKey(ctx, params)
+		response, err = s.h.DeleteDeliveryAPIKey(ctx, params)
 	}
 	if err != nil {
 		defer recordError("Internal", err)
@@ -2116,7 +2116,7 @@ func (s *Server) handleDeleteDeliveryApiKeyRequest(args [2]string, argsEscaped b
 		return
 	}
 
-	if err := encodeDeleteDeliveryApiKeyResponse(response, w); err != nil {
+	if err := encodeDeleteDeliveryAPIKeyResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
@@ -3842,12 +3842,12 @@ func (s *Server) handleGetContentTypeRequest(args [3]string, argsEscaped bool, w
 	}
 }
 
-// handleGetDeliveryApiKeyRequest handles getDeliveryApiKey operation.
+// handleGetDeliveryAPIKeyRequest handles getDeliveryAPIKey operation.
 //
 // Get a single delivery api key.
 //
 // GET /spaces/{space_id}/api_keys/{api_key_id}
-func (s *Server) handleGetDeliveryApiKeyRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetDeliveryAPIKeyRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	ctx := r.Context()
@@ -3855,15 +3855,15 @@ func (s *Server) handleGetDeliveryApiKeyRequest(args [2]string, argsEscaped bool
 	var (
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: GetDeliveryApiKeyOperation,
-			ID:   "getDeliveryApiKey",
+			Name: GetDeliveryAPIKeyOperation,
+			ID:   "getDeliveryAPIKey",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityAccessToken(ctx, GetDeliveryApiKeyOperation, r)
+			sctx, ok, err := s.securityAccessToken(ctx, GetDeliveryAPIKeyOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -3903,7 +3903,7 @@ func (s *Server) handleGetDeliveryApiKeyRequest(args [2]string, argsEscaped bool
 			return
 		}
 	}
-	params, err := decodeGetDeliveryApiKeyParams(args, argsEscaped, r)
+	params, err := decodeGetDeliveryAPIKeyParams(args, argsEscaped, r)
 	if err != nil {
 		err = &ogenerrors.DecodeParamsError{
 			OperationContext: opErrContext,
@@ -3916,13 +3916,13 @@ func (s *Server) handleGetDeliveryApiKeyRequest(args [2]string, argsEscaped bool
 
 	var rawBody []byte
 
-	var response GetDeliveryApiKeyRes
+	var response GetDeliveryAPIKeyRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    GetDeliveryApiKeyOperation,
+			OperationName:    GetDeliveryAPIKeyOperation,
 			OperationSummary: "Get a single delivery api key",
-			OperationID:      "getDeliveryApiKey",
+			OperationID:      "getDeliveryAPIKey",
 			Body:             nil,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
@@ -3940,8 +3940,8 @@ func (s *Server) handleGetDeliveryApiKeyRequest(args [2]string, argsEscaped bool
 
 		type (
 			Request  = struct{}
-			Params   = GetDeliveryApiKeyParams
-			Response = GetDeliveryApiKeyRes
+			Params   = GetDeliveryAPIKeyParams
+			Response = GetDeliveryAPIKeyRes
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -3950,14 +3950,14 @@ func (s *Server) handleGetDeliveryApiKeyRequest(args [2]string, argsEscaped bool
 		](
 			m,
 			mreq,
-			unpackGetDeliveryApiKeyParams,
+			unpackGetDeliveryAPIKeyParams,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.GetDeliveryApiKey(ctx, params)
+				response, err = s.h.GetDeliveryAPIKey(ctx, params)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.GetDeliveryApiKey(ctx, params)
+		response, err = s.h.GetDeliveryAPIKey(ctx, params)
 	}
 	if err != nil {
 		defer recordError("Internal", err)
@@ -3965,7 +3965,7 @@ func (s *Server) handleGetDeliveryApiKeyRequest(args [2]string, argsEscaped bool
 		return
 	}
 
-	if err := encodeGetDeliveryApiKeyResponse(response, w); err != nil {
+	if err := encodeGetDeliveryAPIKeyResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
@@ -4902,12 +4902,12 @@ func (s *Server) handleGetPersonalAccessTokenRequest(args [1]string, argsEscaped
 	}
 }
 
-// handleGetPreviewApiKeyRequest handles getPreviewApiKey operation.
+// handleGetPreviewAPIKeyRequest handles getPreviewAPIKey operation.
 //
 // Get a single preview api key.
 //
 // GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
-func (s *Server) handleGetPreviewApiKeyRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetPreviewAPIKeyRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	ctx := r.Context()
@@ -4915,15 +4915,15 @@ func (s *Server) handleGetPreviewApiKeyRequest(args [2]string, argsEscaped bool,
 	var (
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: GetPreviewApiKeyOperation,
-			ID:   "getPreviewApiKey",
+			Name: GetPreviewAPIKeyOperation,
+			ID:   "getPreviewAPIKey",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityAccessToken(ctx, GetPreviewApiKeyOperation, r)
+			sctx, ok, err := s.securityAccessToken(ctx, GetPreviewAPIKeyOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -4963,7 +4963,7 @@ func (s *Server) handleGetPreviewApiKeyRequest(args [2]string, argsEscaped bool,
 			return
 		}
 	}
-	params, err := decodeGetPreviewApiKeyParams(args, argsEscaped, r)
+	params, err := decodeGetPreviewAPIKeyParams(args, argsEscaped, r)
 	if err != nil {
 		err = &ogenerrors.DecodeParamsError{
 			OperationContext: opErrContext,
@@ -4976,13 +4976,13 @@ func (s *Server) handleGetPreviewApiKeyRequest(args [2]string, argsEscaped bool,
 
 	var rawBody []byte
 
-	var response GetPreviewApiKeyRes
+	var response GetPreviewAPIKeyRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    GetPreviewApiKeyOperation,
+			OperationName:    GetPreviewAPIKeyOperation,
 			OperationSummary: "Get a single preview api key",
-			OperationID:      "getPreviewApiKey",
+			OperationID:      "getPreviewAPIKey",
 			Body:             nil,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
@@ -5000,8 +5000,8 @@ func (s *Server) handleGetPreviewApiKeyRequest(args [2]string, argsEscaped bool,
 
 		type (
 			Request  = struct{}
-			Params   = GetPreviewApiKeyParams
-			Response = GetPreviewApiKeyRes
+			Params   = GetPreviewAPIKeyParams
+			Response = GetPreviewAPIKeyRes
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -5010,14 +5010,14 @@ func (s *Server) handleGetPreviewApiKeyRequest(args [2]string, argsEscaped bool,
 		](
 			m,
 			mreq,
-			unpackGetPreviewApiKeyParams,
+			unpackGetPreviewAPIKeyParams,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.GetPreviewApiKey(ctx, params)
+				response, err = s.h.GetPreviewAPIKey(ctx, params)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.GetPreviewApiKey(ctx, params)
+		response, err = s.h.GetPreviewAPIKey(ctx, params)
 	}
 	if err != nil {
 		defer recordError("Internal", err)
@@ -5025,7 +5025,7 @@ func (s *Server) handleGetPreviewApiKeyRequest(args [2]string, argsEscaped bool,
 		return
 	}
 
-	if err := encodeGetPreviewApiKeyResponse(response, w); err != nil {
+	if err := encodeGetPreviewAPIKeyResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
@@ -7616,12 +7616,12 @@ func (s *Server) handleUnpublishEntryRequest(args [3]string, argsEscaped bool, w
 	}
 }
 
-// handleUpdateDeliveryApiKeyRequest handles updateDeliveryApiKey operation.
+// handleUpdateDeliveryAPIKeyRequest handles updateDeliveryAPIKey operation.
 //
 // Update a single delivery api key.
 //
 // PUT /spaces/{space_id}/api_keys/{api_key_id}
-func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleUpdateDeliveryAPIKeyRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	ctx := r.Context()
@@ -7629,15 +7629,15 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 	var (
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: UpdateDeliveryApiKeyOperation,
-			ID:   "updateDeliveryApiKey",
+			Name: UpdateDeliveryAPIKeyOperation,
+			ID:   "updateDeliveryAPIKey",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityAccessToken(ctx, UpdateDeliveryApiKeyOperation, r)
+			sctx, ok, err := s.securityAccessToken(ctx, UpdateDeliveryAPIKeyOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -7677,7 +7677,7 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 			return
 		}
 	}
-	params, err := decodeUpdateDeliveryApiKeyParams(args, argsEscaped, r)
+	params, err := decodeUpdateDeliveryAPIKeyParams(args, argsEscaped, r)
 	if err != nil {
 		err = &ogenerrors.DecodeParamsError{
 			OperationContext: opErrContext,
@@ -7689,7 +7689,7 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 	}
 
 	var rawBody []byte
-	request, rawBody, close, err := s.decodeUpdateDeliveryApiKeyRequest(r)
+	request, rawBody, close, err := s.decodeUpdateDeliveryAPIKeyRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -7705,13 +7705,13 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 		}
 	}()
 
-	var response UpdateDeliveryApiKeyRes
+	var response UpdateDeliveryAPIKeyRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    UpdateDeliveryApiKeyOperation,
+			OperationName:    UpdateDeliveryAPIKeyOperation,
 			OperationSummary: "Update a single delivery api key",
-			OperationID:      "updateDeliveryApiKey",
+			OperationID:      "updateDeliveryAPIKey",
 			Body:             request,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
@@ -7733,8 +7733,8 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 
 		type (
 			Request  = *ApiKeyRequestData
-			Params   = UpdateDeliveryApiKeyParams
-			Response = UpdateDeliveryApiKeyRes
+			Params   = UpdateDeliveryAPIKeyParams
+			Response = UpdateDeliveryAPIKeyRes
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -7743,14 +7743,14 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 		](
 			m,
 			mreq,
-			unpackUpdateDeliveryApiKeyParams,
+			unpackUpdateDeliveryAPIKeyParams,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.UpdateDeliveryApiKey(ctx, request, params)
+				response, err = s.h.UpdateDeliveryAPIKey(ctx, request, params)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.UpdateDeliveryApiKey(ctx, request, params)
+		response, err = s.h.UpdateDeliveryAPIKey(ctx, request, params)
 	}
 	if err != nil {
 		defer recordError("Internal", err)
@@ -7758,7 +7758,7 @@ func (s *Server) handleUpdateDeliveryApiKeyRequest(args [2]string, argsEscaped b
 		return
 	}
 
-	if err := encodeUpdateDeliveryApiKeyResponse(response, w); err != nil {
+	if err := encodeUpdateDeliveryAPIKeyResponse(response, w); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)

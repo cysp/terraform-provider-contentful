@@ -467,7 +467,7 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 	return res, nil
 }
 
-func decodeCreateDeliveryApiKeyResponse(resp *http.Response) (res CreateDeliveryApiKeyRes, _ error) {
+func decodeCreateDeliveryAPIKeyResponse(resp *http.Response) (res CreateDeliveryAPIKeyRes, _ error) {
 	switch resp.StatusCode {
 	case 401:
 		// Code 401.
@@ -551,7 +551,7 @@ func decodeCreateDeliveryApiKeyResponse(resp *http.Response) (res CreateDelivery
 	switch resp.StatusCode / 100 {
 	case 2:
 		// Pattern 2XX.
-		res, err := func() (res CreateDeliveryApiKeyRes, err error) {
+		res, err := func() (res CreateDeliveryAPIKeyRes, err error) {
 			ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 			if err != nil {
 				return res, errors.Wrap(err, "parse media type")
@@ -604,7 +604,7 @@ func decodeCreateDeliveryApiKeyResponse(resp *http.Response) (res CreateDelivery
 		return res, nil
 	}
 	// Default response.
-	res, err := func() (res CreateDeliveryApiKeyRes, err error) {
+	res, err := func() (res CreateDeliveryAPIKeyRes, err error) {
 		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		if err != nil {
 			return res, errors.Wrap(err, "parse media type")
@@ -2975,7 +2975,7 @@ func decodeDeleteContentTypeResponse(resp *http.Response) (res DeleteContentType
 	return res, nil
 }
 
-func decodeDeleteDeliveryApiKeyResponse(resp *http.Response) (res DeleteDeliveryApiKeyRes, _ error) {
+func decodeDeleteDeliveryAPIKeyResponse(resp *http.Response) (res DeleteDeliveryAPIKeyRes, _ error) {
 	switch resp.StatusCode {
 	case 204:
 		// Code 204.
@@ -3060,7 +3060,7 @@ func decodeDeleteDeliveryApiKeyResponse(resp *http.Response) (res DeleteDelivery
 		}
 	}
 	// Default response.
-	res, err := func() (res DeleteDeliveryApiKeyRes, err error) {
+	res, err := func() (res DeleteDeliveryAPIKeyRes, err error) {
 		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		if err != nil {
 			return res, errors.Wrap(err, "parse media type")
@@ -5630,7 +5630,7 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 	return res, nil
 }
 
-func decodeGetDeliveryApiKeyResponse(resp *http.Response) (res GetDeliveryApiKeyRes, _ error) {
+func decodeGetDeliveryAPIKeyResponse(resp *http.Response) (res GetDeliveryAPIKeyRes, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -5756,7 +5756,7 @@ func decodeGetDeliveryApiKeyResponse(resp *http.Response) (res GetDeliveryApiKey
 		}
 	}
 	// Default response.
-	res, err := func() (res GetDeliveryApiKeyRes, err error) {
+	res, err := func() (res GetDeliveryAPIKeyRes, err error) {
 		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		if err != nil {
 			return res, errors.Wrap(err, "parse media type")
@@ -7358,7 +7358,7 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 	return res, nil
 }
 
-func decodeGetPreviewApiKeyResponse(resp *http.Response) (res GetPreviewApiKeyRes, _ error) {
+func decodeGetPreviewAPIKeyResponse(resp *http.Response) (res GetPreviewAPIKeyRes, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -7484,7 +7484,7 @@ func decodeGetPreviewApiKeyResponse(resp *http.Response) (res GetPreviewApiKeyRe
 		}
 	}
 	// Default response.
-	res, err := func() (res GetPreviewApiKeyRes, err error) {
+	res, err := func() (res GetPreviewAPIKeyRes, err error) {
 		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		if err != nil {
 			return res, errors.Wrap(err, "parse media type")
@@ -11631,7 +11631,7 @@ func decodeUnpublishEntryResponse(resp *http.Response) (res UnpublishEntryRes, _
 	return res, nil
 }
 
-func decodeUpdateDeliveryApiKeyResponse(resp *http.Response) (res UpdateDeliveryApiKeyRes, _ error) {
+func decodeUpdateDeliveryAPIKeyResponse(resp *http.Response) (res UpdateDeliveryAPIKeyRes, _ error) {
 	switch resp.StatusCode {
 	case 401:
 		// Code 401.
@@ -11715,7 +11715,7 @@ func decodeUpdateDeliveryApiKeyResponse(resp *http.Response) (res UpdateDelivery
 	switch resp.StatusCode / 100 {
 	case 2:
 		// Pattern 2XX.
-		res, err := func() (res UpdateDeliveryApiKeyRes, err error) {
+		res, err := func() (res UpdateDeliveryAPIKeyRes, err error) {
 			ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 			if err != nil {
 				return res, errors.Wrap(err, "parse media type")
@@ -11768,7 +11768,7 @@ func decodeUpdateDeliveryApiKeyResponse(resp *http.Response) (res UpdateDelivery
 		return res, nil
 	}
 	// Default response.
-	res, err := func() (res UpdateDeliveryApiKeyRes, err error) {
+	res, err := func() (res UpdateDeliveryAPIKeyRes, err error) {
 		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		if err != nil {
 			return res, errors.Wrap(err, "parse media type")

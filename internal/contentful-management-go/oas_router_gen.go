@@ -340,7 +340,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						if len(elem) == 0 {
 							switch r.Method {
 							case "POST":
-								s.handleCreateDeliveryApiKeyRequest([1]string{
+								s.handleCreateDeliveryAPIKeyRequest([1]string{
 									args[0],
 								}, elemIsEscaped, w, r)
 							default:
@@ -371,17 +371,17 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								// Leaf node.
 								switch r.Method {
 								case "DELETE":
-									s.handleDeleteDeliveryApiKeyRequest([2]string{
+									s.handleDeleteDeliveryAPIKeyRequest([2]string{
 										args[0],
 										args[1],
 									}, elemIsEscaped, w, r)
 								case "GET":
-									s.handleGetDeliveryApiKeyRequest([2]string{
+									s.handleGetDeliveryAPIKeyRequest([2]string{
 										args[0],
 										args[1],
 									}, elemIsEscaped, w, r)
 								case "PUT":
-									s.handleUpdateDeliveryApiKeyRequest([2]string{
+									s.handleUpdateDeliveryAPIKeyRequest([2]string{
 										args[0],
 										args[1],
 									}, elemIsEscaped, w, r)
@@ -892,7 +892,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							// Leaf node.
 							switch r.Method {
 							case "GET":
-								s.handleGetPreviewApiKeyRequest([2]string{
+								s.handleGetPreviewAPIKeyRequest([2]string{
 									args[0],
 									args[1],
 								}, elemIsEscaped, w, r)
@@ -1537,9 +1537,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						if len(elem) == 0 {
 							switch method {
 							case "POST":
-								r.name = CreateDeliveryApiKeyOperation
+								r.name = CreateDeliveryAPIKeyOperation
 								r.summary = "Create a delivery api key"
-								r.operationID = "createDeliveryApiKey"
+								r.operationID = "createDeliveryAPIKey"
 								r.pathPattern = "/spaces/{space_id}/api_keys"
 								r.args = args
 								r.count = 1
@@ -1570,25 +1570,25 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								// Leaf node.
 								switch method {
 								case "DELETE":
-									r.name = DeleteDeliveryApiKeyOperation
+									r.name = DeleteDeliveryAPIKeyOperation
 									r.summary = "Delete a single delivery api key"
-									r.operationID = "deleteDeliveryApiKey"
+									r.operationID = "deleteDeliveryAPIKey"
 									r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
 									r.args = args
 									r.count = 2
 									return r, true
 								case "GET":
-									r.name = GetDeliveryApiKeyOperation
+									r.name = GetDeliveryAPIKeyOperation
 									r.summary = "Get a single delivery api key"
-									r.operationID = "getDeliveryApiKey"
+									r.operationID = "getDeliveryAPIKey"
 									r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
 									r.args = args
 									r.count = 2
 									return r, true
 								case "PUT":
-									r.name = UpdateDeliveryApiKeyOperation
+									r.name = UpdateDeliveryAPIKeyOperation
 									r.summary = "Update a single delivery api key"
-									r.operationID = "updateDeliveryApiKey"
+									r.operationID = "updateDeliveryAPIKey"
 									r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
 									r.args = args
 									r.count = 2
@@ -2141,9 +2141,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							// Leaf node.
 							switch method {
 							case "GET":
-								r.name = GetPreviewApiKeyOperation
+								r.name = GetPreviewAPIKeyOperation
 								r.summary = "Get a single preview api key"
-								r.operationID = "getPreviewApiKey"
+								r.operationID = "getPreviewAPIKey"
 								r.pathPattern = "/spaces/{space_id}/preview_api_keys/{preview_api_key_id}"
 								r.args = args
 								r.count = 2

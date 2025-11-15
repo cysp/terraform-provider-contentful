@@ -33,12 +33,12 @@ type Invoker interface {
 	//
 	// POST /organizations/{organization_id}/app_definitions
 	CreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error)
-	// CreateDeliveryApiKey invokes createDeliveryApiKey operation.
+	// CreateDeliveryAPIKey invokes createDeliveryAPIKey operation.
 	//
 	// Create a delivery api key.
 	//
 	// POST /spaces/{space_id}/api_keys
-	CreateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error)
+	CreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryAPIKeyParams) (CreateDeliveryAPIKeyRes, error)
 	// CreateEntry invokes createEntry operation.
 	//
 	// Create an entry.
@@ -105,12 +105,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
 	DeleteContentType(ctx context.Context, params DeleteContentTypeParams) (DeleteContentTypeRes, error)
-	// DeleteDeliveryApiKey invokes deleteDeliveryApiKey operation.
+	// DeleteDeliveryAPIKey invokes deleteDeliveryAPIKey operation.
 	//
 	// Delete a single delivery api key.
 	//
 	// DELETE /spaces/{space_id}/api_keys/{api_key_id}
-	DeleteDeliveryApiKey(ctx context.Context, params DeleteDeliveryApiKeyParams) (DeleteDeliveryApiKeyRes, error)
+	DeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams) (DeleteDeliveryAPIKeyRes, error)
 	// DeleteEntry invokes deleteEntry operation.
 	//
 	// Delete an entry.
@@ -189,12 +189,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
 	GetContentType(ctx context.Context, params GetContentTypeParams) (GetContentTypeRes, error)
-	// GetDeliveryApiKey invokes getDeliveryApiKey operation.
+	// GetDeliveryAPIKey invokes getDeliveryAPIKey operation.
 	//
 	// Get a single delivery api key.
 	//
 	// GET /spaces/{space_id}/api_keys/{api_key_id}
-	GetDeliveryApiKey(ctx context.Context, params GetDeliveryApiKeyParams) (GetDeliveryApiKeyRes, error)
+	GetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams) (GetDeliveryAPIKeyRes, error)
 	// GetEditorInterface invokes getEditorInterface operation.
 	//
 	// Get the editor interface for a content type.
@@ -237,12 +237,12 @@ type Invoker interface {
 	//
 	// GET /users/me/access_tokens/{access_token_id}
 	GetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams) (GetPersonalAccessTokenRes, error)
-	// GetPreviewApiKey invokes getPreviewApiKey operation.
+	// GetPreviewAPIKey invokes getPreviewAPIKey operation.
 	//
 	// Get a single preview api key.
 	//
 	// GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
-	GetPreviewApiKey(ctx context.Context, params GetPreviewApiKeyParams) (GetPreviewApiKeyRes, error)
+	GetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams) (GetPreviewAPIKeyRes, error)
 	// GetResourceProvider invokes getResourceProvider operation.
 	//
 	// Get one resource provider definition.
@@ -351,12 +351,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
 	UnpublishEntry(ctx context.Context, params UnpublishEntryParams) (UnpublishEntryRes, error)
-	// UpdateDeliveryApiKey invokes updateDeliveryApiKey operation.
+	// UpdateDeliveryAPIKey invokes updateDeliveryAPIKey operation.
 	//
 	// Update a single delivery api key.
 	//
 	// PUT /spaces/{space_id}/api_keys/{api_key_id}
-	UpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error)
+	UpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams) (UpdateDeliveryAPIKeyRes, error)
 	// UpdateRole invokes updateRole operation.
 	//
 	// Update a role.
@@ -646,17 +646,17 @@ func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefini
 	return result, nil
 }
 
-// CreateDeliveryApiKey invokes createDeliveryApiKey operation.
+// CreateDeliveryAPIKey invokes createDeliveryAPIKey operation.
 //
 // Create a delivery api key.
 //
 // POST /spaces/{space_id}/api_keys
-func (c *Client) CreateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryApiKeyParams) (CreateDeliveryApiKeyRes, error) {
-	res, err := c.sendCreateDeliveryApiKey(ctx, request, params)
+func (c *Client) CreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryAPIKeyParams) (CreateDeliveryAPIKeyRes, error) {
+	res, err := c.sendCreateDeliveryAPIKey(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendCreateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryApiKeyParams) (res CreateDeliveryApiKeyRes, err error) {
+func (c *Client) sendCreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryAPIKeyParams) (res CreateDeliveryAPIKeyRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [3]string
@@ -686,7 +686,7 @@ func (c *Client) sendCreateDeliveryApiKey(ctx context.Context, request *ApiKeyRe
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
 	}
-	if err := encodeCreateDeliveryApiKeyRequest(request, r); err != nil {
+	if err := encodeCreateDeliveryAPIKeyRequest(request, r); err != nil {
 		return res, errors.Wrap(err, "encode request")
 	}
 
@@ -695,7 +695,7 @@ func (c *Client) sendCreateDeliveryApiKey(ctx context.Context, request *ApiKeyRe
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, CreateDeliveryApiKeyOperation, r); {
+			switch err := c.securityAccessToken(ctx, CreateDeliveryAPIKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -729,7 +729,7 @@ func (c *Client) sendCreateDeliveryApiKey(ctx context.Context, request *ApiKeyRe
 	}
 	defer resp.Body.Close()
 
-	result, err := decodeCreateDeliveryApiKeyResponse(resp)
+	result, err := decodeCreateDeliveryAPIKeyResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -1964,17 +1964,17 @@ func (c *Client) sendDeleteContentType(ctx context.Context, params DeleteContent
 	return result, nil
 }
 
-// DeleteDeliveryApiKey invokes deleteDeliveryApiKey operation.
+// DeleteDeliveryAPIKey invokes deleteDeliveryAPIKey operation.
 //
 // Delete a single delivery api key.
 //
 // DELETE /spaces/{space_id}/api_keys/{api_key_id}
-func (c *Client) DeleteDeliveryApiKey(ctx context.Context, params DeleteDeliveryApiKeyParams) (DeleteDeliveryApiKeyRes, error) {
-	res, err := c.sendDeleteDeliveryApiKey(ctx, params)
+func (c *Client) DeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams) (DeleteDeliveryAPIKeyRes, error) {
+	res, err := c.sendDeleteDeliveryAPIKey(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendDeleteDeliveryApiKey(ctx context.Context, params DeleteDeliveryApiKeyParams) (res DeleteDeliveryApiKeyRes, err error) {
+func (c *Client) sendDeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams) (res DeleteDeliveryAPIKeyRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [4]string
@@ -2028,7 +2028,7 @@ func (c *Client) sendDeleteDeliveryApiKey(ctx context.Context, params DeleteDeli
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, DeleteDeliveryApiKeyOperation, r); {
+			switch err := c.securityAccessToken(ctx, DeleteDeliveryAPIKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -2062,7 +2062,7 @@ func (c *Client) sendDeleteDeliveryApiKey(ctx context.Context, params DeleteDeli
 	}
 	defer resp.Body.Close()
 
-	result, err := decodeDeleteDeliveryApiKeyResponse(resp)
+	result, err := decodeDeleteDeliveryAPIKeyResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -3508,17 +3508,17 @@ func (c *Client) sendGetContentType(ctx context.Context, params GetContentTypePa
 	return result, nil
 }
 
-// GetDeliveryApiKey invokes getDeliveryApiKey operation.
+// GetDeliveryAPIKey invokes getDeliveryAPIKey operation.
 //
 // Get a single delivery api key.
 //
 // GET /spaces/{space_id}/api_keys/{api_key_id}
-func (c *Client) GetDeliveryApiKey(ctx context.Context, params GetDeliveryApiKeyParams) (GetDeliveryApiKeyRes, error) {
-	res, err := c.sendGetDeliveryApiKey(ctx, params)
+func (c *Client) GetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams) (GetDeliveryAPIKeyRes, error) {
+	res, err := c.sendGetDeliveryAPIKey(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetDeliveryApiKey(ctx context.Context, params GetDeliveryApiKeyParams) (res GetDeliveryApiKeyRes, err error) {
+func (c *Client) sendGetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams) (res GetDeliveryAPIKeyRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [4]string
@@ -3572,7 +3572,7 @@ func (c *Client) sendGetDeliveryApiKey(ctx context.Context, params GetDeliveryAp
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, GetDeliveryApiKeyOperation, r); {
+			switch err := c.securityAccessToken(ctx, GetDeliveryAPIKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -3606,7 +3606,7 @@ func (c *Client) sendGetDeliveryApiKey(ctx context.Context, params GetDeliveryAp
 	}
 	defer resp.Body.Close()
 
-	result, err := decodeGetDeliveryApiKeyResponse(resp)
+	result, err := decodeGetDeliveryAPIKeyResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -4384,17 +4384,17 @@ func (c *Client) sendGetPersonalAccessToken(ctx context.Context, params GetPerso
 	return result, nil
 }
 
-// GetPreviewApiKey invokes getPreviewApiKey operation.
+// GetPreviewAPIKey invokes getPreviewAPIKey operation.
 //
 // Get a single preview api key.
 //
 // GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
-func (c *Client) GetPreviewApiKey(ctx context.Context, params GetPreviewApiKeyParams) (GetPreviewApiKeyRes, error) {
-	res, err := c.sendGetPreviewApiKey(ctx, params)
+func (c *Client) GetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams) (GetPreviewAPIKeyRes, error) {
+	res, err := c.sendGetPreviewAPIKey(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetPreviewApiKey(ctx context.Context, params GetPreviewApiKeyParams) (res GetPreviewApiKeyRes, err error) {
+func (c *Client) sendGetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams) (res GetPreviewAPIKeyRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [4]string
@@ -4448,7 +4448,7 @@ func (c *Client) sendGetPreviewApiKey(ctx context.Context, params GetPreviewApiK
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, GetPreviewApiKeyOperation, r); {
+			switch err := c.securityAccessToken(ctx, GetPreviewAPIKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -4482,7 +4482,7 @@ func (c *Client) sendGetPreviewApiKey(ctx context.Context, params GetPreviewApiK
 	}
 	defer resp.Body.Close()
 
-	result, err := decodeGetPreviewApiKeyResponse(resp)
+	result, err := decodeGetPreviewAPIKeyResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -6659,17 +6659,17 @@ func (c *Client) sendUnpublishEntry(ctx context.Context, params UnpublishEntryPa
 	return result, nil
 }
 
-// UpdateDeliveryApiKey invokes updateDeliveryApiKey operation.
+// UpdateDeliveryAPIKey invokes updateDeliveryAPIKey operation.
 //
 // Update a single delivery api key.
 //
 // PUT /spaces/{space_id}/api_keys/{api_key_id}
-func (c *Client) UpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryApiKeyParams) (UpdateDeliveryApiKeyRes, error) {
-	res, err := c.sendUpdateDeliveryApiKey(ctx, request, params)
+func (c *Client) UpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams) (UpdateDeliveryAPIKeyRes, error) {
+	res, err := c.sendUpdateDeliveryAPIKey(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendUpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryApiKeyParams) (res UpdateDeliveryApiKeyRes, err error) {
+func (c *Client) sendUpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams) (res UpdateDeliveryAPIKeyRes, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [4]string
@@ -6717,7 +6717,7 @@ func (c *Client) sendUpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRe
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
 	}
-	if err := encodeUpdateDeliveryApiKeyRequest(request, r); err != nil {
+	if err := encodeUpdateDeliveryAPIKeyRequest(request, r); err != nil {
 		return res, errors.Wrap(err, "encode request")
 	}
 
@@ -6739,7 +6739,7 @@ func (c *Client) sendUpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRe
 		var satisfied bitset
 		{
 
-			switch err := c.securityAccessToken(ctx, UpdateDeliveryApiKeyOperation, r); {
+			switch err := c.securityAccessToken(ctx, UpdateDeliveryAPIKeyOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -6773,7 +6773,7 @@ func (c *Client) sendUpdateDeliveryApiKey(ctx context.Context, request *ApiKeyRe
 	}
 	defer resp.Body.Close()
 
-	result, err := decodeUpdateDeliveryApiKeyResponse(resp)
+	result, err := decodeUpdateDeliveryAPIKeyResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

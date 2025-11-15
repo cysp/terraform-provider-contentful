@@ -7,8 +7,8 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-//nolint:ireturn,revive
-func (ts *Handler) CreateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequestData, params cm.CreateDeliveryApiKeyParams) (cm.CreateDeliveryApiKeyRes, error) {
+//nolint:ireturn
+func (ts *Handler) CreateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequestData, params cm.CreateDeliveryAPIKeyParams) (cm.CreateDeliveryAPIKeyRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -37,8 +37,8 @@ func (ts *Handler) CreateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequest
 	}, nil
 }
 
-//nolint:ireturn,revive
-func (ts *Handler) GetDeliveryApiKey(_ context.Context, params cm.GetDeliveryApiKeyParams) (cm.GetDeliveryApiKeyRes, error) {
+//nolint:ireturn
+func (ts *Handler) GetDeliveryAPIKey(_ context.Context, params cm.GetDeliveryAPIKeyParams) (cm.GetDeliveryAPIKeyRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -54,8 +54,8 @@ func (ts *Handler) GetDeliveryApiKey(_ context.Context, params cm.GetDeliveryApi
 	return apiKey, nil
 }
 
-//nolint:ireturn,revive
-func (ts *Handler) UpdateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequestData, params cm.UpdateDeliveryApiKeyParams) (cm.UpdateDeliveryApiKeyRes, error) {
+//nolint:ireturn
+func (ts *Handler) UpdateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequestData, params cm.UpdateDeliveryAPIKeyParams) (cm.UpdateDeliveryAPIKeyRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -65,12 +65,12 @@ func (ts *Handler) UpdateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequest
 
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
 	if apiKey == nil {
-		newApiKey := NewAPIKeyFromRequestFields(params.SpaceID, params.APIKeyID, *req)
-		ts.apiKeys.Set(params.SpaceID, params.APIKeyID, &newApiKey)
+		newAPIKey := NewAPIKeyFromRequestFields(params.SpaceID, params.APIKeyID, *req)
+		ts.apiKeys.Set(params.SpaceID, params.APIKeyID, &newAPIKey)
 
 		return &cm.ApiKeyStatusCode{
 			StatusCode: http.StatusCreated,
-			Response:   newApiKey,
+			Response:   newAPIKey,
 		}, nil
 	}
 
@@ -82,8 +82,8 @@ func (ts *Handler) UpdateDeliveryApiKey(_ context.Context, req *cm.ApiKeyRequest
 	}, nil
 }
 
-//nolint:ireturn,revive
-func (ts *Handler) DeleteDeliveryApiKey(_ context.Context, params cm.DeleteDeliveryApiKeyParams) (cm.DeleteDeliveryApiKeyRes, error) {
+//nolint:ireturn
+func (ts *Handler) DeleteDeliveryAPIKey(_ context.Context, params cm.DeleteDeliveryAPIKeyParams) (cm.DeleteDeliveryAPIKeyRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 

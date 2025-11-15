@@ -173,7 +173,7 @@ func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.
 	return []func() datasource.DataSource{
 		NewAppDefinitionDataSource,
 		NewMarketplaceAppDefinitionDataSource,
-		NewPreviewApiKeyDataSource,
+		NewPreviewAPIKeyDataSource,
 	}
 }
 
@@ -185,7 +185,7 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewAppSigningSecretResource,
 		NewAppInstallationResource,
 		NewContentTypeResource,
-		NewDeliveryApiKeyResource,
+		NewDeliveryAPIKeyResource,
 		NewEditorInterfaceResource,
 		NewEnvironmentAliasResource,
 		NewEnvironmentResource,

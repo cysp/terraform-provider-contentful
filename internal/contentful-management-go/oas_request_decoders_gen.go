@@ -93,7 +93,7 @@ func (s *Server) decodeCreateAppDefinitionRequest(r *http.Request) (
 	}
 }
 
-func (s *Server) decodeCreateDeliveryApiKeyRequest(r *http.Request) (
+func (s *Server) decodeCreateDeliveryAPIKeyRequest(r *http.Request) (
 	req *ApiKeyRequestData,
 	rawBody []byte,
 	close func() error,
@@ -1396,7 +1396,7 @@ func (s *Server) decodePutSpaceEnablementsRequest(r *http.Request) (
 	}
 }
 
-func (s *Server) decodeUpdateDeliveryApiKeyRequest(r *http.Request) (
+func (s *Server) decodeUpdateDeliveryAPIKeyRequest(r *http.Request) (
 	req *ApiKeyRequestData,
 	rawBody []byte,
 	close func() error,
