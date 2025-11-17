@@ -38,7 +38,7 @@ func TestAccMarketplaceAppDefinitionDataSource(t *testing.T) {
 		Parameters: cm.NewOptAppDefinitionParameters(cm.AppDefinitionParameters{}),
 	})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
