@@ -14,34 +14,34 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*appDefinitionAppDefinitionResource)(nil)
-	_ resource.ResourceWithConfigure   = (*appDefinitionAppDefinitionResource)(nil)
-	_ resource.ResourceWithIdentity    = (*appDefinitionAppDefinitionResource)(nil)
-	_ resource.ResourceWithImportState = (*appDefinitionAppDefinitionResource)(nil)
+	_ resource.Resource                = (*appDefinitionResource)(nil)
+	_ resource.ResourceWithConfigure   = (*appDefinitionResource)(nil)
+	_ resource.ResourceWithIdentity    = (*appDefinitionResource)(nil)
+	_ resource.ResourceWithImportState = (*appDefinitionResource)(nil)
 )
 
 //nolint:ireturn
 func NewAppDefinitionResource() resource.Resource {
-	return &appDefinitionAppDefinitionResource{}
+	return &appDefinitionResource{}
 }
 
-type appDefinitionAppDefinitionResource struct {
+type appDefinitionResource struct {
 	providerData ContentfulProviderData
 }
 
-func (r *appDefinitionAppDefinitionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *appDefinitionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_app_definition"
 }
 
-func (r *appDefinitionAppDefinitionResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *appDefinitionResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = AppDefinitionResourceSchema(ctx)
 }
 
-func (r *appDefinitionAppDefinitionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *appDefinitionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
 
-func (r *appDefinitionAppDefinitionResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+func (r *appDefinitionResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
 	resp.IdentitySchema = identityschema.Schema{
 		Attributes: map[string]identityschema.Attribute{
 			"organization_id":   identityschema.StringAttribute{RequiredForImport: true},
@@ -50,14 +50,14 @@ func (r *appDefinitionAppDefinitionResource) IdentitySchema(_ context.Context, _
 	}
 }
 
-func (r *appDefinitionAppDefinitionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *appDefinitionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	ImportStatePassthroughMultipartID(ctx, []path.Path{
 		path.Root("organization_id"),
 		path.Root("app_definition_id"),
 	}, req, resp)
 }
 
-func (r *appDefinitionAppDefinitionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data AppDefinitionModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -109,7 +109,7 @@ func (r *appDefinitionAppDefinitionResource) Create(ctx context.Context, req res
 }
 
 //nolint:dupl
-func (r *appDefinitionAppDefinitionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data AppDefinitionModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -163,7 +163,7 @@ func (r *appDefinitionAppDefinitionResource) Read(ctx context.Context, req resou
 }
 
 //nolint:dupl
-func (r *appDefinitionAppDefinitionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data AppDefinitionModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -216,7 +216,7 @@ func (r *appDefinitionAppDefinitionResource) Update(ctx context.Context, req res
 }
 
 //nolint:dupl
-func (r *appDefinitionAppDefinitionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *appDefinitionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data AppDefinitionModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
