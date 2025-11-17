@@ -84,6 +84,12 @@ components:
       required: true
       schema:
         type: string
+    tag_id:
+      in: path
+      name: tag_id
+      required: true
+      schema:
+        type: string
     team_id:
       in: path
       name: team_id
@@ -1204,6 +1210,92 @@ paths:
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "./schemas/entry/entry.yml#/Entry"
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/tags:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+    post:
+      operationId: createTag
+      summary: Create a tag
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - in: header
+          name: X-Contentful-Tag-Visibility
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/tag/data.yml#/TagData"
+      responses:
+        2XX:
+          description: A tag
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./schemas/tag/tag.yml#/Tag"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/tag_id"
+    get:
+      operationId: getTag
+      summary: Get a single tag
+      responses:
+        200:
+          description: A tag
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./schemas/tag/tag.yml#/Tag"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putTag
+      summary: Update a tag
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/tag_id"
+        - $ref: "#/components/parameters/x-contentful-version-required"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/tag/data.yml#/TagData"
+      responses:
+        2XX:
+          description: A tag
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./schemas/tag/tag.yml#/Tag"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteTag
+      summary: Delete a tag
+      responses:
         204:
           $ref: "#/components/responses/no-content"
         401:

@@ -56,6 +56,12 @@ type Handler interface {
 	//
 	// POST /spaces/{space_id}/roles
 	CreateRole(ctx context.Context, req *RoleData, params CreateRoleParams) (CreateRoleRes, error)
+	// CreateTag implements createTag operation.
+	//
+	// Create a tag.
+	//
+	// POST /spaces/{space_id}/environments/{environment_id}/tags
+	CreateTag(ctx context.Context, req *TagData, params CreateTagParams) (CreateTagRes, error)
 	// CreateTeam implements createTeam operation.
 	//
 	// Create a team.
@@ -152,6 +158,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/roles/{role_id}
 	DeleteRole(ctx context.Context, params DeleteRoleParams) (DeleteRoleRes, error)
+	// DeleteTag implements deleteTag operation.
+	//
+	// Delete a tag.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}
+	DeleteTag(ctx context.Context, params DeleteTagParams) (DeleteTagRes, error)
 	// DeleteTeam implements deleteTeam operation.
 	//
 	// Delete a team.
@@ -290,6 +302,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/enablements
 	GetSpaceEnablements(ctx context.Context, params GetSpaceEnablementsParams) (GetSpaceEnablementsRes, error)
+	// GetTag implements getTag operation.
+	//
+	// Get a single tag.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}
+	GetTag(ctx context.Context, params GetTagParams) (GetTagRes, error)
 	// GetTeam implements getTeam operation.
 	//
 	// Get a single team.
@@ -374,6 +392,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/enablements
 	PutSpaceEnablements(ctx context.Context, req *SpaceEnablementData, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error)
+	// PutTag implements putTag operation.
+	//
+	// Update a tag.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}
+	PutTag(ctx context.Context, req *TagData, params PutTagParams) (PutTagRes, error)
 	// PutTeam implements putTeam operation.
 	//
 	// Update a single team.

@@ -108,6 +108,20 @@ func encodeCreateRoleRequest(
 	return nil
 }
 
+func encodeCreateTagRequest(
+	req *TagData,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodeCreateTeamRequest(
 	req *TeamData,
 	r *http.Request,
@@ -278,6 +292,20 @@ func encodePutResourceTypeRequest(
 
 func encodePutSpaceEnablementsRequest(
 	req *SpaceEnablementData,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodePutTagRequest(
+	req *TagData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
