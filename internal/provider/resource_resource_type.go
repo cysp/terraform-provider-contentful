@@ -17,7 +17,6 @@ var (
 	_ resource.ResourceWithConfigure   = (*appDefinitionResourceTypeResource)(nil)
 	_ resource.ResourceWithIdentity    = (*appDefinitionResourceTypeResource)(nil)
 	_ resource.ResourceWithImportState = (*appDefinitionResourceTypeResource)(nil)
-	_ resource.ResourceWithMoveState   = (*appDefinitionResourceTypeResource)(nil)
 )
 
 //nolint:ireturn
@@ -59,24 +58,6 @@ func (r *appDefinitionResourceTypeResource) ImportState(ctx context.Context, req
 	}, req, resp)
 }
 
-func (r *appDefinitionResourceTypeResource) MoveState(ctx context.Context) []resource.StateMover {
-	schema := ResourceTypeResourceSchema(ctx)
-
-	return []resource.StateMover{
-		{
-			SourceSchema: &schema,
-			StateMover: func(_ context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-				if req.SourceTypeName == "contentful_app_definition_resource_type" && req.SourceSchemaVersion == 0 {
-					resp.TargetState = *req.SourceState
-
-					return
-				}
-			},
-		},
-	}
-}
-
-//nolint:dupl
 func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data ResourceTypeModel
 
