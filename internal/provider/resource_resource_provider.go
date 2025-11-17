@@ -17,7 +17,6 @@ var (
 	_ resource.ResourceWithConfigure   = (*appDefinitionResourceProviderResource)(nil)
 	_ resource.ResourceWithIdentity    = (*appDefinitionResourceProviderResource)(nil)
 	_ resource.ResourceWithImportState = (*appDefinitionResourceProviderResource)(nil)
-	_ resource.ResourceWithMoveState   = (*appDefinitionResourceProviderResource)(nil)
 )
 
 //nolint:ireturn
@@ -55,23 +54,6 @@ func (r *appDefinitionResourceProviderResource) ImportState(ctx context.Context,
 		path.Root("organization_id"),
 		path.Root("app_definition_id"),
 	}, req, resp)
-}
-
-func (r *appDefinitionResourceProviderResource) MoveState(ctx context.Context) []resource.StateMover {
-	schema := ResourceProviderResourceSchema(ctx)
-
-	return []resource.StateMover{
-		{
-			SourceSchema: &schema,
-			StateMover: func(_ context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-				if req.SourceTypeName == "contentful_app_definition_resource_provider" && req.SourceSchemaVersion == 0 {
-					resp.TargetState = *req.SourceState
-
-					return
-				}
-			},
-		},
-	}
 }
 
 //nolint:dupl
