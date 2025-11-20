@@ -182,7 +182,6 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Description: "Default value for the field in JSON format.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
-			Computed:    true,
 		},
 		"localized": schema.BoolAttribute{
 			Description: "Whether the field can have different values for different locales.",
