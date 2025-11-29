@@ -1286,12 +1286,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Route is route object.
 type Route struct {
-	name        string
-	summary     string
-	operationID string
-	pathPattern string
-	count       int
-	args        [3]string
+	name           string
+	summary        string
+	operationID    string
+	operationGroup string
+	pathPattern    string
+	count          int
+	args           [3]string
 }
 
 // Name returns ogen operation name.
@@ -1309,6 +1310,11 @@ func (r Route) Summary() string {
 // OperationID returns OpenAPI operationId.
 func (r Route) OperationID() string {
 	return r.operationID
+}
+
+// OperationGroup returns the x-ogen-operation-group value.
+func (r Route) OperationGroup() string {
+	return r.operationGroup
 }
 
 // PathPattern returns OpenAPI path.
@@ -1386,6 +1392,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = GetMarketplaceAppDefinitionsOperation
 						r.summary = "Get marketplace app definitions"
 						r.operationID = "getMarketplaceAppDefinitions"
+						r.operationGroup = ""
 						r.pathPattern = "/app_definitions"
 						r.args = args
 						r.count = 0
@@ -1442,6 +1449,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.name = CreateAppDefinitionOperation
 								r.summary = "Create an app definition"
 								r.operationID = "createAppDefinition"
+								r.operationGroup = ""
 								r.pathPattern = "/organizations/{organization_id}/app_definitions"
 								r.args = args
 								r.count = 1
@@ -1474,6 +1482,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = DeleteAppDefinitionOperation
 									r.summary = "Delete an app definition"
 									r.operationID = "deleteAppDefinition"
+									r.operationGroup = ""
 									r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}"
 									r.args = args
 									r.count = 2
@@ -1482,6 +1491,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = GetAppDefinitionOperation
 									r.summary = "Get one app definition"
 									r.operationID = "getAppDefinition"
+									r.operationGroup = ""
 									r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}"
 									r.args = args
 									r.count = 2
@@ -1490,6 +1500,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = PutAppDefinitionOperation
 									r.summary = "Create or update an app definition"
 									r.operationID = "putAppDefinition"
+									r.operationGroup = ""
 									r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}"
 									r.args = args
 									r.count = 2
@@ -1525,6 +1536,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											r.name = DeleteResourceProviderOperation
 											r.summary = "Delete a resource provider definition"
 											r.operationID = "deleteResourceProvider"
+											r.operationGroup = ""
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider"
 											r.args = args
 											r.count = 2
@@ -1533,6 +1545,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											r.name = GetResourceProviderOperation
 											r.summary = "Get one resource provider definition"
 											r.operationID = "getResourceProvider"
+											r.operationGroup = ""
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider"
 											r.args = args
 											r.count = 2
@@ -1541,6 +1554,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											r.name = PutResourceProviderOperation
 											r.summary = "Create or update a resource provider definition"
 											r.operationID = "putResourceProvider"
+											r.operationGroup = ""
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider"
 											r.args = args
 											r.count = 2
@@ -1574,6 +1588,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.name = DeleteResourceTypeOperation
 												r.summary = "Delete a resource type definition"
 												r.operationID = "deleteResourceType"
+												r.operationGroup = ""
 												r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
 												r.args = args
 												r.count = 3
@@ -1582,6 +1597,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.name = GetResourceTypeOperation
 												r.summary = "Get one resource type definition"
 												r.operationID = "getResourceType"
+												r.operationGroup = ""
 												r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
 												r.args = args
 												r.count = 3
@@ -1590,6 +1606,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.name = PutResourceTypeOperation
 												r.summary = "Create or update a resource type definition"
 												r.operationID = "putResourceType"
+												r.operationGroup = ""
 												r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}"
 												r.args = args
 												r.count = 3
@@ -1616,6 +1633,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											r.name = DeleteAppSigningSecretOperation
 											r.summary = "Delete an app signing secret"
 											r.operationID = "deleteAppSigningSecret"
+											r.operationGroup = ""
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret"
 											r.args = args
 											r.count = 2
@@ -1624,6 +1642,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											r.name = GetAppSigningSecretOperation
 											r.summary = "Get one app signing secret"
 											r.operationID = "getAppSigningSecret"
+											r.operationGroup = ""
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret"
 											r.args = args
 											r.count = 2
@@ -1632,6 +1651,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											r.name = PutAppSigningSecretOperation
 											r.summary = "Create or update an app signing secret"
 											r.operationID = "putAppSigningSecret"
+											r.operationGroup = ""
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret"
 											r.args = args
 											r.count = 2
@@ -1661,6 +1681,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.name = CreateTeamOperation
 								r.summary = "Create a team"
 								r.operationID = "createTeam"
+								r.operationGroup = ""
 								r.pathPattern = "/organizations/{organization_id}/teams"
 								r.args = args
 								r.count = 1
@@ -1694,6 +1715,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = DeleteTeamOperation
 									r.summary = "Delete a team"
 									r.operationID = "deleteTeam"
+									r.operationGroup = ""
 									r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
 									r.args = args
 									r.count = 2
@@ -1702,6 +1724,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = GetTeamOperation
 									r.summary = "Get a single team"
 									r.operationID = "getTeam"
+									r.operationGroup = ""
 									r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
 									r.args = args
 									r.count = 2
@@ -1710,6 +1733,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = PutTeamOperation
 									r.summary = "Update a single team"
 									r.operationID = "putTeam"
+									r.operationGroup = ""
 									r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
 									r.args = args
 									r.count = 2
@@ -1772,6 +1796,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.name = CreateDeliveryAPIKeyOperation
 								r.summary = "Create a delivery api key"
 								r.operationID = "createDeliveryAPIKey"
+								r.operationGroup = ""
 								r.pathPattern = "/spaces/{space_id}/api_keys"
 								r.args = args
 								r.count = 1
@@ -1805,6 +1830,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = DeleteDeliveryAPIKeyOperation
 									r.summary = "Delete a single delivery api key"
 									r.operationID = "deleteDeliveryAPIKey"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
 									r.args = args
 									r.count = 2
@@ -1813,6 +1839,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = GetDeliveryAPIKeyOperation
 									r.summary = "Get a single delivery api key"
 									r.operationID = "getDeliveryAPIKey"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
 									r.args = args
 									r.count = 2
@@ -1821,6 +1848,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = UpdateDeliveryAPIKeyOperation
 									r.summary = "Update a single delivery api key"
 									r.operationID = "updateDeliveryAPIKey"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
 									r.args = args
 									r.count = 2
@@ -1859,6 +1887,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = GetSpaceEnablementsOperation
 									r.summary = "Get enablements for a space"
 									r.operationID = "getSpaceEnablements"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/enablements"
 									r.args = args
 									r.count = 1
@@ -1867,6 +1896,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = PutSpaceEnablementsOperation
 									r.summary = "Update enablements for a space"
 									r.operationID = "putSpaceEnablements"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/enablements"
 									r.args = args
 									r.count = 1
@@ -1912,6 +1942,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										r.name = DeleteEnvironmentAliasOperation
 										r.summary = "Delete an environment alias"
 										r.operationID = "deleteEnvironmentAlias"
+										r.operationGroup = ""
 										r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
 										r.args = args
 										r.count = 2
@@ -1920,6 +1951,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										r.name = GetEnvironmentAliasOperation
 										r.summary = "Get a single environment alias"
 										r.operationID = "getEnvironmentAlias"
+										r.operationGroup = ""
 										r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
 										r.args = args
 										r.count = 2
@@ -1928,6 +1960,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										r.name = CreateOrUpdateEnvironmentAliasOperation
 										r.summary = "Create/Update an environment alias"
 										r.operationID = "createOrUpdateEnvironmentAlias"
+										r.operationGroup = ""
 										r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
 										r.args = args
 										r.count = 2
@@ -1960,6 +1993,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										r.name = DeleteEnvironmentOperation
 										r.summary = "Delete an environment"
 										r.operationID = "deleteEnvironment"
+										r.operationGroup = ""
 										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
 										r.args = args
 										r.count = 2
@@ -1968,6 +2002,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										r.name = GetEnvironmentOperation
 										r.summary = "Get a single environment"
 										r.operationID = "getEnvironment"
+										r.operationGroup = ""
 										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
 										r.args = args
 										r.count = 2
@@ -1976,6 +2011,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										r.name = CreateOrUpdateEnvironmentOperation
 										r.summary = "Create or update an environment"
 										r.operationID = "createOrUpdateEnvironment"
+										r.operationGroup = ""
 										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
 										r.args = args
 										r.count = 2
@@ -2021,6 +2057,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.name = DeleteAppInstallationOperation
 												r.summary = "Uninstall an app"
 												r.operationID = "deleteAppInstallation"
+												r.operationGroup = ""
 												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
 												r.args = args
 												r.count = 3
@@ -2029,6 +2066,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.name = GetAppInstallationOperation
 												r.summary = "Get one app installation"
 												r.operationID = "getAppInstallation"
+												r.operationGroup = ""
 												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
 												r.args = args
 												r.count = 3
@@ -2037,6 +2075,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.name = PutAppInstallationOperation
 												r.summary = "Install or update an app"
 												r.operationID = "putAppInstallation"
+												r.operationGroup = ""
 												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
 												r.args = args
 												r.count = 3
@@ -2069,6 +2108,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.name = DeleteContentTypeOperation
 												r.summary = "Delete a content type"
 												r.operationID = "deleteContentType"
+												r.operationGroup = ""
 												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
 												r.args = args
 												r.count = 3
@@ -2077,6 +2117,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.name = GetContentTypeOperation
 												r.summary = "Get a content type"
 												r.operationID = "getContentType"
+												r.operationGroup = ""
 												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
 												r.args = args
 												r.count = 3
@@ -2085,6 +2126,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.name = PutContentTypeOperation
 												r.summary = "Update a content type"
 												r.operationID = "putContentType"
+												r.operationGroup = ""
 												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
 												r.args = args
 												r.count = 3
@@ -2121,6 +2163,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 														r.name = GetEditorInterfaceOperation
 														r.summary = "Get the editor interface for a content type"
 														r.operationID = "getEditorInterface"
+														r.operationGroup = ""
 														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
 														r.args = args
 														r.count = 3
@@ -2129,6 +2172,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 														r.name = PutEditorInterfaceOperation
 														r.summary = "Update the editor interface for a content type"
 														r.operationID = "putEditorInterface"
+														r.operationGroup = ""
 														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
 														r.args = args
 														r.count = 3
@@ -2153,6 +2197,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 														r.name = DeactivateContentTypeOperation
 														r.summary = "Deactivate a content type"
 														r.operationID = "deactivateContentType"
+														r.operationGroup = ""
 														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
 														r.args = args
 														r.count = 3
@@ -2161,6 +2206,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 														r.name = ActivateContentTypeOperation
 														r.summary = "Activate a content type"
 														r.operationID = "activateContentType"
+														r.operationGroup = ""
 														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
 														r.args = args
 														r.count = 3
@@ -2200,6 +2246,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 													r.name = CreateEntryOperation
 													r.summary = "Create an entry"
 													r.operationID = "createEntry"
+													r.operationGroup = ""
 													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
 													r.args = args
 													r.count = 2
@@ -2232,6 +2279,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 														r.name = DeleteEntryOperation
 														r.summary = "Delete an entry"
 														r.operationID = "deleteEntry"
+														r.operationGroup = ""
 														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
 														r.args = args
 														r.count = 3
@@ -2240,6 +2288,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 														r.name = GetEntryOperation
 														r.summary = "Get a single entry"
 														r.operationID = "getEntry"
+														r.operationGroup = ""
 														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
 														r.args = args
 														r.count = 3
@@ -2248,6 +2297,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 														r.name = PutEntryOperation
 														r.summary = "Create or update an entry"
 														r.operationID = "putEntry"
+														r.operationGroup = ""
 														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
 														r.args = args
 														r.count = 3
@@ -2272,6 +2322,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 															r.name = UnpublishEntryOperation
 															r.summary = "Unpublish an entry"
 															r.operationID = "unpublishEntry"
+															r.operationGroup = ""
 															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
 															r.args = args
 															r.count = 3
@@ -2280,6 +2331,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 															r.name = PublishEntryOperation
 															r.summary = "Publish an entry"
 															r.operationID = "publishEntry"
+															r.operationGroup = ""
 															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
 															r.args = args
 															r.count = 3
@@ -2317,6 +2369,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 													r.name = DeleteExtensionOperation
 													r.summary = "Delete an extension"
 													r.operationID = "deleteExtension"
+													r.operationGroup = ""
 													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
 													r.args = args
 													r.count = 3
@@ -2325,6 +2378,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 													r.name = GetExtensionOperation
 													r.summary = "Get a single extension"
 													r.operationID = "getExtension"
+													r.operationGroup = ""
 													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
 													r.args = args
 													r.count = 3
@@ -2333,6 +2387,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 													r.name = PutExtensionOperation
 													r.summary = "Create or update an extension"
 													r.operationID = "putExtension"
+													r.operationGroup = ""
 													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
 													r.args = args
 													r.count = 3
@@ -2376,6 +2431,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.name = GetPreviewAPIKeyOperation
 								r.summary = "Get a single preview api key"
 								r.operationID = "getPreviewAPIKey"
+								r.operationGroup = ""
 								r.pathPattern = "/spaces/{space_id}/preview_api_keys/{preview_api_key_id}"
 								r.args = args
 								r.count = 2
@@ -2399,6 +2455,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.name = CreateRoleOperation
 								r.summary = "Create a role"
 								r.operationID = "createRole"
+								r.operationGroup = ""
 								r.pathPattern = "/spaces/{space_id}/roles"
 								r.args = args
 								r.count = 1
@@ -2432,6 +2489,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = DeleteRoleOperation
 									r.summary = "Delete a role"
 									r.operationID = "deleteRole"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
 									r.args = args
 									r.count = 2
@@ -2440,6 +2498,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = GetRoleOperation
 									r.summary = "Get a role"
 									r.operationID = "getRole"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
 									r.args = args
 									r.count = 2
@@ -2448,6 +2507,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = UpdateRoleOperation
 									r.summary = "Update a role"
 									r.operationID = "updateRole"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
 									r.args = args
 									r.count = 2
@@ -2473,6 +2533,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.name = CreateTeamSpaceMembershipOperation
 								r.summary = "Create a team space membership"
 								r.operationID = "createTeamSpaceMembership"
+								r.operationGroup = ""
 								r.pathPattern = "/spaces/{space_id}/team_space_memberships"
 								r.args = args
 								r.count = 1
@@ -2506,6 +2567,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = DeleteTeamSpaceMembershipOperation
 									r.summary = "Delete a team space membership"
 									r.operationID = "deleteTeamSpaceMembership"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
 									r.args = args
 									r.count = 2
@@ -2514,6 +2576,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = GetTeamSpaceMembershipOperation
 									r.summary = "Get a single team space membership"
 									r.operationID = "getTeamSpaceMembership"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
 									r.args = args
 									r.count = 2
@@ -2522,6 +2585,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = PutTeamSpaceMembershipOperation
 									r.summary = "Update a single team space membership"
 									r.operationID = "putTeamSpaceMembership"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
 									r.args = args
 									r.count = 2
@@ -2547,6 +2611,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.name = CreateWebhookDefinitionOperation
 								r.summary = "Create a webhook definition"
 								r.operationID = "createWebhookDefinition"
+								r.operationGroup = ""
 								r.pathPattern = "/spaces/{space_id}/webhook_definitions"
 								r.args = args
 								r.count = 1
@@ -2580,6 +2645,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = DeleteWebhookDefinitionOperation
 									r.summary = "Delete a webhook definition"
 									r.operationID = "deleteWebhookDefinition"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
 									r.args = args
 									r.count = 2
@@ -2588,6 +2654,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = GetWebhookDefinitionOperation
 									r.summary = "Get a webhook definition"
 									r.operationID = "getWebhookDefinition"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
 									r.args = args
 									r.count = 2
@@ -2596,6 +2663,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = UpdateWebhookDefinitionOperation
 									r.summary = "Update a webhook definition"
 									r.operationID = "updateWebhookDefinition"
+									r.operationGroup = ""
 									r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
 									r.args = args
 									r.count = 2
@@ -2625,6 +2693,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = GetAuthenticatedUserOperation
 						r.summary = "Get the authenticated user"
 						r.operationID = "getAuthenticatedUser"
+						r.operationGroup = ""
 						r.pathPattern = "/users/me"
 						r.args = args
 						r.count = 0
@@ -2648,6 +2717,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							r.name = CreatePersonalAccessTokenOperation
 							r.summary = "Create a personal access token"
 							r.operationID = "createPersonalAccessToken"
+							r.operationGroup = ""
 							r.pathPattern = "/users/me/access_tokens"
 							r.args = args
 							r.count = 0
@@ -2680,6 +2750,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.name = GetPersonalAccessTokenOperation
 								r.summary = "Get a single personal access token"
 								r.operationID = "getPersonalAccessToken"
+								r.operationGroup = ""
 								r.pathPattern = "/users/me/access_tokens/{access_token_id}"
 								r.args = args
 								r.count = 1
@@ -2704,6 +2775,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									r.name = RevokePersonalAccessTokenOperation
 									r.summary = "Revoke a personal access token"
 									r.operationID = "revokePersonalAccessToken"
+									r.operationGroup = ""
 									r.pathPattern = "/users/me/access_tokens/{access_token_id}/revoked"
 									r.args = args
 									r.count = 1

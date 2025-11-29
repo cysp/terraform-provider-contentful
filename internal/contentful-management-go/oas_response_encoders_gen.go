@@ -56,7 +56,7 @@ func encodeActivateContentTypeResponse(response ActivateContentTypeRes, w http.R
 		}
 		return nil
 
-	case *ContentTypeStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -76,7 +76,7 @@ func encodeActivateContentTypeResponse(response ActivateContentTypeRes, w http.R
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *ContentTypeStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -329,7 +329,7 @@ func encodeCreateEntryResponse(response CreateEntryRes, w http.ResponseWriter) e
 		}
 		return nil
 
-	case *EntryStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -349,7 +349,7 @@ func encodeCreateEntryResponse(response CreateEntryRes, w http.ResponseWriter) e
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *EntryStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -420,7 +420,7 @@ func encodeCreateOrUpdateEnvironmentResponse(response CreateOrUpdateEnvironmentR
 		}
 		return nil
 
-	case *EnvironmentStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -440,7 +440,7 @@ func encodeCreateOrUpdateEnvironmentResponse(response CreateOrUpdateEnvironmentR
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *EnvironmentStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -511,7 +511,7 @@ func encodeCreateOrUpdateEnvironmentAliasResponse(response CreateOrUpdateEnviron
 		}
 		return nil
 
-	case *EnvironmentAliasStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -531,7 +531,7 @@ func encodeCreateOrUpdateEnvironmentAliasResponse(response CreateOrUpdateEnviron
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *EnvironmentAliasStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -602,7 +602,7 @@ func encodeCreatePersonalAccessTokenResponse(response CreatePersonalAccessTokenR
 		}
 		return nil
 
-	case *PersonalAccessTokenStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -622,7 +622,7 @@ func encodeCreatePersonalAccessTokenResponse(response CreatePersonalAccessTokenR
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *PersonalAccessTokenStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -693,7 +693,7 @@ func encodeCreateRoleResponse(response CreateRoleRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *RoleStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -713,7 +713,7 @@ func encodeCreateRoleResponse(response CreateRoleRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *RoleStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -784,7 +784,7 @@ func encodeCreateTeamResponse(response CreateTeamRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *TeamStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -804,7 +804,7 @@ func encodeCreateTeamResponse(response CreateTeamRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *TeamStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -875,7 +875,7 @@ func encodeCreateTeamSpaceMembershipResponse(response CreateTeamSpaceMembershipR
 		}
 		return nil
 
-	case *TeamSpaceMembershipStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -895,7 +895,7 @@ func encodeCreateTeamSpaceMembershipResponse(response CreateTeamSpaceMembershipR
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *TeamSpaceMembershipStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -966,7 +966,7 @@ func encodeCreateWebhookDefinitionResponse(response CreateWebhookDefinitionRes, 
 		}
 		return nil
 
-	case *WebhookDefinitionStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -986,7 +986,7 @@ func encodeCreateWebhookDefinitionResponse(response CreateWebhookDefinitionRes, 
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *WebhookDefinitionStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4040,7 +4040,7 @@ func encodePublishEntryResponse(response PublishEntryRes, w http.ResponseWriter)
 		}
 		return nil
 
-	case *EntryStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4060,7 +4060,7 @@ func encodePublishEntryResponse(response PublishEntryRes, w http.ResponseWriter)
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *EntryStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4404,7 +4404,7 @@ func encodePutContentTypeResponse(response PutContentTypeRes, w http.ResponseWri
 		}
 		return nil
 
-	case *ContentTypeStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4424,7 +4424,7 @@ func encodePutContentTypeResponse(response PutContentTypeRes, w http.ResponseWri
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *ContentTypeStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4495,7 +4495,7 @@ func encodePutEditorInterfaceResponse(response PutEditorInterfaceRes, w http.Res
 		}
 		return nil
 
-	case *EditorInterfaceStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4515,7 +4515,7 @@ func encodePutEditorInterfaceResponse(response PutEditorInterfaceRes, w http.Res
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *EditorInterfaceStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4586,7 +4586,7 @@ func encodePutEntryResponse(response PutEntryRes, w http.ResponseWriter) error {
 		}
 		return nil
 
-	case *EntryStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4606,7 +4606,7 @@ func encodePutEntryResponse(response PutEntryRes, w http.ResponseWriter) error {
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *EntryStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4677,7 +4677,7 @@ func encodePutExtensionResponse(response PutExtensionRes, w http.ResponseWriter)
 		}
 		return nil
 
-	case *ExtensionStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4697,7 +4697,7 @@ func encodePutExtensionResponse(response PutExtensionRes, w http.ResponseWriter)
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *ExtensionStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4768,7 +4768,7 @@ func encodePutResourceProviderResponse(response PutResourceProviderRes, w http.R
 		}
 		return nil
 
-	case *ResourceProviderStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4788,7 +4788,7 @@ func encodePutResourceProviderResponse(response PutResourceProviderRes, w http.R
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *ResourceProviderStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4859,7 +4859,7 @@ func encodePutResourceTypeResponse(response PutResourceTypeRes, w http.ResponseW
 		}
 		return nil
 
-	case *ResourceTypeStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4879,7 +4879,7 @@ func encodePutResourceTypeResponse(response PutResourceTypeRes, w http.ResponseW
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *ResourceTypeStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4950,7 +4950,7 @@ func encodePutSpaceEnablementsResponse(response PutSpaceEnablementsRes, w http.R
 		}
 		return nil
 
-	case *SpaceEnablementStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4970,7 +4970,7 @@ func encodePutSpaceEnablementsResponse(response PutSpaceEnablementsRes, w http.R
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *SpaceEnablementStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5041,7 +5041,7 @@ func encodePutTeamResponse(response PutTeamRes, w http.ResponseWriter) error {
 		}
 		return nil
 
-	case *TeamStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5061,7 +5061,7 @@ func encodePutTeamResponse(response PutTeamRes, w http.ResponseWriter) error {
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *TeamStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5132,7 +5132,7 @@ func encodePutTeamSpaceMembershipResponse(response PutTeamSpaceMembershipRes, w 
 		}
 		return nil
 
-	case *TeamSpaceMembershipStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5152,7 +5152,7 @@ func encodePutTeamSpaceMembershipResponse(response PutTeamSpaceMembershipRes, w 
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *TeamSpaceMembershipStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5223,7 +5223,7 @@ func encodeRevokePersonalAccessTokenResponse(response RevokePersonalAccessTokenR
 		}
 		return nil
 
-	case *PersonalAccessTokenStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5243,7 +5243,7 @@ func encodeRevokePersonalAccessTokenResponse(response RevokePersonalAccessTokenR
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *PersonalAccessTokenStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5493,7 +5493,7 @@ func encodeUpdateRoleResponse(response UpdateRoleRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *RoleStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5513,7 +5513,7 @@ func encodeUpdateRoleResponse(response UpdateRoleRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *RoleStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5584,7 +5584,7 @@ func encodeUpdateWebhookDefinitionResponse(response UpdateWebhookDefinitionRes, 
 		}
 		return nil
 
-	case *WebhookDefinitionStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -5604,7 +5604,7 @@ func encodeUpdateWebhookDefinitionResponse(response UpdateWebhookDefinitionRes, 
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
+	case *WebhookDefinitionStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
