@@ -10,6 +10,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -197,5 +198,11 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewTeamResource,
 		NewTeamSpaceMembershipResource,
 		NewWebhookResource,
+	}
+}
+
+func (p *ContentfulProvider) ListResources(_ context.Context) []func() list.ListResource {
+	return []func() list.ListResource{
+		NewEntryListResource,
 	}
 }

@@ -1019,6 +1019,61 @@ paths:
     parameters:
       - $ref: "#/components/parameters/space_id"
       - $ref: "#/components/parameters/environment_id"
+    get:
+      operationId: getEntries
+      summary: Get entries
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - name: content_type
+          in: query
+          description: Filter by content type ID
+          required: false
+          schema:
+            type: string
+        - name: select
+          in: query
+          description: Select specific fields
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of entries to return
+          required: false
+          schema:
+            type: integer
+            default: 100
+        - name: skip
+          in: query
+          description: Number of entries to skip
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: order
+          in: query
+          description: Order entries by field
+          required: false
+          schema:
+            type: string
+        - name: query
+          in: query
+          description: Full-text search query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: A collection of entries
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./openapi/schemas/entry/collection.yml#/EntryCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
     post:
       operationId: createEntry
       summary: Create an entry

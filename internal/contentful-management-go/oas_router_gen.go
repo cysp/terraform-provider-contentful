@@ -805,13 +805,18 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 											if len(elem) == 0 {
 												switch r.Method {
+												case "GET":
+													s.handleGetEntriesRequest([2]string{
+														args[0],
+														args[1],
+													}, elemIsEscaped, w, r)
 												case "POST":
 													s.handleCreateEntryRequest([2]string{
 														args[0],
 														args[1],
 													}, elemIsEscaped, w, r)
 												default:
-													s.notAllowed(w, r, "POST")
+													s.notAllowed(w, r, "GET,POST")
 												}
 
 												return
@@ -2196,6 +2201,14 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 											if len(elem) == 0 {
 												switch method {
+												case "GET":
+													r.name = GetEntriesOperation
+													r.summary = "Get entries"
+													r.operationID = "getEntries"
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
+													r.args = args
+													r.count = 2
+													return r, true
 												case "POST":
 													r.name = CreateEntryOperation
 													r.summary = "Create an entry"

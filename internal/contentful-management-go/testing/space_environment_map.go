@@ -56,3 +56,24 @@ func (sm *SpaceEnvironmentMap[Value]) Delete(spaceID string, environmentID strin
 
 	delete(environmentValues, key)
 }
+
+//nolint:ireturn
+func (sm *SpaceEnvironmentMap[Value]) GetAllForSpaceEnvironment(spaceID string, environmentID string) []Value {
+	var values []Value
+
+	spaceValues, exists := sm.m[spaceID]
+	if !exists {
+		return values
+	}
+
+	environmentValues, exists := spaceValues[environmentID]
+	if !exists {
+		return values
+	}
+
+	for _, value := range environmentValues {
+		values = append(values, value)
+	}
+
+	return values
+}

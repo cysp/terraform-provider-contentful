@@ -1,0 +1,31 @@
+EntryCollection:
+  type: object
+  properties:
+    sys:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Array
+      required:
+        - type
+    total:
+      type: integer
+      description: Total number of entries
+    skip:
+      type: integer
+      description: Number of entries skipped
+    limit:
+      type: integer
+      description: Maximum number of entries returned
+    items:
+      type: array
+      items:
+        $ref: "./entry.yml#/Entry"
+  required:
+    - sys
+    - total
+    - skip
+    - limit
+    - items

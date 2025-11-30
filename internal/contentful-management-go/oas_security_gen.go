@@ -67,6 +67,7 @@ var operationRolesAccessToken = map[string][]string{
 	GetContentTypeOperation:                 []string{},
 	GetDeliveryAPIKeyOperation:              []string{},
 	GetEditorInterfaceOperation:             []string{},
+	GetEntriesOperation:                     []string{},
 	GetEntryOperation:                       []string{},
 	GetEnvironmentOperation:                 []string{},
 	GetEnvironmentAliasOperation:            []string{},
