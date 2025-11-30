@@ -192,7 +192,8 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	responseModel, currentVersion := r.updateEntry(ctx, plan, currentVersion, &resp.Diagnostics)
+	var responseModel EntryModel
+	responseModel, currentVersion = r.updateEntry(ctx, plan, currentVersion, &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
