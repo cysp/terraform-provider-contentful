@@ -59,6 +59,10 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 	// Filter by content type if specified
 	var entries []cm.Entry
 	for _, entry := range allEntries {
+		// Null safety check
+		if entry.Sys.ContentType.Sys.ID == "" {
+			continue
+		}
 		if params.ContentType.IsSet() && entry.Sys.ContentType.Sys.ID != params.ContentType.Value {
 			continue
 		}

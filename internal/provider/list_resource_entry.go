@@ -139,7 +139,7 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 	}
 }
 
-func convertEntryToModel(ctx context.Context, entry cm.Entry, spaceID, environmentID string) (EntryModel, diag.Diagnostics) {
+func convertEntryToModel(ctx context.Context, entry cm.Entry, _, _ string) (EntryModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Use the existing conversion function
