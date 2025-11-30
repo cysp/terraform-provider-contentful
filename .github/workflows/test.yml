@@ -73,7 +73,6 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - "1.12.*"
           - "1.13.*"
           - "1.14.*"
     concurrency:
@@ -106,7 +105,6 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - "1.12.*"
           - "1.13.*"
           - "1.14.*"
     steps:
