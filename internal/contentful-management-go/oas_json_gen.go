@@ -7373,15 +7373,25 @@ func (s *EditorInterfaceEditorLayoutItem) Decode(d *jx.Decoder) error {
 	if err := d.Capture(func(d *jx.Decoder) error {
 		return d.ObjBytes(func(d *jx.Decoder, key []byte) error {
 			switch string(key) {
-			case "groupId":
-				match := EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem
+			case "fieldId":
+				// Type-based discrimination: check if field has expected JSON type
+				if typ := d.Next(); typ != jx.String {
+					// Field exists but has wrong type, not a match for this variant
+					return d.Skip()
+				}
+				match := EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem
 				if found && s.Type != match {
 					s.Type = ""
 					return errors.Errorf("multiple oneOf matches: (%v, %v)", s.Type, match)
 				}
 				found = true
 				s.Type = match
-			case "name":
+			case "groupId":
+				// Type-based discrimination: check if field has expected JSON type
+				if typ := d.Next(); typ != jx.String {
+					// Field exists but has wrong type, not a match for this variant
+					return d.Skip()
+				}
 				match := EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem
 				if found && s.Type != match {
 					s.Type = ""
@@ -7390,6 +7400,11 @@ func (s *EditorInterfaceEditorLayoutItem) Decode(d *jx.Decoder) error {
 				found = true
 				s.Type = match
 			case "items":
+				// Type-based discrimination: check if field has expected JSON type
+				if typ := d.Next(); typ != jx.Array {
+					// Field exists but has wrong type, not a match for this variant
+					return d.Skip()
+				}
 				match := EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem
 				if found && s.Type != match {
 					s.Type = ""
@@ -7397,8 +7412,13 @@ func (s *EditorInterfaceEditorLayoutItem) Decode(d *jx.Decoder) error {
 				}
 				found = true
 				s.Type = match
-			case "fieldId":
-				match := EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem
+			case "name":
+				// Type-based discrimination: check if field has expected JSON type
+				if typ := d.Next(); typ != jx.String {
+					// Field exists but has wrong type, not a match for this variant
+					return d.Skip()
+				}
+				match := EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem
 				if found && s.Type != match {
 					s.Type = ""
 					return errors.Errorf("multiple oneOf matches: (%v, %v)", s.Type, match)
@@ -15204,20 +15224,34 @@ func (s *PreviewApiKeySysType) UnmarshalJSON(data []byte) error {
 
 // Encode encodes ResourceLink as json.
 func (s ResourceLink) Encode(e *jx.Encoder) {
-	switch s.Type {
-	case ContentfulEntryResourceLinkResourceLink:
-		s.ContentfulEntryResourceLink.Encode(e)
-	case ExternalResourceLinkResourceLink:
-		s.ExternalResourceLink.Encode(e)
-	}
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
 }
 
 func (s ResourceLink) encodeFields(e *jx.Encoder) {
 	switch s.Type {
 	case ContentfulEntryResourceLinkResourceLink:
-		s.ContentfulEntryResourceLink.encodeFields(e)
+		e.FieldStart("type")
+		e.Str("ContentfulEntryResourceLink")
+		{
+			s := s.ContentfulEntryResourceLink
+			{
+				e.FieldStart("source")
+				e.Str(s.Source)
+			}
+			{
+				e.FieldStart("contentTypes")
+				e.ArrStart()
+				for _, elem := range s.ContentTypes {
+					e.Str(elem)
+				}
+				e.ArrEnd()
+			}
+		}
 	case ExternalResourceLinkResourceLink:
-		s.ExternalResourceLink.encodeFields(e)
+		e.FieldStart("type")
+		e.Str("ExternalResourceLink")
 	}
 }
 
@@ -15226,7 +15260,7 @@ func (s *ResourceLink) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode ResourceLink to nil")
 	}
-	// Sum type fields.
+	// Sum type discriminator.
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
@@ -15234,23 +15268,26 @@ func (s *ResourceLink) Decode(d *jx.Decoder) error {
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
 		return d.ObjBytes(func(d *jx.Decoder, key []byte) error {
+			if found {
+				return d.Skip()
+			}
 			switch string(key) {
-			case "source":
-				match := ContentfulEntryResourceLinkResourceLink
-				if found && s.Type != match {
-					s.Type = ""
-					return errors.Errorf("multiple oneOf matches: (%v, %v)", s.Type, match)
+			case "type":
+				typ, err := d.Str()
+				if err != nil {
+					return err
 				}
-				found = true
-				s.Type = match
-			case "contentTypes":
-				match := ContentfulEntryResourceLinkResourceLink
-				if found && s.Type != match {
-					s.Type = ""
-					return errors.Errorf("multiple oneOf matches: (%v, %v)", s.Type, match)
+				switch typ {
+				case "ContentfulEntryResourceLink":
+					s.Type = ContentfulEntryResourceLinkResourceLink
+					found = true
+				case "ExternalResourceLink":
+					s.Type = ExternalResourceLinkResourceLink
+					found = true
+				default:
+					return errors.Errorf("unknown type %s", typ)
 				}
-				found = true
-				s.Type = match
+				return nil
 			}
 			return d.Skip()
 		})
@@ -15258,7 +15295,7 @@ func (s *ResourceLink) Decode(d *jx.Decoder) error {
 		return errors.Wrap(err, "capture")
 	}
 	if !found {
-		s.Type = ExternalResourceLinkResourceLink
+		return errors.New("unable to detect sum type variant")
 	}
 	switch s.Type {
 	case ContentfulEntryResourceLinkResourceLink:

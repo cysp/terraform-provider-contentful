@@ -2,6 +2,8 @@ ResourceLink:
   oneOf:
     - $ref: "#/ContentfulEntryResourceLink"
     - $ref: "#/ExternalResourceLink"
+  discriminator:
+    propertyName: type
 
 ContentfulEntryResourceLink:
   type: object
