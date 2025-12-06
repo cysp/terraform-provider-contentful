@@ -5,10 +5,12 @@ parser:
 generator:
   features:
     enable:
+      - "client/request/options"
       - "client/security/reentrant"
       - "paths/client"
       - "paths/server"
     disable:
+      - "client/editors"
       - "client/request/validation"
       - "debug/example_tests"
       - "ogen/otel"
