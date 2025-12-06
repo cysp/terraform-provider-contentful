@@ -41,6 +41,7 @@ const (
 	GetContentTypesOperation                OperationName = "GetContentTypes"
 	GetDeliveryAPIKeyOperation              OperationName = "GetDeliveryAPIKey"
 	GetEditorInterfaceOperation             OperationName = "GetEditorInterface"
+	GetEntriesOperation                     OperationName = "GetEntries"
 	GetEntryOperation                       OperationName = "GetEntry"
 	GetEnvironmentOperation                 OperationName = "GetEnvironment"
 	GetEnvironmentAliasOperation            OperationName = "GetEnvironmentAlias"

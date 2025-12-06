@@ -51,7 +51,7 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 		SpaceID:       config.SpaceID.ValueString(),
 		EnvironmentID: config.EnvironmentID.ValueString(),
 		Limit:         cm.NewOptInt64(req.Limit),
-		Order:         cm.NewOptString("sys.id"),
+		Order:         []string{"sys.id"},
 	}
 
 	stream.Results = func(yield func(list.ListResult) bool) {

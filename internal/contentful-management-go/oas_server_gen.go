@@ -218,6 +218,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
 	GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (GetEditorInterfaceRes, error)
+	// GetEntries implements getEntries operation.
+	//
+	// Get all entries of a space.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/entries
+	GetEntries(ctx context.Context, params GetEntriesParams) (GetEntriesRes, error)
 	// GetEntry implements getEntry operation.
 	//
 	// Get a single entry.

@@ -8,6 +8,42 @@ import (
 )
 
 //nolint:ireturn
+func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm.GetEntriesRes, error) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
+	skip := params.Skip.Or(0)
+	limit := params.Limit.Or(100) //nolint:mnd
+
+	entries := make([]cm.Entry, 0, limit)
+
+	for _, entry := range ts.entries.List(params.SpaceID, params.EnvironmentID) {
+		if params.ContentType.IsSet() && entry.Sys.ContentType.Sys.ID != params.ContentType.Value {
+			continue
+		}
+
+		entries = append(entries, *entry)
+	}
+
+	start := min(skip, int64(len(entries)))
+	end := min(start+limit, int64(len(entries)))
+
+	collection := cm.EntryCollection{
+		Sys: cm.EntryCollectionSys{
+			Type: cm.EntryCollectionSysTypeArray,
+		},
+		Total: cm.NewOptInt(len(entries)),
+		Items: entries[start:end],
+	}
+
+	return &collection, nil
+}
+
+//nolint:ireturn
 func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params cm.CreateEntryParams) (cm.CreateEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
