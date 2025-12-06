@@ -14,7 +14,7 @@ Manages a Contentful Webhook.
 
 ```terraform
 resource "contentful_webhook" "this" {
-  space_id = local.contentful_space_id
+  space_id = var.contentful_space_id
 
   name = "Example Webhook"
   url  = "https://example.org/webhook"
@@ -177,7 +177,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    space_id   = var.space_id
+    space_id   = var.contentful_space_id
     webhook_id = var.webhook_id
   }
   to = contentful_webhook.this
@@ -196,7 +196,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.space_id}/${var.webhook_id}"
+  id = "${var.contentful_space_id}/${var.webhook_id}"
   to = contentful_webhook.this
 }
 ```

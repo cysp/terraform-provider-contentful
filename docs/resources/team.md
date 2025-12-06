@@ -14,7 +14,7 @@ Manages a Contentful Team.
 
 ```terraform
 resource "contentful_team" "this" {
-  organization_id = var.organization_id
+  organization_id = var.contentful_organization_id
 
   name        = "Example Team"
   description = "An example team"
@@ -47,7 +47,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    organization_id = var.organization_id
+    organization_id = var.contentful_organization_id
     team_id         = var.team_id
   }
   to = contentful_team.this
@@ -66,7 +66,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.organization_id}/${var.team_id}"
+  id = "${var.contentful_organization_id}/${var.team_id}"
   to = contentful_team.this
 }
 ```

@@ -14,8 +14,8 @@ Manages a Contentful App Resource Type.
 
 ```terraform
 resource "contentful_resource_type" "this" {
-  organization_id   = var.organization_id
-  app_definition_id = local.app_definition_id
+  organization_id   = var.contentful_organization_id
+  app_definition_id = var.app_definition_id
   resource_type_id  = "ResourceProvider:resourceType"
 
   name = "Resource"
@@ -87,7 +87,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    organization_id   = var.organization_id
+    organization_id   = var.contentful_organization_id
     app_definition_id = var.app_definition_id
     resource_type_id  = var.resource_type_id
   }
@@ -108,7 +108,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.organization_id}/${var.app_definition_id}/${var.resource_type_id}"
+  id = "${var.contentful_organization_id}/${var.app_definition_id}/${var.resource_type_id}"
   to = contentful_resource_type.this
 }
 ```

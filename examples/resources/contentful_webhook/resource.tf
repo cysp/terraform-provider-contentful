@@ -1,5 +1,5 @@
 resource "contentful_webhook" "this" {
-  space_id = local.contentful_space_id
+  space_id = var.contentful_space_id
 
   name = "Example Webhook"
   url  = "https://example.org/webhook"

@@ -1,6 +1,6 @@
 resource "contentful_content_type" "author" {
-  space_id       = local.contentful_space_id
-  environment_id = local.contentful_environment_id
+  space_id       = var.contentful_space_id
+  environment_id = var.contentful_environment_id
 
   content_type_id = "author"
 
@@ -31,5 +31,3 @@ resource "contentful_content_type" "author" {
     },
   ]
 }
-
-

@@ -1,4 +1,4 @@
 import {
-  id = "${var.organization_id}/${var.app_definition_id}"
-  to = contentful_app_definition.this.id
+  id = "${var.contentful_organization_id}/${var.app_definition_id}"
+  to = contentful_app_definition.this
 }

@@ -14,7 +14,7 @@ Manages a Contentful Delivery API Key.
 
 ```terraform
 resource "contentful_delivery_api_key" "this" {
-  space_id = local.contentful_space_id
+  space_id = var.contentful_space_id
 
   name = "Content Delivery API Key"
 }
@@ -49,7 +49,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    space_id   = var.space_id
+    space_id   = var.contentful_space_id
     api_key_id = var.api_key_id
   }
   to = contentful_delivery_api_key.this
@@ -68,7 +68,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.space_id}/${var.api_key_id}"
+  id = "${var.contentful_space_id}/${var.api_key_id}"
   to = contentful_delivery_api_key.this
 }
 ```

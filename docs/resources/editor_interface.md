@@ -58,7 +58,7 @@ resource "contentful_editor_interface" "author" {
     },
     {
       widget_namespace = "app"
-      widget_id        = local.cool_app_definition_id
+      widget_id        = var.cool_app_definition_id
       settings = jsonencode({
         foo = "bar"
       })
@@ -198,8 +198,8 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    space_id        = var.space_id
-    environment_id  = var.environment_id
+    space_id        = var.contentful_space_id
+    environment_id  = var.contentful_environment_id
     content_type_id = var.content_type_id
   }
   to = contentful_editor_interface.this
@@ -219,7 +219,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.space_id}/${var.environment_id}/${var.content_type_id}"
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
   to = contentful_editor_interface.this
 }
 ```
