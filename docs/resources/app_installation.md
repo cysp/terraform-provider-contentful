@@ -56,6 +56,8 @@ resource "contentful_app_installation" "cool_marketplace_app" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import contentful_app_installation.cool_app $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/cool_app
 ```

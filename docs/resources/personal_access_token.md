@@ -43,6 +43,8 @@ resource "contentful_personal_access_token" "this" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import contentful_personal_access_token.this abcdef
 ```

@@ -128,5 +128,3 @@ Read-Only:
 - `empty` (String) Label for empty value.
 - `false` (String) Label for false value.
 - `true` (String) Label for true value.
-
-

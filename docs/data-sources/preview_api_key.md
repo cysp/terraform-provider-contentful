@@ -34,5 +34,3 @@ data "contentful_preview_api_key" "this" {
 - `description` (String) Description of the preview API key.
 - `environments` (List of String) List of environment IDs this preview API key has access to.
 - `name` (String) Name of the preview API key.
-
-

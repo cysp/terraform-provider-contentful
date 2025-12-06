@@ -193,6 +193,8 @@ Optional:
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import contentful_editor_interface.author $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/author
 ```
