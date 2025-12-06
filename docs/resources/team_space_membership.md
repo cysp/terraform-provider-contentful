@@ -14,7 +14,7 @@ Manages a Contentful Team Space Membership.
 
 ```terraform
 resource "contentful_team_space_membership" "this" {
-  space_id = var.space_id
+  space_id = var.contentful_space_id
   team_id  = var.team_id
 
   admin = false
@@ -46,7 +46,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    space_id                 = var.space_id
+    space_id                 = var.contentful_space_id
     team_space_membership_id = var.team_space_membership_id
   }
   to = contentful_team_space_membership.this
@@ -65,7 +65,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.space_id}/${var.team_space_membership_id}"
+  id = "${var.contentful_space_id}/${var.team_space_membership_id}"
   to = contentful_team_space_membership.this
 }
 ```

@@ -14,8 +14,8 @@ Manages a Contentful Content Type.
 
 ```terraform
 resource "contentful_content_type" "author" {
-  space_id       = local.contentful_space_id
-  environment_id = local.contentful_environment_id
+  space_id       = var.contentful_space_id
+  environment_id = var.contentful_environment_id
 
   content_type_id = "author"
 
@@ -178,8 +178,8 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    space_id        = var.space_id
-    environment_id  = var.environment_id
+    space_id        = var.contentful_space_id
+    environment_id  = var.contentful_environment_id
     content_type_id = var.content_type_id
   }
   to = contentful_content_type.this
@@ -199,7 +199,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.space_id}/${var.environment_id}/${var.content_type_id}"
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
   to = contentful_content_type.this
 }
 ```

@@ -14,7 +14,7 @@ Manages Contentful Space Enablements.
 
 ```terraform
 resource "contentful_space_enablements" "this" {
-  space_id = local.contentful_space_id
+  space_id = var.contentful_space_id
 
   cross_space_links = true
 }
@@ -47,7 +47,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    space_id = var.space_id
+    space_id = var.contentful_space_id
   }
   to = contentful_space_enablements.this
 }
@@ -64,7 +64,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = var.space_id
+  id = var.contentful_space_id
   to = contentful_space_enablements.this
 }
 ```

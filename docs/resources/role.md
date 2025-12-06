@@ -14,7 +14,7 @@ Manages a Contentful Role.
 
 ```terraform
 resource "contentful_role" "editor" {
-  space_id = local.contentful_space_id
+  space_id = var.contentful_space_id
 
   name        = "Editor"
   description = null
@@ -91,7 +91,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    space_id = var.space_id
+    space_id = var.contentful_space_id
     role_id  = var.role_id
   }
   to = contentful_role.this
@@ -110,7 +110,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.space_id}/${var.role_id}"
+  id = "${var.contentful_space_id}/${var.role_id}"
   to = contentful_role.this
 }
 ```

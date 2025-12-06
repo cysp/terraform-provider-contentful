@@ -1,4 +1,4 @@
 import {
-  id = "${var.space_id}/${var.webhook_id}"
+  id = "${var.contentful_space_id}/${var.webhook_id}"
   to = contentful_webhook.this
 }

@@ -14,8 +14,8 @@ Manages a Contentful App Signing Secret.
 
 ```terraform
 resource "contentful_app_signing_secret" "this" {
-  organization_id   = var.organization_id
-  app_definition_id = local.app_definition_id
+  organization_id   = var.contentful_organization_id
+  app_definition_id = var.app_definition_id
 
   value = random_password.contentful_app_signing_secret.result
 }
@@ -49,7 +49,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    organization_id   = var.organization_id
+    organization_id   = var.contentful_organization_id
     app_definition_id = var.app_definition_id
   }
   to = contentful_app_signing_secret.this
@@ -68,7 +68,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.organization_id}/${var.app_definition_id}"
+  id = "${var.contentful_organization_id}/${var.app_definition_id}"
   to = contentful_app_signing_secret.this
 }
 ```

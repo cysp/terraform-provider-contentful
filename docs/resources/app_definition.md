@@ -14,7 +14,7 @@ Manages a Contentful App Definition.
 
 ```terraform
 resource "contentful_app_definition" "this" {
-  organization_id = var.organization_id
+  organization_id = var.contentful_organization_id
 
   name = "My app"
 
@@ -172,10 +172,10 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    organization_id   = var.organization_id
+    organization_id   = var.contentful_organization_id
     app_definition_id = var.app_definition_id
   }
-  to = contentful_app_definition.this.id
+  to = contentful_app_definition.this
 }
 ```
 
@@ -191,8 +191,8 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.organization_id}/${var.app_definition_id}"
-  to = contentful_app_definition.this.id
+  id = "${var.contentful_organization_id}/${var.app_definition_id}"
+  to = contentful_app_definition.this
 }
 ```
 

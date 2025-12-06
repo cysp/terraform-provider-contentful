@@ -1,6 +1,6 @@
 import {
   identity = {
-    space_id             = var.space_id
+    space_id             = var.contentful_space_id
     environment_alias_id = var.environment_alias_id
   }
   to = contentful_environment_alias.this

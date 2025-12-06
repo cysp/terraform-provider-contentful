@@ -1,5 +1,5 @@
 resource "contentful_role" "editor" {
-  space_id = local.contentful_space_id
+  space_id = var.contentful_space_id
 
   name        = "Editor"
   description = null

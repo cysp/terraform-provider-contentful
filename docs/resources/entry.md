@@ -71,8 +71,8 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 ```terraform
 import {
   identity = {
-    space_id       = var.space_id
-    environment_id = var.environment_id
+    space_id       = var.contentful_space_id
+    environment_id = var.contentful_environment_id
     entry_id       = var.entry_id
   }
   to = contentful_entry.this
@@ -92,7 +92,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.space_id}/${var.environment_id}/${var.entry_id}"
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.entry_id}"
   to = contentful_entry.this
 }
 ```
