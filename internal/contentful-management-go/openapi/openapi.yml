@@ -155,10 +155,10 @@ components:
   schemas:
     ApplicationJSONError:
       anyOf:
-        - $ref: "./openapi/schemas/error/error.yml#/Error"
+        - $ref: "./schemas/error/error.yml#/Error"
     ApplicationVndContentfulManagementV1JSONError:
       anyOf:
-        - $ref: "./openapi/schemas/error/error.yml#/Error"
+        - $ref: "./schemas/error/error.yml#/Error"
   securitySchemes:
     accessToken:
       type: http
@@ -223,7 +223,7 @@ paths:
                   items:
                     type: array
                     items:
-                      $ref: "./openapi/schemas/app-definition/app-definition.yml#/AppDefinition"
+                      $ref: "./schemas/app-definition/app-definition.yml#/AppDefinition"
                 required:
                   - sys
                   - total
@@ -245,14 +245,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/app-definition/data.yml#/AppDefinitionData"
+              $ref: "./schemas/app-definition/data.yml#/AppDefinitionData"
       responses:
         2XX:
           description: An app definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/app-definition/app-definition.yml#/AppDefinition"
+                $ref: "./schemas/app-definition/app-definition.yml#/AppDefinition"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -270,7 +270,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/app-definition/app-definition.yml#/AppDefinition"
+                $ref: "./schemas/app-definition/app-definition.yml#/AppDefinition"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -286,14 +286,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/app-definition/data.yml#/AppDefinitionData"
+              $ref: "./schemas/app-definition/data.yml#/AppDefinitionData"
       responses:
         2XX:
           description: An app definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/app-definition/app-definition.yml#/AppDefinition"
+                $ref: "./schemas/app-definition/app-definition.yml#/AppDefinition"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -321,7 +321,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/resource-provider/resource-provider.yml#/ResourceProvider"
+                $ref: "./schemas/resource-provider/resource-provider.yml#/ResourceProvider"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -337,14 +337,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/resource-provider/request.yml#/ResourceProviderRequest"
+              $ref: "./schemas/resource-provider/request.yml#/ResourceProviderRequest"
       responses:
         2XX:
           description: A resource provider definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/resource-provider/resource-provider.yml#/ResourceProvider"
+                $ref: "./schemas/resource-provider/resource-provider.yml#/ResourceProvider"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -373,7 +373,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/resource-type/resource-type.yml#/ResourceType"
+                $ref: "./schemas/resource-type/resource-type.yml#/ResourceType"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -390,14 +390,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/resource-type/data.yml#/ResourceTypeData"
+              $ref: "./schemas/resource-type/data.yml#/ResourceTypeData"
       responses:
         2XX:
           description: A resource type definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/resource-type/resource-type.yml#/ResourceType"
+                $ref: "./schemas/resource-type/resource-type.yml#/ResourceType"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -425,7 +425,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/app-signing-secret/app-signing-secret.yml#/AppSigningSecret"
+                $ref: "./schemas/app-signing-secret/app-signing-secret.yml#/AppSigningSecret"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -441,14 +441,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/app-signing-secret/request-data.yml#/AppSigningSecretRequestData"
+              $ref: "./schemas/app-signing-secret/request-data.yml#/AppSigningSecretRequestData"
       responses:
         2XX:
           description: An app signing secret
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/app-signing-secret/app-signing-secret.yml#/AppSigningSecret"
+                $ref: "./schemas/app-signing-secret/app-signing-secret.yml#/AppSigningSecret"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -476,14 +476,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/team/data.yml#/TeamData"
+              $ref: "./schemas/team/data.yml#/TeamData"
       responses:
         2XX:
           description: A team
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/team/team.yml#/Team"
+                $ref: "./schemas/team/team.yml#/Team"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -501,7 +501,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/team/team.yml#/Team"
+                $ref: "./schemas/team/team.yml#/Team"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -518,14 +518,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/team/data.yml#/TeamData"
+              $ref: "./schemas/team/data.yml#/TeamData"
       responses:
         2XX:
           description: A team
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/team/team.yml#/Team"
+                $ref: "./schemas/team/team.yml#/Team"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -558,14 +558,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/team-space-membership/data.yml#/TeamSpaceMembershipData"
+              $ref: "./schemas/team-space-membership/data.yml#/TeamSpaceMembershipData"
       responses:
         2XX:
           description: A team space membership
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
+                $ref: "./schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -583,7 +583,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
+                $ref: "./schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -599,14 +599,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/team-space-membership/data.yml#/TeamSpaceMembershipData"
+              $ref: "./schemas/team-space-membership/data.yml#/TeamSpaceMembershipData"
       responses:
         2XX:
           description: A team space membership
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
+                $ref: "./schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -632,14 +632,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/api-key/request-data.yml#/ApiKeyRequestData"
+              $ref: "./schemas/api-key/request-data.yml#/ApiKeyRequestData"
       responses:
         2XX:
           description: A delivery api key
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
+                $ref: "./schemas/api-key/api-key.yml#/ApiKey"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -657,7 +657,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
+                $ref: "./schemas/api-key/api-key.yml#/ApiKey"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -674,14 +674,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/api-key/request-data.yml#/ApiKeyRequestData"
+              $ref: "./schemas/api-key/request-data.yml#/ApiKeyRequestData"
       responses:
         2XX:
           description: A delivery api key
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/api-key/api-key.yml#/ApiKey"
+                $ref: "./schemas/api-key/api-key.yml#/ApiKey"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -708,10 +708,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
+                $ref: "./schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
+                $ref: "./schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -727,14 +727,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/space-enablement/data.yml#/SpaceEnablementData"
+              $ref: "./schemas/space-enablement/data.yml#/SpaceEnablementData"
       responses:
         2XX:
           description: Enablements for a space
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
+                $ref: "./schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -752,7 +752,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
+                $ref: "./schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -767,14 +767,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/environment-alias/data.yml#/EnvironmentAliasData"
+              $ref: "./schemas/environment-alias/data.yml#/EnvironmentAliasData"
       responses:
         2XX:
           description: An environment alias
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
+                $ref: "./schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -802,7 +802,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/environment/environment.yml#/Environment"
+                $ref: "./schemas/environment/environment.yml#/Environment"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -818,14 +818,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/environment/data.yml#/EnvironmentData"
+              $ref: "./schemas/environment/data.yml#/EnvironmentData"
       responses:
         2XX:
           description: An environment
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/environment/environment.yml#/Environment"
+                $ref: "./schemas/environment/environment.yml#/Environment"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -854,7 +854,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/app-installation/app-installation.yml#/AppInstallation"
+                $ref: "./schemas/app-installation/app-installation.yml#/AppInstallation"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -875,14 +875,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/app-installation/data.yml#/AppInstallationData"
+              $ref: "./schemas/app-installation/data.yml#/AppInstallationData"
       responses:
         2XX:
           description: An app installation
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/app-installation/app-installation.yml#/AppInstallation"
+                $ref: "./schemas/app-installation/app-installation.yml#/AppInstallation"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -916,7 +916,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/content-type/collection.yml#/ContentTypeCollection"
+                $ref: "./schemas/content-type/collection.yml#/ContentTypeCollection"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -935,7 +935,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
+                $ref: "./schemas/content-type/content-type.yml#/ContentType"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -953,14 +953,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/content-type/request-data.yml#/ContentTypeRequestData"
+              $ref: "./schemas/content-type/request-data.yml#/ContentTypeRequestData"
       responses:
         2XX:
           description: A content type
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
+                $ref: "./schemas/content-type/content-type.yml#/ContentType"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -989,7 +989,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/editor-interface/editor-interface.yml#/EditorInterface"
+                $ref: "./schemas/editor-interface/editor-interface.yml#/EditorInterface"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1007,14 +1007,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/editor-interface/data.yml#/EditorInterfaceData"
+              $ref: "./schemas/editor-interface/data.yml#/EditorInterfaceData"
       responses:
         2XX:
           description: An editor interface
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/editor-interface/editor-interface.yml#/EditorInterface"
+                $ref: "./schemas/editor-interface/editor-interface.yml#/EditorInterface"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1038,7 +1038,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
+                $ref: "./schemas/content-type/content-type.yml#/ContentType"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1052,7 +1052,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
+                $ref: "./schemas/content-type/content-type.yml#/ContentType"
         204:
           $ref: "#/components/responses/no-content"
         401:
@@ -1075,14 +1075,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/entry/request.yml#/EntryRequest"
+              $ref: "./schemas/entry/request.yml#/EntryRequest"
       responses:
         2XX:
           description: An entry
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/entry/entry.yml#/Entry"
+                $ref: "./schemas/entry/entry.yml#/Entry"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1101,7 +1101,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/entry/entry.yml#/Entry"
+                $ref: "./schemas/entry/entry.yml#/Entry"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1120,14 +1120,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/entry/request.yml#/EntryRequest"
+              $ref: "./schemas/entry/request.yml#/EntryRequest"
       responses:
         2XX:
           description: An entry
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/entry/entry.yml#/Entry"
+                $ref: "./schemas/entry/entry.yml#/Entry"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1161,7 +1161,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/entry/entry.yml#/Entry"
+                $ref: "./schemas/entry/entry.yml#/Entry"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1175,7 +1175,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/entry/entry.yml#/Entry"
+                $ref: "./schemas/entry/entry.yml#/Entry"
         204:
           $ref: "#/components/responses/no-content"
         401:
@@ -1196,7 +1196,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/extension/extension.yml#/Extension"
+                $ref: "./schemas/extension/extension.yml#/Extension"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1214,14 +1214,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/extension/data.yml#/ExtensionData"
+              $ref: "./schemas/extension/data.yml#/ExtensionData"
       responses:
         2XX:
           description: An extension
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/extension/extension.yml#/Extension"
+                $ref: "./schemas/extension/extension.yml#/Extension"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1249,7 +1249,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/preview-api-key/preview-api-key.yml#/PreviewApiKey"
+                $ref: "./schemas/preview-api-key/preview-api-key.yml#/PreviewApiKey"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1265,14 +1265,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/role/data.yml#/RoleData"
+              $ref: "./schemas/role/data.yml#/RoleData"
       responses:
         2XX:
           description: A role
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/role/role.yml#/Role"
+                $ref: "./schemas/role/role.yml#/Role"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1290,7 +1290,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/role/role.yml#/Role"
+                $ref: "./schemas/role/role.yml#/Role"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1307,14 +1307,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/role/data.yml#/RoleData"
+              $ref: "./schemas/role/data.yml#/RoleData"
       responses:
         2XX:
           description: A role
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/role/role.yml#/Role"
+                $ref: "./schemas/role/role.yml#/Role"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1340,14 +1340,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/webhook-definition/data.yml#/WebhookDefinitionData"
+              $ref: "./schemas/webhook-definition/data.yml#/WebhookDefinitionData"
       responses:
         2XX:
           description: A webhook definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/webhook-definition/webhook-definition.yml#/WebhookDefinition"
+                $ref: "./schemas/webhook-definition/webhook-definition.yml#/WebhookDefinition"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1365,7 +1365,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/webhook-definition/webhook-definition.yml#/WebhookDefinition"
+                $ref: "./schemas/webhook-definition/webhook-definition.yml#/WebhookDefinition"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1382,14 +1382,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/webhook-definition/data.yml#/WebhookDefinitionData"
+              $ref: "./schemas/webhook-definition/data.yml#/WebhookDefinitionData"
       responses:
         2XX:
           description: A webhook definition
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/webhook-definition/webhook-definition.yml#/WebhookDefinition"
+                $ref: "./schemas/webhook-definition/webhook-definition.yml#/WebhookDefinition"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1414,7 +1414,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/user/user.yml#/User"
+                $ref: "./schemas/user/user.yml#/User"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1428,14 +1428,14 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./openapi/schemas/personal-access-token/request-data.yml#/PersonalAccessTokenRequestData"
+              $ref: "./schemas/personal-access-token/request-data.yml#/PersonalAccessTokenRequestData"
       responses:
         2XX:
           description: A personal access token
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
+                $ref: "./schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1452,7 +1452,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
+                $ref: "./schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -1469,7 +1469,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                $ref: "./openapi/schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
+                $ref: "./schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
