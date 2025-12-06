@@ -7,8 +7,8 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var (
@@ -38,13 +38,11 @@ func (r *contentTypeListResource) ListResourceConfigSchema(ctx context.Context, 
 }
 
 func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest, stream *list.ListResultsStream) {
-	diags := diag.Diagnostics{}
-
 	var config contentTypeListResourceConfig
-	diags.Append(req.Config.Get(ctx, &config)...)
 
-	if diags.HasError() {
-		stream.Results = list.ListResultsStreamDiagnostics(diags)
+	configDiags := req.Config.Get(ctx, &config)
+	if configDiags.HasError() {
+		stream.Results = list.ListResultsStreamDiagnostics(configDiags)
 
 		return
 	}
@@ -57,14 +55,12 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 	}
 
 	stream.Results = func(yield func(list.ListResult) bool) {
-		diags := diag.Diagnostics{}
-
 		response, err := r.providerData.client.GetContentTypes(ctx, params)
 		if err != nil {
-			diags.AddError("Failed to list content types", err.Error())
-
 			yield(list.ListResult{
-				Diagnostics: diags,
+				Diagnostics: diag.Diagnostics{
+					diag.NewErrorDiagnostic("Failed to list content types", util.ErrorDetailFromContentfulManagementResponse(response, err)),
+				},
 			})
 
 			return
@@ -77,14 +73,18 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 
 				result.DisplayName = item.Name
 
-				result.Identity.SetAttribute(ctx, path.Root("space_id"), item.Sys.Space.Sys.ID)
-				result.Identity.SetAttribute(ctx, path.Root("environment_id"), item.Sys.Environment.Sys.ID)
-				result.Identity.SetAttribute(ctx, path.Root("content_type_id"), item.Sys.ID)
+				result.Diagnostics.Append(result.Identity.Set(ctx, ContentTypeIdentityModel{
+					SpaceID:       types.StringValue(item.Sys.Space.Sys.ID),
+					EnvironmentID: types.StringValue(item.Sys.Environment.Sys.ID),
+					ContentTypeID: types.StringValue(item.Sys.ID),
+				})...)
 
-				responseModel, responseModelDiags := NewContentTypeResourceModelFromResponse(ctx, item)
-				result.Diagnostics.Append(responseModelDiags...)
+				if req.IncludeResource {
+					responseModel, responseModelDiags := NewContentTypeResourceModelFromResponse(ctx, item)
+					result.Diagnostics.Append(responseModelDiags...)
 
-				result.Diagnostics.Append(result.Resource.Set(ctx, responseModel)...)
+					result.Diagnostics.Append(result.Resource.Set(ctx, responseModel)...)
+				}
 
 				if !yield(result) {
 					return
@@ -92,9 +92,10 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 			}
 
 		default:
-			diags.AddError("Failed to list content types", util.ErrorDetailFromContentfulManagementResponse(response, err))
 			yield(list.ListResult{
-				Diagnostics: diags,
+				Diagnostics: diag.Diagnostics{
+					diag.NewErrorDiagnostic("Failed to list content types", util.ErrorDetailFromContentfulManagementResponse(response, err)),
+				},
 			})
 
 			return
