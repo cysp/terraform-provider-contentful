@@ -3779,12 +3779,23 @@ func (s *EntryFields) init() EntryFields {
 
 // Ref: #/EntryMetadata
 type EntryMetadata struct {
-	Tags []TagLink `json:"tags"`
+	Concepts []TaxonomyConceptLink `json:"concepts"`
+	Tags     []TagLink             `json:"tags"`
+}
+
+// GetConcepts returns the value of Concepts.
+func (s *EntryMetadata) GetConcepts() []TaxonomyConceptLink {
+	return s.Concepts
 }
 
 // GetTags returns the value of Tags.
 func (s *EntryMetadata) GetTags() []TagLink {
 	return s.Tags
+}
+
+// SetConcepts sets the value of Concepts.
+func (s *EntryMetadata) SetConcepts(val []TaxonomyConceptLink) {
+	s.Concepts = val
 }
 
 // SetTags sets the value of Tags.
@@ -10055,6 +10066,130 @@ func (s *TagLinkSysType) UnmarshalText(data []byte) error {
 	switch TagLinkSysType(data) {
 	case TagLinkSysTypeLink:
 		*s = TagLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/TaxonomyConceptLink
+type TaxonomyConceptLink struct {
+	Sys TaxonomyConceptLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *TaxonomyConceptLink) GetSys() TaxonomyConceptLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *TaxonomyConceptLink) SetSys(val TaxonomyConceptLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type TaxonomyConceptLinkSys struct {
+	// Merged property.
+	Type TaxonomyConceptLinkSysType `json:"type"`
+	ID   string                     `json:"id"`
+	// Merged property.
+	LinkType TaxonomyConceptLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *TaxonomyConceptLinkSys) GetType() TaxonomyConceptLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TaxonomyConceptLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *TaxonomyConceptLinkSys) GetLinkType() TaxonomyConceptLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *TaxonomyConceptLinkSys) SetType(val TaxonomyConceptLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TaxonomyConceptLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *TaxonomyConceptLinkSys) SetLinkType(val TaxonomyConceptLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type TaxonomyConceptLinkSysLinkType string
+
+const (
+	TaxonomyConceptLinkSysLinkTypeTaxonomyConcept TaxonomyConceptLinkSysLinkType = "TaxonomyConcept"
+)
+
+// AllValues returns all TaxonomyConceptLinkSysLinkType values.
+func (TaxonomyConceptLinkSysLinkType) AllValues() []TaxonomyConceptLinkSysLinkType {
+	return []TaxonomyConceptLinkSysLinkType{
+		TaxonomyConceptLinkSysLinkTypeTaxonomyConcept,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TaxonomyConceptLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case TaxonomyConceptLinkSysLinkTypeTaxonomyConcept:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TaxonomyConceptLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch TaxonomyConceptLinkSysLinkType(data) {
+	case TaxonomyConceptLinkSysLinkTypeTaxonomyConcept:
+		*s = TaxonomyConceptLinkSysLinkTypeTaxonomyConcept
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type TaxonomyConceptLinkSysType string
+
+const (
+	TaxonomyConceptLinkSysTypeLink TaxonomyConceptLinkSysType = "Link"
+)
+
+// AllValues returns all TaxonomyConceptLinkSysType values.
+func (TaxonomyConceptLinkSysType) AllValues() []TaxonomyConceptLinkSysType {
+	return []TaxonomyConceptLinkSysType{
+		TaxonomyConceptLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TaxonomyConceptLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TaxonomyConceptLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TaxonomyConceptLinkSysType) UnmarshalText(data []byte) error {
+	switch TaxonomyConceptLinkSysType(data) {
+	case TaxonomyConceptLinkSysTypeLink:
+		*s = TaxonomyConceptLinkSysTypeLink
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

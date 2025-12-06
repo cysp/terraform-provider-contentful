@@ -14,7 +14,8 @@ import (
 
 func EntryResourceSchema(ctx context.Context) schema.Schema {
 	defaultMetadataObjectValue, _ := NewTypedObject[EntryMetadataValue](EntryMetadataValue{
-		Tags: NewTypedListFromStringSlice([]string{}),
+		Concepts: NewTypedListFromStringSlice([]string{}),
+		Tags:     NewTypedListFromStringSlice([]string{}),
 	}).ToObjectValue(ctx)
 
 	return schema.Schema{
@@ -82,9 +83,20 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 }
 
 func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+	defaultConceptsListValue, _ := NewTypedListFromStringSlice([]string{}).ToListValue(ctx)
 	defaultTagsListValue, _ := NewTypedListFromStringSlice([]string{}).ToListValue(ctx)
 
 	return map[string]schema.Attribute{
+		"concepts": schema.ListAttribute{
+			ElementType: types.StringType,
+			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
+			Optional:    true,
+			Computed:    true,
+			Default:     listdefault.StaticValue(defaultConceptsListValue),
+			PlanModifiers: []planmodifier.List{
+				UseStateForUnknown(),
+			},
+		},
 		"tags": schema.ListAttribute{
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),

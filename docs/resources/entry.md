@@ -60,6 +60,7 @@ resource "contentful_entry" "example" {
 
 Optional:
 
+- `concepts` (List of String)
 - `tags` (List of String)
 
 ## Import

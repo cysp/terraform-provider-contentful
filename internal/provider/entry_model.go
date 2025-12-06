@@ -22,5 +22,6 @@ type EntryModel struct {
 }
 
 type EntryMetadataValue struct {
-	Tags TypedList[types.String] `tfsdk:"tags"`
+	Concepts TypedList[types.String] `tfsdk:"concepts"`
+	Tags     TypedList[types.String] `tfsdk:"tags"`
 }
