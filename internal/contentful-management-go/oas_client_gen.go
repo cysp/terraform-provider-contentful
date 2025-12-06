@@ -4,6 +4,7 @@ package contentfulmanagement
 
 import (
 	"context"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -13,6 +14,64 @@ import (
 	"github.com/ogen-go/ogen/ogenerrors"
 	"github.com/ogen-go/ogen/uri"
 )
+
+type requestConfig struct {
+	Client       ht.Client
+	ServerURL    *url.URL
+	EditRequest  func(req *http.Request) error
+	EditResponse func(resp *http.Response) error
+}
+
+func (cfg *requestConfig) setDefaults(c baseClient) {
+	if cfg.Client == nil {
+		cfg.Client = c.cfg.Client
+	}
+}
+
+func (cfg *requestConfig) onRequest(req *http.Request) error {
+	if fn := cfg.EditRequest; fn != nil {
+		return fn(req)
+	}
+	return nil
+}
+
+func (cfg *requestConfig) onResponse(resp *http.Response) error {
+	if fn := cfg.EditResponse; fn != nil {
+		return fn(resp)
+	}
+	return nil
+}
+
+// RequestOption defines options for request.
+type RequestOption func(cfg *requestConfig)
+
+// WithRequestClient sets client for request.
+func WithRequestClient(client ht.Client) RequestOption {
+	return func(cfg *requestConfig) {
+		cfg.Client = client
+	}
+}
+
+// WithServerURL sets client for request.
+func WithServerURL(u *url.URL) RequestOption {
+	return func(cfg *requestConfig) {
+		cfg.ServerURL = u
+	}
+}
+
+// WithEditRequest sets function to edit request.
+func WithEditRequest(fn func(req *http.Request) error) RequestOption {
+	return func(cfg *requestConfig) {
+		cfg.EditRequest = fn
+	}
+}
+
+// WithEditResponse sets function to edit response.
+func WithEditResponse(fn func(resp *http.Response) error) RequestOption {
+	return func(cfg *requestConfig) {
+		cfg.EditResponse = fn
+	}
+}
 
 func trimTrailingSlashes(u *url.URL) {
 	u.Path = strings.TrimRight(u.Path, "/")
@@ -26,403 +85,403 @@ type Invoker interface {
 	// Activate a content type.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
-	ActivateContentType(ctx context.Context, params ActivateContentTypeParams) (ActivateContentTypeRes, error)
+	ActivateContentType(ctx context.Context, params ActivateContentTypeParams, options ...RequestOption) (ActivateContentTypeRes, error)
 	// CreateAppDefinition invokes createAppDefinition operation.
 	//
 	// Create an app definition.
 	//
 	// POST /organizations/{organization_id}/app_definitions
-	CreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error)
+	CreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams, options ...RequestOption) (CreateAppDefinitionRes, error)
 	// CreateDeliveryAPIKey invokes createDeliveryAPIKey operation.
 	//
 	// Create a delivery api key.
 	//
 	// POST /spaces/{space_id}/api_keys
-	CreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryAPIKeyParams) (CreateDeliveryAPIKeyRes, error)
+	CreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryAPIKeyParams, options ...RequestOption) (CreateDeliveryAPIKeyRes, error)
 	// CreateEntry invokes createEntry operation.
 	//
 	// Create an entry.
 	//
 	// POST /spaces/{space_id}/environments/{environment_id}/entries
-	CreateEntry(ctx context.Context, request *EntryRequest, params CreateEntryParams) (CreateEntryRes, error)
+	CreateEntry(ctx context.Context, request *EntryRequest, params CreateEntryParams, options ...RequestOption) (CreateEntryRes, error)
 	// CreateOrUpdateEnvironment invokes createOrUpdateEnvironment operation.
 	//
 	// Create or update an environment.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}
-	CreateOrUpdateEnvironment(ctx context.Context, request *EnvironmentData, params CreateOrUpdateEnvironmentParams) (CreateOrUpdateEnvironmentRes, error)
+	CreateOrUpdateEnvironment(ctx context.Context, request *EnvironmentData, params CreateOrUpdateEnvironmentParams, options ...RequestOption) (CreateOrUpdateEnvironmentRes, error)
 	// CreateOrUpdateEnvironmentAlias invokes createOrUpdateEnvironmentAlias operation.
 	//
 	// Create/Update an environment alias.
 	//
 	// PUT /spaces/{space_id}/environment_aliases/{environment_alias_id}
-	CreateOrUpdateEnvironmentAlias(ctx context.Context, request *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams) (CreateOrUpdateEnvironmentAliasRes, error)
+	CreateOrUpdateEnvironmentAlias(ctx context.Context, request *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams, options ...RequestOption) (CreateOrUpdateEnvironmentAliasRes, error)
 	// CreatePersonalAccessToken invokes createPersonalAccessToken operation.
 	//
 	// Create a personal access token.
 	//
 	// POST /users/me/access_tokens
-	CreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData) (CreatePersonalAccessTokenRes, error)
+	CreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData, options ...RequestOption) (CreatePersonalAccessTokenRes, error)
 	// CreateRole invokes createRole operation.
 	//
 	// Create a role.
 	//
 	// POST /spaces/{space_id}/roles
-	CreateRole(ctx context.Context, request *RoleData, params CreateRoleParams) (CreateRoleRes, error)
+	CreateRole(ctx context.Context, request *RoleData, params CreateRoleParams, options ...RequestOption) (CreateRoleRes, error)
 	// CreateTeam invokes createTeam operation.
 	//
 	// Create a team.
 	//
 	// POST /organizations/{organization_id}/teams
-	CreateTeam(ctx context.Context, request *TeamData, params CreateTeamParams) (CreateTeamRes, error)
+	CreateTeam(ctx context.Context, request *TeamData, params CreateTeamParams, options ...RequestOption) (CreateTeamRes, error)
 	// CreateTeamSpaceMembership invokes createTeamSpaceMembership operation.
 	//
 	// Create a team space membership.
 	//
 	// POST /spaces/{space_id}/team_space_memberships
-	CreateTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params CreateTeamSpaceMembershipParams) (CreateTeamSpaceMembershipRes, error)
+	CreateTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params CreateTeamSpaceMembershipParams, options ...RequestOption) (CreateTeamSpaceMembershipRes, error)
 	// CreateWebhookDefinition invokes createWebhookDefinition operation.
 	//
 	// Create a webhook definition.
 	//
 	// POST /spaces/{space_id}/webhook_definitions
-	CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error)
+	CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams, options ...RequestOption) (CreateWebhookDefinitionRes, error)
 	// DeactivateContentType invokes deactivateContentType operation.
 	//
 	// Deactivate a content type.
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
-	DeactivateContentType(ctx context.Context, params DeactivateContentTypeParams) (DeactivateContentTypeRes, error)
+	DeactivateContentType(ctx context.Context, params DeactivateContentTypeParams, options ...RequestOption) (DeactivateContentTypeRes, error)
 	// DeleteAppDefinition invokes deleteAppDefinition operation.
 	//
 	// Delete an app definition.
 	//
 	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}
-	DeleteAppDefinition(ctx context.Context, params DeleteAppDefinitionParams) (DeleteAppDefinitionRes, error)
+	DeleteAppDefinition(ctx context.Context, params DeleteAppDefinitionParams, options ...RequestOption) (DeleteAppDefinitionRes, error)
 	// DeleteAppInstallation invokes deleteAppInstallation operation.
 	//
 	// Uninstall an app.
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
-	DeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams) (DeleteAppInstallationRes, error)
+	DeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams, options ...RequestOption) (DeleteAppInstallationRes, error)
 	// DeleteAppSigningSecret invokes deleteAppSigningSecret operation.
 	//
 	// Delete an app signing secret.
 	//
 	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
-	DeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams) (DeleteAppSigningSecretRes, error)
+	DeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams, options ...RequestOption) (DeleteAppSigningSecretRes, error)
 	// DeleteContentType invokes deleteContentType operation.
 	//
 	// Delete a content type.
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
-	DeleteContentType(ctx context.Context, params DeleteContentTypeParams) (DeleteContentTypeRes, error)
+	DeleteContentType(ctx context.Context, params DeleteContentTypeParams, options ...RequestOption) (DeleteContentTypeRes, error)
 	// DeleteDeliveryAPIKey invokes deleteDeliveryAPIKey operation.
 	//
 	// Delete a single delivery api key.
 	//
 	// DELETE /spaces/{space_id}/api_keys/{api_key_id}
-	DeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams) (DeleteDeliveryAPIKeyRes, error)
+	DeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams, options ...RequestOption) (DeleteDeliveryAPIKeyRes, error)
 	// DeleteEntry invokes deleteEntry operation.
 	//
 	// Delete an entry.
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
-	DeleteEntry(ctx context.Context, params DeleteEntryParams) (DeleteEntryRes, error)
+	DeleteEntry(ctx context.Context, params DeleteEntryParams, options ...RequestOption) (DeleteEntryRes, error)
 	// DeleteEnvironment invokes deleteEnvironment operation.
 	//
 	// Delete an environment.
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}
-	DeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams) (DeleteEnvironmentRes, error)
+	DeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams, options ...RequestOption) (DeleteEnvironmentRes, error)
 	// DeleteEnvironmentAlias invokes deleteEnvironmentAlias operation.
 	//
 	// Delete an environment alias.
 	//
 	// DELETE /spaces/{space_id}/environment_aliases/{environment_alias_id}
-	DeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams) (DeleteEnvironmentAliasRes, error)
+	DeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams, options ...RequestOption) (DeleteEnvironmentAliasRes, error)
 	// DeleteExtension invokes deleteExtension operation.
 	//
 	// Delete an extension.
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
-	DeleteExtension(ctx context.Context, params DeleteExtensionParams) (DeleteExtensionRes, error)
+	DeleteExtension(ctx context.Context, params DeleteExtensionParams, options ...RequestOption) (DeleteExtensionRes, error)
 	// DeleteResourceProvider invokes deleteResourceProvider operation.
 	//
 	// Delete a resource provider definition.
 	//
 	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
-	DeleteResourceProvider(ctx context.Context, params DeleteResourceProviderParams) (DeleteResourceProviderRes, error)
+	DeleteResourceProvider(ctx context.Context, params DeleteResourceProviderParams, options ...RequestOption) (DeleteResourceProviderRes, error)
 	// DeleteResourceType invokes deleteResourceType operation.
 	//
 	// Delete a resource type definition.
 	//
 	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-	DeleteResourceType(ctx context.Context, params DeleteResourceTypeParams) (DeleteResourceTypeRes, error)
+	DeleteResourceType(ctx context.Context, params DeleteResourceTypeParams, options ...RequestOption) (DeleteResourceTypeRes, error)
 	// DeleteRole invokes deleteRole operation.
 	//
 	// Delete a role.
 	//
 	// DELETE /spaces/{space_id}/roles/{role_id}
-	DeleteRole(ctx context.Context, params DeleteRoleParams) (DeleteRoleRes, error)
+	DeleteRole(ctx context.Context, params DeleteRoleParams, options ...RequestOption) (DeleteRoleRes, error)
 	// DeleteTeam invokes deleteTeam operation.
 	//
 	// Delete a team.
 	//
 	// DELETE /organizations/{organization_id}/teams/{team_id}
-	DeleteTeam(ctx context.Context, params DeleteTeamParams) (DeleteTeamRes, error)
+	DeleteTeam(ctx context.Context, params DeleteTeamParams, options ...RequestOption) (DeleteTeamRes, error)
 	// DeleteTeamSpaceMembership invokes deleteTeamSpaceMembership operation.
 	//
 	// Delete a team space membership.
 	//
 	// DELETE /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
-	DeleteTeamSpaceMembership(ctx context.Context, params DeleteTeamSpaceMembershipParams) (DeleteTeamSpaceMembershipRes, error)
+	DeleteTeamSpaceMembership(ctx context.Context, params DeleteTeamSpaceMembershipParams, options ...RequestOption) (DeleteTeamSpaceMembershipRes, error)
 	// DeleteWebhookDefinition invokes deleteWebhookDefinition operation.
 	//
 	// Delete a webhook definition.
 	//
 	// DELETE /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
-	DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams) (DeleteWebhookDefinitionRes, error)
+	DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams, options ...RequestOption) (DeleteWebhookDefinitionRes, error)
 	// GetAppDefinition invokes getAppDefinition operation.
 	//
 	// Get one app definition.
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}
-	GetAppDefinition(ctx context.Context, params GetAppDefinitionParams) (GetAppDefinitionRes, error)
+	GetAppDefinition(ctx context.Context, params GetAppDefinitionParams, options ...RequestOption) (GetAppDefinitionRes, error)
 	// GetAppInstallation invokes getAppInstallation operation.
 	//
 	// Get one app installation.
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
-	GetAppInstallation(ctx context.Context, params GetAppInstallationParams) (GetAppInstallationRes, error)
+	GetAppInstallation(ctx context.Context, params GetAppInstallationParams, options ...RequestOption) (GetAppInstallationRes, error)
 	// GetAppSigningSecret invokes getAppSigningSecret operation.
 	//
 	// Get one app signing secret.
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
-	GetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams) (GetAppSigningSecretRes, error)
+	GetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams, options ...RequestOption) (GetAppSigningSecretRes, error)
 	// GetAuthenticatedUser invokes getAuthenticatedUser operation.
 	//
 	// Get the authenticated user.
 	//
 	// GET /users/me
-	GetAuthenticatedUser(ctx context.Context) (GetAuthenticatedUserRes, error)
+	GetAuthenticatedUser(ctx context.Context, options ...RequestOption) (GetAuthenticatedUserRes, error)
 	// GetContentType invokes getContentType operation.
 	//
 	// Get a content type.
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
-	GetContentType(ctx context.Context, params GetContentTypeParams) (GetContentTypeRes, error)
+	GetContentType(ctx context.Context, params GetContentTypeParams, options ...RequestOption) (GetContentTypeRes, error)
 	// GetContentTypes invokes getContentTypes operation.
 	//
 	// Get a collection of content types.
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types
-	GetContentTypes(ctx context.Context, params GetContentTypesParams) (GetContentTypesRes, error)
+	GetContentTypes(ctx context.Context, params GetContentTypesParams, options ...RequestOption) (GetContentTypesRes, error)
 	// GetDeliveryAPIKey invokes getDeliveryAPIKey operation.
 	//
 	// Get a single delivery api key.
 	//
 	// GET /spaces/{space_id}/api_keys/{api_key_id}
-	GetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams) (GetDeliveryAPIKeyRes, error)
+	GetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams, options ...RequestOption) (GetDeliveryAPIKeyRes, error)
 	// GetEditorInterface invokes getEditorInterface operation.
 	//
 	// Get the editor interface for a content type.
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
-	GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (GetEditorInterfaceRes, error)
+	GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams, options ...RequestOption) (GetEditorInterfaceRes, error)
 	// GetEntry invokes getEntry operation.
 	//
 	// Get a single entry.
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
-	GetEntry(ctx context.Context, params GetEntryParams) (GetEntryRes, error)
+	GetEntry(ctx context.Context, params GetEntryParams, options ...RequestOption) (GetEntryRes, error)
 	// GetEnvironment invokes getEnvironment operation.
 	//
 	// Get a single environment.
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}
-	GetEnvironment(ctx context.Context, params GetEnvironmentParams) (GetEnvironmentRes, error)
+	GetEnvironment(ctx context.Context, params GetEnvironmentParams, options ...RequestOption) (GetEnvironmentRes, error)
 	// GetEnvironmentAlias invokes getEnvironmentAlias operation.
 	//
 	// Get a single environment alias.
 	//
 	// GET /spaces/{space_id}/environment_aliases/{environment_alias_id}
-	GetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams) (GetEnvironmentAliasRes, error)
+	GetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams, options ...RequestOption) (GetEnvironmentAliasRes, error)
 	// GetExtension invokes getExtension operation.
 	//
 	// Get a single extension.
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
-	GetExtension(ctx context.Context, params GetExtensionParams) (GetExtensionRes, error)
+	GetExtension(ctx context.Context, params GetExtensionParams, options ...RequestOption) (GetExtensionRes, error)
 	// GetMarketplaceAppDefinitions invokes getMarketplaceAppDefinitions operation.
 	//
 	// Get marketplace app definitions.
 	//
 	// GET /app_definitions
-	GetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams) (GetMarketplaceAppDefinitionsRes, error)
+	GetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams, options ...RequestOption) (GetMarketplaceAppDefinitionsRes, error)
 	// GetPersonalAccessToken invokes getPersonalAccessToken operation.
 	//
 	// Get a single personal access token.
 	//
 	// GET /users/me/access_tokens/{access_token_id}
-	GetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams) (GetPersonalAccessTokenRes, error)
+	GetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams, options ...RequestOption) (GetPersonalAccessTokenRes, error)
 	// GetPreviewAPIKey invokes getPreviewAPIKey operation.
 	//
 	// Get a single preview api key.
 	//
 	// GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
-	GetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams) (GetPreviewAPIKeyRes, error)
+	GetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams, options ...RequestOption) (GetPreviewAPIKeyRes, error)
 	// GetResourceProvider invokes getResourceProvider operation.
 	//
 	// Get one resource provider definition.
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
-	GetResourceProvider(ctx context.Context, params GetResourceProviderParams) (GetResourceProviderRes, error)
+	GetResourceProvider(ctx context.Context, params GetResourceProviderParams, options ...RequestOption) (GetResourceProviderRes, error)
 	// GetResourceType invokes getResourceType operation.
 	//
 	// Get one resource type definition.
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-	GetResourceType(ctx context.Context, params GetResourceTypeParams) (GetResourceTypeRes, error)
+	GetResourceType(ctx context.Context, params GetResourceTypeParams, options ...RequestOption) (GetResourceTypeRes, error)
 	// GetRole invokes getRole operation.
 	//
 	// Get a role.
 	//
 	// GET /spaces/{space_id}/roles/{role_id}
-	GetRole(ctx context.Context, params GetRoleParams) (GetRoleRes, error)
+	GetRole(ctx context.Context, params GetRoleParams, options ...RequestOption) (GetRoleRes, error)
 	// GetSpaceEnablements invokes getSpaceEnablements operation.
 	//
 	// Get enablements for a space.
 	//
 	// GET /spaces/{space_id}/enablements
-	GetSpaceEnablements(ctx context.Context, params GetSpaceEnablementsParams) (GetSpaceEnablementsRes, error)
+	GetSpaceEnablements(ctx context.Context, params GetSpaceEnablementsParams, options ...RequestOption) (GetSpaceEnablementsRes, error)
 	// GetTeam invokes getTeam operation.
 	//
 	// Get a single team.
 	//
 	// GET /organizations/{organization_id}/teams/{team_id}
-	GetTeam(ctx context.Context, params GetTeamParams) (GetTeamRes, error)
+	GetTeam(ctx context.Context, params GetTeamParams, options ...RequestOption) (GetTeamRes, error)
 	// GetTeamSpaceMembership invokes getTeamSpaceMembership operation.
 	//
 	// Get a single team space membership.
 	//
 	// GET /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
-	GetTeamSpaceMembership(ctx context.Context, params GetTeamSpaceMembershipParams) (GetTeamSpaceMembershipRes, error)
+	GetTeamSpaceMembership(ctx context.Context, params GetTeamSpaceMembershipParams, options ...RequestOption) (GetTeamSpaceMembershipRes, error)
 	// GetWebhookDefinition invokes getWebhookDefinition operation.
 	//
 	// Get a webhook definition.
 	//
 	// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
-	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (GetWebhookDefinitionRes, error)
+	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams, options ...RequestOption) (GetWebhookDefinitionRes, error)
 	// PublishEntry invokes publishEntry operation.
 	//
 	// Publish an entry.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
-	PublishEntry(ctx context.Context, params PublishEntryParams) (PublishEntryRes, error)
+	PublishEntry(ctx context.Context, params PublishEntryParams, options ...RequestOption) (PublishEntryRes, error)
 	// PutAppDefinition invokes putAppDefinition operation.
 	//
 	// Create or update an app definition.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}
-	PutAppDefinition(ctx context.Context, request *AppDefinitionData, params PutAppDefinitionParams) (PutAppDefinitionRes, error)
+	PutAppDefinition(ctx context.Context, request *AppDefinitionData, params PutAppDefinitionParams, options ...RequestOption) (PutAppDefinitionRes, error)
 	// PutAppInstallation invokes putAppInstallation operation.
 	//
 	// Install or update an app.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
-	PutAppInstallation(ctx context.Context, request *AppInstallationData, params PutAppInstallationParams) (PutAppInstallationRes, error)
+	PutAppInstallation(ctx context.Context, request *AppInstallationData, params PutAppInstallationParams, options ...RequestOption) (PutAppInstallationRes, error)
 	// PutAppSigningSecret invokes putAppSigningSecret operation.
 	//
 	// Create or update an app signing secret.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
-	PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error)
+	PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams, options ...RequestOption) (PutAppSigningSecretRes, error)
 	// PutContentType invokes putContentType operation.
 	//
 	// Update a content type.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
-	PutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams) (PutContentTypeRes, error)
+	PutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams, options ...RequestOption) (PutContentTypeRes, error)
 	// PutEditorInterface invokes putEditorInterface operation.
 	//
 	// Update the editor interface for a content type.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
-	PutEditorInterface(ctx context.Context, request *EditorInterfaceData, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error)
+	PutEditorInterface(ctx context.Context, request *EditorInterfaceData, params PutEditorInterfaceParams, options ...RequestOption) (PutEditorInterfaceRes, error)
 	// PutEntry invokes putEntry operation.
 	//
 	// Create or update an entry.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
-	PutEntry(ctx context.Context, request *EntryRequest, params PutEntryParams) (PutEntryRes, error)
+	PutEntry(ctx context.Context, request *EntryRequest, params PutEntryParams, options ...RequestOption) (PutEntryRes, error)
 	// PutExtension invokes putExtension operation.
 	//
 	// Create or update an extension.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
-	PutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams) (PutExtensionRes, error)
+	PutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams, options ...RequestOption) (PutExtensionRes, error)
 	// PutResourceProvider invokes putResourceProvider operation.
 	//
 	// Create or update a resource provider definition.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
-	PutResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutResourceProviderParams) (PutResourceProviderRes, error)
+	PutResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutResourceProviderParams, options ...RequestOption) (PutResourceProviderRes, error)
 	// PutResourceType invokes putResourceType operation.
 	//
 	// Create or update a resource type definition.
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-	PutResourceType(ctx context.Context, request *ResourceTypeData, params PutResourceTypeParams) (PutResourceTypeRes, error)
+	PutResourceType(ctx context.Context, request *ResourceTypeData, params PutResourceTypeParams, options ...RequestOption) (PutResourceTypeRes, error)
 	// PutSpaceEnablements invokes putSpaceEnablements operation.
 	//
 	// Update enablements for a space.
 	//
 	// PUT /spaces/{space_id}/enablements
-	PutSpaceEnablements(ctx context.Context, request *SpaceEnablementData, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error)
+	PutSpaceEnablements(ctx context.Context, request *SpaceEnablementData, params PutSpaceEnablementsParams, options ...RequestOption) (PutSpaceEnablementsRes, error)
 	// PutTeam invokes putTeam operation.
 	//
 	// Update a single team.
 	//
 	// PUT /organizations/{organization_id}/teams/{team_id}
-	PutTeam(ctx context.Context, request *TeamData, params PutTeamParams) (PutTeamRes, error)
+	PutTeam(ctx context.Context, request *TeamData, params PutTeamParams, options ...RequestOption) (PutTeamRes, error)
 	// PutTeamSpaceMembership invokes putTeamSpaceMembership operation.
 	//
 	// Update a single team space membership.
 	//
 	// PUT /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
-	PutTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params PutTeamSpaceMembershipParams) (PutTeamSpaceMembershipRes, error)
+	PutTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params PutTeamSpaceMembershipParams, options ...RequestOption) (PutTeamSpaceMembershipRes, error)
 	// RevokePersonalAccessToken invokes revokePersonalAccessToken operation.
 	//
 	// Revoke a personal access token.
 	//
 	// PUT /users/me/access_tokens/{access_token_id}/revoked
-	RevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams) (RevokePersonalAccessTokenRes, error)
+	RevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams, options ...RequestOption) (RevokePersonalAccessTokenRes, error)
 	// UnpublishEntry invokes unpublishEntry operation.
 	//
 	// Unpublish an entry.
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
-	UnpublishEntry(ctx context.Context, params UnpublishEntryParams) (UnpublishEntryRes, error)
+	UnpublishEntry(ctx context.Context, params UnpublishEntryParams, options ...RequestOption) (UnpublishEntryRes, error)
 	// UpdateDeliveryAPIKey invokes updateDeliveryAPIKey operation.
 	//
 	// Update a single delivery api key.
 	//
 	// PUT /spaces/{space_id}/api_keys/{api_key_id}
-	UpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams) (UpdateDeliveryAPIKeyRes, error)
+	UpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams, options ...RequestOption) (UpdateDeliveryAPIKeyRes, error)
 	// UpdateRole invokes updateRole operation.
 	//
 	// Update a role.
 	//
 	// PUT /spaces/{space_id}/roles/{role_id}
-	UpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams) (UpdateRoleRes, error)
+	UpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams, options ...RequestOption) (UpdateRoleRes, error)
 	// UpdateWebhookDefinition invokes updateWebhookDefinition operation.
 	//
 	// Update a webhook definition.
 	//
 	// PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
-	UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error)
+	UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams, options ...RequestOption) (UpdateWebhookDefinitionRes, error)
 }
 
 // Client implements OAS client.
@@ -431,10 +490,6 @@ type Client struct {
 	sec       SecuritySource
 	baseClient
 }
-
-var _ Handler = struct {
-	*Client
-}{}
 
 // NewClient initializes new Client defined by OAS.
 func NewClient(serverURL string, sec SecuritySource, opts ...ClientOption) (*Client, error) {
@@ -455,34 +510,29 @@ func NewClient(serverURL string, sec SecuritySource, opts ...ClientOption) (*Cli
 	}, nil
 }
 
-type serverURLKey struct{}
-
-// WithServerURL sets context key to override server URL.
-func WithServerURL(ctx context.Context, u *url.URL) context.Context {
-	return context.WithValue(ctx, serverURLKey{}, u)
-}
-
-func (c *Client) requestURL(ctx context.Context) *url.URL {
-	u, ok := ctx.Value(serverURLKey{}).(*url.URL)
-	if !ok {
-		return c.serverURL
-	}
-	return u
-}
-
 // ActivateContentType invokes activateContentType operation.
 //
 // Activate a content type.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
-func (c *Client) ActivateContentType(ctx context.Context, params ActivateContentTypeParams) (ActivateContentTypeRes, error) {
-	res, err := c.sendActivateContentType(ctx, params)
+func (c *Client) ActivateContentType(ctx context.Context, params ActivateContentTypeParams, options ...RequestOption) (ActivateContentTypeRes, error) {
+	res, err := c.sendActivateContentType(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendActivateContentType(ctx context.Context, params ActivateContentTypeParams) (res ActivateContentTypeRes, err error) {
+func (c *Client) sendActivateContentType(ctx context.Context, params ActivateContentTypeParams, requestOptions ...RequestOption) (res ActivateContentTypeRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [7]string
 	pathParts[0] = "/spaces/"
 	{
@@ -595,11 +645,19 @@ func (c *Client) sendActivateContentType(ctx context.Context, params ActivateCon
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeActivateContentTypeResponse(resp)
 	if err != nil {
@@ -614,14 +672,24 @@ func (c *Client) sendActivateContentType(ctx context.Context, params ActivateCon
 // Create an app definition.
 //
 // POST /organizations/{organization_id}/app_definitions
-func (c *Client) CreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error) {
-	res, err := c.sendCreateAppDefinition(ctx, request, params)
+func (c *Client) CreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams, options ...RequestOption) (CreateAppDefinitionRes, error) {
+	res, err := c.sendCreateAppDefinition(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams) (res CreateAppDefinitionRes, err error) {
+func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams, requestOptions ...RequestOption) (res CreateAppDefinitionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [3]string
 	pathParts[0] = "/organizations/"
 	{
@@ -686,11 +754,19 @@ func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefini
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreateAppDefinitionResponse(resp)
 	if err != nil {
@@ -705,14 +781,24 @@ func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefini
 // Create a delivery api key.
 //
 // POST /spaces/{space_id}/api_keys
-func (c *Client) CreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryAPIKeyParams) (CreateDeliveryAPIKeyRes, error) {
-	res, err := c.sendCreateDeliveryAPIKey(ctx, request, params)
+func (c *Client) CreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryAPIKeyParams, options ...RequestOption) (CreateDeliveryAPIKeyRes, error) {
+	res, err := c.sendCreateDeliveryAPIKey(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryAPIKeyParams) (res CreateDeliveryAPIKeyRes, err error) {
+func (c *Client) sendCreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params CreateDeliveryAPIKeyParams, requestOptions ...RequestOption) (res CreateDeliveryAPIKeyRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [3]string
 	pathParts[0] = "/spaces/"
 	{
@@ -777,11 +863,19 @@ func (c *Client) sendCreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRe
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreateDeliveryAPIKeyResponse(resp)
 	if err != nil {
@@ -796,14 +890,24 @@ func (c *Client) sendCreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRe
 // Create an entry.
 //
 // POST /spaces/{space_id}/environments/{environment_id}/entries
-func (c *Client) CreateEntry(ctx context.Context, request *EntryRequest, params CreateEntryParams) (CreateEntryRes, error) {
-	res, err := c.sendCreateEntry(ctx, request, params)
+func (c *Client) CreateEntry(ctx context.Context, request *EntryRequest, params CreateEntryParams, options ...RequestOption) (CreateEntryRes, error) {
+	res, err := c.sendCreateEntry(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateEntry(ctx context.Context, request *EntryRequest, params CreateEntryParams) (res CreateEntryRes, err error) {
+func (c *Client) sendCreateEntry(ctx context.Context, request *EntryRequest, params CreateEntryParams, requestOptions ...RequestOption) (res CreateEntryRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [5]string
 	pathParts[0] = "/spaces/"
 	{
@@ -900,11 +1004,19 @@ func (c *Client) sendCreateEntry(ctx context.Context, request *EntryRequest, par
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreateEntryResponse(resp)
 	if err != nil {
@@ -919,14 +1031,24 @@ func (c *Client) sendCreateEntry(ctx context.Context, request *EntryRequest, par
 // Create or update an environment.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}
-func (c *Client) CreateOrUpdateEnvironment(ctx context.Context, request *EnvironmentData, params CreateOrUpdateEnvironmentParams) (CreateOrUpdateEnvironmentRes, error) {
-	res, err := c.sendCreateOrUpdateEnvironment(ctx, request, params)
+func (c *Client) CreateOrUpdateEnvironment(ctx context.Context, request *EnvironmentData, params CreateOrUpdateEnvironmentParams, options ...RequestOption) (CreateOrUpdateEnvironmentRes, error) {
+	res, err := c.sendCreateOrUpdateEnvironment(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateOrUpdateEnvironment(ctx context.Context, request *EnvironmentData, params CreateOrUpdateEnvironmentParams) (res CreateOrUpdateEnvironmentRes, err error) {
+func (c *Client) sendCreateOrUpdateEnvironment(ctx context.Context, request *EnvironmentData, params CreateOrUpdateEnvironmentParams, requestOptions ...RequestOption) (res CreateOrUpdateEnvironmentRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -1039,11 +1161,19 @@ func (c *Client) sendCreateOrUpdateEnvironment(ctx context.Context, request *Env
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreateOrUpdateEnvironmentResponse(resp)
 	if err != nil {
@@ -1058,14 +1188,24 @@ func (c *Client) sendCreateOrUpdateEnvironment(ctx context.Context, request *Env
 // Create/Update an environment alias.
 //
 // PUT /spaces/{space_id}/environment_aliases/{environment_alias_id}
-func (c *Client) CreateOrUpdateEnvironmentAlias(ctx context.Context, request *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams) (CreateOrUpdateEnvironmentAliasRes, error) {
-	res, err := c.sendCreateOrUpdateEnvironmentAlias(ctx, request, params)
+func (c *Client) CreateOrUpdateEnvironmentAlias(ctx context.Context, request *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams, options ...RequestOption) (CreateOrUpdateEnvironmentAliasRes, error) {
+	res, err := c.sendCreateOrUpdateEnvironmentAlias(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateOrUpdateEnvironmentAlias(ctx context.Context, request *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams) (res CreateOrUpdateEnvironmentAliasRes, err error) {
+func (c *Client) sendCreateOrUpdateEnvironmentAlias(ctx context.Context, request *EnvironmentAliasData, params CreateOrUpdateEnvironmentAliasParams, requestOptions ...RequestOption) (res CreateOrUpdateEnvironmentAliasRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -1161,11 +1301,19 @@ func (c *Client) sendCreateOrUpdateEnvironmentAlias(ctx context.Context, request
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreateOrUpdateEnvironmentAliasResponse(resp)
 	if err != nil {
@@ -1180,14 +1328,24 @@ func (c *Client) sendCreateOrUpdateEnvironmentAlias(ctx context.Context, request
 // Create a personal access token.
 //
 // POST /users/me/access_tokens
-func (c *Client) CreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData) (CreatePersonalAccessTokenRes, error) {
-	res, err := c.sendCreatePersonalAccessToken(ctx, request)
+func (c *Client) CreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData, options ...RequestOption) (CreatePersonalAccessTokenRes, error) {
+	res, err := c.sendCreatePersonalAccessToken(ctx, request, options...)
 	return res, err
 }
 
-func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData) (res CreatePersonalAccessTokenRes, err error) {
+func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData, requestOptions ...RequestOption) (res CreatePersonalAccessTokenRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [1]string
 	pathParts[0] = "/users/me/access_tokens"
 	uri.AddPathParts(u, pathParts[:]...)
@@ -1233,11 +1391,19 @@ func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *Per
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreatePersonalAccessTokenResponse(resp)
 	if err != nil {
@@ -1252,14 +1418,24 @@ func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *Per
 // Create a role.
 //
 // POST /spaces/{space_id}/roles
-func (c *Client) CreateRole(ctx context.Context, request *RoleData, params CreateRoleParams) (CreateRoleRes, error) {
-	res, err := c.sendCreateRole(ctx, request, params)
+func (c *Client) CreateRole(ctx context.Context, request *RoleData, params CreateRoleParams, options ...RequestOption) (CreateRoleRes, error) {
+	res, err := c.sendCreateRole(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateRole(ctx context.Context, request *RoleData, params CreateRoleParams) (res CreateRoleRes, err error) {
+func (c *Client) sendCreateRole(ctx context.Context, request *RoleData, params CreateRoleParams, requestOptions ...RequestOption) (res CreateRoleRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [3]string
 	pathParts[0] = "/spaces/"
 	{
@@ -1324,11 +1500,19 @@ func (c *Client) sendCreateRole(ctx context.Context, request *RoleData, params C
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreateRoleResponse(resp)
 	if err != nil {
@@ -1343,14 +1527,24 @@ func (c *Client) sendCreateRole(ctx context.Context, request *RoleData, params C
 // Create a team.
 //
 // POST /organizations/{organization_id}/teams
-func (c *Client) CreateTeam(ctx context.Context, request *TeamData, params CreateTeamParams) (CreateTeamRes, error) {
-	res, err := c.sendCreateTeam(ctx, request, params)
+func (c *Client) CreateTeam(ctx context.Context, request *TeamData, params CreateTeamParams, options ...RequestOption) (CreateTeamRes, error) {
+	res, err := c.sendCreateTeam(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateTeam(ctx context.Context, request *TeamData, params CreateTeamParams) (res CreateTeamRes, err error) {
+func (c *Client) sendCreateTeam(ctx context.Context, request *TeamData, params CreateTeamParams, requestOptions ...RequestOption) (res CreateTeamRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [3]string
 	pathParts[0] = "/organizations/"
 	{
@@ -1415,11 +1609,19 @@ func (c *Client) sendCreateTeam(ctx context.Context, request *TeamData, params C
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreateTeamResponse(resp)
 	if err != nil {
@@ -1434,14 +1636,24 @@ func (c *Client) sendCreateTeam(ctx context.Context, request *TeamData, params C
 // Create a team space membership.
 //
 // POST /spaces/{space_id}/team_space_memberships
-func (c *Client) CreateTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params CreateTeamSpaceMembershipParams) (CreateTeamSpaceMembershipRes, error) {
-	res, err := c.sendCreateTeamSpaceMembership(ctx, request, params)
+func (c *Client) CreateTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params CreateTeamSpaceMembershipParams, options ...RequestOption) (CreateTeamSpaceMembershipRes, error) {
+	res, err := c.sendCreateTeamSpaceMembership(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params CreateTeamSpaceMembershipParams) (res CreateTeamSpaceMembershipRes, err error) {
+func (c *Client) sendCreateTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params CreateTeamSpaceMembershipParams, requestOptions ...RequestOption) (res CreateTeamSpaceMembershipRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [3]string
 	pathParts[0] = "/spaces/"
 	{
@@ -1519,11 +1731,19 @@ func (c *Client) sendCreateTeamSpaceMembership(ctx context.Context, request *Tea
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreateTeamSpaceMembershipResponse(resp)
 	if err != nil {
@@ -1538,14 +1758,24 @@ func (c *Client) sendCreateTeamSpaceMembership(ctx context.Context, request *Tea
 // Create a webhook definition.
 //
 // POST /spaces/{space_id}/webhook_definitions
-func (c *Client) CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error) {
-	res, err := c.sendCreateWebhookDefinition(ctx, request, params)
+func (c *Client) CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams, options ...RequestOption) (CreateWebhookDefinitionRes, error) {
+	res, err := c.sendCreateWebhookDefinition(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams) (res CreateWebhookDefinitionRes, err error) {
+func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams, requestOptions ...RequestOption) (res CreateWebhookDefinitionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [3]string
 	pathParts[0] = "/spaces/"
 	{
@@ -1610,11 +1840,19 @@ func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *Webho
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeCreateWebhookDefinitionResponse(resp)
 	if err != nil {
@@ -1629,14 +1867,24 @@ func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *Webho
 // Deactivate a content type.
 //
 // DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
-func (c *Client) DeactivateContentType(ctx context.Context, params DeactivateContentTypeParams) (DeactivateContentTypeRes, error) {
-	res, err := c.sendDeactivateContentType(ctx, params)
+func (c *Client) DeactivateContentType(ctx context.Context, params DeactivateContentTypeParams, options ...RequestOption) (DeactivateContentTypeRes, error) {
+	res, err := c.sendDeactivateContentType(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeactivateContentType(ctx context.Context, params DeactivateContentTypeParams) (res DeactivateContentTypeRes, err error) {
+func (c *Client) sendDeactivateContentType(ctx context.Context, params DeactivateContentTypeParams, requestOptions ...RequestOption) (res DeactivateContentTypeRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [7]string
 	pathParts[0] = "/spaces/"
 	{
@@ -1736,11 +1984,19 @@ func (c *Client) sendDeactivateContentType(ctx context.Context, params Deactivat
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeactivateContentTypeResponse(resp)
 	if err != nil {
@@ -1755,14 +2011,24 @@ func (c *Client) sendDeactivateContentType(ctx context.Context, params Deactivat
 // Delete an app definition.
 //
 // DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}
-func (c *Client) DeleteAppDefinition(ctx context.Context, params DeleteAppDefinitionParams) (DeleteAppDefinitionRes, error) {
-	res, err := c.sendDeleteAppDefinition(ctx, params)
+func (c *Client) DeleteAppDefinition(ctx context.Context, params DeleteAppDefinitionParams, options ...RequestOption) (DeleteAppDefinitionRes, error) {
+	res, err := c.sendDeleteAppDefinition(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteAppDefinition(ctx context.Context, params DeleteAppDefinitionParams) (res DeleteAppDefinitionRes, err error) {
+func (c *Client) sendDeleteAppDefinition(ctx context.Context, params DeleteAppDefinitionParams, requestOptions ...RequestOption) (res DeleteAppDefinitionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/organizations/"
 	{
@@ -1842,11 +2108,19 @@ func (c *Client) sendDeleteAppDefinition(ctx context.Context, params DeleteAppDe
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteAppDefinitionResponse(resp)
 	if err != nil {
@@ -1861,14 +2135,24 @@ func (c *Client) sendDeleteAppDefinition(ctx context.Context, params DeleteAppDe
 // Uninstall an app.
 //
 // DELETE /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
-func (c *Client) DeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams) (DeleteAppInstallationRes, error) {
-	res, err := c.sendDeleteAppInstallation(ctx, params)
+func (c *Client) DeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams, options ...RequestOption) (DeleteAppInstallationRes, error) {
+	res, err := c.sendDeleteAppInstallation(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams) (res DeleteAppInstallationRes, err error) {
+func (c *Client) sendDeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams, requestOptions ...RequestOption) (res DeleteAppInstallationRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -1967,11 +2251,19 @@ func (c *Client) sendDeleteAppInstallation(ctx context.Context, params DeleteApp
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteAppInstallationResponse(resp)
 	if err != nil {
@@ -1986,14 +2278,24 @@ func (c *Client) sendDeleteAppInstallation(ctx context.Context, params DeleteApp
 // Delete an app signing secret.
 //
 // DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
-func (c *Client) DeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams) (DeleteAppSigningSecretRes, error) {
-	res, err := c.sendDeleteAppSigningSecret(ctx, params)
+func (c *Client) DeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams, options ...RequestOption) (DeleteAppSigningSecretRes, error) {
+	res, err := c.sendDeleteAppSigningSecret(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams) (res DeleteAppSigningSecretRes, err error) {
+func (c *Client) sendDeleteAppSigningSecret(ctx context.Context, params DeleteAppSigningSecretParams, requestOptions ...RequestOption) (res DeleteAppSigningSecretRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [5]string
 	pathParts[0] = "/organizations/"
 	{
@@ -2074,11 +2376,19 @@ func (c *Client) sendDeleteAppSigningSecret(ctx context.Context, params DeleteAp
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteAppSigningSecretResponse(resp)
 	if err != nil {
@@ -2093,14 +2403,24 @@ func (c *Client) sendDeleteAppSigningSecret(ctx context.Context, params DeleteAp
 // Delete a content type.
 //
 // DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
-func (c *Client) DeleteContentType(ctx context.Context, params DeleteContentTypeParams) (DeleteContentTypeRes, error) {
-	res, err := c.sendDeleteContentType(ctx, params)
+func (c *Client) DeleteContentType(ctx context.Context, params DeleteContentTypeParams, options ...RequestOption) (DeleteContentTypeRes, error) {
+	res, err := c.sendDeleteContentType(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteContentType(ctx context.Context, params DeleteContentTypeParams) (res DeleteContentTypeRes, err error) {
+func (c *Client) sendDeleteContentType(ctx context.Context, params DeleteContentTypeParams, requestOptions ...RequestOption) (res DeleteContentTypeRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -2199,11 +2519,19 @@ func (c *Client) sendDeleteContentType(ctx context.Context, params DeleteContent
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteContentTypeResponse(resp)
 	if err != nil {
@@ -2218,14 +2546,24 @@ func (c *Client) sendDeleteContentType(ctx context.Context, params DeleteContent
 // Delete a single delivery api key.
 //
 // DELETE /spaces/{space_id}/api_keys/{api_key_id}
-func (c *Client) DeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams) (DeleteDeliveryAPIKeyRes, error) {
-	res, err := c.sendDeleteDeliveryAPIKey(ctx, params)
+func (c *Client) DeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams, options ...RequestOption) (DeleteDeliveryAPIKeyRes, error) {
+	res, err := c.sendDeleteDeliveryAPIKey(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams) (res DeleteDeliveryAPIKeyRes, err error) {
+func (c *Client) sendDeleteDeliveryAPIKey(ctx context.Context, params DeleteDeliveryAPIKeyParams, requestOptions ...RequestOption) (res DeleteDeliveryAPIKeyRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -2305,11 +2643,19 @@ func (c *Client) sendDeleteDeliveryAPIKey(ctx context.Context, params DeleteDeli
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteDeliveryAPIKeyResponse(resp)
 	if err != nil {
@@ -2324,14 +2670,24 @@ func (c *Client) sendDeleteDeliveryAPIKey(ctx context.Context, params DeleteDeli
 // Delete an entry.
 //
 // DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
-func (c *Client) DeleteEntry(ctx context.Context, params DeleteEntryParams) (DeleteEntryRes, error) {
-	res, err := c.sendDeleteEntry(ctx, params)
+func (c *Client) DeleteEntry(ctx context.Context, params DeleteEntryParams, options ...RequestOption) (DeleteEntryRes, error) {
+	res, err := c.sendDeleteEntry(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteEntry(ctx context.Context, params DeleteEntryParams) (res DeleteEntryRes, err error) {
+func (c *Client) sendDeleteEntry(ctx context.Context, params DeleteEntryParams, requestOptions ...RequestOption) (res DeleteEntryRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -2430,11 +2786,19 @@ func (c *Client) sendDeleteEntry(ctx context.Context, params DeleteEntryParams) 
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteEntryResponse(resp)
 	if err != nil {
@@ -2449,14 +2813,24 @@ func (c *Client) sendDeleteEntry(ctx context.Context, params DeleteEntryParams) 
 // Delete an environment.
 //
 // DELETE /spaces/{space_id}/environments/{environment_id}
-func (c *Client) DeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams) (DeleteEnvironmentRes, error) {
-	res, err := c.sendDeleteEnvironment(ctx, params)
+func (c *Client) DeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams, options ...RequestOption) (DeleteEnvironmentRes, error) {
+	res, err := c.sendDeleteEnvironment(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams) (res DeleteEnvironmentRes, err error) {
+func (c *Client) sendDeleteEnvironment(ctx context.Context, params DeleteEnvironmentParams, requestOptions ...RequestOption) (res DeleteEnvironmentRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -2536,11 +2910,19 @@ func (c *Client) sendDeleteEnvironment(ctx context.Context, params DeleteEnviron
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteEnvironmentResponse(resp)
 	if err != nil {
@@ -2555,14 +2937,24 @@ func (c *Client) sendDeleteEnvironment(ctx context.Context, params DeleteEnviron
 // Delete an environment alias.
 //
 // DELETE /spaces/{space_id}/environment_aliases/{environment_alias_id}
-func (c *Client) DeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams) (DeleteEnvironmentAliasRes, error) {
-	res, err := c.sendDeleteEnvironmentAlias(ctx, params)
+func (c *Client) DeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams, options ...RequestOption) (DeleteEnvironmentAliasRes, error) {
+	res, err := c.sendDeleteEnvironmentAlias(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams) (res DeleteEnvironmentAliasRes, err error) {
+func (c *Client) sendDeleteEnvironmentAlias(ctx context.Context, params DeleteEnvironmentAliasParams, requestOptions ...RequestOption) (res DeleteEnvironmentAliasRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -2642,11 +3034,19 @@ func (c *Client) sendDeleteEnvironmentAlias(ctx context.Context, params DeleteEn
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteEnvironmentAliasResponse(resp)
 	if err != nil {
@@ -2661,14 +3061,24 @@ func (c *Client) sendDeleteEnvironmentAlias(ctx context.Context, params DeleteEn
 // Delete an extension.
 //
 // DELETE /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
-func (c *Client) DeleteExtension(ctx context.Context, params DeleteExtensionParams) (DeleteExtensionRes, error) {
-	res, err := c.sendDeleteExtension(ctx, params)
+func (c *Client) DeleteExtension(ctx context.Context, params DeleteExtensionParams, options ...RequestOption) (DeleteExtensionRes, error) {
+	res, err := c.sendDeleteExtension(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteExtension(ctx context.Context, params DeleteExtensionParams) (res DeleteExtensionRes, err error) {
+func (c *Client) sendDeleteExtension(ctx context.Context, params DeleteExtensionParams, requestOptions ...RequestOption) (res DeleteExtensionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -2767,11 +3177,19 @@ func (c *Client) sendDeleteExtension(ctx context.Context, params DeleteExtension
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteExtensionResponse(resp)
 	if err != nil {
@@ -2786,14 +3204,24 @@ func (c *Client) sendDeleteExtension(ctx context.Context, params DeleteExtension
 // Delete a resource provider definition.
 //
 // DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
-func (c *Client) DeleteResourceProvider(ctx context.Context, params DeleteResourceProviderParams) (DeleteResourceProviderRes, error) {
-	res, err := c.sendDeleteResourceProvider(ctx, params)
+func (c *Client) DeleteResourceProvider(ctx context.Context, params DeleteResourceProviderParams, options ...RequestOption) (DeleteResourceProviderRes, error) {
+	res, err := c.sendDeleteResourceProvider(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteResourceProvider(ctx context.Context, params DeleteResourceProviderParams) (res DeleteResourceProviderRes, err error) {
+func (c *Client) sendDeleteResourceProvider(ctx context.Context, params DeleteResourceProviderParams, requestOptions ...RequestOption) (res DeleteResourceProviderRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [5]string
 	pathParts[0] = "/organizations/"
 	{
@@ -2874,11 +3302,19 @@ func (c *Client) sendDeleteResourceProvider(ctx context.Context, params DeleteRe
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteResourceProviderResponse(resp)
 	if err != nil {
@@ -2893,14 +3329,24 @@ func (c *Client) sendDeleteResourceProvider(ctx context.Context, params DeleteRe
 // Delete a resource type definition.
 //
 // DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (c *Client) DeleteResourceType(ctx context.Context, params DeleteResourceTypeParams) (DeleteResourceTypeRes, error) {
-	res, err := c.sendDeleteResourceType(ctx, params)
+func (c *Client) DeleteResourceType(ctx context.Context, params DeleteResourceTypeParams, options ...RequestOption) (DeleteResourceTypeRes, error) {
+	res, err := c.sendDeleteResourceType(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteResourceType(ctx context.Context, params DeleteResourceTypeParams) (res DeleteResourceTypeRes, err error) {
+func (c *Client) sendDeleteResourceType(ctx context.Context, params DeleteResourceTypeParams, requestOptions ...RequestOption) (res DeleteResourceTypeRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/organizations/"
 	{
@@ -2999,11 +3445,19 @@ func (c *Client) sendDeleteResourceType(ctx context.Context, params DeleteResour
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteResourceTypeResponse(resp)
 	if err != nil {
@@ -3018,14 +3472,24 @@ func (c *Client) sendDeleteResourceType(ctx context.Context, params DeleteResour
 // Delete a role.
 //
 // DELETE /spaces/{space_id}/roles/{role_id}
-func (c *Client) DeleteRole(ctx context.Context, params DeleteRoleParams) (DeleteRoleRes, error) {
-	res, err := c.sendDeleteRole(ctx, params)
+func (c *Client) DeleteRole(ctx context.Context, params DeleteRoleParams, options ...RequestOption) (DeleteRoleRes, error) {
+	res, err := c.sendDeleteRole(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteRole(ctx context.Context, params DeleteRoleParams) (res DeleteRoleRes, err error) {
+func (c *Client) sendDeleteRole(ctx context.Context, params DeleteRoleParams, requestOptions ...RequestOption) (res DeleteRoleRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -3105,11 +3569,19 @@ func (c *Client) sendDeleteRole(ctx context.Context, params DeleteRoleParams) (r
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteRoleResponse(resp)
 	if err != nil {
@@ -3124,14 +3596,24 @@ func (c *Client) sendDeleteRole(ctx context.Context, params DeleteRoleParams) (r
 // Delete a team.
 //
 // DELETE /organizations/{organization_id}/teams/{team_id}
-func (c *Client) DeleteTeam(ctx context.Context, params DeleteTeamParams) (DeleteTeamRes, error) {
-	res, err := c.sendDeleteTeam(ctx, params)
+func (c *Client) DeleteTeam(ctx context.Context, params DeleteTeamParams, options ...RequestOption) (DeleteTeamRes, error) {
+	res, err := c.sendDeleteTeam(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteTeam(ctx context.Context, params DeleteTeamParams) (res DeleteTeamRes, err error) {
+func (c *Client) sendDeleteTeam(ctx context.Context, params DeleteTeamParams, requestOptions ...RequestOption) (res DeleteTeamRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/organizations/"
 	{
@@ -3211,11 +3693,19 @@ func (c *Client) sendDeleteTeam(ctx context.Context, params DeleteTeamParams) (r
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteTeamResponse(resp)
 	if err != nil {
@@ -3230,14 +3720,24 @@ func (c *Client) sendDeleteTeam(ctx context.Context, params DeleteTeamParams) (r
 // Delete a team space membership.
 //
 // DELETE /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
-func (c *Client) DeleteTeamSpaceMembership(ctx context.Context, params DeleteTeamSpaceMembershipParams) (DeleteTeamSpaceMembershipRes, error) {
-	res, err := c.sendDeleteTeamSpaceMembership(ctx, params)
+func (c *Client) DeleteTeamSpaceMembership(ctx context.Context, params DeleteTeamSpaceMembershipParams, options ...RequestOption) (DeleteTeamSpaceMembershipRes, error) {
+	res, err := c.sendDeleteTeamSpaceMembership(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteTeamSpaceMembership(ctx context.Context, params DeleteTeamSpaceMembershipParams) (res DeleteTeamSpaceMembershipRes, err error) {
+func (c *Client) sendDeleteTeamSpaceMembership(ctx context.Context, params DeleteTeamSpaceMembershipParams, requestOptions ...RequestOption) (res DeleteTeamSpaceMembershipRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -3317,11 +3817,19 @@ func (c *Client) sendDeleteTeamSpaceMembership(ctx context.Context, params Delet
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteTeamSpaceMembershipResponse(resp)
 	if err != nil {
@@ -3336,14 +3844,24 @@ func (c *Client) sendDeleteTeamSpaceMembership(ctx context.Context, params Delet
 // Delete a webhook definition.
 //
 // DELETE /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
-func (c *Client) DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams) (DeleteWebhookDefinitionRes, error) {
-	res, err := c.sendDeleteWebhookDefinition(ctx, params)
+func (c *Client) DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams, options ...RequestOption) (DeleteWebhookDefinitionRes, error) {
+	res, err := c.sendDeleteWebhookDefinition(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams) (res DeleteWebhookDefinitionRes, err error) {
+func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams, requestOptions ...RequestOption) (res DeleteWebhookDefinitionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -3423,11 +3941,19 @@ func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteW
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeDeleteWebhookDefinitionResponse(resp)
 	if err != nil {
@@ -3442,14 +3968,24 @@ func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteW
 // Get one app definition.
 //
 // GET /organizations/{organization_id}/app_definitions/{app_definition_id}
-func (c *Client) GetAppDefinition(ctx context.Context, params GetAppDefinitionParams) (GetAppDefinitionRes, error) {
-	res, err := c.sendGetAppDefinition(ctx, params)
+func (c *Client) GetAppDefinition(ctx context.Context, params GetAppDefinitionParams, options ...RequestOption) (GetAppDefinitionRes, error) {
+	res, err := c.sendGetAppDefinition(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetAppDefinition(ctx context.Context, params GetAppDefinitionParams) (res GetAppDefinitionRes, err error) {
+func (c *Client) sendGetAppDefinition(ctx context.Context, params GetAppDefinitionParams, requestOptions ...RequestOption) (res GetAppDefinitionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/organizations/"
 	{
@@ -3529,11 +4065,19 @@ func (c *Client) sendGetAppDefinition(ctx context.Context, params GetAppDefiniti
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetAppDefinitionResponse(resp)
 	if err != nil {
@@ -3548,14 +4092,24 @@ func (c *Client) sendGetAppDefinition(ctx context.Context, params GetAppDefiniti
 // Get one app installation.
 //
 // GET /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
-func (c *Client) GetAppInstallation(ctx context.Context, params GetAppInstallationParams) (GetAppInstallationRes, error) {
-	res, err := c.sendGetAppInstallation(ctx, params)
+func (c *Client) GetAppInstallation(ctx context.Context, params GetAppInstallationParams, options ...RequestOption) (GetAppInstallationRes, error) {
+	res, err := c.sendGetAppInstallation(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetAppInstallation(ctx context.Context, params GetAppInstallationParams) (res GetAppInstallationRes, err error) {
+func (c *Client) sendGetAppInstallation(ctx context.Context, params GetAppInstallationParams, requestOptions ...RequestOption) (res GetAppInstallationRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -3654,11 +4208,19 @@ func (c *Client) sendGetAppInstallation(ctx context.Context, params GetAppInstal
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetAppInstallationResponse(resp)
 	if err != nil {
@@ -3673,14 +4235,24 @@ func (c *Client) sendGetAppInstallation(ctx context.Context, params GetAppInstal
 // Get one app signing secret.
 //
 // GET /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
-func (c *Client) GetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams) (GetAppSigningSecretRes, error) {
-	res, err := c.sendGetAppSigningSecret(ctx, params)
+func (c *Client) GetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams, options ...RequestOption) (GetAppSigningSecretRes, error) {
+	res, err := c.sendGetAppSigningSecret(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams) (res GetAppSigningSecretRes, err error) {
+func (c *Client) sendGetAppSigningSecret(ctx context.Context, params GetAppSigningSecretParams, requestOptions ...RequestOption) (res GetAppSigningSecretRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [5]string
 	pathParts[0] = "/organizations/"
 	{
@@ -3761,11 +4333,19 @@ func (c *Client) sendGetAppSigningSecret(ctx context.Context, params GetAppSigni
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetAppSigningSecretResponse(resp)
 	if err != nil {
@@ -3780,14 +4360,24 @@ func (c *Client) sendGetAppSigningSecret(ctx context.Context, params GetAppSigni
 // Get the authenticated user.
 //
 // GET /users/me
-func (c *Client) GetAuthenticatedUser(ctx context.Context) (GetAuthenticatedUserRes, error) {
-	res, err := c.sendGetAuthenticatedUser(ctx)
+func (c *Client) GetAuthenticatedUser(ctx context.Context, options ...RequestOption) (GetAuthenticatedUserRes, error) {
+	res, err := c.sendGetAuthenticatedUser(ctx, options...)
 	return res, err
 }
 
-func (c *Client) sendGetAuthenticatedUser(ctx context.Context) (res GetAuthenticatedUserRes, err error) {
+func (c *Client) sendGetAuthenticatedUser(ctx context.Context, requestOptions ...RequestOption) (res GetAuthenticatedUserRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [1]string
 	pathParts[0] = "/users/me"
 	uri.AddPathParts(u, pathParts[:]...)
@@ -3830,11 +4420,19 @@ func (c *Client) sendGetAuthenticatedUser(ctx context.Context) (res GetAuthentic
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetAuthenticatedUserResponse(resp)
 	if err != nil {
@@ -3849,14 +4447,24 @@ func (c *Client) sendGetAuthenticatedUser(ctx context.Context) (res GetAuthentic
 // Get a content type.
 //
 // GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
-func (c *Client) GetContentType(ctx context.Context, params GetContentTypeParams) (GetContentTypeRes, error) {
-	res, err := c.sendGetContentType(ctx, params)
+func (c *Client) GetContentType(ctx context.Context, params GetContentTypeParams, options ...RequestOption) (GetContentTypeRes, error) {
+	res, err := c.sendGetContentType(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetContentType(ctx context.Context, params GetContentTypeParams) (res GetContentTypeRes, err error) {
+func (c *Client) sendGetContentType(ctx context.Context, params GetContentTypeParams, requestOptions ...RequestOption) (res GetContentTypeRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -3955,11 +4563,19 @@ func (c *Client) sendGetContentType(ctx context.Context, params GetContentTypePa
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetContentTypeResponse(resp)
 	if err != nil {
@@ -3974,14 +4590,24 @@ func (c *Client) sendGetContentType(ctx context.Context, params GetContentTypePa
 // Get a collection of content types.
 //
 // GET /spaces/{space_id}/environments/{environment_id}/content_types
-func (c *Client) GetContentTypes(ctx context.Context, params GetContentTypesParams) (GetContentTypesRes, error) {
-	res, err := c.sendGetContentTypes(ctx, params)
+func (c *Client) GetContentTypes(ctx context.Context, params GetContentTypesParams, options ...RequestOption) (GetContentTypesRes, error) {
+	res, err := c.sendGetContentTypes(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetContentTypes(ctx context.Context, params GetContentTypesParams) (res GetContentTypesRes, err error) {
+func (c *Client) sendGetContentTypes(ctx context.Context, params GetContentTypesParams, requestOptions ...RequestOption) (res GetContentTypesRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [5]string
 	pathParts[0] = "/spaces/"
 	{
@@ -4116,11 +4742,19 @@ func (c *Client) sendGetContentTypes(ctx context.Context, params GetContentTypes
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetContentTypesResponse(resp)
 	if err != nil {
@@ -4135,14 +4769,24 @@ func (c *Client) sendGetContentTypes(ctx context.Context, params GetContentTypes
 // Get a single delivery api key.
 //
 // GET /spaces/{space_id}/api_keys/{api_key_id}
-func (c *Client) GetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams) (GetDeliveryAPIKeyRes, error) {
-	res, err := c.sendGetDeliveryAPIKey(ctx, params)
+func (c *Client) GetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams, options ...RequestOption) (GetDeliveryAPIKeyRes, error) {
+	res, err := c.sendGetDeliveryAPIKey(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams) (res GetDeliveryAPIKeyRes, err error) {
+func (c *Client) sendGetDeliveryAPIKey(ctx context.Context, params GetDeliveryAPIKeyParams, requestOptions ...RequestOption) (res GetDeliveryAPIKeyRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -4222,11 +4866,19 @@ func (c *Client) sendGetDeliveryAPIKey(ctx context.Context, params GetDeliveryAP
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetDeliveryAPIKeyResponse(resp)
 	if err != nil {
@@ -4241,14 +4893,24 @@ func (c *Client) sendGetDeliveryAPIKey(ctx context.Context, params GetDeliveryAP
 // Get the editor interface for a content type.
 //
 // GET /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
-func (c *Client) GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (GetEditorInterfaceRes, error) {
-	res, err := c.sendGetEditorInterface(ctx, params)
+func (c *Client) GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams, options ...RequestOption) (GetEditorInterfaceRes, error) {
+	res, err := c.sendGetEditorInterface(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (res GetEditorInterfaceRes, err error) {
+func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInterfaceParams, requestOptions ...RequestOption) (res GetEditorInterfaceRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [7]string
 	pathParts[0] = "/spaces/"
 	{
@@ -4348,11 +5010,19 @@ func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInt
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetEditorInterfaceResponse(resp)
 	if err != nil {
@@ -4367,14 +5037,24 @@ func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInt
 // Get a single entry.
 //
 // GET /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
-func (c *Client) GetEntry(ctx context.Context, params GetEntryParams) (GetEntryRes, error) {
-	res, err := c.sendGetEntry(ctx, params)
+func (c *Client) GetEntry(ctx context.Context, params GetEntryParams, options ...RequestOption) (GetEntryRes, error) {
+	res, err := c.sendGetEntry(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetEntry(ctx context.Context, params GetEntryParams) (res GetEntryRes, err error) {
+func (c *Client) sendGetEntry(ctx context.Context, params GetEntryParams, requestOptions ...RequestOption) (res GetEntryRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -4473,11 +5153,19 @@ func (c *Client) sendGetEntry(ctx context.Context, params GetEntryParams) (res G
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetEntryResponse(resp)
 	if err != nil {
@@ -4492,14 +5180,24 @@ func (c *Client) sendGetEntry(ctx context.Context, params GetEntryParams) (res G
 // Get a single environment.
 //
 // GET /spaces/{space_id}/environments/{environment_id}
-func (c *Client) GetEnvironment(ctx context.Context, params GetEnvironmentParams) (GetEnvironmentRes, error) {
-	res, err := c.sendGetEnvironment(ctx, params)
+func (c *Client) GetEnvironment(ctx context.Context, params GetEnvironmentParams, options ...RequestOption) (GetEnvironmentRes, error) {
+	res, err := c.sendGetEnvironment(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetEnvironment(ctx context.Context, params GetEnvironmentParams) (res GetEnvironmentRes, err error) {
+func (c *Client) sendGetEnvironment(ctx context.Context, params GetEnvironmentParams, requestOptions ...RequestOption) (res GetEnvironmentRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -4579,11 +5277,19 @@ func (c *Client) sendGetEnvironment(ctx context.Context, params GetEnvironmentPa
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetEnvironmentResponse(resp)
 	if err != nil {
@@ -4598,14 +5304,24 @@ func (c *Client) sendGetEnvironment(ctx context.Context, params GetEnvironmentPa
 // Get a single environment alias.
 //
 // GET /spaces/{space_id}/environment_aliases/{environment_alias_id}
-func (c *Client) GetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams) (GetEnvironmentAliasRes, error) {
-	res, err := c.sendGetEnvironmentAlias(ctx, params)
+func (c *Client) GetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams, options ...RequestOption) (GetEnvironmentAliasRes, error) {
+	res, err := c.sendGetEnvironmentAlias(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams) (res GetEnvironmentAliasRes, err error) {
+func (c *Client) sendGetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams, requestOptions ...RequestOption) (res GetEnvironmentAliasRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -4685,11 +5401,19 @@ func (c *Client) sendGetEnvironmentAlias(ctx context.Context, params GetEnvironm
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetEnvironmentAliasResponse(resp)
 	if err != nil {
@@ -4704,14 +5428,24 @@ func (c *Client) sendGetEnvironmentAlias(ctx context.Context, params GetEnvironm
 // Get a single extension.
 //
 // GET /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
-func (c *Client) GetExtension(ctx context.Context, params GetExtensionParams) (GetExtensionRes, error) {
-	res, err := c.sendGetExtension(ctx, params)
+func (c *Client) GetExtension(ctx context.Context, params GetExtensionParams, options ...RequestOption) (GetExtensionRes, error) {
+	res, err := c.sendGetExtension(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetExtension(ctx context.Context, params GetExtensionParams) (res GetExtensionRes, err error) {
+func (c *Client) sendGetExtension(ctx context.Context, params GetExtensionParams, requestOptions ...RequestOption) (res GetExtensionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -4810,11 +5544,19 @@ func (c *Client) sendGetExtension(ctx context.Context, params GetExtensionParams
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetExtensionResponse(resp)
 	if err != nil {
@@ -4829,14 +5571,24 @@ func (c *Client) sendGetExtension(ctx context.Context, params GetExtensionParams
 // Get marketplace app definitions.
 //
 // GET /app_definitions
-func (c *Client) GetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams) (GetMarketplaceAppDefinitionsRes, error) {
-	res, err := c.sendGetMarketplaceAppDefinitions(ctx, params)
+func (c *Client) GetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams, options ...RequestOption) (GetMarketplaceAppDefinitionsRes, error) {
+	res, err := c.sendGetMarketplaceAppDefinitions(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams) (res GetMarketplaceAppDefinitionsRes, err error) {
+func (c *Client) sendGetMarketplaceAppDefinitions(ctx context.Context, params GetMarketplaceAppDefinitionsParams, requestOptions ...RequestOption) (res GetMarketplaceAppDefinitionsRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [1]string
 	pathParts[0] = "/app_definitions"
 	uri.AddPathParts(u, pathParts[:]...)
@@ -4905,11 +5657,19 @@ func (c *Client) sendGetMarketplaceAppDefinitions(ctx context.Context, params Ge
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetMarketplaceAppDefinitionsResponse(resp)
 	if err != nil {
@@ -4924,14 +5684,24 @@ func (c *Client) sendGetMarketplaceAppDefinitions(ctx context.Context, params Ge
 // Get a single personal access token.
 //
 // GET /users/me/access_tokens/{access_token_id}
-func (c *Client) GetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams) (GetPersonalAccessTokenRes, error) {
-	res, err := c.sendGetPersonalAccessToken(ctx, params)
+func (c *Client) GetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams, options ...RequestOption) (GetPersonalAccessTokenRes, error) {
+	res, err := c.sendGetPersonalAccessToken(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams) (res GetPersonalAccessTokenRes, err error) {
+func (c *Client) sendGetPersonalAccessToken(ctx context.Context, params GetPersonalAccessTokenParams, requestOptions ...RequestOption) (res GetPersonalAccessTokenRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [2]string
 	pathParts[0] = "/users/me/access_tokens/"
 	{
@@ -4992,11 +5762,19 @@ func (c *Client) sendGetPersonalAccessToken(ctx context.Context, params GetPerso
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetPersonalAccessTokenResponse(resp)
 	if err != nil {
@@ -5011,14 +5789,24 @@ func (c *Client) sendGetPersonalAccessToken(ctx context.Context, params GetPerso
 // Get a single preview api key.
 //
 // GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
-func (c *Client) GetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams) (GetPreviewAPIKeyRes, error) {
-	res, err := c.sendGetPreviewAPIKey(ctx, params)
+func (c *Client) GetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams, options ...RequestOption) (GetPreviewAPIKeyRes, error) {
+	res, err := c.sendGetPreviewAPIKey(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams) (res GetPreviewAPIKeyRes, err error) {
+func (c *Client) sendGetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams, requestOptions ...RequestOption) (res GetPreviewAPIKeyRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -5098,11 +5886,19 @@ func (c *Client) sendGetPreviewAPIKey(ctx context.Context, params GetPreviewAPIK
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetPreviewAPIKeyResponse(resp)
 	if err != nil {
@@ -5117,14 +5913,24 @@ func (c *Client) sendGetPreviewAPIKey(ctx context.Context, params GetPreviewAPIK
 // Get one resource provider definition.
 //
 // GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
-func (c *Client) GetResourceProvider(ctx context.Context, params GetResourceProviderParams) (GetResourceProviderRes, error) {
-	res, err := c.sendGetResourceProvider(ctx, params)
+func (c *Client) GetResourceProvider(ctx context.Context, params GetResourceProviderParams, options ...RequestOption) (GetResourceProviderRes, error) {
+	res, err := c.sendGetResourceProvider(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetResourceProvider(ctx context.Context, params GetResourceProviderParams) (res GetResourceProviderRes, err error) {
+func (c *Client) sendGetResourceProvider(ctx context.Context, params GetResourceProviderParams, requestOptions ...RequestOption) (res GetResourceProviderRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [5]string
 	pathParts[0] = "/organizations/"
 	{
@@ -5205,11 +6011,19 @@ func (c *Client) sendGetResourceProvider(ctx context.Context, params GetResource
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetResourceProviderResponse(resp)
 	if err != nil {
@@ -5224,14 +6038,24 @@ func (c *Client) sendGetResourceProvider(ctx context.Context, params GetResource
 // Get one resource type definition.
 //
 // GET /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (c *Client) GetResourceType(ctx context.Context, params GetResourceTypeParams) (GetResourceTypeRes, error) {
-	res, err := c.sendGetResourceType(ctx, params)
+func (c *Client) GetResourceType(ctx context.Context, params GetResourceTypeParams, options ...RequestOption) (GetResourceTypeRes, error) {
+	res, err := c.sendGetResourceType(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetResourceType(ctx context.Context, params GetResourceTypeParams) (res GetResourceTypeRes, err error) {
+func (c *Client) sendGetResourceType(ctx context.Context, params GetResourceTypeParams, requestOptions ...RequestOption) (res GetResourceTypeRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/organizations/"
 	{
@@ -5330,11 +6154,19 @@ func (c *Client) sendGetResourceType(ctx context.Context, params GetResourceType
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetResourceTypeResponse(resp)
 	if err != nil {
@@ -5349,14 +6181,24 @@ func (c *Client) sendGetResourceType(ctx context.Context, params GetResourceType
 // Get a role.
 //
 // GET /spaces/{space_id}/roles/{role_id}
-func (c *Client) GetRole(ctx context.Context, params GetRoleParams) (GetRoleRes, error) {
-	res, err := c.sendGetRole(ctx, params)
+func (c *Client) GetRole(ctx context.Context, params GetRoleParams, options ...RequestOption) (GetRoleRes, error) {
+	res, err := c.sendGetRole(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetRole(ctx context.Context, params GetRoleParams) (res GetRoleRes, err error) {
+func (c *Client) sendGetRole(ctx context.Context, params GetRoleParams, requestOptions ...RequestOption) (res GetRoleRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -5436,11 +6278,19 @@ func (c *Client) sendGetRole(ctx context.Context, params GetRoleParams) (res Get
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetRoleResponse(resp)
 	if err != nil {
@@ -5455,14 +6305,24 @@ func (c *Client) sendGetRole(ctx context.Context, params GetRoleParams) (res Get
 // Get enablements for a space.
 //
 // GET /spaces/{space_id}/enablements
-func (c *Client) GetSpaceEnablements(ctx context.Context, params GetSpaceEnablementsParams) (GetSpaceEnablementsRes, error) {
-	res, err := c.sendGetSpaceEnablements(ctx, params)
+func (c *Client) GetSpaceEnablements(ctx context.Context, params GetSpaceEnablementsParams, options ...RequestOption) (GetSpaceEnablementsRes, error) {
+	res, err := c.sendGetSpaceEnablements(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetSpaceEnablements(ctx context.Context, params GetSpaceEnablementsParams) (res GetSpaceEnablementsRes, err error) {
+func (c *Client) sendGetSpaceEnablements(ctx context.Context, params GetSpaceEnablementsParams, requestOptions ...RequestOption) (res GetSpaceEnablementsRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [3]string
 	pathParts[0] = "/spaces/"
 	{
@@ -5524,11 +6384,19 @@ func (c *Client) sendGetSpaceEnablements(ctx context.Context, params GetSpaceEna
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetSpaceEnablementsResponse(resp)
 	if err != nil {
@@ -5543,14 +6411,24 @@ func (c *Client) sendGetSpaceEnablements(ctx context.Context, params GetSpaceEna
 // Get a single team.
 //
 // GET /organizations/{organization_id}/teams/{team_id}
-func (c *Client) GetTeam(ctx context.Context, params GetTeamParams) (GetTeamRes, error) {
-	res, err := c.sendGetTeam(ctx, params)
+func (c *Client) GetTeam(ctx context.Context, params GetTeamParams, options ...RequestOption) (GetTeamRes, error) {
+	res, err := c.sendGetTeam(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetTeam(ctx context.Context, params GetTeamParams) (res GetTeamRes, err error) {
+func (c *Client) sendGetTeam(ctx context.Context, params GetTeamParams, requestOptions ...RequestOption) (res GetTeamRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/organizations/"
 	{
@@ -5630,11 +6508,19 @@ func (c *Client) sendGetTeam(ctx context.Context, params GetTeamParams) (res Get
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetTeamResponse(resp)
 	if err != nil {
@@ -5649,14 +6535,24 @@ func (c *Client) sendGetTeam(ctx context.Context, params GetTeamParams) (res Get
 // Get a single team space membership.
 //
 // GET /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
-func (c *Client) GetTeamSpaceMembership(ctx context.Context, params GetTeamSpaceMembershipParams) (GetTeamSpaceMembershipRes, error) {
-	res, err := c.sendGetTeamSpaceMembership(ctx, params)
+func (c *Client) GetTeamSpaceMembership(ctx context.Context, params GetTeamSpaceMembershipParams, options ...RequestOption) (GetTeamSpaceMembershipRes, error) {
+	res, err := c.sendGetTeamSpaceMembership(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetTeamSpaceMembership(ctx context.Context, params GetTeamSpaceMembershipParams) (res GetTeamSpaceMembershipRes, err error) {
+func (c *Client) sendGetTeamSpaceMembership(ctx context.Context, params GetTeamSpaceMembershipParams, requestOptions ...RequestOption) (res GetTeamSpaceMembershipRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -5736,11 +6632,19 @@ func (c *Client) sendGetTeamSpaceMembership(ctx context.Context, params GetTeamS
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetTeamSpaceMembershipResponse(resp)
 	if err != nil {
@@ -5755,14 +6659,24 @@ func (c *Client) sendGetTeamSpaceMembership(ctx context.Context, params GetTeamS
 // Get a webhook definition.
 //
 // GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
-func (c *Client) GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (GetWebhookDefinitionRes, error) {
-	res, err := c.sendGetWebhookDefinition(ctx, params)
+func (c *Client) GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams, options ...RequestOption) (GetWebhookDefinitionRes, error) {
+	res, err := c.sendGetWebhookDefinition(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (res GetWebhookDefinitionRes, err error) {
+func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams, requestOptions ...RequestOption) (res GetWebhookDefinitionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -5842,11 +6756,19 @@ func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhook
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeGetWebhookDefinitionResponse(resp)
 	if err != nil {
@@ -5861,14 +6783,24 @@ func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhook
 // Publish an entry.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
-func (c *Client) PublishEntry(ctx context.Context, params PublishEntryParams) (PublishEntryRes, error) {
-	res, err := c.sendPublishEntry(ctx, params)
+func (c *Client) PublishEntry(ctx context.Context, params PublishEntryParams, options ...RequestOption) (PublishEntryRes, error) {
+	res, err := c.sendPublishEntry(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPublishEntry(ctx context.Context, params PublishEntryParams) (res PublishEntryRes, err error) {
+func (c *Client) sendPublishEntry(ctx context.Context, params PublishEntryParams, requestOptions ...RequestOption) (res PublishEntryRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [7]string
 	pathParts[0] = "/spaces/"
 	{
@@ -5981,11 +6913,19 @@ func (c *Client) sendPublishEntry(ctx context.Context, params PublishEntryParams
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePublishEntryResponse(resp)
 	if err != nil {
@@ -6000,14 +6940,24 @@ func (c *Client) sendPublishEntry(ctx context.Context, params PublishEntryParams
 // Create or update an app definition.
 //
 // PUT /organizations/{organization_id}/app_definitions/{app_definition_id}
-func (c *Client) PutAppDefinition(ctx context.Context, request *AppDefinitionData, params PutAppDefinitionParams) (PutAppDefinitionRes, error) {
-	res, err := c.sendPutAppDefinition(ctx, request, params)
+func (c *Client) PutAppDefinition(ctx context.Context, request *AppDefinitionData, params PutAppDefinitionParams, options ...RequestOption) (PutAppDefinitionRes, error) {
+	res, err := c.sendPutAppDefinition(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutAppDefinition(ctx context.Context, request *AppDefinitionData, params PutAppDefinitionParams) (res PutAppDefinitionRes, err error) {
+func (c *Client) sendPutAppDefinition(ctx context.Context, request *AppDefinitionData, params PutAppDefinitionParams, requestOptions ...RequestOption) (res PutAppDefinitionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/organizations/"
 	{
@@ -6090,11 +7040,19 @@ func (c *Client) sendPutAppDefinition(ctx context.Context, request *AppDefinitio
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutAppDefinitionResponse(resp)
 	if err != nil {
@@ -6109,14 +7067,24 @@ func (c *Client) sendPutAppDefinition(ctx context.Context, request *AppDefinitio
 // Install or update an app.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
-func (c *Client) PutAppInstallation(ctx context.Context, request *AppInstallationData, params PutAppInstallationParams) (PutAppInstallationRes, error) {
-	res, err := c.sendPutAppInstallation(ctx, request, params)
+func (c *Client) PutAppInstallation(ctx context.Context, request *AppInstallationData, params PutAppInstallationParams, options ...RequestOption) (PutAppInstallationRes, error) {
+	res, err := c.sendPutAppInstallation(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutAppInstallation(ctx context.Context, request *AppInstallationData, params PutAppInstallationParams) (res PutAppInstallationRes, err error) {
+func (c *Client) sendPutAppInstallation(ctx context.Context, request *AppInstallationData, params PutAppInstallationParams, requestOptions ...RequestOption) (res PutAppInstallationRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -6234,11 +7202,19 @@ func (c *Client) sendPutAppInstallation(ctx context.Context, request *AppInstall
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutAppInstallationResponse(resp)
 	if err != nil {
@@ -6253,14 +7229,24 @@ func (c *Client) sendPutAppInstallation(ctx context.Context, request *AppInstall
 // Create or update an app signing secret.
 //
 // PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret
-func (c *Client) PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error) {
-	res, err := c.sendPutAppSigningSecret(ctx, request, params)
+func (c *Client) PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams, options ...RequestOption) (PutAppSigningSecretRes, error) {
+	res, err := c.sendPutAppSigningSecret(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams) (res PutAppSigningSecretRes, err error) {
+func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams, requestOptions ...RequestOption) (res PutAppSigningSecretRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [5]string
 	pathParts[0] = "/organizations/"
 	{
@@ -6344,11 +7330,19 @@ func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSignin
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutAppSigningSecretResponse(resp)
 	if err != nil {
@@ -6363,14 +7357,24 @@ func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSignin
 // Update a content type.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
-func (c *Client) PutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams) (PutContentTypeRes, error) {
-	res, err := c.sendPutContentType(ctx, request, params)
+func (c *Client) PutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams, options ...RequestOption) (PutContentTypeRes, error) {
+	res, err := c.sendPutContentType(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams) (res PutContentTypeRes, err error) {
+func (c *Client) sendPutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams, requestOptions ...RequestOption) (res PutContentTypeRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -6485,11 +7489,19 @@ func (c *Client) sendPutContentType(ctx context.Context, request *ContentTypeReq
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutContentTypeResponse(resp)
 	if err != nil {
@@ -6504,14 +7516,24 @@ func (c *Client) sendPutContentType(ctx context.Context, request *ContentTypeReq
 // Update the editor interface for a content type.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface
-func (c *Client) PutEditorInterface(ctx context.Context, request *EditorInterfaceData, params PutEditorInterfaceParams) (PutEditorInterfaceRes, error) {
-	res, err := c.sendPutEditorInterface(ctx, request, params)
+func (c *Client) PutEditorInterface(ctx context.Context, request *EditorInterfaceData, params PutEditorInterfaceParams, options ...RequestOption) (PutEditorInterfaceRes, error) {
+	res, err := c.sendPutEditorInterface(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutEditorInterface(ctx context.Context, request *EditorInterfaceData, params PutEditorInterfaceParams) (res PutEditorInterfaceRes, err error) {
+func (c *Client) sendPutEditorInterface(ctx context.Context, request *EditorInterfaceData, params PutEditorInterfaceParams, requestOptions ...RequestOption) (res PutEditorInterfaceRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [7]string
 	pathParts[0] = "/spaces/"
 	{
@@ -6627,11 +7649,19 @@ func (c *Client) sendPutEditorInterface(ctx context.Context, request *EditorInte
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutEditorInterfaceResponse(resp)
 	if err != nil {
@@ -6646,14 +7676,24 @@ func (c *Client) sendPutEditorInterface(ctx context.Context, request *EditorInte
 // Create or update an entry.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}
-func (c *Client) PutEntry(ctx context.Context, request *EntryRequest, params PutEntryParams) (PutEntryRes, error) {
-	res, err := c.sendPutEntry(ctx, request, params)
+func (c *Client) PutEntry(ctx context.Context, request *EntryRequest, params PutEntryParams, options ...RequestOption) (PutEntryRes, error) {
+	res, err := c.sendPutEntry(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutEntry(ctx context.Context, request *EntryRequest, params PutEntryParams) (res PutEntryRes, err error) {
+func (c *Client) sendPutEntry(ctx context.Context, request *EntryRequest, params PutEntryParams, requestOptions ...RequestOption) (res PutEntryRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -6782,11 +7822,19 @@ func (c *Client) sendPutEntry(ctx context.Context, request *EntryRequest, params
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutEntryResponse(resp)
 	if err != nil {
@@ -6801,14 +7849,24 @@ func (c *Client) sendPutEntry(ctx context.Context, request *EntryRequest, params
 // Create or update an extension.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
-func (c *Client) PutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams) (PutExtensionRes, error) {
-	res, err := c.sendPutExtension(ctx, request, params)
+func (c *Client) PutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams, options ...RequestOption) (PutExtensionRes, error) {
+	res, err := c.sendPutExtension(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams) (res PutExtensionRes, err error) {
+func (c *Client) sendPutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams, requestOptions ...RequestOption) (res PutExtensionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/spaces/"
 	{
@@ -6923,11 +7981,19 @@ func (c *Client) sendPutExtension(ctx context.Context, request *ExtensionData, p
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutExtensionResponse(resp)
 	if err != nil {
@@ -6942,14 +8008,24 @@ func (c *Client) sendPutExtension(ctx context.Context, request *ExtensionData, p
 // Create or update a resource provider definition.
 //
 // PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider
-func (c *Client) PutResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutResourceProviderParams) (PutResourceProviderRes, error) {
-	res, err := c.sendPutResourceProvider(ctx, request, params)
+func (c *Client) PutResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutResourceProviderParams, options ...RequestOption) (PutResourceProviderRes, error) {
+	res, err := c.sendPutResourceProvider(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutResourceProviderParams) (res PutResourceProviderRes, err error) {
+func (c *Client) sendPutResourceProvider(ctx context.Context, request *ResourceProviderRequest, params PutResourceProviderParams, requestOptions ...RequestOption) (res PutResourceProviderRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [5]string
 	pathParts[0] = "/organizations/"
 	{
@@ -7033,11 +8109,19 @@ func (c *Client) sendPutResourceProvider(ctx context.Context, request *ResourceP
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutResourceProviderResponse(resp)
 	if err != nil {
@@ -7052,14 +8136,24 @@ func (c *Client) sendPutResourceProvider(ctx context.Context, request *ResourceP
 // Create or update a resource type definition.
 //
 // PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/resource_provider/resource_types/{resource_type_id}
-func (c *Client) PutResourceType(ctx context.Context, request *ResourceTypeData, params PutResourceTypeParams) (PutResourceTypeRes, error) {
-	res, err := c.sendPutResourceType(ctx, request, params)
+func (c *Client) PutResourceType(ctx context.Context, request *ResourceTypeData, params PutResourceTypeParams, options ...RequestOption) (PutResourceTypeRes, error) {
+	res, err := c.sendPutResourceType(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutResourceType(ctx context.Context, request *ResourceTypeData, params PutResourceTypeParams) (res PutResourceTypeRes, err error) {
+func (c *Client) sendPutResourceType(ctx context.Context, request *ResourceTypeData, params PutResourceTypeParams, requestOptions ...RequestOption) (res PutResourceTypeRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [6]string
 	pathParts[0] = "/organizations/"
 	{
@@ -7161,11 +8255,19 @@ func (c *Client) sendPutResourceType(ctx context.Context, request *ResourceTypeD
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutResourceTypeResponse(resp)
 	if err != nil {
@@ -7180,14 +8282,24 @@ func (c *Client) sendPutResourceType(ctx context.Context, request *ResourceTypeD
 // Update enablements for a space.
 //
 // PUT /spaces/{space_id}/enablements
-func (c *Client) PutSpaceEnablements(ctx context.Context, request *SpaceEnablementData, params PutSpaceEnablementsParams) (PutSpaceEnablementsRes, error) {
-	res, err := c.sendPutSpaceEnablements(ctx, request, params)
+func (c *Client) PutSpaceEnablements(ctx context.Context, request *SpaceEnablementData, params PutSpaceEnablementsParams, options ...RequestOption) (PutSpaceEnablementsRes, error) {
+	res, err := c.sendPutSpaceEnablements(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutSpaceEnablements(ctx context.Context, request *SpaceEnablementData, params PutSpaceEnablementsParams) (res PutSpaceEnablementsRes, err error) {
+func (c *Client) sendPutSpaceEnablements(ctx context.Context, request *SpaceEnablementData, params PutSpaceEnablementsParams, requestOptions ...RequestOption) (res PutSpaceEnablementsRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [3]string
 	pathParts[0] = "/spaces/"
 	{
@@ -7265,11 +8377,19 @@ func (c *Client) sendPutSpaceEnablements(ctx context.Context, request *SpaceEnab
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutSpaceEnablementsResponse(resp)
 	if err != nil {
@@ -7284,14 +8404,24 @@ func (c *Client) sendPutSpaceEnablements(ctx context.Context, request *SpaceEnab
 // Update a single team.
 //
 // PUT /organizations/{organization_id}/teams/{team_id}
-func (c *Client) PutTeam(ctx context.Context, request *TeamData, params PutTeamParams) (PutTeamRes, error) {
-	res, err := c.sendPutTeam(ctx, request, params)
+func (c *Client) PutTeam(ctx context.Context, request *TeamData, params PutTeamParams, options ...RequestOption) (PutTeamRes, error) {
+	res, err := c.sendPutTeam(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutTeam(ctx context.Context, request *TeamData, params PutTeamParams) (res PutTeamRes, err error) {
+func (c *Client) sendPutTeam(ctx context.Context, request *TeamData, params PutTeamParams, requestOptions ...RequestOption) (res PutTeamRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/organizations/"
 	{
@@ -7387,11 +8517,19 @@ func (c *Client) sendPutTeam(ctx context.Context, request *TeamData, params PutT
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutTeamResponse(resp)
 	if err != nil {
@@ -7406,14 +8544,24 @@ func (c *Client) sendPutTeam(ctx context.Context, request *TeamData, params PutT
 // Update a single team space membership.
 //
 // PUT /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
-func (c *Client) PutTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params PutTeamSpaceMembershipParams) (PutTeamSpaceMembershipRes, error) {
-	res, err := c.sendPutTeamSpaceMembership(ctx, request, params)
+func (c *Client) PutTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params PutTeamSpaceMembershipParams, options ...RequestOption) (PutTeamSpaceMembershipRes, error) {
+	res, err := c.sendPutTeamSpaceMembership(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendPutTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params PutTeamSpaceMembershipParams) (res PutTeamSpaceMembershipRes, err error) {
+func (c *Client) sendPutTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params PutTeamSpaceMembershipParams, requestOptions ...RequestOption) (res PutTeamSpaceMembershipRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -7496,11 +8644,19 @@ func (c *Client) sendPutTeamSpaceMembership(ctx context.Context, request *TeamSp
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodePutTeamSpaceMembershipResponse(resp)
 	if err != nil {
@@ -7515,14 +8671,24 @@ func (c *Client) sendPutTeamSpaceMembership(ctx context.Context, request *TeamSp
 // Revoke a personal access token.
 //
 // PUT /users/me/access_tokens/{access_token_id}/revoked
-func (c *Client) RevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams) (RevokePersonalAccessTokenRes, error) {
-	res, err := c.sendRevokePersonalAccessToken(ctx, params)
+func (c *Client) RevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams, options ...RequestOption) (RevokePersonalAccessTokenRes, error) {
+	res, err := c.sendRevokePersonalAccessToken(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendRevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams) (res RevokePersonalAccessTokenRes, err error) {
+func (c *Client) sendRevokePersonalAccessToken(ctx context.Context, params RevokePersonalAccessTokenParams, requestOptions ...RequestOption) (res RevokePersonalAccessTokenRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [3]string
 	pathParts[0] = "/users/me/access_tokens/"
 	{
@@ -7584,11 +8750,19 @@ func (c *Client) sendRevokePersonalAccessToken(ctx context.Context, params Revok
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeRevokePersonalAccessTokenResponse(resp)
 	if err != nil {
@@ -7603,14 +8777,24 @@ func (c *Client) sendRevokePersonalAccessToken(ctx context.Context, params Revok
 // Unpublish an entry.
 //
 // DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
-func (c *Client) UnpublishEntry(ctx context.Context, params UnpublishEntryParams) (UnpublishEntryRes, error) {
-	res, err := c.sendUnpublishEntry(ctx, params)
+func (c *Client) UnpublishEntry(ctx context.Context, params UnpublishEntryParams, options ...RequestOption) (UnpublishEntryRes, error) {
+	res, err := c.sendUnpublishEntry(ctx, params, options...)
 	return res, err
 }
 
-func (c *Client) sendUnpublishEntry(ctx context.Context, params UnpublishEntryParams) (res UnpublishEntryRes, err error) {
+func (c *Client) sendUnpublishEntry(ctx context.Context, params UnpublishEntryParams, requestOptions ...RequestOption) (res UnpublishEntryRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [7]string
 	pathParts[0] = "/spaces/"
 	{
@@ -7710,11 +8894,19 @@ func (c *Client) sendUnpublishEntry(ctx context.Context, params UnpublishEntryPa
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeUnpublishEntryResponse(resp)
 	if err != nil {
@@ -7729,14 +8921,24 @@ func (c *Client) sendUnpublishEntry(ctx context.Context, params UnpublishEntryPa
 // Update a single delivery api key.
 //
 // PUT /spaces/{space_id}/api_keys/{api_key_id}
-func (c *Client) UpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams) (UpdateDeliveryAPIKeyRes, error) {
-	res, err := c.sendUpdateDeliveryAPIKey(ctx, request, params)
+func (c *Client) UpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams, options ...RequestOption) (UpdateDeliveryAPIKeyRes, error) {
+	res, err := c.sendUpdateDeliveryAPIKey(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendUpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams) (res UpdateDeliveryAPIKeyRes, err error) {
+func (c *Client) sendUpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRequestData, params UpdateDeliveryAPIKeyParams, requestOptions ...RequestOption) (res UpdateDeliveryAPIKeyRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -7832,11 +9034,19 @@ func (c *Client) sendUpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRe
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeUpdateDeliveryAPIKeyResponse(resp)
 	if err != nil {
@@ -7851,14 +9061,24 @@ func (c *Client) sendUpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRe
 // Update a role.
 //
 // PUT /spaces/{space_id}/roles/{role_id}
-func (c *Client) UpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams) (UpdateRoleRes, error) {
-	res, err := c.sendUpdateRole(ctx, request, params)
+func (c *Client) UpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams, options ...RequestOption) (UpdateRoleRes, error) {
+	res, err := c.sendUpdateRole(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendUpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams) (res UpdateRoleRes, err error) {
+func (c *Client) sendUpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams, requestOptions ...RequestOption) (res UpdateRoleRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -7954,11 +9174,19 @@ func (c *Client) sendUpdateRole(ctx context.Context, request *RoleData, params U
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeUpdateRoleResponse(resp)
 	if err != nil {
@@ -7973,14 +9201,24 @@ func (c *Client) sendUpdateRole(ctx context.Context, request *RoleData, params U
 // Update a webhook definition.
 //
 // PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
-func (c *Client) UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error) {
-	res, err := c.sendUpdateWebhookDefinition(ctx, request, params)
+func (c *Client) UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams, options ...RequestOption) (UpdateWebhookDefinitionRes, error) {
+	res, err := c.sendUpdateWebhookDefinition(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendUpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams) (res UpdateWebhookDefinitionRes, err error) {
+func (c *Client) sendUpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams, requestOptions ...RequestOption) (res UpdateWebhookDefinitionRes, err error) {
 
-	u := uri.Clone(c.requestURL(ctx))
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
 	var pathParts [4]string
 	pathParts[0] = "/spaces/"
 	{
@@ -8076,11 +9314,19 @@ func (c *Client) sendUpdateWebhookDefinition(ctx context.Context, request *Webho
 		}
 	}
 
-	resp, err := c.cfg.Client.Do(r)
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
 	defer resp.Body.Close()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
 
 	result, err := decodeUpdateWebhookDefinitionResponse(resp)
 	if err != nil {
