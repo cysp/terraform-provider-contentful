@@ -32,5 +32,3 @@ resource "contentful_environment_alias" "example" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

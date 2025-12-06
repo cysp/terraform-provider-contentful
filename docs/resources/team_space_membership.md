@@ -26,5 +26,3 @@ Manages a Contentful Team Space Membership.
 
 - `id` (String) The ID of this resource.
 - `team_space_membership_id` (String) System ID of the team space membership.
-
-

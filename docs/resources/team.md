@@ -28,5 +28,3 @@ Manages a Contentful Team.
 
 - `id` (String) The ID of this resource.
 - `team_id` (String) System ID of the team.
-
-
