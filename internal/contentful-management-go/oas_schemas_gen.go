@@ -1538,6 +1538,7 @@ func (*ApplicationJSONError) getContentTypeRes()                 {}
 func (*ApplicationJSONError) getContentTypesRes()                {}
 func (*ApplicationJSONError) getDeliveryAPIKeyRes()              {}
 func (*ApplicationJSONError) getEditorInterfaceRes()             {}
+func (*ApplicationJSONError) getEntriesRes()                     {}
 func (*ApplicationJSONError) getEntryRes()                       {}
 func (*ApplicationJSONError) getEnvironmentAliasRes()            {}
 func (*ApplicationJSONError) getEnvironmentRes()                 {}
@@ -1632,6 +1633,7 @@ func (*ApplicationJSONErrorStatusCode) getContentTypeRes()                 {}
 func (*ApplicationJSONErrorStatusCode) getContentTypesRes()                {}
 func (*ApplicationJSONErrorStatusCode) getDeliveryAPIKeyRes()              {}
 func (*ApplicationJSONErrorStatusCode) getEditorInterfaceRes()             {}
+func (*ApplicationJSONErrorStatusCode) getEntriesRes()                     {}
 func (*ApplicationJSONErrorStatusCode) getEntryRes()                       {}
 func (*ApplicationJSONErrorStatusCode) getEnvironmentAliasRes()            {}
 func (*ApplicationJSONErrorStatusCode) getEnvironmentRes()                 {}
@@ -1741,6 +1743,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) getContentTypeRes()       
 func (*ApplicationVndContentfulManagementV1JSONError) getContentTypesRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryAPIKeyRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEditorInterfaceRes()             {}
+func (*ApplicationVndContentfulManagementV1JSONError) getEntriesRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEntryRes()                       {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEnvironmentAliasRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) getEnvironmentRes()                 {}
@@ -1835,6 +1838,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypeRe
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypesRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryAPIKeyRes()              {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEditorInterfaceRes()             {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEntriesRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEntryRes()                       {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEnvironmentAliasRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEnvironmentRes()                 {}
@@ -3673,6 +3677,93 @@ func (s *Entry) SetFields(val OptEntryFields) {
 
 func (*Entry) getEntryRes()       {}
 func (*Entry) unpublishEntryRes() {}
+
+// Ref: #/EntryCollection
+type EntryCollection struct {
+	Sys   EntryCollectionSys `json:"sys"`
+	Total OptInt             `json:"total"`
+	Items []Entry            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *EntryCollection) GetSys() EntryCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *EntryCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetItems returns the value of Items.
+func (s *EntryCollection) GetItems() []Entry {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *EntryCollection) SetSys(val EntryCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *EntryCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetItems sets the value of Items.
+func (s *EntryCollection) SetItems(val []Entry) {
+	s.Items = val
+}
+
+func (*EntryCollection) getEntriesRes() {}
+
+type EntryCollectionSys struct {
+	Type EntryCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *EntryCollectionSys) GetType() EntryCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *EntryCollectionSys) SetType(val EntryCollectionSysType) {
+	s.Type = val
+}
+
+type EntryCollectionSysType string
+
+const (
+	EntryCollectionSysTypeArray EntryCollectionSysType = "Array"
+)
+
+// AllValues returns all EntryCollectionSysType values.
+func (EntryCollectionSysType) AllValues() []EntryCollectionSysType {
+	return []EntryCollectionSysType{
+		EntryCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EntryCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case EntryCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EntryCollectionSysType) UnmarshalText(data []byte) error {
+	switch EntryCollectionSysType(data) {
+	case EntryCollectionSysTypeArray:
+		*s = EntryCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
 
 // Ref: #/EntryFields
 type EntryFields map[string]jx.Raw

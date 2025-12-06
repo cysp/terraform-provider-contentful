@@ -141,6 +141,10 @@ type GetEditorInterfaceRes interface {
 	getEditorInterfaceRes()
 }
 
+type GetEntriesRes interface {
+	getEntriesRes()
+}
+
 type GetEntryRes interface {
 	getEntryRes()
 }

@@ -151,7 +151,9 @@ components:
       name: order
       required: false
       schema:
-        type: string
+        type: array
+        items:
+          type: string
   schemas:
     ApplicationJSONError:
       anyOf:
@@ -1063,6 +1065,32 @@ paths:
     parameters:
       - $ref: "#/components/parameters/space_id"
       - $ref: "#/components/parameters/environment_id"
+    get:
+      operationId: getEntries
+      summary: Get all entries of a space
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/order"
+        - name: content_type
+          in: query
+          description: Filter by content type ID
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: A collection of entries
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./schemas/entry/collection.yml#/EntryCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
     post:
       operationId: createEntry
       summary: Create an entry

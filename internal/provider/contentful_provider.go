@@ -183,6 +183,7 @@ func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.
 func (p *ContentfulProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
 		NewContentTypeListResource,
+		NewEntryListResource,
 	}
 }
 
