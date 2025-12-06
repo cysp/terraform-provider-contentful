@@ -1,0 +1,1 @@
+terraform import contentful_team.this $CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_TEAM_ID

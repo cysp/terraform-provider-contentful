@@ -1,0 +1,1 @@
+terraform import contentful_team_space_membership.this $CONTENTFUL_SPACE_ID/$CONTENTFUL_TEAM_SPACE_MEMBERSHIP_ID
