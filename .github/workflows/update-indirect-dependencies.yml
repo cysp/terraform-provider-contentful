@@ -13,6 +13,11 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        id: create-github-app-token
+        with:
+          app-id: ${{ vars.CYSPBOT_APP_ID }}
+          private-key: ${{ secrets.CYSPBOT_PRIVATE_KEY }}
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
         with:
@@ -25,8 +30,9 @@ jobs:
       - name: create pull request
         uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412 # v7.0.9
         with:
-          token: ${{ secrets.INDIRECT_DEPENDENCY_UPDATES_GITHUB_TOKEN }}
+          token: ${{ steps.create-github-app-token.outputs.token }}
           commit-message: "chore(deps): bump indirect dependencies"
           title: "chore(deps): bump indirect dependencies"
           branch: "github-action-update-indirect-dependencies"
           body: ''
+          sign-commits: true
