@@ -1,10 +1,18 @@
 EntryMetadata:
   type: object
   properties:
+    concepts:
+      type: array
+      items:
+        $ref: "#/EntryMetadataConceptsItem"
     tags:
       type: array
       items:
         $ref: "#/EntryMetadataTagsItem"
+
+EntryMetadataConceptsItem:
+  allOf:
+    - $ref: "../links/taxonomy-concept-link.yml#/TaxonomyConceptLink"
 
 EntryMetadataTagsItem:
   allOf:

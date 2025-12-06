@@ -350,6 +350,54 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 	})
 }
 
+//nolint:dupl
+func TestAccEntryResourceMetadataConcepts(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+
+	testID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
+
+	configVariables := config.Variables{
+		"space_id":       config.StringVariable("0p38pssr0fi3"),
+		"environment_id": config.StringVariable("test"),
+		"test_id":        config.StringVariable(testID),
+	}
+
+	configVariables1 := maps.Clone(configVariables)
+	configVariables1["entry_concepts"] = config.ListVariable(config.StringVariable("testAbc"))
+
+	configVariables2 := maps.Clone(configVariables)
+	configVariables2["entry_concepts"] = config.ListVariable(config.StringVariable("testDef"), config.StringVariable("testGhi"))
+
+	configVariables3 := maps.Clone(configVariables)
+	configVariables3["entry_concepts"] = config.ListVariable()
+
+	configVariables4 := maps.Clone(configVariables)
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables1,
+			},
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables2,
+			},
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables3,
+			},
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables4,
+			},
+		},
+	})
+}
+
+//nolint:dupl
 func TestAccEntryResourceMetadataTags(t *testing.T) {
 	t.Parallel()
 

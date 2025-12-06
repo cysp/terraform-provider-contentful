@@ -67,6 +67,14 @@ func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.
 		return NewTypedObjectNull[EntryMetadataValue](), diags
 	}
 
+	concepts := []types.String{}
+
+	for _, concept := range metadata.Value.Concepts {
+		if concept.Sys.ID != "" {
+			concepts = append(concepts, types.StringValue(concept.Sys.ID))
+		}
+	}
+
 	tags := []types.String{}
 
 	for _, tag := range metadata.Value.Tags {
@@ -76,7 +84,8 @@ func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.
 	}
 
 	obj, objDiags := NewTypedObjectFromAttributes[EntryMetadataValue](ctx, map[string]attr.Value{
-		"tags": NewTypedList(tags),
+		"concepts": NewTypedList(concepts),
+		"tags":     NewTypedList(tags),
 	})
 	diags.Append(objDiags...)
 

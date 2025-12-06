@@ -53,6 +53,20 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 
 	metadata := cm.EntryMetadata{}
 
+	modelConcepts := model.Metadata.Value().Concepts.Elements()
+	concepts := make([]cm.TaxonomyConceptLink, 0, len(modelConcepts))
+
+	for _, concept := range modelConcepts {
+		conceptValue := concept.ValueString()
+		if conceptValue == "" {
+			continue
+		}
+
+		concepts = append(concepts, cm.NewTaxonomyConceptLink(conceptValue))
+	}
+
+	metadata.Concepts = concepts
+
 	modelTags := model.Metadata.Value().Tags.Elements()
 	tags := make([]cm.TagLink, 0, len(modelTags))
 
