@@ -6450,7 +6450,7 @@ func decodeGetContentTypesResponse(resp *http.Response) (res GetContentTypesRes,
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetContentTypesOK
+			var response ContentTypeCollection
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err

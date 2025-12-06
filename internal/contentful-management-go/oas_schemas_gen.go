@@ -1944,6 +1944,93 @@ func (s *ContentType) SetMetadata(val OptContentTypeMetadata) {
 func (*ContentType) deactivateContentTypeRes() {}
 func (*ContentType) getContentTypeRes()        {}
 
+// Ref: #/ContentTypeCollection
+type ContentTypeCollection struct {
+	Sys   ContentTypeCollectionSys `json:"sys"`
+	Total OptInt                   `json:"total"`
+	Items []ContentType            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *ContentTypeCollection) GetSys() ContentTypeCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *ContentTypeCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetItems returns the value of Items.
+func (s *ContentTypeCollection) GetItems() []ContentType {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *ContentTypeCollection) SetSys(val ContentTypeCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *ContentTypeCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetItems sets the value of Items.
+func (s *ContentTypeCollection) SetItems(val []ContentType) {
+	s.Items = val
+}
+
+func (*ContentTypeCollection) getContentTypesRes() {}
+
+type ContentTypeCollectionSys struct {
+	Type ContentTypeCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentTypeCollectionSys) GetType() ContentTypeCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *ContentTypeCollectionSys) SetType(val ContentTypeCollectionSysType) {
+	s.Type = val
+}
+
+type ContentTypeCollectionSysType string
+
+const (
+	ContentTypeCollectionSysTypeArray ContentTypeCollectionSysType = "Array"
+)
+
+// AllValues returns all ContentTypeCollectionSysType values.
+func (ContentTypeCollectionSysType) AllValues() []ContentTypeCollectionSysType {
+	return []ContentTypeCollectionSysType{
+		ContentTypeCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentTypeCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentTypeCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentTypeCollectionSysType) UnmarshalText(data []byte) error {
+	switch ContentTypeCollectionSysType(data) {
+	case ContentTypeCollectionSysTypeArray:
+		*s = ContentTypeCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 type ContentTypeFieldsItem struct {
 	ID               string                        `json:"id"`
 	Name             string                        `json:"name"`
@@ -5008,92 +5095,6 @@ func (s *FunctionLinkSysType) UnmarshalText(data []byte) error {
 	switch FunctionLinkSysType(data) {
 	case FunctionLinkSysTypeLink:
 		*s = FunctionLinkSysTypeLink
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-type GetContentTypesOK struct {
-	Sys   GetContentTypesOKSys `json:"sys"`
-	Total int                  `json:"total"`
-	Items []ContentType        `json:"items"`
-}
-
-// GetSys returns the value of Sys.
-func (s *GetContentTypesOK) GetSys() GetContentTypesOKSys {
-	return s.Sys
-}
-
-// GetTotal returns the value of Total.
-func (s *GetContentTypesOK) GetTotal() int {
-	return s.Total
-}
-
-// GetItems returns the value of Items.
-func (s *GetContentTypesOK) GetItems() []ContentType {
-	return s.Items
-}
-
-// SetSys sets the value of Sys.
-func (s *GetContentTypesOK) SetSys(val GetContentTypesOKSys) {
-	s.Sys = val
-}
-
-// SetTotal sets the value of Total.
-func (s *GetContentTypesOK) SetTotal(val int) {
-	s.Total = val
-}
-
-// SetItems sets the value of Items.
-func (s *GetContentTypesOK) SetItems(val []ContentType) {
-	s.Items = val
-}
-
-func (*GetContentTypesOK) getContentTypesRes() {}
-
-type GetContentTypesOKSys struct {
-	Type GetContentTypesOKSysType `json:"type"`
-}
-
-// GetType returns the value of Type.
-func (s *GetContentTypesOKSys) GetType() GetContentTypesOKSysType {
-	return s.Type
-}
-
-// SetType sets the value of Type.
-func (s *GetContentTypesOKSys) SetType(val GetContentTypesOKSysType) {
-	s.Type = val
-}
-
-type GetContentTypesOKSysType string
-
-const (
-	GetContentTypesOKSysTypeArray GetContentTypesOKSysType = "Array"
-)
-
-// AllValues returns all GetContentTypesOKSysType values.
-func (GetContentTypesOKSysType) AllValues() []GetContentTypesOKSysType {
-	return []GetContentTypesOKSysType{
-		GetContentTypesOKSysTypeArray,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s GetContentTypesOKSysType) MarshalText() ([]byte, error) {
-	switch s {
-	case GetContentTypesOKSysTypeArray:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *GetContentTypesOKSysType) UnmarshalText(data []byte) error {
-	switch GetContentTypesOKSysType(data) {
-	case GetContentTypesOKSysTypeArray:
-		*s = GetContentTypesOKSysTypeArray
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

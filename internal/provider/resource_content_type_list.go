@@ -78,7 +78,7 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 		}
 
 		switch response := response.(type) {
-		case *cm.GetContentTypesOK:
+		case *cm.ContentTypeCollection:
 			for _, item := range response.Items {
 				result := req.NewListResult(ctx)
 
