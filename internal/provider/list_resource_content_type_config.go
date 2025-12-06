@@ -4,9 +4,15 @@ import (
 	"context"
 
 	listschema "github.com/hashicorp/terraform-plugin-framework/list/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ContentTypeListResourceSchema(_ context.Context) listschema.Schema {
+type contentTypeListResourceConfig struct {
+	SpaceID       types.String `tfsdk:"space_id"`
+	EnvironmentID types.String `tfsdk:"environment_id"`
+}
+
+func ContentTypeListResourceConfigSchema(_ context.Context) listschema.Schema {
 	return listschema.Schema{
 		Description: "List Contentful Content Types.",
 		Attributes: map[string]listschema.Attribute{
