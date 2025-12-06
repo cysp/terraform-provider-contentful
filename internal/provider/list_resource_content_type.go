@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var (
@@ -34,24 +33,18 @@ func (r *contentTypeListResource) Configure(_ context.Context, req resource.Conf
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
 
-type contentTypeListConfig struct {
-	SpaceID       types.String `tfsdk:"space_id"`
-	EnvironmentID types.String `tfsdk:"environment_id"`
-}
-
 func (r *contentTypeListResource) ListResourceConfigSchema(ctx context.Context, _ list.ListResourceSchemaRequest, resp *list.ListResourceSchemaResponse) {
-	resp.Schema = ContentTypeListResourceSchema(ctx)
+	resp.Schema = ContentTypeListResourceConfigSchema(ctx)
 }
 
-func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest, resp *list.ListResultsStream) {
+func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest, stream *list.ListResultsStream) {
 	diags := diag.Diagnostics{}
 
-	var config contentTypeListConfig
-
+	var config contentTypeListResourceConfig
 	diags.Append(req.Config.Get(ctx, &config)...)
 
 	if diags.HasError() {
-		resp.Results = list.ListResultsStreamDiagnostics(diags)
+		stream.Results = list.ListResultsStreamDiagnostics(diags)
 
 		return
 	}
@@ -63,7 +56,7 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 		Order:         cm.NewOptString("sys.id"),
 	}
 
-	resp.Results = func(yield func(list.ListResult) bool) {
+	stream.Results = func(yield func(list.ListResult) bool) {
 		diags := diag.Diagnostics{}
 
 		response, err := r.providerData.client.GetContentTypes(ctx, params)
