@@ -916,27 +916,7 @@ paths:
           content:
             application/vnd.contentful.management.v1+json:
               schema:
-                type: object
-                properties:
-                  sys:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                          - Array
-                    required:
-                      - type
-                  total:
-                    type: integer
-                  items:
-                    type: array
-                    items:
-                      $ref: "./openapi/schemas/content-type/content-type.yml#/ContentType"
-                required:
-                  - sys
-                  - total
-                  - items
+                $ref: "./openapi/schemas/content-type/collection.yml#/ContentTypeCollection"
         401:
           $ref: "#/components/responses/unauthorized"
         default:

@@ -2656,7 +2656,7 @@ func encodeGetContentTypeResponse(response GetContentTypeRes, w http.ResponseWri
 
 func encodeGetContentTypesResponse(response GetContentTypesRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *GetContentTypesOK:
+	case *ContentTypeCollection:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		w.WriteHeader(200)
 

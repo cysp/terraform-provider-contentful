@@ -23,11 +23,11 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 		items = append(items, *ct)
 	}
 
-	return &cm.GetContentTypesOK{
-		Sys: cm.GetContentTypesOKSys{
-			Type: cm.GetContentTypesOKSysTypeArray,
+	return &cm.ContentTypeCollection{
+		Sys: cm.ContentTypeCollectionSys{
+			Type: cm.ContentTypeCollectionSysTypeArray,
 		},
-		Total: len(contentTypes),
+		Total: cm.NewOptInt(len(contentTypes)),
 		Items: items,
 	}, nil
 }
