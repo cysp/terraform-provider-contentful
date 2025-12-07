@@ -58,6 +58,7 @@ func (r *appDefinitionResourceTypeResource) ImportState(ctx context.Context, req
 	}, req, resp)
 }
 
+//nolint:dupl
 func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan ResourceTypeModel
 
@@ -169,6 +170,7 @@ func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+//nolint:dupl
 func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan ResourceTypeModel
 
@@ -213,10 +215,14 @@ func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to update resource type definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel ResourceTypeIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
