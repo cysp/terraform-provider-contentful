@@ -1,3 +1,4 @@
+//nolint:dupl
 package provider
 
 import (
@@ -56,7 +57,6 @@ func (r *roleResource) ImportState(ctx context.Context, req resource.ImportState
 	}, req, resp)
 }
 
-//nolint:dupl
 func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan RoleModel
 
@@ -236,6 +236,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
+//nolint:dupl
 func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state RoleModel
 
@@ -248,10 +249,6 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	params := cm.DeleteRoleParams{
 		SpaceID: state.SpaceID.ValueString(),
 		RoleID:  state.RoleID.ValueString(),
-	}
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.DeleteRole(ctx, params)

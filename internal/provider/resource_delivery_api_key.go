@@ -1,3 +1,4 @@
+//nolint:dupl
 package provider
 
 import (
@@ -56,7 +57,6 @@ func (r *deliveryAPIKeyResource) ImportState(ctx context.Context, req resource.I
 	}, req, resp)
 }
 
-//nolint:dupl
 func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan DeliveryAPIKeyModel
 
