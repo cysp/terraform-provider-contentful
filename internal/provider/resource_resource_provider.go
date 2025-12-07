@@ -1,3 +1,4 @@
+//nolint:dupl
 package provider
 
 import (
@@ -167,6 +168,7 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+//nolint:dupl
 func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan ResourceProviderModel
 
@@ -210,10 +212,14 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 		resp.Diagnostics.AddError("Failed to update resource provider definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	var identityModel ResourceProviderIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
