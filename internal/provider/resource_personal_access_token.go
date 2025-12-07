@@ -55,15 +55,15 @@ func (r *personalAccessTokenResource) ImportState(ctx context.Context, req resou
 }
 
 func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data PersonalAccessTokenModel
+	var plan PersonalAccessTokenModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	request, requestDiags := data.ToPersonalAccessTokenRequestData(ctx)
+	request, requestDiags := plan.ToPersonalAccessTokenRequestData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -78,9 +78,11 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 		"err":      err,
 	})
 
+	var data PersonalAccessTokenModel
+
 	switch response := response.(type) {
 	case *cm.PersonalAccessTokenStatusCode:
-		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, response.Response, data.Token, data.ExpiresIn)
+		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, response.Response, plan.Token, plan.ExpiresIn)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -101,16 +103,16 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 }
 
 func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data PersonalAccessTokenModel
+	var state PersonalAccessTokenModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetPersonalAccessTokenParams{
-		AccessTokenID: data.ID.ValueString(),
+		AccessTokenID: state.ID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetPersonalAccessToken(ctx, params)
@@ -121,9 +123,11 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 		"err":      err,
 	})
 
+	var data PersonalAccessTokenModel
+
 	switch response := response.(type) {
 	case *cm.PersonalAccessToken:
-		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, *response, data.Token, data.ExpiresIn)
+		responseModel, responseModelDiags := NewPersonalAccessTokenResourceModelFromResponse(ctx, *response, state.Token, state.ExpiresIn)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -157,16 +161,16 @@ func (r *personalAccessTokenResource) Update(_ context.Context, _ resource.Updat
 }
 
 func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data PersonalAccessTokenModel
+	var state PersonalAccessTokenModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.RevokePersonalAccessTokenParams{
-		AccessTokenID: data.ID.ValueString(),
+		AccessTokenID: state.ID.ValueString(),
 	}
 
 	response, err := r.providerData.client.RevokePersonalAccessToken(ctx, params)

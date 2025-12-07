@@ -238,18 +238,18 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	r.deleteEntry(ctx, state, &resp.Diagnostics)
 }
 
-func (r *entryResource) createEntry(ctx context.Context, data EntryModel, diags *diag.Diagnostics) (EntryModel, int) {
+func (r *entryResource) createEntry(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) (EntryModel, int) {
 	createEntryParams := cm.CreateEntryParams{
-		SpaceID:                data.SpaceID.ValueString(),
-		EnvironmentID:          data.EnvironmentID.ValueString(),
-		XContentfulContentType: data.ContentTypeID.ValueString(),
+		SpaceID:                entry.SpaceID.ValueString(),
+		EnvironmentID:          entry.EnvironmentID.ValueString(),
+		XContentfulContentType: entry.ContentTypeID.ValueString(),
 	}
 
-	createEntryRequest, createEntryRequestDiags := data.ToEntryRequest(ctx)
+	createEntryRequest, createEntryRequestDiags := entry.ToEntryRequest(ctx)
 	diags.Append(createEntryRequestDiags...)
 
 	if diags.HasError() {
-		return data, 0
+		return entry, 0
 	}
 
 	createEntryResponse, err := r.providerData.client.CreateEntry(ctx, &createEntryRequest, createEntryParams)
@@ -268,30 +268,30 @@ func (r *entryResource) createEntry(ctx context.Context, data EntryModel, diags 
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 		diags.Append(responseModelDiags...)
 
-		data = responseModel
+		entry = responseModel
 		currentVersion = response.Response.Sys.Version
 
 	default:
 		diags.AddError("Failed to create entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
-	return data, currentVersion
+	return entry, currentVersion
 }
 
-func (r *entryResource) updateEntry(ctx context.Context, data EntryModel, currentVersion int, diags *diag.Diagnostics) (EntryModel, int) {
+func (r *entryResource) updateEntry(ctx context.Context, entry EntryModel, currentVersion int, diags *diag.Diagnostics) (EntryModel, int) {
 	putEntryParams := cm.PutEntryParams{
-		SpaceID:                data.SpaceID.ValueString(),
-		EnvironmentID:          data.EnvironmentID.ValueString(),
-		EntryID:                data.EntryID.ValueString(),
-		XContentfulContentType: cm.NewOptPointerString(data.ContentTypeID.ValueStringPointer()),
+		SpaceID:                entry.SpaceID.ValueString(),
+		EnvironmentID:          entry.EnvironmentID.ValueString(),
+		EntryID:                entry.EntryID.ValueString(),
+		XContentfulContentType: cm.NewOptPointerString(entry.ContentTypeID.ValueStringPointer()),
 		XContentfulVersion:     currentVersion,
 	}
 
-	putEntryRequest, putEntryRequestDiags := data.ToEntryRequest(ctx)
+	putEntryRequest, putEntryRequestDiags := entry.ToEntryRequest(ctx)
 	diags.Append(putEntryRequestDiags...)
 
 	if diags.HasError() {
-		return data, currentVersion
+		return entry, currentVersion
 	}
 
 	putEntryResponse, err := r.providerData.client.PutEntry(ctx, &putEntryRequest, putEntryParams)
@@ -308,21 +308,21 @@ func (r *entryResource) updateEntry(ctx context.Context, data EntryModel, curren
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 		diags.Append(responseModelDiags...)
 
-		data = responseModel
+		entry = responseModel
 		currentVersion = response.Response.Sys.Version
 
 	default:
 		diags.AddError("Failed to update entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
-	return data, currentVersion
+	return entry, currentVersion
 }
 
-func (r *entryResource) deleteEntry(ctx context.Context, data EntryModel, diags *diag.Diagnostics) {
+func (r *entryResource) deleteEntry(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) {
 	deleteEntryParams := cm.DeleteEntryParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		EntryID:       data.EntryID.ValueString(),
+		SpaceID:       entry.SpaceID.ValueString(),
+		EnvironmentID: entry.EnvironmentID.ValueString(),
+		EntryID:       entry.EntryID.ValueString(),
 	}
 
 	deleteEntryResponse, err := r.providerData.client.DeleteEntry(ctx, deleteEntryParams)
@@ -353,11 +353,11 @@ func (r *entryResource) deleteEntry(ctx context.Context, data EntryModel, diags 
 	}
 }
 
-func (r *entryResource) publishEntry(ctx context.Context, data EntryModel, currentVersion int, diags *diag.Diagnostics) int {
+func (r *entryResource) publishEntry(ctx context.Context, entry EntryModel, currentVersion int, diags *diag.Diagnostics) int {
 	publishEntryParams := cm.PublishEntryParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		EntryID:            data.EntryID.ValueString(),
+		SpaceID:            entry.SpaceID.ValueString(),
+		EnvironmentID:      entry.EnvironmentID.ValueString(),
+		EntryID:            entry.EntryID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
@@ -380,11 +380,11 @@ func (r *entryResource) publishEntry(ctx context.Context, data EntryModel, curre
 	return currentVersion
 }
 
-func (r *entryResource) unpublishEntry(ctx context.Context, data EntryModel, diags *diag.Diagnostics) {
+func (r *entryResource) unpublishEntry(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) {
 	unpublishEntryParams := cm.UnpublishEntryParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		EntryID:       data.EntryID.ValueString(),
+		SpaceID:       entry.SpaceID.ValueString(),
+		EnvironmentID: entry.EnvironmentID.ValueString(),
+		EntryID:       entry.EntryID.ValueString(),
 	}
 
 	unpublishEntryResponse, err := r.providerData.client.UnpublishEntry(ctx, unpublishEntryParams)

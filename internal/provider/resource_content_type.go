@@ -59,9 +59,9 @@ func (r *contentTypeResource) ImportState(ctx context.Context, req resource.Impo
 }
 
 func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ContentTypeModel
+	var plan ContentTypeModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -70,13 +70,13 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	currentVersion := 1
 
 	params := cm.PutContentTypeParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		ContentTypeID:      data.ContentTypeID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
+		EnvironmentID:      plan.EnvironmentID.ValueString(),
+		ContentTypeID:      plan.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToContentTypeRequestData(ctx)
+	request, requestDiags := plan.ToContentTypeRequestData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -91,6 +91,8 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		"response": response,
 		"err":      err,
 	})
+
+	var data ContentTypeModel
 
 	switch response := response.(type) {
 	case *cm.ContentTypeStatusCode:
@@ -109,9 +111,9 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	activateContentTypeParams := cm.ActivateContentTypeParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		ContentTypeID:      data.ContentTypeID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
+		EnvironmentID:      plan.EnvironmentID.ValueString(),
+		ContentTypeID:      plan.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
@@ -145,18 +147,18 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 
 //nolint:dupl
 func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data ContentTypeModel
+	var state ContentTypeModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetContentTypeParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		ContentTypeID: data.ContentTypeID.ValueString(),
+		SpaceID:       state.SpaceID.ValueString(),
+		EnvironmentID: state.EnvironmentID.ValueString(),
+		ContentTypeID: state.ContentTypeID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetContentType(ctx, params)
@@ -168,6 +170,8 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 	})
 
 	currentVersion := 0
+
+	var data ContentTypeModel
 
 	switch response := response.(type) {
 	case *cm.ContentType:
@@ -203,9 +207,9 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ContentTypeModel
+	var plan ContentTypeModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -217,13 +221,13 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	putContentTypeParams := cm.PutContentTypeParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		ContentTypeID:      data.ContentTypeID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
+		EnvironmentID:      plan.EnvironmentID.ValueString(),
+		ContentTypeID:      plan.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	putContentTypeRequest, putContentTypeRequestDiags := data.ToContentTypeRequestData(ctx)
+	putContentTypeRequest, putContentTypeRequestDiags := plan.ToContentTypeRequestData(ctx)
 	resp.Diagnostics.Append(putContentTypeRequestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -238,6 +242,8 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 		"response": putContentTypeResponse,
 		"err":      err,
 	})
+
+	var data ContentTypeModel
 
 	switch response := putContentTypeResponse.(type) {
 	case *cm.ContentTypeStatusCode:
@@ -256,9 +262,9 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	activateContentTypeParams := cm.ActivateContentTypeParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		ContentTypeID:      data.ContentTypeID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
+		EnvironmentID:      plan.EnvironmentID.ValueString(),
+		ContentTypeID:      plan.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
@@ -289,22 +295,22 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
-	r.providerData.editorInterfaceVersionOffset.Increment(data.ContentTypeID.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Increment(plan.ContentTypeID.ValueString())
 }
 
 func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data ContentTypeModel
+	var state ContentTypeModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	deactivateContentTypeParams := cm.DeactivateContentTypeParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		ContentTypeID: data.ContentTypeID.ValueString(),
+		SpaceID:       state.SpaceID.ValueString(),
+		EnvironmentID: state.EnvironmentID.ValueString(),
+		ContentTypeID: state.ContentTypeID.ValueString(),
 	}
 
 	deactivateContentTypeResponse, err := r.providerData.client.DeactivateContentType(ctx, deactivateContentTypeParams)
@@ -341,9 +347,9 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	deleteContentTypeParams := cm.DeleteContentTypeParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		ContentTypeID: data.ContentTypeID.ValueString(),
+		SpaceID:       state.SpaceID.ValueString(),
+		EnvironmentID: state.EnvironmentID.ValueString(),
+		ContentTypeID: state.ContentTypeID.ValueString(),
 	}
 
 	deleteContentTypeResponse, err := r.providerData.client.DeleteContentType(ctx, deleteContentTypeParams)

@@ -59,25 +59,25 @@ func (r *editorInterfaceResource) ImportState(ctx context.Context, req resource.
 }
 
 func (r *editorInterfaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data EditorInterfaceModel
+	var plan EditorInterfaceModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	currentVersion := 1
-	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(data.ContentTypeID.ValueString())
+	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(plan.ContentTypeID.ValueString())
 
 	params := cm.PutEditorInterfaceParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		ContentTypeID:      data.ContentTypeID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
+		EnvironmentID:      plan.EnvironmentID.ValueString(),
+		ContentTypeID:      plan.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToEditorInterfaceData(ctx)
+	request, requestDiags := plan.ToEditorInterfaceData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -92,6 +92,8 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		"response": response,
 		"err":      err,
 	})
+
+	var data EditorInterfaceModel
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
@@ -116,22 +118,22 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
-	r.providerData.editorInterfaceVersionOffset.Reset(data.ContentTypeID.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Reset(plan.ContentTypeID.ValueString())
 }
 
 func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data EditorInterfaceModel
+	var state EditorInterfaceModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetEditorInterfaceParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		ContentTypeID: data.ContentTypeID.ValueString(),
+		SpaceID:       state.SpaceID.ValueString(),
+		EnvironmentID: state.EnvironmentID.ValueString(),
+		ContentTypeID: state.ContentTypeID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetEditorInterface(ctx, params)
@@ -143,6 +145,8 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 	})
 
 	currentVersion := 0
+
+	var data EditorInterfaceModel
 
 	switch response := response.(type) {
 	case *cm.EditorInterface:
@@ -176,13 +180,13 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
-	r.providerData.editorInterfaceVersionOffset.Reset(data.ContentTypeID.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Reset(state.ContentTypeID.ValueString())
 }
 
 func (r *editorInterfaceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data EditorInterfaceModel
+	var plan EditorInterfaceModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -193,16 +197,16 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
-	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(data.ContentTypeID.ValueString())
+	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(plan.ContentTypeID.ValueString())
 
 	params := cm.PutEditorInterfaceParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		ContentTypeID:      data.ContentTypeID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
+		EnvironmentID:      plan.EnvironmentID.ValueString(),
+		ContentTypeID:      plan.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToEditorInterfaceData(ctx)
+	request, requestDiags := plan.ToEditorInterfaceData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -217,6 +221,8 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		"response": response,
 		"err":      err,
 	})
+
+	var data EditorInterfaceModel
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
@@ -241,7 +247,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
-	r.providerData.editorInterfaceVersionOffset.Reset(data.ContentTypeID.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Reset(plan.ContentTypeID.ValueString())
 }
 
 func (r *editorInterfaceResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {

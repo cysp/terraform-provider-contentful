@@ -58,19 +58,19 @@ func (r *appDefinitionResource) ImportState(ctx context.Context, req resource.Im
 }
 
 func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data AppDefinitionModel
+	var plan AppDefinitionModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.CreateAppDefinitionParams{
-		OrganizationID: data.OrganizationID.ValueString(),
+		OrganizationID: plan.OrganizationID.ValueString(),
 	}
 
-	request, requestDiags := data.ToAppDefinitionData(ctx, path.Empty())
+	request, requestDiags := plan.ToAppDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -85,6 +85,8 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 		"response": response,
 		"err":      err,
 	})
+
+	var data AppDefinitionModel
 
 	switch response := response.(type) {
 	case *cm.AppDefinitionStatusCode:
@@ -110,17 +112,17 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 
 //nolint:dupl
 func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data AppDefinitionModel
+	var state AppDefinitionModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetAppDefinitionParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		OrganizationID:  state.OrganizationID.ValueString(),
+		AppDefinitionID: state.AppDefinitionID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetAppDefinition(ctx, params)
@@ -130,6 +132,8 @@ func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadReque
 		"response": response,
 		"err":      err,
 	})
+
+	var data AppDefinitionModel
 
 	switch response := response.(type) {
 	case *cm.AppDefinition:
@@ -164,20 +168,20 @@ func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadReque
 
 //nolint:dupl
 func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data AppDefinitionModel
+	var plan AppDefinitionModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.PutAppDefinitionParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		OrganizationID:  plan.OrganizationID.ValueString(),
+		AppDefinitionID: plan.AppDefinitionID.ValueString(),
 	}
 
-	request, requestDiags := data.ToAppDefinitionData(ctx, path.Empty())
+	request, requestDiags := plan.ToAppDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -192,6 +196,8 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 		"response": response,
 		"err":      err,
 	})
+
+	var data AppDefinitionModel
 
 	switch response := response.(type) {
 	case *cm.AppDefinitionStatusCode:
@@ -217,17 +223,17 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 
 //nolint:dupl
 func (r *appDefinitionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data AppDefinitionModel
+	var state AppDefinitionModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	response, err := r.providerData.client.DeleteAppDefinition(ctx, cm.DeleteAppDefinitionParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		OrganizationID:  state.OrganizationID.ValueString(),
+		AppDefinitionID: state.AppDefinitionID.ValueString(),
 	})
 
 	switch response := response.(type) {

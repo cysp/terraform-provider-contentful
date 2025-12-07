@@ -58,9 +58,9 @@ func (r *roleResource) ImportState(ctx context.Context, req resource.ImportState
 
 //nolint:dupl
 func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data RoleModel
+	var plan RoleModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -69,10 +69,10 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	currentVersion := 1
 
 	params := cm.CreateRoleParams{
-		SpaceID: data.SpaceID.ValueString(),
+		SpaceID: plan.SpaceID.ValueString(),
 	}
 
-	request, requestDiags := data.ToRoleData(ctx)
+	request, requestDiags := plan.ToRoleData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -87,6 +87,8 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		"response": response,
 		"err":      err,
 	})
+
+	var data RoleModel
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
@@ -112,18 +114,19 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
+//nolint:dupl
 func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data RoleModel
+	var state RoleModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetRoleParams{
-		SpaceID: data.SpaceID.ValueString(),
-		RoleID:  data.RoleID.ValueString(),
+		SpaceID: state.SpaceID.ValueString(),
+		RoleID:  state.RoleID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetRole(ctx, params)
@@ -135,6 +138,8 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	})
 
 	currentVersion := 0
+
+	var data RoleModel
 
 	switch response := response.(type) {
 	case *cm.Role:
@@ -170,9 +175,9 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 }
 
 func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data RoleModel
+	var plan RoleModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -184,12 +189,12 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.UpdateRoleParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		RoleID:             data.RoleID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
+		RoleID:             plan.RoleID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToRoleData(ctx)
+	request, requestDiags := plan.ToRoleData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -204,6 +209,8 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		"response": response,
 		"err":      err,
 	})
+
+	var data RoleModel
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
@@ -230,17 +237,17 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 }
 
 func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data RoleModel
+	var state RoleModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.DeleteRoleParams{
-		SpaceID: data.SpaceID.ValueString(),
-		RoleID:  data.RoleID.ValueString(),
+		SpaceID: state.SpaceID.ValueString(),
+		RoleID:  state.RoleID.ValueString(),
 	}
 
 	if resp.Diagnostics.HasError() {

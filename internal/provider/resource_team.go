@@ -58,19 +58,19 @@ func (r *teamResource) ImportState(ctx context.Context, req resource.ImportState
 }
 
 func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data TeamModel
+	var plan TeamModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.CreateTeamParams{
-		OrganizationID: data.OrganizationID.ValueString(),
+		OrganizationID: plan.OrganizationID.ValueString(),
 	}
 
-	request, requestDiags := data.ToTeamData(ctx, path.Empty())
+	request, requestDiags := plan.ToTeamData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -87,6 +87,8 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 	})
 
 	var currentVersion int
+
+	var data TeamModel
 
 	switch response := response.(type) {
 	case *cm.TeamStatusCode:
@@ -114,17 +116,17 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 //nolint:dupl
 func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data TeamModel
+	var state TeamModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetTeamParams{
-		OrganizationID: data.OrganizationID.ValueString(),
-		TeamID:         data.TeamID.ValueString(),
+		OrganizationID: state.OrganizationID.ValueString(),
+		TeamID:         state.TeamID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetTeam(ctx, params)
@@ -136,6 +138,8 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	})
 
 	var currentVersion int
+
+	var data TeamModel
 
 	switch response := response.(type) {
 	case *cm.Team:
@@ -172,9 +176,9 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 //nolint:dupl
 func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data TeamModel
+	var plan TeamModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -186,12 +190,12 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.PutTeamParams{
-		OrganizationID:     data.OrganizationID.ValueString(),
-		TeamID:             data.TeamID.ValueString(),
+		OrganizationID:     plan.OrganizationID.ValueString(),
+		TeamID:             plan.TeamID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToTeamData(ctx, path.Empty())
+	request, requestDiags := plan.ToTeamData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -206,6 +210,8 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		"response": response,
 		"err":      err,
 	})
+
+	var data TeamModel
 
 	switch response := response.(type) {
 	case *cm.TeamStatusCode:
@@ -233,17 +239,17 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 //nolint:dupl
 func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data TeamModel
+	var state TeamModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	response, err := r.providerData.client.DeleteTeam(ctx, cm.DeleteTeamParams{
-		OrganizationID: data.OrganizationID.ValueString(),
-		TeamID:         data.TeamID.ValueString(),
+		OrganizationID: state.OrganizationID.ValueString(),
+		TeamID:         state.TeamID.ValueString(),
 	})
 
 	switch response := response.(type) {

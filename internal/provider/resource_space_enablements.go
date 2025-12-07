@@ -55,9 +55,9 @@ func (r *spaceEnablementsResource) ImportState(ctx context.Context, req resource
 }
 
 func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data SpaceEnablementsModel
+	var plan SpaceEnablementsModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -66,11 +66,11 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 	currentVersion := 1
 
 	params := cm.PutSpaceEnablementsParams{
-		SpaceID:            data.SpaceID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToSpaceEnablementData(ctx)
+	request, requestDiags := plan.ToSpaceEnablementData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -85,6 +85,8 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 		"response": response,
 		"err":      err,
 	})
+
+	var data SpaceEnablementsModel
 
 	switch response := response.(type) {
 	case *cm.SpaceEnablementStatusCode:
@@ -111,16 +113,16 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 }
 
 func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data SpaceEnablementsModel
+	var state SpaceEnablementsModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetSpaceEnablementsParams{
-		SpaceID: data.SpaceID.ValueString(),
+		SpaceID: state.SpaceID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetSpaceEnablements(ctx, params)
@@ -132,6 +134,8 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 	})
 
 	currentVersion := 0
+
+	var data SpaceEnablementsModel
 
 	switch response := response.(type) {
 	case *cm.GetSpaceEnablementsApplicationJSONOK:
@@ -174,9 +178,9 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data SpaceEnablementsModel
+	var plan SpaceEnablementsModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -188,11 +192,11 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.PutSpaceEnablementsParams{
-		SpaceID:            data.SpaceID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToSpaceEnablementData(ctx)
+	request, requestDiags := plan.ToSpaceEnablementData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -207,6 +211,8 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 		"response": response,
 		"err":      err,
 	})
+
+	var data SpaceEnablementsModel
 
 	switch response := response.(type) {
 	case *cm.SpaceEnablementStatusCode:
