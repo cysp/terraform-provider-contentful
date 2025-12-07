@@ -57,9 +57,9 @@ func (r *webhookResource) ImportState(ctx context.Context, req resource.ImportSt
 }
 
 func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data WebhookModel
+	var plan WebhookModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -68,10 +68,10 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	currentVersion := 1
 
 	params := cm.CreateWebhookDefinitionParams{
-		SpaceID: data.SpaceID.ValueString(),
+		SpaceID: plan.SpaceID.ValueString(),
 	}
 
-	request, requestDiags := data.ToWebhookDefinitionData(ctx, path.Empty())
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -87,9 +87,11 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		"err":      err,
 	})
 
+	var data WebhookModel
+
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, data.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, plan.Headers.Elements())
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -112,17 +114,17 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data WebhookModel
+	var state WebhookModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetWebhookDefinitionParams{
-		SpaceID:             data.SpaceID.ValueString(),
-		WebhookDefinitionID: data.WebhookID.ValueString(),
+		SpaceID:             state.SpaceID.ValueString(),
+		WebhookDefinitionID: state.WebhookID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetWebhookDefinition(ctx, params)
@@ -135,9 +137,11 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	currentVersion := 0
 
+	var data WebhookModel
+
 	switch response := response.(type) {
 	case *cm.WebhookDefinition:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, data.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers.Elements())
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -169,9 +173,9 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data WebhookModel
+	var plan WebhookModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -183,12 +187,12 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.UpdateWebhookDefinitionParams{
-		SpaceID:             data.SpaceID.ValueString(),
-		WebhookDefinitionID: data.WebhookID.ValueString(),
+		SpaceID:             plan.SpaceID.ValueString(),
+		WebhookDefinitionID: plan.WebhookID.ValueString(),
 		XContentfulVersion:  currentVersion,
 	}
 
-	request, requestDiags := data.ToWebhookDefinitionData(ctx, path.Empty())
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -204,9 +208,11 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		"err":      err,
 	})
 
+	var data WebhookModel
+
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, data.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, plan.Headers.Elements())
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -230,17 +236,17 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 //nolint:dupl
 func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data WebhookModel
+	var state WebhookModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	response, err := r.providerData.client.DeleteWebhookDefinition(ctx, cm.DeleteWebhookDefinitionParams{
-		SpaceID:             data.SpaceID.ValueString(),
-		WebhookDefinitionID: data.WebhookID.ValueString(),
+		SpaceID:             state.SpaceID.ValueString(),
+		WebhookDefinitionID: state.WebhookID.ValueString(),
 	})
 
 	switch response := response.(type) {

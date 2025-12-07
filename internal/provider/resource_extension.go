@@ -59,9 +59,9 @@ func (r *extensionResource) ImportState(ctx context.Context, req resource.Import
 }
 
 func (r *extensionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ExtensionModel
+	var plan ExtensionModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -70,12 +70,12 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 	currentVersion := 1
 
 	params := cm.PutExtensionParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		ExtensionID:   data.ExtensionID.ValueString(),
+		SpaceID:       plan.SpaceID.ValueString(),
+		EnvironmentID: plan.EnvironmentID.ValueString(),
+		ExtensionID:   plan.ExtensionID.ValueString(),
 	}
 
-	request, requestDiags := data.ToExtensionData(ctx, path.Empty())
+	request, requestDiags := plan.ToExtensionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -90,6 +90,8 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 		"response": response,
 		"err":      err,
 	})
+
+	var data ExtensionModel
 
 	switch response := response.(type) {
 	case *cm.ExtensionStatusCode:
@@ -117,18 +119,18 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 
 //nolint:dupl
 func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data ExtensionModel
+	var state ExtensionModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetExtensionParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		ExtensionID:   data.ExtensionID.ValueString(),
+		SpaceID:       state.SpaceID.ValueString(),
+		EnvironmentID: state.EnvironmentID.ValueString(),
+		ExtensionID:   state.ExtensionID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetExtension(ctx, params)
@@ -140,6 +142,8 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 	})
 
 	currentVersion := 0
+
+	var data ExtensionModel
 
 	switch response := response.(type) {
 	case *cm.Extension:
@@ -175,9 +179,9 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 func (r *extensionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ExtensionModel
+	var plan ExtensionModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -189,13 +193,13 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.PutExtensionParams{
-		SpaceID:            data.SpaceID.ValueString(),
-		EnvironmentID:      data.EnvironmentID.ValueString(),
-		ExtensionID:        data.ExtensionID.ValueString(),
+		SpaceID:            plan.SpaceID.ValueString(),
+		EnvironmentID:      plan.EnvironmentID.ValueString(),
+		ExtensionID:        plan.ExtensionID.ValueString(),
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := data.ToExtensionData(ctx, path.Empty())
+	request, requestDiags := plan.ToExtensionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -210,6 +214,8 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 		"response": response,
 		"err":      err,
 	})
+
+	var data ExtensionModel
 
 	switch response := response.(type) {
 	case *cm.ExtensionStatusCode:
@@ -237,18 +243,18 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 
 //nolint:dupl
 func (r *extensionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data ExtensionModel
+	var state ExtensionModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.DeleteExtensionParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
-		ExtensionID:   data.ExtensionID.ValueString(),
+		SpaceID:       state.SpaceID.ValueString(),
+		EnvironmentID: state.EnvironmentID.ValueString(),
+		ExtensionID:   state.ExtensionID.ValueString(),
 	}
 
 	response, err := r.providerData.client.DeleteExtension(ctx, params)

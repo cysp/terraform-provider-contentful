@@ -58,20 +58,20 @@ func (r *teamSpaceMembershipResource) ImportState(ctx context.Context, req resou
 
 //nolint:dupl
 func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data TeamSpaceMembershipModel
+	var plan TeamSpaceMembershipModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.CreateTeamSpaceMembershipParams{
-		SpaceID:         data.SpaceID.ValueString(),
-		XContentfulTeam: data.TeamID.ValueString(),
+		SpaceID:         plan.SpaceID.ValueString(),
+		XContentfulTeam: plan.TeamID.ValueString(),
 	}
 
-	request, requestDiags := data.ToTeamSpaceMembershipData(ctx, path.Empty())
+	request, requestDiags := plan.ToTeamSpaceMembershipData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -86,6 +86,8 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 		"response": response,
 		"err":      err,
 	})
+
+	var data TeamSpaceMembershipModel
 
 	switch response := response.(type) {
 	case *cm.TeamSpaceMembershipStatusCode:
@@ -111,17 +113,17 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 
 //nolint:dupl
 func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data TeamSpaceMembershipModel
+	var state TeamSpaceMembershipModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetTeamSpaceMembershipParams{
-		SpaceID:               data.SpaceID.ValueString(),
-		TeamSpaceMembershipID: data.TeamSpaceMembershipID.ValueString(),
+		SpaceID:               state.SpaceID.ValueString(),
+		TeamSpaceMembershipID: state.TeamSpaceMembershipID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetTeamSpaceMembership(ctx, params)
@@ -131,6 +133,8 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 		"response": response,
 		"err":      err,
 	})
+
+	var data TeamSpaceMembershipModel
 
 	switch response := response.(type) {
 	case *cm.TeamSpaceMembership:
@@ -165,20 +169,20 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 
 //nolint:dupl
 func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data TeamSpaceMembershipModel
+	var plan TeamSpaceMembershipModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.PutTeamSpaceMembershipParams{
-		SpaceID:               data.SpaceID.ValueString(),
-		TeamSpaceMembershipID: data.TeamSpaceMembershipID.ValueString(),
+		SpaceID:               plan.SpaceID.ValueString(),
+		TeamSpaceMembershipID: plan.TeamSpaceMembershipID.ValueString(),
 	}
 
-	request, requestDiags := data.ToTeamSpaceMembershipData(ctx, path.Empty())
+	request, requestDiags := plan.ToTeamSpaceMembershipData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -193,6 +197,8 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 		"response": response,
 		"err":      err,
 	})
+
+	var data TeamSpaceMembershipModel
 
 	switch response := response.(type) {
 	case *cm.TeamSpaceMembershipStatusCode:
@@ -218,17 +224,17 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 
 //nolint:dupl
 func (r *teamSpaceMembershipResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data TeamSpaceMembershipModel
+	var state TeamSpaceMembershipModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	response, err := r.providerData.client.DeleteTeamSpaceMembership(ctx, cm.DeleteTeamSpaceMembershipParams{
-		SpaceID:               data.SpaceID.ValueString(),
-		TeamSpaceMembershipID: data.TeamSpaceMembershipID.ValueString(),
+		SpaceID:               state.SpaceID.ValueString(),
+		TeamSpaceMembershipID: state.TeamSpaceMembershipID.ValueString(),
 	})
 
 	switch response := response.(type) {

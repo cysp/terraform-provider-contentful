@@ -58,20 +58,20 @@ func (r *appDefinitionResourceProviderResource) ImportState(ctx context.Context,
 
 //nolint:dupl
 func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ResourceProviderModel
+	var plan ResourceProviderModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.PutResourceProviderParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		OrganizationID:  plan.OrganizationID.ValueString(),
+		AppDefinitionID: plan.AppDefinitionID.ValueString(),
 	}
 
-	request, requestDiags := data.ToResourceProviderRequest(ctx, path.Empty())
+	request, requestDiags := plan.ToResourceProviderRequest(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -86,6 +86,8 @@ func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req 
 		"response": response,
 		"err":      err,
 	})
+
+	var data ResourceProviderModel
 
 	switch response := response.(type) {
 	case *cm.ResourceProviderStatusCode:
@@ -111,17 +113,17 @@ func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req 
 
 //nolint:dupl
 func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data ResourceProviderModel
+	var state ResourceProviderModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetResourceProviderParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		OrganizationID:  state.OrganizationID.ValueString(),
+		AppDefinitionID: state.AppDefinitionID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetResourceProvider(ctx, params)
@@ -131,6 +133,8 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 		"response": response,
 		"err":      err,
 	})
+
+	var data ResourceProviderModel
 
 	switch response := response.(type) {
 	case *cm.ResourceProvider:
@@ -164,20 +168,20 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 }
 
 func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ResourceProviderModel
+	var plan ResourceProviderModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.PutResourceProviderParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		OrganizationID:  plan.OrganizationID.ValueString(),
+		AppDefinitionID: plan.AppDefinitionID.ValueString(),
 	}
 
-	request, requestDiags := data.ToResourceProviderRequest(ctx, path.Empty())
+	request, requestDiags := plan.ToResourceProviderRequest(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -192,6 +196,8 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 		"response": response,
 		"err":      err,
 	})
+
+	var data ResourceProviderModel
 
 	switch response := response.(type) {
 	case *cm.ResourceProviderStatusCode:
@@ -213,17 +219,17 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 
 //nolint:dupl
 func (r *appDefinitionResourceProviderResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data ResourceProviderModel
+	var state ResourceProviderModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	response, err := r.providerData.client.DeleteResourceProvider(ctx, cm.DeleteResourceProviderParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		OrganizationID:  state.OrganizationID.ValueString(),
+		AppDefinitionID: state.AppDefinitionID.ValueString(),
 	})
 
 	switch response := response.(type) {

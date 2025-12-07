@@ -59,21 +59,21 @@ func (r *appDefinitionResourceTypeResource) ImportState(ctx context.Context, req
 }
 
 func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ResourceTypeModel
+	var plan ResourceTypeModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.PutResourceTypeParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
-		ResourceTypeID:  data.ResourceTypeID.ValueString(),
+		OrganizationID:  plan.OrganizationID.ValueString(),
+		AppDefinitionID: plan.AppDefinitionID.ValueString(),
+		ResourceTypeID:  plan.ResourceTypeID.ValueString(),
 	}
 
-	request, requestDiags := data.ToResourceTypeData(ctx, path.Empty())
+	request, requestDiags := plan.ToResourceTypeData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -88,6 +88,8 @@ func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req reso
 		"response": response,
 		"err":      err,
 	})
+
+	var data ResourceTypeModel
 
 	switch response := response.(type) {
 	case *cm.ResourceTypeStatusCode:
@@ -112,18 +114,18 @@ func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req reso
 }
 
 func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data ResourceTypeModel
+	var state ResourceTypeModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetResourceTypeParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
-		ResourceTypeID:  data.ResourceTypeID.ValueString(),
+		OrganizationID:  state.OrganizationID.ValueString(),
+		AppDefinitionID: state.AppDefinitionID.ValueString(),
+		ResourceTypeID:  state.ResourceTypeID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetResourceType(ctx, params)
@@ -133,6 +135,8 @@ func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resour
 		"response": response,
 		"err":      err,
 	})
+
+	var data ResourceTypeModel
 
 	switch response := response.(type) {
 	case *cm.ResourceType:
@@ -166,21 +170,21 @@ func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resour
 }
 
 func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ResourceTypeModel
+	var plan ResourceTypeModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.PutResourceTypeParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
-		ResourceTypeID:  data.ResourceTypeID.ValueString(),
+		OrganizationID:  plan.OrganizationID.ValueString(),
+		AppDefinitionID: plan.AppDefinitionID.ValueString(),
+		ResourceTypeID:  plan.ResourceTypeID.ValueString(),
 	}
 
-	request, requestDiags := data.ToResourceTypeData(ctx, path.Empty())
+	request, requestDiags := plan.ToResourceTypeData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -195,6 +199,8 @@ func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req reso
 		"response": response,
 		"err":      err,
 	})
+
+	var data ResourceTypeModel
 
 	switch response := response.(type) {
 	case *cm.ResourceTypeStatusCode:
@@ -215,18 +221,18 @@ func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req reso
 }
 
 func (r *appDefinitionResourceTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data ResourceTypeModel
+	var state ResourceTypeModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	response, err := r.providerData.client.DeleteResourceType(ctx, cm.DeleteResourceTypeParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
-		ResourceTypeID:  data.ResourceTypeID.ValueString(),
+		OrganizationID:  state.OrganizationID.ValueString(),
+		AppDefinitionID: state.AppDefinitionID.ValueString(),
+		ResourceTypeID:  state.ResourceTypeID.ValueString(),
 	})
 
 	switch response := response.(type) {

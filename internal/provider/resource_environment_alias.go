@@ -115,6 +115,7 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
+//nolint:dupl
 func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state EnvironmentAliasModel
 

@@ -86,6 +86,8 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		"err":      err,
 	})
 
+	var data AppSigningSecretModel
+
 	switch response := response.(type) {
 	case *cm.AppSigningSecretStatusCode:
 		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
@@ -95,21 +97,21 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 			responseModel.Value = plan.Value
 		}
 
-		plan = responseModel
+		data = responseModel
 
 	default:
 		resp.Diagnostics.AddError("Failed to create app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
 	var identityModel AppSigningSecretIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &plan)...)
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -134,6 +136,8 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 		"err":      err,
 	})
 
+	var data AppSigningSecretModel
+
 	switch response := response.(type) {
 	case *cm.AppSigningSecret:
 		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, *response)
@@ -143,7 +147,7 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 			responseModel.Value = state.Value
 		}
 
-		state = responseModel
+		data = responseModel
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -159,14 +163,14 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	var identityModel AppSigningSecretIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &state)...)
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *appSigningSecretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -200,6 +204,8 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		"err":      err,
 	})
 
+	var data AppSigningSecretModel
+
 	switch response := response.(type) {
 	case *cm.AppSigningSecretStatusCode:
 		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
@@ -213,36 +219,36 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 			}
 		}
 
-		plan = responseModel
+		data = responseModel
 
 	default:
 		resp.Diagnostics.AddError("Failed to update app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
 	var identityModel AppSigningSecretIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &plan)...)
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 //nolint:dupl
 func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data AppSigningSecretModel
+	var state AppSigningSecretModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	response, err := r.providerData.client.DeleteAppSigningSecret(ctx, cm.DeleteAppSigningSecretParams{
-		OrganizationID:  data.OrganizationID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		OrganizationID:  state.OrganizationID.ValueString(),
+		AppDefinitionID: state.AppDefinitionID.ValueString(),
 	})
 
 	switch response := response.(type) {

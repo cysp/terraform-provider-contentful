@@ -60,25 +60,25 @@ func (r *appInstallationResource) ImportState(ctx context.Context, req resource.
 
 //nolint:dupl
 func (r *appInstallationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data AppInstallationModel
+	var plan AppInstallationModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	xContentfulMarketplace, xContentfulMarketplaceDiags := data.ToXContentfulMarketplaceHeaderValue(ctx)
+	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue(ctx)
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
 
 	params := cm.PutAppInstallationParams{
-		SpaceID:                data.SpaceID.ValueString(),
-		EnvironmentID:          data.EnvironmentID.ValueString(),
-		AppDefinitionID:        data.AppDefinitionID.ValueString(),
+		SpaceID:                plan.SpaceID.ValueString(),
+		EnvironmentID:          plan.EnvironmentID.ValueString(),
+		AppDefinitionID:        plan.AppDefinitionID.ValueString(),
 		XContentfulMarketplace: xContentfulMarketplace,
 	}
 
-	request, requestDiags := data.ToAppInstallationData()
+	request, requestDiags := plan.ToAppInstallationData()
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -94,9 +94,11 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		"err":      err,
 	})
 
+	var data AppInstallationModel
+
 	switch response := response.(type) {
 	case *cm.AppInstallationStatusCode:
-		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(response.Response, data.Marketplace)
+		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(response.Response, plan.Marketplace)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -117,18 +119,18 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data AppInstallationModel
+	var state AppInstallationModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.GetAppInstallationParams{
-		SpaceID:         data.SpaceID.ValueString(),
-		EnvironmentID:   data.EnvironmentID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		SpaceID:         state.SpaceID.ValueString(),
+		EnvironmentID:   state.EnvironmentID.ValueString(),
+		AppDefinitionID: state.AppDefinitionID.ValueString(),
 	}
 
 	response, err := r.providerData.client.GetAppInstallation(ctx, params)
@@ -139,9 +141,11 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 		"err":      err,
 	})
 
+	var data AppInstallationModel
+
 	switch response := response.(type) {
 	case *cm.AppInstallation:
-		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(*response, data.Marketplace)
+		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(*response, state.Marketplace)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -172,25 +176,25 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 
 //nolint:dupl
 func (r *appInstallationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data AppInstallationModel
+	var plan AppInstallationModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	xContentfulMarketplace, xContentfulMarketplaceDiags := data.ToXContentfulMarketplaceHeaderValue(ctx)
+	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue(ctx)
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
 
 	params := cm.PutAppInstallationParams{
-		SpaceID:                data.SpaceID.ValueString(),
-		EnvironmentID:          data.EnvironmentID.ValueString(),
-		AppDefinitionID:        data.AppDefinitionID.ValueString(),
+		SpaceID:                plan.SpaceID.ValueString(),
+		EnvironmentID:          plan.EnvironmentID.ValueString(),
+		AppDefinitionID:        plan.AppDefinitionID.ValueString(),
 		XContentfulMarketplace: xContentfulMarketplace,
 	}
 
-	request, requestDiags := data.ToAppInstallationData()
+	request, requestDiags := plan.ToAppInstallationData()
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -206,9 +210,11 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 		"err":      err,
 	})
 
+	var data AppInstallationModel
+
 	switch response := response.(type) {
 	case *cm.AppInstallationStatusCode:
-		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(response.Response, data.Marketplace)
+		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(response.Response, plan.Marketplace)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -230,18 +236,18 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 
 //nolint:dupl
 func (r *appInstallationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data AppInstallationModel
+	var state AppInstallationModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.DeleteAppInstallationParams{
-		SpaceID:         data.SpaceID.ValueString(),
-		EnvironmentID:   data.EnvironmentID.ValueString(),
-		AppDefinitionID: data.AppDefinitionID.ValueString(),
+		SpaceID:         state.SpaceID.ValueString(),
+		EnvironmentID:   state.EnvironmentID.ValueString(),
+		AppDefinitionID: state.AppDefinitionID.ValueString(),
 	}
 
 	response, err := r.providerData.client.DeleteAppInstallation(ctx, params)
