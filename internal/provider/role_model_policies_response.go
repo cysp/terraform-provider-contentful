@@ -53,7 +53,7 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 			diags.AddAttributeError(path.AtName("constraint"), "Failed to read policy constraint", err.Error())
 		}
 
-		value.Constraint = jsontypes.NewNormalizedValue(string(constraint))
+		value.Constraint = NewNormalizedJSONTypesNormalizedValue(constraint)
 	} else {
 		value.Constraint = jsontypes.NewNormalizedNull()
 	}

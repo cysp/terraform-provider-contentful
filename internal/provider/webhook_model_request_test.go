@@ -135,7 +135,7 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
-					"body":                   jsontypes.NewNormalizedValue("{\"key\":\"value\"}"),
+					"body":                   NewNormalizedJSONTypesNormalizedValue([]byte("{\"key\":\"value\"}")),
 				})),
 			},
 			expected: cm.WebhookDefinitionData{

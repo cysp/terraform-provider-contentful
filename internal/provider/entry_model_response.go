@@ -54,7 +54,7 @@ func NewEntryFieldsFromResponse(_ context.Context, _ path.Path, fields cm.OptEnt
 
 	elements := map[string]jsontypes.Normalized{}
 	for k, v := range fields.Value {
-		elements[k] = jsontypes.NewNormalizedValue(string(v))
+		elements[k] = NewNormalizedJSONTypesNormalizedValue(v)
 	}
 
 	return NewTypedMap(elements), diags

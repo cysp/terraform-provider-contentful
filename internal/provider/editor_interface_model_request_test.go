@@ -105,7 +105,7 @@ func TestToEditorInterfaceData(t *testing.T) {
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
 	}))
 
 	controls := NewTypedList([]TypedObject[EditorInterfaceControlValue]{
@@ -115,7 +115,7 @@ func TestToEditorInterfaceData(t *testing.T) {
 	sidebarValue1 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
 		"disabled":         types.BoolNull(),
 	}))
 
@@ -173,14 +173,14 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         jsontypes.NewNormalizedValue(`invalid json`),
+		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`invalid json`)),
 	}))
 
 	controlValue3 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceControlValue](ctx, map[string]attr.Value{
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
 	}))
 
 	controls := NewTypedList([]TypedObject[EditorInterfaceControlValue]{
@@ -199,14 +199,14 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 	sidebarValue2 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         jsontypes.NewNormalizedValue(`invalid json`),
+		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`invalid json`)),
 		"disabled":         types.BoolNull(),
 	}))
 
 	sidebarValue3 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
 		"disabled":         types.BoolNull(),
 	}))
 
