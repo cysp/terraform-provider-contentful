@@ -144,7 +144,7 @@ func NewAppDefinitionParameterFromResponse(_ context.Context, parameter cm.AppDe
 
 		for _, option := range parameter.Options {
 			if option != nil {
-				optionsElements = append(optionsElements, jsontypes.NewNormalizedValue(string(option)))
+				optionsElements = append(optionsElements, NewNormalizedJSONTypesNormalizedValue(option))
 			}
 		}
 
@@ -152,7 +152,7 @@ func NewAppDefinitionParameterFromResponse(_ context.Context, parameter cm.AppDe
 	}
 
 	if parameter.Default != nil {
-		model.Default = jsontypes.NewNormalizedValue(string(parameter.Default))
+		model.Default = NewNormalizedJSONTypesNormalizedValue(parameter.Default)
 	}
 
 	if labels, ok := parameter.Labels.Get(); ok {

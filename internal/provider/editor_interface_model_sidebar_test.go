@@ -5,7 +5,6 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -22,7 +21,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItem(t *testing.T) {
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
 		"disabled":         types.BoolNull(),
-		"settings":         jsontypes.NewNormalizedValue(`{"foo":"bar"}`),
+		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
 	}))
 
 	item, diags := model.Value().ToEditorInterfaceDataSidebarItem(ctx, path)
@@ -45,7 +44,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItemInvalidSettings(t *testing.
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
 		"disabled":         types.BoolNull(),
-		"settings":         jsontypes.NewNormalizedValue(`invalid json`),
+		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`invalid json`)),
 	}))
 
 	sidebarItem, diags := model.Value().ToEditorInterfaceDataSidebarItem(ctx, path)

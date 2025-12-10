@@ -41,7 +41,7 @@ func NewExtensionModelFromResponse(ctx context.Context, response cm.Extension) (
 			diags.AddAttributeError(path.Root("parameters"), "Failed to read parameters", err.Error())
 		}
 
-		model.Parameters = jsontypes.NewNormalizedValue(string(constraint))
+		model.Parameters = NewNormalizedJSONTypesNormalizedValue(constraint)
 	} else {
 		model.Parameters = jsontypes.NewNormalizedNull()
 	}

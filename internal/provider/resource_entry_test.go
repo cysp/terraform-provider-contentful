@@ -104,6 +104,76 @@ func TestAccEntryResourceImportNotFound(t *testing.T) {
 	})
 }
 
+func TestAccEntryResourceImportWhitespaceDiff(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+
+	configVariables := config.Variables{
+		"space_id":       config.StringVariable("0p38pssr0fi3"),
+		"environment_id": config.StringVariable("test"),
+		"entry_id":       config.StringVariable("whitespace-test"),
+	}
+
+	server.SetEntry("0p38pssr0fi3", "test", "contentType", "whitespace-test", cm.EntryRequest{
+		Fields: cm.NewOptEntryFields(cm.EntryFields{
+			"name": []byte(`{  "en-US"  :  "Test Name"  }`),
+		}),
+	})
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ResourceName:    "contentful_entry.test",
+				ImportState:     true,
+				ImportStateId:   "0p38pssr0fi3/test/whitespace-test",
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAccEntryResourceImportPropertyOrderDiff(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+
+	configVariables := config.Variables{
+		"space_id":       config.StringVariable("0p38pssr0fi3"),
+		"environment_id": config.StringVariable("test"),
+		"entry_id":       config.StringVariable("proporder-test"),
+	}
+
+	server.SetEntry("0p38pssr0fi3", "test", "contentType", "proporder-test", cm.EntryRequest{
+		Fields: cm.NewOptEntryFields(cm.EntryFields{
+			"data": []byte(`{"second":"value2","first":"value1"}`),
+		}),
+	})
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables,
+				ResourceName:    "contentful_entry.test",
+				ImportState:     true,
+				ImportStateId:   "0p38pssr0fi3/test/proporder-test",
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAccEntryResourceCreate(t *testing.T) {
 	t.Parallel()
 
