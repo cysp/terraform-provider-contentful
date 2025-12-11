@@ -40,32 +40,32 @@ func NewTypedList[T attr.Value](elements []T) TypedList[T] {
 var _ attr.Value = (*TypedList[attr.Value])(nil)
 
 //nolint:ireturn
-func (v TypedList[T]) Type(ctx context.Context) attr.Type {
+func (tl TypedList[T]) Type(ctx context.Context) attr.Type {
 	var t T
 
 	return TypedListType[T]{elementType: t.Type(ctx)}
 }
 
-func (v TypedList[T]) CustomType(ctx context.Context) TypedListType[T] {
+func (tl TypedList[T]) CustomType(ctx context.Context) TypedListType[T] {
 	var t T
 
 	return TypedListType[T]{elementType: t.Type(ctx)}
 }
 
-func (v TypedList[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := v.Type(ctx).TerraformType(ctx)
+func (tl TypedList[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	tft := tl.Type(ctx).TerraformType(ctx)
 
-	if v.IsNull() {
+	if tl.IsNull() {
 		return tftypes.NewValue(tft, nil), nil
 	}
 
-	if v.IsUnknown() {
+	if tl.IsUnknown() {
 		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
 	}
 
-	tfval := make([]tftypes.Value, len(v.elements))
+	tfval := make([]tftypes.Value, len(tl.elements))
 
-	for idx, element := range v.elements {
+	for idx, element := range tl.elements {
 		tfvalelem, err := element.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(tft, tftypes.UnknownValue), err
@@ -77,26 +77,26 @@ func (v TypedList[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	return tftypes.NewValue(tft, tfval), nil
 }
 
-func (v TypedList[T]) Equal(o attr.Value) bool {
-	other, ok := o.(TypedList[T])
+func (tl TypedList[T]) Equal(other attr.Value) bool {
+	otherList, ok := other.(TypedList[T])
 	if !ok {
 		return false
 	}
 
-	if v.state != other.state {
+	if tl.state != otherList.state {
 		return false
 	}
 
-	if v.elements == nil && other.elements == nil {
+	if tl.elements == nil && otherList.elements == nil {
 		return true
 	}
 
-	if len(v.elements) != len(other.elements) {
+	if len(tl.elements) != len(otherList.elements) {
 		return false
 	}
 
-	for i := range v.elements {
-		if !v.elements[i].Equal(other.elements[i]) {
+	for i := range tl.elements {
+		if !tl.elements[i].Equal(otherList.elements[i]) {
 			return false
 		}
 	}
@@ -104,15 +104,15 @@ func (v TypedList[T]) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v TypedList[T]) IsNull() bool {
-	return v.state == attr.ValueStateNull
+func (tl TypedList[T]) IsNull() bool {
+	return tl.state == attr.ValueStateNull
 }
 
-func (v TypedList[T]) IsUnknown() bool {
-	return v.state == attr.ValueStateUnknown
+func (tl TypedList[T]) IsUnknown() bool {
+	return tl.state == attr.ValueStateUnknown
 }
 
-func (v TypedList[T]) String() string {
+func (tl TypedList[T]) String() string {
 	var t T
 
 	return fmt.Sprintf("TypedList[%T]", t)
@@ -120,24 +120,24 @@ func (v TypedList[T]) String() string {
 
 var _ basetypes.ListValuable = (*TypedList[attr.Value])(nil)
 
-func (v TypedList[T]) ToListValue(ctx context.Context) (basetypes.ListValue, diag.Diagnostics) {
+func (tl TypedList[T]) ToListValue(ctx context.Context) (basetypes.ListValue, diag.Diagnostics) {
 	var t T
 
 	elementType := t.Type(ctx)
 
-	if v.IsNull() {
+	if tl.IsNull() {
 		return types.ListNull(elementType), nil
 	}
 
-	if v.IsUnknown() {
+	if tl.IsUnknown() {
 		return types.ListUnknown(elementType), nil
 	}
 
-	return types.ListValueFrom(ctx, elementType, v.elements)
+	return types.ListValueFrom(ctx, elementType, tl.elements)
 }
 
 // ---
 
-func (v TypedList[T]) Elements() []T {
-	return v.elements
+func (tl TypedList[T]) Elements() []T {
+	return tl.elements
 }
