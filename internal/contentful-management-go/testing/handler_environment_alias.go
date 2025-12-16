@@ -27,6 +27,10 @@ func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.En
 		}, nil
 	}
 
+	if params.XContentfulVersion != environmentAlias.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	UpdateEnvironmentAliasFromEnvironmentAliasData(environmentAlias, *data)
 
 	return &cm.EnvironmentAliasStatusCode{

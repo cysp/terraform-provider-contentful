@@ -49,7 +49,7 @@ func (ts *Handler) GetContentType(_ context.Context, params cm.GetContentTypePar
 	return contentType, nil
 }
 
-//nolint:dupl,ireturn
+//nolint:ireturn
 func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestData, params cm.PutContentTypeParams) (cm.PutContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
@@ -69,7 +69,16 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 		}, nil
 	}
 
+	if params.XContentfulVersion != contentType.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	UpdateContentTypeFromRequestFields(contentType, *req)
+
+	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	if editorInterface != nil {
+		editorInterface.Sys.Version++
+	}
 
 	return &cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,

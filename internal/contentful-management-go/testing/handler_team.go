@@ -1,4 +1,3 @@
-//nolint:dupl
 package testing
 
 import (
@@ -62,6 +61,10 @@ func (ts *Handler) PutTeam(_ context.Context, req *cm.TeamData, params cm.PutTea
 			StatusCode: http.StatusCreated,
 			Response:   newTeam,
 		}, nil
+	}
+
+	if params.XContentfulVersion != team.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
 	}
 
 	UpdateTeamFromFields(team, params.OrganizationID, params.TeamID, *req)
