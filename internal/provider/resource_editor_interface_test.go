@@ -266,3 +266,44 @@ func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 		},
 	})
 }
+
+//nolint:paralleltest
+func TestAccEditorInterfaceResourceUpdateWithContentTypeMultipleSpaceEnvironments(t *testing.T) {
+	server, _ := cmt.NewContentfulManagementServer()
+
+	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
+
+	configVariables := config.Variables{
+		"content_type_id": config.StringVariable(contentTypeID),
+	}
+
+	configVariables1 := maps.Clone(configVariables)
+
+	configVariables2 := maps.Clone(configVariables)
+	configVariables2["content_type_additional_fields"] = config.ListVariable(
+		config.StringVariable("a"),
+	)
+
+	configVariables3 := maps.Clone(configVariables)
+	configVariables3["content_type_additional_fields"] = config.ListVariable(
+		config.StringVariable("a"),
+		config.StringVariable("b"),
+	)
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables1,
+			},
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables2,
+			},
+			{
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: configVariables3,
+			},
+		},
+	})
+}
