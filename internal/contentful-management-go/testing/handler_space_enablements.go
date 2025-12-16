@@ -37,7 +37,12 @@ func (ts *Handler) PutSpaceEnablements(_ context.Context, req *cm.SpaceEnablemen
 	enablements, ok := ts.enablements[params.SpaceID]
 	if !ok {
 		enablements = pointerTo(NewSpaceEnablement(params.SpaceID))
+		enablements.Sys.Version = 1
 		ts.enablements[params.SpaceID] = enablements
+	}
+
+	if params.XContentfulVersion != enablements.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
 	}
 
 	UpdateSpaceEnablementFromRequestFields(enablements, *req)

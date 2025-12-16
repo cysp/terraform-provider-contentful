@@ -27,6 +27,10 @@ func (ts *Handler) CreateOrUpdateEnvironment(_ context.Context, req *cm.Environm
 		}, nil
 	}
 
+	if params.XContentfulVersion.Or(1) != environment.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	UpdateEnvironmentFromEnvironmentData(environment, *req)
 
 	return &cm.EnvironmentStatusCode{

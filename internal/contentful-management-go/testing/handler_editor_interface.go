@@ -49,6 +49,10 @@ func (ts *Handler) PutEditorInterface(_ context.Context, req *cm.EditorInterface
 		}, nil
 	}
 
+	if params.XContentfulVersion != editorInterface.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	UpdateEditorInterfaceFromFields(editorInterface, *req)
 
 	return &cm.EditorInterfaceStatusCode{

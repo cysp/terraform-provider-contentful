@@ -11,5 +11,6 @@ const (
 )
 
 const (
-	ErrorSysIDNotFound = "NotFound"
+	ErrorSysIDNotFound        = "NotFound"
+	ErrorSysIDVersionMismatch = "VersionMismatch"
 )

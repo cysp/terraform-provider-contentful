@@ -63,6 +63,10 @@ func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleData, params cm.Upd
 		}, nil
 	}
 
+	if params.XContentfulVersion != role.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	UpdateRoleFromFields(role, *req)
 
 	return &cm.RoleStatusCode{

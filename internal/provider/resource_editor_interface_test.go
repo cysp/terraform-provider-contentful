@@ -212,6 +212,7 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 

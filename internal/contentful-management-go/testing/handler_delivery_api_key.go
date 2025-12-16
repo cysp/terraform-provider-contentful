@@ -74,6 +74,10 @@ func (ts *Handler) UpdateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequest
 		}, nil
 	}
 
+	if params.XContentfulVersion != apiKey.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	UpdateAPIKeyFromRequestFields(apiKey, *req)
 
 	return &cm.ApiKeyStatusCode{

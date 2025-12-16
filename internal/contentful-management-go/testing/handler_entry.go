@@ -100,6 +100,10 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 		}, nil
 	}
 
+	if params.XContentfulVersion != entry.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	UpdateEntryFromRequest(entry, req)
 
 	return &cm.EntryStatusCode{

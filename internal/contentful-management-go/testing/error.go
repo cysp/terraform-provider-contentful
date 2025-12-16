@@ -20,6 +20,13 @@ func NewContentfulManagementErrorStatusCodeNotFound(message *string, details []b
 	}
 }
 
+func NewContentfulManagementErrorStatusCodeVersionMismatch(message *string, details []byte) *cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode {
+	return &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+		StatusCode: http.StatusConflict,
+		Response:   cm.NewErrorApplicationVndContentfulManagementV1JSONError(NewContentfulManagementError(cm.ErrorSysIDVersionMismatch, message, details)),
+	}
+}
+
 func NewContentfulManagementErrorStatusCode(statusCode int, id string, message *string, details []byte) *cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode {
 	return &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
 		StatusCode: statusCode,

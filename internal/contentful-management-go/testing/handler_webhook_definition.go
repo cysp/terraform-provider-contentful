@@ -63,6 +63,10 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 		}, nil
 	}
 
+	if params.XContentfulVersion != webhookDefinition.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	UpdateWebhookDefinitionFromFields(webhookDefinition, *req)
 
 	return &cm.WebhookDefinitionStatusCode{
