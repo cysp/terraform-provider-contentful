@@ -1,4 +1,4 @@
-package testing
+package contentfulmanagement
 
 type SpaceEnvironmentMap[Value any] struct {
 	m map[string]map[string]map[string]Value
@@ -11,7 +11,9 @@ func NewSpaceEnvironmentMap[Value any]() SpaceEnvironmentMap[Value] {
 }
 
 func (sm *SpaceEnvironmentMap[Value]) List(spaceID string, environmentID string) []Value {
-	spaceValues, exists := sm.m[spaceID]
+	sem := sm.getOrCreateMap()
+
+	spaceValues, exists := sem[spaceID]
 	if !exists {
 		var zeroValue []Value
 
@@ -35,7 +37,9 @@ func (sm *SpaceEnvironmentMap[Value]) List(spaceID string, environmentID string)
 
 //nolint:ireturn
 func (sm *SpaceEnvironmentMap[Value]) Get(spaceID string, environmentID string, key string) Value {
-	spaceValues, exists := sm.m[spaceID]
+	sem := sm.getOrCreateMap()
+
+	spaceValues, exists := sem[spaceID]
 	if !exists {
 		var zeroValue Value
 
@@ -55,19 +59,23 @@ func (sm *SpaceEnvironmentMap[Value]) Get(spaceID string, environmentID string, 
 }
 
 func (sm *SpaceEnvironmentMap[Value]) Set(spaceID string, environmentID string, key string, value Value) {
-	if sm.m[spaceID] == nil {
-		sm.m[spaceID] = make(map[string]map[string]Value)
+	sem := sm.getOrCreateMap()
+
+	if sem[spaceID] == nil {
+		sem[spaceID] = make(map[string]map[string]Value)
 	}
 
-	if sm.m[spaceID][environmentID] == nil {
-		sm.m[spaceID][environmentID] = make(map[string]Value)
+	if sem[spaceID][environmentID] == nil {
+		sem[spaceID][environmentID] = make(map[string]Value)
 	}
 
-	sm.m[spaceID][environmentID][key] = value
+	sem[spaceID][environmentID][key] = value
 }
 
 func (sm *SpaceEnvironmentMap[Value]) Delete(spaceID string, environmentID string, key string) {
-	spaceValues, exists := sm.m[spaceID]
+	sem := sm.getOrCreateMap()
+
+	spaceValues, exists := sem[spaceID]
 	if !exists {
 		return
 	}
@@ -78,4 +86,12 @@ func (sm *SpaceEnvironmentMap[Value]) Delete(spaceID string, environmentID strin
 	}
 
 	delete(environmentValues, key)
+}
+
+func (sm *SpaceEnvironmentMap[Value]) getOrCreateMap() map[string]map[string]map[string]Value {
+	if sm.m == nil {
+		sm.m = make(map[string]map[string]map[string]Value)
+	}
+
+	return sm.m
 }
