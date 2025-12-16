@@ -2,45 +2,34 @@ package provider
 
 import (
 	"sync"
+
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
 type ContentfulContentTypeCounter struct {
 	mu sync.RWMutex
 
-	countByContentType map[string]int
+	countByContentType cm.SpaceEnvironmentMap[int]
 }
 
-func (c *ContentfulContentTypeCounter) Get(contentTypeID string) int {
+func (c *ContentfulContentTypeCounter) Get(spaceID, environmentID, contentTypeID string) int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	if c.countByContentType == nil {
-		return 0
-	}
-
-	return c.countByContentType[contentTypeID]
+	return c.countByContentType.Get(spaceID, environmentID, contentTypeID)
 }
 
-func (c *ContentfulContentTypeCounter) Reset(contentTypeID string) {
+func (c *ContentfulContentTypeCounter) Reset(spaceID, environmentID, contentTypeID string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	countByContentType := c.getOrCreateCountByContentTypeMap()
-	delete(countByContentType, contentTypeID)
+	c.countByContentType.Delete(spaceID, environmentID, contentTypeID)
 }
 
-func (c *ContentfulContentTypeCounter) Increment(contentTypeID string) {
+func (c *ContentfulContentTypeCounter) Increment(spaceID, environmentID, contentTypeID string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	countByContentType := c.getOrCreateCountByContentTypeMap()
-	countByContentType[contentTypeID]++
-}
-
-func (c *ContentfulContentTypeCounter) getOrCreateCountByContentTypeMap() map[string]int {
-	if c.countByContentType == nil {
-		c.countByContentType = make(map[string]int)
-	}
-
-	return c.countByContentType
+	count := c.countByContentType.Get(spaceID, environmentID, contentTypeID)
+	c.countByContentType.Set(spaceID, environmentID, contentTypeID, count+1)
 }

@@ -13,7 +13,7 @@ func TestContentfulContentTypeCounterUnknown(t *testing.T) {
 
 	counter := ContentfulContentTypeCounter{}
 
-	assert.Equal(t, 0, counter.Get("non-existent"))
+	assert.Equal(t, 0, counter.Get("non-existent", "non-existent", "non-existent"))
 }
 
 func TestContentfulContentTypeCounterSingleThreaded(t *testing.T) {
@@ -22,17 +22,16 @@ func TestContentfulContentTypeCounterSingleThreaded(t *testing.T) {
 	counter := ContentfulContentTypeCounter{}
 	contentTypeID := "test-id"
 
-	counter.Increment(contentTypeID)
+	counter.Increment("spaceID", "environmentID", contentTypeID)
 
-	assert.Equal(t, 1, counter.Get(contentTypeID))
+	assert.Equal(t, 1, counter.Get("spaceID", "environmentID", contentTypeID))
 
-	counter.Increment(contentTypeID)
+	counter.Increment("spaceID", "environmentID", contentTypeID)
+	assert.Equal(t, 2, counter.Get("spaceID", "environmentID", contentTypeID))
 
-	assert.Equal(t, 2, counter.Get(contentTypeID))
+	counter.Reset("spaceID", "environmentID", contentTypeID)
 
-	counter.Reset(contentTypeID)
-
-	assert.Equal(t, 0, counter.Get(contentTypeID))
+	assert.Equal(t, 0, counter.Get("spaceID", "environmentID", contentTypeID))
 }
 
 func TestContentfulContentTypeCounterConcurrent(t *testing.T) {
@@ -49,7 +48,7 @@ func TestContentfulContentTypeCounterConcurrent(t *testing.T) {
 	for range numGoroutines {
 		errGroup.Go(func() error {
 			for range incrementsPerGoroutine {
-				counter.Increment(contentTypeID)
+				counter.Increment("spaceID", "environmentID", contentTypeID)
 			}
 
 			return nil
@@ -63,9 +62,9 @@ func TestContentfulContentTypeCounterConcurrent(t *testing.T) {
 
 	expected := numGoroutines * incrementsPerGoroutine
 
-	assert.Equal(t, expected, counter.Get(contentTypeID))
+	assert.Equal(t, expected, counter.Get("spaceID", "environmentID", contentTypeID))
 
-	counter.Reset(contentTypeID)
+	counter.Reset("spaceID", "environmentID", contentTypeID)
 
-	assert.Equal(t, 0, counter.Get(contentTypeID))
+	assert.Equal(t, 0, counter.Get("spaceID", "environmentID", contentTypeID))
 }

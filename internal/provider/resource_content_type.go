@@ -295,7 +295,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
-	r.providerData.editorInterfaceVersionOffset.Increment(plan.ContentTypeID.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Increment(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
 }
 
 func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
