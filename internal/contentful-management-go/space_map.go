@@ -1,4 +1,4 @@
-package testing
+package contentfulmanagement
 
 type SpaceMap[Value any] struct {
 	m map[string]map[string]Value
