@@ -53,33 +53,37 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 
 	metadata := cm.EntryMetadata{}
 
-	modelConcepts := model.Metadata.Value().Concepts.Elements()
-	concepts := make([]cm.TaxonomyConceptLink, 0, len(modelConcepts))
+	modelConcepts := model.Metadata.Value().Concepts
+	if !modelConcepts.IsNull() && !modelConcepts.IsUnknown() {
+		concepts := make([]cm.TaxonomyConceptLink, 0, len(modelConcepts.Elements()))
 
-	for _, concept := range modelConcepts {
-		conceptValue := concept.ValueString()
-		if conceptValue == "" {
-			continue
+		for _, concept := range modelConcepts.Elements() {
+			conceptValue := concept.ValueString()
+			if conceptValue == "" {
+				continue
+			}
+
+			concepts = append(concepts, cm.NewTaxonomyConceptLink(conceptValue))
 		}
 
-		concepts = append(concepts, cm.NewTaxonomyConceptLink(conceptValue))
+		metadata.Concepts = concepts
 	}
 
-	metadata.Concepts = concepts
+	modelTags := model.Metadata.Value().Tags
+	if !modelTags.IsNull() && !modelTags.IsUnknown() {
+		tags := make([]cm.TagLink, 0, len(modelTags.Elements()))
 
-	modelTags := model.Metadata.Value().Tags.Elements()
-	tags := make([]cm.TagLink, 0, len(modelTags))
+		for _, tag := range modelTags.Elements() {
+			tagValue := tag.ValueString()
+			if tagValue == "" {
+				continue
+			}
 
-	for _, tag := range modelTags {
-		tagValue := tag.ValueString()
-		if tagValue == "" {
-			continue
+			tags = append(tags, cm.NewTagLink(tagValue))
 		}
 
-		tags = append(tags, cm.NewTagLink(tagValue))
+		metadata.Tags = tags
 	}
-
-	metadata.Tags = tags
 
 	return cm.NewOptEntryMetadata(metadata), diags
 }
