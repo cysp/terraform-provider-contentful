@@ -13,7 +13,7 @@ func NewPersonalAccessTokenResourceModelFromResponse(_ context.Context, personal
 	diags := diag.Diagnostics{}
 
 	model := PersonalAccessTokenModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{personalAccessToken.Sys.ID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(personalAccessToken.Sys.ID),
 	}
 
 	model.Name = types.StringValue(personalAccessToken.Name)

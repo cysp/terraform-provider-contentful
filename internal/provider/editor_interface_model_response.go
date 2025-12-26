@@ -17,7 +17,7 @@ func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 	contentTypeID := editorInterface.Sys.ContentType.Sys.ID
 
 	model := EditorInterfaceModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, environmentID, contentTypeID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID, contentTypeID),
 		EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
 			SpaceID:       types.StringValue(spaceID),
 			EnvironmentID: types.StringValue(environmentID),

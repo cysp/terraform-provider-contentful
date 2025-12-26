@@ -17,7 +17,7 @@ func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm
 	contentTypeID := contentType.Sys.ID
 
 	model := ContentTypeModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, environmentID, contentTypeID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID, contentTypeID),
 		ContentTypeIdentityModel: ContentTypeIdentityModel{
 			SpaceID:       types.StringValue(spaceID),
 			EnvironmentID: types.StringValue(environmentID),

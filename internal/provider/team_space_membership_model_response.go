@@ -16,7 +16,7 @@ func NewTeamSpaceMembershipResourceModelFromResponse(_ context.Context, response
 	teamID := response.Sys.Team.Sys.ID
 
 	model := TeamSpaceMembershipModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, teamSpaceMembershipID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, teamSpaceMembershipID),
 		TeamSpaceMembershipIdentityModel: TeamSpaceMembershipIdentityModel{
 			SpaceID:               types.StringValue(spaceID),
 			TeamSpaceMembershipID: types.StringValue(teamSpaceMembershipID),

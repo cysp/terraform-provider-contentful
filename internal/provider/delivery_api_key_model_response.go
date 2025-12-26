@@ -17,7 +17,7 @@ func NewDeliveryAPIKeyResourceModelFromResponse(ctx context.Context, apiKey cm.A
 	apiKeyID := apiKey.Sys.ID
 
 	model := DeliveryAPIKeyModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, apiKeyID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, apiKeyID),
 		DeliveryAPIKeyIdentityModel: DeliveryAPIKeyIdentityModel{
 			SpaceID:  types.StringValue(spaceID),
 			APIKeyID: types.StringValue(apiKeyID),

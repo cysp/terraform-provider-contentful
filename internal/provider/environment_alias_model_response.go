@@ -16,7 +16,7 @@ func NewEnvironmentAliasResourceModelFromResponse(_ context.Context, environment
 	targetEnvironmentID := environmentAlias.Environment.Sys.ID
 
 	model := EnvironmentAliasModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, environmentAliasID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentAliasID),
 		EnvironmentAliasIdentityModel: EnvironmentAliasIdentityModel{
 			SpaceID:            types.StringValue(spaceID),
 			EnvironmentAliasID: types.StringValue(environmentAliasID),

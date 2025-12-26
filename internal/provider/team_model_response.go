@@ -15,7 +15,7 @@ func NewTeamResourceModelFromResponse(_ context.Context, response cm.Team) (Team
 	teamID := response.Sys.ID
 
 	model := TeamModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{organizationID, teamID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, teamID),
 		TeamIdentityModel: TeamIdentityModel{
 			OrganizationID: types.StringValue(organizationID),
 			TeamID:         types.StringValue(teamID),
