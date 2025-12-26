@@ -17,6 +17,7 @@ linters:
         - i
         - k
         - r
+        - t
         - v
         - w
   exclusions:

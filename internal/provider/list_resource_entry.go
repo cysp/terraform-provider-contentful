@@ -107,6 +107,7 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 					item.Sys.Environment.Sys.ID,
 					item.Sys.ID,
 				))...)
+
 				if req.IncludeResource {
 					responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
 					result.Diagnostics.Append(responseDiags...)
