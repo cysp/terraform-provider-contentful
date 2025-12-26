@@ -20,7 +20,7 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 	entryID := entry.Sys.ID
 
 	model := EntryModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID, environmentID, entryID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID, entryID),
 		EntryIdentityModel: EntryIdentityModel{
 			SpaceID:       types.StringValue(spaceID),
 			EnvironmentID: types.StringValue(environmentID),

@@ -12,7 +12,7 @@ func NewSpaceEnablementsResourceModelFromResponse(_ context.Context, response cm
 	spaceID := response.Sys.Space.Sys.ID
 
 	model := SpaceEnablementsModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{spaceID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID),
 		SpaceEnablementsIdentityModel: SpaceEnablementsIdentityModel{
 			SpaceID: types.StringValue(spaceID),
 		},

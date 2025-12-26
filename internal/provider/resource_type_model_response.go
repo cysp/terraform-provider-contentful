@@ -17,7 +17,7 @@ func NewResourceTypeResourceModelFromResponse(_ context.Context, response cm.Res
 	resourceTypeID := response.Sys.ID
 
 	model := ResourceTypeModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID([]string{organizationID, appDefinitionID, resourceTypeID}),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, appDefinitionID, resourceTypeID),
 		ResourceTypeIdentityModel: ResourceTypeIdentityModel{
 			OrganizationID:  types.StringValue(organizationID),
 			AppDefinitionID: types.StringValue(appDefinitionID),
