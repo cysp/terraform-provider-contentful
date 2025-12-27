@@ -1,0 +1,25 @@
+TagCollection:
+  type: object
+  properties:
+    sys:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Array
+      required:
+        - type
+    total:
+      type: integer
+    skip:
+      type: integer
+    limit:
+      type: integer
+    items:
+      type: array
+      items:
+        $ref: "./tag.yml#/Tag"
+  required:
+    - sys
+    - items

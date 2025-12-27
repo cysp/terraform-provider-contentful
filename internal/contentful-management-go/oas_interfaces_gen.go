@@ -97,6 +97,10 @@ type DeleteRoleRes interface {
 	deleteRoleRes()
 }
 
+type DeleteTagRes interface {
+	deleteTagRes()
+}
+
 type DeleteTeamRes interface {
 	deleteTeamRes()
 }
@@ -189,6 +193,10 @@ type GetSpaceEnablementsRes interface {
 	getSpaceEnablementsRes()
 }
 
+type GetTagRes interface {
+	getTagRes()
+}
+
 type GetTeamRes interface {
 	getTeamRes()
 }
@@ -243,6 +251,10 @@ type PutResourceTypeRes interface {
 
 type PutSpaceEnablementsRes interface {
 	putSpaceEnablementsRes()
+}
+
+type PutTagRes interface {
+	putTagRes()
 }
 
 type PutTeamRes interface {
