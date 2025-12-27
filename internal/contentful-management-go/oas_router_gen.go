@@ -971,6 +971,75 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 										}
 
+									case 't': // Prefix: "tags"
+
+										if l := len("tags"); len(elem) >= l && elem[0:l] == "tags" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										if len(elem) == 0 {
+											switch r.Method {
+											case "GET":
+												s.handleGetTagsRequest([2]string{
+													args[0],
+													args[1],
+												}, elemIsEscaped, w, r)
+											default:
+												s.notAllowed(w, r, "GET")
+											}
+
+											return
+										}
+										switch elem[0] {
+										case '/': // Prefix: "/"
+
+											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											// Param: "tag_id"
+											// Leaf parameter, slashes are prohibited
+											idx := strings.IndexByte(elem, '/')
+											if idx >= 0 {
+												break
+											}
+											args[2] = elem
+											elem = ""
+
+											if len(elem) == 0 {
+												// Leaf node.
+												switch r.Method {
+												case "DELETE":
+													s.handleDeleteTagRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "GET":
+													s.handleGetTagRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "PUT":
+													s.handlePutTagRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												default:
+													s.notAllowed(w, r, "DELETE,GET,PUT")
+												}
+
+												return
+											}
+
+										}
+
 									}
 
 								}
@@ -2453,6 +2522,84 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 													r.operationID = "putExtension"
 													r.operationGroup = ""
 													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												default:
+													return
+												}
+											}
+
+										}
+
+									case 't': // Prefix: "tags"
+
+										if l := len("tags"); len(elem) >= l && elem[0:l] == "tags" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										if len(elem) == 0 {
+											switch method {
+											case "GET":
+												r.name = GetTagsOperation
+												r.summary = "Get a collection of tags"
+												r.operationID = "getTags"
+												r.operationGroup = ""
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags"
+												r.args = args
+												r.count = 2
+												return r, true
+											default:
+												return
+											}
+										}
+										switch elem[0] {
+										case '/': // Prefix: "/"
+
+											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											// Param: "tag_id"
+											// Leaf parameter, slashes are prohibited
+											idx := strings.IndexByte(elem, '/')
+											if idx >= 0 {
+												break
+											}
+											args[2] = elem
+											elem = ""
+
+											if len(elem) == 0 {
+												// Leaf node.
+												switch method {
+												case "DELETE":
+													r.name = DeleteTagOperation
+													r.summary = "Delete a tag"
+													r.operationID = "deleteTag"
+													r.operationGroup = ""
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags/{tag_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "GET":
+													r.name = GetTagOperation
+													r.summary = "Get a single tag"
+													r.operationID = "getTag"
+													r.operationGroup = ""
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags/{tag_id}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "PUT":
+													r.name = PutTagOperation
+													r.summary = "Create or update a tag"
+													r.operationID = "putTag"
+													r.operationGroup = ""
+													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags/{tag_id}"
 													r.args = args
 													r.count = 3
 													return r, true

@@ -1,0 +1,9 @@
+TagRequest:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./request-sys.yml#/TagRequestSys"
+      required:
+        - sys
+    - $ref: "./data.yml#/TagData"

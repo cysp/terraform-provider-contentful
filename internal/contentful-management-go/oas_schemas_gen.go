@@ -1527,6 +1527,7 @@ func (*ApplicationJSONError) deleteExtensionRes()                {}
 func (*ApplicationJSONError) deleteResourceProviderRes()         {}
 func (*ApplicationJSONError) deleteResourceTypeRes()             {}
 func (*ApplicationJSONError) deleteRoleRes()                     {}
+func (*ApplicationJSONError) deleteTagRes()                      {}
 func (*ApplicationJSONError) deleteTeamRes()                     {}
 func (*ApplicationJSONError) deleteTeamSpaceMembershipRes()      {}
 func (*ApplicationJSONError) deleteWebhookDefinitionRes()        {}
@@ -1550,6 +1551,8 @@ func (*ApplicationJSONError) getResourceProviderRes()            {}
 func (*ApplicationJSONError) getResourceTypeRes()                {}
 func (*ApplicationJSONError) getRoleRes()                        {}
 func (*ApplicationJSONError) getSpaceEnablementsRes()            {}
+func (*ApplicationJSONError) getTagRes()                         {}
+func (*ApplicationJSONError) getTagsRes()                        {}
 func (*ApplicationJSONError) getTeamRes()                        {}
 func (*ApplicationJSONError) getTeamSpaceMembershipRes()         {}
 func (*ApplicationJSONError) getWebhookDefinitionRes()           {}
@@ -1564,6 +1567,7 @@ func (*ApplicationJSONError) putExtensionRes()                   {}
 func (*ApplicationJSONError) putResourceProviderRes()            {}
 func (*ApplicationJSONError) putResourceTypeRes()                {}
 func (*ApplicationJSONError) putSpaceEnablementsRes()            {}
+func (*ApplicationJSONError) putTagRes()                         {}
 func (*ApplicationJSONError) putTeamRes()                        {}
 func (*ApplicationJSONError) putTeamSpaceMembershipRes()         {}
 func (*ApplicationJSONError) revokePersonalAccessTokenRes()      {}
@@ -1622,6 +1626,7 @@ func (*ApplicationJSONErrorStatusCode) deleteExtensionRes()                {}
 func (*ApplicationJSONErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ApplicationJSONErrorStatusCode) deleteResourceTypeRes()             {}
 func (*ApplicationJSONErrorStatusCode) deleteRoleRes()                     {}
+func (*ApplicationJSONErrorStatusCode) deleteTagRes()                      {}
 func (*ApplicationJSONErrorStatusCode) deleteTeamRes()                     {}
 func (*ApplicationJSONErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
 func (*ApplicationJSONErrorStatusCode) deleteWebhookDefinitionRes()        {}
@@ -1645,6 +1650,8 @@ func (*ApplicationJSONErrorStatusCode) getResourceProviderRes()            {}
 func (*ApplicationJSONErrorStatusCode) getResourceTypeRes()                {}
 func (*ApplicationJSONErrorStatusCode) getRoleRes()                        {}
 func (*ApplicationJSONErrorStatusCode) getSpaceEnablementsRes()            {}
+func (*ApplicationJSONErrorStatusCode) getTagRes()                         {}
+func (*ApplicationJSONErrorStatusCode) getTagsRes()                        {}
 func (*ApplicationJSONErrorStatusCode) getTeamRes()                        {}
 func (*ApplicationJSONErrorStatusCode) getTeamSpaceMembershipRes()         {}
 func (*ApplicationJSONErrorStatusCode) getWebhookDefinitionRes()           {}
@@ -1659,6 +1666,7 @@ func (*ApplicationJSONErrorStatusCode) putExtensionRes()                   {}
 func (*ApplicationJSONErrorStatusCode) putResourceProviderRes()            {}
 func (*ApplicationJSONErrorStatusCode) putResourceTypeRes()                {}
 func (*ApplicationJSONErrorStatusCode) putSpaceEnablementsRes()            {}
+func (*ApplicationJSONErrorStatusCode) putTagRes()                         {}
 func (*ApplicationJSONErrorStatusCode) putTeamRes()                        {}
 func (*ApplicationJSONErrorStatusCode) putTeamSpaceMembershipRes()         {}
 func (*ApplicationJSONErrorStatusCode) revokePersonalAccessTokenRes()      {}
@@ -1732,6 +1740,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) deleteExtensionRes()      
 func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceProviderRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceTypeRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteRoleRes()                     {}
+func (*ApplicationVndContentfulManagementV1JSONError) deleteTagRes()                      {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteTeamRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteTeamSpaceMembershipRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONError) deleteWebhookDefinitionRes()        {}
@@ -1755,6 +1764,8 @@ func (*ApplicationVndContentfulManagementV1JSONError) getResourceProviderRes()  
 func (*ApplicationVndContentfulManagementV1JSONError) getResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) getRoleRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONError) getSpaceEnablementsRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONError) getTagRes()                         {}
+func (*ApplicationVndContentfulManagementV1JSONError) getTagsRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONError) getTeamRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONError) getTeamSpaceMembershipRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONError) getWebhookDefinitionRes()           {}
@@ -1769,6 +1780,7 @@ func (*ApplicationVndContentfulManagementV1JSONError) putExtensionRes()         
 func (*ApplicationVndContentfulManagementV1JSONError) putResourceProviderRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONError) putResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONError) putSpaceEnablementsRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONError) putTagRes()                         {}
 func (*ApplicationVndContentfulManagementV1JSONError) putTeamRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONError) putTeamSpaceMembershipRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONError) revokePersonalAccessTokenRes()      {}
@@ -1827,6 +1839,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteExtensionR
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceTypeRes()             {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteRoleRes()                     {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteTagRes()                      {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteTeamRes()                     {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteWebhookDefinitionRes()        {}
@@ -1850,6 +1863,8 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getResourceProvi
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getRoleRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getSpaceEnablementsRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getTagRes()                         {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getTagsRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getTeamRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getTeamSpaceMembershipRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getWebhookDefinitionRes()           {}
@@ -1864,6 +1879,7 @@ func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putExtensionRes(
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceProviderRes()            {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceTypeRes()                {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putSpaceEnablementsRes()            {}
+func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putTagRes()                         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putTeamRes()                        {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putTeamSpaceMembershipRes()         {}
 func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) revokePersonalAccessTokenRes()      {}
@@ -5358,6 +5374,7 @@ func (*NoContent) deleteExtensionRes()           {}
 func (*NoContent) deleteResourceProviderRes()    {}
 func (*NoContent) deleteResourceTypeRes()        {}
 func (*NoContent) deleteRoleRes()                {}
+func (*NoContent) deleteTagRes()                 {}
 func (*NoContent) deleteTeamRes()                {}
 func (*NoContent) deleteTeamSpaceMembershipRes() {}
 func (*NoContent) deleteWebhookDefinitionRes()   {}
@@ -9948,6 +9965,145 @@ func (s *SpaceLinkSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Merged schema.
+// Ref: #/Tag
+type Tag struct {
+	Sys TagSys `json:"sys"`
+	// Human readable name for the tag.
+	Name string `json:"name"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Tag) GetSys() TagSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Tag) GetName() string {
+	return s.Name
+}
+
+// SetSys sets the value of Sys.
+func (s *Tag) SetSys(val TagSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Tag) SetName(val string) {
+	s.Name = val
+}
+
+func (*Tag) getTagRes() {}
+
+// Ref: #/TagCollection
+type TagCollection struct {
+	Sys   TagCollectionSys `json:"sys"`
+	Total OptInt           `json:"total"`
+	Skip  OptInt           `json:"skip"`
+	Limit OptInt           `json:"limit"`
+	Items []Tag            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *TagCollection) GetSys() TagCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *TagCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *TagCollection) GetSkip() OptInt {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *TagCollection) GetLimit() OptInt {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *TagCollection) GetItems() []Tag {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *TagCollection) SetSys(val TagCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *TagCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *TagCollection) SetSkip(val OptInt) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *TagCollection) SetLimit(val OptInt) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *TagCollection) SetItems(val []Tag) {
+	s.Items = val
+}
+
+func (*TagCollection) getTagsRes() {}
+
+type TagCollectionSys struct {
+	Type TagCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *TagCollectionSys) GetType() TagCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *TagCollectionSys) SetType(val TagCollectionSysType) {
+	s.Type = val
+}
+
+type TagCollectionSysType string
+
+const (
+	TagCollectionSysTypeArray TagCollectionSysType = "Array"
+)
+
+// AllValues returns all TagCollectionSysType values.
+func (TagCollectionSysType) AllValues() []TagCollectionSysType {
+	return []TagCollectionSysType{
+		TagCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TagCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TagCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TagCollectionSysType) UnmarshalText(data []byte) error {
+	switch TagCollectionSysType(data) {
+	case TagCollectionSysTypeArray:
+		*s = TagCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/TagLink
 type TagLink struct {
 	Sys TagLinkSys `json:"sys"`
@@ -10066,6 +10222,265 @@ func (s *TagLinkSysType) UnmarshalText(data []byte) error {
 	switch TagLinkSysType(data) {
 	case TagLinkSysTypeLink:
 		*s = TagLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/TagRequest
+type TagRequest struct {
+	Sys TagRequestSys `json:"sys"`
+	// Human readable name for the tag.
+	Name string `json:"name"`
+}
+
+// GetSys returns the value of Sys.
+func (s *TagRequest) GetSys() TagRequestSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *TagRequest) GetName() string {
+	return s.Name
+}
+
+// SetSys sets the value of Sys.
+func (s *TagRequest) SetSys(val TagRequestSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *TagRequest) SetName(val string) {
+	s.Name = val
+}
+
+// Merged schema.
+// Ref: #/TagRequestSys
+type TagRequestSys struct {
+	// Merged property.
+	Type       TagRequestSysType `json:"type"`
+	ID         OptString         `json:"id"`
+	Visibility OptString         `json:"visibility"`
+}
+
+// GetType returns the value of Type.
+func (s *TagRequestSys) GetType() TagRequestSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TagRequestSys) GetID() OptString {
+	return s.ID
+}
+
+// GetVisibility returns the value of Visibility.
+func (s *TagRequestSys) GetVisibility() OptString {
+	return s.Visibility
+}
+
+// SetType sets the value of Type.
+func (s *TagRequestSys) SetType(val TagRequestSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TagRequestSys) SetID(val OptString) {
+	s.ID = val
+}
+
+// SetVisibility sets the value of Visibility.
+func (s *TagRequestSys) SetVisibility(val OptString) {
+	s.Visibility = val
+}
+
+// Merged schema.
+type TagRequestSysType string
+
+const (
+	TagRequestSysTypeTag TagRequestSysType = "Tag"
+)
+
+// AllValues returns all TagRequestSysType values.
+func (TagRequestSysType) AllValues() []TagRequestSysType {
+	return []TagRequestSysType{
+		TagRequestSysTypeTag,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TagRequestSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TagRequestSysTypeTag:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TagRequestSysType) UnmarshalText(data []byte) error {
+	switch TagRequestSysType(data) {
+	case TagRequestSysTypeTag:
+		*s = TagRequestSysTypeTag
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// TagStatusCode wraps Tag with StatusCode.
+type TagStatusCode struct {
+	StatusCode int
+	Response   Tag
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *TagStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *TagStatusCode) GetResponse() Tag {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *TagStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *TagStatusCode) SetResponse(val Tag) {
+	s.Response = val
+}
+
+func (*TagStatusCode) putTagRes() {}
+
+// Merged schema.
+// Ref: #/TagSys
+type TagSys struct {
+	Space       SpaceLink       `json:"space"`
+	Environment EnvironmentLink `json:"environment"`
+	// Merged property.
+	Type       TagSysType  `json:"type"`
+	ID         string      `json:"id"`
+	Version    int         `json:"version"`
+	CreatedAt  OptDateTime `json:"createdAt"`
+	UpdatedAt  OptDateTime `json:"updatedAt"`
+	Visibility string      `json:"visibility"`
+}
+
+// GetSpace returns the value of Space.
+func (s *TagSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *TagSys) GetEnvironment() EnvironmentLink {
+	return s.Environment
+}
+
+// GetType returns the value of Type.
+func (s *TagSys) GetType() TagSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TagSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *TagSys) GetVersion() int {
+	return s.Version
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *TagSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *TagSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// GetVisibility returns the value of Visibility.
+func (s *TagSys) GetVisibility() string {
+	return s.Visibility
+}
+
+// SetSpace sets the value of Space.
+func (s *TagSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *TagSys) SetEnvironment(val EnvironmentLink) {
+	s.Environment = val
+}
+
+// SetType sets the value of Type.
+func (s *TagSys) SetType(val TagSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TagSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *TagSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *TagSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *TagSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// SetVisibility sets the value of Visibility.
+func (s *TagSys) SetVisibility(val string) {
+	s.Visibility = val
+}
+
+// Merged schema.
+type TagSysType string
+
+const (
+	TagSysTypeTag TagSysType = "Tag"
+)
+
+// AllValues returns all TagSysType values.
+func (TagSysType) AllValues() []TagSysType {
+	return []TagSysType{
+		TagSysTypeTag,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TagSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TagSysTypeTag:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TagSysType) UnmarshalText(data []byte) error {
+	switch TagSysType(data) {
+	case TagSysTypeTag:
+		*s = TagSysTypeTag
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

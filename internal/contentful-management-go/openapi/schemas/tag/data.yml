@@ -1,0 +1,8 @@
+TagData:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Human readable name for the tag.
+  required:
+    - name
