@@ -18,15 +18,13 @@ type TypedList[T attr.Value] struct {
 
 func NewTypedListUnknown[T attr.Value]() TypedList[T] {
 	return TypedList[T]{
-		elements: make([]T, 0),
-		state:    attr.ValueStateUnknown,
+		state: attr.ValueStateUnknown,
 	}
 }
 
 func NewTypedListNull[T attr.Value]() TypedList[T] {
 	return TypedList[T]{
-		elements: make([]T, 0),
-		state:    attr.ValueStateNull,
+		state: attr.ValueStateNull,
 	}
 }
 
