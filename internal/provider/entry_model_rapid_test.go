@@ -81,8 +81,8 @@ func TestEntryModelRoundTrip_EmptyVsNilSlices(t *testing.T) {
 		result, diags := NewEntryMetadataFromResponse(ctx, path.Root("metadata"), cm.NewOptEntryMetadata(metadata))
 		require.False(t, diags.HasError(), "should not have errors")
 
-		// After processing empty slice from API, it should become null
-		// because empty slices have no semantic difference from absent/null in Contentful
+		// Empty slices from the API should become known empty lists
+		// to preserve the distinction from nil/absent fields
 		isConceptsNull := result.Value().Concepts.IsNull()
 		var conceptsLen int
 		if !isConceptsNull {
@@ -111,12 +111,14 @@ func TestEntryModelRoundTrip_EmptyVsNilSlices(t *testing.T) {
 			conceptsAfterRoundTrip == nil, len(conceptsAfterRoundTrip),
 			tagsAfterRoundTrip == nil, len(tagsAfterRoundTrip))
 
-		// With our fix, empty slices from the API are treated as null
-		// This maintains semantic consistency since Contentful doesn't distinguish
-		// between empty arrays and absent/null fields
-		assert.True(t, isConceptsNull, "empty slice from API should be treated as null")
-		assert.Nil(t, conceptsAfterRoundTrip, "null list should round trip as nil")
-		assert.Nil(t, tagsAfterRoundTrip, "null list should round trip as nil")
+		// Empty slices should round trip correctly: [] → known empty list → []
+		// This preserves the distinction between empty and absent
+		assert.False(t, isConceptsNull, "empty slice from API should become known empty list, not null")
+		assert.NotNil(t, conceptsAfterRoundTrip, "empty list should round trip as empty slice, not nil")
+		assert.Equal(t, 0, len(conceptsAfterRoundTrip), "should remain empty")
+		
+		assert.NotNil(t, tagsAfterRoundTrip, "empty list should round trip as empty slice, not nil")
+		assert.Equal(t, 0, len(tagsAfterRoundTrip), "should remain empty")
 
 		// Now do a second round trip to ensure consistency
 		result2, diags := NewEntryMetadataFromResponse(ctx, path.Root("metadata"), req.Metadata)
@@ -210,7 +212,7 @@ func rapidEntryModelGenerator() *rapid.Generator[EntryModel] {
 
 			hasConcepts := rapid.Bool().Draw(t, "hasMetadataConcepts")
 			if hasConcepts {
-				numConcepts := rapid.IntRange(1, 3).Draw(t, "numMetadataConcepts") // Changed: start from 1, not 0
+				numConcepts := rapid.IntRange(0, 3).Draw(t, "numMetadataConcepts")
 				concepts := make([]types.String, numConcepts)
 				for i := range concepts {
 					concepts[i] = types.StringValue(rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "metadataConcept"))
@@ -222,7 +224,7 @@ func rapidEntryModelGenerator() *rapid.Generator[EntryModel] {
 
 			hasTags := rapid.Bool().Draw(t, "hasMetadataTags")
 			if hasTags {
-				numTags := rapid.IntRange(1, 3).Draw(t, "numMetadataTags") // Changed: start from 1, not 0
+				numTags := rapid.IntRange(0, 3).Draw(t, "numMetadataTags")
 				tags := make([]types.String, numTags)
 				for i := range tags {
 					tags[i] = types.StringValue(rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "metadataTag"))
