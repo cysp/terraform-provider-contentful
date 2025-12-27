@@ -81,11 +81,13 @@ func TestEntryModelRoundTrip_EmptyVsNilSlices(t *testing.T) {
 		result, diags := NewEntryMetadataFromResponse(ctx, path.Root("metadata"), cm.NewOptEntryMetadata(metadata))
 		require.False(t, diags.HasError(), "should not have errors")
 
-		// After processing empty slice from API
-		// What should it be? null or empty known list?
-		// Let's check what it currently is:
+		// After processing empty slice from API, it should become null
+		// because empty slices have no semantic difference from absent/null in Contentful
 		isConceptsNull := result.Value().Concepts.IsNull()
-		conceptsLen := len(result.Value().Concepts.Elements())
+		var conceptsLen int
+		if !isConceptsNull {
+			conceptsLen = len(result.Value().Concepts.Elements())
+		}
 
 		t.Logf("Empty concepts slice: IsNull=%v, Length=%d", isConceptsNull, conceptsLen)
 
@@ -109,21 +111,12 @@ func TestEntryModelRoundTrip_EmptyVsNilSlices(t *testing.T) {
 			conceptsAfterRoundTrip == nil, len(conceptsAfterRoundTrip),
 			tagsAfterRoundTrip == nil, len(tagsAfterRoundTrip))
 
-		// The issue: if we started with an empty slice, we should get back an empty slice
-		// not nil, to maintain semantic equivalence
-		if !isConceptsNull {
-			// If the response processing created a known empty list (not null),
-			// then round tripping should preserve that as an empty slice, not nil
-			assert.NotNil(t, conceptsAfterRoundTrip, "empty slice should round trip as empty slice, not nil")
-			assert.Equal(t, 0, len(conceptsAfterRoundTrip), "should remain empty")
-
-			assert.NotNil(t, tagsAfterRoundTrip, "empty slice should round trip as empty slice, not nil")
-			assert.Equal(t, 0, len(tagsAfterRoundTrip), "should remain empty")
-		} else {
-			// If it became null, that's also acceptable but should be consistent
-			assert.Nil(t, conceptsAfterRoundTrip, "null list should round trip as nil")
-			assert.Nil(t, tagsAfterRoundTrip, "null list should round trip as nil")
-		}
+		// With our fix, empty slices from the API are treated as null
+		// This maintains semantic consistency since Contentful doesn't distinguish
+		// between empty arrays and absent/null fields
+		assert.True(t, isConceptsNull, "empty slice from API should be treated as null")
+		assert.Nil(t, conceptsAfterRoundTrip, "null list should round trip as nil")
+		assert.Nil(t, tagsAfterRoundTrip, "null list should round trip as nil")
 
 		// Now do a second round trip to ensure consistency
 		result2, diags := NewEntryMetadataFromResponse(ctx, path.Root("metadata"), req.Metadata)
