@@ -84,6 +84,12 @@ components:
       required: true
       schema:
         type: string
+    tag_id:
+      in: path
+      name: tag_id
+      required: true
+      schema:
+        type: string
     team_id:
       in: path
       name: team_id
@@ -132,6 +138,12 @@ components:
       required: false
       schema:
         type: integer
+    x-contentful-tag-visibility-optional:
+      in: header
+      name: X-Contentful-Tag-Visibility
+      required: false
+      schema:
+        type: string
     skip:
       in: query
       name: skip
@@ -1257,6 +1269,66 @@ paths:
     delete:
       operationId: deleteExtension
       summary: Delete an extension
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/tag_id"
+    get:
+      operationId: getTag
+      summary: Get a single tag
+      responses:
+        200:
+          description: A tag
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./schemas/tag/tag.yml#/Tag"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putTag
+      summary: Create or update a tag
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/tag_id"
+        - $ref: "#/components/parameters/x-contentful-version-optional"
+        - $ref: "#/components/parameters/x-contentful-tag-visibility-optional"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/tag/request.yml#/TagRequest"
+      responses:
+        2XX:
+          description: A tag
+          content:
+            application/vnd.contentful.management.v1+json:
+              schema:
+                $ref: "./schemas/tag/tag.yml#/Tag"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteTag
+      summary: Delete a tag
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/environment_id"
+        - $ref: "#/components/parameters/tag_id"
+        - $ref: "#/components/parameters/x-contentful-version-optional"
       responses:
         204:
           $ref: "#/components/responses/no-content"

@@ -1,0 +1,15 @@
+TagRequestSys:
+  allOf:
+    - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-type.yml"
+    - type: object
+      properties:
+        type:
+          enum:
+            - Tag
+        id:
+          type: string
+        visibility:
+          type: string
+      required:
+        - type

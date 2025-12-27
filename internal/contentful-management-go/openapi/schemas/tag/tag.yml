@@ -1,0 +1,9 @@
+Tag:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/TagSys"
+      required:
+        - sys
+    - $ref: "./data.yml#/TagData"
