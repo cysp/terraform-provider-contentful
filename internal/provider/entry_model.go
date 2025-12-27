@@ -11,6 +11,14 @@ type EntryIdentityModel struct {
 	EntryID       types.String `tfsdk:"entry_id"`
 }
 
+func NewEntryIdentityModel(spaceID, environmentID, entryID string) EntryIdentityModel {
+	return EntryIdentityModel{
+		SpaceID:       types.StringValue(spaceID),
+		EnvironmentID: types.StringValue(environmentID),
+		EntryID:       types.StringValue(entryID),
+	}
+}
+
 type EntryModel struct {
 	IDIdentityModel
 	EntryIdentityModel

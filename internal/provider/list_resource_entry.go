@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var (
@@ -103,12 +102,11 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 
 				result.DisplayName = item.Sys.ID
 
-				result.Diagnostics.Append(result.Identity.Set(ctx, EntryIdentityModel{
-					SpaceID:       types.StringValue(item.Sys.Space.Sys.ID),
-					EnvironmentID: types.StringValue(item.Sys.Environment.Sys.ID),
-					EntryID:       types.StringValue(item.Sys.ID),
-				})...)
-
+				result.Diagnostics.Append(result.Identity.Set(ctx, NewEntryIdentityModel(
+					item.Sys.Space.Sys.ID,
+					item.Sys.Environment.Sys.ID,
+					item.Sys.ID,
+				))...)
 				if req.IncludeResource {
 					responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
 					result.Diagnostics.Append(responseDiags...)
