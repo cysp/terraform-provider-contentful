@@ -18,15 +18,13 @@ type TypedMap[T attr.Value] struct {
 
 func NewTypedMapUnknown[T attr.Value]() TypedMap[T] {
 	return TypedMap[T]{
-		elements: make(map[string]T, 0),
-		state:    attr.ValueStateUnknown,
+		state: attr.ValueStateUnknown,
 	}
 }
 
 func NewTypedMapNull[T attr.Value]() TypedMap[T] {
 	return TypedMap[T]{
-		elements: make(map[string]T, 0),
-		state:    attr.ValueStateNull,
+		state: attr.ValueStateNull,
 	}
 }
 
