@@ -217,7 +217,7 @@ func rapidEntryModelGenerator() *rapid.Generator[EntryModel] {
 
 			hasConcepts := rapid.Bool().Draw(t, "hasMetadataConcepts")
 			if hasConcepts {
-				numConcepts := rapid.IntRange(0, 3).Draw(t, "numMetadataConcepts")
+				numConcepts := rapid.IntRange(1, 3).Draw(t, "numMetadataConcepts") // Changed: start from 1, not 0
 				concepts := make([]types.String, numConcepts)
 				for i := range concepts {
 					concepts[i] = types.StringValue(rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "metadataConcept"))
@@ -229,7 +229,7 @@ func rapidEntryModelGenerator() *rapid.Generator[EntryModel] {
 
 			hasTags := rapid.Bool().Draw(t, "hasMetadataTags")
 			if hasTags {
-				numTags := rapid.IntRange(0, 3).Draw(t, "numMetadataTags")
+				numTags := rapid.IntRange(1, 3).Draw(t, "numMetadataTags") // Changed: start from 1, not 0
 				tags := make([]types.String, numTags)
 				for i := range tags {
 					tags[i] = types.StringValue(rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "metadataTag"))

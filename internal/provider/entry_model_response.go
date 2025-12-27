@@ -74,7 +74,12 @@ func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.
 			}
 		}
 
-		conceptsValue = NewTypedList(concepts)
+		// Only create a known list if there are actually elements
+		// An empty slice from the API should remain as null to maintain
+		// semantic consistency with nil
+		if len(concepts) > 0 {
+			conceptsValue = NewTypedList(concepts)
+		}
 	}
 
 	tagsValue := NewTypedListNull[types.String]()
@@ -87,7 +92,12 @@ func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.
 			}
 		}
 
-		tagsValue = NewTypedList(tags)
+		// Only create a known list if there are actually elements
+		// An empty slice from the API should remain as null to maintain
+		// semantic consistency with nil
+		if len(tags) > 0 {
+			tagsValue = NewTypedList(tags)
+		}
 	}
 
 	obj, objDiags := NewTypedObjectFromAttributes[EntryMetadataValue](ctx, map[string]attr.Value{
