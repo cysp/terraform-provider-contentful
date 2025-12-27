@@ -20,13 +20,9 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 	entryID := entry.Sys.ID
 
 	model := EntryModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID, entryID),
-		EntryIdentityModel: EntryIdentityModel{
-			SpaceID:       types.StringValue(spaceID),
-			EnvironmentID: types.StringValue(environmentID),
-			EntryID:       types.StringValue(entryID),
-		},
-		ContentTypeID: types.StringValue(contentTypeID),
+		IDIdentityModel:    NewIDIdentityModelFromMultipartID(spaceID, environmentID, entryID),
+		EntryIdentityModel: NewEntryIdentityModel(spaceID, environmentID, entryID),
+		ContentTypeID:      types.StringValue(contentTypeID),
 	}
 
 	fields, fieldsDiags := NewEntryFieldsFromResponse(ctx, path.Root("fields"), entry.Fields)
