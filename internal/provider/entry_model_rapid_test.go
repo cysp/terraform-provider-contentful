@@ -108,6 +108,8 @@ func rapidEntryModelGenerator() *rapid.Generator[EntryModel] {
 			}
 
 			model.Metadata = NewTypedObject(metadata)
+		} else {
+			model.Metadata = NewTypedObjectNull[EntryMetadataValue]()
 		}
 
 		return model
