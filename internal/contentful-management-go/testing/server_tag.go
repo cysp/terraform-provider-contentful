@@ -8,6 +8,8 @@ func (s *Server) SetTag(spaceID, environmentID, tagID string, request cm.TagRequ
 	s.h.mu.Lock()
 	defer s.h.mu.Unlock()
 
+	s.h.registerSpaceEnvironment(spaceID, environmentID)
+
 	tag := NewTagFromRequest(spaceID, environmentID, tagID, &request)
 	s.h.tags.Set(spaceID, environmentID, tagID, &tag)
 }
