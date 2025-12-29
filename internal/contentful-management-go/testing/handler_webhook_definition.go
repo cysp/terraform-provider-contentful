@@ -13,8 +13,8 @@ func (ts *Handler) CreateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, "master") == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
 	}
 
 	webhookDefinition := NewWebhookDefinitionFromFields(params.SpaceID, generateResourceID(), *req)
@@ -31,10 +31,6 @@ func (ts *Handler) GetWebhookDefinition(_ context.Context, params cm.GetWebhookD
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.WebhookDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	webhookDefinition := ts.webhookDefinitions.Get(params.SpaceID, params.WebhookDefinitionID)
 	if webhookDefinition == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("WebhookDefinition not found"), nil), nil
@@ -48,8 +44,8 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.WebhookDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, "master") == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
 	}
 
 	webhookDefinition := ts.webhookDefinitions.Get(params.SpaceID, params.WebhookDefinitionID)
@@ -79,10 +75,6 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 func (ts *Handler) DeleteWebhookDefinition(_ context.Context, params cm.DeleteWebhookDefinitionParams) (cm.DeleteWebhookDefinitionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.WebhookDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	webhookDefinition := ts.webhookDefinitions.Get(params.SpaceID, params.WebhookDefinitionID)
 	if webhookDefinition == nil {

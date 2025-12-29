@@ -12,13 +12,9 @@ func (ts *Handler) CreateAppDefinition(_ context.Context, req *cm.AppDefinitionD
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	appDefinitionID := generateResourceID()
 	appDefinition := NewAppDefinitionFromFields(params.OrganizationID, appDefinitionID, *req)
-	ts.appDefinitions.Set(params.OrganizationID, appDefinition.Sys.ID, &appDefinition)
+	ts.appDefinitions[appDefinition.Sys.ID] = &appDefinition
 
 	return &cm.AppDefinitionStatusCode{
 		StatusCode: http.StatusCreated,
@@ -31,11 +27,7 @@ func (ts *Handler) GetAppDefinition(_ context.Context, params cm.GetAppDefinitio
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
-	appDefinition := ts.appDefinitions.Get(params.OrganizationID, params.AppDefinitionID)
+	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinition not found"), nil), nil
 	}
@@ -48,14 +40,10 @@ func (ts *Handler) PutAppDefinition(_ context.Context, req *cm.AppDefinitionData
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
-	appDefinition := ts.appDefinitions.Get(params.OrganizationID, params.AppDefinitionID)
+	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
 		newAppDefinition := NewAppDefinitionFromFields(params.OrganizationID, params.AppDefinitionID, *req)
-		ts.appDefinitions.Set(params.OrganizationID, newAppDefinition.Sys.ID, &newAppDefinition)
+		ts.appDefinitions[newAppDefinition.Sys.ID] = &newAppDefinition
 
 		return &cm.AppDefinitionStatusCode{
 			StatusCode: http.StatusCreated,
@@ -76,16 +64,12 @@ func (ts *Handler) DeleteAppDefinition(_ context.Context, params cm.DeleteAppDef
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
-	appDefinition := ts.appDefinitions.Get(params.OrganizationID, params.AppDefinitionID)
+	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinition not found"), nil), nil
 	}
 
-	ts.appDefinitions.Delete(params.OrganizationID, params.AppDefinitionID)
+	delete(ts.appDefinitions, params.AppDefinitionID)
 
 	return &cm.NoContent{}, nil
 }

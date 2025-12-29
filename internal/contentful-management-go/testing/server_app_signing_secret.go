@@ -9,5 +9,5 @@ func (s *Server) SetAppSigningSecret(organizationID, appDefinitionID string, fie
 	defer s.h.mu.Unlock()
 
 	appSigningSecret := NewAppSigningSecretFromRequest(organizationID, appDefinitionID, fields)
-	s.h.appSigningSecrets.Set(organizationID, appDefinitionID, &appSigningSecret)
+	s.h.appSigningSecrets[appDefinitionID] = &appSigningSecret
 }

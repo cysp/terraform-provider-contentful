@@ -9,5 +9,5 @@ func (s *Server) SetResourceProvider(organizationID, appDefinitionID string, fie
 	defer s.h.mu.Unlock()
 
 	appDefinition := NewResourceProviderFromRequest(organizationID, appDefinitionID, fields)
-	s.h.appDefinitionResourceProviders.Set(organizationID, appDefinitionID, &appDefinition)
+	s.h.appDefinitionResourceProviders[appDefinitionID] = &appDefinition
 }

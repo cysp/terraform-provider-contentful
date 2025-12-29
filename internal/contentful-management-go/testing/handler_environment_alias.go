@@ -12,8 +12,9 @@ func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.En
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	environment := ts.environments.Get(params.SpaceID, data.Environment.Sys.ID)
+	if environment == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
 	}
 
 	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
@@ -44,10 +45,6 @@ func (ts *Handler) GetEnvironmentAlias(_ context.Context, params cm.GetEnvironme
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
 	if environmentAlias == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
@@ -60,10 +57,6 @@ func (ts *Handler) GetEnvironmentAlias(_ context.Context, params cm.GetEnvironme
 func (ts *Handler) DeleteEnvironmentAlias(_ context.Context, params cm.DeleteEnvironmentAliasParams) (cm.DeleteEnvironmentAliasRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
 	if environmentAlias == nil {

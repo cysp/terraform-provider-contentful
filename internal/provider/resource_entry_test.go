@@ -179,6 +179,8 @@ func TestAccEntryResourceCreate(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
+
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
 		"environment_id":  config.StringVariable("test"),
@@ -202,6 +204,8 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	entryID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -229,6 +233,8 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	configVariables1 := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -283,6 +289,8 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -382,6 +390,8 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
+
 	testID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -425,6 +435,8 @@ func TestAccEntryResourceMetadataConcepts(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	testID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -472,6 +484,8 @@ func TestAccEntryResourceMetadataTags(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	testID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 

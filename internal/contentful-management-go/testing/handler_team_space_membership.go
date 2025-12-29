@@ -12,8 +12,8 @@ func (ts *Handler) CreateTeamSpaceMembership(_ context.Context, req *cm.TeamSpac
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, "master") == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
 	}
 
 	teamSpaceMembershipID := generateResourceID()
@@ -31,10 +31,6 @@ func (ts *Handler) GetTeamSpaceMembership(_ context.Context, params cm.GetTeamSp
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.TeamSpaceMembershipID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	teamSpaceMembership := ts.teamSpaceMemberships.Get(params.SpaceID, params.TeamSpaceMembershipID)
 	if teamSpaceMembership == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Team space membership not found"), nil), nil
@@ -47,10 +43,6 @@ func (ts *Handler) GetTeamSpaceMembership(_ context.Context, params cm.GetTeamSp
 func (ts *Handler) PutTeamSpaceMembership(_ context.Context, req *cm.TeamSpaceMembershipData, params cm.PutTeamSpaceMembershipParams) (cm.PutTeamSpaceMembershipRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.TeamSpaceMembershipID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	teamSpaceMembership := ts.teamSpaceMemberships.Get(params.SpaceID, params.TeamSpaceMembershipID)
 	if teamSpaceMembership == nil {
@@ -69,10 +61,6 @@ func (ts *Handler) PutTeamSpaceMembership(_ context.Context, req *cm.TeamSpaceMe
 func (ts *Handler) DeleteTeamSpaceMembership(_ context.Context, params cm.DeleteTeamSpaceMembershipParams) (cm.DeleteTeamSpaceMembershipRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.TeamSpaceMembershipID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	teamSpaceMembership := ts.teamSpaceMemberships.Get(params.SpaceID, params.TeamSpaceMembershipID)
 	if teamSpaceMembership == nil {

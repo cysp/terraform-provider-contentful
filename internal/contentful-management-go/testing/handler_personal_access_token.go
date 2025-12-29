@@ -37,10 +37,6 @@ func (ts *Handler) GetPersonalAccessToken(_ context.Context, params cm.GetPerson
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.AccessTokenID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	personalAccessToken := ts.personalAccessTokens[params.AccessTokenID]
 	if personalAccessToken == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("PersonalAccessToken not found"), nil), nil
@@ -53,10 +49,6 @@ func (ts *Handler) GetPersonalAccessToken(_ context.Context, params cm.GetPerson
 func (ts *Handler) RevokePersonalAccessToken(_ context.Context, params cm.RevokePersonalAccessTokenParams) (cm.RevokePersonalAccessTokenRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.AccessTokenID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	personalAccessToken := ts.personalAccessTokens[params.AccessTokenID]
 	if personalAccessToken == nil {

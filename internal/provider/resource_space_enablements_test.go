@@ -61,6 +61,8 @@ func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
+
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}

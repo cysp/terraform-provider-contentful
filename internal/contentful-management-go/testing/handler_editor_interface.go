@@ -12,10 +12,6 @@ func (ts *Handler) GetEditorInterface(_ context.Context, params cm.GetEditorInte
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ContentTypeID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if editorInterface == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("EditorInterface not found"), nil), nil
@@ -28,10 +24,6 @@ func (ts *Handler) GetEditorInterface(_ context.Context, params cm.GetEditorInte
 func (ts *Handler) PutEditorInterface(_ context.Context, req *cm.EditorInterfaceData, params cm.PutEditorInterfaceParams) (cm.PutEditorInterfaceRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ContentTypeID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {

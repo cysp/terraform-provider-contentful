@@ -15,6 +15,9 @@ func TestAccEnvironmentAliasResource(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("space-id", "master")
+	server.RegisterSpaceEnvironment("space-id", "staging")
+
 	environmentAliasID := "acctest-" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -26,7 +29,7 @@ func TestAccEnvironmentAliasResource(t *testing.T) {
 	configVariables1 := maps.Clone(configVariables)
 
 	configVariables2 := maps.Clone(configVariables)
-	configVariables2["target_environment_id"] = config.StringVariable("production")
+	configVariables2["target_environment_id"] = config.StringVariable("master")
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
@@ -53,10 +56,12 @@ func TestAccEnvironmentAliasImport(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("space-id", "master-1970-01-01")
+
 	configVariables := config.Variables{
 		"space_id":                  config.StringVariable("space-id"),
 		"test_environment_alias_id": config.StringVariable("master"),
-		"target_environment_id":     config.StringVariable("production"),
+		"target_environment_id":     config.StringVariable("master-1970-01-01"),
 	}
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
@@ -68,7 +73,7 @@ func TestAccEnvironmentAliasImport(t *testing.T) {
 					resource.TestCheckResourceAttr("contentful_environment_alias.test", "id", "space-id/master"),
 					resource.TestCheckResourceAttr("contentful_environment_alias.test", "space_id", "space-id"),
 					resource.TestCheckResourceAttr("contentful_environment_alias.test", "environment_alias_id", "master"),
-					resource.TestCheckResourceAttr("contentful_environment_alias.test", "target_environment_id", "production"),
+					resource.TestCheckResourceAttr("contentful_environment_alias.test", "target_environment_id", "master-1970-01-01"),
 				),
 			},
 			{

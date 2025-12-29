@@ -18,15 +18,17 @@ import (
 func TestAccAppInstallationResource(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
+
+	server.SetAppDefinition("organization-id", "1WkQ2J9LERPtbMTdUfSHka", cm.AppDefinitionData{
+		Name: "Test App",
+	})
+
 	configVariables := config.Variables{
 		"space_id":          config.StringVariable("0p38pssr0fi3"),
 		"environment_id":    config.StringVariable("master"),
 		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
-
-	server.SetAppDefinition("organization-id", "1WkQ2J9LERPtbMTdUfSHka", cm.AppDefinitionData{
-		Name: "Test App",
-	})
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
@@ -58,6 +60,12 @@ func TestAccAppInstallationResource(t *testing.T) {
 //nolint:paralleltest
 func TestAccAppInstallationResourceImport(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
+
+	server.SetAppDefinition("organization-id", "1WkQ2J9LERPtbMTdUfSHka", cm.AppDefinitionData{
+		Name: "Test App",
+	})
 
 	configVariables := config.Variables{
 		"space_id":          config.StringVariable("0p38pssr0fi3"),
@@ -154,6 +162,12 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 func TestAccAppInstallationResourceUpdate(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
+
+	server.SetAppDefinition("organization-id", "1WkQ2J9LERPtbMTdUfSHka", cm.AppDefinitionData{
+		Name: "Test App",
+	})
+
 	configVariables := config.Variables{
 		"space_id":          config.StringVariable("0p38pssr0fi3"),
 		"environment_id":    config.StringVariable("master"),
@@ -191,6 +205,12 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 //nolint:paralleltest
 func TestAccAppInstallationResourceDeleted(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
+
+	server.SetAppDefinition("organization-id", "1WkQ2J9LERPtbMTdUfSHka", cm.AppDefinitionData{
+		Name: "Test App",
+	})
 
 	configVariables := config.Variables{
 		"space_id":          config.StringVariable("0p38pssr0fi3"),

@@ -216,6 +216,8 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
+
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -270,6 +272,10 @@ func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 //nolint:paralleltest
 func TestAccEditorInterfaceResourceUpdateWithContentTypeMultipleSpaceEnvironments(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("space-a", "environment-a-a")
+	server.RegisterSpaceEnvironment("space-a", "environment-a-b")
+	server.RegisterSpaceEnvironment("space-b", "environment-b-a")
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 

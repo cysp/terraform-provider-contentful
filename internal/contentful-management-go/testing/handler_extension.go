@@ -1,4 +1,3 @@
-//nolint:dupl
 package testing
 
 import (
@@ -13,10 +12,6 @@ func (ts *Handler) GetExtension(_ context.Context, params cm.GetExtensionParams)
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ExtensionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	extension := ts.extensions.Get(params.SpaceID, params.EnvironmentID, params.ExtensionID)
 	if extension == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Extension not found"), nil), nil
@@ -30,8 +25,8 @@ func (ts *Handler) PutExtension(_ context.Context, req *cm.ExtensionData, params
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ExtensionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
 	}
 
 	extension := ts.extensions.Get(params.SpaceID, params.EnvironmentID, params.ExtensionID)
@@ -57,10 +52,6 @@ func (ts *Handler) PutExtension(_ context.Context, req *cm.ExtensionData, params
 func (ts *Handler) DeleteExtension(_ context.Context, params cm.DeleteExtensionParams) (cm.DeleteExtensionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ExtensionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	extension := ts.extensions.Get(params.SpaceID, params.EnvironmentID, params.ExtensionID)
 	if extension == nil {
