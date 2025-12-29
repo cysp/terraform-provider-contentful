@@ -12,8 +12,8 @@ func (ts *Handler) GetSpaceEnablements(_ context.Context, params cm.GetSpaceEnab
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, "master") == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
 	}
 
 	enablements, ok := ts.enablements[params.SpaceID]
@@ -30,8 +30,8 @@ func (ts *Handler) PutSpaceEnablements(_ context.Context, req *cm.SpaceEnablemen
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, "master") == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
 	}
 
 	enablements, ok := ts.enablements[params.SpaceID]

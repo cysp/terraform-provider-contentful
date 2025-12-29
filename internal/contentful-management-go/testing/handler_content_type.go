@@ -12,8 +12,8 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
 	}
 
 	contentTypes := ts.contentTypes.List(params.SpaceID, params.EnvironmentID)
@@ -37,10 +37,6 @@ func (ts *Handler) GetContentType(_ context.Context, params cm.GetContentTypePar
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ContentTypeID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ContentType not found"), nil), nil
@@ -54,8 +50,9 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ContentTypeID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
+	if environment == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
 	}
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
@@ -91,10 +88,6 @@ func (ts *Handler) DeleteContentType(_ context.Context, params cm.DeleteContentT
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ContentTypeID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ContentType not found"), nil), nil
@@ -109,10 +102,6 @@ func (ts *Handler) DeleteContentType(_ context.Context, params cm.DeleteContentT
 func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateContentTypeParams) (cm.ActivateContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ContentTypeID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
@@ -131,10 +120,6 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 func (ts *Handler) DeactivateContentType(_ context.Context, params cm.DeactivateContentTypeParams) (cm.DeactivateContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.ContentTypeID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {

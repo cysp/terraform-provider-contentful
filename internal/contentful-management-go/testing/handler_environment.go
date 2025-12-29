@@ -12,8 +12,8 @@ func (ts *Handler) CreateOrUpdateEnvironment(_ context.Context, req *cm.Environm
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, "master") == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
 	}
 
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
@@ -44,10 +44,6 @@ func (ts *Handler) GetEnvironment(_ context.Context, params cm.GetEnvironmentPar
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
 	if environment == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
@@ -60,10 +56,6 @@ func (ts *Handler) GetEnvironment(_ context.Context, params cm.GetEnvironmentPar
 func (ts *Handler) DeleteEnvironment(_ context.Context, params cm.DeleteEnvironmentParams) (cm.DeleteEnvironmentRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
 	if environment == nil {

@@ -13,6 +13,8 @@ import (
 func TestAccTeamSpaceMembershipResource(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("space-id", "master")
+
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
@@ -38,6 +40,8 @@ func TestAccTeamSpaceMembershipResource(t *testing.T) {
 //nolint:paralleltest
 func TestAccTeamSpaceMembershipResourceImport(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("space-id", "master")
 
 	server.SetTeamSpaceMembership("space-id", "team-space-membership-id", "team-id", cm.TeamSpaceMembershipData{
 		Admin: true,

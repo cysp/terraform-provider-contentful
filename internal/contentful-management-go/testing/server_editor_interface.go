@@ -8,6 +8,8 @@ func (s *Server) SetEditorInterface(spaceID, environmentID, contentTypeID string
 	s.h.mu.Lock()
 	defer s.h.mu.Unlock()
 
+	s.h.registerSpaceEnvironment(spaceID, environmentID)
+
 	editorInterface := NewEditorInterfaceFromFields(spaceID, environmentID, contentTypeID, editorInterfaceFields)
 	s.h.editorInterfaces.Set(spaceID, environmentID, contentTypeID, &editorInterface)
 }

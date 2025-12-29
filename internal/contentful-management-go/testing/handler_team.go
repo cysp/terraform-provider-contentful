@@ -12,10 +12,6 @@ func (ts *Handler) CreateTeam(_ context.Context, req *cm.TeamData, params cm.Cre
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	teamID := generateResourceID()
 	team := NewTeamFromFields(params.OrganizationID, teamID, *req)
 	ts.teams.Set(params.OrganizationID, team.Sys.ID, &team)
@@ -31,10 +27,6 @@ func (ts *Handler) GetTeam(_ context.Context, params cm.GetTeamParams) (cm.GetTe
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.TeamID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	team := ts.teams.Get(params.OrganizationID, params.TeamID)
 	if team == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Team not found"), nil), nil
@@ -47,10 +39,6 @@ func (ts *Handler) GetTeam(_ context.Context, params cm.GetTeamParams) (cm.GetTe
 func (ts *Handler) PutTeam(_ context.Context, req *cm.TeamData, params cm.PutTeamParams) (cm.PutTeamRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.OrganizationID == NonexistentID || params.TeamID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	team := ts.teams.Get(params.OrganizationID, params.TeamID)
 	if team == nil {
@@ -79,10 +67,6 @@ func (ts *Handler) PutTeam(_ context.Context, req *cm.TeamData, params cm.PutTea
 func (ts *Handler) DeleteTeam(_ context.Context, params cm.DeleteTeamParams) (cm.DeleteTeamRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.OrganizationID == NonexistentID || params.TeamID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	team := ts.teams.Get(params.OrganizationID, params.TeamID)
 	if team == nil {

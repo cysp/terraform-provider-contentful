@@ -14,6 +14,8 @@ func TestAccExtensionResource(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
+
 	extensionID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{

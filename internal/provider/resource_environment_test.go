@@ -16,6 +16,8 @@ func TestAccEnvironmentResource(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("space-id", "master")
+
 	environmentID := "acctest-" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -54,15 +56,17 @@ func TestAccEnvironmentImport(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("space-id", "master")
+
+	server.SetEnvironment("space-id", "staging", cm.EnvironmentData{
+		Name: "Staging Environment",
+	})
+
 	configVariables := config.Variables{
 		"space_id":            config.StringVariable("space-id"),
 		"test_environment_id": config.StringVariable("staging"),
 		"environment_name":    config.StringVariable("Staging Environment"),
 	}
-
-	server.SetEnvironment("space-id", "staging", cm.EnvironmentData{
-		Name: "Staging Environment",
-	})
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{

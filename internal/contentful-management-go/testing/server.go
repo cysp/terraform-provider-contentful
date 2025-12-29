@@ -44,3 +44,7 @@ func (s *Server) SecurityHandler() *SecurityHandler {
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.server.ServeHTTP(w, r)
 }
+
+func (s *Server) RegisterSpaceEnvironment(spaceID, environmentID string) {
+	s.h.RegisterSpaceEnvironment(spaceID, environmentID)
+}

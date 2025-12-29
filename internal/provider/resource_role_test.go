@@ -76,6 +76,8 @@ func TestAccRoleResourceImportNotFound(t *testing.T) {
 func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
+
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
@@ -98,13 +100,15 @@ func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 func TestAccRoleResourceDeleted(t *testing.T) {
 	server, _ := cmt.NewContentfulManagementServer()
 
-	configVariables := config.Variables{
-		"space_id": config.StringVariable("0p38pssr0fi3"),
-	}
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	server.SetRole("0p38pssr0fi3", "test", cm.RoleData{
 		Name: "Test",
 	})
+
+	configVariables := config.Variables{
+		"space_id": config.StringVariable("0p38pssr0fi3"),
+	}
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{

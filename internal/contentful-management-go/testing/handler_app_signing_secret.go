@@ -13,11 +13,7 @@ func (ts *Handler) GetAppSigningSecret(_ context.Context, params cm.GetAppSignin
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
-	appSigningSecret := ts.appSigningSecrets.Get(params.OrganizationID, params.AppDefinitionID)
+	appSigningSecret := ts.appSigningSecrets[params.AppDefinitionID]
 	if appSigningSecret == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppSigningSecret not found"), nil), nil
 	}
@@ -30,15 +26,16 @@ func (ts *Handler) PutAppSigningSecret(_ context.Context, req *cm.AppSigningSecr
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	appDefinition := ts.appDefinitions[params.AppDefinitionID]
+	if appDefinition == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinition not found"), nil), nil
 	}
 
-	appSigningSecret := ts.appSigningSecrets.Get(params.OrganizationID, params.AppDefinitionID)
+	appSigningSecret := ts.appSigningSecrets[params.AppDefinitionID]
 	if appSigningSecret == nil {
 		appSigningSecret := NewAppSigningSecretFromRequest(params.OrganizationID, params.AppDefinitionID, *req)
 
-		ts.appSigningSecrets.Set(params.OrganizationID, params.AppDefinitionID, &appSigningSecret)
+		ts.appSigningSecrets[params.AppDefinitionID] = &appSigningSecret
 
 		return &cm.AppSigningSecretStatusCode{
 			StatusCode: http.StatusCreated,
@@ -59,16 +56,12 @@ func (ts *Handler) DeleteAppSigningSecret(_ context.Context, params cm.DeleteApp
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
-	appSigningSecret := ts.appSigningSecrets.Get(params.OrganizationID, params.AppDefinitionID)
+	appSigningSecret := ts.appSigningSecrets[params.AppDefinitionID]
 	if appSigningSecret == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppSigningSecret not found"), nil), nil
 	}
 
-	ts.appSigningSecrets.Delete(params.OrganizationID, params.AppDefinitionID)
+	delete(ts.appSigningSecrets, params.AppDefinitionID)
 
 	return &cm.NoContent{}, nil
 }

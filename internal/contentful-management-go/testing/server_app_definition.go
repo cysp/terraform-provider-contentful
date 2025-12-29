@@ -9,5 +9,5 @@ func (s *Server) SetAppDefinition(organizationID, appDefinitionID string, fields
 	defer s.h.mu.Unlock()
 
 	appDefinition := NewAppDefinitionFromFields(organizationID, appDefinitionID, fields)
-	s.h.appDefinitions.Set(organizationID, appDefinitionID, &appDefinition)
+	s.h.appDefinitions[appDefinitionID] = &appDefinition
 }

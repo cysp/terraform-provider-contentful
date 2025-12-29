@@ -13,11 +13,7 @@ func (ts *Handler) GetResourceProvider(_ context.Context, params cm.GetResourceP
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
-	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
+	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
 	}
@@ -30,15 +26,15 @@ func (ts *Handler) PutResourceProvider(_ context.Context, req *cm.ResourceProvid
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	appDefinition := ts.appDefinitions[params.AppDefinitionID]
+	if appDefinition == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinition not found"), nil), nil
 	}
 
-	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
+	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
 		appDefinitionResourceProvider := NewResourceProviderFromRequest(params.OrganizationID, params.AppDefinitionID, *req)
-
-		ts.appDefinitionResourceProviders.Set(params.OrganizationID, params.AppDefinitionID, &appDefinitionResourceProvider)
+		ts.appDefinitionResourceProviders[params.AppDefinitionID] = &appDefinitionResourceProvider
 
 		return &cm.ResourceProviderStatusCode{
 			StatusCode: http.StatusCreated,
@@ -59,16 +55,12 @@ func (ts *Handler) DeleteResourceProvider(_ context.Context, params cm.DeleteRes
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.OrganizationID == NonexistentID || params.AppDefinitionID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
-	appDefinitionResourceProvider := ts.appDefinitionResourceProviders.Get(params.OrganizationID, params.AppDefinitionID)
+	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
 	}
 
-	ts.appDefinitionResourceProviders.Delete(params.OrganizationID, params.AppDefinitionID)
+	delete(ts.appDefinitionResourceProviders, params.AppDefinitionID)
 
 	return &cm.NoContent{}, nil
 }

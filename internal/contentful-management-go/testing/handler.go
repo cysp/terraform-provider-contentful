@@ -27,11 +27,12 @@ type Handler struct {
 
 	marketplaceAppDefinitions map[string]*cm.AppDefinition
 
-	appDefinitions                 OrganizationMap[*cm.AppDefinition]
-	appDefinitionResourceProviders OrganizationMap[*cm.ResourceProvider]
-	appDefinitionResourceTypes     OrganizationMap[*cm.ResourceType]
-	appInstallations               cm.SpaceEnvironmentMap[*cm.AppInstallation]
-	appSigningSecrets              OrganizationMap[*cm.AppSigningSecret]
+	appDefinitions                 map[string]*cm.AppDefinition
+	appDefinitionResourceProviders map[string]*cm.ResourceProvider
+	appDefinitionResourceTypes     map[string]*cm.ResourceType
+	appSigningSecrets              map[string]*cm.AppSigningSecret
+
+	appInstallations cm.SpaceEnvironmentMap[*cm.AppInstallation]
 
 	contentTypes     cm.SpaceEnvironmentMap[*cm.ContentType]
 	editorInterfaces cm.SpaceEnvironmentMap[*cm.EditorInterface]
@@ -60,11 +61,11 @@ func NewHandler() *Handler {
 		environments:                   cm.NewSpaceMap[*cm.Environment](),
 		environmentAliases:             cm.NewSpaceMap[*cm.EnvironmentAlias](),
 		marketplaceAppDefinitions:      make(map[string]*cm.AppDefinition),
-		appDefinitions:                 NewOrganizationMap[*cm.AppDefinition](),
-		appDefinitionResourceProviders: NewOrganizationMap[*cm.ResourceProvider](),
-		appDefinitionResourceTypes:     NewOrganizationMap[*cm.ResourceType](),
+		appDefinitions:                 make(map[string]*cm.AppDefinition),
+		appDefinitionResourceProviders: make(map[string]*cm.ResourceProvider),
+		appDefinitionResourceTypes:     make(map[string]*cm.ResourceType),
+		appSigningSecrets:              make(map[string]*cm.AppSigningSecret),
 		appInstallations:               cm.NewSpaceEnvironmentMap[*cm.AppInstallation](),
-		appSigningSecrets:              NewOrganizationMap[*cm.AppSigningSecret](),
 		contentTypes:                   cm.NewSpaceEnvironmentMap[*cm.ContentType](),
 		editorInterfaces:               cm.NewSpaceEnvironmentMap[*cm.EditorInterface](),
 		entries:                        cm.NewSpaceEnvironmentMap[*cm.Entry](),
@@ -72,4 +73,22 @@ func NewHandler() *Handler {
 		roles:                          cm.NewSpaceMap[*cm.Role](),
 		webhookDefinitions:             cm.NewSpaceMap[*cm.WebhookDefinition](),
 	}
+}
+
+func (h *Handler) RegisterSpaceEnvironment(spaceID, environmentID string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	h.registerSpaceEnvironment(spaceID, environmentID)
+}
+
+func (h *Handler) registerSpaceEnvironment(spaceID, environmentID string) {
+	if h.environments.Get(spaceID, environmentID) != nil {
+		return
+	}
+
+	environment := NewEnvironmentFromEnvironmentData(spaceID, environmentID, cm.EnvironmentData{
+		Name: environmentID,
+	})
+	h.environments.Set(spaceID, environmentID, &environment)
 }

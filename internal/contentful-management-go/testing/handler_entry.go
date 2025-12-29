@@ -12,8 +12,8 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
 	}
 
 	skip := params.Skip.Or(0)
@@ -48,8 +48,8 @@ func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params c
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
 	}
 
 	entryID := generateResourceID()
@@ -68,10 +68,6 @@ func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.Get
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.EntryID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Entry not found"), nil), nil
@@ -85,8 +81,8 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.EntryID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
 	}
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
@@ -117,10 +113,6 @@ func (ts *Handler) DeleteEntry(_ context.Context, params cm.DeleteEntryParams) (
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.EntryID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
-
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Entry not found"), nil), nil
@@ -135,10 +127,6 @@ func (ts *Handler) DeleteEntry(_ context.Context, params cm.DeleteEntryParams) (
 func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams) (cm.PublishEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.EntryID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
@@ -157,10 +145,6 @@ func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams)
 func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryParams) (cm.UnpublishEntryRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
-
-	if params.SpaceID == NonexistentID || params.EnvironmentID == NonexistentID || params.EntryID == NonexistentID {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
-	}
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {

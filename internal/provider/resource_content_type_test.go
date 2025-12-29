@@ -127,6 +127,8 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
+
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -149,6 +151,8 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -209,6 +213,8 @@ func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
+
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
 	configVariables := config.Variables{
@@ -245,6 +251,8 @@ func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -284,6 +292,8 @@ func TestAccContentTypeResourceDeleted(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
