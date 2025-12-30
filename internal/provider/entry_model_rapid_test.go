@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -25,16 +25,13 @@ func TestEntryModelRoundTrip(t *testing.T) {
 			t.Fatalf("ToEntryRequest failed: %v", diags.Errors())
 		}
 
-		entry := cm.Entry{
-			Sys: cm.NewEntrySys(
-				model.SpaceID.ValueString(),
-				model.EnvironmentID.ValueString(),
-				model.ContentTypeID.ValueString(),
-				model.EntryID.ValueString(),
-			),
-			Fields:   entryRequest.Fields,
-			Metadata: entryRequest.Metadata,
-		}
+		entry := cmt.NewEntryFromRequest(
+			model.SpaceID.ValueString(),
+			model.EnvironmentID.ValueString(),
+			model.ContentTypeID.ValueString(),
+			model.EntryID.ValueString(),
+			&entryRequest,
+		)
 
 		result, diags := NewEntryResourceModelFromResponse(ctx, entry)
 		if diags.HasError() {
