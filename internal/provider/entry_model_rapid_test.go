@@ -18,7 +18,7 @@ func TestEntryModelRoundTrip(t *testing.T) {
 	ctx := context.Background()
 
 	rapid.Check(t, func(t *rapid.T) {
-		model := rapidEntryModelGenerator().Draw(t, "model")
+		model := rapidEntryModelGenerator.Draw(t, "model")
 
 		entryRequest, diags := model.ToEntryRequest(ctx)
 		if diags.HasError() {
@@ -45,50 +45,48 @@ func TestEntryModelRoundTrip(t *testing.T) {
 	})
 }
 
-func rapidEntryModelGenerator() *rapid.Generator[EntryModel] {
-	return rapid.Custom(func(t *rapid.T) EntryModel {
-		spaceID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "spaceID")
-		environmentID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "environmentID")
-		contentTypeID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "contentTypeID")
-		entryID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "entryID")
+var rapidEntryModelGenerator = rapid.Custom(func(t *rapid.T) EntryModel {
+	spaceID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "spaceID")
+	environmentID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "environmentID")
+	contentTypeID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "contentTypeID")
+	entryID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "entryID")
 
-		model := EntryModel{
-			IDIdentityModel:    NewIDIdentityModelFromMultipartID(spaceID, environmentID, entryID),
-			EntryIdentityModel: NewEntryIdentityModel(spaceID, environmentID, entryID),
-			ContentTypeID:      types.StringValue(contentTypeID),
+	model := EntryModel{
+		IDIdentityModel:    NewIDIdentityModelFromMultipartID(spaceID, environmentID, entryID),
+		EntryIdentityModel: NewEntryIdentityModel(spaceID, environmentID, entryID),
+		ContentTypeID:      types.StringValue(contentTypeID),
+	}
+
+	hasFields := rapid.Bool().Draw(t, "hasFields")
+	if hasFields {
+		fields := make(map[string]jsontypes.Normalized)
+
+		fieldKeys := rapid.SliceOfN(rapid.StringMatching(`[a-zA-Z0-9]{1,10}`), 0, 5).Draw(t, "fieldKeys")
+		for _, key := range fieldKeys {
+			fields[key] = jsontypes.NewNormalizedValue(`"value"`)
 		}
 
-		hasFields := rapid.Bool().Draw(t, "hasFields")
-		if hasFields {
-			fields := make(map[string]jsontypes.Normalized)
+		model.Fields = NewTypedMap(fields)
+	}
 
-			fieldKeys := rapid.SliceOfN(rapid.StringMatching(`[a-zA-Z0-9]{1,10}`), 0, 5).Draw(t, "fieldKeys")
-			for _, key := range fieldKeys {
-				fields[key] = jsontypes.NewNormalizedValue(`"value"`)
-			}
+	hasMetadata := rapid.Bool().Draw(t, "hasMetadata")
+	if hasMetadata {
+		metadata := EntryMetadataValue{}
 
-			model.Fields = NewTypedMap(fields)
+		hasMetadataConcepts := rapid.Bool().Draw(t, "hasMetadataConcepts")
+		if hasMetadataConcepts {
+			concepts := rapid.SliceOfN(rapid.StringMatching(`[a-zA-Z0-9]{0,10}`), 0, 3).Draw(t, "concepts")
+			metadata.Concepts = NewTypedListFromStringSlice(concepts)
 		}
 
-		hasMetadata := rapid.Bool().Draw(t, "hasMetadata")
-		if hasMetadata {
-			metadata := EntryMetadataValue{}
-
-			hasMetadataConcepts := rapid.Bool().Draw(t, "hasMetadataConcepts")
-			if hasMetadataConcepts {
-				concepts := rapid.SliceOfN(rapid.StringMatching(`[a-zA-Z0-9]{0,10}`), 0, 3).Draw(t, "concepts")
-				metadata.Concepts = NewTypedListFromStringSlice(concepts)
-			}
-
-			hasTags := rapid.Bool().Draw(t, "hasMetadataTags")
-			if hasTags {
-				tags := rapid.SliceOfN(rapid.StringMatching(`[a-zA-Z0-9]{0,10}`), 0, 3).Draw(t, "tags")
-				metadata.Tags = NewTypedListFromStringSlice(tags)
-			}
-
-			model.Metadata = NewTypedObject(metadata)
+		hasTags := rapid.Bool().Draw(t, "hasMetadataTags")
+		if hasTags {
+			tags := rapid.SliceOfN(rapid.StringMatching(`[a-zA-Z0-9]{0,10}`), 0, 3).Draw(t, "tags")
+			metadata.Tags = NewTypedListFromStringSlice(tags)
 		}
 
-		return model
-	})
-}
+		model.Metadata = NewTypedObject(metadata)
+	}
+
+	return model
+})
