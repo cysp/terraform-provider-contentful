@@ -73,7 +73,6 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - "1.13.*"
           - "1.14.*"
     concurrency:
       group: testacc
