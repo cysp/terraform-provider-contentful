@@ -40,6 +40,9 @@ linters:
           - revive
         path: ".*_test.go"
         text: "dot-imports: should not use dot imports"
+      - linters:
+          - gochecknoglobals
+        path: ".*_test.go"
 
 issues:
   max-issues-per-linter: 0

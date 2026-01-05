@@ -19,7 +19,6 @@ func makeTestAccProtoV6ProviderFactories(options ...Option) map[string]func() (t
 	}
 }
 
-//nolint:gochecknoglobals
 var testAccProtoV6ProviderFactories = makeTestAccProtoV6ProviderFactories()
 
 func providerConfigDynamicValue(config map[string]any) (tfprotov6.DynamicValue, error) {
