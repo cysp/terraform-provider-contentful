@@ -18,10 +18,3 @@ func (ts *Handler) GetAuthenticatedUser(_ context.Context) (cm.GetAuthenticatedU
 		return ts.me, nil
 	}
 }
-
-func (ts *Handler) SetMe(me *cm.User) {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
-	ts.me = me
-}
