@@ -21,7 +21,12 @@ func NewContentfulManagementServer() (*Server, error) {
 
 	securityHandler := NewSecurityHandler()
 
-	server, err := cm.NewServer(handler, securityHandler, cm.WithNotFound(notFoundHandler))
+	server, err := cm.NewServer(
+		handler,
+		securityHandler,
+		cm.WithNotFound(notFoundHandler),
+		cm.WithErrorHandler(errorHandler),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}

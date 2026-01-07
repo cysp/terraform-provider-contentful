@@ -21,11 +21,11 @@ func TestContentfulManagementServerGetAuthenticatedUserFound(t *testing.T) {
 
 	client, _ := cm.NewClient(
 		hts.URL,
-		cm.NewAccessTokenSecuritySource("12345"),
+		cm.NewAccessTokenSecuritySource(cmt.ValidAccessToken),
 		cm.WithClient(hts.Client()),
 	)
 
-	server.Handler().SetMe(cm.NewUser("user123"))
+	server.SetMe(cm.NewUser("user123"))
 
 	res, err := client.GetAuthenticatedUser(t.Context())
 	assert.NotNil(t, res)
@@ -48,7 +48,7 @@ func TestContentfulManagementServerGetAuthenticatedUserNotFound(t *testing.T) {
 
 	client, _ := cm.NewClient(
 		hts.URL,
-		cm.NewAccessTokenSecuritySource("12345"),
+		cm.NewAccessTokenSecuritySource(cmt.ValidAccessToken),
 		cm.WithClient(hts.Client()),
 	)
 

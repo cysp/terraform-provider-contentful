@@ -57,6 +57,6 @@ func ContentfulProviderOptionsWithHTTPTestServer(testserver *httptest.Server) []
 	return []Option{
 		WithContentfulURL(testserver.URL),
 		WithHTTPClient(testserver.Client()),
-		WithAccessToken("12345"),
+		WithAccessToken("CFPAT-12345"),
 	}
 }
