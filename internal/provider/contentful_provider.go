@@ -105,7 +105,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		contentfulURL = contentfulURLFromEnv
 	}
 
-	if contentfulURL == "" {
+	if p.contentfulURL != "" {
 		contentfulURL = p.contentfulURL
 	}
 
@@ -126,7 +126,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		}
 	}
 
-	if accessToken == "" {
+	if p.accessToken != "" {
 		accessToken = p.accessToken
 	}
 
