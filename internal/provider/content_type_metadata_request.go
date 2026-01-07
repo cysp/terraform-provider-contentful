@@ -18,8 +18,13 @@ func ToOptContentTypeMetadata(ctx context.Context, path path.Path, m TypedObject
 
 	taxonomy := ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(ctx, path.AtName("taxonomy"), value.Taxonomy)
 
+	var annotations []byte
+	if !value.Annotations.IsNull() && !value.Annotations.IsUnknown() {
+		annotations = []byte(value.Annotations.ValueString())
+	}
+
 	metadata := cm.ContentTypeMetadata{
-		Annotations: []byte(value.Annotations.ValueString()),
+		Annotations: annotations,
 		Taxonomy:    taxonomy,
 	}
 
