@@ -6,6 +6,7 @@ import (
 
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/cysp/terraform-provider-contentful/internal/provider/testdata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -43,10 +44,10 @@ func TestEntryModelRoundTrip(t *testing.T) {
 }
 
 var rapidEntryModelGenerator = rapid.Custom(func(t *rapid.T) EntryModel {
-	spaceID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "spaceID")
-	environmentID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "environmentID")
-	contentTypeID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "contentTypeID")
-	entryID := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "entryID")
+	spaceID := testdata.AlphanumericStringOfN(1, 10).Draw(t, "spaceID")
+	environmentID := testdata.AlphanumericStringOfN(1, 10).Draw(t, "environmentID")
+	contentTypeID := testdata.AlphanumericStringOfN(1, 10).Draw(t, "contentTypeID")
+	entryID := testdata.AlphanumericStringOfN(1, 10).Draw(t, "entryID")
 
 	model := EntryModel{
 		IDIdentityModel:    NewIDIdentityModelFromMultipartID(spaceID, environmentID, entryID),
@@ -58,7 +59,7 @@ var rapidEntryModelGenerator = rapid.Custom(func(t *rapid.T) EntryModel {
 	if hasFields {
 		fields := make(map[string]jsontypes.Normalized)
 
-		fieldKeys := rapid.SliceOfN(rapid.StringMatching(`[a-zA-Z0-9]{1,10}`), 0, 5).Draw(t, "fieldKeys")
+		fieldKeys := rapid.SliceOfN(testdata.AlphanumericStringOfN(1, 10), 0, 5).Draw(t, "fieldKeys")
 		for _, key := range fieldKeys {
 			fields[key] = jsontypes.NewNormalizedValue(`"value"`)
 		}
@@ -72,13 +73,13 @@ var rapidEntryModelGenerator = rapid.Custom(func(t *rapid.T) EntryModel {
 
 		hasMetadataConcepts := rapid.Bool().Draw(t, "hasMetadataConcepts")
 		if hasMetadataConcepts {
-			concepts := rapid.SliceOfN(rapid.StringMatching(`[a-zA-Z0-9]{0,10}`), 0, 3).Draw(t, "concepts")
+			concepts := rapid.SliceOfN(testdata.AlphanumericStringOfN(0, 10), 0, 3).Draw(t, "concepts")
 			metadata.Concepts = NewTypedListFromStringSlice(concepts)
 		}
 
 		hasTags := rapid.Bool().Draw(t, "hasMetadataTags")
 		if hasTags {
-			tags := rapid.SliceOfN(rapid.StringMatching(`[a-zA-Z0-9]{0,10}`), 0, 3).Draw(t, "tags")
+			tags := rapid.SliceOfN(testdata.AlphanumericStringOfN(0, 10), 0, 3).Draw(t, "tags")
 			metadata.Tags = NewTypedListFromStringSlice(tags)
 		}
 
