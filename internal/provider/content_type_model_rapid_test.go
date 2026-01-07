@@ -165,7 +165,7 @@ func rapidContentTypeItemValidations(t *rapid.T, index int) []jsontypes.Normaliz
 }
 
 func rapidAllowedResources(t *rapid.T, index int) TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]] {
-	resourceCount := rapid.IntRange(1, 2).Draw(t, fmt.Sprintf("allowedResourceCount[%d]", index))
+	resourceCount := rapid.IntRange(0, 2).Draw(t, fmt.Sprintf("allowedResourceCount[%d]", index))
 	resources := make([]TypedObject[ContentTypeFieldAllowedResourceItemValue], resourceCount)
 
 	for i := range resourceCount {
