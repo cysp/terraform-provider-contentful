@@ -11,6 +11,14 @@ type ContentTypeIdentityModel struct {
 	ContentTypeID types.String `tfsdk:"content_type_id"`
 }
 
+func NewContentTypeIdentityModel(spaceID, environmentID, contentTypeID string) ContentTypeIdentityModel {
+	return ContentTypeIdentityModel{
+		SpaceID:       types.StringValue(spaceID),
+		EnvironmentID: types.StringValue(environmentID),
+		ContentTypeID: types.StringValue(contentTypeID),
+	}
+}
+
 type ContentTypeModel struct {
 	IDIdentityModel
 	ContentTypeIdentityModel
