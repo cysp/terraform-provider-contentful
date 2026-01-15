@@ -65,7 +65,7 @@ require (
 	github.com/hashicorp/terraform-json v0.27.2 // indirect
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1 // indirect
 	github.com/hashicorp/terraform-registry-address v0.4.0 // indirect
-	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
+	github.com/hashicorp/terraform-svchost v0.2.0 // indirect
 	github.com/hashicorp/yamux v0.1.2 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
@@ -106,7 +106,7 @@ require (
 	golang.org/x/tools v0.41.0 // indirect
 	gonum.org/v1/gonum v0.17.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260112192933-99fd39fd28a9 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260114163908-3f89685c29c3 // indirect
 	google.golang.org/grpc v1.78.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
