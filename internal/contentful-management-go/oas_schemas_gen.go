@@ -178,11 +178,9 @@ func (*ApiKeyStatusCode) updateDeliveryAPIKeyRes() {}
 type ApiKeySys struct {
 	Space SpaceLink `json:"space"`
 	// Merged property.
-	Type      ApiKeySysType `json:"type"`
-	ID        string        `json:"id"`
-	Version   int           `json:"version"`
-	CreatedAt OptDateTime   `json:"createdAt"`
-	UpdatedAt OptDateTime   `json:"updatedAt"`
+	Type    ApiKeySysType `json:"type"`
+	ID      string        `json:"id"`
+	Version int           `json:"version"`
 }
 
 // GetSpace returns the value of Space.
@@ -205,16 +203,6 @@ func (s *ApiKeySys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *ApiKeySys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *ApiKeySys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetSpace sets the value of Space.
 func (s *ApiKeySys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -233,16 +221,6 @@ func (s *ApiKeySys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *ApiKeySys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *ApiKeySys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *ApiKeySys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -2778,8 +2756,6 @@ type ContentTypeSys struct {
 	Type             ContentTypeSysType `json:"type"`
 	ID               string             `json:"id"`
 	Version          int                `json:"version"`
-	CreatedAt        OptDateTime        `json:"createdAt"`
-	UpdatedAt        OptDateTime        `json:"updatedAt"`
 	PublishedVersion OptInt             `json:"publishedVersion"`
 	PublishedAt      OptDateTime        `json:"publishedAt"`
 }
@@ -2807,16 +2783,6 @@ func (s *ContentTypeSys) GetID() string {
 // GetVersion returns the value of Version.
 func (s *ContentTypeSys) GetVersion() int {
 	return s.Version
-}
-
-// GetCreatedAt returns the value of CreatedAt.
-func (s *ContentTypeSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *ContentTypeSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
 }
 
 // GetPublishedVersion returns the value of PublishedVersion.
@@ -2852,16 +2818,6 @@ func (s *ContentTypeSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *ContentTypeSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *ContentTypeSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *ContentTypeSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // SetPublishedVersion sets the value of PublishedVersion.
@@ -3531,8 +3487,6 @@ type EditorInterfaceSys struct {
 	ID          string                 `json:"id"`
 	ContentType ContentTypeLink        `json:"contentType"`
 	Version     int                    `json:"version"`
-	CreatedAt   OptDateTime            `json:"createdAt"`
-	UpdatedAt   OptDateTime            `json:"updatedAt"`
 }
 
 // GetSpace returns the value of Space.
@@ -3565,16 +3519,6 @@ func (s *EditorInterfaceSys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *EditorInterfaceSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *EditorInterfaceSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetSpace sets the value of Space.
 func (s *EditorInterfaceSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -3603,16 +3547,6 @@ func (s *EditorInterfaceSys) SetContentType(val ContentTypeLink) {
 // SetVersion sets the value of Version.
 func (s *EditorInterfaceSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *EditorInterfaceSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *EditorInterfaceSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -3881,8 +3815,6 @@ type EntrySys struct {
 	ID               string          `json:"id"`
 	ContentType      ContentTypeLink `json:"contentType"`
 	Version          int             `json:"version"`
-	CreatedAt        OptDateTime     `json:"createdAt"`
-	UpdatedAt        OptDateTime     `json:"updatedAt"`
 	PublishedVersion OptInt          `json:"publishedVersion"`
 	PublishedAt      OptDateTime     `json:"publishedAt"`
 }
@@ -3915,16 +3847,6 @@ func (s *EntrySys) GetContentType() ContentTypeLink {
 // GetVersion returns the value of Version.
 func (s *EntrySys) GetVersion() int {
 	return s.Version
-}
-
-// GetCreatedAt returns the value of CreatedAt.
-func (s *EntrySys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *EntrySys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
 }
 
 // GetPublishedVersion returns the value of PublishedVersion.
@@ -3965,16 +3887,6 @@ func (s *EntrySys) SetContentType(val ContentTypeLink) {
 // SetVersion sets the value of Version.
 func (s *EntrySys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *EntrySys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *EntrySys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // SetPublishedVersion sets the value of PublishedVersion.
@@ -4129,11 +4041,9 @@ func (*EnvironmentAliasStatusCode) createOrUpdateEnvironmentAliasRes() {}
 type EnvironmentAliasSys struct {
 	Space SpaceLink `json:"space"`
 	// Merged property.
-	Type      EnvironmentAliasSysType `json:"type"`
-	ID        string                  `json:"id"`
-	Version   int                     `json:"version"`
-	CreatedAt OptDateTime             `json:"createdAt"`
-	UpdatedAt OptDateTime             `json:"updatedAt"`
+	Type    EnvironmentAliasSysType `json:"type"`
+	ID      string                  `json:"id"`
+	Version int                     `json:"version"`
 }
 
 // GetSpace returns the value of Space.
@@ -4156,16 +4066,6 @@ func (s *EnvironmentAliasSys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *EnvironmentAliasSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *EnvironmentAliasSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetSpace sets the value of Space.
 func (s *EnvironmentAliasSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -4184,16 +4084,6 @@ func (s *EnvironmentAliasSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *EnvironmentAliasSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *EnvironmentAliasSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *EnvironmentAliasSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -4404,11 +4294,9 @@ func (*EnvironmentStatusCode) createOrUpdateEnvironmentRes() {}
 type EnvironmentSys struct {
 	Space SpaceLink `json:"space"`
 	// Merged property.
-	Type      EnvironmentSysType `json:"type"`
-	ID        string             `json:"id"`
-	Version   int                `json:"version"`
-	CreatedAt OptDateTime        `json:"createdAt"`
-	UpdatedAt OptDateTime        `json:"updatedAt"`
+	Type    EnvironmentSysType `json:"type"`
+	ID      string             `json:"id"`
+	Version int                `json:"version"`
 }
 
 // GetSpace returns the value of Space.
@@ -4431,16 +4319,6 @@ func (s *EnvironmentSys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *EnvironmentSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *EnvironmentSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetSpace sets the value of Space.
 func (s *EnvironmentSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -4459,16 +4337,6 @@ func (s *EnvironmentSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *EnvironmentSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *EnvironmentSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *EnvironmentSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -4964,11 +4832,9 @@ type ExtensionSys struct {
 	Space       SpaceLink       `json:"space"`
 	Environment EnvironmentLink `json:"environment"`
 	// Merged property.
-	Type      ExtensionSysType `json:"type"`
-	ID        string           `json:"id"`
-	Version   int              `json:"version"`
-	CreatedAt OptDateTime      `json:"createdAt"`
-	UpdatedAt OptDateTime      `json:"updatedAt"`
+	Type    ExtensionSysType `json:"type"`
+	ID      string           `json:"id"`
+	Version int              `json:"version"`
 }
 
 // GetSpace returns the value of Space.
@@ -4996,16 +4862,6 @@ func (s *ExtensionSys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *ExtensionSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *ExtensionSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetSpace sets the value of Space.
 func (s *ExtensionSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -5029,16 +4885,6 @@ func (s *ExtensionSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *ExtensionSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *ExtensionSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *ExtensionSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -7901,11 +7747,9 @@ func (*PreviewApiKey) getPreviewAPIKeyRes() {}
 type PreviewApiKeySys struct {
 	Space SpaceLink `json:"space"`
 	// Merged property.
-	Type      PreviewApiKeySysType `json:"type"`
-	ID        string               `json:"id"`
-	Version   int                  `json:"version"`
-	CreatedAt OptDateTime          `json:"createdAt"`
-	UpdatedAt OptDateTime          `json:"updatedAt"`
+	Type    PreviewApiKeySysType `json:"type"`
+	ID      string               `json:"id"`
+	Version int                  `json:"version"`
 }
 
 // GetSpace returns the value of Space.
@@ -7928,16 +7772,6 @@ func (s *PreviewApiKeySys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *PreviewApiKeySys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *PreviewApiKeySys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetSpace sets the value of Space.
 func (s *PreviewApiKeySys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -7956,16 +7790,6 @@ func (s *PreviewApiKeySys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *PreviewApiKeySys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *PreviewApiKeySys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *PreviewApiKeySys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -9488,11 +9312,9 @@ func (*RoleStatusCode) updateRoleRes() {}
 type RoleSys struct {
 	Space SpaceLink `json:"space"`
 	// Merged property.
-	Type      RoleSysType `json:"type"`
-	ID        string      `json:"id"`
-	Version   int         `json:"version"`
-	CreatedAt OptDateTime `json:"createdAt"`
-	UpdatedAt OptDateTime `json:"updatedAt"`
+	Type    RoleSysType `json:"type"`
+	ID      string      `json:"id"`
+	Version int         `json:"version"`
 }
 
 // GetSpace returns the value of Space.
@@ -9515,16 +9337,6 @@ func (s *RoleSys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *RoleSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *RoleSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetSpace sets the value of Space.
 func (s *RoleSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -9543,16 +9355,6 @@ func (s *RoleSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *RoleSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *RoleSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *RoleSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -9746,10 +9548,8 @@ func (*SpaceEnablementStatusCode) putSpaceEnablementsRes() {}
 type SpaceEnablementSys struct {
 	Space SpaceLink `json:"space"`
 	// Merged property.
-	Type      SpaceEnablementSysType `json:"type"`
-	Version   int                    `json:"version"`
-	CreatedAt OptDateTime            `json:"createdAt"`
-	UpdatedAt OptDateTime            `json:"updatedAt"`
+	Type    SpaceEnablementSysType `json:"type"`
+	Version int                    `json:"version"`
 }
 
 // GetSpace returns the value of Space.
@@ -9767,16 +9567,6 @@ func (s *SpaceEnablementSys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *SpaceEnablementSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *SpaceEnablementSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetSpace sets the value of Space.
 func (s *SpaceEnablementSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -9790,16 +9580,6 @@ func (s *SpaceEnablementSys) SetType(val SpaceEnablementSysType) {
 // SetVersion sets the value of Version.
 func (s *SpaceEnablementSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *SpaceEnablementSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *SpaceEnablementSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -10251,12 +10031,10 @@ type TagSys struct {
 	Space       SpaceLink       `json:"space"`
 	Environment EnvironmentLink `json:"environment"`
 	// Merged property.
-	Type       TagSysType  `json:"type"`
-	ID         string      `json:"id"`
-	Version    int         `json:"version"`
-	CreatedAt  OptDateTime `json:"createdAt"`
-	UpdatedAt  OptDateTime `json:"updatedAt"`
-	Visibility string      `json:"visibility"`
+	Type       TagSysType `json:"type"`
+	ID         string     `json:"id"`
+	Version    int        `json:"version"`
+	Visibility string     `json:"visibility"`
 }
 
 // GetSpace returns the value of Space.
@@ -10282,16 +10060,6 @@ func (s *TagSys) GetID() string {
 // GetVersion returns the value of Version.
 func (s *TagSys) GetVersion() int {
 	return s.Version
-}
-
-// GetCreatedAt returns the value of CreatedAt.
-func (s *TagSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *TagSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
 }
 
 // GetVisibility returns the value of Visibility.
@@ -10322,16 +10090,6 @@ func (s *TagSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *TagSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *TagSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *TagSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // SetVisibility sets the value of Visibility.
@@ -10902,11 +10660,9 @@ func (*TeamStatusCode) putTeamRes()    {}
 type TeamSys struct {
 	Organization OrganizationLink `json:"organization"`
 	// Merged property.
-	Type      TeamSysType `json:"type"`
-	ID        string      `json:"id"`
-	Version   int         `json:"version"`
-	CreatedAt OptDateTime `json:"createdAt"`
-	UpdatedAt OptDateTime `json:"updatedAt"`
+	Type    TeamSysType `json:"type"`
+	ID      string      `json:"id"`
+	Version int         `json:"version"`
 }
 
 // GetOrganization returns the value of Organization.
@@ -10929,16 +10685,6 @@ func (s *TeamSys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *TeamSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *TeamSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetOrganization sets the value of Organization.
 func (s *TeamSys) SetOrganization(val OrganizationLink) {
 	s.Organization = val
@@ -10957,16 +10703,6 @@ func (s *TeamSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *TeamSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *TeamSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *TeamSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -11059,11 +10795,9 @@ func (*User) getAuthenticatedUserRes() {}
 // Ref: #/UserSys
 type UserSys struct {
 	// Merged property.
-	Type      UserSysType `json:"type"`
-	ID        string      `json:"id"`
-	Version   int         `json:"version"`
-	CreatedAt OptDateTime `json:"createdAt"`
-	UpdatedAt OptDateTime `json:"updatedAt"`
+	Type    UserSysType `json:"type"`
+	ID      string      `json:"id"`
+	Version int         `json:"version"`
 }
 
 // GetType returns the value of Type.
@@ -11081,16 +10815,6 @@ func (s *UserSys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *UserSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *UserSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetType sets the value of Type.
 func (s *UserSys) SetType(val UserSysType) {
 	s.Type = val
@@ -11104,16 +10828,6 @@ func (s *UserSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *UserSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *UserSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *UserSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -11582,11 +11296,9 @@ func (*WebhookDefinitionStatusCode) updateWebhookDefinitionRes() {}
 type WebhookDefinitionSys struct {
 	Space SpaceLink `json:"space"`
 	// Merged property.
-	Type      WebhookDefinitionSysType `json:"type"`
-	ID        string                   `json:"id"`
-	Version   int                      `json:"version"`
-	CreatedAt OptDateTime              `json:"createdAt"`
-	UpdatedAt OptDateTime              `json:"updatedAt"`
+	Type    WebhookDefinitionSysType `json:"type"`
+	ID      string                   `json:"id"`
+	Version int                      `json:"version"`
 }
 
 // GetSpace returns the value of Space.
@@ -11609,16 +11321,6 @@ func (s *WebhookDefinitionSys) GetVersion() int {
 	return s.Version
 }
 
-// GetCreatedAt returns the value of CreatedAt.
-func (s *WebhookDefinitionSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *WebhookDefinitionSys) GetUpdatedAt() OptDateTime {
-	return s.UpdatedAt
-}
-
 // SetSpace sets the value of Space.
 func (s *WebhookDefinitionSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -11637,16 +11339,6 @@ func (s *WebhookDefinitionSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *WebhookDefinitionSys) SetVersion(val int) {
 	s.Version = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *WebhookDefinitionSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *WebhookDefinitionSys) SetUpdatedAt(val OptDateTime) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
