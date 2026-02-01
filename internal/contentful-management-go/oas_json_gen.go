@@ -369,27 +369,13 @@ func (s *ApiKeySys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfApiKeySys = [6]string{
+var jsonFieldsNameOfApiKeySys = [4]string{
 	0: "space",
 	1: "type",
 	2: "id",
 	3: "version",
-	4: "createdAt",
-	5: "updatedAt",
 }
 
 // Decode decodes ApiKeySys from json.
@@ -444,26 +430,6 @@ func (s *ApiKeySys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -6092,18 +6058,6 @@ func (s *ContentTypeSys) encodeFields(e *jx.Encoder) {
 		e.Int(s.Version)
 	}
 	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
 		if s.PublishedVersion.Set {
 			e.FieldStart("publishedVersion")
 			s.PublishedVersion.Encode(e)
@@ -6117,16 +6071,14 @@ func (s *ContentTypeSys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfContentTypeSys = [9]string{
+var jsonFieldsNameOfContentTypeSys = [7]string{
 	0: "space",
 	1: "environment",
 	2: "type",
 	3: "id",
 	4: "version",
-	5: "createdAt",
-	6: "updatedAt",
-	7: "publishedVersion",
-	8: "publishedAt",
+	5: "publishedVersion",
+	6: "publishedAt",
 }
 
 // Decode decodes ContentTypeSys from json.
@@ -6134,7 +6086,7 @@ func (s *ContentTypeSys) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode ContentTypeSys to nil")
 	}
-	var requiredBitSet [2]uint8
+	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -6192,26 +6144,6 @@ func (s *ContentTypeSys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
 			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
-			}
 		case "publishedVersion":
 			if err := func() error {
 				s.PublishedVersion.Reset()
@@ -6241,9 +6173,8 @@ func (s *ContentTypeSys) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [2]uint8{
+	for i, mask := range [1]uint8{
 		0b00011111,
-		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -8041,29 +7972,15 @@ func (s *EditorInterfaceSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfEditorInterfaceSys = [8]string{
+var jsonFieldsNameOfEditorInterfaceSys = [6]string{
 	0: "space",
 	1: "environment",
 	2: "type",
 	3: "id",
 	4: "contentType",
 	5: "version",
-	6: "createdAt",
-	7: "updatedAt",
 }
 
 // Decode decodes EditorInterfaceSys from json.
@@ -8138,26 +8055,6 @@ func (s *EditorInterfaceSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -8925,18 +8822,6 @@ func (s *EntrySys) encodeFields(e *jx.Encoder) {
 		e.Int(s.Version)
 	}
 	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
 		if s.PublishedVersion.Set {
 			e.FieldStart("publishedVersion")
 			s.PublishedVersion.Encode(e)
@@ -8950,17 +8835,15 @@ func (s *EntrySys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfEntrySys = [10]string{
+var jsonFieldsNameOfEntrySys = [8]string{
 	0: "space",
 	1: "environment",
 	2: "type",
 	3: "id",
 	4: "contentType",
 	5: "version",
-	6: "createdAt",
-	7: "updatedAt",
-	8: "publishedVersion",
-	9: "publishedAt",
+	6: "publishedVersion",
+	7: "publishedAt",
 }
 
 // Decode decodes EntrySys from json.
@@ -8968,7 +8851,7 @@ func (s *EntrySys) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode EntrySys to nil")
 	}
-	var requiredBitSet [2]uint8
+	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -9036,26 +8919,6 @@ func (s *EntrySys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
 			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
-			}
 		case "publishedVersion":
 			if err := func() error {
 				s.PublishedVersion.Reset()
@@ -9085,9 +8948,8 @@ func (s *EntrySys) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [2]uint8{
+	for i, mask := range [1]uint8{
 		0b00111111,
-		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -9510,27 +9372,13 @@ func (s *EnvironmentAliasSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfEnvironmentAliasSys = [6]string{
+var jsonFieldsNameOfEnvironmentAliasSys = [4]string{
 	0: "space",
 	1: "type",
 	2: "id",
 	3: "version",
-	4: "createdAt",
-	5: "updatedAt",
 }
 
 // Decode decodes EnvironmentAliasSys from json.
@@ -9585,26 +9433,6 @@ func (s *EnvironmentAliasSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -10117,27 +9945,13 @@ func (s *EnvironmentSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfEnvironmentSys = [6]string{
+var jsonFieldsNameOfEnvironmentSys = [4]string{
 	0: "space",
 	1: "type",
 	2: "id",
 	3: "version",
-	4: "createdAt",
-	5: "updatedAt",
 }
 
 // Decode decodes EnvironmentSys from json.
@@ -10192,26 +10006,6 @@ func (s *EnvironmentSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -11721,28 +11515,14 @@ func (s *ExtensionSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfExtensionSys = [7]string{
+var jsonFieldsNameOfExtensionSys = [5]string{
 	0: "space",
 	1: "environment",
 	2: "type",
 	3: "id",
 	4: "version",
-	5: "createdAt",
-	6: "updatedAt",
 }
 
 // Decode decodes ExtensionSys from json.
@@ -11807,26 +11587,6 @@ func (s *ExtensionSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -15580,27 +15340,13 @@ func (s *PreviewApiKeySys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfPreviewApiKeySys = [6]string{
+var jsonFieldsNameOfPreviewApiKeySys = [4]string{
 	0: "space",
 	1: "type",
 	2: "id",
 	3: "version",
-	4: "createdAt",
-	5: "updatedAt",
 }
 
 // Decode decodes PreviewApiKeySys from json.
@@ -15655,26 +15401,6 @@ func (s *PreviewApiKeySys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -18927,27 +18653,13 @@ func (s *RoleSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfRoleSys = [6]string{
+var jsonFieldsNameOfRoleSys = [4]string{
 	0: "space",
 	1: "type",
 	2: "id",
 	3: "version",
-	4: "createdAt",
-	5: "updatedAt",
 }
 
 // Decode decodes RoleSys from json.
@@ -19002,26 +18714,6 @@ func (s *RoleSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -19510,26 +19202,12 @@ func (s *SpaceEnablementSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfSpaceEnablementSys = [5]string{
+var jsonFieldsNameOfSpaceEnablementSys = [3]string{
 	0: "space",
 	1: "type",
 	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
 }
 
 // Decode decodes SpaceEnablementSys from json.
@@ -19572,26 +19250,6 @@ func (s *SpaceEnablementSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -20697,32 +20355,18 @@ func (s *TagSys) encodeFields(e *jx.Encoder) {
 		e.Int(s.Version)
 	}
 	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
 		e.FieldStart("visibility")
 		e.Str(s.Visibility)
 	}
 }
 
-var jsonFieldsNameOfTagSys = [8]string{
+var jsonFieldsNameOfTagSys = [6]string{
 	0: "space",
 	1: "environment",
 	2: "type",
 	3: "id",
 	4: "version",
-	5: "createdAt",
-	6: "updatedAt",
-	7: "visibility",
+	5: "visibility",
 }
 
 // Decode decodes TagSys from json.
@@ -20788,28 +20432,8 @@ func (s *TagSys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
 			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
-			}
 		case "visibility":
-			requiredBitSet[0] |= 1 << 7
+			requiredBitSet[0] |= 1 << 5
 			if err := func() error {
 				v, err := d.Str()
 				s.Visibility = string(v)
@@ -20830,7 +20454,7 @@ func (s *TagSys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b10011111,
+		0b00111111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -22208,27 +21832,13 @@ func (s *TeamSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfTeamSys = [6]string{
+var jsonFieldsNameOfTeamSys = [4]string{
 	0: "organization",
 	1: "type",
 	2: "id",
 	3: "version",
-	4: "createdAt",
-	5: "updatedAt",
 }
 
 // Decode decodes TeamSys from json.
@@ -22283,26 +21893,6 @@ func (s *TeamSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -22564,26 +22154,12 @@ func (s *UserSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfUserSys = [5]string{
+var jsonFieldsNameOfUserSys = [3]string{
 	0: "type",
 	1: "id",
 	2: "version",
-	3: "createdAt",
-	4: "updatedAt",
 }
 
 // Decode decodes UserSys from json.
@@ -22628,26 +22204,6 @@ func (s *UserSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -23953,27 +23509,13 @@ func (s *WebhookDefinitionSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
-	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
-		if s.UpdatedAt.Set {
-			e.FieldStart("updatedAt")
-			s.UpdatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
 }
 
-var jsonFieldsNameOfWebhookDefinitionSys = [6]string{
+var jsonFieldsNameOfWebhookDefinitionSys = [4]string{
 	0: "space",
 	1: "type",
 	2: "id",
 	3: "version",
-	4: "createdAt",
-	5: "updatedAt",
 }
 
 // Decode decodes WebhookDefinitionSys from json.
@@ -24028,26 +23570,6 @@ func (s *WebhookDefinitionSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			if err := func() error {
-				s.UpdatedAt.Reset()
-				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
