@@ -76,7 +76,7 @@ func WithAccessToken(accessToken string) Option {
 
 func (p *ContentfulProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manage Contentful space configuration.",
+		Description: "Manage Contentful spaces and related configuration with Terraform.",
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
 				Optional: true,
