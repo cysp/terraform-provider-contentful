@@ -2,9 +2,9 @@ package testing
 
 import cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 
-func NewEnvironmentFromEnvironmentData(spaceID, environmentID string, data cm.EnvironmentData) cm.Environment {
+func NewEnvironmentFromEnvironmentData(spaceID, environmentID, status string, data cm.EnvironmentData) cm.Environment {
 	return cm.Environment{
-		Sys:  cm.NewEnvironmentSys(spaceID, environmentID),
+		Sys:  cm.NewEnvironmentSys(spaceID, environmentID, status),
 		Name: data.Name,
 	}
 }

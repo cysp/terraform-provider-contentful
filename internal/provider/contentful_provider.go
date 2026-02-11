@@ -175,6 +175,7 @@ func (p *ContentfulProvider) Metadata(_ context.Context, _ provider.MetadataRequ
 func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewAppDefinitionDataSource,
+		NewEnvironmentStatusReadyDataSource,
 		NewMarketplaceAppDefinitionDataSource,
 		NewPreviewAPIKeyDataSource,
 	}

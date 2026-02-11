@@ -78,19 +78,19 @@ func NewHandler() *Handler {
 	}
 }
 
-func (h *Handler) RegisterSpaceEnvironment(spaceID, environmentID string) {
+func (h *Handler) RegisterSpaceEnvironment(spaceID, environmentID, status string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	h.registerSpaceEnvironment(spaceID, environmentID)
+	h.registerSpaceEnvironment(spaceID, environmentID, status)
 }
 
-func (h *Handler) registerSpaceEnvironment(spaceID, environmentID string) {
+func (h *Handler) registerSpaceEnvironment(spaceID, environmentID, status string) {
 	if h.environments.Get(spaceID, environmentID) != nil {
 		return
 	}
 
-	environment := NewEnvironmentFromEnvironmentData(spaceID, environmentID, cm.EnvironmentData{
+	environment := NewEnvironmentFromEnvironmentData(spaceID, environmentID, status, cm.EnvironmentData{
 		Name: environmentID,
 	})
 	h.environments.Set(spaceID, environmentID, &environment)
