@@ -5,6 +5,7 @@ EnvironmentSys:
     - $ref: "../sys/with-type.yml"
     - $ref: "../sys/with-id.yml"
     - $ref: "../sys/with-version.yml"
+    - $ref: "../sys/with-status.yml"
     - type: object
       properties:
         type:

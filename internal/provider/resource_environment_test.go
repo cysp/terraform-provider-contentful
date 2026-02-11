@@ -78,6 +78,7 @@ func TestAccEnvironmentImport(t *testing.T) {
 					resource.TestCheckResourceAttr("contentful_environment.test", "space_id", "space-id"),
 					resource.TestCheckResourceAttr("contentful_environment.test", "environment_id", "staging"),
 					resource.TestCheckResourceAttr("contentful_environment.test", "name", "Staging Environment"),
+					resource.TestCheckResourceAttr("contentful_environment.test", "status", "ready"),
 				),
 			},
 			{
