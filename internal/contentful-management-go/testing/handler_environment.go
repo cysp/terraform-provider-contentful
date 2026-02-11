@@ -18,7 +18,7 @@ func (ts *Handler) CreateOrUpdateEnvironment(_ context.Context, req *cm.Environm
 
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
 	if environment == nil {
-		environment := NewEnvironmentFromEnvironmentData(params.SpaceID, params.EnvironmentID, *req)
+		environment := NewEnvironmentFromEnvironmentData(params.SpaceID, params.EnvironmentID, "ready", *req)
 		ts.environments.Set(params.SpaceID, params.EnvironmentID, &environment)
 
 		return &cm.EnvironmentStatusCode{

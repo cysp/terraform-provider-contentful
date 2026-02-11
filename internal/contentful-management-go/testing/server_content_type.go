@@ -8,7 +8,7 @@ func (s *Server) SetContentType(spaceID, environmentID, contentTypeID string, co
 	s.h.mu.Lock()
 	defer s.h.mu.Unlock()
 
-	s.h.registerSpaceEnvironment(spaceID, environmentID)
+	s.h.registerSpaceEnvironment(spaceID, environmentID, "ready")
 
 	contentType := NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID, contentTypeFields)
 	s.h.contentTypes.Set(spaceID, environmentID, contentTypeID, &contentType)

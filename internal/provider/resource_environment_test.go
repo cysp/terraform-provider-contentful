@@ -58,7 +58,7 @@ func TestAccEnvironmentImport(t *testing.T) {
 
 	server.RegisterSpaceEnvironment("space-id", "master")
 
-	server.SetEnvironment("space-id", "staging", cm.EnvironmentData{
+	server.SetEnvironment("space-id", "staging", "ready", cm.EnvironmentData{
 		Name: "Staging Environment",
 	})
 
