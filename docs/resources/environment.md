@@ -37,6 +37,7 @@ resource "contentful_environment" "example" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `status` (String) Status of the environment.
 
 ## Import
 

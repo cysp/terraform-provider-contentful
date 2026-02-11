@@ -36,6 +36,10 @@ func EnvironmentResourceSchema(_ context.Context) schema.Schema {
 				Description: "Name of the environment.",
 				Required:    true,
 			},
+			"status": schema.StringAttribute{
+				Description: "Status of the environment.",
+				Computed:    true,
+			},
 			"source_environment_id": schema.StringAttribute{
 				Description: "ID of the source environment from which to copy content. Environments are created as a copy of an existing environment.",
 				Optional:    true,

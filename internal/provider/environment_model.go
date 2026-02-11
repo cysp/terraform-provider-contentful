@@ -14,5 +14,6 @@ type EnvironmentModel struct {
 	EnvironmentIdentityModel
 
 	Name                types.String `tfsdk:"name"`
+	Status              types.String `tfsdk:"status"`
 	SourceEnvironmentID types.String `tfsdk:"source_environment_id"`
 }

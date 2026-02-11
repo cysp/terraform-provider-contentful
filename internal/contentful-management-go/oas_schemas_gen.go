@@ -4297,6 +4297,7 @@ type EnvironmentSys struct {
 	Type    EnvironmentSysType `json:"type"`
 	ID      string             `json:"id"`
 	Version int                `json:"version"`
+	Status  OptStatusLink      `json:"status"`
 }
 
 // GetSpace returns the value of Space.
@@ -4319,6 +4320,11 @@ func (s *EnvironmentSys) GetVersion() int {
 	return s.Version
 }
 
+// GetStatus returns the value of Status.
+func (s *EnvironmentSys) GetStatus() OptStatusLink {
+	return s.Status
+}
+
 // SetSpace sets the value of Space.
 func (s *EnvironmentSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -4337,6 +4343,11 @@ func (s *EnvironmentSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *EnvironmentSys) SetVersion(val int) {
 	s.Version = val
+}
+
+// SetStatus sets the value of Status.
+func (s *EnvironmentSys) SetStatus(val OptStatusLink) {
+	s.Status = val
 }
 
 // Merged schema.
@@ -7116,6 +7127,52 @@ func (o OptSpaceEnablementField) Or(d SpaceEnablementField) SpaceEnablementField
 	return d
 }
 
+// NewOptStatusLink returns new OptStatusLink with value set to v.
+func NewOptStatusLink(v StatusLink) OptStatusLink {
+	return OptStatusLink{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptStatusLink is optional StatusLink.
+type OptStatusLink struct {
+	Value StatusLink
+	Set   bool
+}
+
+// IsSet returns true if OptStatusLink was set.
+func (o OptStatusLink) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptStatusLink) Reset() {
+	var v StatusLink
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptStatusLink) SetTo(v StatusLink) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptStatusLink) Get() (v StatusLink, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptStatusLink) Or(d StatusLink) StatusLink {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptString returns new OptString with value set to v.
 func NewOptString(v string) OptString {
 	return OptString{
@@ -9735,6 +9792,130 @@ func (s *SpaceLinkSysType) UnmarshalText(data []byte) error {
 	switch SpaceLinkSysType(data) {
 	case SpaceLinkSysTypeLink:
 		*s = SpaceLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/StatusLink
+type StatusLink struct {
+	Sys StatusLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *StatusLink) GetSys() StatusLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *StatusLink) SetSys(val StatusLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type StatusLinkSys struct {
+	// Merged property.
+	Type StatusLinkSysType `json:"type"`
+	ID   string            `json:"id"`
+	// Merged property.
+	LinkType StatusLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *StatusLinkSys) GetType() StatusLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *StatusLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *StatusLinkSys) GetLinkType() StatusLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *StatusLinkSys) SetType(val StatusLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *StatusLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *StatusLinkSys) SetLinkType(val StatusLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type StatusLinkSysLinkType string
+
+const (
+	StatusLinkSysLinkTypeStatus StatusLinkSysLinkType = "Status"
+)
+
+// AllValues returns all StatusLinkSysLinkType values.
+func (StatusLinkSysLinkType) AllValues() []StatusLinkSysLinkType {
+	return []StatusLinkSysLinkType{
+		StatusLinkSysLinkTypeStatus,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s StatusLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case StatusLinkSysLinkTypeStatus:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *StatusLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch StatusLinkSysLinkType(data) {
+	case StatusLinkSysLinkTypeStatus:
+		*s = StatusLinkSysLinkTypeStatus
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type StatusLinkSysType string
+
+const (
+	StatusLinkSysTypeLink StatusLinkSysType = "Link"
+)
+
+// AllValues returns all StatusLinkSysType values.
+func (StatusLinkSysType) AllValues() []StatusLinkSysType {
+	return []StatusLinkSysType{
+		StatusLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s StatusLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case StatusLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *StatusLinkSysType) UnmarshalText(data []byte) error {
+	switch StatusLinkSysType(data) {
+	case StatusLinkSysTypeLink:
+		*s = StatusLinkSysTypeLink
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
