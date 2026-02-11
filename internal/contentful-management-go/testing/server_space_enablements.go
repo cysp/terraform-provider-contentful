@@ -8,7 +8,7 @@ func (s *Server) SetSpaceEnablements(spaceID string, spaceEnablementFields cm.Sp
 	s.h.mu.Lock()
 	defer s.h.mu.Unlock()
 
-	s.h.registerSpaceEnvironment(spaceID, "master")
+	s.h.registerSpaceEnvironment(spaceID, "master", "ready")
 
 	spaceEnablements := NewSpaceEnablementFromRequestFields(spaceID, spaceEnablementFields)
 	s.h.enablements[spaceID] = &spaceEnablements

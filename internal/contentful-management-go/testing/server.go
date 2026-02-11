@@ -51,5 +51,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) RegisterSpaceEnvironment(spaceID, environmentID string) {
-	s.h.RegisterSpaceEnvironment(spaceID, environmentID)
+	s.RegisterSpaceEnvironmentWithStatus(spaceID, environmentID, "ready")
+}
+
+func (s *Server) RegisterSpaceEnvironmentWithStatus(spaceID, environmentID, status string) {
+	s.h.RegisterSpaceEnvironment(spaceID, environmentID, status)
 }
