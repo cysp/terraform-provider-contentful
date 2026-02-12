@@ -4297,7 +4297,7 @@ type EnvironmentSys struct {
 	Type    EnvironmentSysType `json:"type"`
 	ID      string             `json:"id"`
 	Version int                `json:"version"`
-	Status  OptStatusLink      `json:"status"`
+	Status  StatusLink         `json:"status"`
 }
 
 // GetSpace returns the value of Space.
@@ -4321,7 +4321,7 @@ func (s *EnvironmentSys) GetVersion() int {
 }
 
 // GetStatus returns the value of Status.
-func (s *EnvironmentSys) GetStatus() OptStatusLink {
+func (s *EnvironmentSys) GetStatus() StatusLink {
 	return s.Status
 }
 
@@ -4346,7 +4346,7 @@ func (s *EnvironmentSys) SetVersion(val int) {
 }
 
 // SetStatus sets the value of Status.
-func (s *EnvironmentSys) SetStatus(val OptStatusLink) {
+func (s *EnvironmentSys) SetStatus(val StatusLink) {
 	s.Status = val
 }
 
@@ -7121,52 +7121,6 @@ func (o OptSpaceEnablementField) Get() (v SpaceEnablementField, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptSpaceEnablementField) Or(d SpaceEnablementField) SpaceEnablementField {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptStatusLink returns new OptStatusLink with value set to v.
-func NewOptStatusLink(v StatusLink) OptStatusLink {
-	return OptStatusLink{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptStatusLink is optional StatusLink.
-type OptStatusLink struct {
-	Value StatusLink
-	Set   bool
-}
-
-// IsSet returns true if OptStatusLink was set.
-func (o OptStatusLink) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptStatusLink) Reset() {
-	var v StatusLink
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptStatusLink) SetTo(v StatusLink) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptStatusLink) Get() (v StatusLink, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptStatusLink) Or(d StatusLink) StatusLink {
 	if v, ok := o.Get(); ok {
 		return v
 	}
