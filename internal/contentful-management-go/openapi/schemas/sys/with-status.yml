@@ -2,3 +2,5 @@ type: object
 properties:
   status:
     $ref: "../links/status-link.yml#/StatusLink"
+required:
+  - status

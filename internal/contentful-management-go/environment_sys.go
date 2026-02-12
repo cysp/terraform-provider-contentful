@@ -6,6 +6,6 @@ func NewEnvironmentSys(spaceID, environmentID string) EnvironmentSys {
 		ID:      environmentID,
 		Version: 1,
 		Space:   NewSpaceLink(spaceID),
-		Status:  NewOptStatusLink(NewStatusLink("ready")),
+		Status:  NewStatusLink("ready"),
 	}
 }
