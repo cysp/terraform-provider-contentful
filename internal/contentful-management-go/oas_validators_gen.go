@@ -2203,15 +2203,8 @@ func (s *EnvironmentSys) Validate() error {
 		})
 	}
 	if err := func() error {
-		if value, ok := s.Status.Get(); ok {
-			if err := func() error {
-				if err := value.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
+		if err := s.Status.Validate(); err != nil {
+			return err
 		}
 		return nil
 	}(); err != nil {
