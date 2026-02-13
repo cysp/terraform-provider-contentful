@@ -8,13 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEnvironmentResourceModelFromResponse(_ context.Context, environment cm.Environment) (EnvironmentModel, diag.Diagnostics) {
+func NewEnvironmentStatusReadyModelFromResponse(_ context.Context, environment cm.Environment) (EnvironmentStatusReadyModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := environment.Sys.Space.Sys.ID
 	environmentID := environment.Sys.ID
 
-	model := EnvironmentModel{
+	model := EnvironmentStatusReadyModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID),
 		EnvironmentIdentityModel: EnvironmentIdentityModel{
 			SpaceID:       types.StringValue(spaceID),
@@ -22,8 +22,6 @@ func NewEnvironmentResourceModelFromResponse(_ context.Context, environment cm.E
 		},
 		Status: types.StringValue(environment.Sys.Status.Sys.ID),
 	}
-
-	model.Name = types.StringValue(environment.Name)
 
 	return model, diags
 }
