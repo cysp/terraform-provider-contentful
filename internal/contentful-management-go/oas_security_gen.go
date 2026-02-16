@@ -32,6 +32,7 @@ func findAuthorization(h http.Header, prefix string) (string, bool) {
 	return "", false
 }
 
+// operationRolesAccessToken is a private map storing roles per operation.
 var operationRolesAccessToken = map[string][]string{
 	ActivateContentTypeOperation:            []string{},
 	CreateAppDefinitionOperation:            []string{},
@@ -104,6 +105,27 @@ var operationRolesAccessToken = map[string][]string{
 	UpdateDeliveryAPIKeyOperation:           []string{},
 	UpdateRoleOperation:                     []string{},
 	UpdateWebhookDefinitionOperation:        []string{},
+}
+
+// GetRolesForAccessToken returns the required roles for the given operation.
+//
+// This is useful for authorization scenarios where you need to know which roles
+// are required for an operation.
+//
+// Example:
+//
+//	requiredRoles := GetRolesForAccessToken(AddPetOperation)
+//
+// Returns nil if the operation has no role requirements or if the operation is unknown.
+func GetRolesForAccessToken(operation string) []string {
+	roles, ok := operationRolesAccessToken[operation]
+	if !ok {
+		return nil
+	}
+	// Return a copy to prevent external modification
+	result := make([]string, len(roles))
+	copy(result, roles)
+	return result
 }
 
 func (s *Server) securityAccessToken(ctx context.Context, operationName OperationName, req *http.Request) (context.Context, bool, error) {
