@@ -1,5 +1,5 @@
 //nolint:dupl
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -14,7 +14,7 @@ func (ts *Handler) CreateRole(_ context.Context, req *cm.RoleData, params cm.Cre
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
 	role := NewRoleFromFields(params.SpaceID, generateResourceID(), *req)
@@ -33,7 +33,7 @@ func (ts *Handler) GetRole(_ context.Context, params cm.GetRoleParams) (cm.GetRo
 
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
 	if role == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Role not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Role not found"), nil), nil
 	}
 
 	return role, nil
@@ -45,7 +45,7 @@ func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleData, params cm.Upd
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
@@ -78,7 +78,7 @@ func (ts *Handler) DeleteRole(_ context.Context, params cm.DeleteRoleParams) (cm
 
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
 	if role == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Role not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Role not found"), nil), nil
 	}
 
 	ts.roles.Delete(params.SpaceID, params.RoleID)

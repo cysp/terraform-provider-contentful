@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func (ts *Handler) GetPreviewAPIKey(_ context.Context, params cm.GetPreviewAPIKe
 
 	previewAPIKey := ts.previewAPIKeys.Get(params.SpaceID, params.PreviewAPIKeyID)
 	if previewAPIKey == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("PreviewApiKey not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("PreviewApiKey not found"), nil), nil
 	}
 
 	return previewAPIKey, nil

@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -14,7 +14,7 @@ func (ts *Handler) GetTag(_ context.Context, params cm.GetTagParams) (cm.GetTagR
 
 	tag := ts.tags.Get(params.SpaceID, params.EnvironmentID, params.TagID)
 	if tag == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Tag not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Tag not found"), nil), nil
 	}
 
 	return tag, nil
@@ -26,7 +26,7 @@ func (ts *Handler) PutTag(_ context.Context, req *cm.TagRequest, params cm.PutTa
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	tag := ts.tags.Get(params.SpaceID, params.EnvironmentID, params.TagID)
@@ -60,7 +60,7 @@ func (ts *Handler) DeleteTag(_ context.Context, params cm.DeleteTagParams) (cm.D
 
 	tag := ts.tags.Get(params.SpaceID, params.EnvironmentID, params.TagID)
 	if tag == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Tag not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Tag not found"), nil), nil
 	}
 
 	ts.tags.Delete(params.SpaceID, params.EnvironmentID, params.TagID)

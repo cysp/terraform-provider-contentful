@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -14,12 +14,12 @@ func (ts *Handler) GetResourceType(_ context.Context, params cm.GetResourceTypeP
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
 	}
 
 	appDefinitionResourceType := ts.appDefinitionResourceTypes[params.ResourceTypeID]
 	if appDefinitionResourceType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceType not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceType not found"), nil), nil
 	}
 
 	return appDefinitionResourceType, nil
@@ -32,7 +32,7 @@ func (ts *Handler) PutResourceType(_ context.Context, req *cm.ResourceTypeData, 
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
 	}
 
 	resourceProviderID := appDefinitionResourceProvider.Sys.ID
@@ -64,12 +64,12 @@ func (ts *Handler) DeleteResourceType(_ context.Context, params cm.DeleteResourc
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
 	}
 
 	appDefinitionResourceType := ts.appDefinitionResourceTypes[params.ResourceTypeID]
 	if appDefinitionResourceType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceType not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceType not found"), nil), nil
 	}
 
 	delete(ts.appDefinitionResourceTypes, params.ResourceTypeID)

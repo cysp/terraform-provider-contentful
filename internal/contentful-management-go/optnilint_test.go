@@ -15,11 +15,11 @@ func TestNewOptNilPointerInt(t *testing.T) {
 		expected cm.OptNilInt
 	}{
 		"test": {
-			input:    addressOf(42),
+			input:    new(42),
 			expected: cm.NewOptNilInt(42),
 		},
 		"zero": {
-			input:    addressOf(0),
+			input:    new(0),
 			expected: cm.NewOptNilInt(0),
 		},
 		"nil": {
@@ -47,11 +47,11 @@ func TestNewOptNilPointerInt64(t *testing.T) {
 		expected cm.OptNilInt
 	}{
 		"test": {
-			input:    addressOf(int64(42)),
+			input:    new(int64(42)),
 			expected: cm.NewOptNilInt(42),
 		},
 		"zero": {
-			input:    addressOf(int64(0)),
+			input:    new(int64(0)),
 			expected: cm.NewOptNilInt(0),
 		},
 		"nil": {
@@ -80,11 +80,11 @@ func TestOptNilIntValueIntPointer(t *testing.T) {
 	}{
 		"test": {
 			input:    cm.NewOptNilInt(42),
-			expected: addressOf(42),
+			expected: new(42),
 		},
 		"zero": {
 			input:    cm.NewOptNilInt(0),
-			expected: addressOf(0),
+			expected: new(0),
 		},
 		"null": {
 			input:    cm.NewOptNilIntNull(),
@@ -116,11 +116,11 @@ func TestOptNilIntValueInt64Pointer(t *testing.T) {
 	}{
 		"test": {
 			input:    cm.NewOptNilInt(42),
-			expected: addressOf(int64(42)),
+			expected: new(int64(42)),
 		},
 		"zero": {
 			input:    cm.NewOptNilInt(0),
-			expected: addressOf(int64(0)),
+			expected: new(int64(0)),
 		},
 		"null": {
 			input:    cm.NewOptNilIntNull(),

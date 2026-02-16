@@ -15,11 +15,11 @@ func TestNewOptPointerString(t *testing.T) {
 		expected cm.OptString
 	}{
 		"test": {
-			input:    addressOf("test"),
+			input:    new("test"),
 			expected: cm.NewOptString("test"),
 		},
 		"empty": {
-			input:    addressOf(""),
+			input:    new(""),
 			expected: cm.NewOptString(""),
 		},
 		"nil": {
@@ -48,11 +48,11 @@ func TestOptStringValueStringPointer(t *testing.T) {
 	}{
 		"test": {
 			input:    cm.NewOptString("test"),
-			expected: addressOf("test"),
+			expected: new("test"),
 		},
 		"empty": {
 			input:    cm.NewOptString(""),
-			expected: addressOf(""),
+			expected: new(""),
 		},
 		"nil": {
 			input:    cm.OptString{},

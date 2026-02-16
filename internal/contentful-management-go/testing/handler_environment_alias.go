@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -14,7 +14,7 @@ func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.En
 
 	environment := ts.environments.Get(params.SpaceID, data.Environment.Sys.ID)
 	if environment == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)

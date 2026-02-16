@@ -28,9 +28,7 @@ func SetAttributeValues(ctx context.Context, value any, attributes map[string]at
 		attributeKeysRemaining[key] = struct{}{}
 	}
 
-	for i := range typ.NumField() {
-		field := typ.Field(i)
-
+	for field := range typ.Fields() {
 		if !field.IsExported() {
 			continue
 		}

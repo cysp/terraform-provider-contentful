@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 type ConstraintOptNil[T any] interface {
 	Get() (T, bool)

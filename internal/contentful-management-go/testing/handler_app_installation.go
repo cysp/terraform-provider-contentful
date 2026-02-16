@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -13,12 +13,12 @@ func (ts *Handler) GetAppInstallation(_ context.Context, params cm.GetAppInstall
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 	if appInstallation == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppInstallation not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("AppInstallation not found"), nil), nil
 	}
 
 	return appInstallation, nil
@@ -30,11 +30,11 @@ func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallation
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	if ts.appDefinitions[params.AppDefinitionID] == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinition not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
 	}
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
@@ -63,7 +63,7 @@ func (ts *Handler) DeleteAppInstallation(_ context.Context, params cm.DeleteAppI
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 	if appInstallation == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppInstallation not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("AppInstallation not found"), nil), nil
 	}
 
 	ts.appInstallations.Delete(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)

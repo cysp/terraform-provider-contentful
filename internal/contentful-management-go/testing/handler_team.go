@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func (ts *Handler) GetTeam(_ context.Context, params cm.GetTeamParams) (cm.GetTe
 
 	team := ts.teams.Get(params.OrganizationID, params.TeamID)
 	if team == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Team not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Team not found"), nil), nil
 	}
 
 	return team, nil
@@ -70,7 +70,7 @@ func (ts *Handler) DeleteTeam(_ context.Context, params cm.DeleteTeamParams) (cm
 
 	team := ts.teams.Get(params.OrganizationID, params.TeamID)
 	if team == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Team not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Team not found"), nil), nil
 	}
 
 	ts.teams.Delete(params.OrganizationID, params.TeamID)

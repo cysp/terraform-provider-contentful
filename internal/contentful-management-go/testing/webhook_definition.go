@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 

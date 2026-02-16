@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"net/http"

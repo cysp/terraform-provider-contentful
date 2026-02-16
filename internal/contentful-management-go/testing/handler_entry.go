@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	skip := params.Skip.Or(0)
@@ -49,7 +49,7 @@ func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params c
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	entryID := generateResourceID()
@@ -70,7 +70,7 @@ func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.Get
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Entry not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
 	return entry, nil
@@ -82,7 +82,7 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
@@ -115,7 +115,7 @@ func (ts *Handler) DeleteEntry(_ context.Context, params cm.DeleteEntryParams) (
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Entry not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
 	ts.entries.Delete(params.SpaceID, params.EnvironmentID, params.EntryID)
@@ -130,7 +130,7 @@ func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams)
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Entry not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
 	publishEntry(entry)
@@ -148,7 +148,7 @@ func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryPar
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Entry not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
 	entry.Sys.PublishedVersion.Reset()
