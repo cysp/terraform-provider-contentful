@@ -15,11 +15,11 @@ func TestNewNilPointerString(t *testing.T) {
 		expected cm.NilString
 	}{
 		"test": {
-			input:    addressOf("test"),
+			input:    new("test"),
 			expected: cm.NewNilString("test"),
 		},
 		"empty": {
-			input:    addressOf(""),
+			input:    new(""),
 			expected: cm.NewNilString(""),
 		},
 		"nil": {
@@ -48,11 +48,11 @@ func TestNilStringValueStringPointer(t *testing.T) {
 	}{
 		"test": {
 			input:    cm.NewNilString("test"),
-			expected: addressOf("test"),
+			expected: new("test"),
 		},
 		"empty": {
 			input:    cm.NewNilString(""),
-			expected: addressOf(""),
+			expected: new(""),
 		},
 		"null": {
 			input:    cm.NewNilStringNull(),

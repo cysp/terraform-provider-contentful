@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 type OrganizationMap[Value any] struct {
 	m map[string]map[string]Value

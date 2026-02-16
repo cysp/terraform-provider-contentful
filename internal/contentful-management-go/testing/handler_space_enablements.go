@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -13,16 +13,19 @@ func (ts *Handler) GetSpaceEnablements(_ context.Context, params cm.GetSpaceEnab
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
 	enablements, ok := ts.enablements[params.SpaceID]
 	if !ok {
-		enablements = pointerTo(NewSpaceEnablement(params.SpaceID))
+		initial := NewSpaceEnablement(params.SpaceID)
+		enablements = &initial
 		ts.enablements[params.SpaceID] = enablements
 	}
 
-	return pointerTo(cm.GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK(*enablements)), nil
+	response := cm.GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK(*enablements)
+
+	return &response, nil
 }
 
 //nolint:ireturn
@@ -31,12 +34,13 @@ func (ts *Handler) PutSpaceEnablements(_ context.Context, req *cm.SpaceEnablemen
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
 	enablements, ok := ts.enablements[params.SpaceID]
 	if !ok {
-		enablements = pointerTo(NewSpaceEnablement(params.SpaceID))
+		initial := NewSpaceEnablement(params.SpaceID)
+		enablements = &initial
 		enablements.Sys.Version = 1
 		ts.enablements[params.SpaceID] = enablements
 	}

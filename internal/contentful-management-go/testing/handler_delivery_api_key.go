@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func (ts *Handler) CreateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequest
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
 	apiKeyID := generateResourceID()
@@ -44,7 +44,7 @@ func (ts *Handler) GetDeliveryAPIKey(_ context.Context, params cm.GetDeliveryAPI
 
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
 	if apiKey == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ApiKey not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ApiKey not found"), nil), nil
 	}
 
 	return apiKey, nil
@@ -56,7 +56,7 @@ func (ts *Handler) UpdateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequest
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
@@ -89,7 +89,7 @@ func (ts *Handler) DeleteDeliveryAPIKey(_ context.Context, params cm.DeleteDeliv
 
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
 	if apiKey == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ApiKey not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ApiKey not found"), nil), nil
 	}
 
 	ts.apiKeys.Delete(params.SpaceID, params.APIKeyID)

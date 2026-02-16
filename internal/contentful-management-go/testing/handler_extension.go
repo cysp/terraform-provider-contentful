@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -14,7 +14,7 @@ func (ts *Handler) GetExtension(_ context.Context, params cm.GetExtensionParams)
 
 	extension := ts.extensions.Get(params.SpaceID, params.EnvironmentID, params.ExtensionID)
 	if extension == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Extension not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Extension not found"), nil), nil
 	}
 
 	return extension, nil
@@ -26,7 +26,7 @@ func (ts *Handler) PutExtension(_ context.Context, req *cm.ExtensionData, params
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	extension := ts.extensions.Get(params.SpaceID, params.EnvironmentID, params.ExtensionID)
@@ -55,7 +55,7 @@ func (ts *Handler) DeleteExtension(_ context.Context, params cm.DeleteExtensionP
 
 	extension := ts.extensions.Get(params.SpaceID, params.EnvironmentID, params.ExtensionID)
 	if extension == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Extension not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Extension not found"), nil), nil
 	}
 
 	ts.extensions.Delete(params.SpaceID, params.EnvironmentID, params.ExtensionID)

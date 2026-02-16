@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func (ts *Handler) CreateOrUpdateEnvironment(_ context.Context, req *cm.Environm
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
@@ -46,7 +46,7 @@ func (ts *Handler) GetEnvironment(_ context.Context, params cm.GetEnvironmentPar
 
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
 	if environment == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	return environment, nil
@@ -59,7 +59,7 @@ func (ts *Handler) DeleteEnvironment(_ context.Context, params cm.DeleteEnvironm
 
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
 	if environment == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Environment not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
 	ts.environments.Delete(params.SpaceID, params.EnvironmentID)

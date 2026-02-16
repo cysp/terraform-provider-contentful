@@ -15,11 +15,11 @@ func TestNewOptPointerBool(t *testing.T) {
 		expected cm.OptBool
 	}{
 		"true": {
-			input:    addressOf(true),
+			input:    new(true),
 			expected: cm.NewOptBool(true),
 		},
 		"false": {
-			input:    addressOf(false),
+			input:    new(false),
 			expected: cm.NewOptBool(false),
 		},
 		"nil": {
@@ -48,11 +48,11 @@ func TestOptBoolValueBoolPointer(t *testing.T) {
 	}{
 		"true": {
 			input:    cm.NewOptBool(true),
-			expected: addressOf(true),
+			expected: new(true),
 		},
 		"false": {
 			input:    cm.NewOptBool(false),
-			expected: addressOf(false),
+			expected: new(false),
 		},
 		"nil": {
 			input:    cm.OptBool{},

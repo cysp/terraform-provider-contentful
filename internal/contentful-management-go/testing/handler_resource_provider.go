@@ -1,5 +1,5 @@
 //nolint:dupl
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -15,7 +15,7 @@ func (ts *Handler) GetResourceProvider(_ context.Context, params cm.GetResourceP
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
 	}
 
 	return appDefinitionResourceProvider, nil
@@ -28,7 +28,7 @@ func (ts *Handler) PutResourceProvider(_ context.Context, req *cm.ResourceProvid
 
 	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinition not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
 	}
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
@@ -57,7 +57,7 @@ func (ts *Handler) DeleteResourceProvider(_ context.Context, params cm.DeleteRes
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ResourceProvider not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
 	}
 
 	delete(ts.appDefinitionResourceProviders, params.AppDefinitionID)

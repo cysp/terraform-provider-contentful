@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"net/http"
@@ -47,7 +47,7 @@ func notFoundHandler(w http.ResponseWriter, _ *http.Request) {
 		w,
 		http.StatusNotFound,
 		cm.ErrorSysIDNotFound,
-		pointerTo("The resource could not be found."),
+		new("The resource could not be found."),
 		nil,
 	)
 }

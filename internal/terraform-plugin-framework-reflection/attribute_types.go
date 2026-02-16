@@ -32,9 +32,7 @@ func extractAttributeTypesOf(ctx context.Context, attributeTypes map[string]attr
 		typ = typ.Elem()
 	}
 
-	for i := range typ.NumField() {
-		field := typ.Field(i)
-
+	for field := range typ.Fields() {
 		if field.Type.Kind() == reflect.Struct && field.Anonymous {
 			extractAttributeTypesOf(ctx, attributeTypes, field.Type)
 

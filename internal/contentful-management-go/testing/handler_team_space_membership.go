@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func (ts *Handler) CreateTeamSpaceMembership(_ context.Context, req *cm.TeamSpac
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Space not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
 	teamSpaceMembershipID := generateResourceID()
@@ -33,7 +33,7 @@ func (ts *Handler) GetTeamSpaceMembership(_ context.Context, params cm.GetTeamSp
 
 	teamSpaceMembership := ts.teamSpaceMemberships.Get(params.SpaceID, params.TeamSpaceMembershipID)
 	if teamSpaceMembership == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Team space membership not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Team space membership not found"), nil), nil
 	}
 
 	return teamSpaceMembership, nil
@@ -46,7 +46,7 @@ func (ts *Handler) PutTeamSpaceMembership(_ context.Context, req *cm.TeamSpaceMe
 
 	teamSpaceMembership := ts.teamSpaceMemberships.Get(params.SpaceID, params.TeamSpaceMembershipID)
 	if teamSpaceMembership == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Team space membership not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Team space membership not found"), nil), nil
 	}
 
 	UpdateTeamSpaceMembershipFromFields(teamSpaceMembership, params.SpaceID, params.TeamSpaceMembershipID, teamSpaceMembership.Sys.Team.Sys.ID, *req)
@@ -64,7 +64,7 @@ func (ts *Handler) DeleteTeamSpaceMembership(_ context.Context, params cm.Delete
 
 	teamSpaceMembership := ts.teamSpaceMemberships.Get(params.SpaceID, params.TeamSpaceMembershipID)
 	if teamSpaceMembership == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("Team space membership not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Team space membership not found"), nil), nil
 	}
 
 	ts.teamSpaceMemberships.Delete(params.SpaceID, params.TeamSpaceMembershipID)

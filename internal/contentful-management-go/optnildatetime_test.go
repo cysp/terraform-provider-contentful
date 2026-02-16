@@ -19,7 +19,7 @@ func TestOptNilDateTimeValueTimePointer(t *testing.T) {
 	}{
 		"valid": {
 			input:    cm.NewOptNilDateTime(epoch),
-			expected: addressOf(epoch),
+			expected: new(epoch),
 		},
 		"null": {
 			input:    cm.NewOptNilDateTimeNull(),

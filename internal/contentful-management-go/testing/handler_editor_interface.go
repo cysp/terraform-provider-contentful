@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -14,7 +14,7 @@ func (ts *Handler) GetEditorInterface(_ context.Context, params cm.GetEditorInte
 
 	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if editorInterface == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("EditorInterface not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("EditorInterface not found"), nil), nil
 	}
 
 	return editorInterface, nil
@@ -27,7 +27,7 @@ func (ts *Handler) PutEditorInterface(_ context.Context, req *cm.EditorInterface
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("ContentType not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
 	}
 
 	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)

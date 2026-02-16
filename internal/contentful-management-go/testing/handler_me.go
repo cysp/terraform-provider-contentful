@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func (ts *Handler) GetAuthenticatedUser(_ context.Context) (cm.GetAuthenticatedU
 
 	switch ts.me {
 	case nil:
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("The authenticated user could not be found."), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("The authenticated user could not be found."), nil), nil
 	default:
 		return ts.me, nil
 	}

@@ -1,4 +1,4 @@
-package testing
+package cmtesting
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func (ts *Handler) GetAppDefinition(_ context.Context, params cm.GetAppDefinitio
 
 	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinition not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
 	}
 
 	return appDefinition, nil
@@ -66,7 +66,7 @@ func (ts *Handler) DeleteAppDefinition(_ context.Context, params cm.DeleteAppDef
 
 	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(pointerTo("AppDefinition not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
 	}
 
 	delete(ts.appDefinitions, params.AppDefinitionID)
