@@ -910,23 +910,6 @@ func (s *ContentTypeFieldsItem) Validate() error {
 				if value == nil {
 					return errors.New("nil is invalid value")
 				}
-				var failures []validate.FieldError
-				for i, elem := range value {
-					if err := func() error {
-						if err := elem.Validate(); err != nil {
-							return err
-						}
-						return nil
-					}(); err != nil {
-						failures = append(failures, validate.FieldError{
-							Name:  fmt.Sprintf("[%d]", i),
-							Error: err,
-						})
-					}
-				}
-				if len(failures) > 0 {
-					return &validate.Error{Fields: failures}
-				}
 				return nil
 			}(); err != nil {
 				return err
@@ -1204,23 +1187,6 @@ func (s *ContentTypeRequestDataFieldsItem) Validate() error {
 				if value == nil {
 					return errors.New("nil is invalid value")
 				}
-				var failures []validate.FieldError
-				for i, elem := range value {
-					if err := func() error {
-						if err := elem.Validate(); err != nil {
-							return err
-						}
-						return nil
-					}(); err != nil {
-						failures = append(failures, validate.FieldError{
-							Name:  fmt.Sprintf("[%d]", i),
-							Error: err,
-						})
-					}
-				}
-				if len(failures) > 0 {
-					return &validate.Error{Fields: failures}
-				}
 				return nil
 			}(); err != nil {
 				return err
@@ -1310,49 +1276,6 @@ func (s *ContentTypeSys) Validate() error {
 func (s ContentTypeSysType) Validate() error {
 	switch s {
 	case "ContentType":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
-func (s *ContentfulEntryResourceLink) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if s.ContentTypes == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "contentTypes",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s ContentfulEntryResourceLinkType) Validate() error {
-	switch s {
-	case "Contentful:Entry":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
@@ -2987,20 +2910,6 @@ func (s PreviewApiKeySysType) Validate() error {
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
-func (s ResourceLink) Validate() error {
-	switch s.Type {
-	case ContentfulEntryResourceLinkResourceLink:
-		if err := s.ContentfulEntryResourceLink.Validate(); err != nil {
-			return err
-		}
-		return nil
-	case ExternalResourceLinkResourceLink:
-		return nil // no validation needed
-	default:
-		return errors.Errorf("invalid type %q", s.Type)
 	}
 }
 

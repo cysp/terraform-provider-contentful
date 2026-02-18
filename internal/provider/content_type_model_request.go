@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
+const contentfulEntryAllowedResourceType = "Contentful:Entry"
+
 func (m *ContentTypeModel) ToContentTypeRequestData(ctx context.Context) (cm.ContentTypeRequestData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -172,9 +174,9 @@ func (v ContentTypeFieldAllowedResourceItemValue) ToResourceLink(ctx context.Con
 func (v ContentTypeFieldAllowedResourceItemExternalValue) SetResourceLink(_ context.Context, _ path.Path, resourceLink *cm.ResourceLink) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	resourceLink.SetExternalResourceLink(cm.ExternalResourceLink{
-		Type: v.TypeID.ValueString(),
-	})
+	resourceLink.Type = v.TypeID.ValueString()
+	resourceLink.Source = cm.OptString{}
+	resourceLink.ContentTypes = nil
 
 	return diags
 }
@@ -185,11 +187,9 @@ func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SetResourceLink
 	contentTypes := make([]string, len(v.ContentTypes.Elements()))
 	diags.Append(tfsdk.ValueAs(ctx, v.ContentTypes, &contentTypes)...)
 
-	resourceLink.SetContentfulEntryResourceLink(cm.ContentfulEntryResourceLink{
-		Type:         cm.ContentfulEntryResourceLinkTypeContentfulEntry,
-		Source:       v.Source.ValueString(),
-		ContentTypes: contentTypes,
-	})
+	resourceLink.Type = contentfulEntryAllowedResourceType
+	resourceLink.Source = cm.NewOptString(v.Source.ValueString())
+	resourceLink.ContentTypes = contentTypes
 
 	return diags
 }
