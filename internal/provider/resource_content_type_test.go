@@ -13,7 +13,6 @@ import (
 )
 
 func TestAccContentTypeResourceImport(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -72,7 +71,6 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 }
 
 func TestAccContentTypeResourceImportNotFound(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -102,7 +100,6 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 }
 
 func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -123,7 +120,6 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 }
 
 func TestAccContentTypeResourceCreate(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -148,7 +144,6 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 }
 
 func TestAccContentTypeResourceUpdate(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -209,7 +204,6 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 }
 
 func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -248,7 +242,6 @@ func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 }
 
 func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -289,7 +282,6 @@ func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
 }
 
 func TestAccContentTypeResourceDeleted(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
