@@ -2865,77 +2865,6 @@ func (s *ContentTypeSysType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/ContentfulEntryResourceLink
-type ContentfulEntryResourceLink struct {
-	Type         ContentfulEntryResourceLinkType `json:"type"`
-	Source       string                          `json:"source"`
-	ContentTypes []string                        `json:"contentTypes"`
-}
-
-// GetType returns the value of Type.
-func (s *ContentfulEntryResourceLink) GetType() ContentfulEntryResourceLinkType {
-	return s.Type
-}
-
-// GetSource returns the value of Source.
-func (s *ContentfulEntryResourceLink) GetSource() string {
-	return s.Source
-}
-
-// GetContentTypes returns the value of ContentTypes.
-func (s *ContentfulEntryResourceLink) GetContentTypes() []string {
-	return s.ContentTypes
-}
-
-// SetType sets the value of Type.
-func (s *ContentfulEntryResourceLink) SetType(val ContentfulEntryResourceLinkType) {
-	s.Type = val
-}
-
-// SetSource sets the value of Source.
-func (s *ContentfulEntryResourceLink) SetSource(val string) {
-	s.Source = val
-}
-
-// SetContentTypes sets the value of ContentTypes.
-func (s *ContentfulEntryResourceLink) SetContentTypes(val []string) {
-	s.ContentTypes = val
-}
-
-type ContentfulEntryResourceLinkType string
-
-const (
-	ContentfulEntryResourceLinkTypeContentfulEntry ContentfulEntryResourceLinkType = "Contentful:Entry"
-)
-
-// AllValues returns all ContentfulEntryResourceLinkType values.
-func (ContentfulEntryResourceLinkType) AllValues() []ContentfulEntryResourceLinkType {
-	return []ContentfulEntryResourceLinkType{
-		ContentfulEntryResourceLinkTypeContentfulEntry,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s ContentfulEntryResourceLinkType) MarshalText() ([]byte, error) {
-	switch s {
-	case ContentfulEntryResourceLinkTypeContentfulEntry:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *ContentfulEntryResourceLinkType) UnmarshalText(data []byte) error {
-	switch ContentfulEntryResourceLinkType(data) {
-	case ContentfulEntryResourceLinkTypeContentfulEntry:
-		*s = ContentfulEntryResourceLinkTypeContentfulEntry
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
 // Merged schema.
 // Ref: #/EditorInterface
 type EditorInterface struct {
@@ -4931,21 +4860,6 @@ func (s *ExtensionSysType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
-}
-
-// Ref: #/ExternalResourceLink
-type ExternalResourceLink struct {
-	Type string `json:"type"`
-}
-
-// GetType returns the value of Type.
-func (s *ExternalResourceLink) GetType() string {
-	return s.Type
-}
-
-// SetType sets the value of Type.
-func (s *ExternalResourceLink) SetType(val string) {
-	s.Type = val
 }
 
 // Ref: #/FunctionLink
@@ -7839,72 +7753,40 @@ func (s *PreviewApiKeySysType) UnmarshalText(data []byte) error {
 }
 
 // Ref: #/ResourceLink
-// ResourceLink represents sum type.
 type ResourceLink struct {
-	Type                        ResourceLinkType // switch on this field
-	ContentfulEntryResourceLink ContentfulEntryResourceLink
-	ExternalResourceLink        ExternalResourceLink
+	Type         string    `json:"type"`
+	Source       OptString `json:"source"`
+	ContentTypes []string  `json:"contentTypes"`
 }
 
-// ResourceLinkType is oneOf type of ResourceLink.
-type ResourceLinkType string
-
-// Possible values for ResourceLinkType.
-const (
-	ContentfulEntryResourceLinkResourceLink ResourceLinkType = "ContentfulEntryResourceLink"
-	ExternalResourceLinkResourceLink        ResourceLinkType = "ExternalResourceLink"
-)
-
-// IsContentfulEntryResourceLink reports whether ResourceLink is ContentfulEntryResourceLink.
-func (s ResourceLink) IsContentfulEntryResourceLink() bool {
-	return s.Type == ContentfulEntryResourceLinkResourceLink
+// GetType returns the value of Type.
+func (s *ResourceLink) GetType() string {
+	return s.Type
 }
 
-// IsExternalResourceLink reports whether ResourceLink is ExternalResourceLink.
-func (s ResourceLink) IsExternalResourceLink() bool {
-	return s.Type == ExternalResourceLinkResourceLink
+// GetSource returns the value of Source.
+func (s *ResourceLink) GetSource() OptString {
+	return s.Source
 }
 
-// SetContentfulEntryResourceLink sets ResourceLink to ContentfulEntryResourceLink.
-func (s *ResourceLink) SetContentfulEntryResourceLink(v ContentfulEntryResourceLink) {
-	s.Type = ContentfulEntryResourceLinkResourceLink
-	s.ContentfulEntryResourceLink = v
+// GetContentTypes returns the value of ContentTypes.
+func (s *ResourceLink) GetContentTypes() []string {
+	return s.ContentTypes
 }
 
-// GetContentfulEntryResourceLink returns ContentfulEntryResourceLink and true boolean if ResourceLink is ContentfulEntryResourceLink.
-func (s ResourceLink) GetContentfulEntryResourceLink() (v ContentfulEntryResourceLink, ok bool) {
-	if !s.IsContentfulEntryResourceLink() {
-		return v, false
-	}
-	return s.ContentfulEntryResourceLink, true
+// SetType sets the value of Type.
+func (s *ResourceLink) SetType(val string) {
+	s.Type = val
 }
 
-// NewContentfulEntryResourceLinkResourceLink returns new ResourceLink from ContentfulEntryResourceLink.
-func NewContentfulEntryResourceLinkResourceLink(v ContentfulEntryResourceLink) ResourceLink {
-	var s ResourceLink
-	s.SetContentfulEntryResourceLink(v)
-	return s
+// SetSource sets the value of Source.
+func (s *ResourceLink) SetSource(val OptString) {
+	s.Source = val
 }
 
-// SetExternalResourceLink sets ResourceLink to ExternalResourceLink.
-func (s *ResourceLink) SetExternalResourceLink(v ExternalResourceLink) {
-	s.Type = ExternalResourceLinkResourceLink
-	s.ExternalResourceLink = v
-}
-
-// GetExternalResourceLink returns ExternalResourceLink and true boolean if ResourceLink is ExternalResourceLink.
-func (s ResourceLink) GetExternalResourceLink() (v ExternalResourceLink, ok bool) {
-	if !s.IsExternalResourceLink() {
-		return v, false
-	}
-	return s.ExternalResourceLink, true
-}
-
-// NewExternalResourceLinkResourceLink returns new ResourceLink from ExternalResourceLink.
-func NewExternalResourceLinkResourceLink(v ExternalResourceLink) ResourceLink {
-	var s ResourceLink
-	s.SetExternalResourceLink(v)
-	return s
+// SetContentTypes sets the value of ContentTypes.
+func (s *ResourceLink) SetContentTypes(val []string) {
+	s.ContentTypes = val
 }
 
 // Merged schema.

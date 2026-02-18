@@ -112,28 +112,17 @@ func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations 
 	return list, diags
 }
 
-func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, path path.Path, resourceLinks []cm.ResourceLink) (TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]], diag.Diagnostics) {
+func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, _ path.Path, resourceLinks []cm.ResourceLink) (TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	allowedResourceElements := make([]TypedObject[ContentTypeFieldAllowedResourceItemValue], len(resourceLinks))
 
 	for i, resourceLink := range resourceLinks {
-		path := path.AtListIndex(i)
-
 		switch resourceLink.Type {
-		case cm.ContentfulEntryResourceLinkResourceLink:
-			contentfulEntryResourceLink, contentfulEntryResourceLinkOk := resourceLink.GetContentfulEntryResourceLink()
-			if !contentfulEntryResourceLinkOk {
-				diags.AddAttributeError(path, "Invalid data", "Expected contentful entry resource link")
-
-				break
-			}
-
-			contentTypesList := NewTypedListFromStringSlice(contentfulEntryResourceLink.ContentTypes)
-
+		case contentfulEntryAllowedResourceType:
 			contentfulEntryResourceItem, contentfulEntryResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemContentfulEntryValue](ctx, map[string]attr.Value{
-				"source":        types.StringValue(contentfulEntryResourceLink.Source),
-				"content_types": contentTypesList,
+				"source":        types.StringPointerValue(resourceLink.Source.ValueStringPointer()),
+				"content_types": NewTypedListFromStringSlice(resourceLink.ContentTypes),
 			})
 			diags.Append(contentfulEntryResourceItemDiags...)
 
@@ -145,29 +134,19 @@ func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, pa
 
 			allowedResourceElements[i] = allowedResourceItem
 
-		case cm.ExternalResourceLinkResourceLink:
-			externalResourceLink, externalResourceLinkOk := resourceLink.GetExternalResourceLink()
-			if !externalResourceLinkOk {
-				diags.AddAttributeError(path, "Invalid data", "Expected external resource link")
-
-				break
-			}
-
+		default:
 			externalResourceItem, externalResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemExternalValue](ctx, map[string]attr.Value{
-				"type": types.StringValue(externalResourceLink.Type),
+				"type": types.StringValue(resourceLink.Type),
 			})
 			diags.Append(externalResourceItemDiags...)
 
 			allowedResourceItem, allowedResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemValue](ctx, map[string]attr.Value{
-				"external":         externalResourceItem,
 				"contentful_entry": NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
+				"external":         externalResourceItem,
 			})
 			diags.Append(allowedResourceItemDiags...)
 
 			allowedResourceElements[i] = allowedResourceItem
-
-		default:
-			diags.AddAttributeError(path, "Invalid data", "Unknown resource link type: "+string(resourceLink.Type))
 		}
 	}
 
