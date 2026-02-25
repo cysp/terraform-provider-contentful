@@ -677,7 +677,8 @@ func (c *Client) sendActivateContentType(ctx context.Context, params ActivateCon
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -786,7 +787,8 @@ func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefini
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -895,7 +897,8 @@ func (c *Client) sendCreateDeliveryAPIKey(ctx context.Context, request *ApiKeyRe
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -1036,7 +1039,8 @@ func (c *Client) sendCreateEntry(ctx context.Context, request *EntryRequest, par
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -1193,7 +1197,8 @@ func (c *Client) sendCreateOrUpdateEnvironment(ctx context.Context, request *Env
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -1333,7 +1338,8 @@ func (c *Client) sendCreateOrUpdateEnvironmentAlias(ctx context.Context, request
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -1423,7 +1429,8 @@ func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *Per
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -1532,7 +1539,8 @@ func (c *Client) sendCreateRole(ctx context.Context, request *RoleData, params C
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -1641,7 +1649,8 @@ func (c *Client) sendCreateTeam(ctx context.Context, request *TeamData, params C
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -1763,7 +1772,8 @@ func (c *Client) sendCreateTeamSpaceMembership(ctx context.Context, request *Tea
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -1872,7 +1882,8 @@ func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *Webho
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -2016,7 +2027,8 @@ func (c *Client) sendDeactivateContentType(ctx context.Context, params Deactivat
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -2140,7 +2152,8 @@ func (c *Client) sendDeleteAppDefinition(ctx context.Context, params DeleteAppDe
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -2283,7 +2296,8 @@ func (c *Client) sendDeleteAppInstallation(ctx context.Context, params DeleteApp
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -2408,7 +2422,8 @@ func (c *Client) sendDeleteAppSigningSecret(ctx context.Context, params DeleteAp
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -2551,7 +2566,8 @@ func (c *Client) sendDeleteContentType(ctx context.Context, params DeleteContent
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -2675,7 +2691,8 @@ func (c *Client) sendDeleteDeliveryAPIKey(ctx context.Context, params DeleteDeli
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -2818,7 +2835,8 @@ func (c *Client) sendDeleteEntry(ctx context.Context, params DeleteEntryParams, 
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -2942,7 +2960,8 @@ func (c *Client) sendDeleteEnvironment(ctx context.Context, params DeleteEnviron
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -3066,7 +3085,8 @@ func (c *Client) sendDeleteEnvironmentAlias(ctx context.Context, params DeleteEn
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -3209,7 +3229,8 @@ func (c *Client) sendDeleteExtension(ctx context.Context, params DeleteExtension
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -3334,7 +3355,8 @@ func (c *Client) sendDeleteResourceProvider(ctx context.Context, params DeleteRe
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -3477,7 +3499,8 @@ func (c *Client) sendDeleteResourceType(ctx context.Context, params DeleteResour
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -3601,7 +3624,8 @@ func (c *Client) sendDeleteRole(ctx context.Context, params DeleteRoleParams, re
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -3760,7 +3784,8 @@ func (c *Client) sendDeleteTag(ctx context.Context, params DeleteTagParams, requ
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -3884,7 +3909,8 @@ func (c *Client) sendDeleteTeam(ctx context.Context, params DeleteTeamParams, re
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -4008,7 +4034,8 @@ func (c *Client) sendDeleteTeamSpaceMembership(ctx context.Context, params Delet
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -4132,7 +4159,8 @@ func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteW
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -4256,7 +4284,8 @@ func (c *Client) sendGetAppDefinition(ctx context.Context, params GetAppDefiniti
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -4399,7 +4428,8 @@ func (c *Client) sendGetAppInstallation(ctx context.Context, params GetAppInstal
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -4524,7 +4554,8 @@ func (c *Client) sendGetAppSigningSecret(ctx context.Context, params GetAppSigni
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -4611,7 +4642,8 @@ func (c *Client) sendGetAuthenticatedUser(ctx context.Context, requestOptions ..
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -4754,7 +4786,8 @@ func (c *Client) sendGetContentType(ctx context.Context, params GetContentTypePa
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -4942,7 +4975,8 @@ func (c *Client) sendGetContentTypes(ctx context.Context, params GetContentTypes
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -5066,7 +5100,8 @@ func (c *Client) sendGetDeliveryAPIKey(ctx context.Context, params GetDeliveryAP
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -5210,7 +5245,8 @@ func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInt
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -5415,7 +5451,8 @@ func (c *Client) sendGetEntries(ctx context.Context, params GetEntriesParams, re
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -5558,7 +5595,8 @@ func (c *Client) sendGetEntry(ctx context.Context, params GetEntryParams, reques
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -5682,7 +5720,8 @@ func (c *Client) sendGetEnvironment(ctx context.Context, params GetEnvironmentPa
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -5806,7 +5845,8 @@ func (c *Client) sendGetEnvironmentAlias(ctx context.Context, params GetEnvironm
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -5949,7 +5989,8 @@ func (c *Client) sendGetExtension(ctx context.Context, params GetExtensionParams
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -6062,7 +6103,8 @@ func (c *Client) sendGetMarketplaceAppDefinitions(ctx context.Context, params Ge
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -6167,7 +6209,8 @@ func (c *Client) sendGetPersonalAccessToken(ctx context.Context, params GetPerso
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -6291,7 +6334,8 @@ func (c *Client) sendGetPreviewAPIKey(ctx context.Context, params GetPreviewAPIK
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -6416,7 +6460,8 @@ func (c *Client) sendGetResourceProvider(ctx context.Context, params GetResource
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -6559,7 +6604,8 @@ func (c *Client) sendGetResourceType(ctx context.Context, params GetResourceType
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -6683,7 +6729,8 @@ func (c *Client) sendGetRole(ctx context.Context, params GetRoleParams, requestO
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -6789,7 +6836,8 @@ func (c *Client) sendGetSpaceEnablements(ctx context.Context, params GetSpaceEna
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -6932,7 +6980,8 @@ func (c *Client) sendGetTag(ctx context.Context, params GetTagParams, requestOpt
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -7056,7 +7105,8 @@ func (c *Client) sendGetTeam(ctx context.Context, params GetTeamParams, requestO
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -7180,7 +7230,8 @@ func (c *Client) sendGetTeamSpaceMembership(ctx context.Context, params GetTeamS
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -7304,7 +7355,8 @@ func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhook
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -7461,7 +7513,8 @@ func (c *Client) sendPublishEntry(ctx context.Context, params PublishEntryParams
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -7588,7 +7641,8 @@ func (c *Client) sendPutAppDefinition(ctx context.Context, request *AppDefinitio
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -7750,7 +7804,8 @@ func (c *Client) sendPutAppInstallation(ctx context.Context, request *AppInstall
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -7878,7 +7933,8 @@ func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSignin
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -8037,7 +8093,8 @@ func (c *Client) sendPutContentType(ctx context.Context, request *ContentTypeReq
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -8197,7 +8254,8 @@ func (c *Client) sendPutEditorInterface(ctx context.Context, request *EditorInte
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -8370,7 +8428,8 @@ func (c *Client) sendPutEntry(ctx context.Context, request *EntryRequest, params
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -8529,7 +8588,8 @@ func (c *Client) sendPutExtension(ctx context.Context, request *ExtensionData, p
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -8657,7 +8717,8 @@ func (c *Client) sendPutResourceProvider(ctx context.Context, request *ResourceP
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -8803,7 +8864,8 @@ func (c *Client) sendPutResourceType(ctx context.Context, request *ResourceTypeD
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -8925,7 +8987,8 @@ func (c *Client) sendPutSpaceEnablements(ctx context.Context, request *SpaceEnab
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -9101,7 +9164,8 @@ func (c *Client) sendPutTag(ctx context.Context, request *TagRequest, params Put
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -9241,7 +9305,8 @@ func (c *Client) sendPutTeam(ctx context.Context, request *TeamData, params PutT
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -9368,7 +9433,8 @@ func (c *Client) sendPutTeamSpaceMembership(ctx context.Context, request *TeamSp
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -9474,7 +9540,8 @@ func (c *Client) sendRevokePersonalAccessToken(ctx context.Context, params Revok
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -9618,7 +9685,8 @@ func (c *Client) sendUnpublishEntry(ctx context.Context, params UnpublishEntryPa
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -9758,7 +9826,8 @@ func (c *Client) sendUpdateDeliveryAPIKey(ctx context.Context, request *ApiKeyRe
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -9898,7 +9967,8 @@ func (c *Client) sendUpdateRole(ctx context.Context, request *RoleData, params U
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
@@ -10038,7 +10108,8 @@ func (c *Client) sendUpdateWebhookDefinition(ctx context.Context, request *Webho
 	if err != nil {
 		return res, errors.Wrap(err, "do request")
 	}
-	defer resp.Body.Close()
+	body := resp.Body
+	defer body.Close()
 
 	if err := reqCfg.onResponse(resp); err != nil {
 		return res, errors.Wrap(err, "edit response")
