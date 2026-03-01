@@ -63,6 +63,7 @@ provider "contentful" {
 
 - [`contentful_app_definition`](docs/data-sources/app_definition.md)
 - [`contentful_environment_status_ready`](docs/data-sources/environment_status_ready.md)
+- [`contentful_locale`](docs/data-sources/locale.md)
 - [`contentful_marketplace_app_definition`](docs/data-sources/marketplace_app_definition.md)
 - [`contentful_preview_api_key`](docs/data-sources/preview_api_key.md)
 
