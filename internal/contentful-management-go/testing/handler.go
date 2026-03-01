@@ -43,6 +43,8 @@ type Handler struct {
 
 	roles cm.SpaceMap[*cm.Role]
 
+	locales cm.SpaceMap[*cm.Locale]
+
 	tags cm.SpaceEnvironmentMap[*cm.Tag]
 
 	webhookDefinitions cm.SpaceMap[*cm.WebhookDefinition]
@@ -73,6 +75,7 @@ func NewHandler() *Handler {
 		entries:                        cm.NewSpaceEnvironmentMap[*cm.Entry](),
 		extensions:                     cm.NewSpaceEnvironmentMap[*cm.Extension](),
 		roles:                          cm.NewSpaceMap[*cm.Role](),
+		locales:                        cm.NewSpaceMap[*cm.Locale](),
 		tags:                           cm.NewSpaceEnvironmentMap[*cm.Tag](),
 		webhookDefinitions:             cm.NewSpaceMap[*cm.WebhookDefinition](),
 	}

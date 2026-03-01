@@ -47,6 +47,10 @@ func (s *Server) SecurityHandler() *SecurityHandler {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if s.h.HandleLocaleHTTP(w, r, s.sec) {
+		return
+	}
+
 	s.server.ServeHTTP(w, r)
 }
 
