@@ -43,6 +43,7 @@ provider "contentful" {
 - [`contentful_environment`](docs/resources/environment.md)
 - [`contentful_environment_alias`](docs/resources/environment_alias.md)
 - [`contentful_extension`](docs/resources/extension.md)
+- [`contentful_locale`](docs/resources/locale.md)
 - [`contentful_personal_access_token`](docs/resources/personal_access_token.md)
 - [`contentful_resource_provider`](docs/resources/resource_provider.md)
 - [`contentful_resource_type`](docs/resources/resource_type.md)

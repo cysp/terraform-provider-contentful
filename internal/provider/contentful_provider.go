@@ -200,6 +200,7 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewEnvironmentResource,
 		NewEntryResource,
 		NewExtensionResource,
+		NewLocaleResource,
 		NewPersonalAccessTokenResource,
 		NewResourceProviderResource,
 		NewResourceTypeResource,
