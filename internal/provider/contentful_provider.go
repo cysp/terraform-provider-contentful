@@ -54,6 +54,11 @@ type ContentfulProviderModel struct {
 
 var _ provider.Provider = (*ContentfulProvider)(nil)
 
+const (
+	retryWaitMin = time.Second
+	retryWaitMax = 30 * time.Second
+)
+
 type Option func(*ContentfulProvider)
 
 func WithContentfulURL(url string) Option {
@@ -139,9 +144,9 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	}
 
 	retryableClient := retryablehttp.NewClient()
-	retryableClient.RetryWaitMin = time.Duration(1) * time.Second
-	retryableClient.RetryWaitMax = time.Duration(3) * time.Second //nolint:mnd
-	retryableClient.Backoff = retryablehttp.LinearJitterBackoff
+	retryableClient.RetryWaitMin = retryWaitMin
+	retryableClient.RetryWaitMax = retryWaitMax
+	retryableClient.Backoff = util.ContentfulRetryBackoff
 
 	if p.httpClient != nil {
 		retryableClient.HTTPClient = p.httpClient
