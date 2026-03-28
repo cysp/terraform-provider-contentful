@@ -10,7 +10,6 @@ import (
 )
 
 func TestAccExtensionResource(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 

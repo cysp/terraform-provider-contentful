@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccPersonalAccessTokenResource(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -52,7 +51,6 @@ func TestAccPersonalAccessTokenResource(t *testing.T) {
 }
 
 func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -74,7 +72,6 @@ func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 }
 
 func TestAccPersonalAccessTokenResourceImportNotFound(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
