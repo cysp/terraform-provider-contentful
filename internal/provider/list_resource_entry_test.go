@@ -15,7 +15,6 @@ import (
 )
 
 func TestAccEntryListResource(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -102,7 +101,6 @@ func TestAccEntryListResource(t *testing.T) {
 }
 
 func TestAccEntryListResourceNotFoundEnvironment(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 

@@ -87,7 +87,6 @@ func TestAccWebhookResourceImportNotFound(t *testing.T) {
 }
 
 func TestAccWebhookResourceCreate(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -111,7 +110,6 @@ func TestAccWebhookResourceCreate(t *testing.T) {
 }
 
 func TestAccWebhookResourceUpdate(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 

@@ -16,7 +16,6 @@ import (
 )
 
 func TestAccEntryResourceImport(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -74,7 +73,6 @@ func TestAccEntryResourceImport(t *testing.T) {
 }
 
 func TestAccEntryResourceImportNotFound(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -105,7 +103,6 @@ func TestAccEntryResourceImportNotFound(t *testing.T) {
 }
 
 func TestAccEntryResourceImportWhitespaceDiff(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -140,7 +137,6 @@ func TestAccEntryResourceImportWhitespaceDiff(t *testing.T) {
 }
 
 func TestAccEntryResourceImportPropertyOrderDiff(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -175,7 +171,6 @@ func TestAccEntryResourceImportPropertyOrderDiff(t *testing.T) {
 }
 
 func TestAccEntryResourceCreate(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -201,7 +196,6 @@ func TestAccEntryResourceCreate(t *testing.T) {
 }
 
 func TestAccEntryResourceCreateWithID(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -230,7 +224,6 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 }
 
 func TestAccEntryResourceUpdate(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -286,7 +279,6 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 }
 
 func TestAccEntryResourceDeleted(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -386,7 +378,6 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 }
 
 func TestAccEntryResourceMissingFields(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -432,7 +423,6 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 
 //nolint:dupl
 func TestAccEntryResourceMetadataConcepts(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -481,7 +471,6 @@ func TestAccEntryResourceMetadataConcepts(t *testing.T) {
 
 //nolint:dupl
 func TestAccEntryResourceMetadataTags(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
