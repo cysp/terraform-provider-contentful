@@ -12,7 +12,6 @@ import (
 )
 
 func TestAccEnvironmentResource(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -52,7 +51,6 @@ func TestAccEnvironmentResource(t *testing.T) {
 }
 
 func TestAccEnvironmentImport(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 

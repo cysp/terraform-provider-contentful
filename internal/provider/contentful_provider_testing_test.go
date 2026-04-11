@@ -22,8 +22,17 @@ func ContentfulProviderMockableResourceTest(t *testing.T, server http.Handler, t
 	contentfulProviderMockableResourceTest(t, server, false, testcase)
 }
 
+func parallelWhenMocked(t *testing.T) {
+	t.Helper()
+
+	if os.Getenv("TF_ACC_MOCKED") != "" {
+		t.Parallel()
+	}
+}
+
 func contentfulProviderMockableResourceTest(t *testing.T, handler http.Handler, alwaysMock bool, testcase resource.TestCase) {
 	t.Helper()
+	parallelWhenMocked(t)
 
 	switch {
 	case alwaysMock || os.Getenv("TF_ACC_MOCKED") != "":

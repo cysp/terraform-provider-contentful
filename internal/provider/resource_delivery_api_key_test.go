@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccDeliveryApiKeyResource(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -54,7 +53,6 @@ func TestAccDeliveryApiKeyResource(t *testing.T) {
 }
 
 func TestAccDeliveryApiKeyResourceImportNotFound(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 

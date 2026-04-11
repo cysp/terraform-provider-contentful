@@ -10,7 +10,6 @@ import (
 )
 
 func TestAccPreviewApiKeyDataSourceNotFound(t *testing.T) {
-	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
 
