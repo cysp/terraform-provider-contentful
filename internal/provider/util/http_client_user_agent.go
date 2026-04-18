@@ -22,6 +22,6 @@ func (c *ClientWithUserAgent) Do(req *http.Request) (*http.Response, error) {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
 
-	//nolint:wrapcheck
+	//nolint:wrapcheck,gosec // request target is provided by trusted caller-owned request construction
 	return c.client.Do(req)
 }

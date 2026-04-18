@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+const webhookFilterTermCount = 2
+
 func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList TypedList[TypedObject[WebhookFilterValue]]) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
 	if filterValuesList.IsNull() || filterValuesList.IsUnknown() {
 		return cm.NewOptNilWebhookDefinitionFilterArrayNull(), nil
@@ -120,7 +122,7 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value WebhookFilterEqualsValue) (cm.WebhookDefinitionFilterEquals, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	filter := cm.WebhookDefinitionFilterEquals{}
+	filter := make(cm.WebhookDefinitionFilterEquals, 0, webhookFilterTermCount)
 
 	filterTermDoc, filterTermDocDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", value.Doc)
 	diags.Append(filterTermDocDiags...)
@@ -138,7 +140,7 @@ func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value 
 func ToWebhookDefinitionFilterIn(ctx context.Context, path path.Path, value WebhookFilterInValue) (cm.WebhookDefinitionFilterIn, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	filter := cm.WebhookDefinitionFilterIn{}
+	filter := make(cm.WebhookDefinitionFilterIn, 0, webhookFilterTermCount)
 
 	filterTermDoc, filterTermDocDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", value.Doc)
 	diags.Append(filterTermDocDiags...)
@@ -156,7 +158,7 @@ func ToWebhookDefinitionFilterIn(ctx context.Context, path path.Path, value Webh
 func ToWebhookDefinitionFilterRegexp(ctx context.Context, path path.Path, value WebhookFilterRegexpValue) (cm.WebhookDefinitionFilterRegexp, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	filter := cm.WebhookDefinitionFilterRegexp{}
+	filter := make(cm.WebhookDefinitionFilterRegexp, 0, webhookFilterTermCount)
 
 	filterTermDoc, filterTermDocDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", value.Doc)
 	diags.Append(filterTermDocDiags...)

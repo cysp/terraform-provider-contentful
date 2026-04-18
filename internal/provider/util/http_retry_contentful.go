@@ -1,7 +1,8 @@
 package util
 
 import (
-	"math/rand"
+	cryptoRand "crypto/rand"
+	"math/big"
 	"net/http"
 	"strconv"
 	"strings"
@@ -14,11 +15,12 @@ const contentfulRateLimitResetHeader = "X-Contentful-RateLimit-Reset"
 
 const (
 	maxRateLimitHeaderJitter = 250 * time.Millisecond
+	rateLimitJitterDivisor   = 10
 )
 
 // ContentfulRetryBackoff applies Contentful rate-limit reset delays when available.
 // For 429 responses without a usable reset header it falls back to retryablehttp.LinearJitterBackoff.
-func ContentfulRetryBackoff(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+func ContentfulRetryBackoff(minBackoff, maxBackoff time.Duration, attemptNum int, resp *http.Response) time.Duration {
 	if resp != nil && resp.StatusCode == http.StatusTooManyRequests {
 		if resetSeconds, ok := contentfulRateLimitResetSeconds(resp.Header); ok {
 			wait := time.Duration(resetSeconds) * time.Second
@@ -27,7 +29,7 @@ func ContentfulRetryBackoff(min, max time.Duration, attemptNum int, resp *http.R
 		}
 	}
 
-	return retryablehttp.LinearJitterBackoff(min, max, attemptNum, resp)
+	return retryablehttp.LinearJitterBackoff(minBackoff, maxBackoff, attemptNum, resp)
 }
 
 func contentfulRateLimitResetSeconds(header http.Header) (int64, bool) {
@@ -36,6 +38,7 @@ func contentfulRateLimitResetSeconds(header http.Header) (int64, bool) {
 	}
 
 	resetRaw := ""
+
 	for headerName, headerValues := range header {
 		if strings.EqualFold(headerName, contentfulRateLimitResetHeader) && len(headerValues) > 0 {
 			resetRaw = strings.TrimSpace(headerValues[0])
@@ -61,11 +64,16 @@ func positiveJitter(wait time.Duration) time.Duration {
 		return 0
 	}
 
-	jitter := min(wait/10, maxRateLimitHeaderJitter)
+	jitter := min(wait/rateLimitJitterDivisor, maxRateLimitHeaderJitter)
 
 	if jitter <= 0 {
 		return 0
 	}
 
-	return time.Duration(rand.Int63n(int64(jitter) + 1))
+	jitterValue, err := cryptoRand.Int(cryptoRand.Reader, big.NewInt(int64(jitter)+1))
+	if err != nil {
+		return 0
+	}
+
+	return time.Duration(jitterValue.Int64())
 }
