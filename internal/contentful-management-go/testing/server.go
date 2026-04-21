@@ -12,11 +12,18 @@ type Server struct {
 
 	h   *Handler
 	sec *SecurityHandler
+
+	rateLimiter *secondRateLimiter
 }
 
 var _ http.Handler = (*Server)(nil)
 
-func NewContentfulManagementServer() (*Server, error) {
+func NewContentfulManagementServer(opts ...ServerOption) (*Server, error) {
+	cfg, err := buildServerConfig(opts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse server options: %w", err)
+	}
+
 	handler := NewHandler()
 
 	securityHandler := NewSecurityHandler()
@@ -31,10 +38,16 @@ func NewContentfulManagementServer() (*Server, error) {
 		return nil, fmt.Errorf("%w", err)
 	}
 
+	var rateLimiter *secondRateLimiter
+	if cfg.rateLimitPerSecond > 0 {
+		rateLimiter = newSecondRateLimiter(cfg.rateLimitPerSecond, cfg.rateLimitNow)
+	}
+
 	return &Server{
-		server: server,
-		h:      handler,
-		sec:    securityHandler,
+		server:      server,
+		h:           handler,
+		sec:         securityHandler,
+		rateLimiter: rateLimiter,
 	}, nil
 }
 
@@ -47,6 +60,17 @@ func (s *Server) SecurityHandler() *SecurityHandler {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	limitState := s.currentRateLimitState()
+	limitState.writeHeaders(w.Header())
+
+	if !limitState.allowed {
+		message := "Rate limit exceeded"
+
+		_ = WriteContentfulManagementErrorResponse(w, http.StatusTooManyRequests, "RateLimitExceeded", &message, nil)
+
+		return
+	}
+
 	s.server.ServeHTTP(w, r)
 }
 
