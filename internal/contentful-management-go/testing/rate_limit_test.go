@@ -33,8 +33,8 @@ func TestContentfulManagementServerUsesDefaultRateLimitHeaders(t *testing.T) {
 	server.ServeHTTP(response, makeRateLimitTestRequest())
 
 	assert.Equal(t, http.StatusNotFound, response.Code)
-	assert.Equal(t, "0", response.Header().Get(rateLimitSecondLimitHeader))
-	assert.Equal(t, "0", response.Header().Get(rateLimitSecondRemainingHeader))
+	assert.Equal(t, "5", response.Header().Get(rateLimitSecondLimitHeader))
+	assert.Equal(t, "4", response.Header().Get(rateLimitSecondRemainingHeader))
 	assert.Equal(t, "0", response.Header().Get(rateLimitResetHeader))
 }
 

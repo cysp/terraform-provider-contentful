@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const defaultRateLimitPerSecond = 0
+const defaultRateLimitPerSecond = 5
 
 var (
 	errRateLimitPerSecondMustBePositive = errors.New("rate limit per second must be greater than zero")
