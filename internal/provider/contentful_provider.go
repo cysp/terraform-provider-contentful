@@ -141,7 +141,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.RetryWaitMin = time.Duration(1) * time.Second
 	retryableClient.RetryWaitMax = time.Duration(3) * time.Second //nolint:mnd
-	retryableClient.Backoff = retryablehttp.LinearJitterBackoff
+	retryableClient.Backoff = util.ContentfulRateLimitLinearJitterBackoff
 
 	if p.httpClient != nil {
 		retryableClient.HTTPClient = p.httpClient
