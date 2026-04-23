@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -22,4 +23,6 @@ type WebhookModel struct {
 	Headers           TypedMap[TypedObject[WebhookHeaderValue]]  `tfsdk:"headers"`
 	Transformation    TypedObject[WebhookTransformationValue]    `tfsdk:"transformation"`
 	Active            types.Bool                                 `tfsdk:"active"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
