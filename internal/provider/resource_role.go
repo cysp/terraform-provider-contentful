@@ -66,6 +66,16 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	currentVersion := 1
 
 	params := cm.CreateRoleParams{
@@ -102,6 +112,8 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		resp.Diagnostics.AddError("Failed to create role", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel RoleIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -123,6 +135,16 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetRoleParams{
 		SpaceID: state.SpaceID.ValueString(),
@@ -162,6 +184,8 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		resp.Diagnostics.AddError("Failed to read role", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel RoleIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -182,6 +206,16 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var currentVersion int
 
@@ -224,6 +258,8 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		resp.Diagnostics.AddError("Failed to update role", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel RoleIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -245,6 +281,16 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.DeleteRoleParams{
 		SpaceID: state.SpaceID.ValueString(),
