@@ -2,9 +2,9 @@ package provider
 
 import (
 	"context"
+	"math"
 	"net/http"
 	"os"
-	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -139,8 +139,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	}
 
 	retryableClient := retryablehttp.NewClient()
-	retryableClient.RetryWaitMin = time.Duration(1) * time.Second
-	retryableClient.RetryWaitMax = time.Duration(3) * time.Second //nolint:mnd
+	retryableClient.RetryMax = math.MaxInt
 	retryableClient.Backoff = util.ContentfulRateLimitLinearJitterBackoff
 
 	if p.httpClient != nil {
