@@ -67,6 +67,16 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	currentVersion := 1
 	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(plan.SpaceID.ValueString(), plan.EnvironmentID.ValueString(), plan.ContentTypeID.ValueString())
 
@@ -107,6 +117,8 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel EditorInterfaceIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -129,6 +141,16 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetEditorInterfaceParams{
 		SpaceID:       state.SpaceID.ValueString(),
@@ -169,6 +191,8 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		resp.Diagnostics.AddError("Failed to read editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel EditorInterfaceIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -191,6 +215,16 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var currentVersion int
 
@@ -235,6 +269,8 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	default:
 		resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
+
+	data.Timeouts = plan.Timeouts
 
 	var identityModel EditorInterfaceIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
