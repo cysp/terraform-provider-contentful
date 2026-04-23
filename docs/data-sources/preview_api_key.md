@@ -28,9 +28,20 @@ data "contentful_preview_api_key" "this" {
 - `preview_api_key_id` (String) The unique identifier for the preview API key.
 - `space_id` (String) The ID of the space.
 
+### Optional
+
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+
 ### Read-Only
 
 - `access_token` (String, Sensitive) The preview API access token.
 - `description` (String) Description of the preview API key.
 - `environments` (List of String) List of environment IDs this preview API key has access to.
 - `name` (String) Name of the preview API key.
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).

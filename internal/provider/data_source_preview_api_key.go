@@ -45,6 +45,16 @@ func (d *previewAPIKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
+	timeout, timeoutDiagnostics := data.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	params := cm.GetPreviewAPIKeyParams{
 		SpaceID:         data.SpaceID.ValueString(),
 		PreviewAPIKeyID: data.PreviewAPIKeyID.ValueString(),
@@ -63,6 +73,7 @@ func (d *previewAPIKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 		responseModel, responseModelDiags := NewPreviewAPIKeyDataSourceModelFromResponse(ctx, *response)
 		resp.Diagnostics.Append(responseModelDiags...)
 
+		responseModel.Timeouts = data.Timeouts
 		data = responseModel
 
 	default:
