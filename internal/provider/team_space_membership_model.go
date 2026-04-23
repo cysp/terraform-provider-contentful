@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -16,4 +17,6 @@ type TeamSpaceMembershipModel struct {
 	TeamID types.String   `tfsdk:"team_id"`
 	Admin  types.Bool     `tfsdk:"admin"`
 	Roles  []types.String `tfsdk:"roles"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
