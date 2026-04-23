@@ -10,7 +10,7 @@ type AppDefinitionIdentityModel struct {
 	AppDefinitionID types.String `tfsdk:"app_definition_id"`
 }
 
-type AppDefinitionModel struct {
+type AppDefinitionBaseModel struct {
 	IDIdentityModel
 	AppDefinitionIdentityModel
 

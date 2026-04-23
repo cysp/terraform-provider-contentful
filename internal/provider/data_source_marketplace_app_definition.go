@@ -36,13 +36,23 @@ func (d *marketplaceAppDefinitionDataSource) Configure(_ context.Context, req da
 }
 
 func (d *marketplaceAppDefinitionDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data AppDefinitionModel
+	var data AppDefinitionDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := data.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetMarketplaceAppDefinitionsParams{
 		SysIDIn: []string{data.AppDefinitionID.ValueString()},
@@ -64,9 +74,10 @@ func (d *marketplaceAppDefinitionDataSource) Read(ctx context.Context, req datas
 			return
 		}
 
-		responseModel, responseModelDiags := NewAppDefinitionResourceModelFromResponse(ctx, response.Items[0])
+		responseModel, responseModelDiags := NewAppDefinitionDataSourceModelFromResponse(ctx, response.Items[0])
 		resp.Diagnostics.Append(responseModelDiags...)
 
+		responseModel.Timeouts = data.Timeouts
 		data = responseModel
 	default:
 		resp.Diagnostics.AddError("Failed to read app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
