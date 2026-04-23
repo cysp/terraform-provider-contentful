@@ -66,6 +66,16 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	params := cm.CreateTeamParams{
 		OrganizationID: plan.OrganizationID.ValueString(),
 	}
@@ -102,6 +112,8 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		resp.Diagnostics.AddError("Failed to create team", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel TeamIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -123,6 +135,16 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetTeamParams{
 		OrganizationID: state.OrganizationID.ValueString(),
@@ -162,6 +184,8 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		resp.Diagnostics.AddError("Failed to read team", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel TeamIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -183,6 +207,16 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var currentVersion int
 
@@ -225,6 +259,8 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		resp.Diagnostics.AddError("Failed to update team", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel TeamIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -246,6 +282,16 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	response, err := r.providerData.client.DeleteTeam(ctx, cm.DeleteTeamParams{
 		OrganizationID: state.OrganizationID.ValueString(),
