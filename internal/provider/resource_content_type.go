@@ -67,6 +67,16 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	currentVersion := 1
 
 	params := cm.PutContentTypeParams{
@@ -105,6 +115,8 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	default:
 		resp.Diagnostics.AddError("Failed to create content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
+
+	data.Timeouts = plan.Timeouts
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -155,6 +167,16 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	params := cm.GetContentTypeParams{
 		SpaceID:       state.SpaceID.ValueString(),
 		EnvironmentID: state.EnvironmentID.ValueString(),
@@ -194,6 +216,8 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.AddError("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel ContentTypeIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -214,6 +238,16 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var currentVersion int
 
@@ -256,6 +290,8 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	default:
 		resp.Diagnostics.AddError("Failed to update content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
+
+	data.Timeouts = plan.Timeouts
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -306,6 +342,16 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	deactivateContentTypeParams := cm.DeactivateContentTypeParams{
 		SpaceID:       state.SpaceID.ValueString(),
