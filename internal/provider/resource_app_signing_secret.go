@@ -65,6 +65,16 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	params := cm.PutAppSigningSecretParams{
 		OrganizationID:  plan.OrganizationID.ValueString(),
 		AppDefinitionID: plan.AppDefinitionID.ValueString(),
@@ -103,6 +113,8 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		resp.Diagnostics.AddError("Failed to create app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel AppSigningSecretIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -122,6 +134,16 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetAppSigningSecretParams{
 		OrganizationID:  state.OrganizationID.ValueString(),
@@ -162,6 +184,8 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 		resp.Diagnostics.AddError("Failed to read app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel AppSigningSecretIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -182,6 +206,16 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.PutAppSigningSecretParams{
 		OrganizationID:  plan.OrganizationID.ValueString(),
@@ -225,6 +259,8 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		resp.Diagnostics.AddError("Failed to update app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel AppSigningSecretIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -245,6 +281,16 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	response, err := r.providerData.client.DeleteAppSigningSecret(ctx, cm.DeleteAppSigningSecretParams{
 		OrganizationID:  state.OrganizationID.ValueString(),
