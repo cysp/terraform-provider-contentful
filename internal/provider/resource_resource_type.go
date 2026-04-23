@@ -68,6 +68,16 @@ func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req reso
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	params := cm.PutResourceTypeParams{
 		OrganizationID:  plan.OrganizationID.ValueString(),
 		AppDefinitionID: plan.AppDefinitionID.ValueString(),
@@ -103,6 +113,8 @@ func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to create resource type definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel ResourceTypeIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -122,6 +134,16 @@ func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetResourceTypeParams{
 		OrganizationID:  state.OrganizationID.ValueString(),
@@ -159,6 +181,8 @@ func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to read resource type definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel ResourceTypeIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -179,6 +203,16 @@ func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req reso
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.PutResourceTypeParams{
 		OrganizationID:  plan.OrganizationID.ValueString(),
@@ -215,6 +249,8 @@ func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to update resource type definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel ResourceTypeIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -234,6 +270,16 @@ func (r *appDefinitionResourceTypeResource) Delete(ctx context.Context, req reso
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	response, err := r.providerData.client.DeleteResourceType(ctx, cm.DeleteResourceTypeParams{
 		OrganizationID:  state.OrganizationID.ValueString(),
