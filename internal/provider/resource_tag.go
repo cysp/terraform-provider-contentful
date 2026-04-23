@@ -67,6 +67,16 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	params := plan.ToPutTagParams()
 	request := plan.ToTagRequest()
 
@@ -95,6 +105,8 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 		resp.Diagnostics.AddError("Failed to create tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel TagIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -115,6 +127,16 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := state.ToGetTagParams()
 
@@ -151,6 +173,8 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		resp.Diagnostics.AddError("Failed to read tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel TagIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -171,6 +195,16 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var currentVersion int
 
@@ -204,6 +238,8 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		resp.Diagnostics.AddError("Failed to update tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel TagIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -224,6 +260,16 @@ func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var currentVersion int
 

@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -16,4 +17,6 @@ type TagModel struct {
 
 	Name       types.String `tfsdk:"name"`
 	Visibility types.String `tfsdk:"visibility"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
