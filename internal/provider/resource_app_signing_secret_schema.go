@@ -3,12 +3,13 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-func AppSigningSecretResourceSchema(_ context.Context) schema.Schema {
+func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: "Manages a Contentful App Signing Secret.",
 		Attributes: map[string]schema.Attribute{
@@ -37,6 +38,7 @@ func AppSigningSecretResourceSchema(_ context.Context) schema.Schema {
 				Required:    true,
 				Sensitive:   true,
 			},
+			"timeouts": timeouts.AttributesAll(ctx),
 		},
 	}
 }
