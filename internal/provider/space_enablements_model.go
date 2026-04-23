@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -16,4 +17,6 @@ type SpaceEnablementsModel struct {
 	SpaceTemplates    types.Bool `tfsdk:"space_templates"`
 	StudioExperiences types.Bool `tfsdk:"studio_experiences"`
 	SuggestConcepts   types.Bool `tfsdk:"suggest_concepts"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }

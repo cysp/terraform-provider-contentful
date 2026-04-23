@@ -63,6 +63,16 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	currentVersion := 1
 
 	params := cm.PutSpaceEnablementsParams{
@@ -100,6 +110,8 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 		resp.Diagnostics.AddError("Failed to create space enablements", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel SpaceEnablementsIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -120,6 +132,16 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetSpaceEnablementsParams{
 		SpaceID: state.SpaceID.ValueString(),
@@ -165,6 +187,8 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 		resp.Diagnostics.AddError("Failed to read space enablements", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel SpaceEnablementsIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -185,6 +209,16 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var currentVersion int
 
@@ -225,6 +259,8 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 	default:
 		resp.Diagnostics.AddError("Failed to update space enablements", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
+
+	data.Timeouts = plan.Timeouts
 
 	var identityModel SpaceEnablementsIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
