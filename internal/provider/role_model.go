@@ -2,6 +2,7 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -18,6 +19,8 @@ type RoleModel struct {
 	Description types.String                            `tfsdk:"description"`
 	Permissions TypedMap[TypedList[types.String]]       `tfsdk:"permissions"`
 	Policies    TypedList[TypedObject[RolePolicyValue]] `tfsdk:"policies"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 type RolePolicyValue struct {
