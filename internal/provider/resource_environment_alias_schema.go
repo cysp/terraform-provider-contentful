@@ -3,12 +3,13 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-func EnvironmentAliasResourceSchema(_ context.Context) schema.Schema {
+func EnvironmentAliasResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: "Manages a Contentful Environment Alias.",
 		Attributes: map[string]schema.Attribute{
@@ -36,6 +37,7 @@ func EnvironmentAliasResourceSchema(_ context.Context) schema.Schema {
 				Description: "ID of the environment which the environment alias references. Allows you to access and modify the data of this target environment through a different static identifier.",
 				Required:    true,
 			},
+			"timeouts": timeouts.AttributesAll(ctx),
 		},
 	}
 }
