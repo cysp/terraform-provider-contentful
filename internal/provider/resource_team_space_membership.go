@@ -67,6 +67,16 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	params := cm.CreateTeamSpaceMembershipParams{
 		SpaceID:         plan.SpaceID.ValueString(),
 		XContentfulTeam: plan.TeamID.ValueString(),
@@ -101,6 +111,8 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 		resp.Diagnostics.AddError("Failed to create team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel TeamSpaceMembershipIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -121,6 +133,16 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetTeamSpaceMembershipParams{
 		SpaceID:               state.SpaceID.ValueString(),
@@ -157,6 +179,8 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 		resp.Diagnostics.AddError("Failed to read team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel TeamSpaceMembershipIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -177,6 +201,16 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.PutTeamSpaceMembershipParams{
 		SpaceID:               plan.SpaceID.ValueString(),
@@ -212,6 +246,8 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 		resp.Diagnostics.AddError("Failed to update team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel TeamSpaceMembershipIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -232,6 +268,16 @@ func (r *teamSpaceMembershipResource) Delete(ctx context.Context, req resource.D
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	response, err := r.providerData.client.DeleteTeamSpaceMembership(ctx, cm.DeleteTeamSpaceMembershipParams{
 		SpaceID:               state.SpaceID.ValueString(),

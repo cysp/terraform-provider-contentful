@@ -3,13 +3,14 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TeamSpaceMembershipResourceSchema(_ context.Context) schema.Schema {
+func TeamSpaceMembershipResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: "Manages a Contentful Team Space Membership.",
 		Attributes: map[string]schema.Attribute{
@@ -49,6 +50,7 @@ func TeamSpaceMembershipResourceSchema(_ context.Context) schema.Schema {
 				ElementType: types.StringType,
 				Required:    true,
 			},
+			"timeouts": timeouts.AttributesAll(ctx),
 		},
 	}
 }
