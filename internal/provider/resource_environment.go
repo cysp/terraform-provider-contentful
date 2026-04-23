@@ -65,6 +65,16 @@ func (r *environmentResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	currentVersion := 1
 
 	params := cm.CreateOrUpdateEnvironmentParams{
@@ -107,6 +117,7 @@ func (r *environmentResource) Create(ctx context.Context, req resource.CreateReq
 		resp.Diagnostics.AddError("Failed to create environment", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
 	data.SourceEnvironmentID = plan.SourceEnvironmentID
 
 	var identityModel EnvironmentIdentityModel
@@ -129,6 +140,16 @@ func (r *environmentResource) Read(ctx context.Context, req resource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetEnvironmentParams{
 		SpaceID:       state.SpaceID.ValueString(),
@@ -168,6 +189,7 @@ func (r *environmentResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.AddError("Failed to read environment", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
 	data.SourceEnvironmentID = state.SourceEnvironmentID
 
 	var identityModel EnvironmentIdentityModel
@@ -190,6 +212,16 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var currentVersion int
 
@@ -232,6 +264,7 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 		resp.Diagnostics.AddError("Failed to update environment", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
 	data.SourceEnvironmentID = plan.SourceEnvironmentID
 
 	var identityModel EnvironmentIdentityModel
@@ -255,6 +288,16 @@ func (r *environmentResource) Delete(ctx context.Context, req resource.DeleteReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.DeleteEnvironmentParams{
 		SpaceID:       state.SpaceID.ValueString(),

@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -16,4 +17,6 @@ type EnvironmentModel struct {
 	Name                types.String `tfsdk:"name"`
 	Status              types.String `tfsdk:"status"`
 	SourceEnvironmentID types.String `tfsdk:"source_environment_id"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
