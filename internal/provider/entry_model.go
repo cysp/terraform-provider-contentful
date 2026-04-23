@@ -2,6 +2,7 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -27,6 +28,8 @@ type EntryModel struct {
 
 	Fields   TypedMap[jsontypes.Normalized]  `tfsdk:"fields"`
 	Metadata TypedObject[EntryMetadataValue] `tfsdk:"metadata"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 type EntryMetadataValue struct {
