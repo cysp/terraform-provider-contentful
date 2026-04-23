@@ -66,6 +66,16 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	currentVersion := 1
 
 	params := cm.CreateDeliveryAPIKeyParams{
@@ -102,6 +112,8 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 		resp.Diagnostics.AddError("Failed to create delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel DeliveryAPIKeyIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -123,6 +135,16 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetDeliveryAPIKeyParams{
 		SpaceID:  state.SpaceID.ValueString(),
@@ -162,6 +184,8 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		resp.Diagnostics.AddError("Failed to read delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel DeliveryAPIKeyIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -182,6 +206,16 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var currentVersion int
 
@@ -224,6 +258,8 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 		resp.Diagnostics.AddError("Failed to update delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel DeliveryAPIKeyIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -245,6 +281,16 @@ func (r *deliveryAPIKeyResource) Delete(ctx context.Context, req resource.Delete
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.DeleteDeliveryAPIKeyParams{
 		SpaceID:  state.SpaceID.ValueString(),
