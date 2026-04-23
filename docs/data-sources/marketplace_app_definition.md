@@ -25,6 +25,10 @@ data "contentful_marketplace_app_definition" "this" {
 
 - `app_definition_id` (String) The unique identifier for the marketplace app definition.
 
+### Optional
+
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+
 ### Read-Only
 
 - `bundle_id` (String) The bundle identifier for the marketplace app.
@@ -34,6 +38,14 @@ data "contentful_marketplace_app_definition" "this" {
 - `organization_id` (String)
 - `parameters` (Attributes) Configuration parameters for the marketplace app. (see [below for nested schema](#nestedatt--parameters))
 - `src` (String) The URL where the marketplace app is hosted.
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+
 
 <a id="nestedatt--locations"></a>
 ### Nested Schema for `locations`

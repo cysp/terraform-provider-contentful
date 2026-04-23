@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *AppDefinitionModel) ToAppDefinitionData(ctx context.Context, path path.Path) (cm.AppDefinitionData, diag.Diagnostics) {
+func (model *AppDefinitionBaseModel) ToAppDefinitionData(ctx context.Context, path path.Path) (cm.AppDefinitionData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fields := cm.AppDefinitionData{

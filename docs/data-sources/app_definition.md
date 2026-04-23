@@ -28,6 +28,10 @@ data "contentful_app_definition" "this" {
 - `app_definition_id` (String) The unique identifier for the app definition.
 - `organization_id` (String) The ID of the organization.
 
+### Optional
+
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+
 ### Read-Only
 
 - `bundle_id` (String) The bundle identifier for the app.
@@ -36,6 +40,14 @@ data "contentful_app_definition" "this" {
 - `name` (String) The name of the app.
 - `parameters` (Attributes) Configuration parameters for the app. (see [below for nested schema](#nestedatt--parameters))
 - `src` (String) The URL where the app is hosted.
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+
 
 <a id="nestedatt--locations"></a>
 ### Nested Schema for `locations`

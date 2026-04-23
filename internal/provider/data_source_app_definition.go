@@ -36,13 +36,23 @@ func (d *appDefinitionDataSource) Configure(_ context.Context, req datasource.Co
 }
 
 func (d *appDefinitionDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data AppDefinitionModel
+	var data AppDefinitionDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := data.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetAppDefinitionParams{
 		OrganizationID:  data.OrganizationID.ValueString(),
@@ -59,9 +69,10 @@ func (d *appDefinitionDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	switch response := response.(type) {
 	case *cm.AppDefinition:
-		responseModel, responseModelDiags := NewAppDefinitionResourceModelFromResponse(ctx, *response)
+		responseModel, responseModelDiags := NewAppDefinitionDataSourceModelFromResponse(ctx, *response)
 		resp.Diagnostics.Append(responseModelDiags...)
 
+		responseModel.Timeouts = data.Timeouts
 		data = responseModel
 	default:
 		resp.Diagnostics.AddError("Failed to read app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))

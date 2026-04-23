@@ -58,13 +58,23 @@ func (r *appDefinitionResource) ImportState(ctx context.Context, req resource.Im
 }
 
 func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan AppDefinitionModel
+	var plan AppDefinitionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.CreateAppDefinitionParams{
 		OrganizationID: plan.OrganizationID.ValueString(),
@@ -86,7 +96,7 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 		"err":      err,
 	})
 
-	var data AppDefinitionModel
+	var data AppDefinitionResourceModel
 
 	switch response := response.(type) {
 	case *cm.AppDefinitionStatusCode:
@@ -98,6 +108,8 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 	default:
 		resp.Diagnostics.AddError("Failed to create app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
+
+	data.Timeouts = plan.Timeouts
 
 	var identityModel AppDefinitionIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
@@ -112,13 +124,23 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 
 //nolint:dupl
 func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state AppDefinitionModel
+	var state AppDefinitionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetAppDefinitionParams{
 		OrganizationID:  state.OrganizationID.ValueString(),
@@ -133,7 +155,7 @@ func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadReque
 		"err":      err,
 	})
 
-	var data AppDefinitionModel
+	var data AppDefinitionResourceModel
 
 	switch response := response.(type) {
 	case *cm.AppDefinition:
@@ -155,6 +177,8 @@ func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadReque
 		resp.Diagnostics.AddError("Failed to read app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel AppDefinitionIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -168,13 +192,23 @@ func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadReque
 
 //nolint:dupl
 func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan AppDefinitionModel
+	var plan AppDefinitionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.PutAppDefinitionParams{
 		OrganizationID:  plan.OrganizationID.ValueString(),
@@ -197,7 +231,7 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 		"err":      err,
 	})
 
-	var data AppDefinitionModel
+	var data AppDefinitionResourceModel
 
 	switch response := response.(type) {
 	case *cm.AppDefinitionStatusCode:
@@ -209,6 +243,8 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 	default:
 		resp.Diagnostics.AddError("Failed to update app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
+
+	data.Timeouts = plan.Timeouts
 
 	var identityModel AppDefinitionIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
@@ -223,13 +259,23 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 
 //nolint:dupl
 func (r *appDefinitionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state AppDefinitionModel
+	var state AppDefinitionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	response, err := r.providerData.client.DeleteAppDefinition(ctx, cm.DeleteAppDefinitionParams{
 		OrganizationID:  state.OrganizationID.ValueString(),

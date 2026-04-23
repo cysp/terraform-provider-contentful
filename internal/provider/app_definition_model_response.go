@@ -9,13 +9,33 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewAppDefinitionResourceModelFromResponse(ctx context.Context, response cm.AppDefinition) (AppDefinitionModel, diag.Diagnostics) {
+func NewAppDefinitionResourceModelFromResponse(ctx context.Context, response cm.AppDefinition) (AppDefinitionResourceModel, diag.Diagnostics) {
+	baseModel, diags := NewAppDefinitionBaseModelFromResponse(ctx, response)
+
+	model := AppDefinitionResourceModel{
+		AppDefinitionBaseModel: baseModel,
+	}
+
+	return model, diags
+}
+
+func NewAppDefinitionDataSourceModelFromResponse(ctx context.Context, response cm.AppDefinition) (AppDefinitionDataSourceModel, diag.Diagnostics) {
+	baseModel, diags := NewAppDefinitionBaseModelFromResponse(ctx, response)
+
+	model := AppDefinitionDataSourceModel{
+		AppDefinitionBaseModel: baseModel,
+	}
+
+	return model, diags
+}
+
+func NewAppDefinitionBaseModelFromResponse(ctx context.Context, response cm.AppDefinition) (AppDefinitionBaseModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	organizationID := response.Sys.Organization.Sys.ID
 	appDefinitionID := response.Sys.ID
 
-	model := AppDefinitionModel{
+	model := AppDefinitionBaseModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, appDefinitionID),
 		AppDefinitionIdentityModel: AppDefinitionIdentityModel{
 			OrganizationID:  types.StringValue(organizationID),
