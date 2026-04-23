@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -15,4 +16,6 @@ type TeamModel struct {
 
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
