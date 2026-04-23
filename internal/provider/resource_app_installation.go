@@ -68,6 +68,16 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue(ctx)
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
 
@@ -107,6 +117,8 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		resp.Diagnostics.AddError("Failed to create app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel AppInstallationIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -126,6 +138,16 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.GetAppInstallationParams{
 		SpaceID:         state.SpaceID.ValueString(),
@@ -163,6 +185,8 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 		resp.Diagnostics.AddError("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	var identityModel AppInstallationIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -183,6 +207,16 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue(ctx)
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
@@ -223,6 +257,8 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 		resp.Diagnostics.AddError("Failed to update app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = plan.Timeouts
+
 	var identityModel AppInstallationIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
@@ -243,6 +279,16 @@ func (r *appInstallationResource) Delete(ctx context.Context, req resource.Delet
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	params := cm.DeleteAppInstallationParams{
 		SpaceID:         state.SpaceID.ValueString(),
