@@ -3,12 +3,13 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-func ResourceProviderResourceSchema(_ context.Context) schema.Schema {
+func ResourceProviderResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: "Manages a Contentful App Resource Provider.",
 		Attributes: map[string]schema.Attribute{
@@ -43,6 +44,7 @@ func ResourceProviderResourceSchema(_ context.Context) schema.Schema {
 				Description: "ID of the function that provides resources.",
 				Required:    true,
 			},
+			"timeouts": timeouts.AttributesAll(ctx),
 		},
 	}
 }
