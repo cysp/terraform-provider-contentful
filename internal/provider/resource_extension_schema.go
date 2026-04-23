@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -57,6 +58,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 					UseStateForUnknown(),
 				},
 			},
+			"timeouts": timeouts.AttributesAll(ctx),
 		},
 	}
 }
