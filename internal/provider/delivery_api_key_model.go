@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -18,4 +19,6 @@ type DeliveryAPIKeyModel struct {
 	Environments    TypedList[types.String] `tfsdk:"environments"`
 	AccessToken     types.String            `tfsdk:"access_token"`
 	PreviewAPIKeyID types.String            `tfsdk:"preview_api_key_id"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
