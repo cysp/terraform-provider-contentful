@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -14,4 +15,6 @@ type PersonalAccessTokenModel struct {
 	RevokedAt timetypes.RFC3339       `tfsdk:"revoked_at"`
 	Scopes    TypedList[types.String] `tfsdk:"scopes"`
 	Token     types.String            `tfsdk:"token"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
