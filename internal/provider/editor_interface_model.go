@@ -2,6 +2,7 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -19,6 +20,8 @@ type EditorInterfaceModel struct {
 	Controls      TypedList[TypedObject[EditorInterfaceControlValue]]          `tfsdk:"controls"`
 	GroupControls TypedList[TypedObject[EditorInterfaceGroupControlValue]]     `tfsdk:"group_controls"`
 	Sidebar       TypedList[TypedObject[EditorInterfaceSidebarValue]]          `tfsdk:"sidebar"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 type EditorInterfaceEditorLayoutItemValue struct {

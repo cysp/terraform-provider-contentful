@@ -82,6 +82,7 @@ resource "contentful_editor_interface" "author" {
 - `editor_layout` (Attributes List) Layout configuration for the editor interface, defining how fields and groups are organized. (see [below for nested schema](#nestedatt--editor_layout))
 - `group_controls` (Attributes List) Group-level controls that specify widgets for field groups. (see [below for nested schema](#nestedatt--group_controls))
 - `sidebar` (Attributes List) Configuration for sidebar widgets in the editor. (see [below for nested schema](#nestedatt--sidebar))
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
@@ -188,6 +189,16 @@ Optional:
 
 - `disabled` (Boolean) Whether this sidebar widget is disabled.
 - `settings` (String) Widget-specific settings in JSON format.
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
+- `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 ## Import
 

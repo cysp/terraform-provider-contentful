@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -81,6 +82,7 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				CustomType: TypedList[TypedObject[EditorInterfaceSidebarValue]]{}.CustomType(ctx),
 				Optional:   true,
 			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Update: true}),
 		},
 	}
 }
