@@ -3,12 +3,13 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-func SpaceEnablementsResourceSchema(_ context.Context) schema.Schema {
+func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: "Manages Contentful Space Enablements.",
 		Attributes: map[string]schema.Attribute{
@@ -57,6 +58,7 @@ func SpaceEnablementsResourceSchema(_ context.Context) schema.Schema {
 					UseStateForUnknown(),
 				},
 			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Update: true}),
 		},
 	}
 }
