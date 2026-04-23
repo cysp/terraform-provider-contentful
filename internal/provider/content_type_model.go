@@ -2,6 +2,7 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -28,6 +29,8 @@ type ContentTypeModel struct {
 	DisplayField types.String                                  `tfsdk:"display_field"`
 	Fields       TypedList[TypedObject[ContentTypeFieldValue]] `tfsdk:"fields"`
 	Metadata     TypedObject[ContentTypeMetadataValue]         `tfsdk:"metadata"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 type ContentTypeFieldValue struct {
