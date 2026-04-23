@@ -3,10 +3,11 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-func EnvironmentStatusReadyDataSourceSchema(_ context.Context) schema.Schema {
+func EnvironmentStatusReadyDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Waits until a Contentful environment reaches ready status.
 
@@ -27,6 +28,7 @@ This may be referenced in depends_on chains when creating resources that require
 				Description: "Status of the environment.",
 				Computed:    true,
 			},
+			"timeouts": timeouts.Attributes(ctx),
 		},
 	}
 }
