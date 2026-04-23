@@ -68,6 +68,16 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	currentVersion := 1
 
 	var responseModel EntryModel
@@ -77,6 +87,8 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	} else {
 		responseModel, currentVersion = r.updateEntry(ctx, plan, currentVersion, &resp.Diagnostics)
 	}
+
+	responseModel.Timeouts = plan.Timeouts
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -117,6 +129,16 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
+	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	getEntryParams := cm.GetEntryParams{
 		SpaceID:       state.SpaceID.ValueString(),
 		EnvironmentID: state.EnvironmentID.ValueString(),
@@ -156,6 +178,8 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		resp.Diagnostics.AddError("Failed to read entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	data.Timeouts = state.Timeouts
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -183,6 +207,16 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	var currentVersion int
 
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
@@ -193,6 +227,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	responseModel, currentVersion := r.updateEntry(ctx, plan, currentVersion, &resp.Diagnostics)
+	responseModel.Timeouts = plan.Timeouts
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -232,6 +267,16 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	r.unpublishEntry(ctx, state, &resp.Diagnostics)
 
