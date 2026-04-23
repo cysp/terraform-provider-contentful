@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -17,6 +18,8 @@ type ResourceTypeModel struct {
 	ResourceProviderID  types.String              `tfsdk:"resource_provider_id"`
 	Name                types.String              `tfsdk:"name"`
 	DefaultFieldMapping *ResourceTypeFieldMapping `tfsdk:"default_field_mapping"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 type ResourceTypeFieldMapping struct {
