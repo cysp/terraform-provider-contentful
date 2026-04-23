@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -11,7 +12,7 @@ import (
 )
 
 const (
-	environmentStatusReadyPollInterval = 1 * time.Second
+	environmentStatusReadyPollInterval = 15 * time.Second
 	environmentStatusReadyTimeout      = 10 * time.Minute
 	environmentStatusReadyValue        = "ready"
 )
@@ -51,19 +52,26 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 		return
 	}
 
+	timeout, timeoutDiagnostics := data.Timeouts.Read(ctx, environmentStatusReadyTimeout)
+	resp.Diagnostics.Append(timeoutDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := cm.GetEnvironmentParams{
 		SpaceID:       data.SpaceID.ValueString(),
 		EnvironmentID: data.EnvironmentID.ValueString(),
 	}
 
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, environmentStatusReadyTimeout)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	ticker := time.NewTicker(environmentStatusReadyPollInterval)
 	defer ticker.Stop()
 
 	for {
-		response, err := d.providerData.client.GetEnvironment(ctxWithTimeout, params)
+		response, err := d.providerData.client.GetEnvironment(ctx, params)
 
 		tflog.Info(ctx, "environment_status_ready.read", map[string]any{
 			"params":   params,
@@ -71,13 +79,12 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 			"err":      err,
 		})
 
-		var data EnvironmentStatusReadyModel
-
 		switch response := response.(type) {
 		case *cm.Environment:
 			responseModel, responseModelDiags := NewEnvironmentStatusReadyModelFromResponse(ctx, *response)
 			resp.Diagnostics.Append(responseModelDiags...)
 
+			responseModel.Timeouts = data.Timeouts
 			data = responseModel
 
 		default:
@@ -94,12 +101,12 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 
 		select {
 		case <-ctx.Done():
-			return
-		case <-ctxWithTimeout.Done():
-			resp.Diagnostics.AddError(
-				"Timed out waiting for environment to become ready",
-				"",
-			)
+			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+				resp.Diagnostics.AddError(
+					"Timed out waiting for environment to become ready",
+					"",
+				)
+			}
 
 			return
 		case <-ticker.C:
