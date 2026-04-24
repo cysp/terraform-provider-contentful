@@ -14,6 +14,8 @@ import (
 
 //nolint:paralleltest
 func TestAccWebhookResourceImport(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -60,6 +62,8 @@ func TestAccWebhookResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccWebhookResourceImportNotFound(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{

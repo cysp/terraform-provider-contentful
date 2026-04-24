@@ -9,8 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-//nolint:paralleltest
 func TestAccResourceTypeResource(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -43,8 +44,9 @@ func TestAccResourceTypeResource(t *testing.T) {
 	})
 }
 
-//nolint:paralleltest
 func TestAccResourceTypeResourceImport(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{

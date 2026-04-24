@@ -9,8 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-//nolint:paralleltest
 func TestAccAppSigningSecretResource(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
@@ -39,8 +40,9 @@ func TestAccAppSigningSecretResource(t *testing.T) {
 	})
 }
 
-//nolint:paralleltest
 func TestAccAppSigningSecretImport(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{

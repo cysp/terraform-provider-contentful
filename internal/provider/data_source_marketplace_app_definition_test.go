@@ -9,8 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-//nolint:paralleltest
 func TestAccMarketplaceAppDefinitionDataSource(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{

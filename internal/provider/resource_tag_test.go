@@ -13,8 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
-//nolint:paralleltest
 func TestAccTagResourceImport(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
@@ -58,6 +59,8 @@ func TestAccTagResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccTagResourceImportNotFound(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -88,6 +91,8 @@ func TestAccTagResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccTagResourceCreateUpdate(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
