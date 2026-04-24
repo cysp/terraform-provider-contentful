@@ -9,8 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-//nolint:paralleltest
 func TestAccTeamSpaceMembershipResource(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("space-id", "master")
@@ -37,8 +38,9 @@ func TestAccTeamSpaceMembershipResource(t *testing.T) {
 	})
 }
 
-//nolint:paralleltest
 func TestAccTeamSpaceMembershipResourceImport(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("space-id", "master")

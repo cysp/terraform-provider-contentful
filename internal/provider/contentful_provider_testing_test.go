@@ -10,6 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+func parallelWhenMocked(t *testing.T) {
+	t.Helper()
+
+	if os.Getenv("TF_ACC_MOCKED") != "" {
+		t.Parallel()
+	}
+}
+
 func ContentfulProviderMockedResourceTest(t *testing.T, server http.Handler, testcase resource.TestCase) {
 	t.Helper()
 

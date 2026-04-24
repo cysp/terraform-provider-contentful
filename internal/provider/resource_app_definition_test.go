@@ -12,6 +12,8 @@ import (
 
 //nolint:paralleltest
 func TestAccAppDefinitionResource(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -32,8 +34,9 @@ func TestAccAppDefinitionResource(t *testing.T) {
 	})
 }
 
-//nolint:paralleltest
 func TestAccAppDefinitionResourceImport(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -68,6 +71,8 @@ func TestAccAppDefinitionResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppDefinitionResourceImportNotFound(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{

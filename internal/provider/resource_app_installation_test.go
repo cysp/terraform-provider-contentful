@@ -16,6 +16,8 @@ import (
 
 //nolint:paralleltest
 func TestAccAppInstallationResource(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
@@ -59,6 +61,8 @@ func TestAccAppInstallationResource(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceImport(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
@@ -115,6 +119,8 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -139,6 +145,8 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -160,6 +168,8 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceUpdate(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
@@ -204,6 +214,8 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceDeleted(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")

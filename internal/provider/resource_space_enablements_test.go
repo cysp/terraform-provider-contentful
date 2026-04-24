@@ -12,6 +12,8 @@ import (
 
 //nolint:paralleltest
 func TestAccSpaceEnablementsResourceImport(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -37,6 +39,8 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -57,8 +61,9 @@ func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 	})
 }
 
-//nolint:paralleltest
 func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")

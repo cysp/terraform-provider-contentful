@@ -11,6 +11,8 @@ import (
 
 //nolint:paralleltest
 func TestAccAppDefinitionDataSource(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{

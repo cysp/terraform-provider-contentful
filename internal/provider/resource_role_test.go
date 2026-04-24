@@ -13,6 +13,8 @@ import (
 
 //nolint:paralleltest
 func TestAccRoleResourceImport(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -46,6 +48,8 @@ func TestAccRoleResourceImport(t *testing.T) {
 
 //nolint:paralleltest
 func TestAccRoleResourceImportNotFound(t *testing.T) {
+	parallelWhenMocked(t)
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	configVariables := config.Variables{
@@ -72,8 +76,9 @@ func TestAccRoleResourceImportNotFound(t *testing.T) {
 	})
 }
 
-//nolint:paralleltest
 func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
@@ -96,8 +101,9 @@ func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 	})
 }
 
-//nolint:paralleltest
 func TestAccRoleResourceDeleted(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")

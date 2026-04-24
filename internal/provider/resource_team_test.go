@@ -9,8 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-//nolint:paralleltest
 func TestAccTeamResource(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
@@ -33,8 +34,9 @@ func TestAccTeamResource(t *testing.T) {
 	})
 }
 
-//nolint:paralleltest
 func TestAccTeamResourceImport(t *testing.T) {
+	t.Parallel()
+
 	server, _ := cmt.NewContentfulManagementServer()
 
 	server.SetTeam("2zuSjSO4A0e6GKBrhJRe2m", "team-id", cm.TeamData{
