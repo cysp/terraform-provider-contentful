@@ -140,6 +140,8 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
+
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
