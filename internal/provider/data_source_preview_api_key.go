@@ -1,8 +1,8 @@
+//nolint:dupl
 package provider
 
 import (
 	"context"
-	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -77,15 +77,6 @@ func (d *previewAPIKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 		data = responseModel
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read preview api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
-
-				return
-			}
-		}
-
 		resp.Diagnostics.AddError("Failed to read preview api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
