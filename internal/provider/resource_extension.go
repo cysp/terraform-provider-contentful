@@ -146,6 +146,8 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
+
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -293,6 +295,8 @@ func (r *extensionResource) Delete(ctx context.Context, req resource.DeleteReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()

@@ -149,6 +149,8 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
+
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 

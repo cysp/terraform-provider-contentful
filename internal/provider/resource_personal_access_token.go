@@ -130,6 +130,8 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
+
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -199,6 +201,8 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()

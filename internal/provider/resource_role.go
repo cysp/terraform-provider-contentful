@@ -143,6 +143,8 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
+
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -288,6 +290,8 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()

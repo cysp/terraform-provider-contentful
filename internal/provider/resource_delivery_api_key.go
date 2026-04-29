@@ -143,6 +143,8 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
+
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -288,6 +290,8 @@ func (r *deliveryAPIKeyResource) Delete(ctx context.Context, req resource.Delete
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()

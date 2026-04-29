@@ -142,6 +142,8 @@ func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resour
 		return
 	}
 
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
+
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -277,6 +279,8 @@ func (r *appDefinitionResourceTypeResource) Delete(ctx context.Context, req reso
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	timeout = max(timeout, minimumStoredResourceOperationTimeout)
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
