@@ -92,8 +92,8 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	tflog.Info(ctx, "webhook.create", map[string]any{
 		"params":   params,
-		"request":  request,
-		"response": response,
+		"request":  RedactForLogging(request, RedactPath("httpBasicPassword"), RedactPathWhen("headers.*.value", "secret", true)),
+		"response": RedactForLogging(response, RedactPath("response.httpBasicPassword"), RedactPathWhen("response.headers.*.value", "secret", true)),
 		"err":      err,
 	})
 
@@ -153,7 +153,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	tflog.Info(ctx, "webhook.read", map[string]any{
 		"params":   params,
-		"response": response,
+		"response": RedactForLogging(response, RedactPath("httpBasicPassword"), RedactPathWhen("headers.*.value", "secret", true)),
 		"err":      err,
 	})
 
@@ -237,8 +237,8 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	tflog.Info(ctx, "webhook.update", map[string]any{
 		"params":   params,
-		"request":  request,
-		"response": response,
+		"request":  RedactForLogging(request, RedactPath("httpBasicPassword"), RedactPathWhen("headers.*.value", "secret", true)),
+		"response": RedactForLogging(response, RedactPath("response.httpBasicPassword"), RedactPathWhen("response.headers.*.value", "secret", true)),
 		"err":      err,
 	})
 
