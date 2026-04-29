@@ -24,7 +24,7 @@ func TestAccPreviewApiKeyDataSourceNotFound(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile(`Provider produced null object`),
+				ExpectError:     regexp.MustCompile(`Failed to read preview api key`),
 			},
 		},
 	})
