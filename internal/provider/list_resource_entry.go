@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
+const contentfulListPageLimit int64 = 100
+
 var (
 	_ list.ListResource              = (*entryListResource)(nil)
 	_ list.ListResourceWithConfigure = (*entryListResource)(nil)
@@ -50,7 +52,6 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 	params := cm.GetEntriesParams{
 		SpaceID:       config.SpaceID.ValueString(),
 		EnvironmentID: config.EnvironmentID.ValueString(),
-		Limit:         cm.NewOptInt64(req.Limit),
 	}
 
 	configContentType := config.ContentType.ValueString()
@@ -84,50 +85,80 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 	})
 
 	stream.Results = func(yield func(list.ListResult) bool) {
-		response, err := r.providerData.client.GetEntries(ctx, params, getEntriesQueryOption)
-		if err != nil {
-			yield(list.ListResult{
-				Diagnostics: diag.Diagnostics{
-					diag.NewErrorDiagnostic("Failed to list entries", util.ErrorDetailFromContentfulManagementResponse(response, err)),
-				},
-			})
+		var emitted int64
+		var skip int64
 
-			return
-		}
-
-		switch response := response.(type) {
-		case *cm.EntryCollection:
-			for _, item := range response.Items {
-				result := req.NewListResult(ctx)
-
-				result.DisplayName = item.Sys.ID
-
-				result.Diagnostics.Append(result.Identity.Set(ctx, NewEntryIdentityModel(
-					item.Sys.Space.Sys.ID,
-					item.Sys.Environment.Sys.ID,
-					item.Sys.ID,
-				))...)
-
-				if req.IncludeResource {
-					responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
-					result.Diagnostics.Append(responseDiags...)
-
-					result.Diagnostics.Append(result.Resource.Set(ctx, &responseModel)...)
-				}
-
-				if !yield(result) {
+		for {
+			limit := contentfulListPageLimit
+			if req.Limit > 0 {
+				remaining := req.Limit - emitted
+				if remaining <= 0 {
 					return
 				}
+
+				limit = min(limit, remaining)
 			}
 
-		default:
-			yield(list.ListResult{
-				Diagnostics: diag.Diagnostics{
-					diag.NewErrorDiagnostic("Failed to list entries", util.ErrorDetailFromContentfulManagementResponse(response, err)),
-				},
-			})
+			params.Skip = cm.NewOptInt64(skip)
+			params.Limit = cm.NewOptInt64(limit)
 
-			return
+			response, err := r.providerData.client.GetEntries(ctx, params, getEntriesQueryOption)
+			if err != nil {
+				yield(list.ListResult{
+					Diagnostics: diag.Diagnostics{
+						diag.NewErrorDiagnostic("Failed to list entries", util.ErrorDetailFromContentfulManagementResponse(response, err)),
+					},
+				})
+
+				return
+			}
+
+			switch response := response.(type) {
+			case *cm.EntryCollection:
+				for _, item := range response.Items {
+					result := req.NewListResult(ctx)
+
+					result.DisplayName = item.Sys.ID
+
+					result.Diagnostics.Append(result.Identity.Set(ctx, NewEntryIdentityModel(
+						item.Sys.Space.Sys.ID,
+						item.Sys.Environment.Sys.ID,
+						item.Sys.ID,
+					))...)
+
+					if req.IncludeResource {
+						responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
+						result.Diagnostics.Append(responseDiags...)
+
+						result.Diagnostics.Append(result.Resource.Set(ctx, &responseModel)...)
+					}
+
+					if !yield(result) {
+						return
+					}
+
+					emitted++
+				}
+
+				itemCount := int64(len(response.Items))
+				if itemCount == 0 {
+					return
+				}
+
+				skip += itemCount
+				if total, ok := response.Total.Get(); ok && skip >= int64(total) {
+					return
+				}
+
+			default:
+				yield(list.ListResult{
+					Diagnostics: diag.Diagnostics{
+						diag.NewErrorDiagnostic("Failed to list entries", util.ErrorDetailFromContentfulManagementResponse(response, err)),
+					},
+				})
+
+				return
+			}
 		}
 	}
 }
