@@ -152,7 +152,9 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		cm.WithClient(util.NewClientWithUserAgent(retryableClient.StandardClient(), "terraform-provider-contentful/"+p.version)),
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create Contentful client: %s", err.Error())
+		resp.Diagnostics.AddError("Failed to create Contentful client", err.Error())
+
+		return
 	}
 
 	providerData := ContentfulProviderData{
