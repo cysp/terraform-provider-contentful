@@ -18,7 +18,7 @@ require (
 	github.com/ogen-go/ogen v1.20.3
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.20.0
-	pgregory.net/rapid v1.2.0
+	pgregory.net/rapid v1.3.0
 )
 
 require (
