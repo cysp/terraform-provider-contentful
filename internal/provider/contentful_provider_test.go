@@ -65,6 +65,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 		config          map[string]any
 		env             map[string]string
 		expectedSuccess bool
+		expectedSummary string
 	}{
 		"config: url": {
 			config: map[string]any{
@@ -91,6 +92,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"access_token": "CFPAT-12345",
 			},
 			expectedSuccess: false,
+			expectedSummary: "Failed to create Contentful client",
 		},
 		"env: url": {
 			env: map[string]string{
@@ -140,6 +142,9 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				assert.Empty(t, resp.Diagnostics)
 			} else {
 				assert.NotEmpty(t, resp.Diagnostics)
+				if test.expectedSummary != "" {
+					assert.Equal(t, test.expectedSummary, resp.Diagnostics[0].Summary)
+				}
 			}
 		})
 	}
