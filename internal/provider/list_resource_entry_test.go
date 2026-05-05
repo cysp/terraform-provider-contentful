@@ -46,6 +46,8 @@ func TestAccEntryListResource(t *testing.T) {
 		"content_type":   config.StringVariable("author"),
 		"query": config.MapVariable(map[string]config.Variable{
 			"fields.name[ne]": config.StringVariable("nonexistent"),
+			"limit":           config.StringVariable("1"),
+			"skip":            config.StringVariable("100"),
 		}),
 	}
 

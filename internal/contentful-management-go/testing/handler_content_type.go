@@ -29,8 +29,8 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 		return cmp.Compare(a.Sys.ID, b.Sys.ID)
 	})
 
-	skip := params.Skip.Or(0)
-	limit := params.Limit.Or(100) //nolint:mnd
+	skip := max(params.Skip.Or(0), 0)
+	limit := max(params.Limit.Or(100), 0) //nolint:mnd
 	start := min(skip, int64(len(items)))
 	end := min(start+limit, int64(len(items)))
 

@@ -3,15 +3,12 @@ package provider
 import (
 	"context"
 	"net/http"
+	"net/url"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
-
-const contentfulListPageLimit int64 = 100
 
 var (
 	_ list.ListResource              = (*entryListResource)(nil)
@@ -76,7 +73,7 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 		urlQuery := req.URL.Query()
 
 		for key, value := range config.Query.Elements() {
-			urlQuery.Set(key, value.ValueString())
+			setEntryListQueryParam(urlQuery, key, value.ValueString())
 		}
 
 		req.URL.RawQuery = urlQuery.Encode()
@@ -84,84 +81,42 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 		return nil
 	})
 
-	stream.Results = func(yield func(list.ListResult) bool) {
-		var (
-			emitted int64
-			skip    int64
-		)
+	stream.Results = paginateContentfulCollectionItemsAsListResults(ctx, req,
+		"Failed to list entries",
+		func(ctx context.Context, skip int64, limit int64) (cm.GetEntriesRes, error) {
+			pageParams := params
+			pageParams.Skip = cm.NewOptInt64(skip)
+			pageParams.Limit = cm.NewOptInt64(limit)
 
-		for {
-			limit := contentfulListPageLimit
+			return r.providerData.client.GetEntries(ctx, pageParams, getEntriesQueryOption)
+		},
+		func(item cm.Entry) list.ListResult {
+			result := req.NewListResult(ctx)
 
-			if req.Limit > 0 {
-				remaining := req.Limit - emitted
-				if remaining <= 0 {
-					return
-				}
+			result.DisplayName = item.Sys.ID
 
-				limit = min(limit, remaining)
+			result.Diagnostics.Append(result.Identity.Set(ctx, NewEntryIdentityModel(
+				item.Sys.Space.Sys.ID,
+				item.Sys.Environment.Sys.ID,
+				item.Sys.ID,
+			))...)
+
+			if req.IncludeResource {
+				responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
+				result.Diagnostics.Append(responseDiags...)
+
+				result.Diagnostics.Append(result.Resource.Set(ctx, &responseModel)...)
 			}
 
-			params.Skip = cm.NewOptInt64(skip)
-			params.Limit = cm.NewOptInt64(limit)
+			return result
+		},
+	)
+}
 
-			response, err := r.providerData.client.GetEntries(ctx, params, getEntriesQueryOption)
-			if err != nil {
-				yield(list.ListResult{
-					Diagnostics: diag.Diagnostics{
-						diag.NewErrorDiagnostic("Failed to list entries", util.ErrorDetailFromContentfulManagementResponse(response, err)),
-					},
-				})
-
-				return
-			}
-
-			switch response := response.(type) {
-			case *cm.EntryCollection:
-				for _, item := range response.Items {
-					result := req.NewListResult(ctx)
-
-					result.DisplayName = item.Sys.ID
-
-					result.Diagnostics.Append(result.Identity.Set(ctx, NewEntryIdentityModel(
-						item.Sys.Space.Sys.ID,
-						item.Sys.Environment.Sys.ID,
-						item.Sys.ID,
-					))...)
-
-					if req.IncludeResource {
-						responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
-						result.Diagnostics.Append(responseDiags...)
-
-						result.Diagnostics.Append(result.Resource.Set(ctx, &responseModel)...)
-					}
-
-					if !yield(result) {
-						return
-					}
-
-					emitted++
-				}
-
-				itemCount := int64(len(response.Items))
-				if itemCount == 0 {
-					return
-				}
-
-				skip += itemCount
-				if total, ok := response.Total.Get(); ok && skip >= int64(total) {
-					return
-				}
-
-			default:
-				yield(list.ListResult{
-					Diagnostics: diag.Diagnostics{
-						diag.NewErrorDiagnostic("Failed to list entries", util.ErrorDetailFromContentfulManagementResponse(response, err)),
-					},
-				})
-
-				return
-			}
-		}
+func setEntryListQueryParam(query url.Values, key string, value string) {
+	if key == "skip" || key == "limit" {
+		return
 	}
+
+	query.Set(key, value)
 }
