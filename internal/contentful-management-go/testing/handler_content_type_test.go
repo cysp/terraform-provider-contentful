@@ -54,3 +54,28 @@ func TestGetContentTypesPaginates(t *testing.T) {
 	assert.Equal(t, "content-type-1", secondPageCollection.Items[0].Sys.ID)
 	assert.Equal(t, "Content Type 1", secondPageCollection.Items[0].Name)
 }
+
+func TestGetContentTypesHandlesNegativePaginationParams(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+
+	server.SetContentType("space", "environment", "content-type", cm.ContentTypeRequestData{
+		Name:   "Content Type",
+		Fields: []cm.ContentTypeRequestDataFieldsItem{},
+	})
+
+	response, err := server.Handler().GetContentTypes(context.Background(), cm.GetContentTypesParams{
+		SpaceID:       "space",
+		EnvironmentID: "environment",
+		Skip:          cm.NewOptInt64(-1),
+		Limit:         cm.NewOptInt64(-1),
+	})
+	require.NoError(t, err)
+
+	collection, collectionOk := response.(*cm.ContentTypeCollection)
+	require.True(t, collectionOk)
+	assert.Equal(t, 1, collection.Total.Or(0))
+	assert.Empty(t, collection.Items)
+}
