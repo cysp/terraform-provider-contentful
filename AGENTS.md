@@ -1,0 +1,4 @@
+# AGENTS.md
+
+- When committing, use conventional commit message style and use the scope to indicate the area of the codebase being modified.
+- Before every `golangci-lint run`, run `golangci-lint cache clean`.
