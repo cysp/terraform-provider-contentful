@@ -30,7 +30,7 @@ func ErrorDetailFromContentfulManagementResponse(response any, err error) string
 		cmErrorType := reflect.TypeFor[cm.Error]()
 
 		rValue := reflect.ValueOf(response)
-		if rValue.Kind() == reflect.Ptr && !rValue.IsNil() {
+		if rValue.Kind() == reflect.Pointer && !rValue.IsNil() {
 			rValue = rValue.Elem()
 		}
 

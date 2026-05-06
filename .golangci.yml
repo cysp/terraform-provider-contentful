@@ -6,6 +6,8 @@ linters:
     - depguard
     - exhaustruct
     - funlen
+    - goconst
+    - gomodguard
     - lll
     - wsl
   settings:

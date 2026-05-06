@@ -22,6 +22,6 @@ func (c *ClientWithUserAgent) Do(req *http.Request) (*http.Response, error) {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
 
-	//nolint:wrapcheck
+	//nolint:wrapcheck,gosec // The generated Contentful client owns request construction and endpoint validation.
 	return c.client.Do(req)
 }
