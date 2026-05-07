@@ -34,6 +34,7 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 	diags.Append(metadataDiags...)
 
 	model.Metadata = metadata
+	model.Timeouts = TimeoutsNull()
 
 	return model, diags
 }
