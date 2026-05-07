@@ -54,6 +54,7 @@ func EntryModel(spaceID, environmentID, contentTypeID, entryID string) *rapid.Ge
 					provider.NewTypedObject,
 				),
 			).Draw(t, "metadata"),
+			Timeouts: provider.TimeoutsNull(),
 		}
 	})
 }

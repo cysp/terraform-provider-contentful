@@ -39,6 +39,7 @@ func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm
 	diags.Append(metadataDiags...)
 
 	model.Metadata = metadata
+	model.Timeouts = TimeoutsNull()
 
 	return model, diags
 }
