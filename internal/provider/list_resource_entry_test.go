@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
+	"github.com/hashicorp/terraform-plugin-testing/querycheck/queryfilter"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -22,21 +24,25 @@ func TestAccEntryListResource(t *testing.T) {
 	spaceID := "0p38pssr0fi3"
 	environmentID := "test"
 
-	server.SetEntry(spaceID, environmentID, "author", "33lT7CnYPNJGdls6nONU3t", cm.EntryRequest{
+	server.SetEntry(spaceID, environmentID, "author", "4qDT3lHMSFBrdipOx69tGH", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"name": jx.Raw(`{"en-US":"Author 1"}`),
+			"name": jx.Raw(`{"en-AU":"name"}`),
 		}),
 	})
 
 	server.SetEntry(spaceID, environmentID, "author", "author2", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"name": jx.Raw(`{"en-US":"Author 2"}`),
+			"first_name": jx.Raw(`{"en-US":"Author 2"}`),
 		}),
+	})
+
+	server.SetEntry(spaceID, environmentID, "author", "33lT7CnYPNJGdls6nONU3t", cm.EntryRequest{
+		Fields: cm.NewOptEntryFields(cm.EntryFields{}),
 	})
 
 	server.SetEntry(spaceID, environmentID, "post", "post1", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"name": jx.Raw(`{"en-US":"Post 1"}`),
+			"title": jx.Raw(`{"en-US":"Post 1"}`),
 		}),
 	})
 
@@ -86,16 +92,59 @@ func TestAccEntryListResource(t *testing.T) {
 						content_type = var.content_type
 						query        = var.query
 					}
+
+					include_resource = true
 				}
 				`,
 				ConfigVariables: configVariables,
 				Query:           true,
 				QueryResultChecks: []querycheck.QueryResultCheck{
 					querycheck.ExpectLengthAtLeast("contentful_entry.entries", 1),
-					querycheck.ExpectIdentity("contentful_entry.entries", map[string]knownvalue.Check{
+					querycheck.ExpectResourceKnownValues("contentful_entry.entries", queryfilter.ByResourceIdentity(map[string]knownvalue.Check{
+						"space_id":       knownvalue.StringExact("0p38pssr0fi3"),
+						"environment_id": knownvalue.StringExact("test"),
+						"entry_id":       knownvalue.StringExact("4qDT3lHMSFBrdipOx69tGH"),
+					}), []querycheck.KnownValueCheck{
+						{
+							Path:       tfjsonpath.New("id"),
+							KnownValue: knownvalue.StringExact("0p38pssr0fi3/test/4qDT3lHMSFBrdipOx69tGH"),
+						},
+						{
+							Path:       tfjsonpath.New("content_type_id"),
+							KnownValue: knownvalue.StringExact("author"),
+						},
+						{
+							Path: tfjsonpath.New("fields"),
+							KnownValue: knownvalue.MapExact(map[string]knownvalue.Check{
+								"name": knownvalue.StringExact(`{"en-AU":"name"}`),
+							}),
+						},
+						{
+							Path:       tfjsonpath.New("timeouts"),
+							KnownValue: knownvalue.Null(),
+						},
+					}),
+					querycheck.ExpectResourceKnownValues("contentful_entry.entries", queryfilter.ByResourceIdentity(map[string]knownvalue.Check{
 						"space_id":       knownvalue.StringExact("0p38pssr0fi3"),
 						"environment_id": knownvalue.StringExact("test"),
 						"entry_id":       knownvalue.StringExact("33lT7CnYPNJGdls6nONU3t"),
+					}), []querycheck.KnownValueCheck{
+						{
+							Path:       tfjsonpath.New("id"),
+							KnownValue: knownvalue.StringExact("0p38pssr0fi3/test/33lT7CnYPNJGdls6nONU3t"),
+						},
+						{
+							Path:       tfjsonpath.New("content_type_id"),
+							KnownValue: knownvalue.StringExact("author"),
+						},
+						{
+							Path:       tfjsonpath.New("fields"),
+							KnownValue: knownvalue.MapExact(map[string]knownvalue.Check{}),
+						},
+						{
+							Path:       tfjsonpath.New("timeouts"),
+							KnownValue: knownvalue.Null(),
+						},
 					}),
 				},
 			},
