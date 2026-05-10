@@ -37,7 +37,7 @@ func TestEntryListResourceListIgnoresQueryPaginationParams(t *testing.T) {
 
 	server.SetEntry("space", "environment", "author", "entry-1", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"name": jx.Raw(`"Entry 1"`),
+			"name": jx.Raw(`{"en-US":"Entry 1"}`),
 		}),
 	})
 

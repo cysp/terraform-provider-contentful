@@ -152,7 +152,7 @@ func TestAccEntryResourceImportPropertyOrderDiff(t *testing.T) {
 
 	server.SetEntry("0p38pssr0fi3", "test", "contentType", "proporder-test", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"data": []byte(`{"second":"value2","first":"value1"}`),
+			"data": []byte(`{"en-US":{"second":"value2","first":"value1"}}`),
 		}),
 	})
 

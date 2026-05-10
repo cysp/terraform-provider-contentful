@@ -24,19 +24,19 @@ func TestAccEntryListResource(t *testing.T) {
 
 	server.SetEntry(spaceID, environmentID, "author", "33lT7CnYPNJGdls6nONU3t", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"name": jx.Raw(`"Author 1"`),
+			"name": jx.Raw(`{"en-US":"Author 1"}`),
 		}),
 	})
 
 	server.SetEntry(spaceID, environmentID, "author", "author2", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"name": jx.Raw(`"Author 2"`),
+			"name": jx.Raw(`{"en-US":"Author 2"}`),
 		}),
 	})
 
 	server.SetEntry(spaceID, environmentID, "post", "post1", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"name": jx.Raw(`"Post 1"`),
+			"name": jx.Raw(`{"en-US":"Post 1"}`),
 		}),
 	})
 
