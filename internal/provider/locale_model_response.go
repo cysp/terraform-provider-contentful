@@ -35,6 +35,7 @@ func NewLocaleResourceModelFromResponse(_ context.Context, locale cm.Locale) (Lo
 		Optional:             types.BoolValue(locale.Optional),
 		Default:              types.BoolValue(locale.Default),
 		InternalCode:         types.StringValue(locale.InternalCode),
+		Timeouts:             TimeoutsNull(),
 	}
 
 	return model, diags
