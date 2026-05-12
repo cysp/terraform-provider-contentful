@@ -15,9 +15,9 @@ func TestAccLocaleDataSource(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
-	server.SetLocale("0p38pssr0fi3", "test", "en-US", cm.LocaleData{
-		Name:                 "English (United States)",
-		Code:                 "en-US",
+	server.SetLocale("0p38pssr0fi3", "master", "2EElC09UknSbiccBgPK9ib", cm.LocaleData{
+		Name:                 "English (Australia)",
+		Code:                 "en-AU",
 		FallbackCode:         cm.NewNilStringNull(),
 		ContentDeliveryApi:   true,
 		ContentManagementApi: true,
@@ -26,8 +26,8 @@ func TestAccLocaleDataSource(t *testing.T) {
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
-		"environment_id": config.StringVariable("test"),
-		"locale_id":      config.StringVariable("en-US"),
+		"environment_id": config.StringVariable("master"),
+		"locale_id":      config.StringVariable("2EElC09UknSbiccBgPK9ib"),
 	}
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
@@ -36,10 +36,10 @@ func TestAccLocaleDataSource(t *testing.T) {
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.contentful_locale.test", "id", "0p38pssr0fi3/test/en-US"),
-					resource.TestCheckResourceAttr("data.contentful_locale.test", "locale_id", "en-US"),
+					resource.TestCheckResourceAttr("data.contentful_locale.test", "id", "0p38pssr0fi3/master/2EElC09UknSbiccBgPK9ib"),
+					resource.TestCheckResourceAttr("data.contentful_locale.test", "locale_id", "2EElC09UknSbiccBgPK9ib"),
 					resource.TestCheckResourceAttrSet("data.contentful_locale.test", "name"),
-					resource.TestCheckResourceAttr("data.contentful_locale.test", "code", "en-US"),
+					resource.TestCheckResourceAttr("data.contentful_locale.test", "code", "en-AU"),
 					resource.TestCheckResourceAttr("data.contentful_locale.test", "default", "true"),
 				),
 			},
