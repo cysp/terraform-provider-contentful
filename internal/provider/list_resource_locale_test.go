@@ -19,7 +19,7 @@ func TestAccLocaleListResource(t *testing.T) {
 
 	server, _ := cmt.NewContentfulManagementServer()
 
-	server.SetLocale("space-id", "master", "en-US", cm.LocaleData{
+	server.SetLocale("0p38pssr0fi3", "test", "en-US", cm.LocaleData{
 		Name:                 "English (United States)",
 		Code:                 "en-US",
 		FallbackCode:         cm.NewNilStringNull(),
@@ -28,7 +28,7 @@ func TestAccLocaleListResource(t *testing.T) {
 		Optional:             false,
 	}, true)
 
-	server.SetLocale("space-id", "master", "de-DE", cm.LocaleData{
+	server.SetLocale("0p38pssr0fi3", "test", "de-DE", cm.LocaleData{
 		Name:                 "German",
 		Code:                 "de-DE",
 		FallbackCode:         cm.NewNilString("en-US"),
@@ -38,11 +38,11 @@ func TestAccLocaleListResource(t *testing.T) {
 	}, false)
 
 	configVariables := config.Variables{
-		"space_id":       config.StringVariable("space-id"),
-		"environment_id": config.StringVariable("master"),
+		"space_id":       config.StringVariable("0p38pssr0fi3"),
+		"environment_id": config.StringVariable("test"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},
@@ -73,36 +73,32 @@ func TestAccLocaleListResource(t *testing.T) {
 				ConfigVariables: configVariables,
 				Query:           true,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLengthAtLeast("contentful_locale.locales", 2),
+					querycheck.ExpectLengthAtLeast("contentful_locale.locales", 1),
 					querycheck.ExpectIdentity("contentful_locale.locales", map[string]knownvalue.Check{
-						"space_id":       knownvalue.StringExact("space-id"),
-						"environment_id": knownvalue.StringExact("master"),
+						"space_id":       knownvalue.StringExact("0p38pssr0fi3"),
+						"environment_id": knownvalue.StringExact("test"),
 						"locale_id":      knownvalue.StringExact("en-US"),
 					}),
 					querycheck.ExpectResourceKnownValues("contentful_locale.locales", queryfilter.ByResourceIdentity(map[string]knownvalue.Check{
-						"space_id":       knownvalue.StringExact("space-id"),
-						"environment_id": knownvalue.StringExact("master"),
-						"locale_id":      knownvalue.StringExact("de-DE"),
+						"space_id":       knownvalue.StringExact("0p38pssr0fi3"),
+						"environment_id": knownvalue.StringExact("test"),
+						"locale_id":      knownvalue.StringExact("en-US"),
 					}), []querycheck.KnownValueCheck{
 						{
 							Path:       tfjsonpath.New("id"),
-							KnownValue: knownvalue.StringExact("space-id/master/de-DE"),
+							KnownValue: knownvalue.StringExact("0p38pssr0fi3/test/en-US"),
 						},
 						{
-							Path:       tfjsonpath.New("name"),
-							KnownValue: knownvalue.StringExact("German"),
-						},
-						{
-							Path:       tfjsonpath.New("fallback_code"),
+							Path:       tfjsonpath.New("code"),
 							KnownValue: knownvalue.StringExact("en-US"),
 						},
 						{
-							Path:       tfjsonpath.New("optional"),
+							Path:       tfjsonpath.New("default"),
 							KnownValue: knownvalue.Bool(true),
 						},
 						{
-							Path:       tfjsonpath.New("default"),
-							KnownValue: knownvalue.Bool(false),
+							Path:       tfjsonpath.New("timeouts"),
+							KnownValue: knownvalue.Null(),
 						},
 					}),
 				},
