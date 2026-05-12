@@ -30,7 +30,7 @@ func TestAccLocaleDataSource(t *testing.T) {
 		"locale_id":      config.StringVariable("en-US"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -58,7 +58,7 @@ func TestAccLocaleDataSourceNotFound(t *testing.T) {
 		"locale_id":      config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
