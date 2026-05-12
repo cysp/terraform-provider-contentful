@@ -36,6 +36,7 @@ func (r *contentTypeListResource) ListResourceConfigSchema(ctx context.Context, 
 	resp.Schema = ContentTypeListResourceConfigSchema(ctx)
 }
 
+//nolint:dupl
 func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest, stream *list.ListResultsStream) {
 	var config contentTypeListResourceConfig
 
