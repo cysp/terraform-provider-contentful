@@ -19,18 +19,18 @@ resource "contentful_entry" "example" {
   content_type_id = "blogPost"
 
   fields = {
-    title = jsonencode({
-      "en-AU" = "My First Blog Post"
-      "en-US" = "My First Blog Post"
-    })
-    body = jsonencode({
-      "en-AU" = "This is the content of my first blog post."
-      "en-US" = "This is the content of my first blog post."
-    })
-    slug = jsonencode({
-      "en-AU" = "my-first-blog-post"
-      "en-US" = "my-first-blog-post"
-    })
+    title = {
+      "en-AU" = jsonencode("My First Blog Post")
+      "en-US" = jsonencode("My First Blog Post")
+    }
+    body = {
+      "en-AU" = jsonencode("This is the content of my first blog post.")
+      "en-US" = jsonencode("This is the content of my first blog post.")
+    }
+    slug = {
+      "en-AU" = jsonencode("my-first-blog-post")
+      "en-US" = jsonencode("my-first-blog-post")
+    }
   }
 
   metadata = {
@@ -46,7 +46,7 @@ resource "contentful_entry" "example" {
 
 - `content_type_id` (String) ID of the content type for this entry.
 - `environment_id` (String) ID of the environment containing the entry.
-- `fields` (Map of String) Fields that are custom defined by a user through the definition of content types. Fields object always includes locale.
+- `fields` (Map of Map of String) Fields that are custom defined by a user through the definition of content types, keyed by field ID and locale.
 - `space_id` (String) ID of the space containing the entry.
 
 ### Optional

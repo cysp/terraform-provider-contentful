@@ -2,10 +2,13 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
 func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.Diagnostics) {
@@ -33,15 +36,43 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 	fields := make(cm.EntryFields)
 
 	attrs := model.Fields.Elements()
-	for k, v := range attrs {
-		if v.IsNull() {
+	for fieldID, localizedValues := range attrs {
+		if localizedValues.IsNull() || localizedValues.IsUnknown() {
 			continue
 		}
 
-		fields[k] = jx.Raw(v.ValueString())
+		fieldValue, fieldValueDiags := entryLocalizedFieldToRaw(path.Root("fields").AtMapKey(fieldID), localizedValues)
+		diags.Append(fieldValueDiags...)
+
+		if fieldValueDiags.HasError() {
+			continue
+		}
+
+		fields[fieldID] = fieldValue
 	}
 
 	return cm.NewOptEntryFields(fields), diags
+}
+
+func entryLocalizedFieldToRaw(path path.Path, localizedValues TypedMap[jsontypes.Normalized]) (jx.Raw, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	values := map[string]json.RawMessage{}
+
+	for locale, value := range localizedValues.Elements() {
+		if value.IsNull() || value.IsUnknown() {
+			continue
+		}
+
+		values[locale] = json.RawMessage(value.ValueString())
+	}
+
+	encoded, err := json.Marshal(values)
+	if err != nil {
+		diags.AddAttributeError(path, "Invalid Entry Field Value", err.Error())
+	}
+
+	return jx.Raw(encoded), diags
 }
 
 func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEntryMetadata, diag.Diagnostics) {

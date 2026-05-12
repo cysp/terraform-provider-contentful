@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -39,16 +41,44 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 	return model, diags
 }
 
-func NewEntryFieldsFromResponse(_ context.Context, _ path.Path, fields cm.OptEntryFields) (TypedMap[jsontypes.Normalized], diag.Diagnostics) {
+func NewEntryFieldsFromResponse(_ context.Context, path path.Path, fields cm.OptEntryFields) (TypedMap[TypedMap[jsontypes.Normalized]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if !fields.IsSet() {
+		return NewTypedMapNull[TypedMap[jsontypes.Normalized]](), diags
+	}
+
+	elements := map[string]TypedMap[jsontypes.Normalized]{}
+
+	for fieldID, fieldValue := range fields.Value {
+		localizedValues, localizedValuesDiags := NewEntryLocalizedFieldFromRaw(path.AtMapKey(fieldID), fieldValue)
+		diags.Append(localizedValuesDiags...)
+
+		if localizedValuesDiags.HasError() {
+			continue
+		}
+
+		elements[fieldID] = localizedValues
+	}
+
+	return NewTypedMap(elements), diags
+}
+
+func NewEntryLocalizedFieldFromRaw(path path.Path, raw []byte) (TypedMap[jsontypes.Normalized], diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	var localizedValues map[string]json.RawMessage
+
+	err := json.Unmarshal(raw, &localizedValues)
+	if err != nil {
+		diags.AddAttributeError(path, "Invalid Entry Field Value", fmt.Sprintf("Expected a JSON object keyed by locale: %s", err))
+
 		return NewTypedMapNull[jsontypes.Normalized](), diags
 	}
 
-	elements := map[string]jsontypes.Normalized{}
-	for k, v := range fields.Value {
-		elements[k] = NewNormalizedJSONTypesNormalizedValue(v)
+	elements := make(map[string]jsontypes.Normalized, len(localizedValues))
+	for locale, value := range localizedValues {
+		elements[locale] = NewNormalizedJSONTypesNormalizedValue(value)
 	}
 
 	return NewTypedMap(elements), diags
