@@ -42,7 +42,7 @@ func TestAccLocaleListResource(t *testing.T) {
 		"environment_id": config.StringVariable("master"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},
