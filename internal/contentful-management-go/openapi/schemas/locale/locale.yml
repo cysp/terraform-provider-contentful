@@ -1,0 +1,18 @@
+Locale:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/LocaleSys"
+      required:
+        - sys
+    - $ref: "./data.yml#/LocaleData"
+    - type: object
+      properties:
+        default:
+          type: boolean
+        internal_code:
+          type: string
+      required:
+        - default
+        - internal_code
