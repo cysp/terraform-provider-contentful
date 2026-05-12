@@ -45,6 +45,8 @@ type Handler struct {
 
 	extensions cm.SpaceEnvironmentMap[*cm.Extension]
 
+	locales cm.SpaceEnvironmentMap[*cm.Locale]
+
 	roles cm.SpaceMap[*cm.Role]
 
 	tags cm.SpaceEnvironmentMap[*cm.Tag]
@@ -81,6 +83,7 @@ func NewHandler() *Handler {
 		editorInterfaces:               cm.NewSpaceEnvironmentMap[*cm.EditorInterface](),
 		entries:                        cm.NewSpaceEnvironmentMap[*cm.Entry](),
 		extensions:                     cm.NewSpaceEnvironmentMap[*cm.Extension](),
+		locales:                        cm.NewSpaceEnvironmentMap[*cm.Locale](),
 		roles:                          cm.NewSpaceMap[*cm.Role](),
 		tags:                           cm.NewSpaceEnvironmentMap[*cm.Tag](),
 		taxonomyConcepts:               NewOrganizationMap[*cm.TaxonomyConcept](),
