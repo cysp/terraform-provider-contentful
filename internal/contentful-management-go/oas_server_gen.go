@@ -32,6 +32,12 @@ type Handler interface {
 	//
 	// POST /spaces/{space_id}/environments/{environment_id}/entries
 	CreateEntry(ctx context.Context, req *EntryRequest, params CreateEntryParams) (CreateEntryRes, error)
+	// CreateLocale implements createLocale operation.
+	//
+	// Create a locale.
+	//
+	// POST /spaces/{space_id}/environments/{environment_id}/locales
+	CreateLocale(ctx context.Context, req *LocaleData, params CreateLocaleParams) (CreateLocaleRes, error)
 	// CreateOrUpdateEnvironment implements createOrUpdateEnvironment operation.
 	//
 	// Create or update an environment.
@@ -134,6 +140,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	DeleteExtension(ctx context.Context, params DeleteExtensionParams) (DeleteExtensionRes, error)
+	// DeleteLocale implements deleteLocale operation.
+	//
+	// Delete a locale.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}/locales/{locale_id}
+	DeleteLocale(ctx context.Context, params DeleteLocaleParams) (DeleteLocaleRes, error)
 	// DeleteResourceProvider implements deleteResourceProvider operation.
 	//
 	// Delete a resource provider definition.
@@ -254,6 +266,18 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	GetExtension(ctx context.Context, params GetExtensionParams) (GetExtensionRes, error)
+	// GetLocale implements getLocale operation.
+	//
+	// Get a locale.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/locales/{locale_id}
+	GetLocale(ctx context.Context, params GetLocaleParams) (GetLocaleRes, error)
+	// GetLocales implements getLocales operation.
+	//
+	// Get a collection of locales.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/locales
+	GetLocales(ctx context.Context, params GetLocalesParams) (GetLocalesRes, error)
 	// GetMarketplaceAppDefinitions implements getMarketplaceAppDefinitions operation.
 	//
 	// Get marketplace app definitions.
@@ -368,6 +392,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	PutExtension(ctx context.Context, req *ExtensionData, params PutExtensionParams) (PutExtensionRes, error)
+	// PutLocale implements putLocale operation.
+	//
+	// Update a locale.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/locales/{locale_id}
+	PutLocale(ctx context.Context, req *LocaleData, params PutLocaleParams) (PutLocaleRes, error)
 	// PutResourceProvider implements putResourceProvider operation.
 	//
 	// Create or update a resource provider definition.
