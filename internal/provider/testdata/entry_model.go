@@ -20,12 +20,20 @@ func EntryModel(spaceID, environmentID, contentTypeID, entryID string) *rapid.Ge
 					rapid.MapOfN(
 						AlphanumericStringOfN(1, 10),
 						rapid.Map(
-							rapid.Custom(func(t *rapid.T) string {
-								value := rapid.String().Draw(t, "value")
-								bytes, _ := json.Marshal(value)
-								return string(bytes)
-							}),
-							jsontypes.NewNormalizedValue,
+							rapid.MapOfN(
+								AlphanumericStringOfN(1, 10),
+								rapid.Map(
+									rapid.Custom(func(t *rapid.T) string {
+										value := rapid.String().Draw(t, "value")
+										bytes, _ := json.Marshal(value)
+										return string(bytes)
+									}),
+									jsontypes.NewNormalizedValue,
+								),
+								0,
+								5,
+							),
+							provider.NewTypedMap,
 						),
 						0,
 						5,

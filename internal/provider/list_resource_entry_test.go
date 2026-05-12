@@ -116,7 +116,9 @@ func TestAccEntryListResource(t *testing.T) {
 						{
 							Path: tfjsonpath.New("fields"),
 							KnownValue: knownvalue.MapExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact(`{"en-AU":"name"}`),
+								"name": knownvalue.MapExact(map[string]knownvalue.Check{
+									"en-AU": knownvalue.StringExact(`"name"`),
+								}),
 							}),
 						},
 						{
