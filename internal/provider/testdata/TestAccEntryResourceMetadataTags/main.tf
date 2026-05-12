@@ -44,9 +44,9 @@ resource "contentful_entry" "test" {
   content_type_id = contentful_content_type.test.content_type_id
 
   fields = {
-    name = jsonencode({
-      "en-AU" = "Test Entry with Tags"
-    })
+    name = {
+      "en-AU" = jsonencode("Test Entry with Tags")
+    }
   }
 
   metadata = {

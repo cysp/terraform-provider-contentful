@@ -11,7 +11,7 @@ variable "test_id" {
 }
 
 variable "entry_fields" {
-  type    = map(string)
+  type    = map(map(string))
   default = {}
 }
 
@@ -38,7 +38,7 @@ resource "contentful_content_type" "test" {
       id        = "b"
       name      = "B"
       type      = "Symbol"
-      localized = false
+      localized = true
       required  = false
     },
     {
