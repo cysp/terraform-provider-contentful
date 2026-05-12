@@ -11,7 +11,7 @@ variable "content_type_id" {
 }
 
 variable "fields" {
-  type    = map(string)
+  type    = map(map(string))
   default = {}
 }
 

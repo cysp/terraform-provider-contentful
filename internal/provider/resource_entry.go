@@ -17,11 +17,12 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*entryResource)(nil)
-	_ resource.ResourceWithConfigure   = (*entryResource)(nil)
-	_ resource.ResourceWithIdentity    = (*entryResource)(nil)
-	_ resource.ResourceWithImportState = (*entryResource)(nil)
-	_ resource.ResourceWithModifyPlan  = (*entryResource)(nil)
+	_ resource.Resource                 = (*entryResource)(nil)
+	_ resource.ResourceWithConfigure    = (*entryResource)(nil)
+	_ resource.ResourceWithIdentity     = (*entryResource)(nil)
+	_ resource.ResourceWithImportState  = (*entryResource)(nil)
+	_ resource.ResourceWithModifyPlan   = (*entryResource)(nil)
+	_ resource.ResourceWithUpgradeState = (*entryResource)(nil)
 )
 
 //nolint:ireturn

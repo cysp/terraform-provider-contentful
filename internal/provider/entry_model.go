@@ -27,8 +27,8 @@ type EntryModel struct {
 	ContentTypeID    types.String `tfsdk:"content_type_id"`
 	PublishedVersion types.Int64  `tfsdk:"published_version"`
 
-	Fields   TypedMap[jsontypes.Normalized]  `tfsdk:"fields"`
-	Metadata TypedObject[EntryMetadataValue] `tfsdk:"metadata"`
+	Fields   TypedMap[TypedMap[jsontypes.Normalized]] `tfsdk:"fields"`
+	Metadata TypedObject[EntryMetadataValue]          `tfsdk:"metadata"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }

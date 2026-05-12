@@ -19,12 +19,21 @@ import (
 )
 
 func EntryResourceSchema(ctx context.Context) schema.Schema {
+	return entryResourceSchema(ctx, 1, localizedEntryFieldsSchemaAttribute(ctx))
+}
+
+func EntryResourceSchemaV0(ctx context.Context) schema.Schema {
+	return entryResourceSchema(ctx, 0, rawEntryFieldsSchemaAttribute(ctx))
+}
+
+func entryResourceSchema(ctx context.Context, version int64, fieldsAttribute schema.Attribute) schema.Schema {
 	defaultMetadataObjectValue, _ := NewTypedObject[EntryMetadataValue](EntryMetadataValue{
 		Concepts: NewTypedListFromStringSlice([]string{}),
 		Tags:     NewTypedListFromStringSlice([]string{}),
 	}).ToObjectValue(ctx)
 
 	return schema.Schema{
+		Version:     version,
 		Description: "Manages a Contentful Entry.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -74,12 +83,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.UseStateForUnknown(),
 				},
 			},
-			"fields": schema.MapAttribute{
-				Description: "Entry field values keyed by Contentful field ID. Each value is JSON and may contain locale keys for localized fields.",
-				ElementType: jsontypes.NormalizedType{},
-				CustomType:  NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
-				Required:    true,
-			},
+			"fields": fieldsAttribute,
 			"metadata": schema.SingleNestedAttribute{
 				Attributes:  EntryMetadataValue{}.SchemaAttributes(ctx),
 				CustomType:  NewTypedObjectNull[EntryMetadataValue]().CustomType(ctx),
@@ -93,6 +97,24 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},
+	}
+}
+
+func localizedEntryFieldsSchemaAttribute(ctx context.Context) schema.MapAttribute {
+	return schema.MapAttribute{
+		Description: "Fields that are custom defined by a user through the definition of content types, keyed by field ID and locale.",
+		ElementType: NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
+		CustomType:  NewTypedMapNull[TypedMap[jsontypes.Normalized]]().CustomType(ctx),
+		Required:    true,
+	}
+}
+
+func rawEntryFieldsSchemaAttribute(ctx context.Context) schema.MapAttribute {
+	return schema.MapAttribute{
+		Description: "Fields that are custom defined by a user through the definition of content types. Fields object always includes locale.",
+		ElementType: jsontypes.NormalizedType{},
+		CustomType:  NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
+		Required:    true,
 	}
 }
 
