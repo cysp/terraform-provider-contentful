@@ -91,8 +91,8 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	tflog.Info(ctx, "app_signing_secret.create", map[string]any{
 		"params":   params,
-		"request":  request,
-		"response": response,
+		"request":  RedactForLogging(request, RedactPath("value")),
+		"response": RedactForLogging(response, RedactPath("response.redactedValue")),
 		"err":      err,
 	})
 
@@ -156,7 +156,7 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 	tflog.Info(ctx, "app_signing_secret.read", map[string]any{
 		"params":   params,
-		"response": response,
+		"response": RedactForLogging(response, RedactPath("redactedValue")),
 		"err":      err,
 	})
 
@@ -235,8 +235,8 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	tflog.Info(ctx, "app_signing_secret.update", map[string]any{
 		"params":   params,
-		"request":  request,
-		"response": response,
+		"request":  RedactForLogging(request, RedactPath("value")),
+		"response": RedactForLogging(response, RedactPath("response.redactedValue")),
 		"err":      err,
 	})
 
