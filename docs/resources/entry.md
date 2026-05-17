@@ -46,12 +46,12 @@ resource "contentful_entry" "example" {
 
 - `content_type_id` (String) ID of the content type for this entry.
 - `environment_id` (String) ID of the environment containing the entry.
-- `fields` (Map of Map of String) Fields that are custom defined by a user through the definition of content types, keyed by field ID and locale.
 - `space_id` (String) ID of the space containing the entry.
 
 ### Optional
 
 - `entry_id` (String) ID of the entry.
+- `fields` (Map of Map of String) Fields that are custom defined by a user through the definition of content types, keyed by field ID and locale.
 - `metadata` (Attributes) Metadata for the entry. Once set, metadata properties may not be removed, but the list of tags may be reduced to the empty list (see [below for nested schema](#nestedatt--metadata))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
