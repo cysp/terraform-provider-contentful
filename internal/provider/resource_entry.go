@@ -6,6 +6,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -14,10 +15,11 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*entryResource)(nil)
-	_ resource.ResourceWithConfigure   = (*entryResource)(nil)
-	_ resource.ResourceWithIdentity    = (*entryResource)(nil)
-	_ resource.ResourceWithImportState = (*entryResource)(nil)
+	_ resource.Resource                 = (*entryResource)(nil)
+	_ resource.ResourceWithConfigure    = (*entryResource)(nil)
+	_ resource.ResourceWithIdentity     = (*entryResource)(nil)
+	_ resource.ResourceWithImportState  = (*entryResource)(nil)
+	_ resource.ResourceWithUpgradeState = (*entryResource)(nil)
 )
 
 //nolint:ireturn
@@ -97,11 +99,7 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
 
-	for fieldKey, fieldValue := range plan.Fields.Elements() {
-		if !responseModel.Fields.Has(fieldKey) {
-			responseModel.Fields.Set(fieldKey, fieldValue)
-		}
-	}
+	mergeMissingEntryFields(&responseModel.Fields, plan.Fields)
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)
@@ -189,11 +187,7 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
-	for fieldKey, fieldValue := range state.Fields.Elements() {
-		if !data.Fields.Has(fieldKey) {
-			data.Fields.Set(fieldKey, fieldValue)
-		}
-	}
+	mergeMissingEntryFields(&data.Fields, state.Fields)
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -238,11 +232,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
 
-	for fieldKey, fieldValue := range plan.Fields.Elements() {
-		if !responseModel.Fields.Has(fieldKey) {
-			responseModel.Fields.Set(fieldKey, fieldValue)
-		}
-	}
+	mergeMissingEntryFields(&responseModel.Fields, plan.Fields)
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)
@@ -259,6 +249,23 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+}
+
+func mergeMissingEntryFields(target *TypedMap[TypedMap[jsontypes.Normalized]], fallback TypedMap[TypedMap[jsontypes.Normalized]]) {
+	fallbackElements := fallback.Elements()
+	if len(fallbackElements) == 0 {
+		return
+	}
+
+	if target.IsNull() || target.IsUnknown() {
+		*target = NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{})
+	}
+
+	for fieldKey, fieldValue := range fallbackElements {
+		if !target.Has(fieldKey) {
+			target.Set(fieldKey, fieldValue)
+		}
+	}
 }
 
 func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
