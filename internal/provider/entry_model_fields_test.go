@@ -31,7 +31,7 @@ func TestEntryModelToOptEntryFieldsPreservesNullAndSkipsUnknownValues(t *testing
 	require.False(t, diags.HasError())
 	require.True(t, fields.IsSet())
 	assert.JSONEq(t, `{"en-AU":"Title"}`, string(fields.Value["title"]))
-	assert.NotContains(t, fields.Value, "ignored-null")
+	assert.Equal(t, "null", string(fields.Value["ignored-null"]))
 	assert.NotContains(t, fields.Value, "ignored-unknown")
 }
 
