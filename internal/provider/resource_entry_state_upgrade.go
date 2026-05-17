@@ -41,7 +41,7 @@ func upgradeEntryResourceStateV0ToV1(ctx context.Context, req resource.UpgradeSt
 		return
 	}
 
-	fields := NewTypedMapNull[TypedMap[jsontypes.Normalized]]()
+	fields := NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{})
 
 	if !stateV0.Fields.IsNull() && !stateV0.Fields.IsUnknown() {
 		elements := make(map[string]TypedMap[jsontypes.Normalized], len(stateV0.Fields.Elements()))

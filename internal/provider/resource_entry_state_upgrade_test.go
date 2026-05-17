@@ -70,7 +70,7 @@ func TestEntryResourceUpgradeStateRegistersV0Upgrader(t *testing.T) {
 	assert.NotNil(t, upgraders[0].StateUpgrader)
 }
 
-func TestUpgradeEntryResourceStateV0ToV1PreservesNullFields(t *testing.T) {
+func TestUpgradeEntryResourceStateV0ToV1NormalizesNullFieldsToEmptyMap(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -100,7 +100,8 @@ func TestUpgradeEntryResourceStateV0ToV1PreservesNullFields(t *testing.T) {
 
 	var stateV1 EntryModel
 	require.False(t, response.State.Get(ctx, &stateV1).HasError())
-	assert.True(t, stateV1.Fields.IsNull())
+	assert.False(t, stateV1.Fields.IsNull())
+	assert.Empty(t, stateV1.Fields.Elements())
 }
 
 func TestUpgradeEntryResourceStateV0ToV1ReportsInvalidLocalizedField(t *testing.T) {
