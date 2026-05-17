@@ -35,6 +35,20 @@ func TestEntryModelToOptEntryFieldsSkipsNullUnknownAndEncodesLocalizedValues(t *
 	assert.NotContains(t, fields.Value, "ignored-unknown")
 }
 
+func TestEntryModelToOptEntryFieldsPreservesNullFieldValue(t *testing.T) {
+	t.Parallel()
+
+	fields, diags := entryModelToOptEntryFields(context.Background(), EntryModel{
+		Fields: NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{
+			"title": NewTypedMapNull[jsontypes.Normalized](),
+		}),
+	})
+
+	require.False(t, diags.HasError())
+	require.True(t, fields.IsSet())
+	assert.Equal(t, "null", string(fields.Value["title"]))
+}
+
 func TestEntryModelToOptEntryFieldsReportsInvalidLocalizedJSON(t *testing.T) {
 	t.Parallel()
 
@@ -89,5 +103,14 @@ func TestNewEntryLocalizedFieldFromRawReportsInvalidLocalizedJSON(t *testing.T) 
 	field, diags := NewEntryLocalizedFieldFromRaw(path.Root("fields").AtMapKey("title"), []byte(`invalid`))
 
 	require.True(t, diags.HasError())
+	assert.True(t, field.IsNull())
+}
+
+func TestNewEntryLocalizedFieldFromRawPreservesNull(t *testing.T) {
+	t.Parallel()
+
+	field, diags := NewEntryLocalizedFieldFromRaw(path.Root("fields").AtMapKey("title"), []byte(`null`))
+
+	require.False(t, diags.HasError())
 	assert.True(t, field.IsNull())
 }
