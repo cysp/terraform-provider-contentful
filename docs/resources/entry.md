@@ -64,12 +64,12 @@ After creating an Entry in Contentful, or after a provider-managed Contentful En
 
 - `content_type_id` (String) ID of the content type for this entry.
 - `environment_id` (String) ID of the environment containing the entry.
-- `fields` (Map of Map of String) Fields that are custom defined by a user through the definition of content types, keyed by field ID and locale.
 - `space_id` (String) ID of the space containing the entry.
 
 ### Optional
 
 - `entry_id` (String) ID of the entry. When `entry_id` is configured, Terraform creates a new Entry with the specified ID; an existing Entry with the same ID causes an error and is not adopted.
+- `fields` (Map of Map of String) Fields that are custom defined by a user through the definition of content types, keyed by field ID and locale.
 - `metadata` (Attributes) Entry metadata, including assigned tags and taxonomy concepts. (see [below for nested schema](#nestedatt--metadata))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
