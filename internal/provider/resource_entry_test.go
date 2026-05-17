@@ -1,7 +1,11 @@
 package provider_test
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"maps"
+	"reflect"
 	"regexp"
 	"testing"
 
@@ -15,6 +19,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
+)
+
+var (
+	errInvalidExpectedJSON = errors.New("invalid expected JSON")
+	errInvalidActualJSON   = errors.New("invalid actual JSON")
+	errJSONNotEqual        = errors.New("JSON values are not equal")
 )
 
 func TestAccEntryResourceImport(t *testing.T) {
@@ -486,6 +496,28 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 			},
 		},
 	})
+}
+
+func checkJSONEqual(expected string, actual string) error {
+	var expectedJSON any
+
+	err := json.Unmarshal([]byte(expected), &expectedJSON)
+	if err != nil {
+		return fmt.Errorf("%w: %w", errInvalidExpectedJSON, err)
+	}
+
+	var actualJSON any
+
+	err = json.Unmarshal([]byte(actual), &actualJSON)
+	if err != nil {
+		return fmt.Errorf("%w: %w", errInvalidActualJSON, err)
+	}
+
+	if !reflect.DeepEqual(expectedJSON, actualJSON) {
+		return fmt.Errorf("%w: expected %s, got %s", errJSONNotEqual, expected, actual)
+	}
+
+	return nil
 }
 
 //nolint:ireturn
