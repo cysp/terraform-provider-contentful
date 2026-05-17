@@ -207,7 +207,7 @@ func TestAccEntryResourceCreate(t *testing.T) {
 								"en-AU": knownvalue.StringExact(`"name"`),
 							}),
 							"blurb": knownvalue.MapExact(map[string]knownvalue.Check{
-								"en-AU": knownvalue.StringExact(`{"nodeType":"document","data":{},"content":[]}`),
+								"en-AU": knownvalue.StringExact(`{"content":[],"data":{},"nodeType":"document"}`),
 							}),
 						})),
 					},
@@ -446,6 +446,11 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables1,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields"), knownvalue.MapExact(map[string]knownvalue.Check{})),
+					},
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
