@@ -7,6 +7,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -48,15 +49,21 @@ func TestEntryModelToOptEntryFieldsReportsInvalidLocalizedJSON(t *testing.T) {
 	require.True(t, diags.HasError())
 	require.True(t, fields.IsSet())
 	assert.Empty(t, fields.Value)
+	require.Len(t, diags, 1)
+
+	diagWithPath, ok := diags[0].(diag.DiagnosticWithPath)
+	require.True(t, ok)
+	assert.Equal(t, path.Root("fields").AtMapKey("title").AtMapKey("en-AU").String(), diagWithPath.Path().String())
 }
 
-func TestNewEntryFieldsFromResponseReturnsNullForUnsetFields(t *testing.T) {
+func TestNewEntryFieldsFromResponseReturnsEmptyMapForUnsetFields(t *testing.T) {
 	t.Parallel()
 
 	fields, diags := NewEntryFieldsFromResponse(context.Background(), path.Root("fields"), cm.OptEntryFields{})
 
 	require.False(t, diags.HasError())
-	assert.True(t, fields.IsNull())
+	assert.False(t, fields.IsNull())
+	assert.Empty(t, fields.Elements())
 }
 
 func TestNewEntryFieldsFromResponseSkipsInvalidLocalizedFields(t *testing.T) {

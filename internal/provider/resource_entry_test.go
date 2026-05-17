@@ -420,6 +420,11 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables1,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields"), knownvalue.MapExact(map[string]knownvalue.Check{})),
+					},
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
