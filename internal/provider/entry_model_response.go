@@ -67,6 +67,10 @@ func NewEntryFieldsFromResponse(_ context.Context, path path.Path, fields cm.Opt
 func NewEntryLocalizedFieldFromRaw(path path.Path, raw []byte) (TypedMap[jsontypes.Normalized], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
+	if isRawJSONNull(raw) {
+		return NewTypedMapNull[jsontypes.Normalized](), diags
+	}
+
 	var localizedValues map[string]json.RawMessage
 
 	err := json.Unmarshal(raw, &localizedValues)
