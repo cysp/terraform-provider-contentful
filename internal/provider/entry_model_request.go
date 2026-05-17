@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
@@ -128,6 +129,10 @@ func entryLocalizedFieldToRaw(path path.Path, localizedValues TypedMap[jsontypes
 	}
 
 	return jx.Raw(encoded), diags
+}
+
+func isRawJSONNull(raw []byte) bool {
+	return strings.TrimSpace(string(raw)) == "null"
 }
 
 func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEntryMetadata, diag.Diagnostics) {

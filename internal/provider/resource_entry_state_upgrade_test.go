@@ -142,3 +142,38 @@ func TestUpgradeEntryResourceStateV0ToV1ReportsInvalidLocalizedField(t *testing.
 	assert.NotContains(t, stateV1.Fields.Elements(), "empty-value")
 	assert.Equal(t, `"Name"`, stateV1.Fields.Elements()["name"].Elements()["en-AU"].ValueString())
 }
+
+func TestUpgradeEntryResourceStateV0ToV1PreservesRawNullFieldValue(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	schemaV0 := EntryResourceSchemaV0(ctx)
+	schemaV1 := EntryResourceSchema(ctx)
+
+	stateV0 := EntryModelV0{
+		IDIdentityModel:    NewIDIdentityModelFromMultipartID("space", "environment", "entry"),
+		EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
+		ContentTypeID:      types.StringValue("author"),
+		Fields: NewTypedMap(map[string]jsontypes.Normalized{
+			"title": NewNormalizedJSONTypesNormalizedValue([]byte(`null`)),
+		}),
+		Metadata: NewTypedObjectNull[EntryMetadataValue](),
+		Timeouts: TimeoutsNull(),
+	}
+
+	priorState := tfsdk.State{Schema: schemaV0}
+	require.False(t, priorState.Set(ctx, &stateV0).HasError())
+
+	response := resource.UpgradeStateResponse{
+		State: tfsdk.State{Schema: schemaV1},
+	}
+
+	upgradeEntryResourceStateV0ToV1(ctx, resource.UpgradeStateRequest{
+		State: &priorState,
+	}, &response)
+	require.False(t, response.Diagnostics.HasError())
+
+	var stateV1 EntryModel
+	require.False(t, response.State.Get(ctx, &stateV1).HasError())
+	assert.True(t, stateV1.Fields.Elements()["title"].IsNull())
+}
