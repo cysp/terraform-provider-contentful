@@ -56,14 +56,13 @@ func TestEntryModelToOptEntryFieldsReportsInvalidLocalizedJSON(t *testing.T) {
 	assert.Equal(t, path.Root("fields").AtMapKey("title").AtMapKey("en-AU").String(), diagWithPath.Path().String())
 }
 
-func TestNewEntryFieldsFromResponseReturnsEmptyMapForUnsetFields(t *testing.T) {
+func TestNewEntryFieldsFromResponseReturnsNullForUnsetFields(t *testing.T) {
 	t.Parallel()
 
 	fields, diags := NewEntryFieldsFromResponse(context.Background(), path.Root("fields"), cm.OptEntryFields{})
 
 	require.False(t, diags.HasError())
-	assert.False(t, fields.IsNull())
-	assert.Empty(t, fields.Elements())
+	assert.True(t, fields.IsNull())
 }
 
 func TestNewEntryFieldsFromResponseSkipsInvalidLocalizedFields(t *testing.T) {

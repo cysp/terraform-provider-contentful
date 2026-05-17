@@ -45,7 +45,7 @@ func NewEntryFieldsFromResponse(_ context.Context, path path.Path, fields cm.Opt
 	diags := diag.Diagnostics{}
 
 	if !fields.IsSet() {
-		return NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{}), diags
+		return NewTypedMapNull[TypedMap[jsontypes.Normalized]](), diags
 	}
 
 	elements := map[string]TypedMap[jsontypes.Normalized]{}
