@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -97,7 +98,11 @@ func localizedEntryFieldsSchemaAttribute(ctx context.Context) schema.MapAttribut
 		Description: "Fields that are custom defined by a user through the definition of content types, keyed by field ID and locale.",
 		ElementType: NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
 		CustomType:  NewTypedMapNull[TypedMap[jsontypes.Normalized]]().CustomType(ctx),
-		Required:    true,
+		Optional:    true,
+		Computed:    true,
+		PlanModifiers: []planmodifier.Map{
+			mapplanmodifier.UseStateForUnknown(),
+		},
 	}
 }
 
