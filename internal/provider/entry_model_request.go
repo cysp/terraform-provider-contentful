@@ -64,7 +64,14 @@ func entryLocalizedFieldToRaw(path path.Path, localizedValues TypedMap[jsontypes
 			continue
 		}
 
-		values[locale] = json.RawMessage(value.ValueString())
+		raw := []byte(value.ValueString())
+		if !json.Valid(raw) {
+			diags.AddAttributeError(path.AtMapKey(locale), "Invalid Entry Field Value", "Expected a valid JSON value.")
+
+			continue
+		}
+
+		values[locale] = json.RawMessage(raw)
 	}
 
 	encoded, err := json.Marshal(values)
