@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEntryModelToOptEntryFieldsSkipsNullUnknownAndEncodesLocalizedValues(t *testing.T) {
+func TestEntryModelToOptEntryFieldsPreservesNullAndSkipsUnknownValues(t *testing.T) {
 	t.Parallel()
 
 	fields, diags := entryModelToOptEntryFields(context.Background(), EntryModel{
