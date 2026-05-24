@@ -124,7 +124,7 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl
@@ -175,13 +175,10 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 		currentVersion = response.Sys.Version
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read environment alias", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if handled, notFoundDiags := RemoveContentfulResourceIfNotFound(ctx, &resp.State, response, err, "Failed to read environment alias"); handled {
+			resp.Diagnostics.Append(notFoundDiags...)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read environment alias", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -198,7 +195,7 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 func (r *environmentAliasResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -222,7 +219,7 @@ func (r *environmentAliasResource) Update(ctx context.Context, req resource.Upda
 
 	var currentVersion int
 
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
+	currentVersion, currentVersionDiags := GetContentfulResourceVersion(ctx, req.Private)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.CreateOrUpdateEnvironmentAliasParams{
@@ -272,7 +269,7 @@ func (r *environmentAliasResource) Update(ctx context.Context, req resource.Upda
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl

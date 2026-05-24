@@ -122,7 +122,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -172,13 +172,10 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		currentVersion = response.Sys.Version
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if handled, notFoundDiags := RemoveContentfulResourceIfNotFound(ctx, &resp.State, response, err, "Failed to read webhook"); handled {
+			resp.Diagnostics.Append(notFoundDiags...)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -195,7 +192,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -219,7 +216,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	var currentVersion int
 
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
+	currentVersion, currentVersionDiags := GetContentfulResourceVersion(ctx, req.Private)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.UpdateWebhookDefinitionParams{
@@ -269,7 +266,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl

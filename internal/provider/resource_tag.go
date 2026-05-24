@@ -116,7 +116,7 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -163,13 +163,10 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		currentVersion = response.Sys.Version
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if handled, notFoundDiags := RemoveContentfulResourceIfNotFound(ctx, &resp.State, response, err, "Failed to read tag"); handled {
+			resp.Diagnostics.Append(notFoundDiags...)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -186,7 +183,7 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -210,7 +207,8 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	var currentVersion int
 
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
+	currentVersion, currentVersionDiags := GetContentfulResourceVersion(ctx, req.Private)
+	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := plan.ToPutTagParams()
 	params.XContentfulVersion.SetTo(currentVersion)
@@ -251,7 +249,7 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -277,7 +275,8 @@ func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 	var currentVersion int
 
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
+	currentVersion, currentVersionDiags := GetContentfulResourceVersion(ctx, req.Private)
+	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := state.ToDeleteTagParams()
 	params.XContentfulVersion.SetTo(currentVersion)

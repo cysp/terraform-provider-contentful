@@ -126,7 +126,7 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl
@@ -178,13 +178,10 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 		currentVersion = response.Sys.Version
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read extension", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if handled, notFoundDiags := RemoveContentfulResourceIfNotFound(ctx, &resp.State, response, err, "Failed to read extension"); handled {
+			resp.Diagnostics.Append(notFoundDiags...)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read extension", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -201,7 +198,7 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 func (r *extensionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -225,7 +222,7 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 
 	var currentVersion int
 
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
+	currentVersion, currentVersionDiags := GetContentfulResourceVersion(ctx, req.Private)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.PutExtensionParams{
@@ -276,7 +273,7 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl

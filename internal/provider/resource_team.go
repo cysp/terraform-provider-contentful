@@ -123,7 +123,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl
@@ -174,13 +174,10 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		currentVersion = response.Sys.Version
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read team", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if handled, notFoundDiags := RemoveContentfulResourceIfNotFound(ctx, &resp.State, response, err, "Failed to read team"); handled {
+			resp.Diagnostics.Append(notFoundDiags...)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read team", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -197,7 +194,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl
@@ -222,7 +219,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	var currentVersion int
 
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
+	currentVersion, currentVersionDiags := GetContentfulResourceVersion(ctx, req.Private)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.PutTeamParams{
@@ -272,7 +269,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl
