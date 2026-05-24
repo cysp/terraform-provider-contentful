@@ -46,15 +46,28 @@ func providerConfigDynamicValue(config map[string]any) (tfprotov6.DynamicValue, 
 
 type providerDiagnosticExpectation struct {
 	summary   string
+	detail    string
 	attribute *tftypes.AttributePath
 }
 
-func providerAttributeError(summary, attribute string) providerDiagnosticExpectation {
+func providerAttributeError(summary, detail, attribute string) providerDiagnosticExpectation {
 	return providerDiagnosticExpectation{
 		summary:   summary,
+		detail:    detail,
 		attribute: tftypes.NewAttributePath().WithAttributeName(attribute),
 	}
 }
+
+const (
+	missingAccessTokenDetail   = "Set the access_token provider attribute or the CONTENTFUL_MANAGEMENT_ACCESS_TOKEN environment variable."
+	invalidContentfulURLDetail = "The url provider attribute must be an absolute HTTP or HTTPS URL, such as https://api.contentful.com. " +
+		"It can also be set with the CONTENTFUL_URL environment variable."
+	unsupportedContentfulURLSchemeDetail = "The url provider attribute must use the http or https scheme."
+	unknownContentfulURLDetail           = "The provider cannot create the Contentful client because the configured API URL is unknown. " +
+		"Apply the source of the value first or use a known URL."
+	unknownAccessTokenDetail = "The provider cannot create the Contentful client because the configured management access token is unknown. " +
+		"Apply the source of the value first or use a known access token."
+)
 
 func TestProtocol6ProviderServerSchemaVersion(t *testing.T) {
 	t.Parallel()
@@ -69,6 +82,32 @@ func TestProtocol6ProviderServerSchemaVersion(t *testing.T) {
 	assert.Empty(t, resp.Diagnostics)
 
 	assert.EqualValues(t, 0, resp.Provider.Version)
+}
+
+func TestProtocol6ProviderServerSchemaDocumentsProviderConfiguration(t *testing.T) {
+	t.Parallel()
+
+	providerServer, err := testAccProtoV6ProviderFactories["contentful"]()
+	require.NotNil(t, providerServer)
+	require.NoError(t, err)
+
+	resp, err := providerServer.GetProviderSchema(t.Context(), &tfprotov6.GetProviderSchemaRequest{})
+	require.NotNil(t, resp.Provider)
+	require.NoError(t, err)
+	require.Empty(t, resp.Diagnostics)
+
+	attributes := map[string]*tfprotov6.SchemaAttribute{}
+	for _, attribute := range resp.Provider.Block.Attributes {
+		attributes[attribute.Name] = attribute
+	}
+
+	require.Contains(t, attributes, "url")
+	assert.Contains(t, attributes["url"].Description, "CONTENTFUL_URL")
+	assert.Contains(t, attributes["url"].Description, "public Contentful Management API")
+
+	require.Contains(t, attributes, "access_token")
+	assert.True(t, attributes["access_token"].Sensitive)
+	assert.Contains(t, attributes["access_token"].Description, "CONTENTFUL_MANAGEMENT_ACCESS_TOKEN")
 }
 
 func TestProtocol6ProviderServerConfigure(t *testing.T) {
@@ -87,7 +126,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"url": "https://api.test.contentful.com",
 			},
 			expectedDiagnostics: []providerDiagnosticExpectation{
-				providerAttributeError("Failed to configure client", "access_token"),
+				providerAttributeError("Missing Contentful management access token", missingAccessTokenDetail, "access_token"),
 			},
 		},
 		"config: access_token": {
@@ -100,12 +139,58 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"url":          "url://an invalid url %/",
 				"access_token": "CFPAT-12345",
 			},
-			expectedDiagnostics: []providerDiagnosticExpectation{{summary: "Failed to create Contentful client"}},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", invalidContentfulURLDetail, "url"),
+			},
+		},
+		"config: url(relative),access_token": {
+			config: map[string]any{
+				"url":          "/relative",
+				"access_token": "CFPAT-12345",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", invalidContentfulURLDetail, "url"),
+			},
+		},
+		"config: url(empty-host),access_token": {
+			config: map[string]any{
+				"url":          "http://:80",
+				"access_token": "CFPAT-12345",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", invalidContentfulURLDetail, "url"),
+			},
+		},
+		"config: url(unsupported-scheme),access_token": {
+			config: map[string]any{
+				"url":          "ftp://api.test.contentful.com",
+				"access_token": "CFPAT-12345",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", unsupportedContentfulURLSchemeDetail, "url"),
+			},
+		},
+		"env: url": {
+			env: map[string]string{
+				"CONTENTFUL_URL": "https://api.test.contentful.com",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Missing Contentful management access token", missingAccessTokenDetail, "access_token"),
+			},
 		},
 		"env: url,access_token": {
 			env: map[string]string{
 				"CONTENTFUL_URL":                     "https://api.test.contentful.com",
 				"CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "CFPAT-12345",
+			},
+		},
+		"env: url(invalid),access_token": {
+			env: map[string]string{
+				"CONTENTFUL_URL":                     "http://:80",
+				"CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "CFPAT-12345",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", invalidContentfulURLDetail, "url"),
 			},
 		},
 		"config: url env: access_token": {
@@ -135,7 +220,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "CFPAT-12345",
 			},
 			expectedDiagnostics: []providerDiagnosticExpectation{
-				providerAttributeError("Failed to configure client", "access_token"),
+				providerAttributeError("Missing Contentful management access token", missingAccessTokenDetail, "access_token"),
 			},
 		},
 		"unknown url": {
@@ -144,7 +229,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"access_token": "CFPAT-12345",
 			},
 			expectedDiagnostics: []providerDiagnosticExpectation{
-				providerAttributeError("Unknown Contentful API URL", "url"),
+				providerAttributeError("Unknown Contentful API URL", unknownContentfulURLDetail, "url"),
 			},
 		},
 		"unknown access_token": {
@@ -153,7 +238,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"access_token": tftypes.UnknownValue,
 			},
 			expectedDiagnostics: []providerDiagnosticExpectation{
-				providerAttributeError("Unknown Contentful management access token", "access_token"),
+				providerAttributeError("Unknown Contentful management access token", unknownAccessTokenDetail, "access_token"),
 			},
 		},
 		"unknown config takes precedence over env": {
@@ -166,8 +251,8 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "CFPAT-12345",
 			},
 			expectedDiagnostics: []providerDiagnosticExpectation{
-				providerAttributeError("Unknown Contentful API URL", "url"),
-				providerAttributeError("Unknown Contentful management access token", "access_token"),
+				providerAttributeError("Unknown Contentful API URL", unknownContentfulURLDetail, "url"),
+				providerAttributeError("Unknown Contentful management access token", unknownAccessTokenDetail, "access_token"),
 			},
 		},
 		"options take precedence over unknown config and env": {
@@ -194,7 +279,9 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			options: []Option{
 				WithContentfulURL("url://an invalid url %/"),
 			},
-			expectedDiagnostics: []providerDiagnosticExpectation{{summary: "Failed to create Contentful client"}},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", invalidContentfulURLDetail, "url"),
+			},
 		},
 	}
 
@@ -227,9 +314,9 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				expected := test.expectedDiagnostics[i]
 
 				assert.Equal(t, expected.summary, diagnostic.Summary)
+				assert.Equal(t, expected.detail, diagnostic.Detail)
 				assert.Equal(t, tfprotov6.DiagnosticSeverityError, diagnostic.Severity)
 				assert.Equal(t, expected.attribute, diagnostic.Attribute)
-				assert.NotEmpty(t, diagnostic.Detail)
 			}
 		})
 	}
