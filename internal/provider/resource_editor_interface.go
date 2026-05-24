@@ -128,7 +128,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
 }
@@ -204,7 +204,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
 }
@@ -230,7 +230,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	var currentVersion int
 
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
+	currentVersion, currentVersionDiags := GetContentfulResourceVersion(ctx, req.Private)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(plan.SpaceID.ValueString(), plan.EnvironmentID.ValueString(), plan.ContentTypeID.ValueString())
@@ -283,7 +283,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
 }
