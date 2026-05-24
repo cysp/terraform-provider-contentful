@@ -4,12 +4,14 @@ import (
 	"context"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -95,11 +97,13 @@ func (p *ContentfulProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 		Description: "Manage Contentful spaces and related configuration with Terraform.",
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
-				Optional: true,
+				Description: "Contentful Management API base URL. Defaults to the public Contentful Management API. Can also be set with the CONTENTFUL_URL environment variable.",
+				Optional:    true,
 			},
 			"access_token": schema.StringAttribute{
-				Optional:  true,
-				Sensitive: true,
+				Description: "Contentful Management API access token. Can also be set with the CONTENTFUL_MANAGEMENT_ACCESS_TOKEN environment variable.",
+				Optional:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -150,13 +154,15 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	}
 
 	if contentfulURL == "" {
-		resp.Diagnostics.AddAttributeError(path.Root("url"), "Failed to configure client", "No API URL provided")
+		resp.Diagnostics.AddAttributeError(path.Root("url"), "Missing Contentful API URL", "Set the url provider attribute or the CONTENTFUL_URL environment variable.")
+	} else {
+		resp.Diagnostics.Append(validateContentfulURL(contentfulURL)...)
 	}
 
 	accessToken := accessTokenValue.ValueString()
 
 	if accessToken == "" {
-		resp.Diagnostics.AddAttributeError(path.Root("access_token"), "Failed to configure client", "No access token provided")
+		resp.Diagnostics.AddAttributeError(path.Root("access_token"), "Missing Contentful management access token", "Set the access_token provider attribute or the CONTENTFUL_MANAGEMENT_ACCESS_TOKEN environment variable.")
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -191,6 +197,23 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	resp.DataSourceData = providerData
 	resp.ListResourceData = providerData
 	resp.ResourceData = providerData
+}
+
+func validateContentfulURL(rawURL string) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Hostname() == "" {
+		diags.AddAttributeError(path.Root("url"), "Invalid Contentful API URL", "The url provider attribute must be an absolute HTTP or HTTPS URL, such as https://api.contentful.com. It can also be set with the CONTENTFUL_URL environment variable.")
+
+		return diags
+	}
+
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		diags.AddAttributeError(path.Root("url"), "Invalid Contentful API URL", "The url provider attribute must use the http or https scheme.")
+	}
+
+	return diags
 }
 
 func (p *ContentfulProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {

@@ -71,6 +71,32 @@ func TestProtocol6ProviderServerSchemaVersion(t *testing.T) {
 	assert.EqualValues(t, 0, resp.Provider.Version)
 }
 
+func TestProtocol6ProviderServerSchemaDocumentsProviderConfiguration(t *testing.T) {
+	t.Parallel()
+
+	providerServer, err := testAccProtoV6ProviderFactories["contentful"]()
+	require.NotNil(t, providerServer)
+	require.NoError(t, err)
+
+	resp, err := providerServer.GetProviderSchema(t.Context(), &tfprotov6.GetProviderSchemaRequest{})
+	require.NotNil(t, resp.Provider)
+	require.NoError(t, err)
+	require.Empty(t, resp.Diagnostics)
+
+	attributes := map[string]*tfprotov6.SchemaAttribute{}
+	for _, attribute := range resp.Provider.Block.Attributes {
+		attributes[attribute.Name] = attribute
+	}
+
+	require.Contains(t, attributes, "url")
+	assert.Contains(t, attributes["url"].Description, "CONTENTFUL_URL")
+	assert.Contains(t, attributes["url"].Description, "public Contentful Management API")
+
+	require.Contains(t, attributes, "access_token")
+	assert.True(t, attributes["access_token"].Sensitive)
+	assert.Contains(t, attributes["access_token"].Description, "CONTENTFUL_MANAGEMENT_ACCESS_TOKEN")
+}
+
 func TestProtocol6ProviderServerConfigure(t *testing.T) {
 	if os.Getenv("TF_ACC") != "" {
 		return
@@ -87,7 +113,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"url": "https://api.test.contentful.com",
 			},
 			expectedDiagnostics: []providerDiagnosticExpectation{
-				providerAttributeError("Failed to configure client", "access_token"),
+				providerAttributeError("Missing Contentful management access token", "access_token"),
 			},
 		},
 		"config: access_token": {
@@ -100,12 +126,58 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"url":          "url://an invalid url %/",
 				"access_token": "CFPAT-12345",
 			},
-			expectedDiagnostics: []providerDiagnosticExpectation{{summary: "Failed to create Contentful client"}},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", "url"),
+			},
+		},
+		"config: url(relative),access_token": {
+			config: map[string]any{
+				"url":          "/relative",
+				"access_token": "CFPAT-12345",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", "url"),
+			},
+		},
+		"config: url(empty-host),access_token": {
+			config: map[string]any{
+				"url":          "http://:80",
+				"access_token": "CFPAT-12345",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", "url"),
+			},
+		},
+		"config: url(unsupported-scheme),access_token": {
+			config: map[string]any{
+				"url":          "ftp://api.test.contentful.com",
+				"access_token": "CFPAT-12345",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", "url"),
+			},
+		},
+		"env: url": {
+			env: map[string]string{
+				"CONTENTFUL_URL": "https://api.test.contentful.com",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Missing Contentful management access token", "access_token"),
+			},
 		},
 		"env: url,access_token": {
 			env: map[string]string{
 				"CONTENTFUL_URL":                     "https://api.test.contentful.com",
 				"CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "CFPAT-12345",
+			},
+		},
+		"env: url(invalid),access_token": {
+			env: map[string]string{
+				"CONTENTFUL_URL":                     "http://:80",
+				"CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "CFPAT-12345",
+			},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", "url"),
 			},
 		},
 		"config: url env: access_token": {
@@ -135,7 +207,7 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 				"CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "CFPAT-12345",
 			},
 			expectedDiagnostics: []providerDiagnosticExpectation{
-				providerAttributeError("Failed to configure client", "access_token"),
+				providerAttributeError("Missing Contentful management access token", "access_token"),
 			},
 		},
 		"unknown url": {
@@ -194,7 +266,9 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			options: []Option{
 				WithContentfulURL("url://an invalid url %/"),
 			},
-			expectedDiagnostics: []providerDiagnosticExpectation{{summary: "Failed to create Contentful client"}},
+			expectedDiagnostics: []providerDiagnosticExpectation{
+				providerAttributeError("Invalid Contentful API URL", "url"),
+			},
 		},
 	}
 
