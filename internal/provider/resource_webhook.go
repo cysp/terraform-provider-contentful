@@ -199,7 +199,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinition:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
