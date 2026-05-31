@@ -126,7 +126,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, requestModel.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, requestModel.Headers)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -191,7 +191,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinition:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -278,7 +278,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, requestModel.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, requestModel.Headers)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
