@@ -34,11 +34,13 @@ resource "random_password" "contentful_app_signing_secret" {
 
 - `app_definition_id` (String) ID of the app definition for which the signing secret is created.
 - `organization_id` (String) ID of the organization that owns the app.
-- `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. The complete configured value is stored in Terraform state after a successful Create or Update.
-
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+- `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters long and contain only alphanumeric characters (a-z, A-Z, 0-9).
+- `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only alternative to value. The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters long and contain only alphanumeric characters (a-z, A-Z, 0-9).
 
 ### Read-Only
 

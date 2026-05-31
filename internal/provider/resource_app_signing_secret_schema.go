@@ -68,8 +68,17 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"value": schema.StringAttribute{
 				Description: appSigningValueDescription,
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
+				Validators: []validator.String{
+					appSigningSecretValueValidator{},
+				},
+			},
+			"value_wo": schema.StringAttribute{
+				Description: "Write-only alternative to value. " + appSigningValueDescription,
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
 				Validators: []validator.String{
 					appSigningSecretValueValidator{},
 				},

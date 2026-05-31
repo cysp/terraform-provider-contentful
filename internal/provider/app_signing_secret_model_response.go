@@ -20,6 +20,7 @@ func NewAppSigningSecretResourceModelFromResponse(_ context.Context, res cm.AppS
 			OrganizationID:  types.StringValue(organizationID),
 			AppDefinitionID: types.StringValue(appDefinitionID),
 		},
+		ValueWO: types.StringNull(),
 	}
 
 	return model, diags

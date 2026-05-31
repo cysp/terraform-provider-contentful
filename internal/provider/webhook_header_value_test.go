@@ -61,16 +61,19 @@ func TestWebhookHeaderValueInvalid(t *testing.T) {
 
 	testcases := map[string]map[string]attr.Value{
 		"invalid": {
-			"value":  types.DynamicNull(),
-			"secret": types.DynamicNull(),
+			"value":    types.DynamicNull(),
+			"value_wo": types.DynamicNull(),
+			"secret":   types.DynamicNull(),
 		},
 		"invalid value": {
-			"value":  types.DynamicNull(),
-			"secret": types.BoolNull(),
+			"value":    types.DynamicNull(),
+			"value_wo": types.StringNull(),
+			"secret":   types.BoolNull(),
 		},
 		"invalid secret": {
-			"value":  types.StringNull(),
-			"secret": types.DynamicNull(),
+			"value":    types.StringNull(),
+			"value_wo": types.StringNull(),
+			"secret":   types.DynamicNull(),
 		},
 	}
 
@@ -97,20 +100,24 @@ func TestWebhookHeaderValueConversion(t *testing.T) {
 	values := []AttrValueWithToObjectValue{
 		NewTypedObject(WebhookHeaderValue{}),
 		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-			"value":  types.StringUnknown(),
-			"secret": types.BoolUnknown(),
+			"value":    types.StringUnknown(),
+			"value_wo": types.StringUnknown(),
+			"secret":   types.BoolUnknown(),
 		})),
 		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-			"value":  types.StringNull(),
-			"secret": types.BoolNull(),
+			"value":    types.StringNull(),
+			"value_wo": types.StringNull(),
+			"secret":   types.BoolNull(),
 		})),
 		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-			"value":  types.StringValue("value"),
-			"secret": types.BoolValue(false),
+			"value":    types.StringValue("value"),
+			"value_wo": types.StringNull(),
+			"secret":   types.BoolValue(false),
 		})),
 		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-			"value":  types.StringValue("value"),
-			"secret": types.BoolValue(true),
+			"value":    types.StringValue("value"),
+			"value_wo": types.StringNull(),
+			"secret":   types.BoolValue(true),
 		})),
 	}
 
@@ -170,8 +177,9 @@ func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
 		t.Parallel()
 
 		value, diags := types.ObjectValue(typ.AttributeTypes(), map[string]attr.Value{
-			"value":  types.StringValue("value"),
-			"secret": types.BoolValue(true),
+			"value":    types.StringValue("value"),
+			"value_wo": types.StringNull(),
+			"secret":   types.BoolValue(true),
 		})
 		assert.False(t, diags.HasError())
 
