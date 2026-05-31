@@ -35,8 +35,14 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"value": schema.StringAttribute{
 				Description: "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters long and contain only alphanumeric characters (a-z, A-Z, 0-9).",
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
+			},
+			"value_wo": schema.StringAttribute{
+				Description: "Write-only alternative to value. The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters long and contain only alphanumeric characters (a-z, A-Z, 0-9).",
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},
