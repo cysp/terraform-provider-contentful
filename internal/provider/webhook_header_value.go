@@ -5,6 +5,7 @@ import (
 )
 
 type WebhookHeaderValue struct {
-	Value  types.String `tfsdk:"value"`
-	Secret types.Bool   `tfsdk:"secret"`
+	Value   types.String `tfsdk:"value"`
+	ValueWO types.String `tfsdk:"value_wo"`
+	Secret  types.Bool   `tfsdk:"secret"`
 }
