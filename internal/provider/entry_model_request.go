@@ -2,10 +2,14 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
 func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.Diagnostics) {
@@ -33,15 +37,60 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 	fields := make(cm.EntryFields)
 
 	attrs := model.Fields.Elements()
-	for k, v := range attrs {
-		if v.IsNull() {
+	for fieldID, localizedValues := range attrs {
+		if localizedValues.IsUnknown() {
 			continue
 		}
 
-		fields[k] = jx.Raw(v.ValueString())
+		if localizedValues.IsNull() {
+			fields[fieldID] = jx.Raw("null")
+
+			continue
+		}
+
+		fieldValue, fieldValueDiags := entryLocalizedFieldToRaw(path.Root("fields").AtMapKey(fieldID), localizedValues)
+		diags.Append(fieldValueDiags...)
+
+		if fieldValueDiags.HasError() {
+			continue
+		}
+
+		fields[fieldID] = fieldValue
 	}
 
 	return cm.NewOptEntryFields(fields), diags
+}
+
+func entryLocalizedFieldToRaw(path path.Path, localizedValues TypedMap[jsontypes.Normalized]) (jx.Raw, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	values := map[string]json.RawMessage{}
+
+	for locale, value := range localizedValues.Elements() {
+		if value.IsNull() || value.IsUnknown() {
+			continue
+		}
+
+		raw := []byte(value.ValueString())
+		if !json.Valid(raw) {
+			diags.AddAttributeError(path.AtMapKey(locale), "Invalid Entry Field Value", "Expected a valid JSON value.")
+
+			continue
+		}
+
+		values[locale] = json.RawMessage(raw)
+	}
+
+	encoded, err := json.Marshal(values)
+	if err != nil {
+		diags.AddAttributeError(path, "Invalid Entry Field Value", err.Error())
+	}
+
+	return jx.Raw(encoded), diags
+}
+
+func isRawJSONNull(raw []byte) bool {
+	return strings.TrimSpace(string(raw)) == "null"
 }
 
 func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEntryMetadata, diag.Diagnostics) {
