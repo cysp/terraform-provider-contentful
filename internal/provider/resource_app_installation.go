@@ -175,13 +175,10 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 		data = responseModel
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if handled, notFoundDiags := RemoveContentfulResourceIfNotFound(ctx, &resp.State, response, err, "Failed to read app installation"); handled {
+			resp.Diagnostics.Append(notFoundDiags...)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
