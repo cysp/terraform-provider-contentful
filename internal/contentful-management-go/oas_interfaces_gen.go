@@ -17,6 +17,10 @@ type CreateEntryRes interface {
 	createEntryRes()
 }
 
+type CreateLocaleRes interface {
+	createLocaleRes()
+}
+
 type CreateOrUpdateEnvironmentAliasRes interface {
 	createOrUpdateEnvironmentAliasRes()
 }
@@ -83,6 +87,10 @@ type DeleteEnvironmentRes interface {
 
 type DeleteExtensionRes interface {
 	deleteExtensionRes()
+}
+
+type DeleteLocaleRes interface {
+	deleteLocaleRes()
 }
 
 type DeleteResourceProviderRes interface {
@@ -165,6 +173,14 @@ type GetExtensionRes interface {
 	getExtensionRes()
 }
 
+type GetLocaleRes interface {
+	getLocaleRes()
+}
+
+type GetLocalesRes interface {
+	getLocalesRes()
+}
+
 type GetMarketplaceAppDefinitionsRes interface {
 	getMarketplaceAppDefinitionsRes()
 }
@@ -239,6 +255,10 @@ type PutEntryRes interface {
 
 type PutExtensionRes interface {
 	putExtensionRes()
+}
+
+type PutLocaleRes interface {
+	putLocaleRes()
 }
 
 type PutResourceProviderRes interface {
