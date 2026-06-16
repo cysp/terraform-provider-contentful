@@ -1445,7 +1445,8 @@ func (s *AppSigningSecretSysType) UnmarshalText(data []byte) error {
 // Ref: #/components/schemas/ApplicationJSONError
 // ApplicationJSONError represents sum type.
 type ApplicationJSONError struct {
-	Type  ApplicationJSONErrorType // switch on this field
+	// Type selects the active sum variant, switch on this field.
+	Type  ApplicationJSONErrorType
 	Error Error
 }
 
@@ -1654,7 +1655,8 @@ func (*ApplicationJSONErrorStatusCode) updateWebhookDefinitionRes()        {}
 // Ref: #/components/schemas/ApplicationVndContentfulManagementV1JSONError
 // ApplicationVndContentfulManagementV1JSONError represents sum type.
 type ApplicationVndContentfulManagementV1JSONError struct {
-	Type  ApplicationVndContentfulManagementV1JSONErrorType // switch on this field
+	// Type selects the active sum variant, switch on this field.
+	Type  ApplicationVndContentfulManagementV1JSONErrorType
 	Error Error
 }
 
@@ -3218,7 +3220,8 @@ func (s *EditorInterfaceEditorLayoutGroupItem) SetItems(val []EditorInterfaceEdi
 // Ref: #/EditorInterfaceEditorLayoutItem
 // EditorInterfaceEditorLayoutItem represents sum type.
 type EditorInterfaceEditorLayoutItem struct {
-	Type                                 EditorInterfaceEditorLayoutItemType // switch on this field
+	// Type selects the active sum variant, switch on this field.
+	Type                                 EditorInterfaceEditorLayoutItemType
 	EditorInterfaceEditorLayoutGroupItem EditorInterfaceEditorLayoutGroupItem
 	EditorInterfaceEditorLayoutFieldItem EditorInterfaceEditorLayoutFieldItem
 }
@@ -6027,6 +6030,11 @@ func (o *OptNilDateTime) SetToNull() {
 	o.Value = v
 }
 
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilDateTime) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
 // Get returns value and boolean that denotes whether value was set.
 func (o OptNilDateTime) Get() (v time.Time, ok bool) {
 	if o.Null {
@@ -6088,6 +6096,11 @@ func (o *OptNilEditorInterfaceControlsItemArray) SetToNull() {
 	o.Null = true
 	var v []EditorInterfaceControlsItem
 	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilEditorInterfaceControlsItemArray) IsEmpty() bool {
+	return !o.Set && !o.Null
 }
 
 // Get returns value and boolean that denotes whether value was set.
@@ -6153,6 +6166,11 @@ func (o *OptNilEditorInterfaceDataControlsItemArray) SetToNull() {
 	o.Value = v
 }
 
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilEditorInterfaceDataControlsItemArray) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
 // Get returns value and boolean that denotes whether value was set.
 func (o OptNilEditorInterfaceDataControlsItemArray) Get() (v []EditorInterfaceDataControlsItem, ok bool) {
 	if o.Null {
@@ -6214,6 +6232,11 @@ func (o *OptNilEditorInterfaceDataGroupControlsItemArray) SetToNull() {
 	o.Null = true
 	var v []EditorInterfaceDataGroupControlsItem
 	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilEditorInterfaceDataGroupControlsItemArray) IsEmpty() bool {
+	return !o.Set && !o.Null
 }
 
 // Get returns value and boolean that denotes whether value was set.
@@ -6279,6 +6302,11 @@ func (o *OptNilEditorInterfaceDataSidebarItemArray) SetToNull() {
 	o.Value = v
 }
 
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilEditorInterfaceDataSidebarItemArray) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
 // Get returns value and boolean that denotes whether value was set.
 func (o OptNilEditorInterfaceDataSidebarItemArray) Get() (v []EditorInterfaceDataSidebarItem, ok bool) {
 	if o.Null {
@@ -6340,6 +6368,11 @@ func (o *OptNilEditorInterfaceEditorLayoutItemArray) SetToNull() {
 	o.Null = true
 	var v []EditorInterfaceEditorLayoutItem
 	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilEditorInterfaceEditorLayoutItemArray) IsEmpty() bool {
+	return !o.Set && !o.Null
 }
 
 // Get returns value and boolean that denotes whether value was set.
@@ -6405,6 +6438,11 @@ func (o *OptNilEditorInterfaceGroupControlsItemArray) SetToNull() {
 	o.Value = v
 }
 
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilEditorInterfaceGroupControlsItemArray) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
 // Get returns value and boolean that denotes whether value was set.
 func (o OptNilEditorInterfaceGroupControlsItemArray) Get() (v []EditorInterfaceGroupControlsItem, ok bool) {
 	if o.Null {
@@ -6466,6 +6504,11 @@ func (o *OptNilEditorInterfaceSidebarItemArray) SetToNull() {
 	o.Null = true
 	var v []EditorInterfaceSidebarItem
 	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilEditorInterfaceSidebarItemArray) IsEmpty() bool {
+	return !o.Set && !o.Null
 }
 
 // Get returns value and boolean that denotes whether value was set.
@@ -6531,6 +6574,11 @@ func (o *OptNilInt) SetToNull() {
 	o.Value = v
 }
 
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilInt) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
 // Get returns value and boolean that denotes whether value was set.
 func (o OptNilInt) Get() (v int, ok bool) {
 	if o.Null {
@@ -6592,6 +6640,11 @@ func (o *OptNilResourceLinkArray) SetToNull() {
 	o.Null = true
 	var v []ResourceLink
 	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilResourceLinkArray) IsEmpty() bool {
+	return !o.Set && !o.Null
 }
 
 // Get returns value and boolean that denotes whether value was set.
@@ -6657,6 +6710,11 @@ func (o *OptNilString) SetToNull() {
 	o.Value = v
 }
 
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilString) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
 // Get returns value and boolean that denotes whether value was set.
 func (o OptNilString) Get() (v string, ok bool) {
 	if o.Null {
@@ -6718,6 +6776,11 @@ func (o *OptNilWebhookDefinitionDataTransformation) SetToNull() {
 	o.Null = true
 	var v WebhookDefinitionDataTransformation
 	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilWebhookDefinitionDataTransformation) IsEmpty() bool {
+	return !o.Set && !o.Null
 }
 
 // Get returns value and boolean that denotes whether value was set.
@@ -6783,6 +6846,11 @@ func (o *OptNilWebhookDefinitionFilterArray) SetToNull() {
 	o.Value = v
 }
 
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilWebhookDefinitionFilterArray) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
 // Get returns value and boolean that denotes whether value was set.
 func (o OptNilWebhookDefinitionFilterArray) Get() (v []WebhookDefinitionFilter, ok bool) {
 	if o.Null {
@@ -6844,6 +6912,11 @@ func (o *OptNilWebhookDefinitionTransformation) SetToNull() {
 	o.Null = true
 	var v WebhookDefinitionTransformation
 	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilWebhookDefinitionTransformation) IsEmpty() bool {
+	return !o.Set && !o.Null
 }
 
 // Get returns value and boolean that denotes whether value was set.
@@ -8628,7 +8701,8 @@ func (s *RoleDataPermissions) init() RoleDataPermissions {
 
 // RoleDataPermissionsItem represents sum type.
 type RoleDataPermissionsItem struct {
-	Type        RoleDataPermissionsItemType // switch on this field
+	// Type selects the active sum variant, switch on this field.
+	Type        RoleDataPermissionsItemType
 	String      string
 	StringArray []string
 }
@@ -8730,7 +8804,8 @@ func (s *RoleDataPoliciesItem) SetConstraint(val jx.Raw) {
 
 // RoleDataPoliciesItemActions represents sum type.
 type RoleDataPoliciesItemActions struct {
-	Type        RoleDataPoliciesItemActionsType // switch on this field
+	// Type selects the active sum variant, switch on this field.
+	Type        RoleDataPoliciesItemActionsType
 	String      string
 	StringArray []string
 }
@@ -8974,7 +9049,8 @@ func (s *RolePermissions) init() RolePermissions {
 
 // RolePermissionsItem represents sum type.
 type RolePermissionsItem struct {
-	Type        RolePermissionsItemType // switch on this field
+	// Type selects the active sum variant, switch on this field.
+	Type        RolePermissionsItemType
 	String      string
 	StringArray []string
 }
@@ -9074,7 +9150,8 @@ func (s *RolePoliciesItem) SetConstraint(val jx.Raw) {
 
 // RolePoliciesItemActions represents sum type.
 type RolePoliciesItemActions struct {
-	Type        RolePoliciesItemActionsType // switch on this field
+	// Type selects the active sum variant, switch on this field.
+	Type        RolePoliciesItemActionsType
 	String      string
 	StringArray []string
 }
