@@ -5080,6 +5080,14 @@ type GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK SpaceEnableme
 
 func (*GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK) getSpaceEnablementsRes() {}
 
+type GetTeamApplicationJSONOK Team
+
+func (*GetTeamApplicationJSONOK) getTeamRes() {}
+
+type GetTeamApplicationVndContentfulManagementV1JSONOK Team
+
+func (*GetTeamApplicationVndContentfulManagementV1JSONOK) getTeamRes() {}
+
 // NewNilString returns new NilString with value set to v.
 func NewNilString(v string) NilString {
 	return NilString{
@@ -10310,8 +10318,6 @@ func (s *Team) SetName(val string) {
 func (s *Team) SetDescription(val NilString) {
 	s.Description = val
 }
-
-func (*Team) getTeamRes() {}
 
 // Ref: #/TeamData
 type TeamData struct {

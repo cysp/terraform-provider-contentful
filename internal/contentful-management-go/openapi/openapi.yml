@@ -495,6 +495,9 @@ paths:
         2XX:
           description: A team
           content:
+            application/json:
+              schema:
+                $ref: "./schemas/team/team.yml#/Team"
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "./schemas/team/team.yml#/Team"
@@ -513,6 +516,9 @@ paths:
         200:
           description: A team
           content:
+            application/json:
+              schema:
+                $ref: "./schemas/team/team.yml#/Team"
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "./schemas/team/team.yml#/Team"
@@ -537,6 +543,9 @@ paths:
         2XX:
           description: A team
           content:
+            application/json:
+              schema:
+                $ref: "./schemas/team/team.yml#/Team"
             application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "./schemas/team/team.yml#/Team"

@@ -165,15 +165,13 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	var data TeamModel
 
-	switch response := response.(type) {
-	case *cm.Team:
-		responseModel, responseModelDiags := NewTeamResourceModelFromResponse(ctx, *response)
+	if team, ok := cm.TeamFromGetTeamResponse(response); ok {
+		responseModel, responseModelDiags := NewTeamResourceModelFromResponse(ctx, team)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
-
-	default:
+		currentVersion = team.Sys.Version
+	} else {
 		if response, ok := response.(cm.StatusCodeResponse); ok {
 			if response.GetStatusCode() == http.StatusNotFound {
 				resp.Diagnostics.AddWarning("Failed to read team", util.ErrorDetailFromContentfulManagementResponse(response, err))

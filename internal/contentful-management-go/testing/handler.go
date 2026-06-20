@@ -13,6 +13,8 @@ type Handler struct {
 
 	teams OrganizationMap[*cm.Team]
 
+	teamGetContentType ResponseContentType
+
 	teamSpaceMemberships cm.SpaceMap[*cm.TeamSpaceMembership]
 
 	personalAccessTokens map[string]*cm.PersonalAccessToken
