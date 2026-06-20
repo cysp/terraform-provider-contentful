@@ -2560,6 +2560,22 @@ func (s *GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK) Validate
 	return nil
 }
 
+func (s *GetTeamApplicationJSONOK) Validate() error {
+	alias := (*Team)(s)
+	if err := alias.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *GetTeamApplicationVndContentfulManagementV1JSONOK) Validate() error {
+	alias := (*Team)(s)
+	if err := alias.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *OrganizationLink) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer

@@ -784,8 +784,8 @@ func encodeCreateTeamResponse(response CreateTeamRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *TeamStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -804,7 +804,7 @@ func encodeCreateTeamResponse(response CreateTeamRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *TeamStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
@@ -4072,7 +4072,19 @@ func encodeGetTagResponse(response GetTagRes, w http.ResponseWriter) error {
 
 func encodeGetTeamResponse(response GetTeamRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *Team:
+	case *GetTeamApplicationJSONOK:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(200)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *GetTeamApplicationVndContentfulManagementV1JSONOK:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		w.WriteHeader(200)
 
@@ -5457,8 +5469,8 @@ func encodePutTeamResponse(response PutTeamRes, w http.ResponseWriter) error {
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *TeamStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5477,7 +5489,7 @@ func encodePutTeamResponse(response PutTeamRes, w http.ResponseWriter) error {
 		}
 		return nil
 
-	case *TeamStatusCode:
+	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {

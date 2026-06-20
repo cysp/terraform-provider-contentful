@@ -11,3 +11,10 @@ func (s *Server) SetTeam(organizationID, teamID string, fields cm.TeamData) {
 	team := NewTeamFromFields(organizationID, teamID, fields)
 	s.h.teams.Set(organizationID, teamID, &team)
 }
+
+func (s *Server) ServeTeamGetContentType(contentType ResponseContentType) {
+	s.h.mu.Lock()
+	defer s.h.mu.Unlock()
+
+	s.h.teamGetContentType = contentType
+}

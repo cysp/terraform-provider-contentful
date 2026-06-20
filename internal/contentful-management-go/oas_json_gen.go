@@ -12181,6 +12181,82 @@ func (s *GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK) Unmarsha
 	return s.Decode(d)
 }
 
+// Encode encodes GetTeamApplicationJSONOK as json.
+func (s *GetTeamApplicationJSONOK) Encode(e *jx.Encoder) {
+	unwrapped := (*Team)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes GetTeamApplicationJSONOK from json.
+func (s *GetTeamApplicationJSONOK) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GetTeamApplicationJSONOK to nil")
+	}
+	var unwrapped Team
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = GetTeamApplicationJSONOK(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GetTeamApplicationJSONOK) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GetTeamApplicationJSONOK) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes GetTeamApplicationVndContentfulManagementV1JSONOK as json.
+func (s *GetTeamApplicationVndContentfulManagementV1JSONOK) Encode(e *jx.Encoder) {
+	unwrapped := (*Team)(s)
+
+	unwrapped.Encode(e)
+}
+
+// Decode decodes GetTeamApplicationVndContentfulManagementV1JSONOK from json.
+func (s *GetTeamApplicationVndContentfulManagementV1JSONOK) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GetTeamApplicationVndContentfulManagementV1JSONOK to nil")
+	}
+	var unwrapped Team
+	if err := func() error {
+		if err := unwrapped.Decode(d); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = GetTeamApplicationVndContentfulManagementV1JSONOK(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GetTeamApplicationVndContentfulManagementV1JSONOK) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GetTeamApplicationVndContentfulManagementV1JSONOK) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes string as json.
 func (o NilString) Encode(e *jx.Encoder) {
 	if o.Null {
