@@ -23,6 +23,7 @@ func TestAccTeamResource(t *testing.T) {
 					"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
 					"team_name":       config.StringVariable("Test Team"),
 				},
+				Check: resource.TestCheckResourceAttr("contentful_team.test", "description", ""),
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -30,6 +31,7 @@ func TestAccTeamResource(t *testing.T) {
 					"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
 					"team_name":       config.StringVariable("Test Team Updated"),
 				},
+				Check: resource.TestCheckResourceAttr("contentful_team.test", "description", ""),
 			},
 		},
 	})
@@ -82,4 +84,82 @@ resource "contentful_team" "test" {
   description = ""
 }
 `
+}
+
+func TestAccTeamResourceImportUpdateUsesDefaultDescription(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+
+	server.SetTeam("2zuSjSO4A0e6GKBrhJRe2m", "team-id", cm.TeamData{
+		Name:        "Test Team",
+		Description: cm.NewNilString("Existing description"),
+	})
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "contentful_team" "test" {
+  organization_id = "2zuSjSO4A0e6GKBrhJRe2m"
+
+  name = "Test Team"
+}
+`,
+				ResourceName:       "contentful_team.test",
+				ImportState:        true,
+				ImportStateId:      "2zuSjSO4A0e6GKBrhJRe2m/team-id",
+				ImportStatePersist: true,
+			},
+			{
+				Config: `
+resource "contentful_team" "test" {
+  organization_id = "2zuSjSO4A0e6GKBrhJRe2m"
+
+  name = "Test Team Updated"
+}
+`,
+				Check: resource.TestCheckResourceAttr("contentful_team.test", "description", ""),
+			},
+		},
+	})
+}
+
+func TestAccTeamResourceImportNullDescriptionUsesDefault(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+
+	server.SetTeam("2zuSjSO4A0e6GKBrhJRe2m", "team-id", cm.TeamData{
+		Name:        "Test Team",
+		Description: cm.NewNilStringNull(),
+	})
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "contentful_team" "test" {
+  organization_id = "2zuSjSO4A0e6GKBrhJRe2m"
+
+  name = "Test Team"
+}
+`,
+				ResourceName:       "contentful_team.test",
+				ImportState:        true,
+				ImportStateId:      "2zuSjSO4A0e6GKBrhJRe2m/team-id",
+				ImportStatePersist: true,
+			},
+			{
+				Config: `
+resource "contentful_team" "test" {
+  organization_id = "2zuSjSO4A0e6GKBrhJRe2m"
+
+  name = "Test Team"
+}
+`,
+				Check: resource.TestCheckResourceAttr("contentful_team.test", "description", ""),
+			},
+		},
+	})
 }
