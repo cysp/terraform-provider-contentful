@@ -31,7 +31,7 @@ resource "contentful_team" "this" {
 
 ### Optional
 
-- `description` (String) A description of the team.
+- `description` (String) A description of the team. Defaults to an empty string.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

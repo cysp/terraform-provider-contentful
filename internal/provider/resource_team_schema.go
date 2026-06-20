@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -38,8 +39,10 @@ func TeamResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "A description of the team.",
+				Description: "A description of the team. Defaults to an empty string.",
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},
