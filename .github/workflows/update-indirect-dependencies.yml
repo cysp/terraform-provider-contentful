@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: cyspbot
-        uses: chikachow/cyspbot-app-token-action@8894f93a0c17b5a160dafa8df13a46c0399f80a8 # v0.0.4
+        uses: chikachow/cyspbot-app-token-action@e46d6f86fc4f6dee6b7682be3a837859b1b42667 # v0.0.5
 
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
