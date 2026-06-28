@@ -1,0 +1,7 @@
+AppKeyRequestData:
+  type: object
+  properties:
+    jwk:
+      $ref: "./jwk.yml#/AppKeyJWK"
+    generate:
+      type: boolean

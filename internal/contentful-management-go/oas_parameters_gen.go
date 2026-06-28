@@ -293,6 +293,124 @@ func decodeCreateAppDefinitionParams(args [1]string, argsEscaped bool, r *http.R
 	return params, nil
 }
 
+// CreateAppKeyParams is parameters of createAppKey operation.
+type CreateAppKeyParams struct {
+	OrganizationID  string
+	AppDefinitionID string
+}
+
+func unpackCreateAppKeyParams(packed middleware.Parameters) (params CreateAppKeyParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "app_definition_id",
+			In:   "path",
+		}
+		params.AppDefinitionID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeCreateAppKeyParams(args [2]string, argsEscaped bool, r *http.Request) (params CreateAppKeyParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: app_definition_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "app_definition_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.AppDefinitionID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "app_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // CreateDeliveryAPIKeyParams is parameters of createDeliveryAPIKey operation.
 type CreateDeliveryAPIKeyParams struct {
 	SpaceID string
@@ -1653,6 +1771,177 @@ func decodeDeleteAppInstallationParams(args [3]string, argsEscaped bool, r *http
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "app_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// DeleteAppKeyParams is parameters of deleteAppKey operation.
+type DeleteAppKeyParams struct {
+	OrganizationID  string
+	AppDefinitionID string
+	KeyKid          string
+}
+
+func unpackDeleteAppKeyParams(packed middleware.Parameters) (params DeleteAppKeyParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "app_definition_id",
+			In:   "path",
+		}
+		params.AppDefinitionID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "key_kid",
+			In:   "path",
+		}
+		params.KeyKid = packed[key].(string)
+	}
+	return params
+}
+
+func decodeDeleteAppKeyParams(args [3]string, argsEscaped bool, r *http.Request) (params DeleteAppKeyParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: app_definition_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "app_definition_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.AppDefinitionID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "app_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: key_kid.
+	if err := func() error {
+		param := args[2]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[2])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "key_kid",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.KeyKid = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "key_kid",
 			In:   "path",
 			Err:  err,
 		}
@@ -3873,6 +4162,295 @@ func decodeGetAppInstallationParams(args [3]string, argsEscaped bool, r *http.Re
 		param := args[2]
 		if argsEscaped {
 			unescaped, err := url.PathUnescape(args[2])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "app_definition_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.AppDefinitionID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "app_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetAppKeyParams is parameters of getAppKey operation.
+type GetAppKeyParams struct {
+	OrganizationID  string
+	AppDefinitionID string
+	KeyKid          string
+}
+
+func unpackGetAppKeyParams(packed middleware.Parameters) (params GetAppKeyParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "app_definition_id",
+			In:   "path",
+		}
+		params.AppDefinitionID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "key_kid",
+			In:   "path",
+		}
+		params.KeyKid = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetAppKeyParams(args [3]string, argsEscaped bool, r *http.Request) (params GetAppKeyParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: app_definition_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "app_definition_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.AppDefinitionID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "app_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: key_kid.
+	if err := func() error {
+		param := args[2]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[2])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "key_kid",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.KeyKid = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "key_kid",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetAppKeysParams is parameters of getAppKeys operation.
+type GetAppKeysParams struct {
+	OrganizationID  string
+	AppDefinitionID string
+}
+
+func unpackGetAppKeysParams(packed middleware.Parameters) (params GetAppKeysParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "app_definition_id",
+			In:   "path",
+		}
+		params.AppDefinitionID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetAppKeysParams(args [2]string, argsEscaped bool, r *http.Request) (params GetAppKeysParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: app_definition_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
 			if err != nil {
 				return errors.Wrap(err, "unescape path")
 			}
