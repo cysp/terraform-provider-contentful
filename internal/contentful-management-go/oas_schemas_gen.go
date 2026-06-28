@@ -1554,316 +1554,6 @@ func (*ApplicationJSONError) updateDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONError) updateRoleRes()                     {}
 func (*ApplicationJSONError) updateWebhookDefinitionRes()        {}
 
-// ApplicationJSONErrorStatusCode wraps ApplicationJSONError with StatusCode.
-type ApplicationJSONErrorStatusCode struct {
-	StatusCode int
-	Response   ApplicationJSONError
-}
-
-// GetStatusCode returns the value of StatusCode.
-func (s *ApplicationJSONErrorStatusCode) GetStatusCode() int {
-	return s.StatusCode
-}
-
-// GetResponse returns the value of Response.
-func (s *ApplicationJSONErrorStatusCode) GetResponse() ApplicationJSONError {
-	return s.Response
-}
-
-// SetStatusCode sets the value of StatusCode.
-func (s *ApplicationJSONErrorStatusCode) SetStatusCode(val int) {
-	s.StatusCode = val
-}
-
-// SetResponse sets the value of Response.
-func (s *ApplicationJSONErrorStatusCode) SetResponse(val ApplicationJSONError) {
-	s.Response = val
-}
-
-func (*ApplicationJSONErrorStatusCode) activateContentTypeRes()            {}
-func (*ApplicationJSONErrorStatusCode) createAppDefinitionRes()            {}
-func (*ApplicationJSONErrorStatusCode) createDeliveryAPIKeyRes()           {}
-func (*ApplicationJSONErrorStatusCode) createEntryRes()                    {}
-func (*ApplicationJSONErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
-func (*ApplicationJSONErrorStatusCode) createOrUpdateEnvironmentRes()      {}
-func (*ApplicationJSONErrorStatusCode) createPersonalAccessTokenRes()      {}
-func (*ApplicationJSONErrorStatusCode) createRoleRes()                     {}
-func (*ApplicationJSONErrorStatusCode) createTeamRes()                     {}
-func (*ApplicationJSONErrorStatusCode) createTeamSpaceMembershipRes()      {}
-func (*ApplicationJSONErrorStatusCode) createWebhookDefinitionRes()        {}
-func (*ApplicationJSONErrorStatusCode) deactivateContentTypeRes()          {}
-func (*ApplicationJSONErrorStatusCode) deleteAppDefinitionRes()            {}
-func (*ApplicationJSONErrorStatusCode) deleteAppInstallationRes()          {}
-func (*ApplicationJSONErrorStatusCode) deleteAppSigningSecretRes()         {}
-func (*ApplicationJSONErrorStatusCode) deleteContentTypeRes()              {}
-func (*ApplicationJSONErrorStatusCode) deleteDeliveryAPIKeyRes()           {}
-func (*ApplicationJSONErrorStatusCode) deleteEntryRes()                    {}
-func (*ApplicationJSONErrorStatusCode) deleteEnvironmentAliasRes()         {}
-func (*ApplicationJSONErrorStatusCode) deleteEnvironmentRes()              {}
-func (*ApplicationJSONErrorStatusCode) deleteExtensionRes()                {}
-func (*ApplicationJSONErrorStatusCode) deleteResourceProviderRes()         {}
-func (*ApplicationJSONErrorStatusCode) deleteResourceTypeRes()             {}
-func (*ApplicationJSONErrorStatusCode) deleteRoleRes()                     {}
-func (*ApplicationJSONErrorStatusCode) deleteTagRes()                      {}
-func (*ApplicationJSONErrorStatusCode) deleteTeamRes()                     {}
-func (*ApplicationJSONErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
-func (*ApplicationJSONErrorStatusCode) deleteWebhookDefinitionRes()        {}
-func (*ApplicationJSONErrorStatusCode) getAppDefinitionRes()               {}
-func (*ApplicationJSONErrorStatusCode) getAppInstallationRes()             {}
-func (*ApplicationJSONErrorStatusCode) getAppSigningSecretRes()            {}
-func (*ApplicationJSONErrorStatusCode) getAuthenticatedUserRes()           {}
-func (*ApplicationJSONErrorStatusCode) getContentTypeRes()                 {}
-func (*ApplicationJSONErrorStatusCode) getContentTypesRes()                {}
-func (*ApplicationJSONErrorStatusCode) getDeliveryAPIKeyRes()              {}
-func (*ApplicationJSONErrorStatusCode) getEditorInterfaceRes()             {}
-func (*ApplicationJSONErrorStatusCode) getEntriesRes()                     {}
-func (*ApplicationJSONErrorStatusCode) getEntryRes()                       {}
-func (*ApplicationJSONErrorStatusCode) getEnvironmentAliasRes()            {}
-func (*ApplicationJSONErrorStatusCode) getEnvironmentRes()                 {}
-func (*ApplicationJSONErrorStatusCode) getExtensionRes()                   {}
-func (*ApplicationJSONErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
-func (*ApplicationJSONErrorStatusCode) getPersonalAccessTokenRes()         {}
-func (*ApplicationJSONErrorStatusCode) getPreviewAPIKeyRes()               {}
-func (*ApplicationJSONErrorStatusCode) getResourceProviderRes()            {}
-func (*ApplicationJSONErrorStatusCode) getResourceTypeRes()                {}
-func (*ApplicationJSONErrorStatusCode) getRoleRes()                        {}
-func (*ApplicationJSONErrorStatusCode) getSpaceEnablementsRes()            {}
-func (*ApplicationJSONErrorStatusCode) getTagRes()                         {}
-func (*ApplicationJSONErrorStatusCode) getTeamRes()                        {}
-func (*ApplicationJSONErrorStatusCode) getTeamSpaceMembershipRes()         {}
-func (*ApplicationJSONErrorStatusCode) getWebhookDefinitionRes()           {}
-func (*ApplicationJSONErrorStatusCode) publishEntryRes()                   {}
-func (*ApplicationJSONErrorStatusCode) putAppDefinitionRes()               {}
-func (*ApplicationJSONErrorStatusCode) putAppInstallationRes()             {}
-func (*ApplicationJSONErrorStatusCode) putAppSigningSecretRes()            {}
-func (*ApplicationJSONErrorStatusCode) putContentTypeRes()                 {}
-func (*ApplicationJSONErrorStatusCode) putEditorInterfaceRes()             {}
-func (*ApplicationJSONErrorStatusCode) putEntryRes()                       {}
-func (*ApplicationJSONErrorStatusCode) putExtensionRes()                   {}
-func (*ApplicationJSONErrorStatusCode) putResourceProviderRes()            {}
-func (*ApplicationJSONErrorStatusCode) putResourceTypeRes()                {}
-func (*ApplicationJSONErrorStatusCode) putSpaceEnablementsRes()            {}
-func (*ApplicationJSONErrorStatusCode) putTagRes()                         {}
-func (*ApplicationJSONErrorStatusCode) putTeamRes()                        {}
-func (*ApplicationJSONErrorStatusCode) putTeamSpaceMembershipRes()         {}
-func (*ApplicationJSONErrorStatusCode) revokePersonalAccessTokenRes()      {}
-func (*ApplicationJSONErrorStatusCode) unpublishEntryRes()                 {}
-func (*ApplicationJSONErrorStatusCode) updateDeliveryAPIKeyRes()           {}
-func (*ApplicationJSONErrorStatusCode) updateRoleRes()                     {}
-func (*ApplicationJSONErrorStatusCode) updateWebhookDefinitionRes()        {}
-
-// Ref: #/components/schemas/ApplicationVndContentfulManagementV1JSONError
-// ApplicationVndContentfulManagementV1JSONError represents sum type.
-type ApplicationVndContentfulManagementV1JSONError struct {
-	// Type selects the active sum variant, switch on this field.
-	Type  ApplicationVndContentfulManagementV1JSONErrorType
-	Error Error
-}
-
-// ApplicationVndContentfulManagementV1JSONErrorType is oneOf type of ApplicationVndContentfulManagementV1JSONError.
-type ApplicationVndContentfulManagementV1JSONErrorType string
-
-// Possible values for ApplicationVndContentfulManagementV1JSONErrorType.
-const (
-	ErrorApplicationVndContentfulManagementV1JSONError ApplicationVndContentfulManagementV1JSONErrorType = "Error"
-)
-
-// IsError reports whether ApplicationVndContentfulManagementV1JSONError is Error.
-func (s ApplicationVndContentfulManagementV1JSONError) IsError() bool {
-	return s.Type == ErrorApplicationVndContentfulManagementV1JSONError
-}
-
-// SetError sets ApplicationVndContentfulManagementV1JSONError to Error.
-func (s *ApplicationVndContentfulManagementV1JSONError) SetError(v Error) {
-	s.Type = ErrorApplicationVndContentfulManagementV1JSONError
-	s.Error = v
-}
-
-// GetError returns Error and true boolean if ApplicationVndContentfulManagementV1JSONError is Error.
-func (s ApplicationVndContentfulManagementV1JSONError) GetError() (v Error, ok bool) {
-	if !s.IsError() {
-		return v, false
-	}
-	return s.Error, true
-}
-
-// NewErrorApplicationVndContentfulManagementV1JSONError returns new ApplicationVndContentfulManagementV1JSONError from Error.
-func NewErrorApplicationVndContentfulManagementV1JSONError(v Error) ApplicationVndContentfulManagementV1JSONError {
-	var s ApplicationVndContentfulManagementV1JSONError
-	s.SetError(v)
-	return s
-}
-
-func (*ApplicationVndContentfulManagementV1JSONError) activateContentTypeRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) createAppDefinitionRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) createDeliveryAPIKeyRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONError) createEntryRes()                    {}
-func (*ApplicationVndContentfulManagementV1JSONError) createOrUpdateEnvironmentAliasRes() {}
-func (*ApplicationVndContentfulManagementV1JSONError) createOrUpdateEnvironmentRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONError) createPersonalAccessTokenRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONError) createRoleRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONError) createTeamRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONError) createTeamSpaceMembershipRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONError) createWebhookDefinitionRes()        {}
-func (*ApplicationVndContentfulManagementV1JSONError) deactivateContentTypeRes()          {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteAppDefinitionRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteAppInstallationRes()          {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteAppSigningSecretRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteContentTypeRes()              {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteDeliveryAPIKeyRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteEntryRes()                    {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteEnvironmentAliasRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteEnvironmentRes()              {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteExtensionRes()                {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceProviderRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteResourceTypeRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteRoleRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteTagRes()                      {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteTeamRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteTeamSpaceMembershipRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONError) deleteWebhookDefinitionRes()        {}
-func (*ApplicationVndContentfulManagementV1JSONError) getAppDefinitionRes()               {}
-func (*ApplicationVndContentfulManagementV1JSONError) getAppInstallationRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONError) getAppSigningSecretRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) getAuthenticatedUserRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONError) getContentTypeRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONError) getContentTypesRes()                {}
-func (*ApplicationVndContentfulManagementV1JSONError) getDeliveryAPIKeyRes()              {}
-func (*ApplicationVndContentfulManagementV1JSONError) getEditorInterfaceRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONError) getEntriesRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONError) getEntryRes()                       {}
-func (*ApplicationVndContentfulManagementV1JSONError) getEnvironmentAliasRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) getEnvironmentRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONError) getExtensionRes()                   {}
-func (*ApplicationVndContentfulManagementV1JSONError) getMarketplaceAppDefinitionsRes()   {}
-func (*ApplicationVndContentfulManagementV1JSONError) getPersonalAccessTokenRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONError) getPreviewAPIKeyRes()               {}
-func (*ApplicationVndContentfulManagementV1JSONError) getResourceProviderRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) getResourceTypeRes()                {}
-func (*ApplicationVndContentfulManagementV1JSONError) getRoleRes()                        {}
-func (*ApplicationVndContentfulManagementV1JSONError) getSpaceEnablementsRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) getTagRes()                         {}
-func (*ApplicationVndContentfulManagementV1JSONError) getTeamRes()                        {}
-func (*ApplicationVndContentfulManagementV1JSONError) getTeamSpaceMembershipRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONError) getWebhookDefinitionRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONError) publishEntryRes()                   {}
-func (*ApplicationVndContentfulManagementV1JSONError) putAppDefinitionRes()               {}
-func (*ApplicationVndContentfulManagementV1JSONError) putAppInstallationRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONError) putAppSigningSecretRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) putContentTypeRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONError) putEditorInterfaceRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONError) putEntryRes()                       {}
-func (*ApplicationVndContentfulManagementV1JSONError) putExtensionRes()                   {}
-func (*ApplicationVndContentfulManagementV1JSONError) putResourceProviderRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) putResourceTypeRes()                {}
-func (*ApplicationVndContentfulManagementV1JSONError) putSpaceEnablementsRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONError) putTagRes()                         {}
-func (*ApplicationVndContentfulManagementV1JSONError) putTeamRes()                        {}
-func (*ApplicationVndContentfulManagementV1JSONError) putTeamSpaceMembershipRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONError) revokePersonalAccessTokenRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONError) unpublishEntryRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONError) updateDeliveryAPIKeyRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONError) updateRoleRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONError) updateWebhookDefinitionRes()        {}
-
-// ApplicationVndContentfulManagementV1JSONErrorStatusCode wraps ApplicationVndContentfulManagementV1JSONError with StatusCode.
-type ApplicationVndContentfulManagementV1JSONErrorStatusCode struct {
-	StatusCode int
-	Response   ApplicationVndContentfulManagementV1JSONError
-}
-
-// GetStatusCode returns the value of StatusCode.
-func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) GetStatusCode() int {
-	return s.StatusCode
-}
-
-// GetResponse returns the value of Response.
-func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) GetResponse() ApplicationVndContentfulManagementV1JSONError {
-	return s.Response
-}
-
-// SetStatusCode sets the value of StatusCode.
-func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) SetStatusCode(val int) {
-	s.StatusCode = val
-}
-
-// SetResponse sets the value of Response.
-func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) SetResponse(val ApplicationVndContentfulManagementV1JSONError) {
-	s.Response = val
-}
-
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) activateContentTypeRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createAppDefinitionRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createDeliveryAPIKeyRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createEntryRes()                    {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createOrUpdateEnvironmentRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createPersonalAccessTokenRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createRoleRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createTeamRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createTeamSpaceMembershipRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) createWebhookDefinitionRes()        {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deactivateContentTypeRes()          {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppDefinitionRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppInstallationRes()          {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteAppSigningSecretRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteContentTypeRes()              {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteDeliveryAPIKeyRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEntryRes()                    {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEnvironmentAliasRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteEnvironmentRes()              {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteExtensionRes()                {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceProviderRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteResourceTypeRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteRoleRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteTagRes()                      {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteTeamRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) deleteWebhookDefinitionRes()        {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppDefinitionRes()               {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppInstallationRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAppSigningSecretRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getAuthenticatedUserRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypeRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getContentTypesRes()                {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getDeliveryAPIKeyRes()              {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEditorInterfaceRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEntriesRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEntryRes()                       {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEnvironmentAliasRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getEnvironmentRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getExtensionRes()                   {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPersonalAccessTokenRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getPreviewAPIKeyRes()               {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getResourceProviderRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getResourceTypeRes()                {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getRoleRes()                        {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getSpaceEnablementsRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getTagRes()                         {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getTeamRes()                        {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getTeamSpaceMembershipRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) getWebhookDefinitionRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) publishEntryRes()                   {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppDefinitionRes()               {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppInstallationRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putAppSigningSecretRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putContentTypeRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putEditorInterfaceRes()             {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putEntryRes()                       {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putExtensionRes()                   {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceProviderRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putResourceTypeRes()                {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putSpaceEnablementsRes()            {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putTagRes()                         {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putTeamRes()                        {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) putTeamSpaceMembershipRes()         {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) revokePersonalAccessTokenRes()      {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) unpublishEntryRes()                 {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateDeliveryAPIKeyRes()           {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateRoleRes()                     {}
-func (*ApplicationVndContentfulManagementV1JSONErrorStatusCode) updateWebhookDefinitionRes()        {}
-
 // Merged schema.
 // Ref: #/ContentType
 type ContentType struct {
@@ -4355,6 +4045,104 @@ func (s *Error) SetDetails(val jx.Raw) {
 	s.Details = val
 }
 
+// ErrorStatusCode wraps ApplicationJSONError with StatusCode.
+type ErrorStatusCode struct {
+	StatusCode int
+	Response   ApplicationJSONError
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *ErrorStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *ErrorStatusCode) GetResponse() ApplicationJSONError {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *ErrorStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *ErrorStatusCode) SetResponse(val ApplicationJSONError) {
+	s.Response = val
+}
+
+func (*ErrorStatusCode) activateContentTypeRes()            {}
+func (*ErrorStatusCode) createAppDefinitionRes()            {}
+func (*ErrorStatusCode) createDeliveryAPIKeyRes()           {}
+func (*ErrorStatusCode) createEntryRes()                    {}
+func (*ErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
+func (*ErrorStatusCode) createOrUpdateEnvironmentRes()      {}
+func (*ErrorStatusCode) createPersonalAccessTokenRes()      {}
+func (*ErrorStatusCode) createRoleRes()                     {}
+func (*ErrorStatusCode) createTeamRes()                     {}
+func (*ErrorStatusCode) createTeamSpaceMembershipRes()      {}
+func (*ErrorStatusCode) createWebhookDefinitionRes()        {}
+func (*ErrorStatusCode) deactivateContentTypeRes()          {}
+func (*ErrorStatusCode) deleteAppDefinitionRes()            {}
+func (*ErrorStatusCode) deleteAppInstallationRes()          {}
+func (*ErrorStatusCode) deleteAppSigningSecretRes()         {}
+func (*ErrorStatusCode) deleteContentTypeRes()              {}
+func (*ErrorStatusCode) deleteDeliveryAPIKeyRes()           {}
+func (*ErrorStatusCode) deleteEntryRes()                    {}
+func (*ErrorStatusCode) deleteEnvironmentAliasRes()         {}
+func (*ErrorStatusCode) deleteEnvironmentRes()              {}
+func (*ErrorStatusCode) deleteExtensionRes()                {}
+func (*ErrorStatusCode) deleteResourceProviderRes()         {}
+func (*ErrorStatusCode) deleteResourceTypeRes()             {}
+func (*ErrorStatusCode) deleteRoleRes()                     {}
+func (*ErrorStatusCode) deleteTagRes()                      {}
+func (*ErrorStatusCode) deleteTeamRes()                     {}
+func (*ErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
+func (*ErrorStatusCode) deleteWebhookDefinitionRes()        {}
+func (*ErrorStatusCode) getAppDefinitionRes()               {}
+func (*ErrorStatusCode) getAppInstallationRes()             {}
+func (*ErrorStatusCode) getAppSigningSecretRes()            {}
+func (*ErrorStatusCode) getAuthenticatedUserRes()           {}
+func (*ErrorStatusCode) getContentTypeRes()                 {}
+func (*ErrorStatusCode) getContentTypesRes()                {}
+func (*ErrorStatusCode) getDeliveryAPIKeyRes()              {}
+func (*ErrorStatusCode) getEditorInterfaceRes()             {}
+func (*ErrorStatusCode) getEntriesRes()                     {}
+func (*ErrorStatusCode) getEntryRes()                       {}
+func (*ErrorStatusCode) getEnvironmentAliasRes()            {}
+func (*ErrorStatusCode) getEnvironmentRes()                 {}
+func (*ErrorStatusCode) getExtensionRes()                   {}
+func (*ErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
+func (*ErrorStatusCode) getPersonalAccessTokenRes()         {}
+func (*ErrorStatusCode) getPreviewAPIKeyRes()               {}
+func (*ErrorStatusCode) getResourceProviderRes()            {}
+func (*ErrorStatusCode) getResourceTypeRes()                {}
+func (*ErrorStatusCode) getRoleRes()                        {}
+func (*ErrorStatusCode) getSpaceEnablementsRes()            {}
+func (*ErrorStatusCode) getTagRes()                         {}
+func (*ErrorStatusCode) getTeamRes()                        {}
+func (*ErrorStatusCode) getTeamSpaceMembershipRes()         {}
+func (*ErrorStatusCode) getWebhookDefinitionRes()           {}
+func (*ErrorStatusCode) publishEntryRes()                   {}
+func (*ErrorStatusCode) putAppDefinitionRes()               {}
+func (*ErrorStatusCode) putAppInstallationRes()             {}
+func (*ErrorStatusCode) putAppSigningSecretRes()            {}
+func (*ErrorStatusCode) putContentTypeRes()                 {}
+func (*ErrorStatusCode) putEditorInterfaceRes()             {}
+func (*ErrorStatusCode) putEntryRes()                       {}
+func (*ErrorStatusCode) putExtensionRes()                   {}
+func (*ErrorStatusCode) putResourceProviderRes()            {}
+func (*ErrorStatusCode) putResourceTypeRes()                {}
+func (*ErrorStatusCode) putSpaceEnablementsRes()            {}
+func (*ErrorStatusCode) putTagRes()                         {}
+func (*ErrorStatusCode) putTeamRes()                        {}
+func (*ErrorStatusCode) putTeamSpaceMembershipRes()         {}
+func (*ErrorStatusCode) revokePersonalAccessTokenRes()      {}
+func (*ErrorStatusCode) unpublishEntryRes()                 {}
+func (*ErrorStatusCode) updateDeliveryAPIKeyRes()           {}
+func (*ErrorStatusCode) updateRoleRes()                     {}
+func (*ErrorStatusCode) updateWebhookDefinitionRes()        {}
+
 // Ref: #/ErrorSys
 type ErrorSys struct {
 	Type ErrorSysType `json:"type"`
@@ -5074,22 +4862,6 @@ func (s *GetMarketplaceAppDefinitionsOKSysType) UnmarshalText(data []byte) error
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
-
-type GetSpaceEnablementsApplicationJSONOK SpaceEnablement
-
-func (*GetSpaceEnablementsApplicationJSONOK) getSpaceEnablementsRes() {}
-
-type GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK SpaceEnablement
-
-func (*GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK) getSpaceEnablementsRes() {}
-
-type GetTeamApplicationJSONOK Team
-
-func (*GetTeamApplicationJSONOK) getTeamRes() {}
-
-type GetTeamApplicationVndContentfulManagementV1JSONOK Team
-
-func (*GetTeamApplicationVndContentfulManagementV1JSONOK) getTeamRes() {}
 
 // NewNilString returns new NilString with value set to v.
 func NewNilString(v string) NilString {
@@ -9430,6 +9202,8 @@ func (s *SpaceEnablement) SetSuggestConcepts(val OptSpaceEnablementField) {
 	s.SuggestConcepts = val
 }
 
+func (*SpaceEnablement) getSpaceEnablementsRes() {}
+
 // Ref: #/SpaceEnablementData
 type SpaceEnablementData struct {
 	CrossSpaceLinks   OptSpaceEnablementField `json:"crossSpaceLinks"`
@@ -10395,6 +10169,8 @@ func (s *Team) SetName(val string) {
 func (s *Team) SetDescription(val NilString) {
 	s.Description = val
 }
+
+func (*Team) getTeamRes() {}
 
 // Ref: #/TeamData
 type TeamData struct {

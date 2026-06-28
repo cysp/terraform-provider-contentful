@@ -24,9 +24,9 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			},
 			expected: "Error: UnknownError",
 		},
-		"Error: *ApplicationVndContentfulManagementV1JSONError": {
-			response: &cm.ApplicationVndContentfulManagementV1JSONError{
-				Type: cm.ErrorApplicationVndContentfulManagementV1JSONError,
+		"Error: *ApplicationJSONError": {
+			response: &cm.ApplicationJSONError{
+				Type: cm.ErrorApplicationJSONError,
 				Error: cm.Error{
 					Sys:     cm.NewErrorSys("Unauthorized"),
 					Message: cm.NewOptString("Unauthorized"),
@@ -34,26 +34,26 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			},
 			expected: "Error: Unauthorized: Unauthorized",
 		},
-		"ApplicationVndContentfulManagementV1JSONErrorStatusCode": {
-			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
-				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
+		"ErrorStatusCode": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys: cm.NewErrorSys("UnknownError"),
 				}),
 			},
 			expected: "Error: UnknownError",
 		},
-		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessage": {
-			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
-				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
+		"ErrorStatusCodeWithMessage": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
 				}),
 			},
 			expected: "Error: UnknownError: Error message",
 		},
-		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessageAndUnsupportedDetails": {
-			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
-				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
+		"ErrorStatusCodeWithMessageAndUnsupportedDetails": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
 					Details: []byte(`"Detailed reason for error"`),
@@ -61,9 +61,9 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			},
 			expected: "Error: UnknownError: Error message",
 		},
-		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessageAndReasons": {
-			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
-				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
+		"ErrorStatusCodeWithMessageAndReasons": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
 					Details: []byte(`{"reasons":"Detailed reason for error"}`),
@@ -71,9 +71,9 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			},
 			expected: "Error: UnknownError: Error message: Detailed reason for error",
 		},
-		"ApplicationVndContentfulManagementV1JSONErrorStatusCodeWithMessageAndUnsupportedReason": {
-			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
-				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
+		"ErrorStatusCodeWithMessageAndUnsupportedReason": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
 					Details: []byte(`{"reasons":["Reason 1", "Reason 2"]}`),
@@ -90,9 +90,9 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			expected: "unsupported operation",
 		},
 		"ValidationFailed with detailed errors": {
-			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			response: &cm.ErrorStatusCode{
 				StatusCode: 422,
-				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("ValidationFailed"),
 					Message: cm.NewOptString("Validation error"),
 					Details: []byte("{\"errors\":[{\"name\":\"required\",\"details\":\"The property \\\"annotations\\\" is required here\",\"path\":[\"metadata\",\"annotations\"]},{\"name\":\"required\",\"details\":\"The property \\\"taxonomy\\\" is required here\",\"path\":[\"metadata\",\"taxonomy\"]},{\"name\":\"in\",\"details\":\"Value must be one of expected values\",\"path\":[\"metadata\"],\"value\": {},\"expected\":[{\"required\":[\"annotations\"]},{\"required\":[\"taxonomy\"]}]}]}"),
@@ -101,9 +101,9 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			expected: "Error: ValidationFailed: Validation error\n  metadata.annotations: The property \"annotations\" is required here\n  metadata.taxonomy: The property \"taxonomy\" is required here\n  metadata: Value must be one of expected values",
 		},
 		"ValidationFailed with detailed errors in fields list item": {
-			response: &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			response: &cm.ErrorStatusCode{
 				StatusCode: 422,
-				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("ValidationFailed"),
 					Message: cm.NewOptString("Validation error"),
 					Details: []byte("{\"errors\":[{\"name\":\"type\",\"details\":\"The type of \\\"required\\\" is incorrect, expected type: Boolean\",\"path\":[\"fields\",0,\"required\"],\"type\":\"Boolean\",\"value\":\"true\"}]}"),

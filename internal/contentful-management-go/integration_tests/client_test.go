@@ -14,7 +14,7 @@ func testContentfulManagementClient(t *testing.T, serverURL string, accessToken 
 	client, err := cm.NewClient(
 		serverURL,
 		cm.NewAccessTokenSecuritySource(accessToken),
-		cm.WithClient(cm.NewClientWithUserAgent(http.DefaultClient, cm.DefaultUserAgent)),
+		cm.WithClient(cm.NewTransportClient(http.DefaultClient, cm.DefaultUserAgent)),
 	)
 	require.NoError(t, err)
 	require.NotNil(t, client)

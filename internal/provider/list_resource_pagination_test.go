@@ -130,8 +130,8 @@ func TestPaginateContentfulCollectionItemsAsListResultsReturnsContentfulErrorDia
 		list.ListRequest{},
 		"failed",
 		func(context.Context, int64, int64) (any, error) {
-			return &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
-				Response: cm.NewErrorApplicationVndContentfulManagementV1JSONError(cm.Error{
+			return &cm.ErrorStatusCode{
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("NotFound"),
 					Message: cm.NewOptString("Environment not found"),
 				}),

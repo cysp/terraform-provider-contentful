@@ -6,31 +6,24 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func NewContentfulManagementErrorStatusCodeBadRequest(message *string, details []byte) *cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode {
-	return &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+func NewContentfulManagementErrorStatusCodeBadRequest(message *string, details []byte) *cm.ErrorStatusCode {
+	return &cm.ErrorStatusCode{
 		StatusCode: http.StatusBadRequest,
-		Response:   cm.NewErrorApplicationVndContentfulManagementV1JSONError(NewContentfulManagementError("BadRequest", message, details)),
+		Response:   cm.NewErrorApplicationJSONError(NewContentfulManagementError("BadRequest", message, details)),
 	}
 }
 
-func NewContentfulManagementErrorStatusCodeNotFound(message *string, details []byte) *cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode {
-	return &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+func NewContentfulManagementErrorStatusCodeNotFound(message *string, details []byte) *cm.ErrorStatusCode {
+	return &cm.ErrorStatusCode{
 		StatusCode: http.StatusNotFound,
-		Response:   cm.NewErrorApplicationVndContentfulManagementV1JSONError(NewContentfulManagementError(cm.ErrorSysIDNotFound, message, details)),
+		Response:   cm.NewErrorApplicationJSONError(NewContentfulManagementError(cm.ErrorSysIDNotFound, message, details)),
 	}
 }
 
-func NewContentfulManagementErrorStatusCodeVersionMismatch(message *string, details []byte) *cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode {
-	return &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+func NewContentfulManagementErrorStatusCodeVersionMismatch(message *string, details []byte) *cm.ErrorStatusCode {
+	return &cm.ErrorStatusCode{
 		StatusCode: http.StatusConflict,
-		Response:   cm.NewErrorApplicationVndContentfulManagementV1JSONError(NewContentfulManagementError(cm.ErrorSysIDVersionMismatch, message, details)),
-	}
-}
-
-func NewContentfulManagementErrorStatusCode(statusCode int, id string, message *string, details []byte) *cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode {
-	return &cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode{
-		StatusCode: statusCode,
-		Response:   cm.NewErrorApplicationVndContentfulManagementV1JSONError(NewContentfulManagementError(id, message, details)),
+		Response:   cm.NewErrorApplicationJSONError(NewContentfulManagementError(cm.ErrorSysIDVersionMismatch, message, details)),
 	}
 }
 

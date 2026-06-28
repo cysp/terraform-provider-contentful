@@ -56,40 +56,6 @@ func decodeActivateContentTypeResponse(resp *http.Response) (res ActivateContent
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -103,7 +69,7 @@ func decodeActivateContentTypeResponse(resp *http.Response) (res ActivateContent
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -189,44 +155,7 @@ func decodeActivateContentTypeResponse(resp *http.Response) (res ActivateContent
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -283,40 +212,6 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -330,7 +225,7 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -416,44 +311,7 @@ func decodeCreateAppDefinitionResponse(resp *http.Response) (res CreateAppDefini
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -510,40 +368,6 @@ func decodeCreateDeliveryAPIKeyResponse(resp *http.Response) (res CreateDelivery
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -557,7 +381,7 @@ func decodeCreateDeliveryAPIKeyResponse(resp *http.Response) (res CreateDelivery
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -643,44 +467,7 @@ func decodeCreateDeliveryAPIKeyResponse(resp *http.Response) (res CreateDelivery
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -737,40 +524,6 @@ func decodeCreateEntryResponse(resp *http.Response) (res CreateEntryRes, _ error
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -784,7 +537,7 @@ func decodeCreateEntryResponse(resp *http.Response) (res CreateEntryRes, _ error
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -870,44 +623,7 @@ func decodeCreateEntryResponse(resp *http.Response) (res CreateEntryRes, _ error
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -964,40 +680,6 @@ func decodeCreateOrUpdateEnvironmentResponse(resp *http.Response) (res CreateOrU
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -1011,7 +693,7 @@ func decodeCreateOrUpdateEnvironmentResponse(resp *http.Response) (res CreateOrU
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -1097,44 +779,7 @@ func decodeCreateOrUpdateEnvironmentResponse(resp *http.Response) (res CreateOrU
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1191,40 +836,6 @@ func decodeCreateOrUpdateEnvironmentAliasResponse(resp *http.Response) (res Crea
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -1238,7 +849,7 @@ func decodeCreateOrUpdateEnvironmentAliasResponse(resp *http.Response) (res Crea
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -1324,44 +935,7 @@ func decodeCreateOrUpdateEnvironmentAliasResponse(resp *http.Response) (res Crea
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1418,40 +992,6 @@ func decodeCreatePersonalAccessTokenResponse(resp *http.Response) (res CreatePer
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -1465,7 +1005,7 @@ func decodeCreatePersonalAccessTokenResponse(resp *http.Response) (res CreatePer
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -1551,44 +1091,7 @@ func decodeCreatePersonalAccessTokenResponse(resp *http.Response) (res CreatePer
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1645,40 +1148,6 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -1692,7 +1161,7 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -1778,44 +1247,7 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -1872,40 +1304,6 @@ func decodeCreateTeamResponse(resp *http.Response) (res CreateTeamRes, _ error) 
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -1920,43 +1318,6 @@ func decodeCreateTeamResponse(resp *http.Response) (res CreateTeamRes, _ error) 
 			}
 			switch {
 			case ct == "application/json":
-				buf, err := io.ReadAll(resp.Body)
-				if err != nil {
-					return res, err
-				}
-				d := jx.DecodeBytes(buf)
-
-				var response Team
-				if err := func() error {
-					if err := response.Decode(d); err != nil {
-						return err
-					}
-					if err := d.Skip(); err != io.EOF {
-						return errors.New("unexpected trailing data")
-					}
-					return nil
-				}(); err != nil {
-					err = &ogenerrors.DecodeBodyError{
-						ContentType: ct,
-						Body:        buf,
-						Err:         err,
-					}
-					return res, err
-				}
-				// Validate response.
-				if err := func() error {
-					if err := response.Validate(); err != nil {
-						return err
-					}
-					return nil
-				}(); err != nil {
-					return res, errors.Wrap(err, "validate")
-				}
-				return &TeamStatusCode{
-					StatusCode: resp.StatusCode,
-					Response:   response,
-				}, nil
-			case ct == "application/vnd.contentful.management.v1+json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -2042,44 +1403,7 @@ func decodeCreateTeamResponse(resp *http.Response) (res CreateTeamRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2136,40 +1460,6 @@ func decodeCreateTeamSpaceMembershipResponse(resp *http.Response) (res CreateTea
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -2183,7 +1473,7 @@ func decodeCreateTeamSpaceMembershipResponse(resp *http.Response) (res CreateTea
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -2269,44 +1559,7 @@ func decodeCreateTeamSpaceMembershipResponse(resp *http.Response) (res CreateTea
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2363,40 +1616,6 @@ func decodeCreateWebhookDefinitionResponse(resp *http.Response) (res CreateWebho
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -2410,7 +1629,7 @@ func decodeCreateWebhookDefinitionResponse(resp *http.Response) (res CreateWebho
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -2496,44 +1715,7 @@ func decodeCreateWebhookDefinitionResponse(resp *http.Response) (res CreateWebho
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2556,7 +1738,7 @@ func decodeDeactivateContentTypeResponse(resp *http.Response) (res DeactivateCon
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -2637,40 +1819,6 @@ func decodeDeactivateContentTypeResponse(resp *http.Response) (res DeactivateCon
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -2715,44 +1863,7 @@ func decodeDeactivateContentTypeResponse(resp *http.Response) (res DeactivateCon
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2786,40 +1897,6 @@ func decodeDeleteAppDefinitionResponse(resp *http.Response) (res DeleteAppDefini
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -2890,44 +1967,7 @@ func decodeDeleteAppDefinitionResponse(resp *http.Response) (res DeleteAppDefini
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -2961,40 +2001,6 @@ func decodeDeleteAppInstallationResponse(resp *http.Response) (res DeleteAppInst
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3065,44 +2071,7 @@ func decodeDeleteAppInstallationResponse(resp *http.Response) (res DeleteAppInst
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3136,40 +2105,6 @@ func decodeDeleteAppSigningSecretResponse(resp *http.Response) (res DeleteAppSig
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3240,44 +2175,7 @@ func decodeDeleteAppSigningSecretResponse(resp *http.Response) (res DeleteAppSig
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3311,40 +2209,6 @@ func decodeDeleteContentTypeResponse(resp *http.Response) (res DeleteContentType
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3415,44 +2279,7 @@ func decodeDeleteContentTypeResponse(resp *http.Response) (res DeleteContentType
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3486,40 +2313,6 @@ func decodeDeleteDeliveryAPIKeyResponse(resp *http.Response) (res DeleteDelivery
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3590,44 +2383,7 @@ func decodeDeleteDeliveryAPIKeyResponse(resp *http.Response) (res DeleteDelivery
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3661,40 +2417,6 @@ func decodeDeleteEntryResponse(resp *http.Response) (res DeleteEntryRes, _ error
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3765,44 +2487,7 @@ func decodeDeleteEntryResponse(resp *http.Response) (res DeleteEntryRes, _ error
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -3836,40 +2521,6 @@ func decodeDeleteEnvironmentResponse(resp *http.Response) (res DeleteEnvironment
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -3940,44 +2591,7 @@ func decodeDeleteEnvironmentResponse(resp *http.Response) (res DeleteEnvironment
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4011,40 +2625,6 @@ func decodeDeleteEnvironmentAliasResponse(resp *http.Response) (res DeleteEnviro
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4115,44 +2695,7 @@ func decodeDeleteEnvironmentAliasResponse(resp *http.Response) (res DeleteEnviro
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4186,40 +2729,6 @@ func decodeDeleteExtensionResponse(resp *http.Response) (res DeleteExtensionRes,
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4290,44 +2799,7 @@ func decodeDeleteExtensionResponse(resp *http.Response) (res DeleteExtensionRes,
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4361,40 +2833,6 @@ func decodeDeleteResourceProviderResponse(resp *http.Response) (res DeleteResour
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4465,44 +2903,7 @@ func decodeDeleteResourceProviderResponse(resp *http.Response) (res DeleteResour
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4536,40 +2937,6 @@ func decodeDeleteResourceTypeResponse(resp *http.Response) (res DeleteResourceTy
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4640,44 +3007,7 @@ func decodeDeleteResourceTypeResponse(resp *http.Response) (res DeleteResourceTy
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4711,40 +3041,6 @@ func decodeDeleteRoleResponse(resp *http.Response) (res DeleteRoleRes, _ error) 
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4815,44 +3111,7 @@ func decodeDeleteRoleResponse(resp *http.Response) (res DeleteRoleRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -4886,40 +3145,6 @@ func decodeDeleteTagResponse(resp *http.Response) (res DeleteTagRes, _ error) {
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -4990,44 +3215,7 @@ func decodeDeleteTagResponse(resp *http.Response) (res DeleteTagRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5061,40 +3249,6 @@ func decodeDeleteTeamResponse(resp *http.Response) (res DeleteTeamRes, _ error) 
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5165,44 +3319,7 @@ func decodeDeleteTeamResponse(resp *http.Response) (res DeleteTeamRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5236,40 +3353,6 @@ func decodeDeleteTeamSpaceMembershipResponse(resp *http.Response) (res DeleteTea
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5340,44 +3423,7 @@ func decodeDeleteTeamSpaceMembershipResponse(resp *http.Response) (res DeleteTea
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5411,40 +3457,6 @@ func decodeDeleteWebhookDefinitionResponse(resp *http.Response) (res DeleteWebho
 			d := jx.DecodeBytes(buf)
 
 			var response ApplicationJSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -5515,44 +3527,7 @@ func decodeDeleteWebhookDefinitionResponse(resp *http.Response) (res DeleteWebho
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5575,7 +3550,7 @@ func decodeGetAppDefinitionResponse(resp *http.Response) (res GetAppDefinitionRe
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -5653,40 +3628,6 @@ func decodeGetAppDefinitionResponse(resp *http.Response) (res GetAppDefinitionRe
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -5731,44 +3672,7 @@ func decodeGetAppDefinitionResponse(resp *http.Response) (res GetAppDefinitionRe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -5791,7 +3695,7 @@ func decodeGetAppInstallationResponse(resp *http.Response) (res GetAppInstallati
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -5869,40 +3773,6 @@ func decodeGetAppInstallationResponse(resp *http.Response) (res GetAppInstallati
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -5947,44 +3817,7 @@ func decodeGetAppInstallationResponse(resp *http.Response) (res GetAppInstallati
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6007,7 +3840,7 @@ func decodeGetAppSigningSecretResponse(resp *http.Response) (res GetAppSigningSe
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -6085,40 +3918,6 @@ func decodeGetAppSigningSecretResponse(resp *http.Response) (res GetAppSigningSe
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -6163,44 +3962,7 @@ func decodeGetAppSigningSecretResponse(resp *http.Response) (res GetAppSigningSe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6223,7 +3985,7 @@ func decodeGetAuthenticatedUserResponse(resp *http.Response) (res GetAuthenticat
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -6301,40 +4063,6 @@ func decodeGetAuthenticatedUserResponse(resp *http.Response) (res GetAuthenticat
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -6379,44 +4107,7 @@ func decodeGetAuthenticatedUserResponse(resp *http.Response) (res GetAuthenticat
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6439,7 +4130,7 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -6517,40 +4208,6 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -6595,44 +4252,7 @@ func decodeGetContentTypeResponse(resp *http.Response) (res GetContentTypeRes, _
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6655,7 +4275,7 @@ func decodeGetContentTypesResponse(resp *http.Response) (res GetContentTypesRes,
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -6733,40 +4353,6 @@ func decodeGetContentTypesResponse(resp *http.Response) (res GetContentTypesRes,
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -6811,44 +4397,7 @@ func decodeGetContentTypesResponse(resp *http.Response) (res GetContentTypesRes,
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -6871,7 +4420,7 @@ func decodeGetDeliveryAPIKeyResponse(resp *http.Response) (res GetDeliveryAPIKey
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -6949,40 +4498,6 @@ func decodeGetDeliveryAPIKeyResponse(resp *http.Response) (res GetDeliveryAPIKey
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -7027,44 +4542,7 @@ func decodeGetDeliveryAPIKeyResponse(resp *http.Response) (res GetDeliveryAPIKey
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7087,7 +4565,7 @@ func decodeGetEditorInterfaceResponse(resp *http.Response) (res GetEditorInterfa
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -7165,40 +4643,6 @@ func decodeGetEditorInterfaceResponse(resp *http.Response) (res GetEditorInterfa
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -7243,44 +4687,7 @@ func decodeGetEditorInterfaceResponse(resp *http.Response) (res GetEditorInterfa
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7303,7 +4710,7 @@ func decodeGetEntriesResponse(resp *http.Response) (res GetEntriesRes, _ error) 
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -7381,40 +4788,6 @@ func decodeGetEntriesResponse(resp *http.Response) (res GetEntriesRes, _ error) 
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -7459,44 +4832,7 @@ func decodeGetEntriesResponse(resp *http.Response) (res GetEntriesRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7519,7 +4855,7 @@ func decodeGetEntryResponse(resp *http.Response) (res GetEntryRes, _ error) {
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -7597,40 +4933,6 @@ func decodeGetEntryResponse(resp *http.Response) (res GetEntryRes, _ error) {
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -7675,44 +4977,7 @@ func decodeGetEntryResponse(resp *http.Response) (res GetEntryRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7735,7 +5000,7 @@ func decodeGetEnvironmentResponse(resp *http.Response) (res GetEnvironmentRes, _
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -7813,40 +5078,6 @@ func decodeGetEnvironmentResponse(resp *http.Response) (res GetEnvironmentRes, _
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -7891,44 +5122,7 @@ func decodeGetEnvironmentResponse(resp *http.Response) (res GetEnvironmentRes, _
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -7951,7 +5145,7 @@ func decodeGetEnvironmentAliasResponse(resp *http.Response) (res GetEnvironmentA
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -8029,40 +5223,6 @@ func decodeGetEnvironmentAliasResponse(resp *http.Response) (res GetEnvironmentA
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -8107,44 +5267,7 @@ func decodeGetEnvironmentAliasResponse(resp *http.Response) (res GetEnvironmentA
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8167,7 +5290,7 @@ func decodeGetExtensionResponse(resp *http.Response) (res GetExtensionRes, _ err
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -8245,40 +5368,6 @@ func decodeGetExtensionResponse(resp *http.Response) (res GetExtensionRes, _ err
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -8323,44 +5412,7 @@ func decodeGetExtensionResponse(resp *http.Response) (res GetExtensionRes, _ err
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8383,7 +5435,7 @@ func decodeGetMarketplaceAppDefinitionsResponse(resp *http.Response) (res GetMar
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -8461,40 +5513,6 @@ func decodeGetMarketplaceAppDefinitionsResponse(resp *http.Response) (res GetMar
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -8539,44 +5557,7 @@ func decodeGetMarketplaceAppDefinitionsResponse(resp *http.Response) (res GetMar
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8599,7 +5580,7 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -8677,40 +5658,6 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -8755,44 +5702,7 @@ func decodeGetPersonalAccessTokenResponse(resp *http.Response) (res GetPersonalA
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -8815,7 +5725,7 @@ func decodeGetPreviewAPIKeyResponse(resp *http.Response) (res GetPreviewAPIKeyRe
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -8893,40 +5803,6 @@ func decodeGetPreviewAPIKeyResponse(resp *http.Response) (res GetPreviewAPIKeyRe
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -8971,44 +5847,7 @@ func decodeGetPreviewAPIKeyResponse(resp *http.Response) (res GetPreviewAPIKeyRe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -9031,7 +5870,7 @@ func decodeGetResourceProviderResponse(resp *http.Response) (res GetResourceProv
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -9109,40 +5948,6 @@ func decodeGetResourceProviderResponse(resp *http.Response) (res GetResourceProv
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -9187,44 +5992,7 @@ func decodeGetResourceProviderResponse(resp *http.Response) (res GetResourceProv
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -9247,7 +6015,7 @@ func decodeGetResourceTypeResponse(resp *http.Response) (res GetResourceTypeRes,
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -9325,40 +6093,6 @@ func decodeGetResourceTypeResponse(resp *http.Response) (res GetResourceTypeRes,
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -9403,44 +6137,7 @@ func decodeGetResourceTypeResponse(resp *http.Response) (res GetResourceTypeRes,
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -9463,7 +6160,7 @@ func decodeGetRoleResponse(resp *http.Response) (res GetRoleRes, _ error) {
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -9541,40 +6238,6 @@ func decodeGetRoleResponse(resp *http.Response) (res GetRoleRes, _ error) {
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -9619,44 +6282,7 @@ func decodeGetRoleResponse(resp *http.Response) (res GetRoleRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -9686,41 +6312,7 @@ func decodeGetSpaceEnablementsResponse(resp *http.Response) (res GetSpaceEnablem
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetSpaceEnablementsApplicationJSONOK
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK
+			var response SpaceEnablement
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -9791,40 +6383,6 @@ func decodeGetSpaceEnablementsResponse(resp *http.Response) (res GetSpaceEnablem
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -9869,44 +6427,7 @@ func decodeGetSpaceEnablementsResponse(resp *http.Response) (res GetSpaceEnablem
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -9929,7 +6450,7 @@ func decodeGetTagResponse(resp *http.Response) (res GetTagRes, _ error) {
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -10007,40 +6528,6 @@ func decodeGetTagResponse(resp *http.Response) (res GetTagRes, _ error) {
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -10085,44 +6572,7 @@ func decodeGetTagResponse(resp *http.Response) (res GetTagRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -10152,41 +6602,7 @@ func decodeGetTeamResponse(resp *http.Response) (res GetTeamRes, _ error) {
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetTeamApplicationJSONOK
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response GetTeamApplicationVndContentfulManagementV1JSONOK
+			var response Team
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -10257,40 +6673,6 @@ func decodeGetTeamResponse(resp *http.Response) (res GetTeamRes, _ error) {
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -10335,44 +6717,7 @@ func decodeGetTeamResponse(resp *http.Response) (res GetTeamRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -10395,7 +6740,7 @@ func decodeGetTeamSpaceMembershipResponse(resp *http.Response) (res GetTeamSpace
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -10473,40 +6818,6 @@ func decodeGetTeamSpaceMembershipResponse(resp *http.Response) (res GetTeamSpace
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -10551,44 +6862,7 @@ func decodeGetTeamSpaceMembershipResponse(resp *http.Response) (res GetTeamSpace
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -10611,7 +6885,7 @@ func decodeGetWebhookDefinitionResponse(resp *http.Response) (res GetWebhookDefi
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -10689,40 +6963,6 @@ func decodeGetWebhookDefinitionResponse(resp *http.Response) (res GetWebhookDefi
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -10767,44 +7007,7 @@ func decodeGetWebhookDefinitionResponse(resp *http.Response) (res GetWebhookDefi
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -10861,40 +7064,6 @@ func decodePublishEntryResponse(resp *http.Response) (res PublishEntryRes, _ err
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -10908,7 +7077,7 @@ func decodePublishEntryResponse(resp *http.Response) (res PublishEntryRes, _ err
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -10994,44 +7163,7 @@ func decodePublishEntryResponse(resp *http.Response) (res PublishEntryRes, _ err
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -11088,40 +7220,6 @@ func decodePutAppDefinitionResponse(resp *http.Response) (res PutAppDefinitionRe
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -11135,7 +7233,7 @@ func decodePutAppDefinitionResponse(resp *http.Response) (res PutAppDefinitionRe
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -11221,44 +7319,7 @@ func decodePutAppDefinitionResponse(resp *http.Response) (res PutAppDefinitionRe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -11315,40 +7376,6 @@ func decodePutAppInstallationResponse(resp *http.Response) (res PutAppInstallati
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -11362,7 +7389,7 @@ func decodePutAppInstallationResponse(resp *http.Response) (res PutAppInstallati
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -11448,44 +7475,7 @@ func decodePutAppInstallationResponse(resp *http.Response) (res PutAppInstallati
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -11542,40 +7532,6 @@ func decodePutAppSigningSecretResponse(resp *http.Response) (res PutAppSigningSe
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -11589,7 +7545,7 @@ func decodePutAppSigningSecretResponse(resp *http.Response) (res PutAppSigningSe
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -11675,44 +7631,7 @@ func decodePutAppSigningSecretResponse(resp *http.Response) (res PutAppSigningSe
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -11769,40 +7688,6 @@ func decodePutContentTypeResponse(resp *http.Response) (res PutContentTypeRes, _
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -11816,7 +7701,7 @@ func decodePutContentTypeResponse(resp *http.Response) (res PutContentTypeRes, _
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -11902,44 +7787,7 @@ func decodePutContentTypeResponse(resp *http.Response) (res PutContentTypeRes, _
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -11996,40 +7844,6 @@ func decodePutEditorInterfaceResponse(resp *http.Response) (res PutEditorInterfa
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -12043,7 +7857,7 @@ func decodePutEditorInterfaceResponse(resp *http.Response) (res PutEditorInterfa
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -12129,44 +7943,7 @@ func decodePutEditorInterfaceResponse(resp *http.Response) (res PutEditorInterfa
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -12223,40 +8000,6 @@ func decodePutEntryResponse(resp *http.Response) (res PutEntryRes, _ error) {
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -12270,7 +8013,7 @@ func decodePutEntryResponse(resp *http.Response) (res PutEntryRes, _ error) {
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -12356,44 +8099,7 @@ func decodePutEntryResponse(resp *http.Response) (res PutEntryRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -12450,40 +8156,6 @@ func decodePutExtensionResponse(resp *http.Response) (res PutExtensionRes, _ err
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -12497,7 +8169,7 @@ func decodePutExtensionResponse(resp *http.Response) (res PutExtensionRes, _ err
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -12583,44 +8255,7 @@ func decodePutExtensionResponse(resp *http.Response) (res PutExtensionRes, _ err
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -12677,40 +8312,6 @@ func decodePutResourceProviderResponse(resp *http.Response) (res PutResourceProv
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -12724,7 +8325,7 @@ func decodePutResourceProviderResponse(resp *http.Response) (res PutResourceProv
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -12810,44 +8411,7 @@ func decodePutResourceProviderResponse(resp *http.Response) (res PutResourceProv
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -12904,40 +8468,6 @@ func decodePutResourceTypeResponse(resp *http.Response) (res PutResourceTypeRes,
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -12951,7 +8481,7 @@ func decodePutResourceTypeResponse(resp *http.Response) (res PutResourceTypeRes,
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -13037,44 +8567,7 @@ func decodePutResourceTypeResponse(resp *http.Response) (res PutResourceTypeRes,
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -13131,40 +8624,6 @@ func decodePutSpaceEnablementsResponse(resp *http.Response) (res PutSpaceEnablem
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -13178,7 +8637,7 @@ func decodePutSpaceEnablementsResponse(resp *http.Response) (res PutSpaceEnablem
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -13264,44 +8723,7 @@ func decodePutSpaceEnablementsResponse(resp *http.Response) (res PutSpaceEnablem
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -13358,40 +8780,6 @@ func decodePutTagResponse(resp *http.Response) (res PutTagRes, _ error) {
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -13405,7 +8793,7 @@ func decodePutTagResponse(resp *http.Response) (res PutTagRes, _ error) {
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -13491,44 +8879,7 @@ func decodePutTagResponse(resp *http.Response) (res PutTagRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -13585,40 +8936,6 @@ func decodePutTeamResponse(resp *http.Response) (res PutTeamRes, _ error) {
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -13633,43 +8950,6 @@ func decodePutTeamResponse(resp *http.Response) (res PutTeamRes, _ error) {
 			}
 			switch {
 			case ct == "application/json":
-				buf, err := io.ReadAll(resp.Body)
-				if err != nil {
-					return res, err
-				}
-				d := jx.DecodeBytes(buf)
-
-				var response Team
-				if err := func() error {
-					if err := response.Decode(d); err != nil {
-						return err
-					}
-					if err := d.Skip(); err != io.EOF {
-						return errors.New("unexpected trailing data")
-					}
-					return nil
-				}(); err != nil {
-					err = &ogenerrors.DecodeBodyError{
-						ContentType: ct,
-						Body:        buf,
-						Err:         err,
-					}
-					return res, err
-				}
-				// Validate response.
-				if err := func() error {
-					if err := response.Validate(); err != nil {
-						return err
-					}
-					return nil
-				}(); err != nil {
-					return res, errors.Wrap(err, "validate")
-				}
-				return &TeamStatusCode{
-					StatusCode: resp.StatusCode,
-					Response:   response,
-				}, nil
-			case ct == "application/vnd.contentful.management.v1+json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -13755,44 +9035,7 @@ func decodePutTeamResponse(resp *http.Response) (res PutTeamRes, _ error) {
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -13849,40 +9092,6 @@ func decodePutTeamSpaceMembershipResponse(resp *http.Response) (res PutTeamSpace
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -13896,7 +9105,7 @@ func decodePutTeamSpaceMembershipResponse(resp *http.Response) (res PutTeamSpace
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -13982,44 +9191,7 @@ func decodePutTeamSpaceMembershipResponse(resp *http.Response) (res PutTeamSpace
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -14076,40 +9248,6 @@ func decodeRevokePersonalAccessTokenResponse(resp *http.Response) (res RevokePer
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -14123,7 +9261,7 @@ func decodeRevokePersonalAccessTokenResponse(resp *http.Response) (res RevokePer
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -14209,44 +9347,7 @@ func decodeRevokePersonalAccessTokenResponse(resp *http.Response) (res RevokePer
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -14269,7 +9370,7 @@ func decodeUnpublishEntryResponse(resp *http.Response) (res UnpublishEntryRes, _
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -14350,40 +9451,6 @@ func decodeUnpublishEntryResponse(resp *http.Response) (res UnpublishEntryRes, _
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -14428,44 +9495,7 @@ func decodeUnpublishEntryResponse(resp *http.Response) (res UnpublishEntryRes, _
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -14522,40 +9552,6 @@ func decodeUpdateDeliveryAPIKeyResponse(resp *http.Response) (res UpdateDelivery
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -14569,7 +9565,7 @@ func decodeUpdateDeliveryAPIKeyResponse(resp *http.Response) (res UpdateDelivery
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -14655,44 +9651,7 @@ func decodeUpdateDeliveryAPIKeyResponse(resp *http.Response) (res UpdateDelivery
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -14749,40 +9708,6 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -14796,7 +9721,7 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -14882,44 +9807,7 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil
@@ -14976,40 +9864,6 @@ func decodeUpdateWebhookDefinitionResponse(resp *http.Response) (res UpdateWebho
 				return res, errors.Wrap(err, "validate")
 			}
 			return &response, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &response, nil
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
@@ -15023,7 +9877,7 @@ func decodeUpdateWebhookDefinitionResponse(resp *http.Response) (res UpdateWebho
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -15109,44 +9963,7 @@ func decodeUpdateWebhookDefinitionResponse(resp *http.Response) (res UpdateWebho
 			}(); err != nil {
 				return res, errors.Wrap(err, "validate")
 			}
-			return &ApplicationJSONErrorStatusCode{
-				StatusCode: resp.StatusCode,
-				Response:   response,
-			}, nil
-		case ct == "application/vnd.contentful.management.v1+json":
-			buf, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return res, err
-			}
-			d := jx.DecodeBytes(buf)
-
-			var response ApplicationVndContentfulManagementV1JSONError
-			if err := func() error {
-				if err := response.Decode(d); err != nil {
-					return err
-				}
-				if err := d.Skip(); err != io.EOF {
-					return errors.New("unexpected trailing data")
-				}
-				return nil
-			}(); err != nil {
-				err = &ogenerrors.DecodeBodyError{
-					ContentType: ct,
-					Body:        buf,
-					Err:         err,
-				}
-				return res, err
-			}
-			// Validate response.
-			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return res, errors.Wrap(err, "validate")
-			}
-			return &ApplicationVndContentfulManagementV1JSONErrorStatusCode{
+			return &ErrorStatusCode{
 				StatusCode: resp.StatusCode,
 				Response:   response,
 			}, nil

@@ -56,7 +56,7 @@ func TestContentfulManagementServerGetAuthenticatedUserNotFound(t *testing.T) {
 	assert.NotNil(t, res)
 	require.NoError(t, err)
 
-	esc, escOk := res.(*cm.ApplicationVndContentfulManagementV1JSONErrorStatusCode)
+	esc, escOk := res.(*cm.ErrorStatusCode)
 	require.True(t, escOk)
 	require.NotNil(t, esc)
 

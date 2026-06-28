@@ -170,9 +170,6 @@ components:
     ApplicationJSONError:
       anyOf:
         - $ref: "./schemas/error/error.yml#/Error"
-    ApplicationVndContentfulManagementV1JSONError:
-      anyOf:
-        - $ref: "./schemas/error/error.yml#/Error"
   securitySchemes:
     accessToken:
       type: http
@@ -187,18 +184,12 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ApplicationJSONError"
-        application/vnd.contentful.management.v1+json:
-          schema:
-            $ref: "#/components/schemas/ApplicationVndContentfulManagementV1JSONError"
     error:
       description: An error
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ApplicationJSONError"
-        application/vnd.contentful.management.v1+json:
-          schema:
-            $ref: "#/components/schemas/ApplicationVndContentfulManagementV1JSONError"
 security:
   - accessToken: []
 paths:
@@ -219,7 +210,7 @@ paths:
         200:
           description: A list of app definitions
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 type: object
                 properties:
@@ -264,7 +255,7 @@ paths:
         2XX:
           description: An app definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/app-definition/app-definition.yml#/AppDefinition"
         401:
@@ -282,7 +273,7 @@ paths:
         200:
           description: An app definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/app-definition/app-definition.yml#/AppDefinition"
         401:
@@ -305,7 +296,7 @@ paths:
         2XX:
           description: An app definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/app-definition/app-definition.yml#/AppDefinition"
         401:
@@ -333,7 +324,7 @@ paths:
         200:
           description: A resource provider definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/resource-provider/resource-provider.yml#/ResourceProvider"
         401:
@@ -356,7 +347,7 @@ paths:
         2XX:
           description: A resource provider definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/resource-provider/resource-provider.yml#/ResourceProvider"
         401:
@@ -385,7 +376,7 @@ paths:
         200:
           description: A resource type definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/resource-type/resource-type.yml#/ResourceType"
         401:
@@ -409,7 +400,7 @@ paths:
         2XX:
           description: A resource type definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/resource-type/resource-type.yml#/ResourceType"
         401:
@@ -437,7 +428,7 @@ paths:
         200:
           description: An app signing secret
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/app-signing-secret/app-signing-secret.yml#/AppSigningSecret"
         401:
@@ -460,7 +451,7 @@ paths:
         2XX:
           description: An app signing secret
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/app-signing-secret/app-signing-secret.yml#/AppSigningSecret"
         401:
@@ -498,9 +489,6 @@ paths:
             application/json:
               schema:
                 $ref: "./schemas/team/team.yml#/Team"
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./schemas/team/team.yml#/Team"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -517,9 +505,6 @@ paths:
           description: A team
           content:
             application/json:
-              schema:
-                $ref: "./schemas/team/team.yml#/Team"
-            application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "./schemas/team/team.yml#/Team"
         401:
@@ -544,9 +529,6 @@ paths:
           description: A team
           content:
             application/json:
-              schema:
-                $ref: "./schemas/team/team.yml#/Team"
-            application/vnd.contentful.management.v1+json:
               schema:
                 $ref: "./schemas/team/team.yml#/Team"
         401:
@@ -586,7 +568,7 @@ paths:
         2XX:
           description: A team space membership
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
         401:
@@ -604,7 +586,7 @@ paths:
         200:
           description: A team space membership
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
         401:
@@ -627,7 +609,7 @@ paths:
         2XX:
           description: A team space membership
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/team-space-membership/team-space-membership.yml#/TeamSpaceMembership"
         401:
@@ -660,7 +642,7 @@ paths:
         2XX:
           description: A delivery api key
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/api-key/api-key.yml#/ApiKey"
         401:
@@ -678,7 +660,7 @@ paths:
         200:
           description: A delivery api key
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/api-key/api-key.yml#/ApiKey"
         401:
@@ -702,7 +684,7 @@ paths:
         2XX:
           description: A delivery api key
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/api-key/api-key.yml#/ApiKey"
         401:
@@ -732,9 +714,6 @@ paths:
             application/json:
               schema:
                 $ref: "./schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
-            application/vnd.contentful.management.v1+json:
-              schema:
-                $ref: "./schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
         401:
           $ref: "#/components/responses/unauthorized"
         default:
@@ -755,7 +734,7 @@ paths:
         2XX:
           description: Enablements for a space
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/space-enablement/space-enablement.yml#/SpaceEnablement"
         401:
@@ -773,7 +752,7 @@ paths:
         200:
           description: An environment alias
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
         401:
@@ -795,7 +774,7 @@ paths:
         2XX:
           description: An environment alias
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/environment-alias/environment-alias.yml#/EnvironmentAlias"
         401:
@@ -823,7 +802,7 @@ paths:
         200:
           description: An environment
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/environment/environment.yml#/Environment"
         401:
@@ -846,7 +825,7 @@ paths:
         2XX:
           description: An environment
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/environment/environment.yml#/Environment"
         401:
@@ -875,7 +854,7 @@ paths:
         200:
           description: An app installation
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/app-installation/app-installation.yml#/AppInstallation"
         401:
@@ -903,7 +882,7 @@ paths:
         2XX:
           description: An app installation
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/app-installation/app-installation.yml#/AppInstallation"
         401:
@@ -937,7 +916,7 @@ paths:
         200:
           description: A list of content types
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/content-type/collection.yml#/ContentTypeCollection"
         401:
@@ -956,7 +935,7 @@ paths:
         200:
           description: A content type
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/content-type/content-type.yml#/ContentType"
         401:
@@ -981,7 +960,7 @@ paths:
         2XX:
           description: A content type
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/content-type/content-type.yml#/ContentType"
         401:
@@ -1010,7 +989,7 @@ paths:
         200:
           description: An editor interface
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/editor-interface/editor-interface.yml#/EditorInterface"
         401:
@@ -1035,7 +1014,7 @@ paths:
         2XX:
           description: An editor interface
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/editor-interface/editor-interface.yml#/EditorInterface"
         401:
@@ -1059,7 +1038,7 @@ paths:
         2XX:
           description: A content type
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/content-type/content-type.yml#/ContentType"
         401:
@@ -1073,7 +1052,7 @@ paths:
         200:
           description: A content type
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/content-type/content-type.yml#/ContentType"
         204:
@@ -1105,7 +1084,7 @@ paths:
         200:
           description: A collection of entries
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/entry/collection.yml#/EntryCollection"
         401:
@@ -1129,7 +1108,7 @@ paths:
         2XX:
           description: An entry
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/entry/entry.yml#/Entry"
         401:
@@ -1148,7 +1127,7 @@ paths:
         200:
           description: An entry
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/entry/entry.yml#/Entry"
         401:
@@ -1174,7 +1153,7 @@ paths:
         2XX:
           description: An entry
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/entry/entry.yml#/Entry"
         401:
@@ -1208,7 +1187,7 @@ paths:
         2XX:
           description: An entry
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/entry/entry.yml#/Entry"
         401:
@@ -1222,7 +1201,7 @@ paths:
         200:
           description: An entry
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/entry/entry.yml#/Entry"
         204:
@@ -1243,7 +1222,7 @@ paths:
         200:
           description: An extension
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/extension/extension.yml#/Extension"
         401:
@@ -1268,7 +1247,7 @@ paths:
         2XX:
           description: An extension
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/extension/extension.yml#/Extension"
         401:
@@ -1297,7 +1276,7 @@ paths:
         200:
           description: A tag
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/tag/tag.yml#/Tag"
         401:
@@ -1323,7 +1302,7 @@ paths:
         2XX:
           description: A tag
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/tag/tag.yml#/Tag"
         401:
@@ -1356,7 +1335,7 @@ paths:
         200:
           description: A preview api key
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/preview-api-key/preview-api-key.yml#/PreviewApiKey"
         401:
@@ -1379,7 +1358,7 @@ paths:
         2XX:
           description: A role
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/role/role.yml#/Role"
         401:
@@ -1397,7 +1376,7 @@ paths:
         200:
           description: A role
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/role/role.yml#/Role"
         401:
@@ -1421,7 +1400,7 @@ paths:
         2XX:
           description: A role
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/role/role.yml#/Role"
         401:
@@ -1454,7 +1433,7 @@ paths:
         2XX:
           description: A webhook definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/webhook-definition/webhook-definition.yml#/WebhookDefinition"
         401:
@@ -1472,7 +1451,7 @@ paths:
         200:
           description: A webhook definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/webhook-definition/webhook-definition.yml#/WebhookDefinition"
         401:
@@ -1496,7 +1475,7 @@ paths:
         2XX:
           description: A webhook definition
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/webhook-definition/webhook-definition.yml#/WebhookDefinition"
         401:
@@ -1521,7 +1500,7 @@ paths:
         200:
           description: The authenticated user
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/user/user.yml#/User"
         401:
@@ -1542,7 +1521,7 @@ paths:
         2XX:
           description: A personal access token
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
         401:
@@ -1559,7 +1538,7 @@ paths:
         200:
           description: Get a single access token
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
         401:
@@ -1576,7 +1555,7 @@ paths:
         2XX:
           description: A personal access token
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/personal-access-token/personal-access-token.yml#/PersonalAccessToken"
         401:

@@ -18,6 +18,4 @@ generator:
       - "server/response/validation"
       - "webhooks/client"
       - "webhooks/server"
-  content_type_aliases:
-    "application/vnd.contentful.management.v1+json": "application/json"
   convenient_errors: "off"
