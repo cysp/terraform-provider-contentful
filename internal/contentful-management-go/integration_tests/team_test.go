@@ -57,25 +57,12 @@ func TestGetTeamAcceptsJSONContentTypes(t *testing.T) {
 
 	tests := map[string]struct {
 		contentType string
-		assertType  func(t *testing.T, response cm.GetTeamRes)
 	}{
 		"application/json": {
 			contentType: "application/json",
-			assertType: func(t *testing.T, response cm.GetTeamRes) {
-				t.Helper()
-
-				_, ok := response.(*cm.GetTeamApplicationJSONOK)
-				require.True(t, ok)
-			},
 		},
 		"application/vnd.contentful.management.v1+json": {
 			contentType: "application/vnd.contentful.management.v1+json",
-			assertType: func(t *testing.T, response cm.GetTeamRes) {
-				t.Helper()
-
-				_, ok := response.(*cm.GetTeamApplicationVndContentfulManagementV1JSONOK)
-				require.True(t, ok)
-			},
 		},
 	}
 
@@ -105,9 +92,7 @@ func TestGetTeamAcceptsJSONContentTypes(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			test.assertType(t, response)
-
-			teamResponse, ok := cm.TeamFromGetTeamResponse(response)
+			teamResponse, ok := response.(*cm.Team)
 			require.True(t, ok)
 			require.Equal(t, "team-id", teamResponse.Sys.ID)
 		})

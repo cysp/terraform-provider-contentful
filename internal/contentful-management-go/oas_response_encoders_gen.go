@@ -24,19 +24,7 @@ func encodeActivateContentTypeResponse(response ActivateContentTypeRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ContentTypeStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -56,28 +44,8 @@ func encodeActivateContentTypeResponse(response ActivateContentTypeRes, w http.R
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ContentTypeStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -115,19 +83,7 @@ func encodeCreateAppDefinitionResponse(response CreateAppDefinitionRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *AppDefinitionStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -147,28 +103,8 @@ func encodeCreateAppDefinitionResponse(response CreateAppDefinitionRes, w http.R
 		}
 		return nil
 
-	case *AppDefinitionStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -206,19 +142,7 @@ func encodeCreateDeliveryAPIKeyResponse(response CreateDeliveryAPIKeyRes, w http
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ApiKeyStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -238,28 +162,8 @@ func encodeCreateDeliveryAPIKeyResponse(response CreateDeliveryAPIKeyRes, w http
 		}
 		return nil
 
-	case *ApiKeyStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -297,19 +201,7 @@ func encodeCreateEntryResponse(response CreateEntryRes, w http.ResponseWriter) e
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *EntryStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -329,28 +221,8 @@ func encodeCreateEntryResponse(response CreateEntryRes, w http.ResponseWriter) e
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *EntryStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -388,19 +260,7 @@ func encodeCreateOrUpdateEnvironmentResponse(response CreateOrUpdateEnvironmentR
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *EnvironmentStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -420,28 +280,8 @@ func encodeCreateOrUpdateEnvironmentResponse(response CreateOrUpdateEnvironmentR
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *EnvironmentStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -479,19 +319,7 @@ func encodeCreateOrUpdateEnvironmentAliasResponse(response CreateOrUpdateEnviron
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *EnvironmentAliasStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -511,28 +339,8 @@ func encodeCreateOrUpdateEnvironmentAliasResponse(response CreateOrUpdateEnviron
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *EnvironmentAliasStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -570,19 +378,7 @@ func encodeCreatePersonalAccessTokenResponse(response CreatePersonalAccessTokenR
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -602,28 +398,8 @@ func encodeCreatePersonalAccessTokenResponse(response CreatePersonalAccessTokenR
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *PersonalAccessTokenStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -661,19 +437,7 @@ func encodeCreateRoleResponse(response CreateRoleRes, w http.ResponseWriter) err
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -693,28 +457,8 @@ func encodeCreateRoleResponse(response CreateRoleRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *RoleStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -752,19 +496,7 @@ func encodeCreateTeamResponse(response CreateTeamRes, w http.ResponseWriter) err
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -804,26 +536,6 @@ func encodeCreateTeamResponse(response CreateTeamRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
@@ -843,19 +555,7 @@ func encodeCreateTeamSpaceMembershipResponse(response CreateTeamSpaceMembershipR
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -875,28 +575,8 @@ func encodeCreateTeamSpaceMembershipResponse(response CreateTeamSpaceMembershipR
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *TeamSpaceMembershipStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -934,19 +614,7 @@ func encodeCreateWebhookDefinitionResponse(response CreateWebhookDefinitionRes, 
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -966,28 +634,8 @@ func encodeCreateWebhookDefinitionResponse(response CreateWebhookDefinitionRes, 
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *WebhookDefinitionStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1014,7 +662,7 @@ func encodeCreateWebhookDefinitionResponse(response CreateWebhookDefinitionRes, 
 func encodeDeactivateContentTypeResponse(response DeactivateContentTypeRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ContentType:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -1042,40 +690,8 @@ func encodeDeactivateContentTypeResponse(response DeactivateContentTypeRes, w ht
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1118,40 +734,8 @@ func encodeDeleteAppDefinitionResponse(response DeleteAppDefinitionRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1194,40 +778,8 @@ func encodeDeleteAppInstallationResponse(response DeleteAppInstallationRes, w ht
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1270,40 +822,8 @@ func encodeDeleteAppSigningSecretResponse(response DeleteAppSigningSecretRes, w 
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1346,40 +866,8 @@ func encodeDeleteContentTypeResponse(response DeleteContentTypeRes, w http.Respo
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1422,40 +910,8 @@ func encodeDeleteDeliveryAPIKeyResponse(response DeleteDeliveryAPIKeyRes, w http
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1498,40 +954,8 @@ func encodeDeleteEntryResponse(response DeleteEntryRes, w http.ResponseWriter) e
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1574,40 +998,8 @@ func encodeDeleteEnvironmentResponse(response DeleteEnvironmentRes, w http.Respo
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1650,40 +1042,8 @@ func encodeDeleteEnvironmentAliasResponse(response DeleteEnvironmentAliasRes, w 
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1726,40 +1086,8 @@ func encodeDeleteExtensionResponse(response DeleteExtensionRes, w http.ResponseW
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1802,40 +1130,8 @@ func encodeDeleteResourceProviderResponse(response DeleteResourceProviderRes, w 
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1878,40 +1174,8 @@ func encodeDeleteResourceTypeResponse(response DeleteResourceTypeRes, w http.Res
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -1954,40 +1218,8 @@ func encodeDeleteRoleResponse(response DeleteRoleRes, w http.ResponseWriter) err
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2030,40 +1262,8 @@ func encodeDeleteTagResponse(response DeleteTagRes, w http.ResponseWriter) error
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2106,40 +1306,8 @@ func encodeDeleteTeamResponse(response DeleteTeamRes, w http.ResponseWriter) err
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2182,40 +1350,8 @@ func encodeDeleteTeamSpaceMembershipResponse(response DeleteTeamSpaceMembershipR
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2258,40 +1394,8 @@ func encodeDeleteWebhookDefinitionResponse(response DeleteWebhookDefinitionRes, 
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2318,7 +1422,7 @@ func encodeDeleteWebhookDefinitionResponse(response DeleteWebhookDefinitionRes, 
 func encodeGetAppDefinitionResponse(response GetAppDefinitionRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *AppDefinition:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -2341,40 +1445,8 @@ func encodeGetAppDefinitionResponse(response GetAppDefinitionRes, w http.Respons
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2401,7 +1473,7 @@ func encodeGetAppDefinitionResponse(response GetAppDefinitionRes, w http.Respons
 func encodeGetAppInstallationResponse(response GetAppInstallationRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *AppInstallation:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -2424,40 +1496,8 @@ func encodeGetAppInstallationResponse(response GetAppInstallationRes, w http.Res
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2484,7 +1524,7 @@ func encodeGetAppInstallationResponse(response GetAppInstallationRes, w http.Res
 func encodeGetAppSigningSecretResponse(response GetAppSigningSecretRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *AppSigningSecret:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -2507,40 +1547,8 @@ func encodeGetAppSigningSecretResponse(response GetAppSigningSecretRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2567,7 +1575,7 @@ func encodeGetAppSigningSecretResponse(response GetAppSigningSecretRes, w http.R
 func encodeGetAuthenticatedUserResponse(response GetAuthenticatedUserRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *User:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -2590,40 +1598,8 @@ func encodeGetAuthenticatedUserResponse(response GetAuthenticatedUserRes, w http
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2650,7 +1626,7 @@ func encodeGetAuthenticatedUserResponse(response GetAuthenticatedUserRes, w http
 func encodeGetContentTypeResponse(response GetContentTypeRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ContentType:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -2673,40 +1649,8 @@ func encodeGetContentTypeResponse(response GetContentTypeRes, w http.ResponseWri
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2733,7 +1677,7 @@ func encodeGetContentTypeResponse(response GetContentTypeRes, w http.ResponseWri
 func encodeGetContentTypesResponse(response GetContentTypesRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ContentTypeCollection:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -2756,40 +1700,8 @@ func encodeGetContentTypesResponse(response GetContentTypesRes, w http.ResponseW
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2816,7 +1728,7 @@ func encodeGetContentTypesResponse(response GetContentTypesRes, w http.ResponseW
 func encodeGetDeliveryAPIKeyResponse(response GetDeliveryAPIKeyRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ApiKey:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -2839,40 +1751,8 @@ func encodeGetDeliveryAPIKeyResponse(response GetDeliveryAPIKeyRes, w http.Respo
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2899,7 +1779,7 @@ func encodeGetDeliveryAPIKeyResponse(response GetDeliveryAPIKeyRes, w http.Respo
 func encodeGetEditorInterfaceResponse(response GetEditorInterfaceRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *EditorInterface:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -2922,40 +1802,8 @@ func encodeGetEditorInterfaceResponse(response GetEditorInterfaceRes, w http.Res
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2982,7 +1830,7 @@ func encodeGetEditorInterfaceResponse(response GetEditorInterfaceRes, w http.Res
 func encodeGetEntriesResponse(response GetEntriesRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *EntryCollection:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3005,40 +1853,8 @@ func encodeGetEntriesResponse(response GetEntriesRes, w http.ResponseWriter) err
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3065,7 +1881,7 @@ func encodeGetEntriesResponse(response GetEntriesRes, w http.ResponseWriter) err
 func encodeGetEntryResponse(response GetEntryRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Entry:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3088,40 +1904,8 @@ func encodeGetEntryResponse(response GetEntryRes, w http.ResponseWriter) error {
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3148,7 +1932,7 @@ func encodeGetEntryResponse(response GetEntryRes, w http.ResponseWriter) error {
 func encodeGetEnvironmentResponse(response GetEnvironmentRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Environment:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3171,40 +1955,8 @@ func encodeGetEnvironmentResponse(response GetEnvironmentRes, w http.ResponseWri
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3231,7 +1983,7 @@ func encodeGetEnvironmentResponse(response GetEnvironmentRes, w http.ResponseWri
 func encodeGetEnvironmentAliasResponse(response GetEnvironmentAliasRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *EnvironmentAlias:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3254,40 +2006,8 @@ func encodeGetEnvironmentAliasResponse(response GetEnvironmentAliasRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3314,7 +2034,7 @@ func encodeGetEnvironmentAliasResponse(response GetEnvironmentAliasRes, w http.R
 func encodeGetExtensionResponse(response GetExtensionRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Extension:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3337,40 +2057,8 @@ func encodeGetExtensionResponse(response GetExtensionRes, w http.ResponseWriter)
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3397,7 +2085,7 @@ func encodeGetExtensionResponse(response GetExtensionRes, w http.ResponseWriter)
 func encodeGetMarketplaceAppDefinitionsResponse(response GetMarketplaceAppDefinitionsRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *GetMarketplaceAppDefinitionsOK:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3420,40 +2108,8 @@ func encodeGetMarketplaceAppDefinitionsResponse(response GetMarketplaceAppDefini
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3480,7 +2136,7 @@ func encodeGetMarketplaceAppDefinitionsResponse(response GetMarketplaceAppDefini
 func encodeGetPersonalAccessTokenResponse(response GetPersonalAccessTokenRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *PersonalAccessToken:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3503,40 +2159,8 @@ func encodeGetPersonalAccessTokenResponse(response GetPersonalAccessTokenRes, w 
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3563,7 +2187,7 @@ func encodeGetPersonalAccessTokenResponse(response GetPersonalAccessTokenRes, w 
 func encodeGetPreviewAPIKeyResponse(response GetPreviewAPIKeyRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *PreviewApiKey:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3586,40 +2210,8 @@ func encodeGetPreviewAPIKeyResponse(response GetPreviewAPIKeyRes, w http.Respons
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3646,7 +2238,7 @@ func encodeGetPreviewAPIKeyResponse(response GetPreviewAPIKeyRes, w http.Respons
 func encodeGetResourceProviderResponse(response GetResourceProviderRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ResourceProvider:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3669,40 +2261,8 @@ func encodeGetResourceProviderResponse(response GetResourceProviderRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3729,7 +2289,7 @@ func encodeGetResourceProviderResponse(response GetResourceProviderRes, w http.R
 func encodeGetResourceTypeResponse(response GetResourceTypeRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ResourceType:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3752,40 +2312,8 @@ func encodeGetResourceTypeResponse(response GetResourceTypeRes, w http.ResponseW
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3812,7 +2340,7 @@ func encodeGetResourceTypeResponse(response GetResourceTypeRes, w http.ResponseW
 func encodeGetRoleResponse(response GetRoleRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Role:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3835,40 +2363,8 @@ func encodeGetRoleResponse(response GetRoleRes, w http.ResponseWriter) error {
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3894,20 +2390,8 @@ func encodeGetRoleResponse(response GetRoleRes, w http.ResponseWriter) error {
 
 func encodeGetSpaceEnablementsResponse(response GetSpaceEnablementsRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *GetSpaceEnablementsApplicationJSONOK:
+	case *SpaceEnablement:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3930,40 +2414,8 @@ func encodeGetSpaceEnablementsResponse(response GetSpaceEnablementsRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -3990,7 +2442,7 @@ func encodeGetSpaceEnablementsResponse(response GetSpaceEnablementsRes, w http.R
 func encodeGetTagResponse(response GetTagRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Tag:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -4013,40 +2465,8 @@ func encodeGetTagResponse(response GetTagRes, w http.ResponseWriter) error {
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4072,20 +2492,8 @@ func encodeGetTagResponse(response GetTagRes, w http.ResponseWriter) error {
 
 func encodeGetTeamResponse(response GetTeamRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *GetTeamApplicationJSONOK:
+	case *Team:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetTeamApplicationVndContentfulManagementV1JSONOK:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -4108,40 +2516,8 @@ func encodeGetTeamResponse(response GetTeamRes, w http.ResponseWriter) error {
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4168,7 +2544,7 @@ func encodeGetTeamResponse(response GetTeamRes, w http.ResponseWriter) error {
 func encodeGetTeamSpaceMembershipResponse(response GetTeamSpaceMembershipRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *TeamSpaceMembership:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -4191,40 +2567,8 @@ func encodeGetTeamSpaceMembershipResponse(response GetTeamSpaceMembershipRes, w 
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4251,7 +2595,7 @@ func encodeGetTeamSpaceMembershipResponse(response GetTeamSpaceMembershipRes, w 
 func encodeGetWebhookDefinitionResponse(response GetWebhookDefinitionRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *WebhookDefinition:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -4274,40 +2618,8 @@ func encodeGetWebhookDefinitionResponse(response GetWebhookDefinitionRes, w http
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4345,19 +2657,7 @@ func encodePublishEntryResponse(response PublishEntryRes, w http.ResponseWriter)
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *EntryStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -4377,28 +2677,8 @@ func encodePublishEntryResponse(response PublishEntryRes, w http.ResponseWriter)
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *EntryStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4436,19 +2716,7 @@ func encodePutAppDefinitionResponse(response PutAppDefinitionRes, w http.Respons
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *AppDefinitionStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -4468,28 +2736,8 @@ func encodePutAppDefinitionResponse(response PutAppDefinitionRes, w http.Respons
 		}
 		return nil
 
-	case *AppDefinitionStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4527,19 +2775,7 @@ func encodePutAppInstallationResponse(response PutAppInstallationRes, w http.Res
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *AppInstallationStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -4559,28 +2795,8 @@ func encodePutAppInstallationResponse(response PutAppInstallationRes, w http.Res
 		}
 		return nil
 
-	case *AppInstallationStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4618,19 +2834,7 @@ func encodePutAppSigningSecretResponse(response PutAppSigningSecretRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *AppSigningSecretStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -4650,28 +2854,8 @@ func encodePutAppSigningSecretResponse(response PutAppSigningSecretRes, w http.R
 		}
 		return nil
 
-	case *AppSigningSecretStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4709,19 +2893,7 @@ func encodePutContentTypeResponse(response PutContentTypeRes, w http.ResponseWri
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ContentTypeStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -4741,28 +2913,8 @@ func encodePutContentTypeResponse(response PutContentTypeRes, w http.ResponseWri
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ContentTypeStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4800,19 +2952,7 @@ func encodePutEditorInterfaceResponse(response PutEditorInterfaceRes, w http.Res
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *EditorInterfaceStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -4832,28 +2972,8 @@ func encodePutEditorInterfaceResponse(response PutEditorInterfaceRes, w http.Res
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *EditorInterfaceStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4891,19 +3011,7 @@ func encodePutEntryResponse(response PutEntryRes, w http.ResponseWriter) error {
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *EntryStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -4923,28 +3031,8 @@ func encodePutEntryResponse(response PutEntryRes, w http.ResponseWriter) error {
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *EntryStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -4982,19 +3070,7 @@ func encodePutExtensionResponse(response PutExtensionRes, w http.ResponseWriter)
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5014,28 +3090,8 @@ func encodePutExtensionResponse(response PutExtensionRes, w http.ResponseWriter)
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *ExtensionStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5073,19 +3129,7 @@ func encodePutResourceProviderResponse(response PutResourceProviderRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5105,28 +3149,8 @@ func encodePutResourceProviderResponse(response PutResourceProviderRes, w http.R
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *ResourceProviderStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5164,19 +3188,7 @@ func encodePutResourceTypeResponse(response PutResourceTypeRes, w http.ResponseW
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5196,28 +3208,8 @@ func encodePutResourceTypeResponse(response PutResourceTypeRes, w http.ResponseW
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *ResourceTypeStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5255,19 +3247,7 @@ func encodePutSpaceEnablementsResponse(response PutSpaceEnablementsRes, w http.R
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5287,28 +3267,8 @@ func encodePutSpaceEnablementsResponse(response PutSpaceEnablementsRes, w http.R
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *SpaceEnablementStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5346,19 +3306,7 @@ func encodePutTagResponse(response PutTagRes, w http.ResponseWriter) error {
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5378,28 +3326,8 @@ func encodePutTagResponse(response PutTagRes, w http.ResponseWriter) error {
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *TagStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5437,19 +3365,7 @@ func encodePutTeamResponse(response PutTeamRes, w http.ResponseWriter) error {
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5489,26 +3405,6 @@ func encodePutTeamResponse(response PutTeamRes, w http.ResponseWriter) error {
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
@@ -5528,19 +3424,7 @@ func encodePutTeamSpaceMembershipResponse(response PutTeamSpaceMembershipRes, w 
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5560,28 +3444,8 @@ func encodePutTeamSpaceMembershipResponse(response PutTeamSpaceMembershipRes, w 
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *TeamSpaceMembershipStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5619,19 +3483,7 @@ func encodeRevokePersonalAccessTokenResponse(response RevokePersonalAccessTokenR
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5651,28 +3503,8 @@ func encodeRevokePersonalAccessTokenResponse(response RevokePersonalAccessTokenR
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *PersonalAccessTokenStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5699,7 +3531,7 @@ func encodeRevokePersonalAccessTokenResponse(response RevokePersonalAccessTokenR
 func encodeUnpublishEntryResponse(response UnpublishEntryRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Entry:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -5727,40 +3559,8 @@ func encodeUnpublishEntryResponse(response UnpublishEntryRes, w http.ResponseWri
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5798,19 +3598,7 @@ func encodeUpdateDeliveryAPIKeyResponse(response UpdateDeliveryAPIKeyRes, w http
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ApiKeyStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5830,28 +3618,8 @@ func encodeUpdateDeliveryAPIKeyResponse(response UpdateDeliveryAPIKeyRes, w http
 		}
 		return nil
 
-	case *ApiKeyStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+	case *ErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5889,19 +3657,7 @@ func encodeUpdateRoleResponse(response UpdateRoleRes, w http.ResponseWriter) err
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -5921,28 +3677,8 @@ func encodeUpdateRoleResponse(response UpdateRoleRes, w http.ResponseWriter) err
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *RoleStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -5980,19 +3716,7 @@ func encodeUpdateWebhookDefinitionResponse(response UpdateWebhookDefinitionRes, 
 
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONError:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		w.WriteHeader(401)
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *ApplicationJSONErrorStatusCode:
+	case *ErrorStatusCode:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
@@ -6012,28 +3736,8 @@ func encodeUpdateWebhookDefinitionResponse(response UpdateWebhookDefinitionRes, 
 		}
 		return nil
 
-	case *ApplicationVndContentfulManagementV1JSONErrorStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
-		code := response.StatusCode
-		if code == 0 {
-			// Set default status code.
-			code = http.StatusOK
-		}
-		w.WriteHeader(code)
-
-		e := new(jx.Encoder)
-		response.Response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		if code >= http.StatusInternalServerError {
-			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
-		}
-		return nil
-
 	case *WebhookDefinitionStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.

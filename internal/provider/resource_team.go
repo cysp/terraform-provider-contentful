@@ -165,8 +165,8 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	var data TeamModel
 
-	if team, ok := cm.TeamFromGetTeamResponse(response); ok {
-		responseModel, responseModelDiags := NewTeamResourceModelFromResponse(ctx, team)
+	if team, ok := response.(*cm.Team); ok {
+		responseModel, responseModelDiags := NewTeamResourceModelFromResponse(ctx, *team)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel

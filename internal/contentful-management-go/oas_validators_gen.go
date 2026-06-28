@@ -688,64 +688,6 @@ func (s ApplicationJSONError) Validate() error {
 	}
 }
 
-func (s *ApplicationJSONErrorStatusCode) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Response.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "Response",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s ApplicationVndContentfulManagementV1JSONError) Validate() error {
-	switch s.Type {
-	case ErrorApplicationVndContentfulManagementV1JSONError:
-		if err := s.Error.Validate(); err != nil {
-			return err
-		}
-		return nil
-	default:
-		return errors.Errorf("invalid type %q", s.Type)
-	}
-}
-
-func (s *ApplicationVndContentfulManagementV1JSONErrorStatusCode) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Response.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "Response",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
 func (s *ContentType) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -2174,6 +2116,29 @@ func (s *Error) Validate() error {
 	return nil
 }
 
+func (s *ErrorStatusCode) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Response.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "Response",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
 func (s *ErrorSys) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -2542,38 +2507,6 @@ func (s GetMarketplaceAppDefinitionsOKSysType) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
-}
-
-func (s *GetSpaceEnablementsApplicationJSONOK) Validate() error {
-	alias := (*SpaceEnablement)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK) Validate() error {
-	alias := (*SpaceEnablement)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetTeamApplicationJSONOK) Validate() error {
-	alias := (*Team)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *GetTeamApplicationVndContentfulManagementV1JSONOK) Validate() error {
-	alias := (*Team)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *OrganizationLink) Validate() error {

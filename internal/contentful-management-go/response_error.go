@@ -13,10 +13,6 @@ type ErrorStatusCodeResponse interface {
 	GetError() (v Error, ok bool)
 }
 
-func (r *ApplicationJSONErrorStatusCode) GetError() (Error, bool) {
-	return r.GetResponse().GetError()
-}
-
-func (r *ApplicationVndContentfulManagementV1JSONErrorStatusCode) GetError() (Error, bool) {
+func (r *ErrorStatusCode) GetError() (Error, bool) {
 	return r.GetResponse().GetError()
 }

@@ -64,36 +64,6 @@ func TestAccTeamResourceImport(t *testing.T) {
 	})
 }
 
-func TestAccTeamResourceImportApplicationJSON(t *testing.T) {
-	t.Parallel()
-
-	server, err := cmt.NewContentfulManagementServer()
-	require.NoError(t, err)
-
-	server.SetTeam("2zuSjSO4A0e6GKBrhJRe2m", "team-id", cm.TeamData{
-		Name:        "Test Team",
-		Description: cm.NewNilString(""),
-	})
-	server.ServeTeamGetContentType(cmt.ResponseContentTypeApplicationJSON)
-
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
-		Steps: []resource.TestStep{
-			{
-				Config:             testAccTeamResourceImportConfig(),
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config:        testAccTeamResourceImportConfig(),
-				ResourceName:  "contentful_team.test",
-				ImportState:   true,
-				ImportStateId: "2zuSjSO4A0e6GKBrhJRe2m/team-id",
-				Check:         testAccTeamResourceImportCheck(),
-			},
-		},
-	})
-}
-
 func testAccTeamResourceImportCheck() resource.TestCheckFunc {
 	return resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr("contentful_team.test", "organization_id", "2zuSjSO4A0e6GKBrhJRe2m"),

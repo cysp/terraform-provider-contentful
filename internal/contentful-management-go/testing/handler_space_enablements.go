@@ -23,9 +23,7 @@ func (ts *Handler) GetSpaceEnablements(_ context.Context, params cm.GetSpaceEnab
 		ts.enablements[params.SpaceID] = enablements
 	}
 
-	response := cm.GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK(*enablements)
-
-	return &response, nil
+	return enablements, nil
 }
 
 //nolint:ireturn

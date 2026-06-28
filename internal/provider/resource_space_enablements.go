@@ -162,15 +162,8 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 	var data SpaceEnablementsModel
 
 	switch response := response.(type) {
-	case *cm.GetSpaceEnablementsApplicationJSONOK:
-		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, cm.SpaceEnablement(*response))
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
-		currentVersion = response.Sys.Version
-
-	case *cm.GetSpaceEnablementsApplicationVndContentfulManagementV1JSONOK:
-		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, cm.SpaceEnablement(*response))
+	case *cm.SpaceEnablement:
+		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, *response)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel

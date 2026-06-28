@@ -2,14 +2,10 @@ package cmtesting
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
-
-var errUnsupportedTeamGetContentType = errors.New("unsupported team get response content type")
 
 //nolint:ireturn
 func (ts *Handler) CreateTeam(_ context.Context, req *cm.TeamData, params cm.CreateTeamParams) (cm.CreateTeamRes, error) {
@@ -36,23 +32,7 @@ func (ts *Handler) GetTeam(_ context.Context, params cm.GetTeamParams) (cm.GetTe
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Team not found"), nil), nil
 	}
 
-	contentType := ts.teamGetContentType
-	if contentType == "" {
-		contentType = ResponseContentTypeContentfulJSON
-	}
-
-	switch contentType {
-	case ResponseContentTypeApplicationJSON:
-		response := cm.GetTeamApplicationJSONOK(*team)
-
-		return &response, nil
-	case ResponseContentTypeContentfulJSON:
-		response := cm.GetTeamApplicationVndContentfulManagementV1JSONOK(*team)
-
-		return &response, nil
-	default:
-		return nil, fmt.Errorf("%w: %q", errUnsupportedTeamGetContentType, contentType)
-	}
+	return team, nil
 }
 
 //nolint:ireturn
