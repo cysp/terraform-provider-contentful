@@ -105,3 +105,14 @@ func TestTypedListTypeValueFromTerraform(t *testing.T) {
 		})
 	}
 }
+
+func TestTypedListTypeFrameworkMethods(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	listType := TypedList[types.String]{}.CustomType(ctx)
+
+	assert.IsType(t, TypedList[types.String]{}, listType.ValueType(ctx))
+	assertStringElementType(t, listType)
+	assertAttributePathStepType(t, listType, tftypes.ElementKeyInt(0), types.StringType)
+}
