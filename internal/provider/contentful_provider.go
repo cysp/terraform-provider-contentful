@@ -190,6 +190,7 @@ func (p *ContentfulProvider) ListResources(_ context.Context) []func() list.List
 func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewAppDefinitionResource,
+		NewAppKeyResource,
 		NewAppSigningSecretResource,
 		NewAppInstallationResource,
 		NewContentTypeResource,

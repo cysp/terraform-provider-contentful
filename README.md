@@ -35,6 +35,7 @@ provider "contentful" {
 
 - [`contentful_app_definition`](docs/resources/app_definition.md)
 - [`contentful_app_installation`](docs/resources/app_installation.md)
+- [`contentful_app_key`](docs/resources/app_key.md)
 - [`contentful_app_signing_secret`](docs/resources/app_signing_secret.md)
 - [`contentful_content_type`](docs/resources/content_type.md)
 - [`contentful_delivery_api_key`](docs/resources/delivery_api_key.md)

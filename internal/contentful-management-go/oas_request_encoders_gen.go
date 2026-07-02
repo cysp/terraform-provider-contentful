@@ -24,6 +24,20 @@ func encodeCreateAppDefinitionRequest(
 	return nil
 }
 
+func encodeCreateAppKeyRequest(
+	req *AppKeyRequestData,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodeCreateDeliveryAPIKeyRequest(
 	req *ApiKeyRequestData,
 	r *http.Request,

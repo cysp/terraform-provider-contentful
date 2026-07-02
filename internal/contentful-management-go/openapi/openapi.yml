@@ -42,6 +42,12 @@ components:
       required: true
       schema:
         type: string
+    key_kid:
+      in: path
+      name: key_kid
+      required: true
+      schema:
+        type: string
     content_type_id:
       in: path
       name: content_type_id
@@ -306,6 +312,73 @@ paths:
     delete:
       operationId: deleteAppDefinition
       summary: Delete an app definition
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}/keys:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+    get:
+      operationId: getAppKeys
+      summary: Get all app keys
+      responses:
+        200:
+          description: A list of app keys
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-key/collection.yml#/AppKeyCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    post:
+      operationId: createAppKey
+      summary: Create an app key
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/app-key/request-data.yml#/AppKeyRequestData"
+      responses:
+        201:
+          description: An app key
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-key/app-key.yml#/AppKey"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}/keys/{key_kid}:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+      - $ref: "#/components/parameters/key_kid"
+    get:
+      operationId: getAppKey
+      summary: Get one app key
+      responses:
+        200:
+          description: An app key
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-key/app-key.yml#/AppKey"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteAppKey
+      summary: Delete an app key
       responses:
         204:
           $ref: "#/components/responses/no-content"
