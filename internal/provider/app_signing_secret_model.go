@@ -14,7 +14,8 @@ type AppSigningSecretModel struct {
 	IDIdentityModel
 	AppSigningSecretIdentityModel
 
-	Value types.String `tfsdk:"value"`
+	Value   types.String `tfsdk:"value"`
+	ValueWO types.String `tfsdk:"value_wo"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
