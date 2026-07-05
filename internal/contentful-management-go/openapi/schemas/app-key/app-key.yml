@@ -1,0 +1,9 @@
+AppKey:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/AppKeySys"
+      required:
+        - sys
+    - $ref: "./data.yml#/AppKeyData"

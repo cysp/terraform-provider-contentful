@@ -20,6 +20,12 @@ type Handler interface {
 	//
 	// POST /organizations/{organization_id}/app_definitions
 	CreateAppDefinition(ctx context.Context, req *AppDefinitionData, params CreateAppDefinitionParams) (CreateAppDefinitionRes, error)
+	// CreateAppKey implements createAppKey operation.
+	//
+	// Create an app key.
+	//
+	// POST /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
+	CreateAppKey(ctx context.Context, req *AppKeyRequestData, params CreateAppKeyParams) (CreateAppKeyRes, error)
 	// CreateDeliveryAPIKey implements createDeliveryAPIKey operation.
 	//
 	// Create a delivery api key.
@@ -92,6 +98,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	DeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams) (DeleteAppInstallationRes, error)
+	// DeleteAppKey implements deleteAppKey operation.
+	//
+	// Delete an app key.
+	//
+	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/keys/{key_kid}
+	DeleteAppKey(ctx context.Context, params DeleteAppKeyParams) (DeleteAppKeyRes, error)
 	// DeleteAppSigningSecret implements deleteAppSigningSecret operation.
 	//
 	// Delete an app signing secret.
@@ -188,6 +200,18 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	GetAppInstallation(ctx context.Context, params GetAppInstallationParams) (GetAppInstallationRes, error)
+	// GetAppKey implements getAppKey operation.
+	//
+	// Get one app key.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys/{key_kid}
+	GetAppKey(ctx context.Context, params GetAppKeyParams) (GetAppKeyRes, error)
+	// GetAppKeys implements getAppKeys operation.
+	//
+	// Get all app keys.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
+	GetAppKeys(ctx context.Context, params GetAppKeysParams) (GetAppKeysRes, error)
 	// GetAppSigningSecret implements getAppSigningSecret operation.
 	//
 	// Get one app signing secret.

@@ -1,0 +1,22 @@
+AppKeySys:
+  allOf:
+    - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-id.yml"
+    - $ref: "../sys/with-type.yml"
+    - $ref: "../sys/with-organization.yml"
+    - $ref: "../sys/with-app-definition.yml"
+    - type: object
+      properties:
+        type:
+          enum:
+            - AppKey
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true

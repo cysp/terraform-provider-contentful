@@ -30,6 +30,8 @@ type Handler struct {
 	appDefinitions                 map[string]*cm.AppDefinition
 	appDefinitionResourceProviders map[string]*cm.ResourceProvider
 	appDefinitionResourceTypes     map[string]*cm.ResourceType
+	appDefinitionKeys              map[string]map[string]*cm.AppKey
+	omitGeneratedAppKeyPrivateKey  bool
 	appSigningSecrets              map[string]*cm.AppSigningSecret
 
 	appInstallations cm.SpaceEnvironmentMap[*cm.AppInstallation]
@@ -66,6 +68,7 @@ func NewHandler() *Handler {
 		appDefinitions:                 make(map[string]*cm.AppDefinition),
 		appDefinitionResourceProviders: make(map[string]*cm.ResourceProvider),
 		appDefinitionResourceTypes:     make(map[string]*cm.ResourceType),
+		appDefinitionKeys:              make(map[string]map[string]*cm.AppKey),
 		appSigningSecrets:              make(map[string]*cm.AppSigningSecret),
 		appInstallations:               cm.NewSpaceEnvironmentMap[*cm.AppInstallation](),
 		contentTypes:                   cm.NewSpaceEnvironmentMap[*cm.ContentType](),

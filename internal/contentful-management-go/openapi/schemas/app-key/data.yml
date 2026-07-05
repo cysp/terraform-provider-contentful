@@ -1,0 +1,11 @@
+AppKeyData:
+  type: object
+  properties:
+    jwk:
+      $ref: "./jwk.yml#/AppKeyJWK"
+    generated:
+      $ref: "./generated.yml#/AppKeyGenerated"
+    privateKey:
+      type: string
+  required:
+    - jwk

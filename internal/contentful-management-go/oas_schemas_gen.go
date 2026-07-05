@@ -1297,6 +1297,476 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
+// Ref: #/AppKey
+type AppKey struct {
+	Sys        AppKeySys          `json:"sys"`
+	Jwk        AppKeyJWK          `json:"jwk"`
+	Generated  OptAppKeyGenerated `json:"generated"`
+	PrivateKey OptString          `json:"privateKey"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppKey) GetSys() AppKeySys {
+	return s.Sys
+}
+
+// GetJwk returns the value of Jwk.
+func (s *AppKey) GetJwk() AppKeyJWK {
+	return s.Jwk
+}
+
+// GetGenerated returns the value of Generated.
+func (s *AppKey) GetGenerated() OptAppKeyGenerated {
+	return s.Generated
+}
+
+// GetPrivateKey returns the value of PrivateKey.
+func (s *AppKey) GetPrivateKey() OptString {
+	return s.PrivateKey
+}
+
+// SetSys sets the value of Sys.
+func (s *AppKey) SetSys(val AppKeySys) {
+	s.Sys = val
+}
+
+// SetJwk sets the value of Jwk.
+func (s *AppKey) SetJwk(val AppKeyJWK) {
+	s.Jwk = val
+}
+
+// SetGenerated sets the value of Generated.
+func (s *AppKey) SetGenerated(val OptAppKeyGenerated) {
+	s.Generated = val
+}
+
+// SetPrivateKey sets the value of PrivateKey.
+func (s *AppKey) SetPrivateKey(val OptString) {
+	s.PrivateKey = val
+}
+
+func (*AppKey) createAppKeyRes() {}
+func (*AppKey) getAppKeyRes()    {}
+
+// Ref: #/AppKeyCollection
+type AppKeyCollection struct {
+	Sys   AppKeyCollectionSys `json:"sys"`
+	Total int                 `json:"total"`
+	Items []AppKey            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppKeyCollection) GetSys() AppKeyCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *AppKeyCollection) GetTotal() int {
+	return s.Total
+}
+
+// GetItems returns the value of Items.
+func (s *AppKeyCollection) GetItems() []AppKey {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *AppKeyCollection) SetSys(val AppKeyCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *AppKeyCollection) SetTotal(val int) {
+	s.Total = val
+}
+
+// SetItems sets the value of Items.
+func (s *AppKeyCollection) SetItems(val []AppKey) {
+	s.Items = val
+}
+
+func (*AppKeyCollection) getAppKeysRes() {}
+
+type AppKeyCollectionSys struct {
+	Type AppKeyCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *AppKeyCollectionSys) GetType() AppKeyCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *AppKeyCollectionSys) SetType(val AppKeyCollectionSysType) {
+	s.Type = val
+}
+
+type AppKeyCollectionSysType string
+
+const (
+	AppKeyCollectionSysTypeArray AppKeyCollectionSysType = "Array"
+)
+
+// AllValues returns all AppKeyCollectionSysType values.
+func (AppKeyCollectionSysType) AllValues() []AppKeyCollectionSysType {
+	return []AppKeyCollectionSysType{
+		AppKeyCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppKeyCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppKeyCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppKeyCollectionSysType) UnmarshalText(data []byte) error {
+	switch AppKeyCollectionSysType(data) {
+	case AppKeyCollectionSysTypeArray:
+		*s = AppKeyCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/AppKeyGenerated
+type AppKeyGenerated struct {
+	PrivateKey string `json:"privateKey"`
+}
+
+// GetPrivateKey returns the value of PrivateKey.
+func (s *AppKeyGenerated) GetPrivateKey() string {
+	return s.PrivateKey
+}
+
+// SetPrivateKey sets the value of PrivateKey.
+func (s *AppKeyGenerated) SetPrivateKey(val string) {
+	s.PrivateKey = val
+}
+
+// Ref: #/AppKeyJWK
+type AppKeyJWK struct {
+	Alg AppKeyJWKAlg `json:"alg"`
+	Kty AppKeyJWKKty `json:"kty"`
+	Use AppKeyJWKUse `json:"use"`
+	X5c []string     `json:"x5c"`
+	Kid string       `json:"kid"`
+	X5t string       `json:"x5t"`
+}
+
+// GetAlg returns the value of Alg.
+func (s *AppKeyJWK) GetAlg() AppKeyJWKAlg {
+	return s.Alg
+}
+
+// GetKty returns the value of Kty.
+func (s *AppKeyJWK) GetKty() AppKeyJWKKty {
+	return s.Kty
+}
+
+// GetUse returns the value of Use.
+func (s *AppKeyJWK) GetUse() AppKeyJWKUse {
+	return s.Use
+}
+
+// GetX5c returns the value of X5c.
+func (s *AppKeyJWK) GetX5c() []string {
+	return s.X5c
+}
+
+// GetKid returns the value of Kid.
+func (s *AppKeyJWK) GetKid() string {
+	return s.Kid
+}
+
+// GetX5t returns the value of X5t.
+func (s *AppKeyJWK) GetX5t() string {
+	return s.X5t
+}
+
+// SetAlg sets the value of Alg.
+func (s *AppKeyJWK) SetAlg(val AppKeyJWKAlg) {
+	s.Alg = val
+}
+
+// SetKty sets the value of Kty.
+func (s *AppKeyJWK) SetKty(val AppKeyJWKKty) {
+	s.Kty = val
+}
+
+// SetUse sets the value of Use.
+func (s *AppKeyJWK) SetUse(val AppKeyJWKUse) {
+	s.Use = val
+}
+
+// SetX5c sets the value of X5c.
+func (s *AppKeyJWK) SetX5c(val []string) {
+	s.X5c = val
+}
+
+// SetKid sets the value of Kid.
+func (s *AppKeyJWK) SetKid(val string) {
+	s.Kid = val
+}
+
+// SetX5t sets the value of X5t.
+func (s *AppKeyJWK) SetX5t(val string) {
+	s.X5t = val
+}
+
+type AppKeyJWKAlg string
+
+const (
+	AppKeyJWKAlgRS256 AppKeyJWKAlg = "RS256"
+)
+
+// AllValues returns all AppKeyJWKAlg values.
+func (AppKeyJWKAlg) AllValues() []AppKeyJWKAlg {
+	return []AppKeyJWKAlg{
+		AppKeyJWKAlgRS256,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppKeyJWKAlg) MarshalText() ([]byte, error) {
+	switch s {
+	case AppKeyJWKAlgRS256:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppKeyJWKAlg) UnmarshalText(data []byte) error {
+	switch AppKeyJWKAlg(data) {
+	case AppKeyJWKAlgRS256:
+		*s = AppKeyJWKAlgRS256
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type AppKeyJWKKty string
+
+const (
+	AppKeyJWKKtyRSA AppKeyJWKKty = "RSA"
+)
+
+// AllValues returns all AppKeyJWKKty values.
+func (AppKeyJWKKty) AllValues() []AppKeyJWKKty {
+	return []AppKeyJWKKty{
+		AppKeyJWKKtyRSA,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppKeyJWKKty) MarshalText() ([]byte, error) {
+	switch s {
+	case AppKeyJWKKtyRSA:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppKeyJWKKty) UnmarshalText(data []byte) error {
+	switch AppKeyJWKKty(data) {
+	case AppKeyJWKKtyRSA:
+		*s = AppKeyJWKKtyRSA
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type AppKeyJWKUse string
+
+const (
+	AppKeyJWKUseSig AppKeyJWKUse = "sig"
+)
+
+// AllValues returns all AppKeyJWKUse values.
+func (AppKeyJWKUse) AllValues() []AppKeyJWKUse {
+	return []AppKeyJWKUse{
+		AppKeyJWKUseSig,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppKeyJWKUse) MarshalText() ([]byte, error) {
+	switch s {
+	case AppKeyJWKUseSig:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppKeyJWKUse) UnmarshalText(data []byte) error {
+	switch AppKeyJWKUse(data) {
+	case AppKeyJWKUseSig:
+		*s = AppKeyJWKUseSig
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/AppKeyRequestData
+type AppKeyRequestData struct {
+	Jwk      OptAppKeyJWK `json:"jwk"`
+	Generate OptBool      `json:"generate"`
+}
+
+// GetJwk returns the value of Jwk.
+func (s *AppKeyRequestData) GetJwk() OptAppKeyJWK {
+	return s.Jwk
+}
+
+// GetGenerate returns the value of Generate.
+func (s *AppKeyRequestData) GetGenerate() OptBool {
+	return s.Generate
+}
+
+// SetJwk sets the value of Jwk.
+func (s *AppKeyRequestData) SetJwk(val OptAppKeyJWK) {
+	s.Jwk = val
+}
+
+// SetGenerate sets the value of Generate.
+func (s *AppKeyRequestData) SetGenerate(val OptBool) {
+	s.Generate = val
+}
+
+// Merged schema.
+// Ref: #/AppKeySys
+type AppKeySys struct {
+	ID string `json:"id"`
+	// Merged property.
+	Type          AppKeySysType     `json:"type"`
+	Organization  OrganizationLink  `json:"organization"`
+	AppDefinition AppDefinitionLink `json:"appDefinition"`
+	CreatedAt     OptDateTime       `json:"createdAt"`
+	UpdatedAt     OptDateTime       `json:"updatedAt"`
+	LastUsedAt    OptNilDateTime    `json:"lastUsedAt"`
+}
+
+// GetID returns the value of ID.
+func (s *AppKeySys) GetID() string {
+	return s.ID
+}
+
+// GetType returns the value of Type.
+func (s *AppKeySys) GetType() AppKeySysType {
+	return s.Type
+}
+
+// GetOrganization returns the value of Organization.
+func (s *AppKeySys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetAppDefinition returns the value of AppDefinition.
+func (s *AppKeySys) GetAppDefinition() AppDefinitionLink {
+	return s.AppDefinition
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *AppKeySys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *AppKeySys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
+// GetLastUsedAt returns the value of LastUsedAt.
+func (s *AppKeySys) GetLastUsedAt() OptNilDateTime {
+	return s.LastUsedAt
+}
+
+// SetID sets the value of ID.
+func (s *AppKeySys) SetID(val string) {
+	s.ID = val
+}
+
+// SetType sets the value of Type.
+func (s *AppKeySys) SetType(val AppKeySysType) {
+	s.Type = val
+}
+
+// SetOrganization sets the value of Organization.
+func (s *AppKeySys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetAppDefinition sets the value of AppDefinition.
+func (s *AppKeySys) SetAppDefinition(val AppDefinitionLink) {
+	s.AppDefinition = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *AppKeySys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *AppKeySys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
+}
+
+// SetLastUsedAt sets the value of LastUsedAt.
+func (s *AppKeySys) SetLastUsedAt(val OptNilDateTime) {
+	s.LastUsedAt = val
+}
+
+// Merged schema.
+type AppKeySysType string
+
+const (
+	AppKeySysTypeAppKey AppKeySysType = "AppKey"
+)
+
+// AllValues returns all AppKeySysType values.
+func (AppKeySysType) AllValues() []AppKeySysType {
+	return []AppKeySysType{
+		AppKeySysTypeAppKey,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppKeySysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppKeySysTypeAppKey:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppKeySysType) UnmarshalText(data []byte) error {
+	switch AppKeySysType(data) {
+	case AppKeySysTypeAppKey:
+		*s = AppKeySysTypeAppKey
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
 // Ref: #/AppSigningSecret
 type AppSigningSecret struct {
 	Sys           AppSigningSecretSys `json:"sys"`
@@ -1484,6 +1954,7 @@ func NewErrorApplicationJSONError(v Error) ApplicationJSONError {
 
 func (*ApplicationJSONError) activateContentTypeRes()            {}
 func (*ApplicationJSONError) createAppDefinitionRes()            {}
+func (*ApplicationJSONError) createAppKeyRes()                   {}
 func (*ApplicationJSONError) createDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONError) createEntryRes()                    {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentAliasRes() {}
@@ -1496,6 +1967,7 @@ func (*ApplicationJSONError) createWebhookDefinitionRes()        {}
 func (*ApplicationJSONError) deactivateContentTypeRes()          {}
 func (*ApplicationJSONError) deleteAppDefinitionRes()            {}
 func (*ApplicationJSONError) deleteAppInstallationRes()          {}
+func (*ApplicationJSONError) deleteAppKeyRes()                   {}
 func (*ApplicationJSONError) deleteAppSigningSecretRes()         {}
 func (*ApplicationJSONError) deleteContentTypeRes()              {}
 func (*ApplicationJSONError) deleteDeliveryAPIKeyRes()           {}
@@ -1512,6 +1984,8 @@ func (*ApplicationJSONError) deleteTeamSpaceMembershipRes()      {}
 func (*ApplicationJSONError) deleteWebhookDefinitionRes()        {}
 func (*ApplicationJSONError) getAppDefinitionRes()               {}
 func (*ApplicationJSONError) getAppInstallationRes()             {}
+func (*ApplicationJSONError) getAppKeyRes()                      {}
+func (*ApplicationJSONError) getAppKeysRes()                     {}
 func (*ApplicationJSONError) getAppSigningSecretRes()            {}
 func (*ApplicationJSONError) getAuthenticatedUserRes()           {}
 func (*ApplicationJSONError) getContentTypeRes()                 {}
@@ -4073,6 +4547,7 @@ func (s *ErrorStatusCode) SetResponse(val ApplicationJSONError) {
 
 func (*ErrorStatusCode) activateContentTypeRes()            {}
 func (*ErrorStatusCode) createAppDefinitionRes()            {}
+func (*ErrorStatusCode) createAppKeyRes()                   {}
 func (*ErrorStatusCode) createDeliveryAPIKeyRes()           {}
 func (*ErrorStatusCode) createEntryRes()                    {}
 func (*ErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
@@ -4085,6 +4560,7 @@ func (*ErrorStatusCode) createWebhookDefinitionRes()        {}
 func (*ErrorStatusCode) deactivateContentTypeRes()          {}
 func (*ErrorStatusCode) deleteAppDefinitionRes()            {}
 func (*ErrorStatusCode) deleteAppInstallationRes()          {}
+func (*ErrorStatusCode) deleteAppKeyRes()                   {}
 func (*ErrorStatusCode) deleteAppSigningSecretRes()         {}
 func (*ErrorStatusCode) deleteContentTypeRes()              {}
 func (*ErrorStatusCode) deleteDeliveryAPIKeyRes()           {}
@@ -4101,6 +4577,8 @@ func (*ErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
 func (*ErrorStatusCode) deleteWebhookDefinitionRes()        {}
 func (*ErrorStatusCode) getAppDefinitionRes()               {}
 func (*ErrorStatusCode) getAppInstallationRes()             {}
+func (*ErrorStatusCode) getAppKeyRes()                      {}
+func (*ErrorStatusCode) getAppKeysRes()                     {}
 func (*ErrorStatusCode) getAppSigningSecretRes()            {}
 func (*ErrorStatusCode) getAuthenticatedUserRes()           {}
 func (*ErrorStatusCode) getContentTypeRes()                 {}
@@ -4914,6 +5392,7 @@ type NoContent struct{}
 func (*NoContent) deactivateContentTypeRes()     {}
 func (*NoContent) deleteAppDefinitionRes()       {}
 func (*NoContent) deleteAppInstallationRes()     {}
+func (*NoContent) deleteAppKeyRes()              {}
 func (*NoContent) deleteAppSigningSecretRes()    {}
 func (*NoContent) deleteContentTypeRes()         {}
 func (*NoContent) deleteDeliveryAPIKeyRes()      {}
@@ -5246,6 +5725,98 @@ func (o OptAppDefinitionParameters) Get() (v AppDefinitionParameters, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptAppDefinitionParameters) Or(d AppDefinitionParameters) AppDefinitionParameters {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppKeyGenerated returns new OptAppKeyGenerated with value set to v.
+func NewOptAppKeyGenerated(v AppKeyGenerated) OptAppKeyGenerated {
+	return OptAppKeyGenerated{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppKeyGenerated is optional AppKeyGenerated.
+type OptAppKeyGenerated struct {
+	Value AppKeyGenerated
+	Set   bool
+}
+
+// IsSet returns true if OptAppKeyGenerated was set.
+func (o OptAppKeyGenerated) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppKeyGenerated) Reset() {
+	var v AppKeyGenerated
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppKeyGenerated) SetTo(v AppKeyGenerated) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppKeyGenerated) Get() (v AppKeyGenerated, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppKeyGenerated) Or(d AppKeyGenerated) AppKeyGenerated {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppKeyJWK returns new OptAppKeyJWK with value set to v.
+func NewOptAppKeyJWK(v AppKeyJWK) OptAppKeyJWK {
+	return OptAppKeyJWK{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppKeyJWK is optional AppKeyJWK.
+type OptAppKeyJWK struct {
+	Value AppKeyJWK
+	Set   bool
+}
+
+// IsSet returns true if OptAppKeyJWK was set.
+func (o OptAppKeyJWK) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppKeyJWK) Reset() {
+	var v AppKeyJWK
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppKeyJWK) SetTo(v AppKeyJWK) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppKeyJWK) Get() (v AppKeyJWK, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppKeyJWK) Or(d AppKeyJWK) AppKeyJWK {
 	if v, ok := o.Get(); ok {
 		return v
 	}
