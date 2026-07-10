@@ -17,6 +17,7 @@ var (
 	_ resource.ResourceWithConfigure   = (*contentTypeResource)(nil)
 	_ resource.ResourceWithIdentity    = (*contentTypeResource)(nil)
 	_ resource.ResourceWithImportState = (*contentTypeResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*contentTypeResource)(nil)
 )
 
 //nolint:ireturn
@@ -56,6 +57,27 @@ func (r *contentTypeResource) ImportState(ctx context.Context, req resource.Impo
 		path.Root("environment_id"),
 		path.Root("content_type_id"),
 	}, req, resp)
+}
+
+func (r *contentTypeResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
+
+	var configMetadata, stateMetadata TypedObject[ContentTypeMetadataValue]
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("metadata"), &configMetadata)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("metadata"), &stateMetadata)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	plannedMetadata, modified := reconcileContentTypeMetadataPlan(configMetadata, stateMetadata)
+	if !modified {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("metadata"), plannedMetadata)...)
 }
 
 func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
