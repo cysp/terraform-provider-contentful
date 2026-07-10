@@ -34,8 +34,9 @@ type Handler struct {
 
 	appInstallations cm.SpaceEnvironmentMap[*cm.AppInstallation]
 
-	contentTypes     cm.SpaceEnvironmentMap[*cm.ContentType]
-	editorInterfaces cm.SpaceEnvironmentMap[*cm.EditorInterface]
+	contentTypes                 cm.SpaceEnvironmentMap[*cm.ContentType]
+	publishedContentTypeFieldIDs cm.SpaceEnvironmentMap[[]string]
+	editorInterfaces             cm.SpaceEnvironmentMap[*cm.EditorInterface]
 
 	entries cm.SpaceEnvironmentMap[*cm.Entry]
 
@@ -69,6 +70,7 @@ func NewHandler() *Handler {
 		appSigningSecrets:              make(map[string]*cm.AppSigningSecret),
 		appInstallations:               cm.NewSpaceEnvironmentMap[*cm.AppInstallation](),
 		contentTypes:                   cm.NewSpaceEnvironmentMap[*cm.ContentType](),
+		publishedContentTypeFieldIDs:   cm.NewSpaceEnvironmentMap[[]string](),
 		editorInterfaces:               cm.NewSpaceEnvironmentMap[*cm.EditorInterface](),
 		entries:                        cm.NewSpaceEnvironmentMap[*cm.Entry](),
 		extensions:                     cm.NewSpaceEnvironmentMap[*cm.Extension](),

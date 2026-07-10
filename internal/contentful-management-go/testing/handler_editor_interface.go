@@ -32,13 +32,7 @@ func (ts *Handler) PutEditorInterface(_ context.Context, req *cm.EditorInterface
 
 	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if editorInterface == nil {
-		newEditorInterface := NewEditorInterfaceFromFields(params.SpaceID, params.EnvironmentID, params.ContentTypeID, *req)
-		ts.editorInterfaces.Set(params.SpaceID, params.EnvironmentID, params.ContentTypeID, &newEditorInterface)
-
-		return &cm.EditorInterfaceStatusCode{
-			StatusCode: http.StatusCreated,
-			Response:   newEditorInterface,
-		}, nil
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("The content type you sent could not be found or was not activated."), nil), nil
 	}
 
 	if params.XContentfulVersion != editorInterface.Sys.Version {

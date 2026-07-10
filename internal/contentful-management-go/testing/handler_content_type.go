@@ -88,11 +88,6 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 
 	UpdateContentTypeFromRequestFields(contentType, *req)
 
-	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
-	if editorInterface != nil {
-		editorInterface.Sys.Version++
-	}
-
 	return &cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *contentType,
@@ -114,6 +109,8 @@ func (ts *Handler) DeleteContentType(_ context.Context, params cm.DeleteContentT
 	}
 
 	ts.contentTypes.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	ts.publishedContentTypeFieldIDs.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	ts.editorInterfaces.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 
 	return &cm.NoContent{}, nil
 }
@@ -133,6 +130,22 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 	}
 
 	publishContentType(contentType, time.Now().UTC())
+
+	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	if editorInterface == nil {
+		newEditorInterface := NewDefaultEditorInterface(params.SpaceID, params.EnvironmentID, params.ContentTypeID, contentType.Fields)
+		ts.editorInterfaces.Set(params.SpaceID, params.EnvironmentID, params.ContentTypeID, &newEditorInterface)
+	} else {
+		previousFieldIDs := ts.publishedContentTypeFieldIDs.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+		SyncEditorInterfaceWithContentType(editorInterface, previousFieldIDs, contentType.Fields)
+	}
+
+	ts.publishedContentTypeFieldIDs.Set(
+		params.SpaceID,
+		params.EnvironmentID,
+		params.ContentTypeID,
+		contentTypeFieldIDs(contentType.Fields),
+	)
 
 	return &cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
