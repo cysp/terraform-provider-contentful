@@ -3,6 +3,7 @@ package cmtesting_test
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -55,7 +56,7 @@ func TestGetContentTypesPaginates(t *testing.T) {
 	assert.Equal(t, "Content Type 1", secondPageCollection.Items[0].Name)
 }
 
-func TestGetContentTypesHandlesNegativePaginationParams(t *testing.T) {
+func TestGetContentTypesRejectsInvalidPaginationParams(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer()
@@ -66,16 +67,37 @@ func TestGetContentTypesHandlesNegativePaginationParams(t *testing.T) {
 		Fields: []cm.ContentTypeRequestDataFieldsItem{},
 	})
 
-	response, err := server.Handler().GetContentTypes(context.Background(), cm.GetContentTypesParams{
-		SpaceID:       "space",
-		EnvironmentID: "environment",
-		Skip:          cm.NewOptInt64(-1),
-		Limit:         cm.NewOptInt64(-1),
-	})
-	require.NoError(t, err)
+	testCases := map[string]struct {
+		params  cm.GetContentTypesParams
+		message string
+	}{
+		"negative skip": {
+			params: cm.GetContentTypesParams{
+				SpaceID: "space", EnvironmentID: "environment", Skip: cm.NewOptInt64(-1),
+			},
+			message: `The value provided for "skip" is invalid. Please provide a value larger than or equal to 0`,
+		},
+		"negative limit": {
+			params: cm.GetContentTypesParams{
+				SpaceID: "space", EnvironmentID: "environment", Limit: cm.NewOptInt64(-1),
+			},
+			message: `The value provided for "limit" is invalid. Please provide a value between 0 and 1000`,
+		},
+		"limit above maximum": {
+			params: cm.GetContentTypesParams{
+				SpaceID: "space", EnvironmentID: "environment", Limit: cm.NewOptInt64(1001),
+			},
+			message: `The value provided for "limit" is invalid. Please provide a value between 0 and 1000`,
+		},
+	}
 
-	collection, collectionOk := response.(*cm.ContentTypeCollection)
-	require.True(t, collectionOk)
-	assert.Equal(t, 1, collection.Total.Or(0))
-	assert.Empty(t, collection.Items)
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			response, err := server.Handler().GetContentTypes(context.Background(), testCase.params)
+			require.NoError(t, err)
+			requireContentfulError(t, response, http.StatusBadRequest, "InvalidQuery", testCase.message)
+		})
+	}
 }

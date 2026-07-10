@@ -10,6 +10,10 @@ func NewContentfulManagementErrorStatusCodeBadRequest(message *string, details [
 	return NewContentfulManagementErrorStatusCode(http.StatusBadRequest, "BadRequest", message, details)
 }
 
+func NewContentfulManagementErrorStatusCodeInvalidQuery(message *string, details []byte) *cm.ErrorStatusCode {
+	return NewContentfulManagementErrorStatusCode(http.StatusBadRequest, "InvalidQuery", message, details)
+}
+
 func NewContentfulManagementErrorStatusCodeValidationFailed(message *string, details []byte) *cm.ErrorStatusCode {
 	return NewContentfulManagementErrorStatusCode(http.StatusUnprocessableEntity, "ValidationFailed", message, details)
 }
