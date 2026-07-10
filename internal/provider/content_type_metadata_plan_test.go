@@ -41,6 +41,16 @@ func TestReconcileContentTypeMetadataPlan(t *testing.T) {
 			stateMetadata:    NewTypedObjectNull[ContentTypeMetadataValue](),
 			expectedModified: false,
 		},
+		"unknown state": {
+			configMetadata:   NewTypedObjectNull[ContentTypeMetadataValue](),
+			stateMetadata:    NewTypedObjectUnknown[ContentTypeMetadataValue](),
+			expectedModified: false,
+		},
+		"configured metadata without prior metadata": {
+			configMetadata:   metadata(annotations, taxonomyNull),
+			stateMetadata:    NewTypedObjectNull[ContentTypeMetadataValue](),
+			expectedModified: false,
+		},
 		"omitted metadata clears annotations without taxonomy": {
 			configMetadata:   NewTypedObjectNull[ContentTypeMetadataValue](),
 			stateMetadata:    metadata(annotations, taxonomyNull),
