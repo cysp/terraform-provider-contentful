@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"slices"
+	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
@@ -108,6 +109,10 @@ func (ts *Handler) DeleteContentType(_ context.Context, params cm.DeleteContentT
 		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
 	}
 
+	if contentType.Sys.PublishedVersion.IsSet() {
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("Cannot delete published"), nil), nil
+	}
+
 	ts.contentTypes.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 
 	return &cm.NoContent{}, nil
@@ -123,7 +128,11 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
 	}
 
-	publishContentType(contentType)
+	if params.XContentfulVersion != contentType.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
+	publishContentType(contentType, time.Now().UTC())
 
 	return &cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
@@ -141,7 +150,13 @@ func (ts *Handler) DeactivateContentType(_ context.Context, params cm.Deactivate
 		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
 	}
 
-	contentType.Sys.PublishedVersion.Reset()
+	if !contentType.Sys.PublishedVersion.IsSet() {
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("Not published"), nil), nil
+	}
 
-	return &cm.NoContent{}, nil
+	contentType.Sys.PublishedVersion.Reset()
+	contentType.Sys.PublishedAt.Reset()
+	contentType.Sys.Version++
+
+	return contentType, nil
 }
