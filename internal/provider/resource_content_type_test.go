@@ -245,7 +245,7 @@ func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 				},
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/3"),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -254,7 +254,7 @@ func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 				},
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/3"),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
