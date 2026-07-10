@@ -3,6 +3,7 @@ package cmtesting
 import (
 	"bytes"
 	"encoding/json"
+	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
@@ -95,8 +96,9 @@ func updateContentTypeMetadata(contentType *cm.ContentType, requestedMetadata cm
 	contentType.Metadata.SetTo(metadata)
 }
 
-func publishContentType(contentType *cm.ContentType) {
+func publishContentType(contentType *cm.ContentType, publishedAt time.Time) {
 	contentType.Sys.PublishedVersion.SetTo(contentType.Sys.Version)
+	contentType.Sys.PublishedAt.SetTo(publishedAt)
 
 	contentType.Sys.Version++
 }
