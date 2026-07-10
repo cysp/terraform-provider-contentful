@@ -7,24 +7,26 @@ import (
 )
 
 func NewContentfulManagementErrorStatusCodeBadRequest(message *string, details []byte) *cm.ErrorStatusCode {
+	return NewContentfulManagementErrorStatusCode(http.StatusBadRequest, "BadRequest", message, details)
+}
+
+func NewContentfulManagementErrorStatusCodeValidationFailed(message *string, details []byte) *cm.ErrorStatusCode {
+	return NewContentfulManagementErrorStatusCode(http.StatusUnprocessableEntity, "ValidationFailed", message, details)
+}
+
+func NewContentfulManagementErrorStatusCode(statusCode int, id string, message *string, details []byte) *cm.ErrorStatusCode {
 	return &cm.ErrorStatusCode{
-		StatusCode: http.StatusBadRequest,
-		Response:   cm.NewErrorApplicationJSONError(NewContentfulManagementError("BadRequest", message, details)),
+		StatusCode: statusCode,
+		Response:   cm.NewErrorApplicationJSONError(NewContentfulManagementError(id, message, details)),
 	}
 }
 
 func NewContentfulManagementErrorStatusCodeNotFound(message *string, details []byte) *cm.ErrorStatusCode {
-	return &cm.ErrorStatusCode{
-		StatusCode: http.StatusNotFound,
-		Response:   cm.NewErrorApplicationJSONError(NewContentfulManagementError(cm.ErrorSysIDNotFound, message, details)),
-	}
+	return NewContentfulManagementErrorStatusCode(http.StatusNotFound, cm.ErrorSysIDNotFound, message, details)
 }
 
 func NewContentfulManagementErrorStatusCodeVersionMismatch(message *string, details []byte) *cm.ErrorStatusCode {
-	return &cm.ErrorStatusCode{
-		StatusCode: http.StatusConflict,
-		Response:   cm.NewErrorApplicationJSONError(NewContentfulManagementError(cm.ErrorSysIDVersionMismatch, message, details)),
-	}
+	return NewContentfulManagementErrorStatusCode(http.StatusConflict, cm.ErrorSysIDVersionMismatch, message, details)
 }
 
 func NewContentfulManagementError(id string, message *string, details []byte) cm.Error {

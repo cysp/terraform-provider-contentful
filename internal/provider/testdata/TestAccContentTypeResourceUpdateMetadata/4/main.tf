@@ -28,4 +28,8 @@ resource "contentful_content_type" "test" {
       }
     }
   ]
+
+  metadata = {
+    taxonomy = []
+  }
 }
