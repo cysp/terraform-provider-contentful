@@ -21,6 +21,16 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 
 	contentTypes := ts.contentTypes.List(params.SpaceID, params.EnvironmentID)
 
+	skip := params.Skip.Or(0)
+	if skip < 0 {
+		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "skip" is invalid. Please provide a value larger than or equal to 0`), nil), nil
+	}
+
+	limit := params.Limit.Or(100) //nolint:mnd
+	if limit < 0 || limit > 1000 {
+		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "limit" is invalid. Please provide a value between 0 and 1000`), nil), nil
+	}
+
 	items := make([]cm.ContentType, 0, len(contentTypes))
 	for _, ct := range contentTypes {
 		items = append(items, *ct)
@@ -30,8 +40,6 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 		return cmp.Compare(a.Sys.ID, b.Sys.ID)
 	})
 
-	skip := max(params.Skip.Or(0), 0)
-	limit := max(params.Limit.Or(100), 0) //nolint:mnd
 	start := min(skip, int64(len(items)))
 	end := min(start+limit, int64(len(items)))
 
