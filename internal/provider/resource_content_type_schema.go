@@ -76,6 +76,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  NewTypedObjectNull[ContentTypeMetadataValue]().CustomType(ctx),
 				Description: `Metadata for the content type. Omitting metadata removes annotations but preserves taxonomy items. To remove taxonomy items, configure taxonomy as an empty list`,
 				Optional:    true,
+				Computed:    true,
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},
@@ -304,6 +305,7 @@ func (v ContentTypeMetadataValue) SchemaAttributes(ctx context.Context) map[stri
 			CustomType:  NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]]().CustomType(ctx),
 			Description: "List of taxonomy items for this content type. Each item represents a taxonomy term that may be associated with the content type.",
 			Optional:    true,
+			Computed:    true,
 			Validators: []validator.List{
 				listvalidator.AtLeastOneOf(
 					path.MatchRelative().AtParent().AtName("annotations"),

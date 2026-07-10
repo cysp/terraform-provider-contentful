@@ -245,6 +245,24 @@ func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 				},
 			},
 			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/1"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/1"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+					},
+				},
+			},
+			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/3"),
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
