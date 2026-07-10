@@ -61,6 +61,10 @@ func TestDeactivateAndDeleteContentTypeUsesContentfulLifecycle(t *testing.T) {
 
 	_, deleted := deleteResponse.(*cm.NoContent)
 	require.True(t, deleted)
+
+	editorResponse, err := handler.GetEditorInterface(context.Background(), contentTypeEditorInterfaceParams())
+	require.NoError(t, err)
+	requireContentfulError(t, editorResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "EditorInterface not found")
 }
 
 func contentTypeActivateParams(version int) cm.ActivateContentTypeParams {
