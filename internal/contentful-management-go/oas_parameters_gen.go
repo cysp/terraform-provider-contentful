@@ -4443,6 +4443,7 @@ func decodeGetContentTypesParams(args [2]string, argsEscaped bool, r *http.Reque
 
 		if err := q.HasParam(cfg); err == nil {
 			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				params.Order = nil
 				return d.DecodeArray(func(d uri.Decoder) error {
 					var paramsDotOrderVal string
 					if err := func() error {
@@ -5017,6 +5018,7 @@ func decodeGetEntriesParams(args [2]string, argsEscaped bool, r *http.Request) (
 
 		if err := q.HasParam(cfg); err == nil {
 			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				params.Order = nil
 				return d.DecodeArray(func(d uri.Decoder) error {
 					var paramsDotOrderVal string
 					if err := func() error {
@@ -5700,6 +5702,7 @@ func decodeGetMarketplaceAppDefinitionsParams(args [0]string, argsEscaped bool, 
 
 		if err := q.HasParam(cfg); err == nil {
 			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				params.SysIDIn = nil
 				return d.DecodeArray(func(d uri.Decoder) error {
 					var paramsDotSysIDInVal string
 					if err := func() error {
