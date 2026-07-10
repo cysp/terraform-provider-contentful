@@ -208,8 +208,9 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server, _ := cmt.NewContentfulManagementServer()
 
@@ -223,7 +224,7 @@ func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -240,6 +241,73 @@ func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				ConfigDirectory: config.TestStepDirectory(),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+					},
+				},
+			},
+		},
+	})
+}
+
+//nolint:paralleltest
+func TestAccContentTypeResourceRemoveAnnotationsMetadata(t *testing.T) {
+	parallelWhenMocked(t)
+
+	server, _ := cmt.NewContentfulManagementServer()
+
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
+
+	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
+
+	configVariables := config.Variables{
+		"space_id":             config.StringVariable("0p38pssr0fi3"),
+		"environment_id":       config.StringVariable("test"),
+		"test_content_type_id": config.StringVariable(contentTypeID),
+	}
+
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/annotations_only"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/1"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/1"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
 					},
 				},
 			},

@@ -63,7 +63,7 @@ resource "contentful_content_type" "author" {
 
 ### Optional
 
-- `metadata` (Attributes) Metadata for the content type. Once set, metadata properties may not be removed, but the list of taxonomy items may be reduced to the empty list (see [below for nested schema](#nestedatt--metadata))
+- `metadata` (Attributes) Metadata for the content type. Omitting metadata removes annotations but preserves taxonomy items. To remove taxonomy items, configure taxonomy as an empty list (see [below for nested schema](#nestedatt--metadata))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

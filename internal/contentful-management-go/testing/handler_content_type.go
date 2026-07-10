@@ -66,6 +66,10 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
+	if metadata, metadataSet := req.Metadata.Get(); metadataSet && contentTypeMetadataIsEmpty(metadata) {
+		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil), nil
+	}
+
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
 		newContentType := NewContentTypeFromRequestFields(params.SpaceID, params.EnvironmentID, params.ContentTypeID, *req)

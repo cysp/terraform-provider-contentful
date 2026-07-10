@@ -74,7 +74,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 			"metadata": schema.SingleNestedAttribute{
 				Attributes:  ContentTypeMetadataValue{}.SchemaAttributes(ctx),
 				CustomType:  NewTypedObjectNull[ContentTypeMetadataValue]().CustomType(ctx),
-				Description: `Metadata for the content type. Once set, metadata properties may not be removed, but the list of taxonomy items may be reduced to the empty list`,
+				Description: `Metadata for the content type. Omitting metadata removes annotations but preserves taxonomy items. To remove taxonomy items, configure taxonomy as an empty list`,
 				Optional:    true,
 			},
 			"timeouts": timeouts.AttributesAll(ctx),

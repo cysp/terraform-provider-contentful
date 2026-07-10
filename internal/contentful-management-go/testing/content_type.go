@@ -1,8 +1,27 @@
 package cmtesting
 
 import (
+	"bytes"
+	"encoding/json"
+
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
+
+func contentTypeMetadataIsEmpty(metadata cm.ContentTypeMetadata) bool {
+	annotations := bytes.TrimSpace(metadata.Annotations)
+	if len(annotations) == 0 {
+		return metadata.Taxonomy == nil
+	}
+
+	var annotationAssignments map[string]json.RawMessage
+
+	err := json.Unmarshal(annotations, &annotationAssignments)
+	if err != nil {
+		return false
+	}
+
+	return len(annotationAssignments) == 0 && metadata.Taxonomy == nil
+}
 
 func NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID string, contentTypeFields cm.ContentTypeRequestData) cm.ContentType {
 	contentType := cm.ContentType{
@@ -45,7 +64,35 @@ func UpdateContentTypeFromRequestFields(contentType *cm.ContentType, contentType
 
 	contentType.DisplayField = cm.NewNilString(contentTypeFields.DisplayField)
 
-	contentType.Metadata = contentTypeFields.Metadata
+	updateContentTypeMetadata(contentType, contentTypeFields.Metadata)
+}
+
+func updateContentTypeMetadata(contentType *cm.ContentType, requestedMetadata cm.OptContentTypeMetadata) {
+	existingMetadata, existingMetadataSet := contentType.Metadata.Get()
+	metadata, metadataSet := requestedMetadata.Get()
+
+	if !metadataSet {
+		if !existingMetadataSet {
+			return
+		}
+
+		existingMetadata.Annotations = nil
+		if existingMetadata.Taxonomy == nil {
+			contentType.Metadata.Reset()
+
+			return
+		}
+
+		contentType.Metadata.SetTo(existingMetadata)
+
+		return
+	}
+
+	if metadata.Taxonomy == nil && existingMetadataSet {
+		metadata.Taxonomy = existingMetadata.Taxonomy
+	}
+
+	contentType.Metadata.SetTo(metadata)
 }
 
 func publishContentType(contentType *cm.ContentType) {

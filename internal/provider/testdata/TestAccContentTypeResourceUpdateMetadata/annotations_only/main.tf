@@ -52,18 +52,5 @@ resource "contentful_content_type" "test" {
         ]
       }
     })
-    taxonomy = [
-      {
-        taxonomy_concept_scheme = {
-          id = "furniture"
-        }
-      },
-      {
-        taxonomy_concept = {
-          id       = "livingRoomFurniture"
-          required = true
-        }
-      },
-    ]
   }
 }
