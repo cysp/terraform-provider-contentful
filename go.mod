@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-go v0.31.0
 	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
-	github.com/ogen-go/ogen v1.22.0
+	github.com/ogen-go/ogen v1.23.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.22.0
 	pgregory.net/rapid v1.3.0
