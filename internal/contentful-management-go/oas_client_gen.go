@@ -231,6 +231,18 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}
 	DeleteTag(ctx context.Context, params DeleteTagParams, options ...RequestOption) (DeleteTagRes, error)
+	// DeleteTaxonomyConcept invokes deleteTaxonomyConcept operation.
+	//
+	// Delete a taxonomy concept.
+	//
+	// DELETE /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+	DeleteTaxonomyConcept(ctx context.Context, params DeleteTaxonomyConceptParams, options ...RequestOption) (DeleteTaxonomyConceptRes, error)
+	// DeleteTaxonomyConceptScheme invokes deleteTaxonomyConceptScheme operation.
+	//
+	// Delete a taxonomy concept scheme.
+	//
+	// DELETE /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+	DeleteTaxonomyConceptScheme(ctx context.Context, params DeleteTaxonomyConceptSchemeParams, options ...RequestOption) (DeleteTaxonomyConceptSchemeRes, error)
 	// DeleteTeam invokes deleteTeam operation.
 	//
 	// Delete a team.
@@ -375,6 +387,18 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}
 	GetTag(ctx context.Context, params GetTagParams, options ...RequestOption) (GetTagRes, error)
+	// GetTaxonomyConcept invokes getTaxonomyConcept operation.
+	//
+	// Get a taxonomy concept.
+	//
+	// GET /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+	GetTaxonomyConcept(ctx context.Context, params GetTaxonomyConceptParams, options ...RequestOption) (GetTaxonomyConceptRes, error)
+	// GetTaxonomyConceptScheme invokes getTaxonomyConceptScheme operation.
+	//
+	// Get a taxonomy concept scheme.
+	//
+	// GET /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+	GetTaxonomyConceptScheme(ctx context.Context, params GetTaxonomyConceptSchemeParams, options ...RequestOption) (GetTaxonomyConceptSchemeRes, error)
 	// GetTeam invokes getTeam operation.
 	//
 	// Get a single team.
@@ -393,6 +417,18 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams, options ...RequestOption) (GetWebhookDefinitionRes, error)
+	// PatchTaxonomyConcept invokes patchTaxonomyConcept operation.
+	//
+	// Update a taxonomy concept.
+	//
+	// PATCH /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+	PatchTaxonomyConcept(ctx context.Context, request TaxonomyPatch, params PatchTaxonomyConceptParams, options ...RequestOption) (PatchTaxonomyConceptRes, error)
+	// PatchTaxonomyConceptScheme invokes patchTaxonomyConceptScheme operation.
+	//
+	// Update a taxonomy concept scheme.
+	//
+	// PATCH /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+	PatchTaxonomyConceptScheme(ctx context.Context, request TaxonomyPatch, params PatchTaxonomyConceptSchemeParams, options ...RequestOption) (PatchTaxonomyConceptSchemeRes, error)
 	// PublishEntry invokes publishEntry operation.
 	//
 	// Publish an entry.
@@ -465,6 +501,18 @@ type Invoker interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}
 	PutTag(ctx context.Context, request *TagRequest, params PutTagParams, options ...RequestOption) (PutTagRes, error)
+	// PutTaxonomyConcept invokes putTaxonomyConcept operation.
+	//
+	// Create a taxonomy concept with a caller-defined ID.
+	//
+	// PUT /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+	PutTaxonomyConcept(ctx context.Context, request *TaxonomyConceptRequest, params PutTaxonomyConceptParams, options ...RequestOption) (PutTaxonomyConceptRes, error)
+	// PutTaxonomyConceptScheme invokes putTaxonomyConceptScheme operation.
+	//
+	// Create a taxonomy concept scheme with a caller-defined ID.
+	//
+	// PUT /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+	PutTaxonomyConceptScheme(ctx context.Context, request *TaxonomyConceptSchemeRequest, params PutTaxonomyConceptSchemeParams, options ...RequestOption) (PutTaxonomyConceptSchemeRes, error)
 	// PutTeam invokes putTeam operation.
 	//
 	// Update a single team.
@@ -3950,6 +3998,294 @@ func (c *Client) sendDeleteTag(ctx context.Context, params DeleteTagParams, requ
 	return result, nil
 }
 
+// DeleteTaxonomyConcept invokes deleteTaxonomyConcept operation.
+//
+// Delete a taxonomy concept.
+//
+// DELETE /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+func (c *Client) DeleteTaxonomyConcept(ctx context.Context, params DeleteTaxonomyConceptParams, options ...RequestOption) (DeleteTaxonomyConceptRes, error) {
+	res, err := c.sendDeleteTaxonomyConcept(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendDeleteTaxonomyConcept(ctx context.Context, params DeleteTaxonomyConceptParams, requestOptions ...RequestOption) (res DeleteTaxonomyConceptRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/taxonomy/concepts/"
+	{
+		// Encode "taxonomy_concept_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "taxonomy_concept_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.TaxonomyConceptID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteTaxonomyConceptOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeDeleteTaxonomyConceptResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// DeleteTaxonomyConceptScheme invokes deleteTaxonomyConceptScheme operation.
+//
+// Delete a taxonomy concept scheme.
+//
+// DELETE /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+func (c *Client) DeleteTaxonomyConceptScheme(ctx context.Context, params DeleteTaxonomyConceptSchemeParams, options ...RequestOption) (DeleteTaxonomyConceptSchemeRes, error) {
+	res, err := c.sendDeleteTaxonomyConceptScheme(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendDeleteTaxonomyConceptScheme(ctx context.Context, params DeleteTaxonomyConceptSchemeParams, requestOptions ...RequestOption) (res DeleteTaxonomyConceptSchemeRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/taxonomy/concept-schemes/"
+	{
+		// Encode "taxonomy_concept_scheme_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "taxonomy_concept_scheme_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.TaxonomyConceptSchemeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteTaxonomyConceptSchemeOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeDeleteTaxonomyConceptSchemeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // DeleteTeam invokes deleteTeam operation.
 //
 // Delete a team.
@@ -7290,6 +7626,268 @@ func (c *Client) sendGetTag(ctx context.Context, params GetTagParams, requestOpt
 	return result, nil
 }
 
+// GetTaxonomyConcept invokes getTaxonomyConcept operation.
+//
+// Get a taxonomy concept.
+//
+// GET /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+func (c *Client) GetTaxonomyConcept(ctx context.Context, params GetTaxonomyConceptParams, options ...RequestOption) (GetTaxonomyConceptRes, error) {
+	res, err := c.sendGetTaxonomyConcept(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendGetTaxonomyConcept(ctx context.Context, params GetTaxonomyConceptParams, requestOptions ...RequestOption) (res GetTaxonomyConceptRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/taxonomy/concepts/"
+	{
+		// Encode "taxonomy_concept_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "taxonomy_concept_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.TaxonomyConceptID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetTaxonomyConceptOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeGetTaxonomyConceptResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetTaxonomyConceptScheme invokes getTaxonomyConceptScheme operation.
+//
+// Get a taxonomy concept scheme.
+//
+// GET /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+func (c *Client) GetTaxonomyConceptScheme(ctx context.Context, params GetTaxonomyConceptSchemeParams, options ...RequestOption) (GetTaxonomyConceptSchemeRes, error) {
+	res, err := c.sendGetTaxonomyConceptScheme(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendGetTaxonomyConceptScheme(ctx context.Context, params GetTaxonomyConceptSchemeParams, requestOptions ...RequestOption) (res GetTaxonomyConceptSchemeRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/taxonomy/concept-schemes/"
+	{
+		// Encode "taxonomy_concept_scheme_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "taxonomy_concept_scheme_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.TaxonomyConceptSchemeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetTaxonomyConceptSchemeOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeGetTaxonomyConceptSchemeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetTeam invokes getTeam operation.
 //
 // Get a single team.
@@ -7676,6 +8274,300 @@ func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhook
 	}
 
 	result, err := decodeGetWebhookDefinitionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PatchTaxonomyConcept invokes patchTaxonomyConcept operation.
+//
+// Update a taxonomy concept.
+//
+// PATCH /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+func (c *Client) PatchTaxonomyConcept(ctx context.Context, request TaxonomyPatch, params PatchTaxonomyConceptParams, options ...RequestOption) (PatchTaxonomyConceptRes, error) {
+	res, err := c.sendPatchTaxonomyConcept(ctx, request, params, options...)
+	return res, err
+}
+
+func (c *Client) sendPatchTaxonomyConcept(ctx context.Context, request TaxonomyPatch, params PatchTaxonomyConceptParams, requestOptions ...RequestOption) (res PatchTaxonomyConceptRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/taxonomy/concepts/"
+	{
+		// Encode "taxonomy_concept_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "taxonomy_concept_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.TaxonomyConceptID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PATCH", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePatchTaxonomyConceptRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, PatchTaxonomyConceptOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodePatchTaxonomyConceptResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PatchTaxonomyConceptScheme invokes patchTaxonomyConceptScheme operation.
+//
+// Update a taxonomy concept scheme.
+//
+// PATCH /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+func (c *Client) PatchTaxonomyConceptScheme(ctx context.Context, request TaxonomyPatch, params PatchTaxonomyConceptSchemeParams, options ...RequestOption) (PatchTaxonomyConceptSchemeRes, error) {
+	res, err := c.sendPatchTaxonomyConceptScheme(ctx, request, params, options...)
+	return res, err
+}
+
+func (c *Client) sendPatchTaxonomyConceptScheme(ctx context.Context, request TaxonomyPatch, params PatchTaxonomyConceptSchemeParams, requestOptions ...RequestOption) (res PatchTaxonomyConceptSchemeRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/taxonomy/concept-schemes/"
+	{
+		// Encode "taxonomy_concept_scheme_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "taxonomy_concept_scheme_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.TaxonomyConceptSchemeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PATCH", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePatchTaxonomyConceptSchemeRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, PatchTaxonomyConceptSchemeOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodePatchTaxonomyConceptSchemeResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -9557,6 +10449,274 @@ func (c *Client) sendPutTag(ctx context.Context, request *TagRequest, params Put
 	}
 
 	result, err := decodePutTagResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutTaxonomyConcept invokes putTaxonomyConcept operation.
+//
+// Create a taxonomy concept with a caller-defined ID.
+//
+// PUT /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+func (c *Client) PutTaxonomyConcept(ctx context.Context, request *TaxonomyConceptRequest, params PutTaxonomyConceptParams, options ...RequestOption) (PutTaxonomyConceptRes, error) {
+	res, err := c.sendPutTaxonomyConcept(ctx, request, params, options...)
+	return res, err
+}
+
+func (c *Client) sendPutTaxonomyConcept(ctx context.Context, request *TaxonomyConceptRequest, params PutTaxonomyConceptParams, requestOptions ...RequestOption) (res PutTaxonomyConceptRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/taxonomy/concepts/"
+	{
+		// Encode "taxonomy_concept_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "taxonomy_concept_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.TaxonomyConceptID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutTaxonomyConceptRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, PutTaxonomyConceptOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodePutTaxonomyConceptResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutTaxonomyConceptScheme invokes putTaxonomyConceptScheme operation.
+//
+// Create a taxonomy concept scheme with a caller-defined ID.
+//
+// PUT /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+func (c *Client) PutTaxonomyConceptScheme(ctx context.Context, request *TaxonomyConceptSchemeRequest, params PutTaxonomyConceptSchemeParams, options ...RequestOption) (PutTaxonomyConceptSchemeRes, error) {
+	res, err := c.sendPutTaxonomyConceptScheme(ctx, request, params, options...)
+	return res, err
+}
+
+func (c *Client) sendPutTaxonomyConceptScheme(ctx context.Context, request *TaxonomyConceptSchemeRequest, params PutTaxonomyConceptSchemeParams, requestOptions ...RequestOption) (res PutTaxonomyConceptSchemeRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/taxonomy/concept-schemes/"
+	{
+		// Encode "taxonomy_concept_scheme_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "taxonomy_concept_scheme_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.TaxonomyConceptSchemeID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutTaxonomyConceptSchemeRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, PutTaxonomyConceptSchemeOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodePutTaxonomyConceptSchemeResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

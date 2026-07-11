@@ -46,6 +46,9 @@ type Handler struct {
 
 	tags cm.SpaceEnvironmentMap[*cm.Tag]
 
+	taxonomyConcepts       OrganizationMap[*cm.TaxonomyConcept]
+	taxonomyConceptSchemes OrganizationMap[*cm.TaxonomyConceptScheme]
+
 	webhookDefinitions cm.SpaceMap[*cm.WebhookDefinition]
 }
 
@@ -76,6 +79,8 @@ func NewHandler() *Handler {
 		extensions:                     cm.NewSpaceEnvironmentMap[*cm.Extension](),
 		roles:                          cm.NewSpaceMap[*cm.Role](),
 		tags:                           cm.NewSpaceEnvironmentMap[*cm.Tag](),
+		taxonomyConcepts:               NewOrganizationMap[*cm.TaxonomyConcept](),
+		taxonomyConceptSchemes:         NewOrganizationMap[*cm.TaxonomyConceptScheme](),
 		webhookDefinitions:             cm.NewSpaceMap[*cm.WebhookDefinition](),
 	}
 }

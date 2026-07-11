@@ -1,0 +1,17 @@
+TaxonomyPatch:
+  type: array
+  items:
+    type: object
+    properties:
+      op:
+        type: string
+        enum:
+          - add
+          - replace
+          - remove
+      path:
+        type: string
+      value: {}
+    required:
+      - op
+      - path

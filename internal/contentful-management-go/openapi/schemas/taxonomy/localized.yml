@@ -1,0 +1,17 @@
+LocalizedString:
+  type: object
+  additionalProperties:
+    type: string
+
+LocalizedStringList:
+  type: object
+  additionalProperties:
+    type: array
+    items:
+      type: string
+
+NullableLocalizedString:
+  type: object
+  nullable: true
+  additionalProperties:
+    type: string

@@ -1,0 +1,23 @@
+TaxonomyConcept:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "../taxonomy/sys.yml#/TaxonomySys"
+            - type: object
+              properties:
+                type:
+                  enum:
+                    - TaxonomyConcept
+      required:
+        - sys
+    - $ref: "./request.yml#/TaxonomyConceptRequest"
+    - type: object
+      properties:
+        conceptSchemes:
+          type: array
+          items:
+            $ref: "../links/taxonomy-concept-scheme-link.yml#/TaxonomyConceptSchemeLink"
+      required:
+        - conceptSchemes

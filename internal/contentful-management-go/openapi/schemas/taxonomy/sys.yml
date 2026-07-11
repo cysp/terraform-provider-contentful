@@ -1,0 +1,7 @@
+TaxonomySys:
+  allOf:
+    - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-organization.yml"
+    - $ref: "../sys/with-type.yml"
+    - $ref: "../sys/with-id.yml"
+    - $ref: "../sys/with-version.yml"

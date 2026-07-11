@@ -1,0 +1,22 @@
+TaxonomyConceptSchemeRequest:
+  type: object
+  properties:
+    uri:
+      type: string
+      nullable: true
+    prefLabel:
+      $ref: "../taxonomy/localized.yml#/LocalizedString"
+    definition:
+      $ref: "../taxonomy/localized.yml#/NullableLocalizedString"
+    topConcepts:
+      type: array
+      items:
+        $ref: "../links/taxonomy-concept-link.yml#/TaxonomyConceptLink"
+    concepts:
+      type: array
+      items:
+        $ref: "../links/taxonomy-concept-link.yml#/TaxonomyConceptLink"
+  required:
+    - prefLabel
+    - topConcepts
+    - concepts

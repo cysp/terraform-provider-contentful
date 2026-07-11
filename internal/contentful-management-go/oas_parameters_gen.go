@@ -3273,6 +3273,328 @@ func decodeDeleteTagParams(args [3]string, argsEscaped bool, r *http.Request) (p
 	return params, nil
 }
 
+// DeleteTaxonomyConceptParams is parameters of deleteTaxonomyConcept operation.
+type DeleteTaxonomyConceptParams struct {
+	XContentfulVersion int
+	OrganizationID     string
+	TaxonomyConceptID  string
+}
+
+func unpackDeleteTaxonomyConceptParams(packed middleware.Parameters) (params DeleteTaxonomyConceptParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Version",
+			In:   "header",
+		}
+		params.XContentfulVersion = packed[key].(int)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "taxonomy_concept_id",
+			In:   "path",
+		}
+		params.TaxonomyConceptID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeDeleteTaxonomyConceptParams(args [2]string, argsEscaped bool, r *http.Request) (params DeleteTaxonomyConceptParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Contentful-Version.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt(val)
+				if err != nil {
+					return err
+				}
+
+				params.XContentfulVersion = c
+				return nil
+			}); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Version",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: taxonomy_concept_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "taxonomy_concept_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.TaxonomyConceptID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "taxonomy_concept_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// DeleteTaxonomyConceptSchemeParams is parameters of deleteTaxonomyConceptScheme operation.
+type DeleteTaxonomyConceptSchemeParams struct {
+	XContentfulVersion      int
+	OrganizationID          string
+	TaxonomyConceptSchemeID string
+}
+
+func unpackDeleteTaxonomyConceptSchemeParams(packed middleware.Parameters) (params DeleteTaxonomyConceptSchemeParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Version",
+			In:   "header",
+		}
+		params.XContentfulVersion = packed[key].(int)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "taxonomy_concept_scheme_id",
+			In:   "path",
+		}
+		params.TaxonomyConceptSchemeID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeDeleteTaxonomyConceptSchemeParams(args [2]string, argsEscaped bool, r *http.Request) (params DeleteTaxonomyConceptSchemeParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Contentful-Version.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt(val)
+				if err != nil {
+					return err
+				}
+
+				params.XContentfulVersion = c
+				return nil
+			}); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Version",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: taxonomy_concept_scheme_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "taxonomy_concept_scheme_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.TaxonomyConceptSchemeID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "taxonomy_concept_scheme_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // DeleteTeamParams is parameters of deleteTeam operation.
 type DeleteTeamParams struct {
 	OrganizationID string
@@ -6583,6 +6905,242 @@ func decodeGetTagParams(args [3]string, argsEscaped bool, r *http.Request) (para
 	return params, nil
 }
 
+// GetTaxonomyConceptParams is parameters of getTaxonomyConcept operation.
+type GetTaxonomyConceptParams struct {
+	OrganizationID    string
+	TaxonomyConceptID string
+}
+
+func unpackGetTaxonomyConceptParams(packed middleware.Parameters) (params GetTaxonomyConceptParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "taxonomy_concept_id",
+			In:   "path",
+		}
+		params.TaxonomyConceptID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetTaxonomyConceptParams(args [2]string, argsEscaped bool, r *http.Request) (params GetTaxonomyConceptParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: taxonomy_concept_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "taxonomy_concept_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.TaxonomyConceptID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "taxonomy_concept_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetTaxonomyConceptSchemeParams is parameters of getTaxonomyConceptScheme operation.
+type GetTaxonomyConceptSchemeParams struct {
+	OrganizationID          string
+	TaxonomyConceptSchemeID string
+}
+
+func unpackGetTaxonomyConceptSchemeParams(packed middleware.Parameters) (params GetTaxonomyConceptSchemeParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "taxonomy_concept_scheme_id",
+			In:   "path",
+		}
+		params.TaxonomyConceptSchemeID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetTaxonomyConceptSchemeParams(args [2]string, argsEscaped bool, r *http.Request) (params GetTaxonomyConceptSchemeParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: taxonomy_concept_scheme_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "taxonomy_concept_scheme_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.TaxonomyConceptSchemeID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "taxonomy_concept_scheme_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetTeamParams is parameters of getTeam operation.
 type GetTeamParams struct {
 	OrganizationID string
@@ -6930,6 +7488,328 @@ func decodeGetWebhookDefinitionParams(args [2]string, argsEscaped bool, r *http.
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "webhook_definition_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PatchTaxonomyConceptParams is parameters of patchTaxonomyConcept operation.
+type PatchTaxonomyConceptParams struct {
+	XContentfulVersion int
+	OrganizationID     string
+	TaxonomyConceptID  string
+}
+
+func unpackPatchTaxonomyConceptParams(packed middleware.Parameters) (params PatchTaxonomyConceptParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Version",
+			In:   "header",
+		}
+		params.XContentfulVersion = packed[key].(int)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "taxonomy_concept_id",
+			In:   "path",
+		}
+		params.TaxonomyConceptID = packed[key].(string)
+	}
+	return params
+}
+
+func decodePatchTaxonomyConceptParams(args [2]string, argsEscaped bool, r *http.Request) (params PatchTaxonomyConceptParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Contentful-Version.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt(val)
+				if err != nil {
+					return err
+				}
+
+				params.XContentfulVersion = c
+				return nil
+			}); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Version",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: taxonomy_concept_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "taxonomy_concept_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.TaxonomyConceptID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "taxonomy_concept_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PatchTaxonomyConceptSchemeParams is parameters of patchTaxonomyConceptScheme operation.
+type PatchTaxonomyConceptSchemeParams struct {
+	XContentfulVersion      int
+	OrganizationID          string
+	TaxonomyConceptSchemeID string
+}
+
+func unpackPatchTaxonomyConceptSchemeParams(packed middleware.Parameters) (params PatchTaxonomyConceptSchemeParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Version",
+			In:   "header",
+		}
+		params.XContentfulVersion = packed[key].(int)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "taxonomy_concept_scheme_id",
+			In:   "path",
+		}
+		params.TaxonomyConceptSchemeID = packed[key].(string)
+	}
+	return params
+}
+
+func decodePatchTaxonomyConceptSchemeParams(args [2]string, argsEscaped bool, r *http.Request) (params PatchTaxonomyConceptSchemeParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Contentful-Version.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt(val)
+				if err != nil {
+					return err
+				}
+
+				params.XContentfulVersion = c
+				return nil
+			}); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Version",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: taxonomy_concept_scheme_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "taxonomy_concept_scheme_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.TaxonomyConceptSchemeID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "taxonomy_concept_scheme_id",
 			In:   "path",
 			Err:  err,
 		}
@@ -9174,6 +10054,242 @@ func decodePutTagParams(args [3]string, argsEscaped bool, r *http.Request) (para
 		return params, &ogenerrors.DecodeParamError{
 			Name: "X-Contentful-Tag-Visibility",
 			In:   "header",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PutTaxonomyConceptParams is parameters of putTaxonomyConcept operation.
+type PutTaxonomyConceptParams struct {
+	OrganizationID    string
+	TaxonomyConceptID string
+}
+
+func unpackPutTaxonomyConceptParams(packed middleware.Parameters) (params PutTaxonomyConceptParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "taxonomy_concept_id",
+			In:   "path",
+		}
+		params.TaxonomyConceptID = packed[key].(string)
+	}
+	return params
+}
+
+func decodePutTaxonomyConceptParams(args [2]string, argsEscaped bool, r *http.Request) (params PutTaxonomyConceptParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: taxonomy_concept_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "taxonomy_concept_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.TaxonomyConceptID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "taxonomy_concept_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PutTaxonomyConceptSchemeParams is parameters of putTaxonomyConceptScheme operation.
+type PutTaxonomyConceptSchemeParams struct {
+	OrganizationID          string
+	TaxonomyConceptSchemeID string
+}
+
+func unpackPutTaxonomyConceptSchemeParams(packed middleware.Parameters) (params PutTaxonomyConceptSchemeParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "organization_id",
+			In:   "path",
+		}
+		params.OrganizationID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "taxonomy_concept_scheme_id",
+			In:   "path",
+		}
+		params.TaxonomyConceptSchemeID = packed[key].(string)
+	}
+	return params
+}
+
+func decodePutTaxonomyConceptSchemeParams(args [2]string, argsEscaped bool, r *http.Request) (params PutTaxonomyConceptSchemeParams, _ error) {
+	// Decode path: organization_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "organization_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.OrganizationID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "organization_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: taxonomy_concept_scheme_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "taxonomy_concept_scheme_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.TaxonomyConceptSchemeID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "taxonomy_concept_scheme_id",
+			In:   "path",
 			Err:  err,
 		}
 	}

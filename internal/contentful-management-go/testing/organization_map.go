@@ -40,3 +40,14 @@ func (sm *OrganizationMap[Value]) Delete(organizationID string, key string) {
 
 	delete(organizationValues, key)
 }
+
+func (sm *OrganizationMap[Value]) Values(organizationID string) []Value {
+	organizationValues := sm.m[organizationID]
+	values := make([]Value, 0, len(organizationValues))
+
+	for _, value := range organizationValues {
+		values = append(values, value)
+	}
+
+	return values
+}

@@ -1,0 +1,21 @@
+TaxonomyConceptScheme:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          allOf:
+            - $ref: "../taxonomy/sys.yml#/TaxonomySys"
+            - type: object
+              properties:
+                type:
+                  enum:
+                    - TaxonomyConceptScheme
+      required:
+        - sys
+    - $ref: "./request.yml#/TaxonomyConceptSchemeRequest"
+    - type: object
+      properties:
+        totalConcepts:
+          type: integer
+      required:
+        - totalConcepts

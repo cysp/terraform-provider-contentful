@@ -150,6 +150,34 @@ func encodeCreateWebhookDefinitionRequest(
 	return nil
 }
 
+func encodePatchTaxonomyConceptRequest(
+	req TaxonomyPatch,
+	r *http.Request,
+) error {
+	const contentType = "application/json-patch+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodePatchTaxonomyConceptSchemeRequest(
+	req TaxonomyPatch,
+	r *http.Request,
+) error {
+	const contentType = "application/json-patch+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodePutAppDefinitionRequest(
 	req *AppDefinitionData,
 	r *http.Request,
@@ -292,6 +320,34 @@ func encodePutSpaceEnablementsRequest(
 
 func encodePutTagRequest(
 	req *TagRequest,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodePutTaxonomyConceptRequest(
+	req *TaxonomyConceptRequest,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodePutTaxonomyConceptSchemeRequest(
+	req *TaxonomyConceptSchemeRequest,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

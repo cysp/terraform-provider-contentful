@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	rn55AllowedHeaders = map[string]string{
+	rn61AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn11AllowedHeaders = map[string]string{
@@ -37,10 +37,22 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type",
 	}
+	rn50AllowedHeaders = map[string]string{
+		"DELETE": "Authorization,X-Contentful-Version",
+		"GET":    "Authorization",
+		"PATCH":  "Authorization,Content-Type,X-Contentful-Version",
+		"PUT":    "Authorization,Content-Type",
+	}
+	rn47AllowedHeaders = map[string]string{
+		"DELETE": "Authorization,X-Contentful-Version",
+		"GET":    "Authorization",
+		"PATCH":  "Authorization,Content-Type,X-Contentful-Version",
+		"PUT":    "Authorization,Content-Type",
+	}
 	rn22AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
-	rn46AllowedHeaders = map[string]string{
+	rn52AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
@@ -53,7 +65,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
-	rn61AllowedHeaders = map[string]string{
+	rn67AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 		"PUT": "Authorization,Content-Type,X-Contentful-Version",
 	}
@@ -72,7 +84,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Marketplace",
 	}
-	rn52AllowedHeaders = map[string]string{
+	rn58AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn6AllowedHeaders = map[string]string{
@@ -80,7 +92,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
-	rn54AllowedHeaders = map[string]string{
+	rn60AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 		"PUT": "Authorization,Content-Type,X-Contentful-Version",
 	}
@@ -97,7 +109,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Content-Type,X-Contentful-Version",
 	}
-	rn62AllowedHeaders = map[string]string{
+	rn68AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
 		"PUT":    "Authorization,X-Contentful-Version",
 	}
@@ -111,7 +123,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Tag-Visibility,X-Contentful-Version",
 	}
-	rn59AllowedHeaders = map[string]string{
+	rn65AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn20AllowedHeaders = map[string]string{
@@ -125,7 +137,7 @@ var (
 	rn23AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type,X-Contentful-Team",
 	}
-	rn48AllowedHeaders = map[string]string{
+	rn54AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type",
@@ -133,21 +145,21 @@ var (
 	rn24AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
-	rn50AllowedHeaders = map[string]string{
+	rn56AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
-	rn51AllowedHeaders = map[string]string{
+	rn57AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn19AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
-	rn57AllowedHeaders = map[string]string{
+	rn63AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn63AllowedHeaders = map[string]string{
+	rn69AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
 )
@@ -219,7 +231,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn55AllowedHeaders,
+							allowedHeaders: rn61AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -478,77 +490,209 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 						}
 
-					case 't': // Prefix: "teams"
+					case 't': // Prefix: "t"
 
-						if l := len("teams"); len(elem) >= l && elem[0:l] == "teams" {
+						if l := len("t"); len(elem) >= l && elem[0:l] == "t" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							switch r.Method {
-							case "POST":
-								s.handleCreateTeamRequest([1]string{
-									args[0],
-								}, elemIsEscaped, w, r)
-							default:
-								s.notAllowed(w, r, notAllowedParams{
-									allowedMethods: "POST",
-									allowedHeaders: rn22AllowedHeaders,
-									acceptPost:     "application/vnd.contentful.management.v1+json",
-									acceptPatch:    "",
-								})
-							}
-
-							return
+							break
 						}
 						switch elem[0] {
-						case '/': // Prefix: "/"
+						case 'a': // Prefix: "axonomy/concept"
 
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							if l := len("axonomy/concept"); len(elem) >= l && elem[0:l] == "axonomy/concept" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
-							// Param: "team_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
+							if len(elem) == 0 {
 								break
 							}
-							args[1] = elem
-							elem = ""
+							switch elem[0] {
+							case '-': // Prefix: "-schemes/"
+
+								if l := len("-schemes/"); len(elem) >= l && elem[0:l] == "-schemes/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "taxonomy_concept_scheme_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch r.Method {
+									case "DELETE":
+										s.handleDeleteTaxonomyConceptSchemeRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "GET":
+										s.handleGetTaxonomyConceptSchemeRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "PATCH":
+										s.handlePatchTaxonomyConceptSchemeRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "PUT":
+										s.handlePutTaxonomyConceptSchemeRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, notAllowedParams{
+											allowedMethods: "DELETE,GET,PATCH,PUT",
+											allowedHeaders: rn50AllowedHeaders,
+											acceptPost:     "",
+											acceptPatch:    "application/json-patch+json",
+										})
+									}
+
+									return
+								}
+
+							case 's': // Prefix: "s/"
+
+								if l := len("s/"); len(elem) >= l && elem[0:l] == "s/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "taxonomy_concept_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch r.Method {
+									case "DELETE":
+										s.handleDeleteTaxonomyConceptRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "GET":
+										s.handleGetTaxonomyConceptRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "PATCH":
+										s.handlePatchTaxonomyConceptRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "PUT":
+										s.handlePutTaxonomyConceptRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, notAllowedParams{
+											allowedMethods: "DELETE,GET,PATCH,PUT",
+											allowedHeaders: rn47AllowedHeaders,
+											acceptPost:     "",
+											acceptPatch:    "application/json-patch+json",
+										})
+									}
+
+									return
+								}
+
+							}
+
+						case 'e': // Prefix: "eams"
+
+							if l := len("eams"); len(elem) >= l && elem[0:l] == "eams" {
+								elem = elem[l:]
+							} else {
+								break
+							}
 
 							if len(elem) == 0 {
-								// Leaf node.
 								switch r.Method {
-								case "DELETE":
-									s.handleDeleteTeamRequest([2]string{
+								case "POST":
+									s.handleCreateTeamRequest([1]string{
 										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								case "GET":
-									s.handleGetTeamRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								case "PUT":
-									s.handlePutTeamRequest([2]string{
-										args[0],
-										args[1],
 									}, elemIsEscaped, w, r)
 								default:
 									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "DELETE,GET,PUT",
-										allowedHeaders: rn46AllowedHeaders,
-										acceptPost:     "",
+										allowedMethods: "POST",
+										allowedHeaders: rn22AllowedHeaders,
+										acceptPost:     "application/vnd.contentful.management.v1+json",
 										acceptPatch:    "",
 									})
 								}
 
 								return
+							}
+							switch elem[0] {
+							case '/': // Prefix: "/"
+
+								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "team_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch r.Method {
+									case "DELETE":
+										s.handleDeleteTeamRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "GET":
+										s.handleGetTeamRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "PUT":
+										s.handlePutTeamRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, notAllowedParams{
+											allowedMethods: "DELETE,GET,PUT",
+											allowedHeaders: rn52AllowedHeaders,
+											acceptPost:     "",
+											acceptPatch:    "",
+										})
+									}
+
+									return
+								}
+
 							}
 
 						}
@@ -699,7 +843,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "GET,PUT",
-										allowedHeaders: rn61AllowedHeaders,
+										allowedHeaders: rn67AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -893,7 +1037,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 											default:
 												s.notAllowed(w, r, notAllowedParams{
 													allowedMethods: "GET",
-													allowedHeaders: rn52AllowedHeaders,
+													allowedHeaders: rn58AllowedHeaders,
 													acceptPost:     "",
 													acceptPatch:    "",
 												})
@@ -989,7 +1133,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 														default:
 															s.notAllowed(w, r, notAllowedParams{
 																allowedMethods: "GET,PUT",
-																allowedHeaders: rn54AllowedHeaders,
+																allowedHeaders: rn60AllowedHeaders,
 																acceptPost:     "",
 																acceptPatch:    "",
 															})
@@ -1158,7 +1302,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 														default:
 															s.notAllowed(w, r, notAllowedParams{
 																allowedMethods: "DELETE,PUT",
-																allowedHeaders: rn62AllowedHeaders,
+																allowedHeaders: rn68AllowedHeaders,
 																acceptPost:     "",
 																acceptPatch:    "",
 															})
@@ -1309,7 +1453,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							default:
 								s.notAllowed(w, r, notAllowedParams{
 									allowedMethods: "GET",
-									allowedHeaders: rn59AllowedHeaders,
+									allowedHeaders: rn65AllowedHeaders,
 									acceptPost:     "",
 									acceptPatch:    "",
 								})
@@ -1457,7 +1601,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "DELETE,GET,PUT",
-										allowedHeaders: rn48AllowedHeaders,
+										allowedHeaders: rn54AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -1532,7 +1676,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "DELETE,GET,PUT",
-										allowedHeaders: rn50AllowedHeaders,
+										allowedHeaders: rn56AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -1562,7 +1706,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn51AllowedHeaders,
+							allowedHeaders: rn57AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -1621,7 +1765,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							default:
 								s.notAllowed(w, r, notAllowedParams{
 									allowedMethods: "GET",
-									allowedHeaders: rn57AllowedHeaders,
+									allowedHeaders: rn63AllowedHeaders,
 									acceptPost:     "",
 									acceptPatch:    "",
 								})
@@ -1648,7 +1792,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "PUT",
-										allowedHeaders: rn63AllowedHeaders,
+										allowedHeaders: rn69AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -2053,80 +2197,230 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 						}
 
-					case 't': // Prefix: "teams"
+					case 't': // Prefix: "t"
 
-						if l := len("teams"); len(elem) >= l && elem[0:l] == "teams" {
+						if l := len("t"); len(elem) >= l && elem[0:l] == "t" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							switch method {
-							case "POST":
-								r.name = CreateTeamOperation
-								r.summary = "Create a team"
-								r.operationID = "createTeam"
-								r.operationGroup = ""
-								r.pathPattern = "/organizations/{organization_id}/teams"
-								r.args = args
-								r.count = 1
-								return r, true
-							default:
-								return
-							}
+							break
 						}
 						switch elem[0] {
-						case '/': // Prefix: "/"
+						case 'a': // Prefix: "axonomy/concept"
 
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							if l := len("axonomy/concept"); len(elem) >= l && elem[0:l] == "axonomy/concept" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
-							// Param: "team_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
+							if len(elem) == 0 {
 								break
 							}
-							args[1] = elem
-							elem = ""
+							switch elem[0] {
+							case '-': // Prefix: "-schemes/"
+
+								if l := len("-schemes/"); len(elem) >= l && elem[0:l] == "-schemes/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "taxonomy_concept_scheme_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch method {
+									case "DELETE":
+										r.name = DeleteTaxonomyConceptSchemeOperation
+										r.summary = "Delete a taxonomy concept scheme"
+										r.operationID = "deleteTaxonomyConceptScheme"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "GET":
+										r.name = GetTaxonomyConceptSchemeOperation
+										r.summary = "Get a taxonomy concept scheme"
+										r.operationID = "getTaxonomyConceptScheme"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "PATCH":
+										r.name = PatchTaxonomyConceptSchemeOperation
+										r.summary = "Update a taxonomy concept scheme"
+										r.operationID = "patchTaxonomyConceptScheme"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "PUT":
+										r.name = PutTaxonomyConceptSchemeOperation
+										r.summary = "Create a taxonomy concept scheme with a caller-defined ID"
+										r.operationID = "putTaxonomyConceptScheme"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									default:
+										return
+									}
+								}
+
+							case 's': // Prefix: "s/"
+
+								if l := len("s/"); len(elem) >= l && elem[0:l] == "s/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "taxonomy_concept_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch method {
+									case "DELETE":
+										r.name = DeleteTaxonomyConceptOperation
+										r.summary = "Delete a taxonomy concept"
+										r.operationID = "deleteTaxonomyConcept"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "GET":
+										r.name = GetTaxonomyConceptOperation
+										r.summary = "Get a taxonomy concept"
+										r.operationID = "getTaxonomyConcept"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "PATCH":
+										r.name = PatchTaxonomyConceptOperation
+										r.summary = "Update a taxonomy concept"
+										r.operationID = "patchTaxonomyConcept"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "PUT":
+										r.name = PutTaxonomyConceptOperation
+										r.summary = "Create a taxonomy concept with a caller-defined ID"
+										r.operationID = "putTaxonomyConcept"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									default:
+										return
+									}
+								}
+
+							}
+
+						case 'e': // Prefix: "eams"
+
+							if l := len("eams"); len(elem) >= l && elem[0:l] == "eams" {
+								elem = elem[l:]
+							} else {
+								break
+							}
 
 							if len(elem) == 0 {
-								// Leaf node.
 								switch method {
-								case "DELETE":
-									r.name = DeleteTeamOperation
-									r.summary = "Delete a team"
-									r.operationID = "deleteTeam"
+								case "POST":
+									r.name = CreateTeamOperation
+									r.summary = "Create a team"
+									r.operationID = "createTeam"
 									r.operationGroup = ""
-									r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
+									r.pathPattern = "/organizations/{organization_id}/teams"
 									r.args = args
-									r.count = 2
-									return r, true
-								case "GET":
-									r.name = GetTeamOperation
-									r.summary = "Get a single team"
-									r.operationID = "getTeam"
-									r.operationGroup = ""
-									r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								case "PUT":
-									r.name = PutTeamOperation
-									r.summary = "Update a single team"
-									r.operationID = "putTeam"
-									r.operationGroup = ""
-									r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
-									r.args = args
-									r.count = 2
+									r.count = 1
 									return r, true
 								default:
 									return
 								}
+							}
+							switch elem[0] {
+							case '/': // Prefix: "/"
+
+								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "team_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch method {
+									case "DELETE":
+										r.name = DeleteTeamOperation
+										r.summary = "Delete a team"
+										r.operationID = "deleteTeam"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "GET":
+										r.name = GetTeamOperation
+										r.summary = "Get a single team"
+										r.operationID = "getTeam"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "PUT":
+										r.name = PutTeamOperation
+										r.summary = "Update a single team"
+										r.operationID = "putTeam"
+										r.operationGroup = ""
+										r.pathPattern = "/organizations/{organization_id}/teams/{team_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									default:
+										return
+									}
+								}
+
 							}
 
 						}
