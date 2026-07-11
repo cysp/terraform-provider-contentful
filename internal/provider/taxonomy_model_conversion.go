@@ -11,6 +11,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -144,6 +145,28 @@ func NewTaxonomyConceptModelFromResponse(ctx context.Context, response cm.Taxono
 		Example: localizedStringValue(ctx, response.Example, &diags), HistoryNote: localizedStringValue(ctx, response.HistoryNote, &diags), ScopeNote: localizedStringValue(ctx, response.ScopeNote, &diags),
 		BroaderConceptIDs: broader, RelatedConceptIDs: related, ConceptSchemeIDs: conceptSchemes,
 	}, diags
+}
+
+func preserveConfiguredLabelMapShape(model *TaxonomyConceptModel, configured TaxonomyConceptModel) {
+	model.AltLabels = labelMapWithConfiguredKeys(configured.AltLabels, model.AltLabels)
+	model.HiddenLabels = labelMapWithConfiguredKeys(configured.HiddenLabels, model.HiddenLabels)
+}
+
+func labelMapWithConfiguredKeys(configured, returned types.Map) types.Map {
+	if configured.IsNull() || configured.IsUnknown() || returned.IsNull() || returned.IsUnknown() {
+		return returned
+	}
+
+	returnedElements := returned.Elements()
+	values := make(map[string]attr.Value, len(configured.Elements()))
+
+	for locale := range configured.Elements() {
+		if value, ok := returnedElements[locale]; ok {
+			values[locale] = value
+		}
+	}
+
+	return types.MapValueMust(types.ListType{ElemType: types.StringType}, values)
 }
 
 func (model TaxonomyConceptSchemeModel) ToRequest(ctx context.Context) (cm.TaxonomyConceptSchemeRequest, diag.Diagnostics) {

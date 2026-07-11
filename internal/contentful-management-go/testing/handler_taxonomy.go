@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -21,10 +22,26 @@ func taxonomyConceptFromRequest(organizationID, id string, req *cm.TaxonomyConce
 
 func updateTaxonomyConcept(concept *cm.TaxonomyConcept, req *cm.TaxonomyConceptRequest) {
 	concept.Sys.Version++
-	concept.URI, concept.PrefLabel, concept.AltLabels, concept.HiddenLabels = req.URI, req.PrefLabel, req.AltLabels, req.HiddenLabels
+	concept.URI, concept.PrefLabel = req.URI, req.PrefLabel
+	concept.AltLabels = normalizeTaxonomyLabels(req.PrefLabel, req.AltLabels)
+	concept.HiddenLabels = normalizeTaxonomyLabels(req.PrefLabel, req.HiddenLabels)
 	concept.Notations, concept.Note, concept.ChangeNote, concept.Definition = req.Notations, req.Note, req.ChangeNote, req.Definition
 	concept.EditorialNote, concept.Example, concept.HistoryNote, concept.ScopeNote = req.EditorialNote, req.Example, req.HistoryNote, req.ScopeNote
 	concept.Broader, concept.Related = req.Broader, req.Related
+}
+
+func normalizeTaxonomyLabels(prefLabels cm.LocalizedString, labels cm.OptLocalizedStringList) cm.OptLocalizedStringList {
+	configured, _ := labels.Get()
+	normalized := make(cm.LocalizedStringList, len(configured))
+	maps.Copy(normalized, configured)
+
+	for locale := range prefLabels {
+		if _, ok := normalized[locale]; !ok {
+			normalized[locale] = []string{}
+		}
+	}
+
+	return cm.NewOptLocalizedStringList(normalized)
 }
 
 func taxonomyConceptSchemeFromRequest(organizationID, id string, req *cm.TaxonomyConceptSchemeRequest) cm.TaxonomyConceptScheme {
