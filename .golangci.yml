@@ -18,6 +18,7 @@ linters:
       ignore-names:
         - i
         - k
+        - ok
         - r
         - t
         - v

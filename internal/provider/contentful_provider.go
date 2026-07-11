@@ -205,6 +205,8 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewRoleResource,
 		NewSpaceEnablementsResource,
 		NewTagResource,
+		NewTaxonomyConceptResource,
+		NewTaxonomyConceptSchemeResource,
 		NewTeamResource,
 		NewTeamSpaceMembershipResource,
 		NewWebhookResource,
