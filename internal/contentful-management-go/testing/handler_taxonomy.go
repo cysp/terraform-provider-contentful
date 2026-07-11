@@ -3,11 +3,18 @@ package cmtesting
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"maps"
 	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+)
+
+var (
+	errInvalidTaxonomyPatchPath   = errors.New("invalid taxonomy patch path")
+	errUnknownTaxonomyPatchPath   = errors.New("unknown taxonomy patch path")
+	errUnsupportedTaxonomyPatchOp = errors.New("unsupported taxonomy patch operation")
 )
 
 func taxonomyConceptFromRequest(organizationID, id string, req *cm.TaxonomyConceptRequest) cm.TaxonomyConcept {
@@ -141,11 +148,22 @@ func applyTaxonomyPatch(current any, patch cm.TaxonomyPatch, destination any) er
 	}
 
 	for _, operation := range patch {
+		if !strings.HasPrefix(operation.Path, "/") || strings.Contains(strings.TrimPrefix(operation.Path, "/"), "/") {
+			return fmt.Errorf("%w: %q", errInvalidTaxonomyPatchPath, operation.Path)
+		}
+
 		key := strings.TrimPrefix(operation.Path, "/")
-		if operation.Op == cm.TaxonomyPatchItemOpRemove {
-			delete(fields, key)
-		} else {
+		if _, ok := fields[key]; !ok {
+			return fmt.Errorf("%w: %q", errUnknownTaxonomyPatchPath, operation.Path)
+		}
+
+		switch operation.Op {
+		case cm.TaxonomyPatchItemOpAdd, cm.TaxonomyPatchItemOpReplace:
 			fields[key] = json.RawMessage(operation.Value)
+		case cm.TaxonomyPatchItemOpRemove:
+			delete(fields, key)
+		default:
+			return fmt.Errorf("%w: %q", errUnsupportedTaxonomyPatchOp, operation.Op)
 		}
 	}
 
