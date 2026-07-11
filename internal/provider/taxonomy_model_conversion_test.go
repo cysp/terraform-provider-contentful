@@ -161,6 +161,24 @@ func nullLocalizedString() cm.OptNilNullableLocalizedString {
 	return value
 }
 
+func TestLabelMapWithConfiguredKeys(t *testing.T) {
+	t.Parallel()
+
+	configured := types.MapValueMust(types.ListType{ElemType: types.StringType}, map[string]attr.Value{
+		"en-GB": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("Chair")}),
+	})
+	returned := types.MapValueMust(types.ListType{ElemType: types.StringType}, map[string]attr.Value{
+		"en-GB": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("Chair")}),
+		"en-US": types.ListValueMust(types.StringType, []attr.Value{}),
+	})
+
+	filtered := labelMapWithConfiguredKeys(configured, returned)
+	assert.Equal(t, map[string]attr.Value{
+		"en-GB": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("Chair")}),
+	}, filtered.Elements())
+	assert.Equal(t, returned, labelMapWithConfiguredKeys(types.MapNull(configured.ElementType(t.Context())), returned))
+}
+
 func TestValidateTaxonomyConceptResponse(t *testing.T) {
 	t.Parallel()
 

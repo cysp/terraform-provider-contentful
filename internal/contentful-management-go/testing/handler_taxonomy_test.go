@@ -22,6 +22,13 @@ func TestTaxonomyHandlerLifecycleAndConstraints(t *testing.T) {
 	parent, ok := parentResponse.(*cm.TaxonomyConcept)
 	require.True(t, ok)
 	require.Equal(t, 1, parent.Sys.Version)
+	altLabels, ok := parent.AltLabels.Get()
+	require.True(t, ok)
+	require.Equal(t, cm.LocalizedStringList{"en-US": {}}, altLabels)
+
+	hiddenLabels, ok := parent.HiddenLabels.Get()
+	require.True(t, ok)
+	require.Equal(t, cm.LocalizedStringList{"en-US": {}}, hiddenLabels)
 
 	selfRequest := cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Self"}, Broader: []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("self")}}
 	selfResponse, err := handler.PutTaxonomyConcept(ctx, &selfRequest, cm.PutTaxonomyConceptParams{OrganizationID: organizationID, TaxonomyConceptID: "self"})

@@ -131,6 +131,7 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 
 	data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, *concept)
 	resp.Diagnostics.Append(modelDiags...)
+	preserveConfiguredLabelMapShape(&data, state)
 
 	data.Timeouts = state.Timeouts
 
@@ -186,6 +187,7 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 	if len(patch) == 0 {
 		data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, *current)
 		resp.Diagnostics.Append(modelDiags...)
+		preserveConfiguredLabelMapShape(&data, plan)
 
 		data.Timeouts = plan.Timeouts
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -213,6 +215,7 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 
 	data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, *concept)
 	resp.Diagnostics.Append(modelDiags...)
+	preserveConfiguredLabelMapShape(&data, plan)
 
 	data.Timeouts = plan.Timeouts
 
@@ -277,6 +280,7 @@ func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.Delet
 func (r *taxonomyConceptResource) setCreateState(ctx context.Context, prior TaxonomyConceptModel, concept cm.TaxonomyConcept, resp *resource.CreateResponse) {
 	data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, concept)
 	resp.Diagnostics.Append(modelDiags...)
+	preserveConfiguredLabelMapShape(&data, prior)
 
 	data.Timeouts = prior.Timeouts
 
