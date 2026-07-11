@@ -195,8 +195,14 @@ func TestValidateTaxonomyConceptResponse(t *testing.T) {
 
 	require.NoError(t, validateTaxonomyConceptResponse(request, response))
 
-	response.AltLabels = cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {}})
+	response.PrefLabel = cm.LocalizedString{"en-GB": "Chair"}
 	err := validateTaxonomyConceptResponse(request, response)
+	require.ErrorIs(t, err, errTaxonomyLocaleNotPreserved)
+
+	response.PrefLabel = cm.LocalizedString{"en-US": "Chair"}
+
+	response.AltLabels = cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {}})
+	err = validateTaxonomyConceptResponse(request, response)
 	require.ErrorIs(t, err, errTaxonomyLocaleNotPreserved)
 
 	response.AltLabels = cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-GB": {"Seat"}, "en-US": {}})
