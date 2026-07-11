@@ -1507,6 +1507,8 @@ func (*ApplicationJSONError) deleteResourceProviderRes()         {}
 func (*ApplicationJSONError) deleteResourceTypeRes()             {}
 func (*ApplicationJSONError) deleteRoleRes()                     {}
 func (*ApplicationJSONError) deleteTagRes()                      {}
+func (*ApplicationJSONError) deleteTaxonomyConceptRes()          {}
+func (*ApplicationJSONError) deleteTaxonomyConceptSchemeRes()    {}
 func (*ApplicationJSONError) deleteTeamRes()                     {}
 func (*ApplicationJSONError) deleteTeamSpaceMembershipRes()      {}
 func (*ApplicationJSONError) deleteWebhookDefinitionRes()        {}
@@ -1531,9 +1533,13 @@ func (*ApplicationJSONError) getResourceTypeRes()                {}
 func (*ApplicationJSONError) getRoleRes()                        {}
 func (*ApplicationJSONError) getSpaceEnablementsRes()            {}
 func (*ApplicationJSONError) getTagRes()                         {}
+func (*ApplicationJSONError) getTaxonomyConceptRes()             {}
+func (*ApplicationJSONError) getTaxonomyConceptSchemeRes()       {}
 func (*ApplicationJSONError) getTeamRes()                        {}
 func (*ApplicationJSONError) getTeamSpaceMembershipRes()         {}
 func (*ApplicationJSONError) getWebhookDefinitionRes()           {}
+func (*ApplicationJSONError) patchTaxonomyConceptRes()           {}
+func (*ApplicationJSONError) patchTaxonomyConceptSchemeRes()     {}
 func (*ApplicationJSONError) publishEntryRes()                   {}
 func (*ApplicationJSONError) putAppDefinitionRes()               {}
 func (*ApplicationJSONError) putAppInstallationRes()             {}
@@ -1546,6 +1552,8 @@ func (*ApplicationJSONError) putResourceProviderRes()            {}
 func (*ApplicationJSONError) putResourceTypeRes()                {}
 func (*ApplicationJSONError) putSpaceEnablementsRes()            {}
 func (*ApplicationJSONError) putTagRes()                         {}
+func (*ApplicationJSONError) putTaxonomyConceptRes()             {}
+func (*ApplicationJSONError) putTaxonomyConceptSchemeRes()       {}
 func (*ApplicationJSONError) putTeamRes()                        {}
 func (*ApplicationJSONError) putTeamSpaceMembershipRes()         {}
 func (*ApplicationJSONError) revokePersonalAccessTokenRes()      {}
@@ -4096,6 +4104,8 @@ func (*ErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ErrorStatusCode) deleteResourceTypeRes()             {}
 func (*ErrorStatusCode) deleteRoleRes()                     {}
 func (*ErrorStatusCode) deleteTagRes()                      {}
+func (*ErrorStatusCode) deleteTaxonomyConceptRes()          {}
+func (*ErrorStatusCode) deleteTaxonomyConceptSchemeRes()    {}
 func (*ErrorStatusCode) deleteTeamRes()                     {}
 func (*ErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
 func (*ErrorStatusCode) deleteWebhookDefinitionRes()        {}
@@ -4120,9 +4130,13 @@ func (*ErrorStatusCode) getResourceTypeRes()                {}
 func (*ErrorStatusCode) getRoleRes()                        {}
 func (*ErrorStatusCode) getSpaceEnablementsRes()            {}
 func (*ErrorStatusCode) getTagRes()                         {}
+func (*ErrorStatusCode) getTaxonomyConceptRes()             {}
+func (*ErrorStatusCode) getTaxonomyConceptSchemeRes()       {}
 func (*ErrorStatusCode) getTeamRes()                        {}
 func (*ErrorStatusCode) getTeamSpaceMembershipRes()         {}
 func (*ErrorStatusCode) getWebhookDefinitionRes()           {}
+func (*ErrorStatusCode) patchTaxonomyConceptRes()           {}
+func (*ErrorStatusCode) patchTaxonomyConceptSchemeRes()     {}
 func (*ErrorStatusCode) publishEntryRes()                   {}
 func (*ErrorStatusCode) putAppDefinitionRes()               {}
 func (*ErrorStatusCode) putAppInstallationRes()             {}
@@ -4135,6 +4149,8 @@ func (*ErrorStatusCode) putResourceProviderRes()            {}
 func (*ErrorStatusCode) putResourceTypeRes()                {}
 func (*ErrorStatusCode) putSpaceEnablementsRes()            {}
 func (*ErrorStatusCode) putTagRes()                         {}
+func (*ErrorStatusCode) putTaxonomyConceptRes()             {}
+func (*ErrorStatusCode) putTaxonomyConceptSchemeRes()       {}
 func (*ErrorStatusCode) putTeamRes()                        {}
 func (*ErrorStatusCode) putTeamSpaceMembershipRes()         {}
 func (*ErrorStatusCode) revokePersonalAccessTokenRes()      {}
@@ -4863,6 +4879,30 @@ func (s *GetMarketplaceAppDefinitionsOKSysType) UnmarshalText(data []byte) error
 	}
 }
 
+// Ref: #/LocalizedString
+type LocalizedString map[string]string
+
+func (s *LocalizedString) init() LocalizedString {
+	m := *s
+	if m == nil {
+		m = map[string]string{}
+		*s = m
+	}
+	return m
+}
+
+// Ref: #/LocalizedStringList
+type LocalizedStringList map[string][]string
+
+func (s *LocalizedStringList) init() LocalizedStringList {
+	m := *s
+	if m == nil {
+		m = map[string][]string{}
+		*s = m
+	}
+	return m
+}
+
 // NewNilString returns new NilString with value set to v.
 func NewNilString(v string) NilString {
 	return NilString{
@@ -4911,24 +4951,38 @@ func (o NilString) Or(d string) string {
 // Ref: #/components/responses/no-content
 type NoContent struct{}
 
-func (*NoContent) deactivateContentTypeRes()     {}
-func (*NoContent) deleteAppDefinitionRes()       {}
-func (*NoContent) deleteAppInstallationRes()     {}
-func (*NoContent) deleteAppSigningSecretRes()    {}
-func (*NoContent) deleteContentTypeRes()         {}
-func (*NoContent) deleteDeliveryAPIKeyRes()      {}
-func (*NoContent) deleteEntryRes()               {}
-func (*NoContent) deleteEnvironmentAliasRes()    {}
-func (*NoContent) deleteEnvironmentRes()         {}
-func (*NoContent) deleteExtensionRes()           {}
-func (*NoContent) deleteResourceProviderRes()    {}
-func (*NoContent) deleteResourceTypeRes()        {}
-func (*NoContent) deleteRoleRes()                {}
-func (*NoContent) deleteTagRes()                 {}
-func (*NoContent) deleteTeamRes()                {}
-func (*NoContent) deleteTeamSpaceMembershipRes() {}
-func (*NoContent) deleteWebhookDefinitionRes()   {}
-func (*NoContent) unpublishEntryRes()            {}
+func (*NoContent) deactivateContentTypeRes()       {}
+func (*NoContent) deleteAppDefinitionRes()         {}
+func (*NoContent) deleteAppInstallationRes()       {}
+func (*NoContent) deleteAppSigningSecretRes()      {}
+func (*NoContent) deleteContentTypeRes()           {}
+func (*NoContent) deleteDeliveryAPIKeyRes()        {}
+func (*NoContent) deleteEntryRes()                 {}
+func (*NoContent) deleteEnvironmentAliasRes()      {}
+func (*NoContent) deleteEnvironmentRes()           {}
+func (*NoContent) deleteExtensionRes()             {}
+func (*NoContent) deleteResourceProviderRes()      {}
+func (*NoContent) deleteResourceTypeRes()          {}
+func (*NoContent) deleteRoleRes()                  {}
+func (*NoContent) deleteTagRes()                   {}
+func (*NoContent) deleteTaxonomyConceptRes()       {}
+func (*NoContent) deleteTaxonomyConceptSchemeRes() {}
+func (*NoContent) deleteTeamRes()                  {}
+func (*NoContent) deleteTeamSpaceMembershipRes()   {}
+func (*NoContent) deleteWebhookDefinitionRes()     {}
+func (*NoContent) unpublishEntryRes()              {}
+
+// Ref: #/NullableLocalizedString
+type NullableLocalizedString map[string]string
+
+func (s *NullableLocalizedString) init() NullableLocalizedString {
+	m := *s
+	if m == nil {
+		m = map[string]string{}
+		*s = m
+	}
+	return m
+}
 
 // NewOptAppBundleLink returns new OptAppBundleLink with value set to v.
 func NewOptAppBundleLink(v AppBundleLink) OptAppBundleLink {
@@ -5758,6 +5812,52 @@ func (o OptInt64) Or(d int64) int64 {
 	return d
 }
 
+// NewOptLocalizedStringList returns new OptLocalizedStringList with value set to v.
+func NewOptLocalizedStringList(v LocalizedStringList) OptLocalizedStringList {
+	return OptLocalizedStringList{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptLocalizedStringList is optional LocalizedStringList.
+type OptLocalizedStringList struct {
+	Value LocalizedStringList
+	Set   bool
+}
+
+// IsSet returns true if OptLocalizedStringList was set.
+func (o OptLocalizedStringList) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptLocalizedStringList) Reset() {
+	var v LocalizedStringList
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptLocalizedStringList) SetTo(v LocalizedStringList) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptLocalizedStringList) Get() (v LocalizedStringList, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptLocalizedStringList) Or(d LocalizedStringList) LocalizedStringList {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilDateTime returns new OptNilDateTime with value set to v.
 func NewOptNilDateTime(v time.Time) OptNilDateTime {
 	return OptNilDateTime{
@@ -6364,6 +6464,74 @@ func (o OptNilInt) Get() (v int, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilInt) Or(d int) int {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilNullableLocalizedString returns new OptNilNullableLocalizedString with value set to v.
+func NewOptNilNullableLocalizedString(v NullableLocalizedString) OptNilNullableLocalizedString {
+	return OptNilNullableLocalizedString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilNullableLocalizedString is optional nullable NullableLocalizedString.
+type OptNilNullableLocalizedString struct {
+	Value NullableLocalizedString
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilNullableLocalizedString was set.
+func (o OptNilNullableLocalizedString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilNullableLocalizedString) Reset() {
+	var v NullableLocalizedString
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilNullableLocalizedString) SetTo(v NullableLocalizedString) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilNullableLocalizedString) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilNullableLocalizedString) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v NullableLocalizedString
+	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilNullableLocalizedString) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilNullableLocalizedString) Get() (v NullableLocalizedString, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilNullableLocalizedString) Or(d NullableLocalizedString) NullableLocalizedString {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -10008,6 +10176,191 @@ func (s *TagSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Merged schema.
+// Ref: #/TaxonomyConcept
+type TaxonomyConcept struct {
+	Sys            TaxonomyConceptSys            `json:"sys"`
+	URI            OptNilString                  `json:"uri"`
+	PrefLabel      LocalizedString               `json:"prefLabel"`
+	AltLabels      OptLocalizedStringList        `json:"altLabels"`
+	HiddenLabels   OptLocalizedStringList        `json:"hiddenLabels"`
+	Notations      []string                      `json:"notations"`
+	Note           OptNilNullableLocalizedString `json:"note"`
+	ChangeNote     OptNilNullableLocalizedString `json:"changeNote"`
+	Definition     OptNilNullableLocalizedString `json:"definition"`
+	EditorialNote  OptNilNullableLocalizedString `json:"editorialNote"`
+	Example        OptNilNullableLocalizedString `json:"example"`
+	HistoryNote    OptNilNullableLocalizedString `json:"historyNote"`
+	ScopeNote      OptNilNullableLocalizedString `json:"scopeNote"`
+	Broader        []TaxonomyConceptLink         `json:"broader"`
+	Related        []TaxonomyConceptLink         `json:"related"`
+	ConceptSchemes []TaxonomyConceptSchemeLink   `json:"conceptSchemes"`
+}
+
+// GetSys returns the value of Sys.
+func (s *TaxonomyConcept) GetSys() TaxonomyConceptSys {
+	return s.Sys
+}
+
+// GetURI returns the value of URI.
+func (s *TaxonomyConcept) GetURI() OptNilString {
+	return s.URI
+}
+
+// GetPrefLabel returns the value of PrefLabel.
+func (s *TaxonomyConcept) GetPrefLabel() LocalizedString {
+	return s.PrefLabel
+}
+
+// GetAltLabels returns the value of AltLabels.
+func (s *TaxonomyConcept) GetAltLabels() OptLocalizedStringList {
+	return s.AltLabels
+}
+
+// GetHiddenLabels returns the value of HiddenLabels.
+func (s *TaxonomyConcept) GetHiddenLabels() OptLocalizedStringList {
+	return s.HiddenLabels
+}
+
+// GetNotations returns the value of Notations.
+func (s *TaxonomyConcept) GetNotations() []string {
+	return s.Notations
+}
+
+// GetNote returns the value of Note.
+func (s *TaxonomyConcept) GetNote() OptNilNullableLocalizedString {
+	return s.Note
+}
+
+// GetChangeNote returns the value of ChangeNote.
+func (s *TaxonomyConcept) GetChangeNote() OptNilNullableLocalizedString {
+	return s.ChangeNote
+}
+
+// GetDefinition returns the value of Definition.
+func (s *TaxonomyConcept) GetDefinition() OptNilNullableLocalizedString {
+	return s.Definition
+}
+
+// GetEditorialNote returns the value of EditorialNote.
+func (s *TaxonomyConcept) GetEditorialNote() OptNilNullableLocalizedString {
+	return s.EditorialNote
+}
+
+// GetExample returns the value of Example.
+func (s *TaxonomyConcept) GetExample() OptNilNullableLocalizedString {
+	return s.Example
+}
+
+// GetHistoryNote returns the value of HistoryNote.
+func (s *TaxonomyConcept) GetHistoryNote() OptNilNullableLocalizedString {
+	return s.HistoryNote
+}
+
+// GetScopeNote returns the value of ScopeNote.
+func (s *TaxonomyConcept) GetScopeNote() OptNilNullableLocalizedString {
+	return s.ScopeNote
+}
+
+// GetBroader returns the value of Broader.
+func (s *TaxonomyConcept) GetBroader() []TaxonomyConceptLink {
+	return s.Broader
+}
+
+// GetRelated returns the value of Related.
+func (s *TaxonomyConcept) GetRelated() []TaxonomyConceptLink {
+	return s.Related
+}
+
+// GetConceptSchemes returns the value of ConceptSchemes.
+func (s *TaxonomyConcept) GetConceptSchemes() []TaxonomyConceptSchemeLink {
+	return s.ConceptSchemes
+}
+
+// SetSys sets the value of Sys.
+func (s *TaxonomyConcept) SetSys(val TaxonomyConceptSys) {
+	s.Sys = val
+}
+
+// SetURI sets the value of URI.
+func (s *TaxonomyConcept) SetURI(val OptNilString) {
+	s.URI = val
+}
+
+// SetPrefLabel sets the value of PrefLabel.
+func (s *TaxonomyConcept) SetPrefLabel(val LocalizedString) {
+	s.PrefLabel = val
+}
+
+// SetAltLabels sets the value of AltLabels.
+func (s *TaxonomyConcept) SetAltLabels(val OptLocalizedStringList) {
+	s.AltLabels = val
+}
+
+// SetHiddenLabels sets the value of HiddenLabels.
+func (s *TaxonomyConcept) SetHiddenLabels(val OptLocalizedStringList) {
+	s.HiddenLabels = val
+}
+
+// SetNotations sets the value of Notations.
+func (s *TaxonomyConcept) SetNotations(val []string) {
+	s.Notations = val
+}
+
+// SetNote sets the value of Note.
+func (s *TaxonomyConcept) SetNote(val OptNilNullableLocalizedString) {
+	s.Note = val
+}
+
+// SetChangeNote sets the value of ChangeNote.
+func (s *TaxonomyConcept) SetChangeNote(val OptNilNullableLocalizedString) {
+	s.ChangeNote = val
+}
+
+// SetDefinition sets the value of Definition.
+func (s *TaxonomyConcept) SetDefinition(val OptNilNullableLocalizedString) {
+	s.Definition = val
+}
+
+// SetEditorialNote sets the value of EditorialNote.
+func (s *TaxonomyConcept) SetEditorialNote(val OptNilNullableLocalizedString) {
+	s.EditorialNote = val
+}
+
+// SetExample sets the value of Example.
+func (s *TaxonomyConcept) SetExample(val OptNilNullableLocalizedString) {
+	s.Example = val
+}
+
+// SetHistoryNote sets the value of HistoryNote.
+func (s *TaxonomyConcept) SetHistoryNote(val OptNilNullableLocalizedString) {
+	s.HistoryNote = val
+}
+
+// SetScopeNote sets the value of ScopeNote.
+func (s *TaxonomyConcept) SetScopeNote(val OptNilNullableLocalizedString) {
+	s.ScopeNote = val
+}
+
+// SetBroader sets the value of Broader.
+func (s *TaxonomyConcept) SetBroader(val []TaxonomyConceptLink) {
+	s.Broader = val
+}
+
+// SetRelated sets the value of Related.
+func (s *TaxonomyConcept) SetRelated(val []TaxonomyConceptLink) {
+	s.Related = val
+}
+
+// SetConceptSchemes sets the value of ConceptSchemes.
+func (s *TaxonomyConcept) SetConceptSchemes(val []TaxonomyConceptSchemeLink) {
+	s.ConceptSchemes = val
+}
+
+func (*TaxonomyConcept) getTaxonomyConceptRes()   {}
+func (*TaxonomyConcept) patchTaxonomyConceptRes() {}
+func (*TaxonomyConcept) putTaxonomyConceptRes()   {}
+
 // Ref: #/TaxonomyConceptLink
 type TaxonomyConceptLink struct {
 	Sys TaxonomyConceptLinkSys `json:"sys"`
@@ -10126,6 +10479,687 @@ func (s *TaxonomyConceptLinkSysType) UnmarshalText(data []byte) error {
 	switch TaxonomyConceptLinkSysType(data) {
 	case TaxonomyConceptLinkSysTypeLink:
 		*s = TaxonomyConceptLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/TaxonomyConceptRequest
+type TaxonomyConceptRequest struct {
+	URI           OptNilString                  `json:"uri"`
+	PrefLabel     LocalizedString               `json:"prefLabel"`
+	AltLabels     OptLocalizedStringList        `json:"altLabels"`
+	HiddenLabels  OptLocalizedStringList        `json:"hiddenLabels"`
+	Notations     []string                      `json:"notations"`
+	Note          OptNilNullableLocalizedString `json:"note"`
+	ChangeNote    OptNilNullableLocalizedString `json:"changeNote"`
+	Definition    OptNilNullableLocalizedString `json:"definition"`
+	EditorialNote OptNilNullableLocalizedString `json:"editorialNote"`
+	Example       OptNilNullableLocalizedString `json:"example"`
+	HistoryNote   OptNilNullableLocalizedString `json:"historyNote"`
+	ScopeNote     OptNilNullableLocalizedString `json:"scopeNote"`
+	Broader       []TaxonomyConceptLink         `json:"broader"`
+	Related       []TaxonomyConceptLink         `json:"related"`
+}
+
+// GetURI returns the value of URI.
+func (s *TaxonomyConceptRequest) GetURI() OptNilString {
+	return s.URI
+}
+
+// GetPrefLabel returns the value of PrefLabel.
+func (s *TaxonomyConceptRequest) GetPrefLabel() LocalizedString {
+	return s.PrefLabel
+}
+
+// GetAltLabels returns the value of AltLabels.
+func (s *TaxonomyConceptRequest) GetAltLabels() OptLocalizedStringList {
+	return s.AltLabels
+}
+
+// GetHiddenLabels returns the value of HiddenLabels.
+func (s *TaxonomyConceptRequest) GetHiddenLabels() OptLocalizedStringList {
+	return s.HiddenLabels
+}
+
+// GetNotations returns the value of Notations.
+func (s *TaxonomyConceptRequest) GetNotations() []string {
+	return s.Notations
+}
+
+// GetNote returns the value of Note.
+func (s *TaxonomyConceptRequest) GetNote() OptNilNullableLocalizedString {
+	return s.Note
+}
+
+// GetChangeNote returns the value of ChangeNote.
+func (s *TaxonomyConceptRequest) GetChangeNote() OptNilNullableLocalizedString {
+	return s.ChangeNote
+}
+
+// GetDefinition returns the value of Definition.
+func (s *TaxonomyConceptRequest) GetDefinition() OptNilNullableLocalizedString {
+	return s.Definition
+}
+
+// GetEditorialNote returns the value of EditorialNote.
+func (s *TaxonomyConceptRequest) GetEditorialNote() OptNilNullableLocalizedString {
+	return s.EditorialNote
+}
+
+// GetExample returns the value of Example.
+func (s *TaxonomyConceptRequest) GetExample() OptNilNullableLocalizedString {
+	return s.Example
+}
+
+// GetHistoryNote returns the value of HistoryNote.
+func (s *TaxonomyConceptRequest) GetHistoryNote() OptNilNullableLocalizedString {
+	return s.HistoryNote
+}
+
+// GetScopeNote returns the value of ScopeNote.
+func (s *TaxonomyConceptRequest) GetScopeNote() OptNilNullableLocalizedString {
+	return s.ScopeNote
+}
+
+// GetBroader returns the value of Broader.
+func (s *TaxonomyConceptRequest) GetBroader() []TaxonomyConceptLink {
+	return s.Broader
+}
+
+// GetRelated returns the value of Related.
+func (s *TaxonomyConceptRequest) GetRelated() []TaxonomyConceptLink {
+	return s.Related
+}
+
+// SetURI sets the value of URI.
+func (s *TaxonomyConceptRequest) SetURI(val OptNilString) {
+	s.URI = val
+}
+
+// SetPrefLabel sets the value of PrefLabel.
+func (s *TaxonomyConceptRequest) SetPrefLabel(val LocalizedString) {
+	s.PrefLabel = val
+}
+
+// SetAltLabels sets the value of AltLabels.
+func (s *TaxonomyConceptRequest) SetAltLabels(val OptLocalizedStringList) {
+	s.AltLabels = val
+}
+
+// SetHiddenLabels sets the value of HiddenLabels.
+func (s *TaxonomyConceptRequest) SetHiddenLabels(val OptLocalizedStringList) {
+	s.HiddenLabels = val
+}
+
+// SetNotations sets the value of Notations.
+func (s *TaxonomyConceptRequest) SetNotations(val []string) {
+	s.Notations = val
+}
+
+// SetNote sets the value of Note.
+func (s *TaxonomyConceptRequest) SetNote(val OptNilNullableLocalizedString) {
+	s.Note = val
+}
+
+// SetChangeNote sets the value of ChangeNote.
+func (s *TaxonomyConceptRequest) SetChangeNote(val OptNilNullableLocalizedString) {
+	s.ChangeNote = val
+}
+
+// SetDefinition sets the value of Definition.
+func (s *TaxonomyConceptRequest) SetDefinition(val OptNilNullableLocalizedString) {
+	s.Definition = val
+}
+
+// SetEditorialNote sets the value of EditorialNote.
+func (s *TaxonomyConceptRequest) SetEditorialNote(val OptNilNullableLocalizedString) {
+	s.EditorialNote = val
+}
+
+// SetExample sets the value of Example.
+func (s *TaxonomyConceptRequest) SetExample(val OptNilNullableLocalizedString) {
+	s.Example = val
+}
+
+// SetHistoryNote sets the value of HistoryNote.
+func (s *TaxonomyConceptRequest) SetHistoryNote(val OptNilNullableLocalizedString) {
+	s.HistoryNote = val
+}
+
+// SetScopeNote sets the value of ScopeNote.
+func (s *TaxonomyConceptRequest) SetScopeNote(val OptNilNullableLocalizedString) {
+	s.ScopeNote = val
+}
+
+// SetBroader sets the value of Broader.
+func (s *TaxonomyConceptRequest) SetBroader(val []TaxonomyConceptLink) {
+	s.Broader = val
+}
+
+// SetRelated sets the value of Related.
+func (s *TaxonomyConceptRequest) SetRelated(val []TaxonomyConceptLink) {
+	s.Related = val
+}
+
+// Merged schema.
+// Ref: #/TaxonomyConceptScheme
+type TaxonomyConceptScheme struct {
+	Sys           TaxonomyConceptSchemeSys      `json:"sys"`
+	URI           OptNilString                  `json:"uri"`
+	PrefLabel     LocalizedString               `json:"prefLabel"`
+	Definition    OptNilNullableLocalizedString `json:"definition"`
+	TopConcepts   []TaxonomyConceptLink         `json:"topConcepts"`
+	Concepts      []TaxonomyConceptLink         `json:"concepts"`
+	TotalConcepts int                           `json:"totalConcepts"`
+}
+
+// GetSys returns the value of Sys.
+func (s *TaxonomyConceptScheme) GetSys() TaxonomyConceptSchemeSys {
+	return s.Sys
+}
+
+// GetURI returns the value of URI.
+func (s *TaxonomyConceptScheme) GetURI() OptNilString {
+	return s.URI
+}
+
+// GetPrefLabel returns the value of PrefLabel.
+func (s *TaxonomyConceptScheme) GetPrefLabel() LocalizedString {
+	return s.PrefLabel
+}
+
+// GetDefinition returns the value of Definition.
+func (s *TaxonomyConceptScheme) GetDefinition() OptNilNullableLocalizedString {
+	return s.Definition
+}
+
+// GetTopConcepts returns the value of TopConcepts.
+func (s *TaxonomyConceptScheme) GetTopConcepts() []TaxonomyConceptLink {
+	return s.TopConcepts
+}
+
+// GetConcepts returns the value of Concepts.
+func (s *TaxonomyConceptScheme) GetConcepts() []TaxonomyConceptLink {
+	return s.Concepts
+}
+
+// GetTotalConcepts returns the value of TotalConcepts.
+func (s *TaxonomyConceptScheme) GetTotalConcepts() int {
+	return s.TotalConcepts
+}
+
+// SetSys sets the value of Sys.
+func (s *TaxonomyConceptScheme) SetSys(val TaxonomyConceptSchemeSys) {
+	s.Sys = val
+}
+
+// SetURI sets the value of URI.
+func (s *TaxonomyConceptScheme) SetURI(val OptNilString) {
+	s.URI = val
+}
+
+// SetPrefLabel sets the value of PrefLabel.
+func (s *TaxonomyConceptScheme) SetPrefLabel(val LocalizedString) {
+	s.PrefLabel = val
+}
+
+// SetDefinition sets the value of Definition.
+func (s *TaxonomyConceptScheme) SetDefinition(val OptNilNullableLocalizedString) {
+	s.Definition = val
+}
+
+// SetTopConcepts sets the value of TopConcepts.
+func (s *TaxonomyConceptScheme) SetTopConcepts(val []TaxonomyConceptLink) {
+	s.TopConcepts = val
+}
+
+// SetConcepts sets the value of Concepts.
+func (s *TaxonomyConceptScheme) SetConcepts(val []TaxonomyConceptLink) {
+	s.Concepts = val
+}
+
+// SetTotalConcepts sets the value of TotalConcepts.
+func (s *TaxonomyConceptScheme) SetTotalConcepts(val int) {
+	s.TotalConcepts = val
+}
+
+func (*TaxonomyConceptScheme) getTaxonomyConceptSchemeRes()   {}
+func (*TaxonomyConceptScheme) patchTaxonomyConceptSchemeRes() {}
+func (*TaxonomyConceptScheme) putTaxonomyConceptSchemeRes()   {}
+
+// Ref: #/TaxonomyConceptSchemeLink
+type TaxonomyConceptSchemeLink struct {
+	Sys TaxonomyConceptSchemeLinkSys `json:"sys"`
+}
+
+// GetSys returns the value of Sys.
+func (s *TaxonomyConceptSchemeLink) GetSys() TaxonomyConceptSchemeLinkSys {
+	return s.Sys
+}
+
+// SetSys sets the value of Sys.
+func (s *TaxonomyConceptSchemeLink) SetSys(val TaxonomyConceptSchemeLinkSys) {
+	s.Sys = val
+}
+
+// Merged schema.
+type TaxonomyConceptSchemeLinkSys struct {
+	// Merged property.
+	Type TaxonomyConceptSchemeLinkSysType `json:"type"`
+	ID   string                           `json:"id"`
+	// Merged property.
+	LinkType TaxonomyConceptSchemeLinkSysLinkType `json:"linkType"`
+}
+
+// GetType returns the value of Type.
+func (s *TaxonomyConceptSchemeLinkSys) GetType() TaxonomyConceptSchemeLinkSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TaxonomyConceptSchemeLinkSys) GetID() string {
+	return s.ID
+}
+
+// GetLinkType returns the value of LinkType.
+func (s *TaxonomyConceptSchemeLinkSys) GetLinkType() TaxonomyConceptSchemeLinkSysLinkType {
+	return s.LinkType
+}
+
+// SetType sets the value of Type.
+func (s *TaxonomyConceptSchemeLinkSys) SetType(val TaxonomyConceptSchemeLinkSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TaxonomyConceptSchemeLinkSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetLinkType sets the value of LinkType.
+func (s *TaxonomyConceptSchemeLinkSys) SetLinkType(val TaxonomyConceptSchemeLinkSysLinkType) {
+	s.LinkType = val
+}
+
+// Merged schema.
+type TaxonomyConceptSchemeLinkSysLinkType string
+
+const (
+	TaxonomyConceptSchemeLinkSysLinkTypeTaxonomyConceptScheme TaxonomyConceptSchemeLinkSysLinkType = "TaxonomyConceptScheme"
+)
+
+// AllValues returns all TaxonomyConceptSchemeLinkSysLinkType values.
+func (TaxonomyConceptSchemeLinkSysLinkType) AllValues() []TaxonomyConceptSchemeLinkSysLinkType {
+	return []TaxonomyConceptSchemeLinkSysLinkType{
+		TaxonomyConceptSchemeLinkSysLinkTypeTaxonomyConceptScheme,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TaxonomyConceptSchemeLinkSysLinkType) MarshalText() ([]byte, error) {
+	switch s {
+	case TaxonomyConceptSchemeLinkSysLinkTypeTaxonomyConceptScheme:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TaxonomyConceptSchemeLinkSysLinkType) UnmarshalText(data []byte) error {
+	switch TaxonomyConceptSchemeLinkSysLinkType(data) {
+	case TaxonomyConceptSchemeLinkSysLinkTypeTaxonomyConceptScheme:
+		*s = TaxonomyConceptSchemeLinkSysLinkTypeTaxonomyConceptScheme
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type TaxonomyConceptSchemeLinkSysType string
+
+const (
+	TaxonomyConceptSchemeLinkSysTypeLink TaxonomyConceptSchemeLinkSysType = "Link"
+)
+
+// AllValues returns all TaxonomyConceptSchemeLinkSysType values.
+func (TaxonomyConceptSchemeLinkSysType) AllValues() []TaxonomyConceptSchemeLinkSysType {
+	return []TaxonomyConceptSchemeLinkSysType{
+		TaxonomyConceptSchemeLinkSysTypeLink,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TaxonomyConceptSchemeLinkSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TaxonomyConceptSchemeLinkSysTypeLink:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TaxonomyConceptSchemeLinkSysType) UnmarshalText(data []byte) error {
+	switch TaxonomyConceptSchemeLinkSysType(data) {
+	case TaxonomyConceptSchemeLinkSysTypeLink:
+		*s = TaxonomyConceptSchemeLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/TaxonomyConceptSchemeRequest
+type TaxonomyConceptSchemeRequest struct {
+	URI         OptNilString                  `json:"uri"`
+	PrefLabel   LocalizedString               `json:"prefLabel"`
+	Definition  OptNilNullableLocalizedString `json:"definition"`
+	TopConcepts []TaxonomyConceptLink         `json:"topConcepts"`
+	Concepts    []TaxonomyConceptLink         `json:"concepts"`
+}
+
+// GetURI returns the value of URI.
+func (s *TaxonomyConceptSchemeRequest) GetURI() OptNilString {
+	return s.URI
+}
+
+// GetPrefLabel returns the value of PrefLabel.
+func (s *TaxonomyConceptSchemeRequest) GetPrefLabel() LocalizedString {
+	return s.PrefLabel
+}
+
+// GetDefinition returns the value of Definition.
+func (s *TaxonomyConceptSchemeRequest) GetDefinition() OptNilNullableLocalizedString {
+	return s.Definition
+}
+
+// GetTopConcepts returns the value of TopConcepts.
+func (s *TaxonomyConceptSchemeRequest) GetTopConcepts() []TaxonomyConceptLink {
+	return s.TopConcepts
+}
+
+// GetConcepts returns the value of Concepts.
+func (s *TaxonomyConceptSchemeRequest) GetConcepts() []TaxonomyConceptLink {
+	return s.Concepts
+}
+
+// SetURI sets the value of URI.
+func (s *TaxonomyConceptSchemeRequest) SetURI(val OptNilString) {
+	s.URI = val
+}
+
+// SetPrefLabel sets the value of PrefLabel.
+func (s *TaxonomyConceptSchemeRequest) SetPrefLabel(val LocalizedString) {
+	s.PrefLabel = val
+}
+
+// SetDefinition sets the value of Definition.
+func (s *TaxonomyConceptSchemeRequest) SetDefinition(val OptNilNullableLocalizedString) {
+	s.Definition = val
+}
+
+// SetTopConcepts sets the value of TopConcepts.
+func (s *TaxonomyConceptSchemeRequest) SetTopConcepts(val []TaxonomyConceptLink) {
+	s.TopConcepts = val
+}
+
+// SetConcepts sets the value of Concepts.
+func (s *TaxonomyConceptSchemeRequest) SetConcepts(val []TaxonomyConceptLink) {
+	s.Concepts = val
+}
+
+// Merged schema.
+type TaxonomyConceptSchemeSys struct {
+	Organization OrganizationLink `json:"organization"`
+	// Merged property.
+	Type    TaxonomyConceptSchemeSysType `json:"type"`
+	ID      string                       `json:"id"`
+	Version int                          `json:"version"`
+}
+
+// GetOrganization returns the value of Organization.
+func (s *TaxonomyConceptSchemeSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetType returns the value of Type.
+func (s *TaxonomyConceptSchemeSys) GetType() TaxonomyConceptSchemeSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TaxonomyConceptSchemeSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *TaxonomyConceptSchemeSys) GetVersion() int {
+	return s.Version
+}
+
+// SetOrganization sets the value of Organization.
+func (s *TaxonomyConceptSchemeSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetType sets the value of Type.
+func (s *TaxonomyConceptSchemeSys) SetType(val TaxonomyConceptSchemeSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TaxonomyConceptSchemeSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *TaxonomyConceptSchemeSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// Merged schema.
+type TaxonomyConceptSchemeSysType string
+
+const (
+	TaxonomyConceptSchemeSysTypeTaxonomyConceptScheme TaxonomyConceptSchemeSysType = "TaxonomyConceptScheme"
+)
+
+// AllValues returns all TaxonomyConceptSchemeSysType values.
+func (TaxonomyConceptSchemeSysType) AllValues() []TaxonomyConceptSchemeSysType {
+	return []TaxonomyConceptSchemeSysType{
+		TaxonomyConceptSchemeSysTypeTaxonomyConceptScheme,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TaxonomyConceptSchemeSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TaxonomyConceptSchemeSysTypeTaxonomyConceptScheme:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TaxonomyConceptSchemeSysType) UnmarshalText(data []byte) error {
+	switch TaxonomyConceptSchemeSysType(data) {
+	case TaxonomyConceptSchemeSysTypeTaxonomyConceptScheme:
+		*s = TaxonomyConceptSchemeSysTypeTaxonomyConceptScheme
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+type TaxonomyConceptSys struct {
+	Organization OrganizationLink `json:"organization"`
+	// Merged property.
+	Type    TaxonomyConceptSysType `json:"type"`
+	ID      string                 `json:"id"`
+	Version int                    `json:"version"`
+}
+
+// GetOrganization returns the value of Organization.
+func (s *TaxonomyConceptSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetType returns the value of Type.
+func (s *TaxonomyConceptSys) GetType() TaxonomyConceptSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TaxonomyConceptSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *TaxonomyConceptSys) GetVersion() int {
+	return s.Version
+}
+
+// SetOrganization sets the value of Organization.
+func (s *TaxonomyConceptSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetType sets the value of Type.
+func (s *TaxonomyConceptSys) SetType(val TaxonomyConceptSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TaxonomyConceptSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *TaxonomyConceptSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// Merged schema.
+type TaxonomyConceptSysType string
+
+const (
+	TaxonomyConceptSysTypeTaxonomyConcept TaxonomyConceptSysType = "TaxonomyConcept"
+)
+
+// AllValues returns all TaxonomyConceptSysType values.
+func (TaxonomyConceptSysType) AllValues() []TaxonomyConceptSysType {
+	return []TaxonomyConceptSysType{
+		TaxonomyConceptSysTypeTaxonomyConcept,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TaxonomyConceptSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TaxonomyConceptSysTypeTaxonomyConcept:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TaxonomyConceptSysType) UnmarshalText(data []byte) error {
+	switch TaxonomyConceptSysType(data) {
+	case TaxonomyConceptSysTypeTaxonomyConcept:
+		*s = TaxonomyConceptSysTypeTaxonomyConcept
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type TaxonomyPatch []TaxonomyPatchItem
+
+type TaxonomyPatchItem struct {
+	Op    TaxonomyPatchItemOp `json:"op"`
+	Path  string              `json:"path"`
+	Value jx.Raw              `json:"value"`
+}
+
+// GetOp returns the value of Op.
+func (s *TaxonomyPatchItem) GetOp() TaxonomyPatchItemOp {
+	return s.Op
+}
+
+// GetPath returns the value of Path.
+func (s *TaxonomyPatchItem) GetPath() string {
+	return s.Path
+}
+
+// GetValue returns the value of Value.
+func (s *TaxonomyPatchItem) GetValue() jx.Raw {
+	return s.Value
+}
+
+// SetOp sets the value of Op.
+func (s *TaxonomyPatchItem) SetOp(val TaxonomyPatchItemOp) {
+	s.Op = val
+}
+
+// SetPath sets the value of Path.
+func (s *TaxonomyPatchItem) SetPath(val string) {
+	s.Path = val
+}
+
+// SetValue sets the value of Value.
+func (s *TaxonomyPatchItem) SetValue(val jx.Raw) {
+	s.Value = val
+}
+
+type TaxonomyPatchItemOp string
+
+const (
+	TaxonomyPatchItemOpAdd     TaxonomyPatchItemOp = "add"
+	TaxonomyPatchItemOpReplace TaxonomyPatchItemOp = "replace"
+	TaxonomyPatchItemOpRemove  TaxonomyPatchItemOp = "remove"
+)
+
+// AllValues returns all TaxonomyPatchItemOp values.
+func (TaxonomyPatchItemOp) AllValues() []TaxonomyPatchItemOp {
+	return []TaxonomyPatchItemOp{
+		TaxonomyPatchItemOpAdd,
+		TaxonomyPatchItemOpReplace,
+		TaxonomyPatchItemOpRemove,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TaxonomyPatchItemOp) MarshalText() ([]byte, error) {
+	switch s {
+	case TaxonomyPatchItemOpAdd:
+		return []byte(s), nil
+	case TaxonomyPatchItemOpReplace:
+		return []byte(s), nil
+	case TaxonomyPatchItemOpRemove:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TaxonomyPatchItemOp) UnmarshalText(data []byte) error {
+	switch TaxonomyPatchItemOp(data) {
+	case TaxonomyPatchItemOpAdd:
+		*s = TaxonomyPatchItemOpAdd
+		return nil
+	case TaxonomyPatchItemOpReplace:
+		*s = TaxonomyPatchItemOpReplace
+		return nil
+	case TaxonomyPatchItemOpRemove:
+		*s = TaxonomyPatchItemOpRemove
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

@@ -1,0 +1,40 @@
+TaxonomyConceptRequest:
+  type: object
+  properties:
+    uri:
+      type: string
+      nullable: true
+    prefLabel:
+      $ref: "../taxonomy/localized.yml#/LocalizedString"
+    altLabels:
+      $ref: "../taxonomy/localized.yml#/LocalizedStringList"
+    hiddenLabels:
+      $ref: "../taxonomy/localized.yml#/LocalizedStringList"
+    notations:
+      type: array
+      items:
+        type: string
+    note:
+      $ref: "../taxonomy/localized.yml#/NullableLocalizedString"
+    changeNote:
+      $ref: "../taxonomy/localized.yml#/NullableLocalizedString"
+    definition:
+      $ref: "../taxonomy/localized.yml#/NullableLocalizedString"
+    editorialNote:
+      $ref: "../taxonomy/localized.yml#/NullableLocalizedString"
+    example:
+      $ref: "../taxonomy/localized.yml#/NullableLocalizedString"
+    historyNote:
+      $ref: "../taxonomy/localized.yml#/NullableLocalizedString"
+    scopeNote:
+      $ref: "../taxonomy/localized.yml#/NullableLocalizedString"
+    broader:
+      type: array
+      items:
+        $ref: "../links/taxonomy-concept-link.yml#/TaxonomyConceptLink"
+    related:
+      type: array
+      items:
+        $ref: "../links/taxonomy-concept-link.yml#/TaxonomyConceptLink"
+  required:
+    - prefLabel

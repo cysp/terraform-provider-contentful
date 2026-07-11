@@ -90,6 +90,18 @@ components:
       required: true
       schema:
         type: string
+    taxonomy_concept_id:
+      in: path
+      name: taxonomy_concept_id
+      required: true
+      schema:
+        type: string
+    taxonomy_concept_scheme_id:
+      in: path
+      name: taxonomy_concept_scheme_id
+      required: true
+      schema:
+        type: string
     team_id:
       in: path
       name: team_id
@@ -461,6 +473,150 @@ paths:
     delete:
       operationId: deleteAppSigningSecret
       summary: Delete an app signing secret
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/taxonomy_concept_scheme_id"
+    get:
+      operationId: getTaxonomyConceptScheme
+      summary: Get a taxonomy concept scheme
+      responses:
+        200:
+          description: A taxonomy concept scheme
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/taxonomy-concept-scheme/taxonomy-concept-scheme.yml#/TaxonomyConceptScheme"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putTaxonomyConceptScheme
+      summary: Create a taxonomy concept scheme with a caller-defined ID
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/taxonomy-concept-scheme/request.yml#/TaxonomyConceptSchemeRequest"
+      responses:
+        201:
+          description: A taxonomy concept scheme
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/taxonomy-concept-scheme/taxonomy-concept-scheme.yml#/TaxonomyConceptScheme"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    patch:
+      operationId: patchTaxonomyConceptScheme
+      summary: Update a taxonomy concept scheme
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version-required"
+      requestBody:
+        required: true
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: "./schemas/taxonomy/patch.yml#/TaxonomyPatch"
+      responses:
+        200:
+          description: A taxonomy concept scheme
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/taxonomy-concept-scheme/taxonomy-concept-scheme.yml#/TaxonomyConceptScheme"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteTaxonomyConceptScheme
+      summary: Delete a taxonomy concept scheme
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version-required"
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/taxonomy_concept_id"
+    get:
+      operationId: getTaxonomyConcept
+      summary: Get a taxonomy concept
+      responses:
+        200:
+          description: A taxonomy concept
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/taxonomy-concept/taxonomy-concept.yml#/TaxonomyConcept"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putTaxonomyConcept
+      summary: Create a taxonomy concept with a caller-defined ID
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/taxonomy-concept/request.yml#/TaxonomyConceptRequest"
+      responses:
+        201:
+          description: A taxonomy concept
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/taxonomy-concept/taxonomy-concept.yml#/TaxonomyConcept"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    patch:
+      operationId: patchTaxonomyConcept
+      summary: Update a taxonomy concept
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version-required"
+      requestBody:
+        required: true
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: "./schemas/taxonomy/patch.yml#/TaxonomyPatch"
+      responses:
+        200:
+          description: A taxonomy concept
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/taxonomy-concept/taxonomy-concept.yml#/TaxonomyConcept"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteTaxonomyConcept
+      summary: Delete a taxonomy concept
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version-required"
       responses:
         204:
           $ref: "#/components/responses/no-content"

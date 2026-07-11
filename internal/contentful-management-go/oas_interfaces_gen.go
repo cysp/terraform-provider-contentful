@@ -101,6 +101,14 @@ type DeleteTagRes interface {
 	deleteTagRes()
 }
 
+type DeleteTaxonomyConceptRes interface {
+	deleteTaxonomyConceptRes()
+}
+
+type DeleteTaxonomyConceptSchemeRes interface {
+	deleteTaxonomyConceptSchemeRes()
+}
+
 type DeleteTeamRes interface {
 	deleteTeamRes()
 }
@@ -197,6 +205,14 @@ type GetTagRes interface {
 	getTagRes()
 }
 
+type GetTaxonomyConceptRes interface {
+	getTaxonomyConceptRes()
+}
+
+type GetTaxonomyConceptSchemeRes interface {
+	getTaxonomyConceptSchemeRes()
+}
+
 type GetTeamRes interface {
 	getTeamRes()
 }
@@ -207,6 +223,14 @@ type GetTeamSpaceMembershipRes interface {
 
 type GetWebhookDefinitionRes interface {
 	getWebhookDefinitionRes()
+}
+
+type PatchTaxonomyConceptRes interface {
+	patchTaxonomyConceptRes()
+}
+
+type PatchTaxonomyConceptSchemeRes interface {
+	patchTaxonomyConceptSchemeRes()
 }
 
 type PublishEntryRes interface {
@@ -255,6 +279,14 @@ type PutSpaceEnablementsRes interface {
 
 type PutTagRes interface {
 	putTagRes()
+}
+
+type PutTaxonomyConceptRes interface {
+	putTaxonomyConceptRes()
+}
+
+type PutTaxonomyConceptSchemeRes interface {
+	putTaxonomyConceptSchemeRes()
 }
 
 type PutTeamRes interface {

@@ -158,6 +158,18 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}
 	DeleteTag(ctx context.Context, params DeleteTagParams) (DeleteTagRes, error)
+	// DeleteTaxonomyConcept implements deleteTaxonomyConcept operation.
+	//
+	// Delete a taxonomy concept.
+	//
+	// DELETE /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+	DeleteTaxonomyConcept(ctx context.Context, params DeleteTaxonomyConceptParams) (DeleteTaxonomyConceptRes, error)
+	// DeleteTaxonomyConceptScheme implements deleteTaxonomyConceptScheme operation.
+	//
+	// Delete a taxonomy concept scheme.
+	//
+	// DELETE /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+	DeleteTaxonomyConceptScheme(ctx context.Context, params DeleteTaxonomyConceptSchemeParams) (DeleteTaxonomyConceptSchemeRes, error)
 	// DeleteTeam implements deleteTeam operation.
 	//
 	// Delete a team.
@@ -302,6 +314,18 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}
 	GetTag(ctx context.Context, params GetTagParams) (GetTagRes, error)
+	// GetTaxonomyConcept implements getTaxonomyConcept operation.
+	//
+	// Get a taxonomy concept.
+	//
+	// GET /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+	GetTaxonomyConcept(ctx context.Context, params GetTaxonomyConceptParams) (GetTaxonomyConceptRes, error)
+	// GetTaxonomyConceptScheme implements getTaxonomyConceptScheme operation.
+	//
+	// Get a taxonomy concept scheme.
+	//
+	// GET /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+	GetTaxonomyConceptScheme(ctx context.Context, params GetTaxonomyConceptSchemeParams) (GetTaxonomyConceptSchemeRes, error)
 	// GetTeam implements getTeam operation.
 	//
 	// Get a single team.
@@ -320,6 +344,18 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (GetWebhookDefinitionRes, error)
+	// PatchTaxonomyConcept implements patchTaxonomyConcept operation.
+	//
+	// Update a taxonomy concept.
+	//
+	// PATCH /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+	PatchTaxonomyConcept(ctx context.Context, req TaxonomyPatch, params PatchTaxonomyConceptParams) (PatchTaxonomyConceptRes, error)
+	// PatchTaxonomyConceptScheme implements patchTaxonomyConceptScheme operation.
+	//
+	// Update a taxonomy concept scheme.
+	//
+	// PATCH /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+	PatchTaxonomyConceptScheme(ctx context.Context, req TaxonomyPatch, params PatchTaxonomyConceptSchemeParams) (PatchTaxonomyConceptSchemeRes, error)
 	// PublishEntry implements publishEntry operation.
 	//
 	// Publish an entry.
@@ -392,6 +428,18 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/tags/{tag_id}
 	PutTag(ctx context.Context, req *TagRequest, params PutTagParams) (PutTagRes, error)
+	// PutTaxonomyConcept implements putTaxonomyConcept operation.
+	//
+	// Create a taxonomy concept with a caller-defined ID.
+	//
+	// PUT /organizations/{organization_id}/taxonomy/concepts/{taxonomy_concept_id}
+	PutTaxonomyConcept(ctx context.Context, req *TaxonomyConceptRequest, params PutTaxonomyConceptParams) (PutTaxonomyConceptRes, error)
+	// PutTaxonomyConceptScheme implements putTaxonomyConceptScheme operation.
+	//
+	// Create a taxonomy concept scheme with a caller-defined ID.
+	//
+	// PUT /organizations/{organization_id}/taxonomy/concept-schemes/{taxonomy_concept_scheme_id}
+	PutTaxonomyConceptScheme(ctx context.Context, req *TaxonomyConceptSchemeRequest, params PutTaxonomyConceptSchemeParams) (PutTaxonomyConceptSchemeRes, error)
 	// PutTeam implements putTeam operation.
 	//
 	// Update a single team.
