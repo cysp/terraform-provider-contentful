@@ -10,9 +10,7 @@ This note catalogues settings and resource families exposed by the Contentful we
 - the provider registrations in [`internal/provider/contentful_provider.go`](../../internal/provider/contentful_provider.go); and
 - first-party Contentful API and Help Center documentation available on the observation date.
 
-It is an exploration record, not an assertion that every private web-app endpoint is a supported public API. The initial survey was read-only.
-
-After the initial read-only survey, two low-impact settings were changed and immediately restored through the web app to observe their write contracts. The mutation evidence is recorded below. No access-control, membership, SSO, deletion, billing, secret, embargoed-asset, or publishing setting was changed.
+This is the final evidence catalogue, not an assertion that every private web-app endpoint is a supported public API. Most observations were read-only. Two low-impact settings were changed and immediately restored to characterize their write contracts. No access-control, membership, SSO, deletion, billing, secret, embargoed-asset, or publishing setting was changed.
 
 All organization, space, environment, user, account, and content identifiers are symbolic placeholders. Examples preserve exact API field names and protocol enum values only where their spelling is part of the finding. No response bodies containing customer or personal data are reproduced.
 
@@ -32,11 +30,11 @@ The provider currently registers these 21 Terraform resource types:
 
 `app_definition`, `app_signing_secret`, `app_installation`, `content_type`, `delivery_api_key`, `editor_interface`, `environment_alias`, `environment`, `entry`, `extension`, `personal_access_token`, `resource_provider`, `resource_type`, `role`, `space_enablements`, `tag`, `taxonomy_concept`, `taxonomy_concept_scheme`, `team`, `team_space_membership`, and `webhook`.
 
-The following settings surfaced in the space settings menu during the live session:
+The primary-environment settings menu exposed:
 
 `Locales`, `Tags`, `Home`, `Content preview`, `General settings`, `Users`, `Roles`, `Environments`, `API keys`, `CMA tokens`, `Embargoed assets`, `Webhooks`, and `Usage`.
 
-That list came from the primary environment. In a non-primary environment, the menu was narrower: `Locales`, `Tags`, `Home`, `Content preview`, `Environments`, `API keys`, and `CMA tokens`. `General settings`, `Users`, `Roles`, `Embargoed assets`, `Webhooks`, and `Usage` were absent. This is UI evidence that the omitted panes are not environment-local; it is not by itself an API contract.
+The non-primary-environment menu exposed only `Locales`, `Tags`, `Home`, `Content preview`, `Environments`, `API keys`, and `CMA tokens`. `General settings`, `Users`, `Roles`, `Embargoed assets`, `Webhooks`, and `Usage` were absent. This is UI evidence that the omitted panes are not environment-local; it is not by itself an API contract.
 
 The organization settings UI also exposed mutable organization name, granular environment permissions, default language, security-notification email addresses, and SSO configuration.
 
@@ -65,7 +63,7 @@ The organization settings UI also exposed mutable organization name, granular en
 
 ## Non-primary-environment path survey
 
-A second read-only Safari Web Inspector pass loaded the settings panes from a non-primary environment. It confirmed that the environment shown in the web-app route is also present in the CMA paths for environment-local resources; the environment was not merely client-side navigation context.
+Read-only Safari Web Inspector captures from a non-primary environment confirmed that the environment shown in the web-app route is also present in the CMA paths for environment-local resources; the environment was not merely client-side navigation context.
 
 All paths below are symbolic. Query values are retained only when they describe the observed collection request rather than a customer identifier.
 
@@ -90,7 +88,7 @@ No mutation was performed during this non-primary-environment pass. In particula
 
 ### Preview mode through the observed shortened UI Config route
 
-The preview mode exposed on the primary-environment settings page was switched from live preview to new-tab preview and then restored to live preview. Both operations succeeded and the restored state was verified in the UI. A later read-only pass from a non-primary environment used the documented environment-explicit UI Config path. Together with the public contract, this establishes that UI Config is environment-scoped; the mutation capture still characterizes only the shortened primary-environment route.
+A reversible primary-environment preview-mode change succeeded through the shortened UI Config route, and restoration was verified in the UI. The public contract and a non-primary-environment capture both use the environment-explicit UI Config path. UI Config is therefore environment-scoped, while the mutation evidence characterizes only the shortened primary-environment route.
 
 The web app used:
 
@@ -148,7 +146,7 @@ The request body was a full replacement-shaped document containing:
 
 Multiple content types using the same URL were represented as separate configuration objects. Responses additionally included `contentType` and `sys` metadata.
 
-The initial update sent the current resource version and returned its successor. The restoration sent that successor and returned the next version. This establishes optimistic versioning for updates without retaining concrete observed values, but does not establish a supported public contract. Browser-session authorization, create/delete semantics, ordering, error behavior, and personal-access-token compatibility remain unverified.
+Each update sent the current resource version and returned its successor; the restoration used the version returned by the preceding change. This establishes optimistic versioning for updates without retaining concrete observed values, but does not establish a supported public contract. Browser-session authorization, create/delete semantics, ordering, error behavior, and personal-access-token compatibility remain unverified.
 
 ## Tier A: publicly documented gaps
 
@@ -162,7 +160,7 @@ Suggested Terraform shape: an environment-scoped `contentful_locale` resource. D
 
 The public CMA documents spaces as manageable resources, including updating a space name. This directly backs the mutable name shown under General settings.
 
-A provider resource should avoid accidentally coupling a routine name change to destructive space deletion. A narrowly scoped `contentful_space_settings` resource may be safer than initially claiming the complete space lifecycle.
+A provider resource should avoid accidentally coupling a routine name change to destructive space deletion. A narrowly scoped `contentful_space_settings` resource may be safer than claiming the complete space lifecycle.
 
 ### Space memberships
 
@@ -208,7 +206,7 @@ The live web app called a shortened path for the primary environment:
 /spaces/{space_id}/ui_config
 ```
 
-The later non-primary-environment pass called:
+The non-primary-environment web app called:
 
 ```text
 /spaces/{space_id}/environments/{environment_id}/ui_config
@@ -228,7 +226,7 @@ The Content preview page called:
 
 The UI exposes preview configuration as mutable, but no matching public CMA reference was found. The similarly named Content Preview API is a content-delivery API and is not documentation for this configuration endpoint.
 
-Update and rollback request/response shapes are now captured in the reversible-mutation section. Before provider implementation, capture creation, reordering, and deletion traffic in a disposable test configuration; verify supported non-browser authentication; and confirm the endpoint is supported for third-party use.
+Update and rollback request/response shapes are recorded in the reversible-mutation section. Before provider implementation, capture creation, reordering, and deletion traffic in a disposable test configuration; verify supported non-browser authentication; and confirm the endpoint is supported for third-party use.
 
 ### Embargoed-assets protection mode
 
@@ -249,7 +247,7 @@ The web app called:
 /organizations/{organization_id}/access_policy
 ```
 
-The observed `GET` returned an organization access-policy object with fields for SSO enforcement, MFA enforcement, explicit token authorization, token-expiration limits, SCIM-only management, and granular environment policies. This corrects the initial survey's mistaken space scope and shows that the object has a substantially wider security blast radius than the granular-permissions toggle that led to its discovery.
+The observed organization-scoped `GET` returned an access-policy object with fields for SSO enforcement, MFA enforcement, explicit token authorization, token-expiration limits, SCIM-only management, and granular environment policies. The object is broad, security-sensitive shared state rather than a narrow granular-permissions toggle.
 
 No matching public CMA endpoint reference was found. The live response establishes read shape, not supported mutation methods, field coupling, authentication outside the web app, or safe rollback behavior. Keep this object outside the implementation-ready tier.
 
@@ -317,7 +315,7 @@ This ordering is an engineering recommendation, not an API fact. It weighs publi
 
 Use a disposable organization/space and record only redacted request metadata for one intentional change at a time:
 
-1. Create, reorder, and delete a preview environment. Update and rollback behavior has now been captured.
+1. Create, reorder, and delete a preview environment; update and rollback behavior is already characterized.
 2. Change Home configuration and determine whether the documented environment UI Config fully represents it.
 3. In a disposable organization, test one organization access-policy field and the default language independently, recording the endpoint, method, concurrency header, and minimal symbolic diff. Access-policy changes require an explicit lockout and access-removal safety plan.
 4. Exercise identity-provider create/update/delete only with explicit authorization and a test IdP; SSO mistakes can lock users out.
