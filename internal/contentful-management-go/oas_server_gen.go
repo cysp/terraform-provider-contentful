@@ -50,6 +50,12 @@ type Handler interface {
 	//
 	// POST /users/me/access_tokens
 	CreatePersonalAccessToken(ctx context.Context, req *PersonalAccessTokenRequestData) (CreatePersonalAccessTokenRes, error)
+	// CreatePreviewEnvironment implements createPreviewEnvironment operation.
+	//
+	// Create a content preview platform.
+	//
+	// POST /spaces/{space_id}/preview_environments
+	CreatePreviewEnvironment(ctx context.Context, req *PreviewEnvironmentCreateData, params CreatePreviewEnvironmentParams) (CreatePreviewEnvironmentRes, error)
 	// CreateRole implements createRole operation.
 	//
 	// Create a role.
@@ -134,6 +140,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	DeleteExtension(ctx context.Context, params DeleteExtensionParams) (DeleteExtensionRes, error)
+	// DeletePreviewEnvironment implements deletePreviewEnvironment operation.
+	//
+	// Delete a content preview platform.
+	//
+	// DELETE /spaces/{space_id}/preview_environments/{preview_environment_id}
+	DeletePreviewEnvironment(ctx context.Context, params DeletePreviewEnvironmentParams) (DeletePreviewEnvironmentRes, error)
 	// DeleteResourceProvider implements deleteResourceProvider operation.
 	//
 	// Delete a resource provider definition.
@@ -284,6 +296,18 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
 	GetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams) (GetPreviewAPIKeyRes, error)
+	// GetPreviewEnvironment implements getPreviewEnvironment operation.
+	//
+	// Get a content preview platform.
+	//
+	// GET /spaces/{space_id}/preview_environments/{preview_environment_id}
+	GetPreviewEnvironment(ctx context.Context, params GetPreviewEnvironmentParams) (GetPreviewEnvironmentRes, error)
+	// GetPreviewEnvironments implements getPreviewEnvironments operation.
+	//
+	// Get content preview platforms.
+	//
+	// GET /spaces/{space_id}/preview_environments
+	GetPreviewEnvironments(ctx context.Context, params GetPreviewEnvironmentsParams) (GetPreviewEnvironmentsRes, error)
 	// GetResourceProvider implements getResourceProvider operation.
 	//
 	// Get one resource provider definition.
@@ -404,6 +428,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	PutExtension(ctx context.Context, req *ExtensionData, params PutExtensionParams) (PutExtensionRes, error)
+	// PutPreviewEnvironment implements putPreviewEnvironment operation.
+	//
+	// Create or update a content preview platform with a selected ID.
+	//
+	// PUT /spaces/{space_id}/preview_environments/{preview_environment_id}
+	PutPreviewEnvironment(ctx context.Context, req *PreviewEnvironmentData, params PutPreviewEnvironmentParams) (PutPreviewEnvironmentRes, error)
 	// PutResourceProvider implements putResourceProvider operation.
 	//
 	// Create or update a resource provider definition.

@@ -94,6 +94,20 @@ func encodeCreatePersonalAccessTokenRequest(
 	return nil
 }
 
+func encodeCreatePreviewEnvironmentRequest(
+	req *PreviewEnvironmentCreateData,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodeCreateRoleRequest(
 	req *RoleData,
 	r *http.Request,
@@ -264,6 +278,20 @@ func encodePutEntryRequest(
 
 func encodePutExtensionRequest(
 	req *ExtensionData,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodePutPreviewEnvironmentRequest(
+	req *PreviewEnvironmentData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
