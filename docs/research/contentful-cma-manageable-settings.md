@@ -7,11 +7,12 @@ Date observed: 2026-07-14
 This document catalogues settings and resource families exposed by the Contentful web app that are not all represented by the provider's currently registered Terraform resources. Its findings were adversarially checked against:
 
 - read-only observation of the signed-in Contentful web app and Safari Web Inspector network traffic;
+- direct CMA requests authenticated with a personal management token, with sensitive response values discarded;
 - the provider registrations in [`internal/provider/contentful_provider.go`](../../internal/provider/contentful_provider.go);
 - first-party Contentful API and Help Center documentation available on the observation date; and
 - the provider's generated-client OpenAPI description.
 
-This is the final evidence catalogue, not an assertion that every undocumented web-app endpoint is a supported public API. Most observations were read-only. Two low-impact settings were changed and immediately restored to characterize their write contracts. No access-control, membership, SSO, deletion, billing, secret, embargoed-asset, or publishing setting was changed.
+This is the final evidence catalogue, not an assertion that every undocumented web-app endpoint is a supported public API. Most observations were read-only. Three low-impact fields were changed and immediately restored to characterize their write contracts. No access-control, membership, SSO, deletion, billing, secret, embargoed-asset, or publishing setting was changed.
 
 All organization, space, environment, user, account, and content identifiers are symbolic placeholders. Examples preserve exact API field names and protocol enum values only where their spelling is part of the finding. No response bodies containing customer or personal data are reproduced.
 
@@ -19,16 +20,18 @@ All organization, space, environment, user, account, and content identifiers are
 
 Conclusions use deliberately narrow standards:
 
-- **Confirmed public contract** means a current first-party API reference or checked-in source directly supports the stated API claim.
+- **Confirmed public contract** means a current public first-party API reference or official public SDK source directly supports the stated API claim.
+- **Repository confirmation** means checked-in provider code or generated descriptions establish current repository coverage only, not Contentful API support.
 - **Web-app implementation** means the behavior is implemented in a current first-party Contentful web-app bundle. It describes what the web app does, not a supported third-party API contract.
 - **Observed live behavior** means direct web-app evidence supports the stated technical fact without establishing a public third-party contract.
+- **Direct CMA observation** means a personal management token reached the endpoint and produced the recorded status or behavior. Reachability does not establish public support or stability.
 - **Unsupported as a public contract** means the web app demonstrates technical behavior but no matching public API contract was established.
 - **Ambiguous** means the evidence establishes only part of the scope, lifecycle, authentication, or mutation semantics.
 
 | Tier | Meaning |
 | --- | --- |
 | A — publicly documented | Contentful documents a public API contract for the resource or setting. This is the strongest basis for provider support. |
-| B — web-app implementation or live observation | The first-party web app implements or calls an endpoint, but no matching public CMA reference was found. Treat public support and stability as unknown until Contentful documents or confirms them. |
+| B — undocumented implementation or observation | The first-party web app implements or calls an endpoint, or a direct token reaches it, but no matching public CMA reference was found. Treat public support and stability as unknown until Contentful documents or confirms them. |
 | C — read-only/supporting | The endpoint appears to supply entitlement, enforcement, membership aggregation, billing, license, or usage context. Observation alone does not establish a manageable resource. |
 
 “Public docs not found” is bounded to the current [CMA reference](https://www.contentful.com/developers/docs/references/content-management-api/), [User Management API reference](https://www.contentful.com/developers/docs/references/user-management-api/), and first-party Contentful documentation reviewed on the date above. It does not prove that an unpublished or separately contracted API does not exist.
@@ -39,7 +42,7 @@ The provider currently registers these 21 Terraform resource types:
 
 `app_definition`, `app_signing_secret`, `app_installation`, `content_type`, `delivery_api_key`, `editor_interface`, `environment_alias`, `environment`, `entry`, `extension`, `personal_access_token`, `resource_provider`, `resource_type`, `role`, `space_enablements`, `tag`, `taxonomy_concept`, `taxonomy_concept_scheme`, `team`, `team_space_membership`, and `webhook`.
 
-The checked-in [`openapi.yml`](../../internal/contentful-management-go/openapi/openapi.yml) does not contain the investigated locale, UI Config, security-contact, organization-metadata, direct-membership, preview-configuration, access-policy, identity-provider, or embargoed-mode paths. It does contain other organization-scoped resource families. This is a generated-client implementation gap, not evidence that the confirmed public APIs are absent.
+The checked-in [`openapi.yml`](../../internal/contentful-management-go/openapi/openapi.yml) does not contain the investigated locale, UI Config, security-contact, organization-metadata, organization-enablement, direct-membership, preview-configuration, access-policy, identity-provider, or embargoed-mode paths. It does contain other organization-scoped resource families. This is a generated-client implementation gap, not evidence that the confirmed public APIs are absent.
 
 The primary-environment settings menu exposed:
 
@@ -56,7 +59,7 @@ The organization settings UI also exposed mutable organization name, granular en
 | Locales | Environment-scoped locale resources | A | Confirmed public contract | Missing | Strong candidate. Public CMA supports listing, creation, update, and deletion of locales. |
 | Tags | Environment-scoped tags | A | Confirmed public contract | Covered by `contentful_tag` | No additional resource implied. |
 | Home | App-provided/built-in home widgets, app installations, and UI config | A, plus live mapping | Confirmed public UI Config contract; observed Home mapping | Partly covered by `app_installation` and `extension`; UI config missing | The documented UI Config includes `homeViews` entries. A dedicated UI-config resource would cover the environment-visible arrangement; app installation/extension lifecycle is already represented. |
-| Content preview | Preview-environment configuration | B | Web-app lifecycle implementation and observed update; unsupported as a public contract | Missing | The web app implements create, update, delete, and rank operations. Only update and rollback were exercised live; external authentication and API support remain unverified. |
+| Content preview | Preview-environment configuration | B | Web-app lifecycle implementation plus browser and direct-token update evidence; unsupported as a public contract | Missing | The web app implements create, update, delete, and rank operations. Direct item read, update, version advancement, and exact restoration succeeded with a personal management token. |
 | General settings | Space object, especially mutable space name | A | Confirmed public contract, narrow metadata scope | Missing | Strong candidate for a space resource or narrowly scoped space-settings resource. Public CMA documents space creation, name update, deletion, and unarchive. |
 | Users | Space memberships are mutable; space members are an aggregate view | A and C | Confirmed public contracts with distinct lifecycles | Direct user/space membership missing; team-space membership covered | Model `space_memberships`, not the read-only `space_members` aggregation. |
 | Organization members | Organization memberships created indirectly through invitations | A | Unsupported as conventional CRUD | Missing | Public list/get/update/delete operations exist, but a membership cannot be created directly. Model invitation and acceptance or support only import/update/delete. |
@@ -64,14 +67,15 @@ The organization settings UI also exposed mutable organization name, granular en
 | Environments | Environments and aliases | A | Confirmed public contract | Covered | No additional top-level resource implied by the menu item. |
 | API keys | Delivery/preview API-key pairs | A | Confirmed public contract | Delivery key covered; preview key is a data source | Existing coverage is substantially aligned. |
 | CMA tokens | Personal access tokens | A | Confirmed public contract | Covered by `contentful_personal_access_token` | Existing coverage is aligned. |
-| Embargoed assets | Space-level protection mode; asset keys are short-lived signing credentials | B, plus public feature docs and asset-key API | Web-app mutation implementation; unsupported as a public protection-mode contract | Missing | The web app uses a space singleton with a narrow protection-mode body. Do not equate it with the documented asset-key endpoint. |
+| Embargoed assets | Space-level protection mode; asset keys are short-lived signing credentials | B, plus public feature docs and asset-key API | Web-app mutation implementation; unsupported as a public protection-mode contract | Missing | The direct token received `403 Forbidden`; this establishes a credential/role/feature boundary, not endpoint absence. Do not equate the singleton with the asset-key endpoint. |
 | Webhooks | Space-scoped webhook definitions | A | Confirmed public contract | Covered by `contentful_webhook` | Existing coverage is aligned. |
 | Usage | Usage, entitlements, enforcement, account, and license views | C | Observed read-only/supporting behavior | Missing | Treat as informational unless a documented mutation contract and a stable Terraform lifecycle emerge. |
 | Organization name | Organization metadata | A for organization retrieval/update; live UI | Confirmed public contract, narrow metadata scope | Missing | Possible organization-settings singleton. Public evidence supports metadata read/update, not full organization lifecycle. |
-| Organization access policy | Organization-wide access controls, including granular environment permissions | B; public Help Center describes some behavior | Web-app partial-update implementation; unsupported as a public contract | Missing | Two independent web-app flows use narrow versioned `PUT` bodies. This is security-sensitive shared state, and arbitrary omission semantics remain unverified. |
+| Organization access policy | Organization-wide access controls, including granular environment permissions | B; public Help Center describes some behavior | Direct-token read and web-app partial-update implementation; unsupported as a public contract | Missing | Direct read returned the broad versioned singleton. Writes remain untested because the object is security-sensitive and arbitrary omission semantics are unverified. |
 | Default language | Organization-level default for the web app and email communications | B | Observed UI behavior; unsupported as a public contract | Missing | Users can override it in their profiles. Candidate only after its endpoint and update contract are captured and supported; it is not a space environment locale. |
-| Security notification emails | Organization security contacts | A | Confirmed public contract | Missing | Strong candidate. Public CMA documents get, create, update, and delete operations for organization security contacts. |
-| SSO | Organization identity provider, certificates, and access-policy state | B | Web-app create/update implementation and observed absence behavior; unsupported as a public contract | Missing | The web app splits identity-provider, certificate, and MFA mutations across separate resources. The live GET returned `404` when unset; no delete call was found. |
+| Security notification emails | Organization security contacts | A | Confirmed public contract and direct-token collection read | Missing | Strong candidate. The direct collection read succeeded and was empty; public CMA documents get, create, update, and delete operations. |
+| Organization AI enablements | Organization enablements singleton | A | Confirmed public get/update contract and direct-token read | Missing; `space_enablements` covers a different scope | Public CMA documents `GET` and `PUT`; the direct response was versioned and contained built-in AI actions, custom AI actions, and vectorization fields. Writes were not tested. |
+| SSO | Organization identity provider, certificates, and access-policy state | B | Direct-token reads plus web-app create/update implementation; unsupported as a public contract | Missing | Identity-provider read returned `404 NotFound`, while certificate collection read returned an empty `200` collection. The web app splits identity-provider, certificate, and MFA writes across separate resources. |
 
 ## Non-primary-environment path survey
 
@@ -94,7 +98,37 @@ All paths below are symbolic. Query values are retained only when they describe 
 
 The bootstrap requests were observed while loading an environment settings page, but they are not all owned by that pane. The web app preloads navigation, editor, app, and entitlement context. Their presence establishes environment-aware read paths, not a new settings resource or a pane-specific mutation contract.
 
-A reversible UI Config mutation subsequently confirmed that the environment-explicit non-primary path accepts `PUT`. No other path in the table was mutated. The survey does not establish whether the observed `public/content_types` route is a supported third-party contract or whether a personal access token can call undocumented routes used by the web app.
+A reversible UI Config mutation confirmed that the environment-explicit non-primary path accepts `PUT`. The direct-token results below separately establish current reachability for the exact paths without converting undocumented routes into supported third-party contracts.
+
+## Direct CMA availability and response boundaries
+
+A personal management token issued `GET` requests against exact documented or web-app-observed paths. Token validity was independently established by a successful public space read. Statuses describe this credential, role, account, region, and feature state only.
+
+| Resource family | Symbolic `GET` path | Direct result | Redacted shape or boundary |
+| --- | --- | --- | --- |
+| Space, organization, environments | `/spaces/{space_id}`; `/organizations/{organization_id}`; `/spaces/{space_id}/environments` | `200` | Versioned singleton metadata and a paginated environment collection |
+| UI Config | `/spaces/{space_id}/ui_config`; `/spaces/{space_id}/environments/{environment_id}/ui_config` | `200` for the shortened and each tested explicit path | `publish`, `homeViews`, `livePreview`, `entryListViews`, and versioned `sys`; the shortened response matched the primary environment's mutable document |
+| Locales | `/spaces/{space_id}/environments/{environment_id}/locales` | `200` in each tested environment | Paginated items with code, name, default/optional flags, fallback, API visibility, internal code, and versioned `sys` |
+| Preview environments | `/spaces/{space_id}/preview_environments`; `/spaces/{space_id}/preview_environments/{preview_environment_id}` | `200` | Paginated, versioned objects with name, description, and configurations; configurations carried URL, content-type enrichment, entity type/ID, enabled, and example fields |
+| Organization access policy | `/organizations/{organization_id}/access_policy` | `200` | Versioned singleton containing SSO enforcement, MFA enforcement, explicit-token authorization, SCIM-only management, token-expiration limit, and granular-environment-policy fields |
+| Organization identity provider | `/organizations/{organization_id}/identity_provider` | `404 NotFound` | Consistent with an unset singleton for this organization; other `404` causes remain possible generally |
+| Identity-provider certificates | `/organizations/{organization_id}/certificates` | `200` | Empty paginated collection; direct-token collection access exists independently of identity-provider presence |
+| Embargoed-assets protection | `/spaces/{space_id}/embargoed_assets` | `403 Forbidden` | Credential, role, plan, or feature boundary; not evidence that the observed endpoint is absent |
+| Organization security contacts | `/organizations/{organization_id}/security_contacts` | `200` | Empty paginated collection; no contact values were retained |
+| Organization enablements | `/organizations/{organization_id}/enablements` | `200` | Versioned singleton with built-in AI actions, custom AI actions, and vectorization enablement objects |
+| Space memberships and aggregate members | `/spaces/{space_id}/space_memberships`; `/spaces/{space_id}/space_members` | `200` | Versioned direct membership and aggregate access shapes; user identifiers and included personal data were discarded |
+| Organization memberships | `/organizations/{organization_id}/organization_memberships` | `403 FeatureNotEnabled` | Feature/account boundary distinct from generic authorization failure |
+| Entitlement sets | `/spaces/{space_id}/space_entitlement_set`; `/organizations/{organization_id}/space_entitlement_sets` | `200` | Feature, quota, trait, source, distribution, and related-product structures; customer values were discarded |
+| Enforcements | `/spaces/{space_id}/enforcements` | `200` | Empty paginated collection for the tested space |
+| Roles and environment aliases | `/spaces/{space_id}/roles`; `/spaces/{space_id}/environment_aliases` | `200` | Standard paginated collections; alias collection was empty |
+| API keys and webhook definitions | `/spaces/{space_id}/api_keys`; `/spaces/{space_id}/webhook_definitions` | `200` | Standard collections; usable tokens, destinations, headers, and other sensitive values were not retained |
+| Tags, content types, editor interfaces, app installations, extensions | `/spaces/{space_id}/environments/{environment_id}/tags`; `/content_types`; `/editor_interfaces`; `/app_installations`; `/extensions` relative to the same environment prefix | `200` in each tested environment | Standard environment-scoped collections; installed parameters and app-specific values were discarded |
+| Public content types | `/spaces/{space_id}/environments/{environment_id}/public/content_types` | `200` in each tested environment | Content definitions matched the standard collection, while `sys` omitted management audit/version fields and used `revision` |
+| Resources bootstrap | `/spaces/{space_id}/environments/{environment_id}/resources` | `404 UnknownRoute` in each tested environment | The browser-observed path was not available to this direct token on the CMA host |
+
+Most public resources returned `application/vnd.contentful.management.v1+json`. Access policy, enablements, embargoed-assets errors, entitlement sets, and enforcements instead returned generic JSON. This media-type split is an observation, not proof that the routes are served by distinct contractual APIs.
+
+Sensitive API-key, webhook, membership, entitlement, and other customer values were not retained or added to the repository.
 
 ## Reversible mutation evidence
 
@@ -159,7 +193,19 @@ The request body was a full replacement-shaped document containing:
 
 Multiple content types using the same URL were represented as separate configuration objects. Responses additionally included `contentType` and `sys` metadata.
 
-Each update sent the current resource version and returned its successor; the restoration used the version returned by the preceding change. This establishes optimistic versioning for updates without retaining concrete observed values, but does not establish a supported public contract. Browser-session authorization, server validation, error behavior, and personal-access-token compatibility remain unverified. Create, delete, and ordering behavior were established only from the web-app implementation described below.
+Each update sent the current resource version and returned its successor; the restoration used the version returned by the preceding change. This establishes optimistic versioning for updates without retaining concrete observed values, but does not establish a supported public contract. Direct personal-token compatibility was subsequently confirmed as described below. Complete server validation and error behavior remain unverified. Create, delete, and ordering behavior were established only from the web-app implementation.
+
+### Direct-token mutation results
+
+Three field-level probes used a personal management token. Each resource was fetched immediately before mutation, every unrelated mutable field was preserved, restoration used the successor version, and a final canonical comparison matched the original mutable representation.
+
+| Object and field | Boundary tested | Result |
+| --- | --- | --- |
+| Non-primary UI Config preview mode | Full-body `PUT`; stale and current `X-Contentful-Version` | Stale version returned `409 VersionMismatch`; current update returned `200`; mutation and restoration each advanced the version by one; exact mutable body restored |
+| Preview-environment description | Item `GET`; replacement-shaped versioned `PUT` without response-only `sys` or content-type enrichment | Direct item read, update, and restoration returned `200`; each write advanced the version by one; exact mutable body restored |
+| Non-default locale name | Versioned item `PUT` for a locale that was not referenced as a fallback | Update and restoration returned `200`; each write advanced the version by one; exact mutable body restored |
+
+The locale payload excluded `sys`, read-only `default`, and `internal_code`. No locale code, fallback, API visibility, optionality, or deletion behavior was changed. The preview probe did not change URLs, entity mappings, enablement, order, or lifecycle state. These results establish current direct-token behavior only; they do not make the preview-environment endpoint public or guarantee future compatibility.
 
 ## Mutation semantics by configuration object
 
@@ -167,13 +213,14 @@ The CMA overview recommends fetching a resource, modifying it, and sending the c
 
 | Configuration object | Mutation shape | Concurrency | Established behavior |
 | --- | --- | --- | --- |
-| UI Config | Environment singleton `PUT`; public SDK sends the complete object without `sys` | `X-Contentful-Version` | Complete-object client behavior; live primary and non-primary update/rollback confirmed; server omission semantics unverified |
-| Preview environment | Collection `POST`; item `PUT` and `DELETE`; collection rank `PATCH` | Version header on item update; per-item versions in rank body; no delete version in inspected client | Undocumented web-app implementation; live item update/rollback confirmed |
+| UI Config | Environment singleton `PUT`; public SDK sends the complete object without `sys` | `X-Contentful-Version`; stale direct write returned `409 VersionMismatch` | Complete-object client behavior; browser and direct update/rollback confirmed; server omission semantics unverified |
+| Preview environment | Collection `POST`; item `PUT` and `DELETE`; collection rank `PATCH` | Version header on item update; per-item versions in rank body; no delete version in inspected client | Undocumented web-app implementation; browser and direct item update/rollback confirmed |
 | Organization access policy | Singleton `PUT` with narrow bodies used by independent UI flows | `X-Contentful-Version` | Undocumented partial-update behavior for verified fields only |
 | Organization identity provider | Singleton `POST`, `PUT`, and `PATCH` | Current version on existing-object `PUT` and `PATCH` | Undocumented create/update implementation; no delete call found |
 | Identity-provider certificate | Collection `POST`; item `PUT` and `PATCH` | Current version on existing-object mutation | Separate from identity-provider and MFA writes; no delete call found |
 | Embargoed-assets protection | Space singleton `PUT` with exactly `{ "protectionMode": value }` | No version supplied by inspected client | Undocumented web-app implementation; high-impact confirmation dialog observed in UI |
-| Locale | Environment collection `POST`; versioned item `PUT`; item `DELETE` | Version header on update; no delete version in public SDK | Public lifecycle; referenced-fallback deletion is multi-resource orchestration |
+| Locale | Environment collection `POST`; versioned item `PUT`; item `DELETE` | Version header on update; no delete version in public SDK | Public lifecycle; direct safe-name update/rollback confirmed; referenced-fallback deletion is multi-resource orchestration |
+| Organization enablements | Organization singleton `PUT` | Current version required by the public reference | Public get/update contract; direct versioned read confirmed; write untested |
 
 ### UI Config complete-object client behavior
 
@@ -192,7 +239,7 @@ PATCH  /spaces/{space_id}/preview_environments/rank
 
 Create sends mutable fields without `sys`. Update removes `sys` and sends the current version as a header. Delete supplies no version in the inspected client. Configuration rows omit resolved UI-only `contentType` objects before transmission.
 
-Rank is an action rather than resource replacement. Its body wraps items containing the object ID, current version, and zero-based rank; concurrency travels per item rather than in a request header. Client-side URL and configuration validation does not establish the server's complete validation contract. [Contentful web app](https://app.contentful.com/)
+Rank is an action rather than resource replacement. Its body wraps items containing the object ID, current version, and zero-based rank; concurrency travels per item rather than in a request header. Client-side URL and configuration validation does not establish the server's complete validation contract. [Captured web-app implementation evidence](#captured-web-app-implementation-evidence)
 
 ### Access policy, identity provider, and certificates
 
@@ -200,7 +247,7 @@ The undocumented access-policy helper performs versioned `PUT`. At least two ind
 
 The identity-provider client exposes unversioned `POST` creation and versioned `PUT` or `PATCH` for an existing object. The setup save flow can issue `PUT`, while edits to an enabled configuration use `PATCH`; the inspected implementation did not establish which preceding server state selects `POST` rather than the setup-flow `PUT`. The client catches every identity-provider read failure and returns absence, so callers must not treat all swallowed failures as `404`.
 
-Certificates are separate objects created with `{ "content": value }` and updated through versioned `PUT` or `PATCH`. The form removes certificate content and `mfaEnforcement` before writing the identity provider: certificate content goes to the certificate endpoint, and MFA enforcement goes to access policy. Connection testing calls a separate authentication service and is not a CMA mutation. No identity-provider or certificate delete call was found. [Contentful web app](https://app.contentful.com/)
+Certificates are separate objects created with `{ "content": value }` and updated through versioned `PUT` or `PATCH`. The form removes certificate content and `mfaEnforcement` before writing the identity provider: certificate content goes to the certificate endpoint, and MFA enforcement goes to access policy. Connection testing calls a separate authentication service and is not a CMA mutation. No identity-provider or certificate delete call was found. [Captured web-app implementation evidence](#captured-web-app-implementation-evidence)
 
 ### Embargoed-assets protection mode
 
@@ -211,11 +258,11 @@ GET /spaces/{space_id}/embargoed_assets
 PUT /spaces/{space_id}/embargoed_assets
 ```
 
-The `PUT` body is exactly `{ "protectionMode": value }`, and the inspected client supplies no version. For display it treats an absent mode as `disabled`; on write it maps the disabled UI state to JSON `null`, the enabled UI state to `migrating`, and passes other selected modes through. These are undocumented client mappings, not a public wire contract. Asset keys remain a separate public, environment-scoped, short-lived credential resource. [Contentful web app](https://app.contentful.com/) [Asset keys](https://www.contentful.com/developers/docs/references/content-management-api/asset-keys/)
+The `PUT` body is exactly `{ "protectionMode": value }`, and the inspected client supplies no version. For display it treats an absent mode as `disabled`; on write it maps the disabled UI state to JSON `null`, the enabled UI state to `migrating`, and passes other selected modes through. These are undocumented client mappings, not a public wire contract. Asset keys remain a separate public, environment-scoped, short-lived credential resource. [Captured web-app implementation evidence](#captured-web-app-implementation-evidence) [Asset keys](https://www.contentful.com/developers/docs/references/content-management-api/asset-keys/)
 
 ### Locale fallback deletion
 
-The public SDK sends a complete mutable locale representation on update, removing `sys`, the read-only `default` property, and internal fields. The web app cannot directly delete a locale referenced as another locale's fallback. It first updates every dependent locale with its own current version, then deletes the target. The dependent updates run concurrently and no transaction or rollback is evident, so partial failure can leave some dependents changed while the target remains. This should be modeled as a multi-resource transition with explicit recovery, not as one atomic delete. [Locale endpoint source](https://github.com/contentful/contentful-management.js/blob/main/lib/adapters/REST/endpoints/locale.ts) [Locales](https://www.contentful.com/developers/docs/references/content-management-api/locales/) [Contentful web app](https://app.contentful.com/)
+The public SDK sends a complete mutable locale representation on update, removing `sys`, the read-only `default` property, and internal fields. The web app cannot directly delete a locale referenced as another locale's fallback. It first updates every dependent locale with its own current version, then deletes the target. The dependent updates run concurrently and no transaction or rollback is evident, so partial failure can leave some dependents changed while the target remains. This should be modeled as a multi-resource transition with explicit recovery, not as one atomic delete. [Locale endpoint source](https://github.com/contentful/contentful-management.js/blob/main/lib/adapters/REST/endpoints/locale.ts) [Locales](https://www.contentful.com/developers/docs/references/content-management-api/locales/) [Captured web-app implementation evidence](#captured-web-app-implementation-evidence)
 
 ### Unresolved organization preference mutation
 
@@ -226,6 +273,8 @@ The public organization representation contains `defaultUserLanguage`, and the p
 ### Locales
 
 Contentful publicly documents locale collection and individual-locale operations under the CMA. Locales are environment-aware and are copied when an environment is created. The provider has no registered locale resource in this checkout.
+
+Direct reads succeeded in both environments. A non-default locale with no fallback dependents accepted a versioned temporary name update and exact restoration; both writes advanced the version by one. This validates the ordinary update path without exercising code, fallback, visibility, optionality, or deletion boundaries.
 
 Suggested Terraform shape: an environment-scoped `contentful_locale` resource. Default-locale changes, fallback cycles, and deletion constraints require live lifecycle tests before finalizing the schema.
 
@@ -255,6 +304,8 @@ The live web app called:
 
 Contentful's public User Management API documents list, get, update, and delete operations for organization memberships. A membership cannot be created directly: creating an organization invitation produces a pending membership as a side effect. This is a supported API family, although it is documented under the User Management API rather than the main CMA reference.
 
+The tested direct token received `403 FeatureNotEnabled`. That result limits availability for this account/credential but does not alter the public contract.
+
 Provider support would therefore need to model invitations and their transition to accepted membership, or intentionally support only import/update/delete of an existing membership. It also needs a stable identity key that does not place personal email addresses unnecessarily in logs or diagnostics.
 
 ### Organization security contacts
@@ -267,7 +318,21 @@ The live web app called:
 
 The public CMA reference documents get, create, update, and delete operations for organization security contacts. This maps cleanly to the mutable security-notification email list in organization settings.
 
+The direct collection read returned `200` with an empty collection. No email or contact value was retained and no mutation was attempted.
+
 Because the data is personally identifiable contact information, any provider design should explicitly consider state sensitivity and import behavior.
+
+### Organization enablements
+
+The public CMA documents organization-scoped `GET` and `PUT` operations at:
+
+```text
+/organizations/{organization_id}/enablements
+```
+
+The direct read returned a versioned singleton with enablement objects for built-in AI actions, custom AI actions, and vectorization. No write was attempted. The provider currently covers `space_enablements`, which is a different scope, and the checked-in generated client does not include the organization singleton.
+
+A provider resource would need to preserve enablement fields it does not own, use the current version, and distinguish organization capability switches from individual AI-action resources. [Organization enablements](https://www.contentful.com/developers/docs/references/content-management-api/organization-enablements/)
 
 ### Environment UI Config
 
@@ -287,6 +352,8 @@ The non-primary-environment web app called:
 
 The public contract and the non-primary live observation are therefore aligned on environment scope. Provider work should prefer the documented environment-explicit endpoint rather than depend on the observed shortened primary-environment path, which may be a compatibility alias.
 
+Direct reads succeeded for both explicit environment paths and the shortened route; the shortened route's mutable document matched the primary environment. A stale direct update returned `409 VersionMismatch`. A current non-primary update and restoration each advanced the version by one, and the final mutable document matched exactly.
+
 ## Tier B: live-observed endpoints without a public contract found
 
 ### Preview environments
@@ -299,7 +366,7 @@ The Content preview page called:
 
 The UI exposes preview configuration as mutable, but no matching public CMA reference was found. The similarly named Content Preview API is a content-delivery API and is not documentation for this configuration endpoint.
 
-The web-app implementation establishes create, update, delete, and rank request shapes; update and rollback were also observed live. Before provider implementation, verify supported non-browser authentication, server validation and error behavior, and whether Contentful supports the endpoint for third-party use.
+The web-app implementation establishes create, update, delete, and rank request shapes. Browser and direct-token item update/rollback both succeeded, so non-browser authentication is established for this personal management token. Before provider implementation, verify server validation and error behavior and whether Contentful supports the endpoint for third-party use.
 
 ### Embargoed-assets protection mode
 
@@ -311,6 +378,8 @@ The web-app implementation identifies a space-level `embargoed_assets` singleton
 - an asset key is an expiring secret used to sign protected URLs and has a public creation API.
 
 Protection-mode management therefore remains in the investigation tier. An asset-key resource is technically better supported, but would still need write-only or ephemeral handling because the returned secret is short-lived.
+
+The direct token received `403 Forbidden` from the protection-mode singleton. This does not distinguish role, plan, or feature gating and does not establish absence. No protection setting was changed.
 
 ### Organization access policy
 
@@ -324,7 +393,7 @@ The observed organization-scoped `GET` returned an access-policy object with fie
 
 The web-app client performs versioned partial-body `PUT` requests for at least explicit-token authorization and MFA enforcement. The public organization update example separately exposes an `accessPolicy.sso` value inside organization system metadata, but it does not document the observed `access_policy` endpoint or its mutation contract.
 
-No matching public CMA endpoint reference was found. The implementation establishes those narrow client mutations, not a supported general merge contract, authentication outside the web app, or safe rollback behavior. Keep this object outside the implementation-ready tier.
+The direct token successfully read the versioned singleton, establishing current non-browser read access. No matching public CMA endpoint reference was found. The implementation establishes narrow client mutations, not a supported general merge contract or safe rollback behavior. Keep this object outside the implementation-ready tier.
 
 ### Organization identity provider
 
@@ -334,7 +403,7 @@ The SSO UI mapped to:
 /organizations/{organization_id}/identity_provider
 ```
 
-An observed `GET` returned `404` when no identity provider was configured. The web-app implementation uses `POST`, versioned `PUT`, and versioned `PATCH`, and splits certificate and MFA writes into separate resources. No delete call or matching public CMA endpoint reference was found.
+Browser and direct-token `GET` requests returned `404 NotFound` when no identity provider was configured. The separate certificate collection returned an empty `200` response to the direct token. The web-app implementation uses `POST`, versioned `PUT`, and versioned `PATCH`, and splits certificate and MFA writes into separate resources. No delete call or matching public CMA endpoint reference was found.
 
 ### Organization-level preferences
 
@@ -360,6 +429,8 @@ The following live-observed requests appear to support navigation, authorization
 
 The session also observed request families containing `customer_accounts`, `licenses`, and `usage`. Their exact customer-specific URLs and response bodies are intentionally not recorded here.
 
+Direct-token reads returned `200` for the space entitlement set, organization space-entitlement sets, aggregate space members, and enforcements; the enforcements collection was empty. Only schema and type information was retained. These successful reads do not make derived plan or enforcement state manageable configuration.
+
 Classification notes:
 
 - `space_members` has a public read API, but mutations should target memberships instead.
@@ -379,25 +450,30 @@ This ordering is an engineering recommendation, not an API fact. It weighs publi
 | 3 | Space name/settings singleton | Public read/update; narrow schema | Must not imply ownership of space deletion |
 | 4 | Direct space membership | Public CRUD/invite; clear access-management gap | Creation can invite; deletion removes access |
 | 5 | Environment UI Config | Public read/update; covers Home and other shared settings | Open-ended shared document and drift/overwrite risk |
-| 6 | Organization membership | Public read/update/delete | No direct create; invitations and acceptance are separate lifecycle states |
-| Investigate | Preview environment | Web-app lifecycle known; live update/rollback characterized | No supported public contract or non-browser authentication established |
-| Investigate | Embargoed-assets protection mode | Public feature behavior and undocumented client mutation known | No supported mode-mutation contract established |
-| Investigate | Organization access policy | Live read schema and undocumented partial-update behavior known | No public mutation contract; security-critical shared state |
-| Investigate | Identity provider/SSO | Undocumented create/update implementation and live absence behavior known | No public contract; no delete call found; security-critical and lockout-prone |
+| 6 | Organization enablements | Public get/update; direct versioned read | Organization-wide feature effects; write behavior not exercised live |
+| 7 | Organization membership | Public read/update/delete | No direct create; invitations and acceptance are separate lifecycle states |
+| Investigate | Preview environment | Web-app lifecycle known; browser and direct-token update/rollback characterized | No supported public contract; server validation and stability unknown |
+| Investigate | Embargoed-assets protection mode | Public feature behavior and undocumented client mutation known | Direct token received `403`; no supported mode-mutation contract established |
+| Investigate | Organization access policy | Direct-token read schema and undocumented partial-update behavior known | No public mutation contract; security-critical shared state |
+| Investigate | Identity provider/SSO | Direct absence/certificate reads and undocumented create/update implementation known | No public contract; no delete call found; security-critical and lockout-prone |
 | Defer/read-only | Entitlements, enforcement, licenses, usage, customer accounts | Live supporting requests | Not demonstrated as user-managed desired state |
 
 ## Recommended follow-up capture
 
 Use a disposable organization/space and record only redacted request metadata for one intentional change at a time:
 
-1. Verify preview-environment authentication, validation, and error behavior outside the browser; the client lifecycle and live update/rollback are already characterized.
+1. Ask Contentful whether preview-environment endpoints are supported for third-party automation; direct-token authentication and item update/rollback are already characterized.
 2. Change Home configuration and determine whether the documented environment UI Config fully represents it.
 3. Capture the exact default-language save request in a disposable organization. Exercise access-policy writes only if Contentful confirms support and an explicit lockout and access-removal safety plan exists.
 4. Exercise identity-provider lifecycle only with explicit authorization and a test IdP; SSO mistakes can lock users out.
 5. Move embargoed assets through supported modes only in a disposable space, because activation changes asset URL behavior.
-6. For every undocumented candidate, verify behavior using a personal access token outside the web app. A browser-session endpoint being callable does not prove that it is supported by public CMA credentials.
+6. For undocumented routes that returned `403` or `404`, clarify the role, feature, and support boundary with Contentful rather than guessing alternate paths or headers.
 
 Do not copy browser cookies, bearer tokens, customer IDs, emails, or full response bodies into repository fixtures or notes.
+
+## Captured web-app implementation evidence
+
+Mutation helpers and call sites were inspected in first-party JavaScript bundles loaded by the Contentful web app on the observation date. The evidence establishes client implementation behavior only. Concrete bundle-version path components are intentionally omitted from this document; they are deploy-specific identifiers rather than customer data or stable public contracts.
 
 ## First-party sources
 
@@ -415,6 +491,7 @@ Do not copy browser cookies, bearer tokens, customer IDs, emails, or full respon
 - [Space members: get all](https://www.contentful.com/developers/docs/references/user-management-api/space-members/get-all-space-members/) — read-only aggregated space-access view.
 - [Organizations](https://www.contentful.com/developers/docs/references/content-management-api/organizations/) and [Update an organization](https://www.contentful.com/developers/docs/references/content-management-api/organizations/put-an-organization-id-an-admin-or-owner-has-access-to/) — organization metadata read and update scope.
 - [Security Contacts](https://www.contentful.com/developers/docs/references/content-management-api/security-contacts/) — organization security-contact lifecycle.
+- [Organization Enablements](https://www.contentful.com/developers/docs/references/content-management-api/organization-enablements/) — organization-scoped enablement get/update operations.
 - [Authentication](https://www.contentful.com/developers/docs/references/authentication/) — API keys and personal access tokens surfaced in space settings.
 - [Environment permissions](https://www.contentful.com/help/environments/environments-permissions/) — organization-level granular environment permissions behavior.
 - [Single sign-on](https://www.contentful.com/help/faq/sso/) and [SSO configuration module changelog](https://www.contentful.com/developers/changelog/sso-configuration-module/) — public SSO behavior and web-app configuration surface, but not an identity-provider API contract.
