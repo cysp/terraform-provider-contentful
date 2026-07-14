@@ -1,0 +1,28 @@
+PreviewEnvironmentCollection:
+  type: object
+  properties:
+    sys:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Array
+      required:
+        - type
+    total:
+      type: integer
+    skip:
+      type: integer
+    limit:
+      type: integer
+    items:
+      type: array
+      items:
+        $ref: "./preview-environment.yml#/PreviewEnvironment"
+  required:
+    - sys
+    - total
+    - skip
+    - limit
+    - items

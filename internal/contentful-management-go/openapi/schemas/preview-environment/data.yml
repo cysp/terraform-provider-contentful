@@ -1,0 +1,32 @@
+PreviewEnvironmentData:
+  type: object
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+    configurations:
+      type: array
+      items:
+        $ref: "./configuration.yml#/PreviewEnvironmentConfigurationData"
+  required:
+    - name
+    - description
+    - configurations
+
+PreviewEnvironmentCreateData:
+  type: object
+  additionalProperties: false
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+    configurations:
+      type: array
+      items:
+        $ref: "./configuration.yml#/PreviewEnvironmentCreateConfigurationData"
+  required:
+    - name
+    - description
+    - configurations
