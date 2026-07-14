@@ -1,20 +1,28 @@
-# Contentful CMA-manageable settings observed in the web app
+# Contentful CMA-manageable settings: validated findings
 
 Date observed: 2026-07-14
 
 ## Purpose
 
-This note catalogues settings and resource families exposed by the Contentful web app that are not all represented by the provider's currently registered Terraform resources. It combines:
+This document catalogues settings and resource families exposed by the Contentful web app that are not all represented by the provider's currently registered Terraform resources. Its findings were adversarially checked against:
 
 - read-only observation of the signed-in Contentful web app and Safari Web Inspector network traffic;
-- the provider registrations in [`internal/provider/contentful_provider.go`](../../internal/provider/contentful_provider.go); and
-- first-party Contentful API and Help Center documentation available on the observation date.
+- the provider registrations in [`internal/provider/contentful_provider.go`](../../internal/provider/contentful_provider.go);
+- first-party Contentful API and Help Center documentation available on the observation date; and
+- the provider's generated-client OpenAPI description.
 
 This is the final evidence catalogue, not an assertion that every private web-app endpoint is a supported public API. Most observations were read-only. Two low-impact settings were changed and immediately restored to characterize their write contracts. No access-control, membership, SSO, deletion, billing, secret, embargoed-asset, or publishing setting was changed.
 
 All organization, space, environment, user, account, and content identifiers are symbolic placeholders. Examples preserve exact API field names and protocol enum values only where their spelling is part of the finding. No response bodies containing customer or personal data are reproduced.
 
-## Evidence tiers
+## Standard of proof and evidence tiers
+
+Conclusions use deliberately narrow standards:
+
+- **Confirmed public contract** means a current first-party API reference or checked-in source directly supports the stated API claim.
+- **Observed live behavior** means direct web-app evidence supports the stated technical fact without establishing a public third-party contract.
+- **Unsupported as a public contract** means the web app demonstrates technical behavior but no matching public API contract was established.
+- **Ambiguous** means the evidence establishes only part of the scope, lifecycle, authentication, or mutation semantics.
 
 | Tier | Meaning |
 | --- | --- |
@@ -22,13 +30,15 @@ All organization, space, environment, user, account, and content identifiers are
 | B — live-observed only | The web app exposed a mutable setting and/or called an endpoint, but no matching public CMA reference was found. Treat public support and stability as unknown until Contentful documents or confirms them. |
 | C — read-only/supporting | The endpoint appears to supply entitlement, enforcement, membership aggregation, billing, license, or usage context. Observation alone does not establish a manageable resource. |
 
-“Public docs not found” means no matching endpoint was found in Contentful's public CMA and User Management API references during this survey; it does not prove that no documentation exists elsewhere.
+“Public docs not found” is bounded to the current [CMA reference](https://www.contentful.com/developers/docs/references/content-management-api/), [User Management API reference](https://www.contentful.com/developers/docs/references/user-management-api/), and first-party Contentful documentation reviewed on the date above. It does not prove that an unpublished or separately contracted API does not exist.
 
-## Current provider baseline
+## Provider and generated-client baseline
 
 The provider currently registers these 21 Terraform resource types:
 
 `app_definition`, `app_signing_secret`, `app_installation`, `content_type`, `delivery_api_key`, `editor_interface`, `environment_alias`, `environment`, `entry`, `extension`, `personal_access_token`, `resource_provider`, `resource_type`, `role`, `space_enablements`, `tag`, `taxonomy_concept`, `taxonomy_concept_scheme`, `team`, `team_space_membership`, and `webhook`.
+
+The checked-in [`openapi.yml`](../../internal/contentful-management-go/openapi/openapi.yml) does not contain the investigated locale, UI Config, security-contact, organization, direct-membership, preview-configuration, access-policy, identity-provider, or embargoed-mode paths. This is a generated-client implementation gap, not evidence that the confirmed public APIs are absent.
 
 The primary-environment settings menu exposed:
 
@@ -40,26 +50,27 @@ The organization settings UI also exposed mutable organization name, granular en
 
 ## Catalogue by settings surface
 
-| Web-app surface | API/resource interpretation | Evidence | Provider coverage | Assessment |
-| --- | --- | --- | --- | --- |
-| Locales | Environment-scoped locale resources | A | Missing | Strong candidate. Public CMA supports listing, creation, update, and deletion of locales. |
-| Tags | Environment-scoped tags | A | Covered by `contentful_tag` | No additional resource implied. |
-| Home | App-provided/built-in home widgets, app installations, and UI config | A, plus live mapping | Partly covered by `app_installation` and `extension`; UI config missing | The documented UI Config includes `homeViews` entries. A dedicated UI-config resource would cover the environment-visible arrangement; app installation/extension lifecycle is already represented. |
-| Content preview | Preview-environment configuration | B | Missing | Potential product fit. Update and rollback traffic is characterized, but creation, deletion, ordering, authentication outside the web app, and API support remain unverified. |
-| General settings | Space object, especially mutable space name | A | Missing | Strong candidate for a space resource or narrowly scoped space-settings resource. Public CMA documents space creation, name update, deletion, and unarchive. |
-| Users | Space memberships are mutable; space members are an aggregate view | A and C | Direct user/space membership missing; team-space membership covered | Model `space_memberships`, not the read-only `space_members` aggregation. |
-| Roles | Space roles and policies | A | Covered by `contentful_role` | No additional top-level resource implied. |
-| Environments | Environments and aliases | A | Covered | No additional top-level resource implied by the menu item. |
-| API keys | Delivery/preview API-key pairs | A | Delivery key covered; preview key is a data source | Existing coverage is substantially aligned. |
-| CMA tokens | Personal access tokens | A | Covered by `contentful_personal_access_token` | Existing coverage is aligned. |
-| Embargoed assets | Space-level protection mode; asset keys are short-lived signing credentials | Public feature docs; toggle contract not identified | Missing | Do not equate the documented asset-key endpoint with management of the space's protection mode. The UI makes the mode mutable, but this survey did not identify a supported public mutation contract for that setting. |
-| Webhooks | Space-scoped webhook definitions | A | Covered by `contentful_webhook` | Existing coverage is aligned. |
-| Usage | Usage, entitlements, enforcement, account, and license views | C | Missing | Treat as informational unless a documented mutation contract and a stable Terraform lifecycle emerge. |
-| Organization name | Organization metadata | A for organization retrieval/update; live UI | Missing | Possible organization-settings singleton. Public evidence supports metadata read/update, not full organization lifecycle. |
-| Organization access policy | Organization-wide access controls, including granular environment permissions | B; public Help Center describes some behavior | Missing | The live read schema is characterized, but mutation and public-support contracts are not. This is security-sensitive shared state, not a narrow feature toggle. |
-| Default language | Organization-level default for the web app and email communications | B | Missing | Users can override it in their profiles. Candidate only after its endpoint and update contract are captured and supported; it is not a space environment locale. |
-| Security notification emails | Organization security contacts | A | Missing | Strong candidate. Public CMA documents get, create, update, and delete operations for organization security contacts. |
-| SSO | Organization identity-provider singleton/configuration | B | Missing | Potentially high-value but high-risk. The live GET returned `404` when unset; no public endpoint contract was found. |
+| Web-app surface | API/resource interpretation | Evidence | Verdict | Provider coverage | Assessment |
+| --- | --- | --- | --- | --- | --- |
+| Locales | Environment-scoped locale resources | A | Confirmed public contract | Missing | Strong candidate. Public CMA supports listing, creation, update, and deletion of locales. |
+| Tags | Environment-scoped tags | A | Confirmed public contract | Covered by `contentful_tag` | No additional resource implied. |
+| Home | App-provided/built-in home widgets, app installations, and UI config | A, plus live mapping | Confirmed public UI Config contract; observed Home mapping | Partly covered by `app_installation` and `extension`; UI config missing | The documented UI Config includes `homeViews` entries. A dedicated UI-config resource would cover the environment-visible arrangement; app installation/extension lifecycle is already represented. |
+| Content preview | Preview-environment configuration | B | Observed live behavior; unsupported as a public contract | Missing | Potential product fit. Update and rollback traffic is characterized, but creation, deletion, ordering, authentication outside the web app, and API support remain unverified. |
+| General settings | Space object, especially mutable space name | A | Confirmed public contract, narrow metadata scope | Missing | Strong candidate for a space resource or narrowly scoped space-settings resource. Public CMA documents space creation, name update, deletion, and unarchive. |
+| Users | Space memberships are mutable; space members are an aggregate view | A and C | Confirmed public contracts with distinct lifecycles | Direct user/space membership missing; team-space membership covered | Model `space_memberships`, not the read-only `space_members` aggregation. |
+| Organization members | Organization memberships created indirectly through invitations | A | Unsupported as conventional CRUD | Missing | Public list/get/update/delete operations exist, but a membership cannot be created directly. Model invitation and acceptance or support only import/update/delete. |
+| Roles | Space roles and policies | A | Confirmed public contract | Covered by `contentful_role` | No additional top-level resource implied. |
+| Environments | Environments and aliases | A | Confirmed public contract | Covered | No additional top-level resource implied by the menu item. |
+| API keys | Delivery/preview API-key pairs | A | Confirmed public contract | Delivery key covered; preview key is a data source | Existing coverage is substantially aligned. |
+| CMA tokens | Personal access tokens | A | Confirmed public contract | Covered by `contentful_personal_access_token` | Existing coverage is aligned. |
+| Embargoed assets | Space-level protection mode; asset keys are short-lived signing credentials | Public feature docs; asset-key API | Confirmed feature; unsupported protection-mode API mutation | Missing | Do not equate the documented asset-key endpoint with management of the space's protection mode. |
+| Webhooks | Space-scoped webhook definitions | A | Confirmed public contract | Covered by `contentful_webhook` | Existing coverage is aligned. |
+| Usage | Usage, entitlements, enforcement, account, and license views | C | Observed read-only/supporting behavior | Missing | Treat as informational unless a documented mutation contract and a stable Terraform lifecycle emerge. |
+| Organization name | Organization metadata | A for organization retrieval/update; live UI | Confirmed public contract, narrow metadata scope | Missing | Possible organization-settings singleton. Public evidence supports metadata read/update, not full organization lifecycle. |
+| Organization access policy | Organization-wide access controls, including granular environment permissions | B; public Help Center describes some behavior | Observed live behavior; unsupported as a public contract | Missing | The read schema is characterized, but mutation and public-support contracts are not. This is security-sensitive shared state, not a narrow feature toggle. |
+| Default language | Organization-level default for the web app and email communications | B | Observed UI behavior; unsupported as a public contract | Missing | Users can override it in their profiles. Candidate only after its endpoint and update contract are captured and supported; it is not a space environment locale. |
+| Security notification emails | Organization security contacts | A | Confirmed public contract | Missing | Strong candidate. Public CMA documents get, create, update, and delete operations for organization security contacts. |
+| SSO | Organization identity-provider singleton/configuration | B | Observed absence behavior; unsupported as a public contract | Missing | Potentially high-value but high-risk. The live GET returned `404` when unset; no public endpoint contract was found. |
 
 ## Non-primary-environment path survey
 
@@ -230,7 +241,7 @@ Update and rollback request/response shapes are recorded in the reversible-mutat
 
 ### Embargoed-assets protection mode
 
-Contentful publicly documents that embargoed assets are enabled at space level and configured using durable protection modes. It separately documents creation of short-lived asset keys through Contentful APIs.
+Contentful publicly documents that embargoed assets are enabled at space level using the durable modes `preparation`, `unpublished assets protected`, and `all assets protected`. It separately documents creation of short-lived asset keys through Contentful APIs.
 
 Those are distinct concerns:
 
@@ -248,6 +259,8 @@ The web app called:
 ```
 
 The observed organization-scoped `GET` returned an access-policy object with fields for SSO enforcement, MFA enforcement, explicit token authorization, token-expiration limits, SCIM-only management, and granular environment policies. The object is broad, security-sensitive shared state rather than a narrow granular-permissions toggle.
+
+The public organization update example separately exposes an `accessPolicy.sso` value inside organization system metadata, but it does not document the observed `access_policy` endpoint or its mutation contract.
 
 No matching public CMA endpoint reference was found. The live response establishes read shape, not supported mutation methods, field coupling, authentication outside the web app, or safe rollback behavior. Keep this object outside the implementation-ready tier.
 
@@ -329,14 +342,20 @@ Do not copy browser cookies, bearer tokens, customer IDs, emails, or full respon
 - [Content Management API overview](https://www.contentful.com/developers/docs/references/content-management-api/overview/) — CMA scope, authentication, and read/write status.
 - [Content Management API reference index](https://www.contentful.com/developers/docs/references/content-management-api/) — spaces, organizations, security contacts, locales, tags, webhooks, roles, memberships, API keys, access tokens, app resources, asset keys, and other public CMA resource families.
 - [UI Config](https://www.contentful.com/developers/docs/references/content-management-api/ui-config/) — environment and per-user UI configuration, including Home views.
+- [Get the UI Config](https://www.contentful.com/developers/docs/references/content-management-api/ui-config/get-the-ui-config/) and [Update the UI Config](https://www.contentful.com/developers/docs/references/content-management-api/ui-config/update-the-ui-config/) — documented environment-scoped read and update contracts.
 - [Environments](https://www.contentful.com/developers/docs/references/content-management-api/environments/) — environment lifecycle and environment-aware resources.
+- [Locales](https://www.contentful.com/developers/docs/references/content-management-api/locales/) — environment-scoped locale lifecycle.
 - [Tags](https://www.contentful.com/developers/docs/references/content-management-api/tags/) — environment-scoped tag management.
 - [Webhooks](https://www.contentful.com/developers/docs/references/content-management-api/webhooks/) — space webhook CRUD.
 - [Roles](https://www.contentful.com/developers/docs/references/content-management-api/roles/) — space settings permissions and role policies.
 - [Space memberships: create](https://www.contentful.com/developers/docs/references/content-management-api/space-memberships/create-a-space-membership/) — direct user invitation/membership creation.
 - [User Management API](https://www.contentful.com/developers/docs/references/user-management-api/) — organization membership lifecycle.
 - [Space members: get all](https://www.contentful.com/developers/docs/references/user-management-api/space-members/get-all-space-members/) — read-only aggregated space-access view.
+- [Organizations](https://www.contentful.com/developers/docs/references/content-management-api/organizations/) and [Update an organization](https://www.contentful.com/developers/docs/references/content-management-api/organizations/put-an-organization-id-an-admin-or-owner-has-access-to/) — organization metadata read and update scope.
+- [Security Contacts](https://www.contentful.com/developers/docs/references/content-management-api/security-contacts/) — organization security-contact lifecycle.
 - [Authentication](https://www.contentful.com/developers/docs/references/authentication/) — API keys and personal access tokens surfaced in space settings.
 - [Environment permissions](https://www.contentful.com/help/environments/environments-permissions/) — organization-level granular environment permissions behavior.
+- [Single sign-on](https://www.contentful.com/help/faq/sso/) and [SSO configuration module changelog](https://www.contentful.com/developers/changelog/sso-configuration-module/) — public SSO behavior and web-app configuration surface, but not an identity-provider API contract.
 - [Getting started with embargoed assets](https://www.contentful.com/developers/docs/tutorials/general/embargoed-assets-getting-started/) — space-level protection modes and asset-key use.
+- [Protection modes](https://www.contentful.com/help/media/embargoed-assets/embargoed-assets-modes/) and [Asset keys](https://www.contentful.com/developers/docs/references/content-management-api/asset-keys/) — durable protection behavior and the separate short-lived signing-key API.
 - [Embargoed assets](https://www.contentful.com/help/media/embargoed-assets/) — feature scope and space-level configuration.
