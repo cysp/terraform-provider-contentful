@@ -11,7 +11,7 @@ This document catalogues settings and resource families exposed by the Contentfu
 - first-party Contentful API and Help Center documentation available on the observation date; and
 - the provider's generated-client OpenAPI description.
 
-This is the final evidence catalogue, not an assertion that every private web-app endpoint is a supported public API. Most observations were read-only. Two low-impact settings were changed and immediately restored to characterize their write contracts. No access-control, membership, SSO, deletion, billing, secret, embargoed-asset, or publishing setting was changed.
+This is the final evidence catalogue, not an assertion that every undocumented web-app endpoint is a supported public API. Most observations were read-only. Two low-impact settings were changed and immediately restored to characterize their write contracts. No access-control, membership, SSO, deletion, billing, secret, embargoed-asset, or publishing setting was changed.
 
 All organization, space, environment, user, account, and content identifiers are symbolic placeholders. Examples preserve exact API field names and protocol enum values only where their spelling is part of the finding. No response bodies containing customer or personal data are reproduced.
 
@@ -20,6 +20,7 @@ All organization, space, environment, user, account, and content identifiers are
 Conclusions use deliberately narrow standards:
 
 - **Confirmed public contract** means a current first-party API reference or checked-in source directly supports the stated API claim.
+- **Web-app implementation** means the behavior is implemented in a current first-party Contentful web-app bundle. It describes what the web app does, not a supported third-party API contract.
 - **Observed live behavior** means direct web-app evidence supports the stated technical fact without establishing a public third-party contract.
 - **Unsupported as a public contract** means the web app demonstrates technical behavior but no matching public API contract was established.
 - **Ambiguous** means the evidence establishes only part of the scope, lifecycle, authentication, or mutation semantics.
@@ -27,7 +28,7 @@ Conclusions use deliberately narrow standards:
 | Tier | Meaning |
 | --- | --- |
 | A — publicly documented | Contentful documents a public API contract for the resource or setting. This is the strongest basis for provider support. |
-| B — live-observed only | The web app exposed a mutable setting and/or called an endpoint, but no matching public CMA reference was found. Treat public support and stability as unknown until Contentful documents or confirms them. |
+| B — web-app implementation or live observation | The first-party web app implements or calls an endpoint, but no matching public CMA reference was found. Treat public support and stability as unknown until Contentful documents or confirms them. |
 | C — read-only/supporting | The endpoint appears to supply entitlement, enforcement, membership aggregation, billing, license, or usage context. Observation alone does not establish a manageable resource. |
 
 “Public docs not found” is bounded to the current [CMA reference](https://www.contentful.com/developers/docs/references/content-management-api/), [User Management API reference](https://www.contentful.com/developers/docs/references/user-management-api/), and first-party Contentful documentation reviewed on the date above. It does not prove that an unpublished or separately contracted API does not exist.
@@ -38,7 +39,7 @@ The provider currently registers these 21 Terraform resource types:
 
 `app_definition`, `app_signing_secret`, `app_installation`, `content_type`, `delivery_api_key`, `editor_interface`, `environment_alias`, `environment`, `entry`, `extension`, `personal_access_token`, `resource_provider`, `resource_type`, `role`, `space_enablements`, `tag`, `taxonomy_concept`, `taxonomy_concept_scheme`, `team`, `team_space_membership`, and `webhook`.
 
-The checked-in [`openapi.yml`](../../internal/contentful-management-go/openapi/openapi.yml) does not contain the investigated locale, UI Config, security-contact, organization, direct-membership, preview-configuration, access-policy, identity-provider, or embargoed-mode paths. This is a generated-client implementation gap, not evidence that the confirmed public APIs are absent.
+The checked-in [`openapi.yml`](../../internal/contentful-management-go/openapi/openapi.yml) does not contain the investigated locale, UI Config, security-contact, organization-metadata, direct-membership, preview-configuration, access-policy, identity-provider, or embargoed-mode paths. It does contain other organization-scoped resource families. This is a generated-client implementation gap, not evidence that the confirmed public APIs are absent.
 
 The primary-environment settings menu exposed:
 
@@ -55,7 +56,7 @@ The organization settings UI also exposed mutable organization name, granular en
 | Locales | Environment-scoped locale resources | A | Confirmed public contract | Missing | Strong candidate. Public CMA supports listing, creation, update, and deletion of locales. |
 | Tags | Environment-scoped tags | A | Confirmed public contract | Covered by `contentful_tag` | No additional resource implied. |
 | Home | App-provided/built-in home widgets, app installations, and UI config | A, plus live mapping | Confirmed public UI Config contract; observed Home mapping | Partly covered by `app_installation` and `extension`; UI config missing | The documented UI Config includes `homeViews` entries. A dedicated UI-config resource would cover the environment-visible arrangement; app installation/extension lifecycle is already represented. |
-| Content preview | Preview-environment configuration | B | Observed live behavior; unsupported as a public contract | Missing | Potential product fit. Update and rollback traffic is characterized, but creation, deletion, ordering, authentication outside the web app, and API support remain unverified. |
+| Content preview | Preview-environment configuration | B | Web-app lifecycle implementation and observed update; unsupported as a public contract | Missing | The web app implements create, update, delete, and rank operations. Only update and rollback were exercised live; external authentication and API support remain unverified. |
 | General settings | Space object, especially mutable space name | A | Confirmed public contract, narrow metadata scope | Missing | Strong candidate for a space resource or narrowly scoped space-settings resource. Public CMA documents space creation, name update, deletion, and unarchive. |
 | Users | Space memberships are mutable; space members are an aggregate view | A and C | Confirmed public contracts with distinct lifecycles | Direct user/space membership missing; team-space membership covered | Model `space_memberships`, not the read-only `space_members` aggregation. |
 | Organization members | Organization memberships created indirectly through invitations | A | Unsupported as conventional CRUD | Missing | Public list/get/update/delete operations exist, but a membership cannot be created directly. Model invitation and acceptance or support only import/update/delete. |
@@ -63,14 +64,14 @@ The organization settings UI also exposed mutable organization name, granular en
 | Environments | Environments and aliases | A | Confirmed public contract | Covered | No additional top-level resource implied by the menu item. |
 | API keys | Delivery/preview API-key pairs | A | Confirmed public contract | Delivery key covered; preview key is a data source | Existing coverage is substantially aligned. |
 | CMA tokens | Personal access tokens | A | Confirmed public contract | Covered by `contentful_personal_access_token` | Existing coverage is aligned. |
-| Embargoed assets | Space-level protection mode; asset keys are short-lived signing credentials | Public feature docs; asset-key API | Confirmed feature; unsupported protection-mode API mutation | Missing | Do not equate the documented asset-key endpoint with management of the space's protection mode. |
+| Embargoed assets | Space-level protection mode; asset keys are short-lived signing credentials | B, plus public feature docs and asset-key API | Web-app mutation implementation; unsupported as a public protection-mode contract | Missing | The web app uses a space singleton with a narrow protection-mode body. Do not equate it with the documented asset-key endpoint. |
 | Webhooks | Space-scoped webhook definitions | A | Confirmed public contract | Covered by `contentful_webhook` | Existing coverage is aligned. |
 | Usage | Usage, entitlements, enforcement, account, and license views | C | Observed read-only/supporting behavior | Missing | Treat as informational unless a documented mutation contract and a stable Terraform lifecycle emerge. |
 | Organization name | Organization metadata | A for organization retrieval/update; live UI | Confirmed public contract, narrow metadata scope | Missing | Possible organization-settings singleton. Public evidence supports metadata read/update, not full organization lifecycle. |
-| Organization access policy | Organization-wide access controls, including granular environment permissions | B; public Help Center describes some behavior | Observed live behavior; unsupported as a public contract | Missing | The read schema is characterized, but mutation and public-support contracts are not. This is security-sensitive shared state, not a narrow feature toggle. |
+| Organization access policy | Organization-wide access controls, including granular environment permissions | B; public Help Center describes some behavior | Web-app partial-update implementation; unsupported as a public contract | Missing | Two independent web-app flows use narrow versioned `PUT` bodies. This is security-sensitive shared state, and arbitrary omission semantics remain unverified. |
 | Default language | Organization-level default for the web app and email communications | B | Observed UI behavior; unsupported as a public contract | Missing | Users can override it in their profiles. Candidate only after its endpoint and update contract are captured and supported; it is not a space environment locale. |
 | Security notification emails | Organization security contacts | A | Confirmed public contract | Missing | Strong candidate. Public CMA documents get, create, update, and delete operations for organization security contacts. |
-| SSO | Organization identity-provider singleton/configuration | B | Observed absence behavior; unsupported as a public contract | Missing | Potentially high-value but high-risk. The live GET returned `404` when unset; no public endpoint contract was found. |
+| SSO | Organization identity provider, certificates, and access-policy state | B | Web-app create/update implementation and observed absence behavior; unsupported as a public contract | Missing | The web app splits identity-provider, certificate, and MFA mutations across separate resources. The live GET returned `404` when unset; no delete call was found. |
 
 ## Non-primary-environment path survey
 
@@ -93,23 +94,22 @@ All paths below are symbolic. Query values are retained only when they describe 
 
 The bootstrap requests were observed while loading an environment settings page, but they are not all owned by that pane. The web app preloads navigation, editor, app, and entitlement context. Their presence establishes environment-aware read paths, not a new settings resource or a pane-specific mutation contract.
 
-No mutation was performed during this non-primary-environment pass. In particular, it does not establish whether every environment-explicit read path accepts writes, whether the observed `public/content_types` route is a supported third-party contract, or whether a personal access token can call private-looking routes used by the web app.
+A reversible UI Config mutation subsequently confirmed that the environment-explicit non-primary path accepts `PUT`. No other path in the table was mutated. The survey does not establish whether the observed `public/content_types` route is a supported third-party contract or whether a personal access token can call undocumented routes used by the web app.
 
 ## Reversible mutation evidence
 
-### Preview mode through the observed shortened UI Config route
+### Preview mode through primary and non-primary UI Config routes
 
-A reversible primary-environment preview-mode change succeeded through the shortened UI Config route, and restoration was verified in the UI. The public contract and a non-primary-environment capture both use the environment-explicit UI Config path. UI Config is therefore environment-scoped, while the mutation evidence characterizes only the shortened primary-environment route.
-
-The web app used:
+Reversible preview-mode changes succeeded in both the primary and a non-primary environment, and restoration was verified in the UI. The web app used the shortened path for the primary environment and the documented environment-explicit path for the non-primary environment:
 
 ```http
 PUT /spaces/{space_id}/ui_config
+PUT /spaces/{space_id}/environments/{environment_id}/ui_config
 Content-Type: application/vnd.contentful.management.v1+json
 X-Contentful-Version: {current_version}
 ```
 
-The web app sent the complete shared UI Config document, not a one-field patch. That establishes observed client behavior, but not server-side replacement semantics: this survey did not test whether an omitted property is preserved or removed. The relevant value changed between:
+The web app sent the complete shared UI Config document, not a one-field patch. That establishes observed client behavior, but not server-side replacement semantics; treatment of an omitted property remains unverified. The relevant value changed between:
 
 ```json
 {"livePreview":{"previewMode":"legacyPreview"}}
@@ -123,7 +123,9 @@ and:
 
 The same document also contained publishing mode, Home views, and entry-list views. This reinforces the ownership concern for Terraform: a conservative client should fetch, merge, and update the document so it preserves unknown and unmanaged fields.
 
-The mutation endpoint omitted the environment component, while both the public UI Config documentation and the non-primary live read are environment-scoped. Contentful documents shortened paths for some environment-aware resources as addressing the primary environment, so this may be a compatibility route. Do not classify the shortened route as public, private, or legacy until Contentful confirms its status.
+The non-primary change advanced the UI Config version, and restoration used that successor version. The tested preview-mode effect was environment-specific: after a full reload, the primary environment retained its original mode while the non-primary environment retained the temporary mode. This differs from the dialog's all-environments warning and is a bounded two-environment result, not proof about every Contentful account or future web-app version.
+
+The shortened primary path may be a compatibility route for the primary environment. Provider work should use the documented environment-explicit endpoint rather than depend on that alias.
 
 ### Preview-environment update
 
@@ -157,7 +159,67 @@ The request body was a full replacement-shaped document containing:
 
 Multiple content types using the same URL were represented as separate configuration objects. Responses additionally included `contentType` and `sys` metadata.
 
-Each update sent the current resource version and returned its successor; the restoration used the version returned by the preceding change. This establishes optimistic versioning for updates without retaining concrete observed values, but does not establish a supported public contract. Browser-session authorization, create/delete semantics, ordering, error behavior, and personal-access-token compatibility remain unverified.
+Each update sent the current resource version and returned its successor; the restoration used the version returned by the preceding change. This establishes optimistic versioning for updates without retaining concrete observed values, but does not establish a supported public contract. Browser-session authorization, server validation, error behavior, and personal-access-token compatibility remain unverified. Create, delete, and ordering behavior were established only from the web-app implementation described below.
+
+## Mutation semantics by configuration object
+
+The CMA overview recommends fetching a resource, modifying it, and sending the complete expected update body. The public SDK and live web app show complete-object behavior for UI Config. That does not independently establish how the UI Config server treats omitted fields, and it must not be projected onto undocumented endpoints where the first-party client demonstrably uses a partial body or a purpose-built action.
+
+| Configuration object | Mutation shape | Concurrency | Established behavior |
+| --- | --- | --- | --- |
+| UI Config | Environment singleton `PUT`; public SDK sends the complete object without `sys` | `X-Contentful-Version` | Complete-object client behavior; live primary and non-primary update/rollback confirmed; server omission semantics unverified |
+| Preview environment | Collection `POST`; item `PUT` and `DELETE`; collection rank `PATCH` | Version header on item update; per-item versions in rank body; no delete version in inspected client | Undocumented web-app implementation; live item update/rollback confirmed |
+| Organization access policy | Singleton `PUT` with narrow bodies used by independent UI flows | `X-Contentful-Version` | Undocumented partial-update behavior for verified fields only |
+| Organization identity provider | Singleton `POST`, `PUT`, and `PATCH` | Current version on existing-object `PUT` and `PATCH` | Undocumented create/update implementation; no delete call found |
+| Identity-provider certificate | Collection `POST`; item `PUT` and `PATCH` | Current version on existing-object mutation | Separate from identity-provider and MFA writes; no delete call found |
+| Embargoed-assets protection | Space singleton `PUT` with exactly `{ "protectionMode": value }` | No version supplied by inspected client | Undocumented web-app implementation; high-impact confirmation dialog observed in UI |
+| Locale | Environment collection `POST`; versioned item `PUT`; item `DELETE` | Version header on update; no delete version in public SDK | Public lifecycle; referenced-fallback deletion is multi-resource orchestration |
+
+### UI Config complete-object client behavior
+
+The public management SDK deep-copies the supplied UI Config, removes `sys`, and sends the remaining object with the current version. Its example modifies a fetched object rather than constructing a one-field request. The provider should therefore preserve unknown mutable fields and avoid claiming exclusive ownership of this shared document. The live client also sent the complete shared document, including unrelated Home, publishing, and entry-list configuration. Server behavior for an intentionally omitted field remains unverified. [UI Config endpoint source](https://github.com/contentful/contentful-management.js/blob/main/lib/adapters/REST/endpoints/ui-config.ts) [UI Config API source](https://github.com/contentful/contentful-management.js/blob/main/lib/create-ui-config-api.ts)
+
+### Preview-environment lifecycle and rank action
+
+The first-party web app implements the following undocumented surface:
+
+```text
+POST   /spaces/{space_id}/preview_environments
+PUT    /spaces/{space_id}/preview_environments/{preview_environment_id}
+DELETE /spaces/{space_id}/preview_environments/{preview_environment_id}
+PATCH  /spaces/{space_id}/preview_environments/rank
+```
+
+Create sends mutable fields without `sys`. Update removes `sys` and sends the current version as a header. Delete supplies no version in the inspected client. Configuration rows omit resolved UI-only `contentType` objects before transmission.
+
+Rank is an action rather than resource replacement. Its body wraps items containing the object ID, current version, and zero-based rank; concurrency travels per item rather than in a request header. Client-side URL and configuration validation does not establish the server's complete validation contract. [Contentful web app](https://app.contentful.com/)
+
+### Access policy, identity provider, and certificates
+
+The undocumented access-policy helper performs versioned `PUT`. At least two independent UI flows send narrow bodies: `{ "explicitTokenAuthorization": value }` and `{ "mfaEnforcement": value }`. This establishes field-specific partial-update behavior for those flows, not a general merge guarantee for every field. No create or delete call was found.
+
+The identity-provider client exposes unversioned `POST` creation and versioned `PUT` or `PATCH` for an existing object. The setup save flow can issue `PUT`, while edits to an enabled configuration use `PATCH`; the inspected implementation did not establish which preceding server state selects `POST` rather than the setup-flow `PUT`. The client catches every identity-provider read failure and returns absence, so callers must not treat all swallowed failures as `404`.
+
+Certificates are separate objects created with `{ "content": value }` and updated through versioned `PUT` or `PATCH`. The form removes certificate content and `mfaEnforcement` before writing the identity provider: certificate content goes to the certificate endpoint, and MFA enforcement goes to access policy. Connection testing calls a separate authentication service and is not a CMA mutation. No identity-provider or certificate delete call was found. [Contentful web app](https://app.contentful.com/)
+
+### Embargoed-assets protection mode
+
+The web app uses a space-scoped singleton:
+
+```text
+GET /spaces/{space_id}/embargoed_assets
+PUT /spaces/{space_id}/embargoed_assets
+```
+
+The `PUT` body is exactly `{ "protectionMode": value }`, and the inspected client supplies no version. For display it treats an absent mode as `disabled`; on write it maps the disabled UI state to JSON `null`, the enabled UI state to `migrating`, and passes other selected modes through. These are undocumented client mappings, not a public wire contract. Asset keys remain a separate public, environment-scoped, short-lived credential resource. [Contentful web app](https://app.contentful.com/) [Asset keys](https://www.contentful.com/developers/docs/references/content-management-api/asset-keys/)
+
+### Locale fallback deletion
+
+The public SDK sends a complete mutable locale representation on update, removing `sys`, the read-only `default` property, and internal fields. The web app cannot directly delete a locale referenced as another locale's fallback. It first updates every dependent locale with its own current version, then deletes the target. The dependent updates run concurrently and no transaction or rollback is evident, so partial failure can leave some dependents changed while the target remains. This should be modeled as a multi-resource transition with explicit recovery, not as one atomic delete. [Locale endpoint source](https://github.com/contentful/contentful-management.js/blob/main/lib/adapters/REST/endpoints/locale.ts) [Locales](https://www.contentful.com/developers/docs/references/content-management-api/locales/) [Contentful web app](https://app.contentful.com/)
+
+### Unresolved organization preference mutation
+
+The public organization representation contains `defaultUserLanguage`, and the public CMA exposes organization update. The exact web-app save request, body ownership, and concurrency behavior for this field were not established. It remains unresolved rather than inheriting semantics from unrelated organization resources. [Organization entity source](https://github.com/contentful/contentful-management.js/blob/main/lib/entities/organization.ts) [Organizations](https://www.contentful.com/developers/docs/references/content-management-api/organizations/)
 
 ## Tier A: publicly documented gaps
 
@@ -237,15 +299,15 @@ The Content preview page called:
 
 The UI exposes preview configuration as mutable, but no matching public CMA reference was found. The similarly named Content Preview API is a content-delivery API and is not documentation for this configuration endpoint.
 
-Update and rollback request/response shapes are recorded in the reversible-mutation section. Before provider implementation, capture creation, reordering, and deletion traffic in a disposable test configuration; verify supported non-browser authentication; and confirm the endpoint is supported for third-party use.
+The web-app implementation establishes create, update, delete, and rank request shapes; update and rollback were also observed live. Before provider implementation, verify supported non-browser authentication, server validation and error behavior, and whether Contentful supports the endpoint for third-party use.
 
 ### Embargoed-assets protection mode
 
 Contentful publicly documents that embargoed assets are enabled at space level using the durable modes `preparation`, `unpublished assets protected`, and `all assets protected`. It separately documents creation of short-lived asset keys through Contentful APIs.
 
-Those are distinct concerns:
+The web-app implementation identifies a space-level `embargoed_assets` singleton and its narrow `PUT` body, but no matching public endpoint contract was located. This and asset keys are distinct concerns:
 
-- the protection mode is durable space configuration shown in the UI, but no public mode-mutation endpoint was located;
+- the protection mode is durable space configuration shown in the UI and mutated by an undocumented web-app endpoint;
 - an asset key is an expiring secret used to sign protected URLs and has a public creation API.
 
 Protection-mode management therefore remains in the investigation tier. An asset-key resource is technically better supported, but would still need write-only or ephemeral handling because the returned secret is short-lived.
@@ -260,9 +322,9 @@ The web app called:
 
 The observed organization-scoped `GET` returned an access-policy object with fields for SSO enforcement, MFA enforcement, explicit token authorization, token-expiration limits, SCIM-only management, and granular environment policies. The object is broad, security-sensitive shared state rather than a narrow granular-permissions toggle.
 
-The public organization update example separately exposes an `accessPolicy.sso` value inside organization system metadata, but it does not document the observed `access_policy` endpoint or its mutation contract.
+The web-app client performs versioned partial-body `PUT` requests for at least explicit-token authorization and MFA enforcement. The public organization update example separately exposes an `accessPolicy.sso` value inside organization system metadata, but it does not document the observed `access_policy` endpoint or its mutation contract.
 
-No matching public CMA endpoint reference was found. The live response establishes read shape, not supported mutation methods, field coupling, authentication outside the web app, or safe rollback behavior. Keep this object outside the implementation-ready tier.
+No matching public CMA endpoint reference was found. The implementation establishes those narrow client mutations, not a supported general merge contract, authentication outside the web app, or safe rollback behavior. Keep this object outside the implementation-ready tier.
 
 ### Organization identity provider
 
@@ -272,11 +334,11 @@ The SSO UI mapped to:
 /organizations/{organization_id}/identity_provider
 ```
 
-An observed `GET` returned `404` when no identity provider was configured. That is useful absence behavior, but it does not establish supported create/update/delete methods or payload stability. No matching public CMA endpoint reference was found.
+An observed `GET` returned `404` when no identity provider was configured. The web-app implementation uses `POST`, versioned `PUT`, and versioned `PATCH`, and splits certificate and MFA writes into separate resources. No delete call or matching public CMA endpoint reference was found.
 
 ### Organization-level preferences
 
-The UI exposed mutable organization name, granular environment permissions, and default language. Organization retrieval/update is publicly documented, granular environment permissions are described in the Help Center, and the default language is described in the UI as applying to the web app and email communications unless a user overrides it. This survey did not capture supported mutation contracts for the access-policy or language settings.
+The UI exposed mutable organization name, granular environment permissions, and default language. Organization retrieval/update is publicly documented, granular environment permissions are described in the Help Center, and the default language is described in the UI as applying to the web app and email communications unless a user overrides it. Access-policy implementation semantics are recorded above; the exact default-language save request remains unresolved.
 
 Further capture should distinguish:
 
@@ -318,22 +380,22 @@ This ordering is an engineering recommendation, not an API fact. It weighs publi
 | 4 | Direct space membership | Public CRUD/invite; clear access-management gap | Creation can invite; deletion removes access |
 | 5 | Environment UI Config | Public read/update; covers Home and other shared settings | Open-ended shared document and drift/overwrite risk |
 | 6 | Organization membership | Public read/update/delete | No direct create; invitations and acceptance are separate lifecycle states |
-| Investigate | Preview environment | Live update/rollback characterized | No supported public contract or non-browser authentication established |
-| Investigate | Embargoed-assets protection mode | Public feature behavior | No supported mode-mutation contract established |
-| Investigate | Organization access policy | Live read schema and mutable UI | No public mutation contract; security-critical shared state |
-| Investigate | Identity provider/SSO | Live mutable UI and absence behavior | No public contract; security-critical and lockout-prone |
+| Investigate | Preview environment | Web-app lifecycle known; live update/rollback characterized | No supported public contract or non-browser authentication established |
+| Investigate | Embargoed-assets protection mode | Public feature behavior and undocumented client mutation known | No supported mode-mutation contract established |
+| Investigate | Organization access policy | Live read schema and undocumented partial-update behavior known | No public mutation contract; security-critical shared state |
+| Investigate | Identity provider/SSO | Undocumented create/update implementation and live absence behavior known | No public contract; no delete call found; security-critical and lockout-prone |
 | Defer/read-only | Entitlements, enforcement, licenses, usage, customer accounts | Live supporting requests | Not demonstrated as user-managed desired state |
 
 ## Recommended follow-up capture
 
 Use a disposable organization/space and record only redacted request metadata for one intentional change at a time:
 
-1. Create, reorder, and delete a preview environment; update and rollback behavior is already characterized.
+1. Verify preview-environment authentication, validation, and error behavior outside the browser; the client lifecycle and live update/rollback are already characterized.
 2. Change Home configuration and determine whether the documented environment UI Config fully represents it.
-3. In a disposable organization, test one organization access-policy field and the default language independently, recording the endpoint, method, concurrency header, and minimal symbolic diff. Access-policy changes require an explicit lockout and access-removal safety plan.
-4. Exercise identity-provider create/update/delete only with explicit authorization and a test IdP; SSO mistakes can lock users out.
+3. Capture the exact default-language save request in a disposable organization. Exercise access-policy writes only if Contentful confirms support and an explicit lockout and access-removal safety plan exists.
+4. Exercise identity-provider lifecycle only with explicit authorization and a test IdP; SSO mistakes can lock users out.
 5. Move embargoed assets through supported modes only in a disposable space, because activation changes asset URL behavior.
-6. For every candidate, verify behavior using a personal access token outside the web app. A browser-session endpoint being callable does not prove that it is supported by public CMA credentials.
+6. For every undocumented candidate, verify behavior using a personal access token outside the web app. A browser-session endpoint being callable does not prove that it is supported by public CMA credentials.
 
 Do not copy browser cookies, bearer tokens, customer IDs, emails, or full response bodies into repository fixtures or notes.
 
