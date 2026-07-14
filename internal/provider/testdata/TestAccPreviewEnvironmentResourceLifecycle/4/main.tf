@@ -1,0 +1,14 @@
+resource "contentful_preview_environment" "test" {
+  space_id    = var.space_id
+  name        = "${var.name} updated"
+  description = "updated description"
+
+  content_type_configurations = {
+    author = {
+      url = "https://preview.example.invalid/{env_id}/authors/{entry.sys.id}"
+    }
+    page = {
+      url = "https://preview.example.invalid/{env_id}/pages/{entry.sys.id}?replacement=true"
+    }
+  }
+}
