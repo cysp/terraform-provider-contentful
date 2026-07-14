@@ -36,6 +36,8 @@ The following settings surfaced in the space settings menu during the live sessi
 
 `Locales`, `Tags`, `Home`, `Content preview`, `General settings`, `Users`, `Roles`, `Environments`, `API keys`, `CMA tokens`, `Embargoed assets`, `Webhooks`, and `Usage`.
 
+That list came from the primary environment. In a non-primary environment, the menu was narrower: `Locales`, `Tags`, `Home`, `Content preview`, `Environments`, `API keys`, and `CMA tokens`. `General settings`, `Users`, `Roles`, `Embargoed assets`, `Webhooks`, and `Usage` were absent. This is UI evidence that the omitted panes are not environment-local; it is not by itself an API contract.
+
 The organization settings UI also exposed mutable organization name, granular environment permissions, default language, security-notification email addresses, and SSO configuration.
 
 ## Catalogue by settings surface
@@ -61,11 +63,34 @@ The organization settings UI also exposed mutable organization name, granular en
 | Security notification emails | Organization security contacts | A | Missing | Strong candidate. Public CMA documents get, create, update, and delete operations for organization security contacts. |
 | SSO | Organization identity-provider singleton/configuration | B | Missing | Potentially high-value but high-risk. The live GET returned `404` when unset; no public endpoint contract was found. |
 
+## Non-primary-environment path survey
+
+A second read-only Safari Web Inspector pass loaded the settings panes from a non-primary environment. It confirmed that the environment shown in the web-app route is also present in the CMA paths for environment-local resources; the environment was not merely client-side navigation context.
+
+All paths below are symbolic. Query values are retained only when they describe the observed collection request rather than a customer identifier.
+
+| Web-app surface or request role | Live-observed CMA path | Scope conclusion |
+| --- | --- | --- |
+| Locales pane | `/spaces/{space_id}/environments/{environment_id}/locales?limit=100&skip=0` | Explicitly environment-scoped |
+| Tags pane | `/spaces/{space_id}/environments/{environment_id}/tags?limit=1000&skip=0` | Explicitly environment-scoped |
+| Home pane | `/spaces/{space_id}/environments/{environment_id}/ui_config` | Explicitly environment-scoped |
+| Content preview pane: shared UI settings | `/spaces/{space_id}/environments/{environment_id}/ui_config` | Explicitly environment-scoped |
+| Content preview pane: preview definitions | `/spaces/{space_id}/preview_environments?limit=100` | Space-scoped; selecting a non-primary environment did not add an environment path component |
+| Shared settings-page bootstrap: content types | `/spaces/{space_id}/environments/{environment_id}/public/content_types?limit=1000` | Explicitly environment-scoped; note the observed `public` path component |
+| Shared settings-page bootstrap: editor interfaces | `/spaces/{space_id}/environments/{environment_id}/editor_interfaces` | Explicitly environment-scoped |
+| Shared settings-page bootstrap: resources | `/spaces/{space_id}/environments/{environment_id}/resources` | Explicitly environment-scoped |
+| Shared settings-page bootstrap: app installations | `/spaces/{space_id}/environments/{environment_id}/app_installations` | Explicitly environment-scoped |
+| Shared settings-page bootstrap: extensions | `/spaces/{space_id}/environments/{environment_id}/extensions` | Explicitly environment-scoped |
+
+The bootstrap requests were observed while loading an environment settings page, but they are not all owned by that pane. The web app preloads navigation, editor, app, and entitlement context. Their presence establishes environment-aware read paths, not a new settings resource or a pane-specific mutation contract.
+
+No mutation was performed during this non-primary-environment pass. In particular, it does not establish whether every environment-explicit read path accepts writes, whether the observed `public/content_types` route is a supported third-party contract, or whether a personal access token can call private-looking routes used by the web app.
+
 ## Reversible mutation evidence
 
 ### Preview mode through the observed shortened UI Config route
 
-The preview mode exposed on the space settings page was switched from live preview to new-tab preview and then restored to live preview. Both operations succeeded and the restored state was verified in the UI. The observed shortened route does not by itself establish whether the setting is space-wide or an implicit primary-environment configuration.
+The preview mode exposed on the primary-environment settings page was switched from live preview to new-tab preview and then restored to live preview. Both operations succeeded and the restored state was verified in the UI. A later read-only pass from a non-primary environment used the documented environment-explicit UI Config path. Together with the public contract, this establishes that UI Config is environment-scoped; the mutation capture still characterizes only the shortened primary-environment route.
 
 The web app used:
 
@@ -89,7 +114,7 @@ and:
 
 The same document also contained publishing mode, Home views, and entry-list views. This reinforces the ownership concern for Terraform: a conservative client should fetch, merge, and update the document so it preserves unknown and unmanaged fields.
 
-The observed endpoint was space-scoped, while the public UI Config documentation is environment-scoped. Contentful documents shortened paths for some environment-aware resources as addressing the primary environment, so this may be a compatibility route. Do not classify it as public, private, or legacy until Contentful confirms the route's status.
+The mutation endpoint omitted the environment component, while both the public UI Config documentation and the non-primary live read are environment-scoped. Contentful documents shortened paths for some environment-aware resources as addressing the primary environment, so this may be a compatibility route. Do not classify the shortened route as public, private, or legacy until Contentful confirms its status.
 
 ### Preview-environment update
 
@@ -177,13 +202,19 @@ Because the data is personally identifiable contact information, any provider de
 
 Contentful publicly documents environment-scoped UI Config get/update operations and describes the configuration as views, folders, Home widgets, preview mode, publishing mode, and timeline settings visible to everyone in an environment.
 
-The live web app called a shortened, primary-environment-looking path:
+The live web app called a shortened path for the primary environment:
 
 ```text
 /spaces/{space_id}/ui_config
 ```
 
-The public contract is environment-scoped. Provider work should prefer the documented environment-explicit endpoint rather than depend on the observed space-level path, which may be a master-environment compatibility alias.
+The later non-primary-environment pass called:
+
+```text
+/spaces/{space_id}/environments/{environment_id}/ui_config
+```
+
+The public contract and the non-primary live observation are therefore aligned on environment scope. Provider work should prefer the documented environment-explicit endpoint rather than depend on the observed shortened primary-environment path, which may be a compatibility alias.
 
 ## Tier B: live-observed endpoints without a public contract found
 

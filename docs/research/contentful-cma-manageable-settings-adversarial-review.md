@@ -42,9 +42,9 @@ The initial catalogue incorrectly described `access_policy` as space-scoped. A t
 
 The public organization update example separately exposes an `accessPolicy.sso` value inside organization system metadata, but it does not document the observed `access_policy` endpoint or its mutation contract. See [Update an organization](https://www.contentful.com/developers/docs/references/content-management-api/organizations/put-an-organization-id-an-admin-or-owner-has-access-to/). Keep the live endpoint outside the public-contract tier until Contentful documents or confirms it.
 
-### Medium: UI Config support is confirmed, but the observed path and replacement semantics are not
+### Medium: UI Config support and environment scope are confirmed, but the shortened path and replacement semantics are not
 
-**Verdict: Confirmed for environment-scoped GET/PUT; ambiguous for the space-scoped path and full-replacement claim.** Contentful publicly documents:
+**Verdict: Confirmed for environment-scoped GET/PUT and for a live non-primary-environment read; ambiguous for the shortened primary-environment path and full-replacement claim.** Contentful publicly documents:
 
 ```text
 GET /spaces/{space_id}/environments/{environment_id}/ui_config
@@ -52,6 +52,14 @@ PUT /spaces/{space_id}/environments/{environment_id}/ui_config
 ```
 
 The reference says the shared configuration is visible to everyone in the environment and includes Home views, preview mode, publishing mode, and timeline controls. See [UI Config](https://www.contentful.com/developers/docs/references/content-management-api/ui-config/), [Get the UI Config](https://www.contentful.com/developers/docs/references/content-management-api/ui-config/get-the-ui-config/), and [Update the UI Config](https://www.contentful.com/developers/docs/references/content-management-api/ui-config/update-the-ui-config/).
+
+A targeted Safari Web Inspector pass from a non-primary environment observed the explicit read path:
+
+```text
+/spaces/{space_id}/environments/{environment_id}/ui_config
+```
+
+The Home and Content preview panes both requested that path. This removes the earlier ambiguity about whether UI Config itself is space-wide. It does not turn the separately observed shortened primary-environment route into a documented contract.
 
 The Environments reference documents one compatibility precedent: entries can omit the environment fragment to address the primary environment. That precedent makes a similar explanation for the observed `/spaces/{space_id}/ui_config` route plausible, but it does not document the UI Config route itself or establish that every environment-aware resource supports omission. See [Environments — Access content in an environment](https://www.contentful.com/developers/docs/references/content-management-api/environments/). Label this an observed shortened route with an unconfirmed compatibility interpretation, not “legacy” or “private,” unless Contentful confirms either classification.
 
@@ -62,6 +70,26 @@ The web app sent a complete document and used `X-Contentful-Version`; that prove
 **Verdict: Confirmed product behavior; unsupported public mutation contract.** Contentful documents space-level configuration and the durable modes `preparation`, `unpublished assets protected`, and `all assets protected`. It also documents creating short-lived asset keys, which is a separate operation. See [Getting started with embargoed assets](https://www.contentful.com/developers/docs/tutorials/general/embargoed-assets-getting-started/), [Protection modes](https://www.contentful.com/help/media/embargoed-assets/embargoed-assets-modes/), and [CMA Asset keys](https://www.contentful.com/developers/docs/references/content-management-api/asset-keys/).
 
 No public endpoint for changing the durable protection mode was located in the current CMA reference. The catalogue correctly separates mode configuration from asset keys and correctly withholds a Terraform resource recommendation. The phrase “public feature docs” should not be upgraded to Tier A API evidence.
+
+### Low: non-primary settings traffic confirms environment-aware paths without proving pane ownership
+
+**Verdict: Confirmed as live read paths; ambiguous as independent manageable settings.** The non-primary-environment pass observed these symbolic path families:
+
+```text
+/spaces/{space_id}/environments/{environment_id}/locales
+/spaces/{space_id}/environments/{environment_id}/tags
+/spaces/{space_id}/environments/{environment_id}/public/content_types
+/spaces/{space_id}/environments/{environment_id}/editor_interfaces
+/spaces/{space_id}/environments/{environment_id}/resources
+/spaces/{space_id}/environments/{environment_id}/app_installations
+/spaces/{space_id}/environments/{environment_id}/extensions
+```
+
+Locales and tags were the primary data requests of their respective panes. The remaining paths appeared among shared bootstrap traffic and should not be attributed to the Tags pane merely because that page was used for capture. The `public/content_types` spelling is a live observation, not a claim that the route is in Contentful's public API reference.
+
+The non-primary Content preview pane also requested the space-scoped `/spaces/{space_id}/preview_environments` collection. This is evidence against rewriting that family as environment-scoped based solely on the selected environment in the UI.
+
+The non-primary settings menu omitted General settings, Users, Roles, Embargoed assets, Webhooks, and Usage. This supports the catalogue's separation of environment-local panes from broader space or organization state, but menu visibility remains product-UI evidence rather than a formal API guarantee.
 
 ### Low: security-contact CRUD and organization update are public, with narrower contracts than the ranking implies
 
@@ -122,3 +150,4 @@ The refined catalogue incorporates these review outcomes:
 5. Organization metadata update is separated from full organization lifecycle.
 6. Candidate readiness is explicitly an engineering recommendation with stated criteria.
 7. `access_policy` is corrected to organization scope and characterized as broad security-sensitive shared state.
+8. A non-primary-environment capture confirms explicit environment paths for UI Config, locales, tags, and shared bootstrap resources while preserving the space scope of preview-environment definitions.
