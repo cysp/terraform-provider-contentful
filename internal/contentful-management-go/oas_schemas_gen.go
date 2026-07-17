@@ -1489,6 +1489,7 @@ func (*ApplicationJSONError) createEntryRes()                    {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentAliasRes() {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationJSONError) createPersonalAccessTokenRes()      {}
+func (*ApplicationJSONError) createPreviewEnvironmentRes()       {}
 func (*ApplicationJSONError) createRoleRes()                     {}
 func (*ApplicationJSONError) createTeamRes()                     {}
 func (*ApplicationJSONError) createTeamSpaceMembershipRes()      {}
@@ -1503,6 +1504,7 @@ func (*ApplicationJSONError) deleteEntryRes()                    {}
 func (*ApplicationJSONError) deleteEnvironmentAliasRes()         {}
 func (*ApplicationJSONError) deleteEnvironmentRes()              {}
 func (*ApplicationJSONError) deleteExtensionRes()                {}
+func (*ApplicationJSONError) deletePreviewEnvironmentRes()       {}
 func (*ApplicationJSONError) deleteResourceProviderRes()         {}
 func (*ApplicationJSONError) deleteResourceTypeRes()             {}
 func (*ApplicationJSONError) deleteRoleRes()                     {}
@@ -1528,6 +1530,8 @@ func (*ApplicationJSONError) getExtensionRes()                   {}
 func (*ApplicationJSONError) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationJSONError) getPersonalAccessTokenRes()         {}
 func (*ApplicationJSONError) getPreviewAPIKeyRes()               {}
+func (*ApplicationJSONError) getPreviewEnvironmentRes()          {}
+func (*ApplicationJSONError) getPreviewEnvironmentsRes()         {}
 func (*ApplicationJSONError) getResourceProviderRes()            {}
 func (*ApplicationJSONError) getResourceTypeRes()                {}
 func (*ApplicationJSONError) getRoleRes()                        {}
@@ -1548,6 +1552,7 @@ func (*ApplicationJSONError) putContentTypeRes()                 {}
 func (*ApplicationJSONError) putEditorInterfaceRes()             {}
 func (*ApplicationJSONError) putEntryRes()                       {}
 func (*ApplicationJSONError) putExtensionRes()                   {}
+func (*ApplicationJSONError) putPreviewEnvironmentRes()          {}
 func (*ApplicationJSONError) putResourceProviderRes()            {}
 func (*ApplicationJSONError) putResourceTypeRes()                {}
 func (*ApplicationJSONError) putSpaceEnablementsRes()            {}
@@ -4086,6 +4091,7 @@ func (*ErrorStatusCode) createEntryRes()                    {}
 func (*ErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
 func (*ErrorStatusCode) createOrUpdateEnvironmentRes()      {}
 func (*ErrorStatusCode) createPersonalAccessTokenRes()      {}
+func (*ErrorStatusCode) createPreviewEnvironmentRes()       {}
 func (*ErrorStatusCode) createRoleRes()                     {}
 func (*ErrorStatusCode) createTeamRes()                     {}
 func (*ErrorStatusCode) createTeamSpaceMembershipRes()      {}
@@ -4100,6 +4106,7 @@ func (*ErrorStatusCode) deleteEntryRes()                    {}
 func (*ErrorStatusCode) deleteEnvironmentAliasRes()         {}
 func (*ErrorStatusCode) deleteEnvironmentRes()              {}
 func (*ErrorStatusCode) deleteExtensionRes()                {}
+func (*ErrorStatusCode) deletePreviewEnvironmentRes()       {}
 func (*ErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ErrorStatusCode) deleteResourceTypeRes()             {}
 func (*ErrorStatusCode) deleteRoleRes()                     {}
@@ -4125,6 +4132,8 @@ func (*ErrorStatusCode) getExtensionRes()                   {}
 func (*ErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
 func (*ErrorStatusCode) getPersonalAccessTokenRes()         {}
 func (*ErrorStatusCode) getPreviewAPIKeyRes()               {}
+func (*ErrorStatusCode) getPreviewEnvironmentRes()          {}
+func (*ErrorStatusCode) getPreviewEnvironmentsRes()         {}
 func (*ErrorStatusCode) getResourceProviderRes()            {}
 func (*ErrorStatusCode) getResourceTypeRes()                {}
 func (*ErrorStatusCode) getRoleRes()                        {}
@@ -4961,6 +4970,7 @@ func (*NoContent) deleteEntryRes()                 {}
 func (*NoContent) deleteEnvironmentAliasRes()      {}
 func (*NoContent) deleteEnvironmentRes()           {}
 func (*NoContent) deleteExtensionRes()             {}
+func (*NoContent) deletePreviewEnvironmentRes()    {}
 func (*NoContent) deleteResourceProviderRes()      {}
 func (*NoContent) deleteResourceTypeRes()          {}
 func (*NoContent) deleteRoleRes()                  {}
@@ -7772,6 +7782,537 @@ func (s *PreviewApiKeySysType) UnmarshalText(data []byte) error {
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
+
+// Ref: #/PreviewEnvironment
+type PreviewEnvironment struct {
+	Sys            PreviewEnvironmentSys             `json:"sys"`
+	Name           string                            `json:"name"`
+	Description    string                            `json:"description"`
+	Configurations []PreviewEnvironmentConfiguration `json:"configurations"`
+}
+
+// GetSys returns the value of Sys.
+func (s *PreviewEnvironment) GetSys() PreviewEnvironmentSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *PreviewEnvironment) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *PreviewEnvironment) GetDescription() string {
+	return s.Description
+}
+
+// GetConfigurations returns the value of Configurations.
+func (s *PreviewEnvironment) GetConfigurations() []PreviewEnvironmentConfiguration {
+	return s.Configurations
+}
+
+// SetSys sets the value of Sys.
+func (s *PreviewEnvironment) SetSys(val PreviewEnvironmentSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *PreviewEnvironment) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *PreviewEnvironment) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetConfigurations sets the value of Configurations.
+func (s *PreviewEnvironment) SetConfigurations(val []PreviewEnvironmentConfiguration) {
+	s.Configurations = val
+}
+
+func (*PreviewEnvironment) createPreviewEnvironmentRes() {}
+func (*PreviewEnvironment) getPreviewEnvironmentRes()    {}
+func (*PreviewEnvironment) putPreviewEnvironmentRes()    {}
+
+// Ref: #/PreviewEnvironmentCollection
+type PreviewEnvironmentCollection struct {
+	Sys   PreviewEnvironmentCollectionSys `json:"sys"`
+	Total int                             `json:"total"`
+	Skip  int                             `json:"skip"`
+	Limit int                             `json:"limit"`
+	Items []PreviewEnvironment            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *PreviewEnvironmentCollection) GetSys() PreviewEnvironmentCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *PreviewEnvironmentCollection) GetTotal() int {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *PreviewEnvironmentCollection) GetSkip() int {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *PreviewEnvironmentCollection) GetLimit() int {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *PreviewEnvironmentCollection) GetItems() []PreviewEnvironment {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *PreviewEnvironmentCollection) SetSys(val PreviewEnvironmentCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *PreviewEnvironmentCollection) SetTotal(val int) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *PreviewEnvironmentCollection) SetSkip(val int) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *PreviewEnvironmentCollection) SetLimit(val int) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *PreviewEnvironmentCollection) SetItems(val []PreviewEnvironment) {
+	s.Items = val
+}
+
+func (*PreviewEnvironmentCollection) getPreviewEnvironmentsRes() {}
+
+type PreviewEnvironmentCollectionSys struct {
+	Type PreviewEnvironmentCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *PreviewEnvironmentCollectionSys) GetType() PreviewEnvironmentCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *PreviewEnvironmentCollectionSys) SetType(val PreviewEnvironmentCollectionSysType) {
+	s.Type = val
+}
+
+type PreviewEnvironmentCollectionSysType string
+
+const (
+	PreviewEnvironmentCollectionSysTypeArray PreviewEnvironmentCollectionSysType = "Array"
+)
+
+// AllValues returns all PreviewEnvironmentCollectionSysType values.
+func (PreviewEnvironmentCollectionSysType) AllValues() []PreviewEnvironmentCollectionSysType {
+	return []PreviewEnvironmentCollectionSysType{
+		PreviewEnvironmentCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PreviewEnvironmentCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case PreviewEnvironmentCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PreviewEnvironmentCollectionSysType) UnmarshalText(data []byte) error {
+	switch PreviewEnvironmentCollectionSysType(data) {
+	case PreviewEnvironmentCollectionSysTypeArray:
+		*s = PreviewEnvironmentCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/PreviewEnvironmentConfiguration
+type PreviewEnvironmentConfiguration struct {
+	URL         string    `json:"url"`
+	EntityType  OptString `json:"entityType"`
+	EntityId    OptString `json:"entityId"`
+	ContentType OptString `json:"contentType"`
+	Enabled     bool      `json:"enabled"`
+	Example     bool      `json:"example"`
+}
+
+// GetURL returns the value of URL.
+func (s *PreviewEnvironmentConfiguration) GetURL() string {
+	return s.URL
+}
+
+// GetEntityType returns the value of EntityType.
+func (s *PreviewEnvironmentConfiguration) GetEntityType() OptString {
+	return s.EntityType
+}
+
+// GetEntityId returns the value of EntityId.
+func (s *PreviewEnvironmentConfiguration) GetEntityId() OptString {
+	return s.EntityId
+}
+
+// GetContentType returns the value of ContentType.
+func (s *PreviewEnvironmentConfiguration) GetContentType() OptString {
+	return s.ContentType
+}
+
+// GetEnabled returns the value of Enabled.
+func (s *PreviewEnvironmentConfiguration) GetEnabled() bool {
+	return s.Enabled
+}
+
+// GetExample returns the value of Example.
+func (s *PreviewEnvironmentConfiguration) GetExample() bool {
+	return s.Example
+}
+
+// SetURL sets the value of URL.
+func (s *PreviewEnvironmentConfiguration) SetURL(val string) {
+	s.URL = val
+}
+
+// SetEntityType sets the value of EntityType.
+func (s *PreviewEnvironmentConfiguration) SetEntityType(val OptString) {
+	s.EntityType = val
+}
+
+// SetEntityId sets the value of EntityId.
+func (s *PreviewEnvironmentConfiguration) SetEntityId(val OptString) {
+	s.EntityId = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *PreviewEnvironmentConfiguration) SetContentType(val OptString) {
+	s.ContentType = val
+}
+
+// SetEnabled sets the value of Enabled.
+func (s *PreviewEnvironmentConfiguration) SetEnabled(val bool) {
+	s.Enabled = val
+}
+
+// SetExample sets the value of Example.
+func (s *PreviewEnvironmentConfiguration) SetExample(val bool) {
+	s.Example = val
+}
+
+// Ref: #/PreviewEnvironmentConfigurationData
+type PreviewEnvironmentConfigurationData struct {
+	URL        string  `json:"url"`
+	EntityType string  `json:"entityType"`
+	EntityId   string  `json:"entityId"`
+	Enabled    bool    `json:"enabled"`
+	Example    OptBool `json:"example"`
+}
+
+// GetURL returns the value of URL.
+func (s *PreviewEnvironmentConfigurationData) GetURL() string {
+	return s.URL
+}
+
+// GetEntityType returns the value of EntityType.
+func (s *PreviewEnvironmentConfigurationData) GetEntityType() string {
+	return s.EntityType
+}
+
+// GetEntityId returns the value of EntityId.
+func (s *PreviewEnvironmentConfigurationData) GetEntityId() string {
+	return s.EntityId
+}
+
+// GetEnabled returns the value of Enabled.
+func (s *PreviewEnvironmentConfigurationData) GetEnabled() bool {
+	return s.Enabled
+}
+
+// GetExample returns the value of Example.
+func (s *PreviewEnvironmentConfigurationData) GetExample() OptBool {
+	return s.Example
+}
+
+// SetURL sets the value of URL.
+func (s *PreviewEnvironmentConfigurationData) SetURL(val string) {
+	s.URL = val
+}
+
+// SetEntityType sets the value of EntityType.
+func (s *PreviewEnvironmentConfigurationData) SetEntityType(val string) {
+	s.EntityType = val
+}
+
+// SetEntityId sets the value of EntityId.
+func (s *PreviewEnvironmentConfigurationData) SetEntityId(val string) {
+	s.EntityId = val
+}
+
+// SetEnabled sets the value of Enabled.
+func (s *PreviewEnvironmentConfigurationData) SetEnabled(val bool) {
+	s.Enabled = val
+}
+
+// SetExample sets the value of Example.
+func (s *PreviewEnvironmentConfigurationData) SetExample(val OptBool) {
+	s.Example = val
+}
+
+// Ref: #/PreviewEnvironmentCreateConfigurationData
+type PreviewEnvironmentCreateConfigurationData struct {
+	URL         string    `json:"url"`
+	EntityType  OptString `json:"entityType"`
+	EntityId    OptString `json:"entityId"`
+	Enabled     bool      `json:"enabled"`
+	Example     OptBool   `json:"example"`
+	ContentType OptString `json:"contentType"`
+}
+
+// GetURL returns the value of URL.
+func (s *PreviewEnvironmentCreateConfigurationData) GetURL() string {
+	return s.URL
+}
+
+// GetEntityType returns the value of EntityType.
+func (s *PreviewEnvironmentCreateConfigurationData) GetEntityType() OptString {
+	return s.EntityType
+}
+
+// GetEntityId returns the value of EntityId.
+func (s *PreviewEnvironmentCreateConfigurationData) GetEntityId() OptString {
+	return s.EntityId
+}
+
+// GetEnabled returns the value of Enabled.
+func (s *PreviewEnvironmentCreateConfigurationData) GetEnabled() bool {
+	return s.Enabled
+}
+
+// GetExample returns the value of Example.
+func (s *PreviewEnvironmentCreateConfigurationData) GetExample() OptBool {
+	return s.Example
+}
+
+// GetContentType returns the value of ContentType.
+func (s *PreviewEnvironmentCreateConfigurationData) GetContentType() OptString {
+	return s.ContentType
+}
+
+// SetURL sets the value of URL.
+func (s *PreviewEnvironmentCreateConfigurationData) SetURL(val string) {
+	s.URL = val
+}
+
+// SetEntityType sets the value of EntityType.
+func (s *PreviewEnvironmentCreateConfigurationData) SetEntityType(val OptString) {
+	s.EntityType = val
+}
+
+// SetEntityId sets the value of EntityId.
+func (s *PreviewEnvironmentCreateConfigurationData) SetEntityId(val OptString) {
+	s.EntityId = val
+}
+
+// SetEnabled sets the value of Enabled.
+func (s *PreviewEnvironmentCreateConfigurationData) SetEnabled(val bool) {
+	s.Enabled = val
+}
+
+// SetExample sets the value of Example.
+func (s *PreviewEnvironmentCreateConfigurationData) SetExample(val OptBool) {
+	s.Example = val
+}
+
+// SetContentType sets the value of ContentType.
+func (s *PreviewEnvironmentCreateConfigurationData) SetContentType(val OptString) {
+	s.ContentType = val
+}
+
+// Ref: #/PreviewEnvironmentCreateData
+type PreviewEnvironmentCreateData struct {
+	Name           string                                      `json:"name"`
+	Description    string                                      `json:"description"`
+	Configurations []PreviewEnvironmentCreateConfigurationData `json:"configurations"`
+}
+
+// GetName returns the value of Name.
+func (s *PreviewEnvironmentCreateData) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *PreviewEnvironmentCreateData) GetDescription() string {
+	return s.Description
+}
+
+// GetConfigurations returns the value of Configurations.
+func (s *PreviewEnvironmentCreateData) GetConfigurations() []PreviewEnvironmentCreateConfigurationData {
+	return s.Configurations
+}
+
+// SetName sets the value of Name.
+func (s *PreviewEnvironmentCreateData) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *PreviewEnvironmentCreateData) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetConfigurations sets the value of Configurations.
+func (s *PreviewEnvironmentCreateData) SetConfigurations(val []PreviewEnvironmentCreateConfigurationData) {
+	s.Configurations = val
+}
+
+// Ref: #/PreviewEnvironmentData
+type PreviewEnvironmentData struct {
+	Name           string                                `json:"name"`
+	Description    string                                `json:"description"`
+	Configurations []PreviewEnvironmentConfigurationData `json:"configurations"`
+}
+
+// GetName returns the value of Name.
+func (s *PreviewEnvironmentData) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *PreviewEnvironmentData) GetDescription() string {
+	return s.Description
+}
+
+// GetConfigurations returns the value of Configurations.
+func (s *PreviewEnvironmentData) GetConfigurations() []PreviewEnvironmentConfigurationData {
+	return s.Configurations
+}
+
+// SetName sets the value of Name.
+func (s *PreviewEnvironmentData) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *PreviewEnvironmentData) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetConfigurations sets the value of Configurations.
+func (s *PreviewEnvironmentData) SetConfigurations(val []PreviewEnvironmentConfigurationData) {
+	s.Configurations = val
+}
+
+// Merged schema.
+// Ref: #/PreviewEnvironmentSys
+type PreviewEnvironmentSys struct {
+	Space SpaceLink `json:"space"`
+	// Merged property.
+	Type    PreviewEnvironmentSysType `json:"type"`
+	ID      string                    `json:"id"`
+	Version int                       `json:"version"`
+}
+
+// GetSpace returns the value of Space.
+func (s *PreviewEnvironmentSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetType returns the value of Type.
+func (s *PreviewEnvironmentSys) GetType() PreviewEnvironmentSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *PreviewEnvironmentSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *PreviewEnvironmentSys) GetVersion() int {
+	return s.Version
+}
+
+// SetSpace sets the value of Space.
+func (s *PreviewEnvironmentSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetType sets the value of Type.
+func (s *PreviewEnvironmentSys) SetType(val PreviewEnvironmentSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *PreviewEnvironmentSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *PreviewEnvironmentSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// Merged schema.
+type PreviewEnvironmentSysType string
+
+const (
+	PreviewEnvironmentSysTypePreviewEnvironment PreviewEnvironmentSysType = "PreviewEnvironment"
+)
+
+// AllValues returns all PreviewEnvironmentSysType values.
+func (PreviewEnvironmentSysType) AllValues() []PreviewEnvironmentSysType {
+	return []PreviewEnvironmentSysType{
+		PreviewEnvironmentSysTypePreviewEnvironment,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PreviewEnvironmentSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case PreviewEnvironmentSysTypePreviewEnvironment:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PreviewEnvironmentSysType) UnmarshalText(data []byte) error {
+	switch PreviewEnvironmentSysType(data) {
+	case PreviewEnvironmentSysTypePreviewEnvironment:
+		*s = PreviewEnvironmentSysTypePreviewEnvironment
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type PutPreviewEnvironmentBadRequest ErrorStatusCode
+
+func (*PutPreviewEnvironmentBadRequest) putPreviewEnvironmentRes() {}
+
+type PutPreviewEnvironmentConflict ErrorStatusCode
+
+func (*PutPreviewEnvironmentConflict) putPreviewEnvironmentRes() {}
+
+type PutPreviewEnvironmentNotFound ErrorStatusCode
+
+func (*PutPreviewEnvironmentNotFound) putPreviewEnvironmentRes() {}
 
 // Ref: #/ResourceLink
 type ResourceLink struct {

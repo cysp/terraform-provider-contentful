@@ -123,6 +123,12 @@ type Invoker interface {
 	//
 	// POST /users/me/access_tokens
 	CreatePersonalAccessToken(ctx context.Context, request *PersonalAccessTokenRequestData, options ...RequestOption) (CreatePersonalAccessTokenRes, error)
+	// CreatePreviewEnvironment invokes createPreviewEnvironment operation.
+	//
+	// Create a content preview platform.
+	//
+	// POST /spaces/{space_id}/preview_environments
+	CreatePreviewEnvironment(ctx context.Context, request *PreviewEnvironmentCreateData, params CreatePreviewEnvironmentParams, options ...RequestOption) (CreatePreviewEnvironmentRes, error)
 	// CreateRole invokes createRole operation.
 	//
 	// Create a role.
@@ -207,6 +213,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	DeleteExtension(ctx context.Context, params DeleteExtensionParams, options ...RequestOption) (DeleteExtensionRes, error)
+	// DeletePreviewEnvironment invokes deletePreviewEnvironment operation.
+	//
+	// Delete a content preview platform.
+	//
+	// DELETE /spaces/{space_id}/preview_environments/{preview_environment_id}
+	DeletePreviewEnvironment(ctx context.Context, params DeletePreviewEnvironmentParams, options ...RequestOption) (DeletePreviewEnvironmentRes, error)
 	// DeleteResourceProvider invokes deleteResourceProvider operation.
 	//
 	// Delete a resource provider definition.
@@ -357,6 +369,18 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/preview_api_keys/{preview_api_key_id}
 	GetPreviewAPIKey(ctx context.Context, params GetPreviewAPIKeyParams, options ...RequestOption) (GetPreviewAPIKeyRes, error)
+	// GetPreviewEnvironment invokes getPreviewEnvironment operation.
+	//
+	// Get a content preview platform.
+	//
+	// GET /spaces/{space_id}/preview_environments/{preview_environment_id}
+	GetPreviewEnvironment(ctx context.Context, params GetPreviewEnvironmentParams, options ...RequestOption) (GetPreviewEnvironmentRes, error)
+	// GetPreviewEnvironments invokes getPreviewEnvironments operation.
+	//
+	// Get content preview platforms.
+	//
+	// GET /spaces/{space_id}/preview_environments
+	GetPreviewEnvironments(ctx context.Context, params GetPreviewEnvironmentsParams, options ...RequestOption) (GetPreviewEnvironmentsRes, error)
 	// GetResourceProvider invokes getResourceProvider operation.
 	//
 	// Get one resource provider definition.
@@ -477,6 +501,12 @@ type Invoker interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	PutExtension(ctx context.Context, request *ExtensionData, params PutExtensionParams, options ...RequestOption) (PutExtensionRes, error)
+	// PutPreviewEnvironment invokes putPreviewEnvironment operation.
+	//
+	// Create or update a content preview platform with a selected ID.
+	//
+	// PUT /spaces/{space_id}/preview_environments/{preview_environment_id}
+	PutPreviewEnvironment(ctx context.Context, request *PreviewEnvironmentData, params PutPreviewEnvironmentParams, options ...RequestOption) (PutPreviewEnvironmentRes, error)
 	// PutResourceProvider invokes putResourceProvider operation.
 	//
 	// Create or update a resource provider definition.
@@ -1528,6 +1558,122 @@ func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *Per
 	}
 
 	result, err := decodeCreatePersonalAccessTokenResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// CreatePreviewEnvironment invokes createPreviewEnvironment operation.
+//
+// Create a content preview platform.
+//
+// POST /spaces/{space_id}/preview_environments
+func (c *Client) CreatePreviewEnvironment(ctx context.Context, request *PreviewEnvironmentCreateData, params CreatePreviewEnvironmentParams, options ...RequestOption) (CreatePreviewEnvironmentRes, error) {
+	res, err := c.sendCreatePreviewEnvironment(ctx, request, params, options...)
+	return res, err
+}
+
+func (c *Client) sendCreatePreviewEnvironment(ctx context.Context, request *PreviewEnvironmentCreateData, params CreatePreviewEnvironmentParams, requestOptions ...RequestOption) (res CreatePreviewEnvironmentRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [3]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/preview_environments"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeCreatePreviewEnvironmentRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, CreatePreviewEnvironmentOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeCreatePreviewEnvironmentResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -3412,6 +3558,137 @@ func (c *Client) sendDeleteExtension(ctx context.Context, params DeleteExtension
 	}
 
 	result, err := decodeDeleteExtensionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// DeletePreviewEnvironment invokes deletePreviewEnvironment operation.
+//
+// Delete a content preview platform.
+//
+// DELETE /spaces/{space_id}/preview_environments/{preview_environment_id}
+func (c *Client) DeletePreviewEnvironment(ctx context.Context, params DeletePreviewEnvironmentParams, options ...RequestOption) (DeletePreviewEnvironmentRes, error) {
+	res, err := c.sendDeletePreviewEnvironment(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendDeletePreviewEnvironment(ctx context.Context, params DeletePreviewEnvironmentParams, requestOptions ...RequestOption) (res DeletePreviewEnvironmentRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/preview_environments/"
+	{
+		// Encode "preview_environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "preview_environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.PreviewEnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeletePreviewEnvironmentOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeDeletePreviewEnvironmentResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -6950,6 +7227,287 @@ func (c *Client) sendGetPreviewAPIKey(ctx context.Context, params GetPreviewAPIK
 	return result, nil
 }
 
+// GetPreviewEnvironment invokes getPreviewEnvironment operation.
+//
+// Get a content preview platform.
+//
+// GET /spaces/{space_id}/preview_environments/{preview_environment_id}
+func (c *Client) GetPreviewEnvironment(ctx context.Context, params GetPreviewEnvironmentParams, options ...RequestOption) (GetPreviewEnvironmentRes, error) {
+	res, err := c.sendGetPreviewEnvironment(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendGetPreviewEnvironment(ctx context.Context, params GetPreviewEnvironmentParams, requestOptions ...RequestOption) (res GetPreviewEnvironmentRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/preview_environments/"
+	{
+		// Encode "preview_environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "preview_environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.PreviewEnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetPreviewEnvironmentOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeGetPreviewEnvironmentResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetPreviewEnvironments invokes getPreviewEnvironments operation.
+//
+// Get content preview platforms.
+//
+// GET /spaces/{space_id}/preview_environments
+func (c *Client) GetPreviewEnvironments(ctx context.Context, params GetPreviewEnvironmentsParams, options ...RequestOption) (GetPreviewEnvironmentsRes, error) {
+	res, err := c.sendGetPreviewEnvironments(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendGetPreviewEnvironments(ctx context.Context, params GetPreviewEnvironmentsParams, requestOptions ...RequestOption) (res GetPreviewEnvironmentsRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [3]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/preview_environments"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	q := uri.NewQueryEncoder()
+	{
+		// Encode "skip" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "skip",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.Skip.Get(); ok {
+				return e.EncodeValue(conv.Int64ToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	{
+		// Encode "limit" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "limit",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.Limit.Get(); ok {
+				return e.EncodeValue(conv.Int64ToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	u.RawQuery = q.Values().Encode()
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetPreviewEnvironmentsOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeGetPreviewEnvironmentsResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetResourceProvider invokes getResourceProvider operation.
 //
 // Get one resource provider definition.
@@ -9849,6 +10407,153 @@ func (c *Client) sendPutExtension(ctx context.Context, request *ExtensionData, p
 	}
 
 	result, err := decodePutExtensionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutPreviewEnvironment invokes putPreviewEnvironment operation.
+//
+// Create or update a content preview platform with a selected ID.
+//
+// PUT /spaces/{space_id}/preview_environments/{preview_environment_id}
+func (c *Client) PutPreviewEnvironment(ctx context.Context, request *PreviewEnvironmentData, params PutPreviewEnvironmentParams, options ...RequestOption) (PutPreviewEnvironmentRes, error) {
+	res, err := c.sendPutPreviewEnvironment(ctx, request, params, options...)
+	return res, err
+}
+
+func (c *Client) sendPutPreviewEnvironment(ctx context.Context, request *PreviewEnvironmentData, params PutPreviewEnvironmentParams, requestOptions ...RequestOption) (res PutPreviewEnvironmentRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [4]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/preview_environments/"
+	{
+		// Encode "preview_environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "preview_environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.PreviewEnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutPreviewEnvironmentRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	h := uri.NewHeaderEncoder(r.Header)
+	{
+		cfg := uri.HeaderParameterEncodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode header")
+		}
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, PutPreviewEnvironmentOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodePutPreviewEnvironmentResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

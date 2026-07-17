@@ -72,6 +72,12 @@ components:
       required: true
       schema:
         type: string
+    preview_environment_id:
+      in: path
+      name: preview_environment_id
+      required: true
+      schema:
+        type: string
     resource_type_id:
       in: path
       name: resource_type_id
@@ -1646,6 +1652,110 @@ paths:
           $ref: "#/components/responses/no-content"
         401:
           $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/preview_environments:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+    get:
+      operationId: getPreviewEnvironments
+      summary: Get content preview platforms
+      parameters:
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        200:
+          description: Content preview platforms
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/preview-environment/collection.yml#/PreviewEnvironmentCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    post:
+      operationId: createPreviewEnvironment
+      summary: Create a content preview platform
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/preview-environment/data.yml#/PreviewEnvironmentCreateData"
+      responses:
+        201:
+          description: A content preview platform
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/preview-environment/preview-environment.yml#/PreviewEnvironment"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        400:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/preview_environments/{preview_environment_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/preview_environment_id"
+    get:
+      operationId: getPreviewEnvironment
+      summary: Get a content preview platform
+      responses:
+        200:
+          description: A content preview platform
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/preview-environment/preview-environment.yml#/PreviewEnvironment"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putPreviewEnvironment
+      summary: Create or update a content preview platform with a selected ID
+      parameters:
+        - $ref: "#/components/parameters/space_id"
+        - $ref: "#/components/parameters/preview_environment_id"
+        - $ref: "#/components/parameters/x-contentful-version-required"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/preview-environment/data.yml#/PreviewEnvironmentData"
+      responses:
+        200:
+          description: A content preview platform
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/preview-environment/preview-environment.yml#/PreviewEnvironment"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        400:
+          $ref: "#/components/responses/error"
+        404:
+          $ref: "#/components/responses/error"
+        409:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deletePreviewEnvironment
+      summary: Delete a content preview platform
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/error"
         default:
           $ref: "#/components/responses/error"
   /users/me:
