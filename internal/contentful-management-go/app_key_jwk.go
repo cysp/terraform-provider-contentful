@@ -5,11 +5,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/go-faster/jx"
 )
 
-var errNonCanonicalAppKeyJWKMaterial = errors.New("x5c is not canonical standard base64")
+var errAppKeyJWKBase64LineBreak = errors.New("CR and LF are not permitted")
 
 type AppKeyJWKMaterial struct {
 	DER         []byte
@@ -17,13 +18,13 @@ type AppKeyJWKMaterial struct {
 }
 
 func DecodeAppKeyJWKMaterial(x5c string) (AppKeyJWKMaterial, error) {
+	if strings.ContainsAny(x5c, "\r\n") {
+		return AppKeyJWKMaterial{}, fmt.Errorf("decode standard base64: %w", errAppKeyJWKBase64LineBreak)
+	}
+
 	publicKeyDER, err := base64.StdEncoding.DecodeString(x5c)
 	if err != nil {
 		return AppKeyJWKMaterial{}, fmt.Errorf("decode standard base64: %w", err)
-	}
-
-	if base64.StdEncoding.EncodeToString(publicKeyDER) != x5c {
-		return AppKeyJWKMaterial{}, errNonCanonicalAppKeyJWKMaterial
 	}
 
 	return AppKeyJWKMaterial{

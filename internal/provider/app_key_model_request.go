@@ -116,7 +116,7 @@ func validateAppKeyJWKMaterialValues(x5c string, kid, x5t *string, attrPath path
 
 	material, err := cm.DecodeAppKeyJWKMaterial(x5c)
 	if err != nil {
-		diags.AddAttributeError(attrPath.AtName("x5c").AtListIndex(0), "Invalid app key JWK x5c", "The first x5c value must use standard base64 encoding without whitespace.")
+		diags.AddAttributeError(attrPath.AtName("x5c").AtListIndex(0), "Invalid app key JWK x5c", "The first x5c value must use valid standard base64 encoding without CR or LF.")
 
 		return diags
 	}

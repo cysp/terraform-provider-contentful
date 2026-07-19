@@ -117,7 +117,7 @@ func AppKeyJWKSchemaAttributes(ctx context.Context) map[string]schema.Attribute 
 			},
 		},
 		"x5c": schema.ListAttribute{
-			Description: "JWK public key material. The single value must use canonical standard base64 encoding. Contentful documents RSA-4096 key generation; the provider validates the encoding and its fingerprint relationships without enforcing undocumented key formats or sizes.",
+			Description: "JWK public key material. The single value must use valid standard base64 encoding without CR or LF. The provider validates the encoding and its fingerprint relationships without enforcing undocumented key formats or sizes.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Required:    true,

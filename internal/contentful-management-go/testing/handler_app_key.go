@@ -3,11 +3,9 @@ package cmtesting
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
@@ -288,16 +286,12 @@ func appKeyJWKValidationErrors(jwk map[string]any) []appKeyValidationError {
 }
 
 func decodeAppKeyX5CValue(value string) ([]byte, bool) {
-	if strings.ContainsAny(value, "\r\n") {
-		return nil, false
-	}
-
-	decoded, err := base64.StdEncoding.DecodeString(value)
+	material, err := cm.DecodeAppKeyJWKMaterial(value)
 	if err != nil {
 		return nil, false
 	}
 
-	return decoded, true
+	return material.DER, true
 }
 
 func appKeyJWKEnumValidationErrors(value any, configured bool, property, expected string) []appKeyValidationError {

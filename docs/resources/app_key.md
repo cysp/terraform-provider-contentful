@@ -58,7 +58,7 @@ Required:
 - `kid` (String) JWK key identifier. This becomes the Contentful app key ID and must match the x5c fingerprint.
 - `kty` (String) JWK key type. Must be RSA.
 - `use` (String) JWK public key use. Must be sig.
-- `x5c` (List of String) JWK public key material. The single value must use canonical standard base64 encoding. Contentful documents RSA-4096 key generation; the provider validates the encoding and its fingerprint relationships without enforcing undocumented key formats or sizes.
+- `x5c` (List of String) JWK public key material. The single value must use valid standard base64 encoding without CR or LF. The provider validates the encoding and its fingerprint relationships without enforcing undocumented key formats or sizes.
 - `x5t` (String) JWK key thumbprint. This must be the unpadded base64url-encoded SHA-256 digest of the decoded bytes in x5c[0].
 
 

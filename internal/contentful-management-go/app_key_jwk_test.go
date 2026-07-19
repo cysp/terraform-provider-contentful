@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
+	"strings"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -14,15 +15,24 @@ import (
 func TestDecodeAppKeyJWKMaterial(t *testing.T) {
 	t.Parallel()
 
-	publicKeyDER := bytes.Repeat([]byte{0x42}, 600)
-	x5c := base64.StdEncoding.EncodeToString(publicKeyDER)
+	publicKeyDER := bytes.Repeat([]byte{0}, 550)
+	canonicalX5C := base64.StdEncoding.EncodeToString(publicKeyDER)
+	require.True(t, strings.HasSuffix(canonicalX5C, "AA=="))
+
+	noncanonicalX5C := canonicalX5C[:len(canonicalX5C)-3] + "P=="
+	require.NotEqual(t, canonicalX5C, noncanonicalX5C)
+
 	fingerprint := sha256.Sum256(publicKeyDER)
 
-	material, err := cm.DecodeAppKeyJWKMaterial(x5c)
-
+	canonical, err := cm.DecodeAppKeyJWKMaterial(canonicalX5C)
 	require.NoError(t, err)
-	assert.Equal(t, publicKeyDER, material.DER)
-	assert.Equal(t, base64.RawURLEncoding.EncodeToString(fingerprint[:]), material.Fingerprint)
+	noncanonical, err := cm.DecodeAppKeyJWKMaterial(noncanonicalX5C)
+	require.NoError(t, err)
+
+	assert.Equal(t, publicKeyDER, canonical.DER)
+	assert.Equal(t, publicKeyDER, noncanonical.DER)
+	assert.Equal(t, base64.RawURLEncoding.EncodeToString(fingerprint[:]), canonical.Fingerprint)
+	assert.Equal(t, canonical.Fingerprint, noncanonical.Fingerprint)
 }
 
 func TestDecodeAppKeyJWKMaterialRejectsInvalidStandardBase64(t *testing.T) {
@@ -31,8 +41,12 @@ func TestDecodeAppKeyJWKMaterialRejectsInvalidStandardBase64(t *testing.T) {
 	valid := base64.StdEncoding.EncodeToString(bytes.Repeat([]byte{0x42}, 600))
 
 	tests := map[string]string{
-		"whitespace":       valid[:100] + "\n" + valid[100:],
+		"line feed":        valid[:100] + "\n" + valid[100:],
+		"carriage return":  valid[:100] + "\r" + valid[100:],
+		"space":            valid[:100] + " " + valid[100:],
+		"tab":              valid[:100] + "\t" + valid[100:],
 		"invalid alphabet": "!" + valid[1:],
+		"invalid padding":  valid + "=",
 	}
 
 	for name, x5c := range tests {
