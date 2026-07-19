@@ -10,5 +10,5 @@ func (s *Server) SetAppKey(organizationID, appDefinitionID string, request cm.Ap
 
 	appKey := NewAppKeyFromRequest(organizationID, appDefinitionID, request)
 
-	s.h.appKeys.Set(organizationID, appDefinitionID, &appKey)
+	s.h.appKeys.Set(organizationID, appDefinitionID, appKey)
 }
