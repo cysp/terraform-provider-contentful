@@ -1299,9 +1299,8 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 // Merged schema.
 // Ref: #/AppKey
 type AppKey struct {
-	Sys       AppKeySys          `json:"sys"`
-	Jwk       AppKeyJWK          `json:"jwk"`
-	Generated OptAppKeyGenerated `json:"generated"`
+	Sys AppKeySys `json:"sys"`
+	Jwk AppKeyJWK `json:"jwk"`
 }
 
 // GetSys returns the value of Sys.
@@ -1314,11 +1313,6 @@ func (s *AppKey) GetJwk() AppKeyJWK {
 	return s.Jwk
 }
 
-// GetGenerated returns the value of Generated.
-func (s *AppKey) GetGenerated() OptAppKeyGenerated {
-	return s.Generated
-}
-
 // SetSys sets the value of Sys.
 func (s *AppKey) SetSys(val AppKeySys) {
 	s.Sys = val
@@ -1327,11 +1321,6 @@ func (s *AppKey) SetSys(val AppKeySys) {
 // SetJwk sets the value of Jwk.
 func (s *AppKey) SetJwk(val AppKeyJWK) {
 	s.Jwk = val
-}
-
-// SetGenerated sets the value of Generated.
-func (s *AppKey) SetGenerated(val OptAppKeyGenerated) {
-	s.Generated = val
 }
 
 func (*AppKey) createAppKeyRes() {}
@@ -1444,21 +1433,6 @@ func (s *AppKeyCollectionSysType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
-}
-
-// Ref: #/AppKeyGenerated
-type AppKeyGenerated struct {
-	PrivateKey string `json:"privateKey"`
-}
-
-// GetPrivateKey returns the value of PrivateKey.
-func (s *AppKeyGenerated) GetPrivateKey() string {
-	return s.PrivateKey
-}
-
-// SetPrivateKey sets the value of PrivateKey.
-func (s *AppKeyGenerated) SetPrivateKey(val string) {
-	s.PrivateKey = val
 }
 
 // Ref: #/AppKeyJWK
@@ -1635,28 +1609,17 @@ func (s *AppKeyJWKUse) UnmarshalText(data []byte) error {
 
 // Ref: #/AppKeyRequestData
 type AppKeyRequestData struct {
-	Jwk      jx.Raw `json:"jwk"`
-	Generate jx.Raw `json:"generate"`
+	Jwk AppKeyJWK `json:"jwk"`
 }
 
 // GetJwk returns the value of Jwk.
-func (s *AppKeyRequestData) GetJwk() jx.Raw {
+func (s *AppKeyRequestData) GetJwk() AppKeyJWK {
 	return s.Jwk
 }
 
-// GetGenerate returns the value of Generate.
-func (s *AppKeyRequestData) GetGenerate() jx.Raw {
-	return s.Generate
-}
-
 // SetJwk sets the value of Jwk.
-func (s *AppKeyRequestData) SetJwk(val jx.Raw) {
+func (s *AppKeyRequestData) SetJwk(val AppKeyJWK) {
 	s.Jwk = val
-}
-
-// SetGenerate sets the value of Generate.
-func (s *AppKeyRequestData) SetGenerate(val jx.Raw) {
-	s.Generate = val
 }
 
 // Merged schema.
@@ -5812,52 +5775,6 @@ func (o OptAppDefinitionParameters) Get() (v AppDefinitionParameters, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptAppDefinitionParameters) Or(d AppDefinitionParameters) AppDefinitionParameters {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptAppKeyGenerated returns new OptAppKeyGenerated with value set to v.
-func NewOptAppKeyGenerated(v AppKeyGenerated) OptAppKeyGenerated {
-	return OptAppKeyGenerated{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptAppKeyGenerated is optional AppKeyGenerated.
-type OptAppKeyGenerated struct {
-	Value AppKeyGenerated
-	Set   bool
-}
-
-// IsSet returns true if OptAppKeyGenerated was set.
-func (o OptAppKeyGenerated) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptAppKeyGenerated) Reset() {
-	var v AppKeyGenerated
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptAppKeyGenerated) SetTo(v AppKeyGenerated) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptAppKeyGenerated) Get() (v AppKeyGenerated, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptAppKeyGenerated) Or(d AppKeyGenerated) AppKeyGenerated {
 	if v, ok := o.Get(); ok {
 		return v
 	}

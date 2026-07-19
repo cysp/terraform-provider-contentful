@@ -1,7 +1,0 @@
-AppKeyGenerated:
-  type: object
-  properties:
-    privateKey:
-      type: string
-  required:
-    - privateKey

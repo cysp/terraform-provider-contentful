@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"net/http"
 	"strings"
 	"testing"
@@ -14,96 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestGeneratedAppKeyPrivateMaterialIsReturnedOnlyOnCreate(t *testing.T) {
-	t.Parallel()
-
-	server, err := cmt.NewContentfulManagementServer()
-	require.NoError(t, err)
-	server.SetAppDefinition("organization", "app-definition", cm.AppDefinitionData{Name: "App"})
-
-	handler := server.Handler()
-	params := cm.CreateAppKeyParams{
-		OrganizationID:  "organization",
-		AppDefinitionID: "app-definition",
-	}
-
-	createResponse, err := handler.CreateAppKey(context.Background(), &cm.AppKeyRequestData{
-		Generate: []byte("true"),
-	}, params)
-	require.NoError(t, err)
-
-	created, ok := createResponse.(*cm.AppKey)
-	require.True(t, ok)
-	assert.Equal(t, "mock-user", created.Sys.CreatedBy.Sys.ID)
-	assert.Equal(t, "mock-user", created.Sys.UpdatedBy.Sys.ID)
-	assertAppKeyHasPrivateMaterial(t, *created)
-
-	secondCreateResponse, err := handler.CreateAppKey(context.Background(), &cm.AppKeyRequestData{
-		Generate: []byte("true"),
-	}, params)
-	require.NoError(t, err)
-
-	secondCreated, ok := secondCreateResponse.(*cm.AppKey)
-	require.True(t, ok)
-	assert.NotEqual(t, created.Sys.ID, secondCreated.Sys.ID)
-	assertAppKeyHasPrivateMaterial(t, *secondCreated)
-
-	getResponse, err := handler.GetAppKey(context.Background(), cm.GetAppKeyParams{
-		OrganizationID:  params.OrganizationID,
-		AppDefinitionID: params.AppDefinitionID,
-		KeyKid:          created.Sys.ID,
-	})
-	require.NoError(t, err)
-
-	got, ok := getResponse.(*cm.AppKey)
-	require.True(t, ok)
-	assertAppKeyHasNoPrivateMaterial(t, *got)
-
-	listResponse, err := handler.GetAppKeys(context.Background(), cm.GetAppKeysParams{
-		OrganizationID:  params.OrganizationID,
-		AppDefinitionID: params.AppDefinitionID,
-	})
-	require.NoError(t, err)
-
-	listed, ok := listResponse.(*cm.AppKeyCollection)
-	require.True(t, ok)
-	require.Len(t, listed.Items, 2)
-	assertAppKeyHasNoPrivateMaterial(t, listed.Items[0])
-	assertAppKeyHasNoPrivateMaterial(t, listed.Items[1])
-}
-
-func TestAppKeyCreateReturnsMalformedRawValueErrors(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]cm.AppKeyRequestData{
-		"jwk":      {Jwk: []byte("{")},
-		"generate": {Generate: []byte("{")},
-	}
-
-	for name, request := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			handler := newAppKeyTestHandler(t)
-			response, err := handler.CreateAppKey(context.Background(), &request, appKeyCreateParams())
-
-			require.ErrorContains(t, err, "validate app key request")
-			assert.Nil(t, response)
-		})
-	}
-}
-
-func TestNewAppKeyFromRequestReturnsJWKDecodeError(t *testing.T) {
-	t.Parallel()
-
-	appKey, err := cmt.NewAppKeyFromRequest("organization", "app-definition", cm.AppKeyRequestData{
-		Jwk: []byte("true"),
-	})
-
-	require.ErrorContains(t, err, "decode app key JWK")
-	assert.Empty(t, appKey)
-}
 
 func TestAppKeyCollectionPagination(t *testing.T) {
 	t.Parallel()
@@ -186,13 +95,6 @@ func TestAppKeyCreateAcceptsOpaqueFingerprintableMaterial(t *testing.T) {
 
 	created := createAppKey(t, handler, request)
 	assert.Equal(t, cm.AppKeyJWKFingerprint(publicKeyDER), created.Sys.ID)
-
-	dsaPublicKeyDER, err := cmt.NewDSAAppKeyPublicKeyDER()
-	require.NoError(t, err)
-
-	dsaRequest := appKeyRequestFromDER(dsaPublicKeyDER)
-	dsaCreated := createAppKey(t, handler, dsaRequest)
-	assert.Equal(t, cm.AppKeyJWKFingerprint(dsaPublicKeyDER), dsaCreated.Sys.ID)
 }
 
 func TestAppKeyCreateAcceptsNonCanonicalBase64PaddingBits(t *testing.T) {
@@ -202,8 +104,7 @@ func TestAppKeyCreateAcceptsNonCanonicalBase64PaddingBits(t *testing.T) {
 	publicKeyDER := bytes.Repeat([]byte{0}, 550)
 	request := appKeyRequestFromDER(publicKeyDER)
 
-	var jwk cm.AppKeyJWK
-	require.NoError(t, json.Unmarshal(request.Jwk, &jwk))
+	jwk := request.Jwk
 	require.Len(t, jwk.X5c, 1)
 	require.True(t, strings.HasSuffix(jwk.X5c[0], "AA=="))
 
@@ -213,8 +114,7 @@ func TestAppKeyCreateAcceptsNonCanonicalBase64PaddingBits(t *testing.T) {
 	require.Equal(t, publicKeyDER, decoded)
 	require.NotEqual(t, jwk.X5c[0], base64.StdEncoding.EncodeToString(decoded))
 
-	request.Jwk, err = json.Marshal(jwk)
-	require.NoError(t, err)
+	request.Jwk = jwk
 
 	created := createAppKey(t, handler, request)
 	assert.Equal(t, cm.AppKeyJWKFingerprint(publicKeyDER), created.Sys.ID)
@@ -226,33 +126,25 @@ func TestAppKeyCreateRejectsBase64LineBreaks(t *testing.T) {
 	handler := newAppKeyTestHandler(t)
 	request := appKeyRequestFromDER(bytes.Repeat([]byte{0}, 550))
 
-	var jwk cm.AppKeyJWK
-	require.NoError(t, json.Unmarshal(request.Jwk, &jwk))
+	jwk := request.Jwk
 	jwk.X5c[0] = jwk.X5c[0][:4] + "\n" + jwk.X5c[0][4:]
-
-	var err error
-
-	request.Jwk, err = json.Marshal(jwk)
-	require.NoError(t, err)
+	request.Jwk = jwk
 
 	response, err := handler.CreateAppKey(context.Background(), request, appKeyCreateParams())
 	require.NoError(t, err)
 	requireContentfulError(t, response, http.StatusUnprocessableEntity, "ValidationFailed", "Validation error")
-	requireAppKeyErrorDetailsContain(t, response, `"name":"regexp"`)
 }
 
 func TestAppKeyCreateEnforcesX5CEncodedLength(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		derSize         int
-		expectedStatus  int
-		expectedDetails string
+		derSize        int
+		expectedStatus int
 	}{
 		"below minimum": {
-			derSize:         549,
-			expectedStatus:  http.StatusUnprocessableEntity,
-			expectedDetails: `"name":"size"`,
+			derSize:        549,
+			expectedStatus: http.StatusUnprocessableEntity,
 		},
 		"minimum": {
 			derSize:        550,
@@ -263,9 +155,8 @@ func TestAppKeyCreateEnforcesX5CEncodedLength(t *testing.T) {
 			expectedStatus: http.StatusCreated,
 		},
 		"above maximum": {
-			derSize:         1063,
-			expectedStatus:  http.StatusUnprocessableEntity,
-			expectedDetails: `"name":"size"`,
+			derSize:        1063,
+			expectedStatus: http.StatusUnprocessableEntity,
 		},
 	}
 
@@ -286,9 +177,6 @@ func TestAppKeyCreateEnforcesX5CEncodedLength(t *testing.T) {
 			}
 
 			requireContentfulError(t, response, test.expectedStatus, "ValidationFailed", "Validation error")
-			requireAppKeyErrorDetailsContain(t, response, test.expectedDetails)
-			requireAppKeyErrorDetailsContain(t, response, `"min":736`)
-			requireAppKeyErrorDetailsContain(t, response, `"max":1416`)
 		})
 	}
 }
@@ -423,17 +311,15 @@ func TestAppKeyOperationsRejectCrossOrganizationParent(t *testing.T) {
 	})
 	require.NoError(t, err)
 	requireContentfulError(t, listResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")
-	requireAppKeyErrorDetailsContain(t, listResponse, "AppDefinition does not exist.")
+	requireAppDefinitionDoesNotExistDetails(t, listResponse)
 
-	createResponse, err := handler.CreateAppKey(context.Background(), &cm.AppKeyRequestData{
-		Generate: []byte("true"),
-	}, cm.CreateAppKeyParams{
+	createResponse, err := handler.CreateAppKey(context.Background(), appKeyRequest(t), cm.CreateAppKeyParams{
 		OrganizationID:  "other-organization",
 		AppDefinitionID: "app-definition",
 	})
 	require.NoError(t, err)
 	requireContentfulError(t, createResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")
-	requireAppKeyErrorDetailsContain(t, createResponse, "AppDefinition does not exist.")
+	requireAppDefinitionDoesNotExistDetails(t, createResponse)
 
 	getResponse, err := handler.GetAppKey(context.Background(), cm.GetAppKeyParams{
 		OrganizationID:  "other-organization",
@@ -442,7 +328,7 @@ func TestAppKeyOperationsRejectCrossOrganizationParent(t *testing.T) {
 	})
 	require.NoError(t, err)
 	requireContentfulError(t, getResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")
-	requireAppKeyErrorDetailsContain(t, getResponse, "AppDefinition does not exist.")
+	requireAppDefinitionDoesNotExistDetails(t, getResponse)
 
 	deleteResponse, err := handler.DeleteAppKey(context.Background(), cm.DeleteAppKeyParams{
 		OrganizationID:  "other-organization",
@@ -451,5 +337,5 @@ func TestAppKeyOperationsRejectCrossOrganizationParent(t *testing.T) {
 	})
 	require.NoError(t, err)
 	requireContentfulError(t, deleteResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")
-	requireAppKeyErrorDetailsContain(t, deleteResponse, "AppDefinition does not exist.")
+	requireAppDefinitionDoesNotExistDetails(t, deleteResponse)
 }

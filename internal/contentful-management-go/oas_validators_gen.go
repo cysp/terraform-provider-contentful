@@ -736,6 +736,14 @@ func (s *AppKeyJWK) Validate() error {
 		if s.X5c == nil {
 			return errors.New("nil is invalid value")
 		}
+		if err := (validate.Array{
+			MinLength:    1,
+			MinLengthSet: true,
+			MaxLength:    1,
+			MaxLengthSet: true,
+		}).ValidateLength(len(s.X5c)); err != nil {
+			return errors.Wrap(err, "array")
+		}
 		return nil
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
@@ -774,6 +782,29 @@ func (s AppKeyJWKUse) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
+}
+
+func (s *AppKeyRequestData) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Jwk.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "jwk",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
 }
 
 func (s *AppKeySys) Validate() error {

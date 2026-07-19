@@ -72,13 +72,12 @@ func TestNewAppKeyRequestDataEncodesJWK(t *testing.T) {
 		X5t: "x5t",
 	})
 
-	assert.JSONEq(t, `{
-		"alg": "RS256",
-		"kty": "RSA",
-		"use": "sig",
-		"x5c": ["cHVibGljLWtleQ=="],
-		"kid": "kid",
-		"x5t": "x5t"
-	}`, string(request.Jwk))
-	assert.Empty(t, request.Generate)
+	assert.Equal(t, cm.AppKeyJWK{
+		Alg: cm.AppKeyJWKAlgRS256,
+		Kty: cm.AppKeyJWKKtyRSA,
+		Use: cm.AppKeyJWKUseSig,
+		X5c: []string{"cHVibGljLWtleQ=="},
+		Kid: "kid",
+		X5t: "x5t",
+	}, request.Jwk)
 }
