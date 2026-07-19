@@ -34,12 +34,14 @@ func TestContentTypeFieldsRejectNullAndUnknownObjects(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, diags := FieldsListToContentTypeRequestDataFields(
+			result, diags := FieldsListToContentTypeRequestDataFields(
 				t.Context(),
 				path.Root("fields"),
 				NewTypedList([]TypedObject[ContentTypeFieldValue]{value}),
 			)
+			assert.Nil(t, result)
 			require.True(t, diags.HasError())
+			assert.Equal(t, []string{"fields[0]"}, diagnosticPaths(t, diags))
 		})
 	}
 }

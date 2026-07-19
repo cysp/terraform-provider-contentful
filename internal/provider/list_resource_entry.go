@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -113,7 +114,8 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 		return nil
 	})
 
-	stream.Results = paginateContentfulCollectionItemsAsListResults(ctx, req,
+	stream.Results = paginateContentfulCollectionItemsAsListResults(
+		ctx, req,
 		"Failed to list entries",
 		func(ctx context.Context, skip int64, limit int64) (cm.GetEntriesRes, error) {
 			pageParams := params
@@ -123,24 +125,17 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 			return r.providerData.client.GetEntries(ctx, pageParams, getEntriesQueryOption)
 		},
 		func(item cm.Entry) list.ListResult {
-			result := req.NewListResult(ctx)
-
-			result.DisplayName = item.Sys.ID
-
-			result.Diagnostics.Append(result.Identity.Set(ctx, NewEntryIdentityModel(
-				item.Sys.Space.Sys.ID,
-				item.Sys.Environment.Sys.ID,
+			return newListResultFromResponse(
+				ctx,
+				req,
 				item.Sys.ID,
-			))...)
+				NewEntryIdentityModel(item.Sys.Space.Sys.ID, item.Sys.Environment.Sys.ID, item.Sys.ID),
+				func() (*EntryModel, diag.Diagnostics) {
+					responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
 
-			if req.IncludeResource {
-				responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
-				result.Diagnostics.Append(responseDiags...)
-
-				result.Diagnostics.Append(result.Resource.Set(ctx, &responseModel)...)
-			}
-
-			return result
+					return &responseModel, responseDiags
+				},
+			)
 		},
 	)
 }

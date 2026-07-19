@@ -114,6 +114,10 @@ func (model TaxonomyConceptModel) ToRequest(ctx context.Context) (cm.TaxonomyCon
 		Related:       conceptLinks(related),
 	}
 
+	if diags.HasError() {
+		return cm.TaxonomyConceptRequest{}, diags
+	}
+
 	return request, diags
 }
 
@@ -191,10 +195,16 @@ func (model TaxonomyConceptSchemeModel) ToRequest(ctx context.Context) (cm.Taxon
 	uri, uriDiags := optionalKnownStringPointer(model.URI, path.Root("uri"))
 	diags.Append(uriDiags...)
 
-	return cm.TaxonomyConceptSchemeRequest{
+	request := cm.TaxonomyConceptSchemeRequest{
 		URI: cm.NewOptNilPointerString(uri), PrefLabel: cm.LocalizedString(prefLabel),
 		Definition: nullableLocalizedString(ctx, model.Definition, path.Root("definition"), &diags), TopConcepts: conceptLinks(topIDs), Concepts: conceptLinks(ids),
-	}, diags
+	}
+
+	if diags.HasError() {
+		return cm.TaxonomyConceptSchemeRequest{}, diags
+	}
+
+	return request, diags
 }
 
 func optionalKnownStringPointer(value types.String, valuePath path.Path) (*string, diag.Diagnostics) {

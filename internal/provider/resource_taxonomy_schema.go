@@ -5,6 +5,8 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -34,7 +36,15 @@ func taxonomyIdentityAttributes(entityName string) map[string]schema.Attribute {
 }
 
 func localizedStringAttribute(description string, required bool) schema.MapAttribute {
-	return schema.MapAttribute{Description: description, Required: required, Optional: !required, ElementType: types.StringType}
+	return schema.MapAttribute{
+		Description: description,
+		Required:    required,
+		Optional:    !required,
+		ElementType: types.StringType,
+		Validators: []validator.Map{
+			mapvalidator.NoNullValues(),
+		},
+	}
 }
 
 func optionalComputedStringList(description string) schema.ListAttribute {
@@ -43,6 +53,9 @@ func optionalComputedStringList(description string) schema.ListAttribute {
 		Optional:    true,
 		Computed:    true,
 		ElementType: types.StringType,
+		Validators: []validator.List{
+			listvalidator.NoNullValues(),
+		},
 		PlanModifiers: []planmodifier.List{
 			UseStateForUnknown(),
 		},
@@ -59,6 +72,9 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 		Optional:    true,
 		Computed:    true,
 		ElementType: types.ListType{ElemType: types.StringType},
+		Validators: []validator.Map{
+			mapvalidator.NoNullValues(),
+		},
 		PlanModifiers: []planmodifier.Map{
 			UseStateForUnknown(),
 		},
@@ -68,6 +84,9 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 		Optional:    true,
 		Computed:    true,
 		ElementType: types.ListType{ElemType: types.StringType},
+		Validators: []validator.Map{
+			mapvalidator.NoNullValues(),
+		},
 		PlanModifiers: []planmodifier.Map{
 			UseStateForUnknown(),
 		},

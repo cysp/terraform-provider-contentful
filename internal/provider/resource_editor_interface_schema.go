@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -54,6 +55,9 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 				CustomType: TypedList[TypedObject[EditorInterfaceEditorLayoutItemValue]]{}.CustomType(ctx),
 				Optional:   true,
+				Validators: []validator.List{
+					listvalidator.NoNullValues(),
+				},
 			},
 			"controls": schema.ListNestedAttribute{
 				Description: "Field-level controls that specify which widget to use for editing each field.",
@@ -63,6 +67,9 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 				CustomType: TypedList[TypedObject[EditorInterfaceControlValue]]{}.CustomType(ctx),
 				Optional:   true,
+				Validators: []validator.List{
+					listvalidator.NoNullValues(),
+				},
 			},
 			"group_controls": schema.ListNestedAttribute{
 				Description: "Group-level controls that specify widgets for field groups.",
@@ -72,6 +79,9 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 				CustomType: TypedList[TypedObject[EditorInterfaceGroupControlValue]]{}.CustomType(ctx),
 				Optional:   true,
+				Validators: []validator.List{
+					listvalidator.NoNullValues(),
+				},
 			},
 			"sidebar": schema.ListNestedAttribute{
 				Description: "Configuration for sidebar widgets in the editor.",
@@ -81,6 +91,9 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 				CustomType: TypedList[TypedObject[EditorInterfaceSidebarValue]]{}.CustomType(ctx),
 				Optional:   true,
+				Validators: []validator.List{
+					listvalidator.NoNullValues(),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Update: true}),
 		},
@@ -156,6 +169,9 @@ func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) SchemaAttributes(ctx
 			},
 			CustomType: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]]().CustomType(ctx),
 			Required:   true,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 	}
 }
@@ -208,6 +224,9 @@ func (v EditorInterfaceEditorLayoutItemGroupValue) SchemaAttributes(ctx context.
 			},
 			CustomType: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]]().CustomType(ctx),
 			Required:   true,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 	}
 }

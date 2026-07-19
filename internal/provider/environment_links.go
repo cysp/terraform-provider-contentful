@@ -36,6 +36,10 @@ func ToEnvironmentLinks(ctx context.Context, path path.Path, value TypedList[typ
 		environments = append(environments, environmentsItem)
 	}
 
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	return environments, diags
 }
 

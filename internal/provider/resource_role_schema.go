@@ -5,9 +5,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -48,6 +51,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				ElementType: NewTypedListNull[types.String]().Type(ctx),
 				CustomType:  NewTypedMapNull[TypedList[types.String]]().CustomType(ctx),
 				Required:    true,
+				Validators: []validator.Map{
+					mapvalidator.NoNullValues(),
+				},
 			},
 			"policies": schema.ListNestedAttribute{
 				Description: "Policies allow or deny access to resources in fine-grained detail. For example, limit read access to only entries of a specific content type or write access to only certain parts of an entry (e.g. a specific locale).",
@@ -57,6 +63,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				},
 				CustomType: TypedList[TypedObject[RolePolicyValue]]{}.CustomType(ctx),
 				Required:   true,
+				Validators: []validator.List{
+					listvalidator.NoNullValues(),
+				},
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},
@@ -70,6 +79,9 @@ func (v RolePolicyValue) SchemaAttributes(ctx context.Context) map[string]schema
 			ElementType: types.StringType,
 			CustomType:  TypedList[types.String]{}.CustomType(ctx),
 			Required:    true,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 		"constraint": schema.StringAttribute{
 			Description: "JSON constraint that defines the scope of the policy.",

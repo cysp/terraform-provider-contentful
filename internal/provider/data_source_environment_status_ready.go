@@ -81,10 +81,19 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 
 		switch response := response.(type) {
 		case *cm.Environment:
-			responseModel, responseModelDiags := NewEnvironmentStatusReadyModelFromResponse(ctx, *response)
+			responseModel, responseModelDiags := setEnvironmentStatusReadyState(
+				ctx,
+				&resp.State,
+				data,
+				*response,
+				NewEnvironmentStatusReadyModelFromResponse,
+			)
 			resp.Diagnostics.Append(responseModelDiags...)
 
-			responseModel.Timeouts = data.Timeouts
+			if responseModelDiags.HasError() {
+				return
+			}
+
 			data = responseModel
 
 		default:
@@ -92,8 +101,6 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 
 			return
 		}
-
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 		if data.Status.ValueString() == environmentStatusReadyValue {
 			return

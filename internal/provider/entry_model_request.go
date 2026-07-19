@@ -18,6 +18,10 @@ func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.D
 	metadata, metadataDiags := entryModelToOptEntryMetadata(ctx, m)
 	diags.Append(metadataDiags...)
 
+	if diags.HasError() {
+		return cm.EntryRequest{}, diags
+	}
+
 	return cm.EntryRequest{
 		Fields:   fields,
 		Metadata: metadata,
@@ -48,6 +52,10 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 		}
 
 		fields[k] = jx.Raw(v.ValueString())
+	}
+
+	if diags.HasError() {
+		return cm.OptEntryFields{}, diags
 	}
 
 	return cm.NewOptEntryFields(fields), diags
@@ -96,6 +104,10 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 		}
 
 		metadata.Tags = tags
+	}
+
+	if diags.HasError() {
+		return cm.OptEntryMetadata{}, diags
 	}
 
 	return cm.NewOptEntryMetadata(metadata), diags

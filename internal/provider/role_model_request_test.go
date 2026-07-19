@@ -85,11 +85,14 @@ func TestRoleRequestRejectsNullAndUnknownPolicyObjects(t *testing.T) {
 			t.Parallel()
 
 			model := RoleModel{
-				Name:     types.StringValue("role"),
-				Policies: NewTypedList([]TypedObject[RolePolicyValue]{value}),
+				Name:        types.StringValue("role"),
+				Permissions: NewTypedMap(map[string]TypedList[types.String]{}),
+				Policies:    NewTypedList([]TypedObject[RolePolicyValue]{value}),
 			}
-			_, diags := model.ToRoleData(t.Context())
+			request, diags := model.ToRoleData(t.Context())
 			require.True(t, diags.HasError())
+			assert.Nil(t, request.Policies)
+			assert.Equal(t, []string{"policies[0]"}, diagnosticPaths(t, diags))
 		})
 	}
 }

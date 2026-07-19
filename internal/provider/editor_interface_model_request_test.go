@@ -110,8 +110,10 @@ func TestEditorInterfaceRequestRejectsNullAndUnknownObjects(t *testing.T) {
 			model := EditorInterfaceModel{
 				Controls: NewTypedList([]TypedObject[EditorInterfaceControlValue]{value}),
 			}
-			_, diags := model.ToEditorInterfaceData(t.Context())
+			request, diags := model.ToEditorInterfaceData(t.Context())
 			require.True(t, diags.HasError())
+			assert.False(t, request.Controls.Set)
+			assert.Equal(t, []string{"controls[0]"}, diagnosticPaths(t, diags))
 		})
 	}
 }

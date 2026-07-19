@@ -5,6 +5,7 @@ import (
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -73,4 +74,35 @@ func TestContentTypeMetadataRequestSerialization(t *testing.T) {
 			assert.JSONEq(t, test.expected, string(requestBody))
 		})
 	}
+}
+
+func TestContentTypeMetadataTaxonomyFailsWithoutPartialOutput(t *testing.T) {
+	t.Parallel()
+
+	items := NewTypedList([]TypedObject[ContentTypeMetadataTaxonomyItemValue]{
+		NewTypedObject(ContentTypeMetadataTaxonomyItemValue{
+			TaxonomyConcept: NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{
+				ID:       types.StringValue("valid"),
+				Required: types.BoolValue(false),
+			}),
+			TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+		}),
+		NewTypedObject(ContentTypeMetadataTaxonomyItemValue{
+			TaxonomyConcept: NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{
+				ID:       types.StringUnknown(),
+				Required: types.BoolValue(false),
+			}),
+			TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+		}),
+	})
+
+	result, diags := ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
+		t.Context(),
+		path.Root("metadata").AtName("taxonomy"),
+		items,
+	)
+
+	assert.Nil(t, result)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{"metadata.taxonomy[1].taxonomy_concept.id"}, diagnosticPaths(t, diags))
 }

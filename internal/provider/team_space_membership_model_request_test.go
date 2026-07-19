@@ -3,7 +3,6 @@ package provider_test
 import (
 	"testing"
 
-	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -28,9 +27,7 @@ func TestTeamSpaceMembershipModelToRequestRejectsNullAndUnknownRoles(t *testing.
 	require.True(t, diags.HasError())
 	assert.Len(t, diags.Errors(), 2)
 
-	assert.True(t, request.Admin)
-	assert.Equal(t, []cm.RoleLink{
-		{Sys: cm.RoleLinkSys{Type: cm.RoleLinkSysTypeLink, LinkType: cm.RoleLinkSysLinkTypeRole, ID: "role-a"}},
-		{Sys: cm.RoleLinkSys{Type: cm.RoleLinkSysTypeLink, LinkType: cm.RoleLinkSysLinkTypeRole, ID: "role-b"}},
-	}, request.Roles)
+	assert.False(t, request.Admin)
+	assert.Nil(t, request.Roles)
+	assert.Equal(t, []string{"roles[1]", "roles[2]"}, diagnosticPaths(t, diags))
 }

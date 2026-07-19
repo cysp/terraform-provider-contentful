@@ -687,7 +687,7 @@ in Configure, validation, planning, or aggregate-child conversion.
 
 | Area | Value boundary reviewed | Result |
 | --- | --- | --- |
-| Provider configuration | `url`, `access_token`, environment fallback, default URL | Unknown configuration now produces path-specific errors before primitive access or fallback. Null retains the documented fallback behavior. Protocol tests cover both attributes. |
+| Provider configuration | `url`, `access_token`, environment fallback, default URL | Unknown configuration now produces path-specific errors before primitive access or fallback unless an internal test override supplies the effective value. Null retains the documented fallback behavior. Protocol tests cover both attributes and override precedence. |
 | App Definition | Base model, locations, field types, navigation, installation/instance parameters, JSON defaults and options | Native nested models remain CRUD-known. Framework JSON values reject unknown defaults and null/unknown option children; an unknown options collection is rejected. Optional-computed `src` and `bundle_id` intentionally remain unset on initial create and use prior state on update. |
 | App Installation | Marketplace set, JSON parameters | Unknown containers and null/unknown set children now fail with attribute diagnostics. Unknown JSON parameters fail rather than being sent as omission. |
 | App Key | JWK object and `x5c` children | Existing strict known-value validation is retained. Null/unknown JWK material is rejected before certificate decoding or request construction. |
@@ -709,16 +709,21 @@ in Configure, validation, planning, or aggregate-child conversion.
 | Taxonomy Concept Scheme | URI, preferred label, definition, top/concept IDs | Uses the same explicit taxonomy policies and diagnostic barrier as concepts. Explicit empty collections still clear; omitted update configuration preserves state. |
 | Team | Name and nullable description | Required name is CRUD-known. Unknown description now errors rather than becoming API null; explicit null still clears/omits according to the existing request contract. |
 | Team Space Membership | Admin and role ID list | Null/unknown role children now fail instead of being silently dropped. Native required values remain CRUD-known. |
-| Webhook | Required scalars, topics, credentials, filters, headers, transformation | Required and optional request primitives are checked where they cross custom conversion boundaries. Unknown collections, typed objects, union alternatives, and primitive children fail with paths. Null filters retain explicit API-null semantics. Header/transformation requests are not partially set after errors. |
-| Data sources | App Definition, environment-ready status, marketplace App Definition, Preview API Key | Inputs are required data-source configuration and are known before Read under the framework contract. Response conversion diagnostics are checked before state is written. |
-| List resources | Content Type and Entry | Required IDs use known-value extraction. Optional Entry filters distinguish null from unknown, validate collection children, and stop before API calls on diagnostics. |
-| Import | Multipart identity parsing and state writes | Parsed identity components reject null/unknown before use. Import writes only known values to state. |
-| Custom collection/object types | Terraform conversion and request-side accessors | Top-level null/unknown preservation is retained. Request converters now use `GetValue` through path-aware helpers for object children and keep `ElementsAs`/`ValueAs` in strict (`allowUnhandled=false`) mode. |
-| Response/state conversion | All model-from-response paths and state setters | No API response converter intentionally creates unknown state. Conversion diagnostics are treated as barriers before `State.Set`; invalid role unions return null plus an error. Planning-only unknown values remain confined to plan reconciliation and plan modifiers. |
+| Webhook | Required scalars, topics, credentials, filters, headers, transformation | Required and optional request primitives are checked where they cross custom conversion boundaries. An unknown top-level Optional+Computed headers map is legal initial-create omission; `UseStateForUnknown` preserves prior headers on update. Known collections still reject invalid children with exact paths. Filters and headers return no partial API value after an error. |
+| Data sources | App Definition, environment-ready status, marketplace App Definition, Preview API Key | Inputs are required data-source configuration and are known before Read under the framework contract. Environment-ready response conversion and state setting share an explicit barrier that leaves prior state untouched on conversion errors. |
+| List resources | Content Type and Entry | Required IDs use known-value extraction. Optional Entry filters distinguish null from unknown, validate collection children, and stop before API calls on diagnostics. A shared list-result builder leaves the resource null when response conversion fails. |
+| Import | Multipart identity parsing and state writes | Identity components are decoded and validated as known strings before any write. Null, unknown, and decode errors leave both identity and state untouched; only a fully valid component set is written. |
+| Custom collection/object types | Terraform conversion and request-side accessors | Top-level null/unknown preservation is retained. A shared fail-closed list/map conversion seam supplies exact child paths, deterministic map ordering, and no aggregate API output on any child error. `ElementsAs`/`ValueAs` remain strict (`allowUnhandled=false`). |
+| Response/state conversion | All model-from-response paths and state setters | No API response converter intentionally creates unknown state. Conversion diagnostics are barriers before state or list-resource data is written; invalid role unions return null plus an error. Planning-only unknown values remain confined to plan reconciliation and plan modifiers. |
 
-Representative tests cover provider protocol configuration, taxonomy lifecycle
-preservation versus explicit clearing, known collection containers with
-null/unknown primitive and object children, entry JSON-null semantics, and
-response-conversion failures. The mechanical mutation-site audit confirmed that
-every request converter returning diagnostics is followed by `HasError()` before
-the Contentful client call.
+Tests cover provider protocol configuration and override precedence, taxonomy
+lifecycle preservation versus explicit clearing, a taxonomy conversion failure
+that performs no PATCH, known collection containers with null/unknown primitive
+and object children, exact diagnostic paths and absence of partial API output,
+entry Terraform-null omission versus known JSON null, atomic identity import,
+schema validation that rejects null children while deferring unknown containers,
+and response-conversion barriers for list resources and the environment-ready
+data source. Mock acceptance covers the complete provider resource lifecycle.
+The mechanical mutation-site audit confirmed that every request converter
+returning diagnostics is followed by `HasError()` before the Contentful client
+mutation.

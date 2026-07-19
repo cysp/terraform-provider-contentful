@@ -36,6 +36,10 @@ func (model *TeamSpaceMembershipModel) ToTeamSpaceMembershipData(_ context.Conte
 			roles = append(roles, roleLink)
 		}
 
+		if diags.HasError() {
+			return cm.TeamSpaceMembershipData{}, diags
+		}
+
 		fields.Roles = roles
 	}
 
