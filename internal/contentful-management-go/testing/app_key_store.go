@@ -38,9 +38,7 @@ func (s *appKeyStore) Set(organizationID, appDefinitionID string, appKey cm.AppK
 		appKey:          appKey,
 	}
 
-	index := slices.IndexFunc(s.records, func(existing appKeyRecord) bool {
-		return existing.appKey.Sys.ID == appKey.Sys.ID
-	})
+	index := s.index(organizationID, appDefinitionID, appKey.Sys.ID)
 	if index == -1 {
 		s.records = append(s.records, record)
 

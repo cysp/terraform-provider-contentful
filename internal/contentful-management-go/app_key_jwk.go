@@ -10,29 +10,21 @@ import (
 
 var errAppKeyJWKBase64LineBreak = errors.New("CR and LF are not permitted")
 
-type AppKeyJWKMaterial struct {
-	DER         []byte
-	Fingerprint string
-}
-
-func DecodeAppKeyJWKMaterial(x5c string) (AppKeyJWKMaterial, error) {
+func AppKeyJWKFingerprintFromX5C(x5c string) (string, error) {
 	if strings.ContainsAny(x5c, "\r\n") {
-		return AppKeyJWKMaterial{}, fmt.Errorf("decode standard base64: %w", errAppKeyJWKBase64LineBreak)
+		return "", fmt.Errorf("decode standard base64: %w", errAppKeyJWKBase64LineBreak)
 	}
 
-	publicKeyDER, err := base64.StdEncoding.DecodeString(x5c)
+	publicKeyBytes, err := base64.StdEncoding.DecodeString(x5c)
 	if err != nil {
-		return AppKeyJWKMaterial{}, fmt.Errorf("decode standard base64: %w", err)
+		return "", fmt.Errorf("decode standard base64: %w", err)
 	}
 
-	return AppKeyJWKMaterial{
-		DER:         publicKeyDER,
-		Fingerprint: AppKeyJWKFingerprint(publicKeyDER),
-	}, nil
+	return AppKeyJWKFingerprint(publicKeyBytes), nil
 }
 
-func AppKeyJWKFingerprint(publicKeyDER []byte) string {
-	fingerprint := sha256.Sum256(publicKeyDER)
+func AppKeyJWKFingerprint(publicKeyBytes []byte) string {
+	fingerprint := sha256.Sum256(publicKeyBytes)
 
 	return base64.RawURLEncoding.EncodeToString(fingerprint[:])
 }

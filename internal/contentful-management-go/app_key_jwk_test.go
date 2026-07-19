@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDecodeAppKeyJWKMaterial(t *testing.T) {
+func TestAppKeyJWKFingerprintFromX5C(t *testing.T) {
 	t.Parallel()
 
 	publicKeyDER := bytes.Repeat([]byte{0}, 550)
@@ -24,18 +24,16 @@ func TestDecodeAppKeyJWKMaterial(t *testing.T) {
 
 	fingerprint := sha256.Sum256(publicKeyDER)
 
-	canonical, err := cm.DecodeAppKeyJWKMaterial(canonicalX5C)
+	canonical, err := cm.AppKeyJWKFingerprintFromX5C(canonicalX5C)
 	require.NoError(t, err)
-	noncanonical, err := cm.DecodeAppKeyJWKMaterial(noncanonicalX5C)
+	noncanonical, err := cm.AppKeyJWKFingerprintFromX5C(noncanonicalX5C)
 	require.NoError(t, err)
 
-	assert.Equal(t, publicKeyDER, canonical.DER)
-	assert.Equal(t, publicKeyDER, noncanonical.DER)
-	assert.Equal(t, base64.RawURLEncoding.EncodeToString(fingerprint[:]), canonical.Fingerprint)
-	assert.Equal(t, canonical.Fingerprint, noncanonical.Fingerprint)
+	assert.Equal(t, base64.RawURLEncoding.EncodeToString(fingerprint[:]), canonical)
+	assert.Equal(t, canonical, noncanonical)
 }
 
-func TestDecodeAppKeyJWKMaterialRejectsInvalidStandardBase64(t *testing.T) {
+func TestAppKeyJWKFingerprintFromX5CRejectsInvalidStandardBase64(t *testing.T) {
 	t.Parallel()
 
 	valid := base64.StdEncoding.EncodeToString(bytes.Repeat([]byte{0x42}, 600))
@@ -53,7 +51,7 @@ func TestDecodeAppKeyJWKMaterialRejectsInvalidStandardBase64(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, err := cm.DecodeAppKeyJWKMaterial(x5c)
+			_, err := cm.AppKeyJWKFingerprintFromX5C(x5c)
 
 			require.Error(t, err)
 		})

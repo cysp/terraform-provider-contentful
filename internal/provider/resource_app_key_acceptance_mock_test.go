@@ -3,6 +3,7 @@ package provider_test
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
@@ -296,6 +297,49 @@ func TestAccAppKeyResourceMockAcceptsFingerprintableMaterial(t *testing.T) {
 				PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 			},
 		}},
+	})
+}
+
+func TestAccAppKeyResourceMockPreservesNonCanonicalBase64(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+	setTestAccAppKeyAppDefinitions(server)
+
+	publicKeyBytes := bytes.Repeat([]byte{0}, 550)
+
+	jwk := testAccAppKeyJWKFromDER(publicKeyBytes)
+	if !strings.HasSuffix(jwk.x5c, "AA==") {
+		t.Fatalf("canonical test input has unexpected suffix: %q", jwk.x5c[len(jwk.x5c)-4:])
+	}
+
+	jwk.x5c = jwk.x5c[:len(jwk.x5c)-3] + "P=="
+
+	decoded, err := base64.StdEncoding.DecodeString(jwk.x5c)
+	if err != nil {
+		t.Fatalf("decode noncanonical test input: %v", err)
+	}
+
+	if !bytes.Equal(publicKeyBytes, decoded) {
+		t.Fatal("noncanonical test input decodes to different bytes")
+	}
+
+	config := testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, "")
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check:  resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.x5c.0", jwk.x5c),
+			},
+			{
+				Config: config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.x5c.0", jwk.x5c),
+			},
+		},
 	})
 }
 

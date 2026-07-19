@@ -97,16 +97,16 @@ func validateAppKeyRequest(request cm.AppKeyRequestData) error {
 		return errAppKeyX5CEncodedLength
 	}
 
-	material, err := cm.DecodeAppKeyJWKMaterial(x5c)
+	fingerprint, err := cm.AppKeyJWKFingerprintFromX5C(x5c)
 	if err != nil {
 		return fmt.Errorf("validate x5c encoding: %w", err)
 	}
 
-	if request.Jwk.X5t != material.Fingerprint {
+	if request.Jwk.X5t != fingerprint {
 		return errAppKeyX5TFingerprint
 	}
 
-	if request.Jwk.Kid != material.Fingerprint {
+	if request.Jwk.Kid != fingerprint {
 		return errAppKeyKIDFingerprint
 	}
 
