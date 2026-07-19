@@ -118,6 +118,18 @@ func TestAppKeyCreateAcceptsNonCanonicalBase64PaddingBits(t *testing.T) {
 
 	created := createAppKey(t, handler, request)
 	assert.Equal(t, cm.AppKeyJWKFingerprint(publicKeyDER), created.Sys.ID)
+	require.Equal(t, jwk.X5c[0], created.Jwk.X5c[0])
+
+	response, err := handler.GetAppKey(context.Background(), cm.GetAppKeyParams{
+		OrganizationID:  "organization",
+		AppDefinitionID: "app-definition",
+		KeyKid:          created.Sys.ID,
+	})
+	require.NoError(t, err)
+
+	read, ok := response.(*cm.AppKey)
+	require.True(t, ok)
+	require.Equal(t, jwk.X5c[0], read.Jwk.X5c[0])
 }
 
 func TestAppKeyCreateRejectsBase64LineBreaks(t *testing.T) {

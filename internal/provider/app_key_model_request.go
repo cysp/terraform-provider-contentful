@@ -114,19 +114,19 @@ func validateKnownAppKeyJWKMaterial(jwk AppKeyJWKModel, attrPath path.Path) diag
 func validateAppKeyJWKMaterialValues(x5c string, kid, x5t *string, attrPath path.Path) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	material, err := cm.DecodeAppKeyJWKMaterial(x5c)
+	fingerprint, err := cm.AppKeyJWKFingerprintFromX5C(x5c)
 	if err != nil {
 		diags.AddAttributeError(attrPath.AtName("x5c").AtListIndex(0), "Invalid app key JWK x5c", "The first x5c value must use valid standard base64 encoding without CR or LF.")
 
 		return diags
 	}
 
-	if x5t != nil && *x5t != material.Fingerprint {
-		diags.AddAttributeError(attrPath.AtName("x5t"), "Invalid app key JWK x5t", fmt.Sprintf("The x5t value must match the base64url-encoded SHA-256 digest of x5c[0]. Expected %q.", material.Fingerprint))
+	if x5t != nil && *x5t != fingerprint {
+		diags.AddAttributeError(attrPath.AtName("x5t"), "Invalid app key JWK x5t", fmt.Sprintf("The x5t value must match the base64url-encoded SHA-256 digest of x5c[0]. Expected %q.", fingerprint))
 	}
 
-	if kid != nil && *kid != material.Fingerprint {
-		diags.AddAttributeError(attrPath.AtName("kid"), "Invalid app key JWK kid", fmt.Sprintf("The kid value must match the base64url-encoded SHA-256 digest of x5c[0]. Expected %q.", material.Fingerprint))
+	if kid != nil && *kid != fingerprint {
+		diags.AddAttributeError(attrPath.AtName("kid"), "Invalid app key JWK kid", fmt.Sprintf("The kid value must match the base64url-encoded SHA-256 digest of x5c[0]. Expected %q.", fingerprint))
 	}
 
 	return diags
