@@ -33,6 +33,7 @@ func TestAccAppKeyResourceMockLifecycle(t *testing.T) {
 	replacementJWK := testAccAppKeyJWK(t)
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		CheckDestroy: testAccAppKeyDestroyCheck(server.Handler().GetAppKey, jwk.kid, replacementJWK.kid),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, testAccAppKeyCreateBeforeDestroyHCL),

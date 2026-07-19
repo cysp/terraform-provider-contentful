@@ -27,8 +27,16 @@ func TestAccAppKeyResourceLiveLifecycle(t *testing.T) {
 	replacementJWK := testAccAppKeyJWK(t)
 
 	cleanupLiveAppKeyFixture(t, jwk.kid, replacementJWK.kid)
+	client := newLiveAppKeyClient(t)
 
 	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+		CheckDestroy: testAccAppKeyDestroyCheck(
+			func(ctx context.Context, params cm.GetAppKeyParams) (cm.GetAppKeyRes, error) {
+				return client.GetAppKey(ctx, params)
+			},
+			jwk.kid,
+			replacementJWK.kid,
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAppKeyJWKConfig(jwk),
