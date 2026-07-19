@@ -4,18 +4,11 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func (s *Server) SetAppKey(organizationID, appDefinitionID string, request cm.AppKeyRequestData) error {
+func (s *Server) SetAppKey(organizationID, appDefinitionID string, request cm.AppKeyRequestData) {
 	s.h.mu.Lock()
 	defer s.h.mu.Unlock()
 
-	appKey, err := NewAppKeyFromRequest(organizationID, appDefinitionID, request)
-	if err != nil {
-		return err
-	}
-
-	appKey.Generated.Reset()
+	appKey := NewAppKeyFromRequest(organizationID, appDefinitionID, request)
 
 	s.h.appKeys.Set(organizationID, appDefinitionID, &appKey)
-
-	return nil
 }

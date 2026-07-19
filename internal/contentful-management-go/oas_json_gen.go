@@ -3440,18 +3440,11 @@ func (s *AppKey) encodeFields(e *jx.Encoder) {
 		e.FieldStart("jwk")
 		s.Jwk.Encode(e)
 	}
-	{
-		if s.Generated.Set {
-			e.FieldStart("generated")
-			s.Generated.Encode(e)
-		}
-	}
 }
 
-var jsonFieldsNameOfAppKey = [3]string{
+var jsonFieldsNameOfAppKey = [2]string{
 	0: "sys",
 	1: "jwk",
-	2: "generated",
 }
 
 // Decode decodes AppKey from json.
@@ -3482,16 +3475,6 @@ func (s *AppKey) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"jwk\"")
-			}
-		case "generated":
-			if err := func() error {
-				s.Generated.Reset()
-				if err := s.Generated.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"generated\"")
 			}
 		default:
 			return d.Skip()
@@ -3854,102 +3837,6 @@ func (s *AppKeyCollectionSysType) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s *AppKeyGenerated) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields encodes fields.
-func (s *AppKeyGenerated) encodeFields(e *jx.Encoder) {
-	{
-		e.FieldStart("privateKey")
-		e.Str(s.PrivateKey)
-	}
-}
-
-var jsonFieldsNameOfAppKeyGenerated = [1]string{
-	0: "privateKey",
-}
-
-// Decode decodes AppKeyGenerated from json.
-func (s *AppKeyGenerated) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode AppKeyGenerated to nil")
-	}
-	var requiredBitSet [1]uint8
-
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		switch string(k) {
-		case "privateKey":
-			requiredBitSet[0] |= 1 << 0
-			if err := func() error {
-				v, err := d.Str()
-				s.PrivateKey = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"privateKey\"")
-			}
-		default:
-			return d.Skip()
-		}
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode AppKeyGenerated")
-	}
-	// Validate required fields.
-	var failures []validate.FieldError
-	for i, mask := range [1]uint8{
-		0b00000001,
-	} {
-		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
-			// Mask only required fields and check equality to mask using XOR.
-			//
-			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
-			// Bits of fields which would be set are actually bits of missed fields.
-			missed := bits.OnesCount8(result)
-			for bitN := 0; bitN < missed; bitN++ {
-				bitIdx := bits.TrailingZeros8(result)
-				fieldIdx := i*8 + bitIdx
-				var name string
-				if fieldIdx < len(jsonFieldsNameOfAppKeyGenerated) {
-					name = jsonFieldsNameOfAppKeyGenerated[fieldIdx]
-				} else {
-					name = strconv.Itoa(fieldIdx)
-				}
-				failures = append(failures, validate.FieldError{
-					Name:  name,
-					Error: validate.ErrFieldRequired,
-				})
-				// Reset bit.
-				result &^= 1 << bitIdx
-			}
-		}
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s *AppKeyGenerated) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *AppKeyGenerated) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
 func (s *AppKeyJWK) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -4260,22 +4147,13 @@ func (s *AppKeyRequestData) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *AppKeyRequestData) encodeFields(e *jx.Encoder) {
 	{
-		if len(s.Jwk) != 0 {
-			e.FieldStart("jwk")
-			e.Raw(s.Jwk)
-		}
-	}
-	{
-		if len(s.Generate) != 0 {
-			e.FieldStart("generate")
-			e.Raw(s.Generate)
-		}
+		e.FieldStart("jwk")
+		s.Jwk.Encode(e)
 	}
 }
 
-var jsonFieldsNameOfAppKeyRequestData = [2]string{
+var jsonFieldsNameOfAppKeyRequestData = [1]string{
 	0: "jwk",
-	1: "generate",
 }
 
 // Decode decodes AppKeyRequestData from json.
@@ -4283,30 +4161,19 @@ func (s *AppKeyRequestData) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode AppKeyRequestData to nil")
 	}
+	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
 		case "jwk":
+			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				v, err := d.RawAppend(nil)
-				s.Jwk = jx.Raw(v)
-				if err != nil {
+				if err := s.Jwk.Decode(d); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"jwk\"")
-			}
-		case "generate":
-			if err := func() error {
-				v, err := d.RawAppend(nil)
-				s.Generate = jx.Raw(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"generate\"")
 			}
 		default:
 			return d.Skip()
@@ -4314,6 +4181,38 @@ func (s *AppKeyRequestData) Decode(d *jx.Decoder) error {
 		return nil
 	}); err != nil {
 		return errors.Wrap(err, "decode AppKeyRequestData")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfAppKeyRequestData) {
+					name = jsonFieldsNameOfAppKeyRequestData[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
 	}
 
 	return nil
@@ -13689,39 +13588,6 @@ func (s OptAppDefinitionParameters) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptAppDefinitionParameters) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes AppKeyGenerated as json.
-func (o OptAppKeyGenerated) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes AppKeyGenerated from json.
-func (o *OptAppKeyGenerated) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptAppKeyGenerated to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptAppKeyGenerated) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptAppKeyGenerated) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

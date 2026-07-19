@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/go-faster/jx"
 )
 
 var errAppKeyJWKBase64LineBreak = errors.New("CR and LF are not permitted")
@@ -40,10 +38,7 @@ func AppKeyJWKFingerprint(publicKeyDER []byte) string {
 }
 
 func NewAppKeyRequestData(jwk AppKeyJWK) AppKeyRequestData {
-	encoder := jx.Encoder{}
-	jwk.Encode(&encoder)
-
 	return AppKeyRequestData{
-		Jwk: encoder.Bytes(),
+		Jwk: jwk,
 	}
 }
