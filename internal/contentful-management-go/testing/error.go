@@ -18,6 +18,10 @@ func NewContentfulManagementErrorStatusCodeValidationFailed(message *string, det
 	return NewContentfulManagementErrorStatusCode(http.StatusUnprocessableEntity, "ValidationFailed", message, details)
 }
 
+func NewContentfulManagementErrorStatusCodeAccessDenied(message *string, details []byte) *cm.ErrorStatusCode {
+	return NewContentfulManagementErrorStatusCode(http.StatusForbidden, "AccessDenied", message, details)
+}
+
 func NewContentfulManagementErrorStatusCode(statusCode int, id string, message *string, details []byte) *cm.ErrorStatusCode {
 	return &cm.ErrorStatusCode{
 		StatusCode: statusCode,

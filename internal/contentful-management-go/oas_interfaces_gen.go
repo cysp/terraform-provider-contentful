@@ -9,6 +9,10 @@ type CreateAppDefinitionRes interface {
 	createAppDefinitionRes()
 }
 
+type CreateAppKeyRes interface {
+	createAppKeyRes()
+}
+
 type CreateDeliveryAPIKeyRes interface {
 	createDeliveryAPIKeyRes()
 }
@@ -55,6 +59,10 @@ type DeleteAppDefinitionRes interface {
 
 type DeleteAppInstallationRes interface {
 	deleteAppInstallationRes()
+}
+
+type DeleteAppKeyRes interface {
+	deleteAppKeyRes()
 }
 
 type DeleteAppSigningSecretRes interface {
@@ -127,6 +135,14 @@ type GetAppDefinitionRes interface {
 
 type GetAppInstallationRes interface {
 	getAppInstallationRes()
+}
+
+type GetAppKeyRes interface {
+	getAppKeyRes()
+}
+
+type GetAppKeysRes interface {
+	getAppKeysRes()
 }
 
 type GetAppSigningSecretRes interface {

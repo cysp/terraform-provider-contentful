@@ -1,0 +1,7 @@
+AppKeyRequestData:
+  # Deliberately not modelled as oneOf: invalid mode combinations must reach
+  # the mock handler so it can reproduce Contentful's 422 validation responses.
+  type: object
+  properties:
+    jwk: {}
+    generate: {}
