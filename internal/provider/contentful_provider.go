@@ -98,7 +98,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	if data.URL.IsUnknown() {
+	if p.contentfulURL == "" && data.URL.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("url"),
 			"Unknown Contentful API URL",
@@ -107,7 +107,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		)
 	}
 
-	if data.AccessToken.IsUnknown() {
+	if p.accessToken == "" && data.AccessToken.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("access_token"),
 			"Unknown Contentful management access token",
@@ -121,14 +121,12 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	}
 
 	var contentfulURL string
-	if !data.URL.IsNull() {
+	if p.contentfulURL != "" {
+		contentfulURL = p.contentfulURL
+	} else if !data.URL.IsNull() {
 		contentfulURL = data.URL.ValueString()
 	} else if contentfulURLFromEnv, found := os.LookupEnv("CONTENTFUL_URL"); found {
 		contentfulURL = contentfulURLFromEnv
-	}
-
-	if p.contentfulURL != "" {
-		contentfulURL = p.contentfulURL
 	}
 
 	if contentfulURL == "" {
@@ -140,16 +138,15 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 	}
 
 	var accessToken string
-	if !data.AccessToken.IsNull() {
+	switch {
+	case p.accessToken != "":
+		accessToken = p.accessToken
+	case !data.AccessToken.IsNull():
 		accessToken = data.AccessToken.ValueString()
-	} else {
+	default:
 		if accessTokenFromEnv, found := os.LookupEnv("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN"); found {
 			accessToken = accessTokenFromEnv
 		}
-	}
-
-	if p.accessToken != "" {
-		accessToken = p.accessToken
 	}
 
 	if accessToken == "" {

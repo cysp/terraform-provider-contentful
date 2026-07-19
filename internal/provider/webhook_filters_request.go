@@ -26,24 +26,11 @@ func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, f
 		return cm.OptNilWebhookDefinitionFilterArray{}, diags
 	}
 
-	filterValues := filterValuesList.Elements()
+	filters, filterDiags := ConvertKnownObjectListElements(ctx, path, filterValuesList.Elements(), ToWebhookDefinitionFilter)
+	diags.Append(filterDiags...)
 
-	filters := make([]cm.WebhookDefinitionFilter, len(filterValues))
-
-	for index, filterValue := range filterValues {
-		path := path.AtListIndex(index)
-
-		value, valueDiags := KnownObjectValue(filterValue, path)
-		diags.Append(valueDiags...)
-
-		if valueDiags.HasError() {
-			continue
-		}
-
-		filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, value)
-		diags.Append(filterDiags...)
-
-		filters[index] = filter
+	if filterDiags.HasError() {
+		return cm.OptNilWebhookDefinitionFilterArray{}, diags
 	}
 
 	return cm.NewOptNilWebhookDefinitionFilterArray(filters), diags
@@ -53,11 +40,11 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 	diags := diag.Diagnostics{}
 
 	filter := cm.WebhookDefinitionFilter{}
-	found := false
+	found := 0
 
 	notValue, notValueOk := value.Not.GetValue()
 	if notValueOk {
-		found = true
+		found++
 		path := path.AtName("not")
 
 		filterNot, filterNotDiags := ToWebhookDefinitionFilterNot(ctx, path, notValue)
@@ -68,7 +55,7 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	equalsValue, equalsValueOk := value.Equals.GetValue()
 	if equalsValueOk {
-		found = true
+		found++
 		path := path.AtName("equals")
 
 		filterEquals, filterEqualsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
@@ -79,7 +66,7 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	inValue, inValueOk := value.In.GetValue()
 	if inValueOk {
-		found = true
+		found++
 		path := path.AtName("in")
 
 		filterIn, filterInDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
@@ -90,7 +77,7 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	regexpValue, regexpValueOk := value.Regexp.GetValue()
 	if regexpValueOk {
-		found = true
+		found++
 		path := path.AtName("regexp")
 
 		filterRegexp, filterRegexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
@@ -99,8 +86,12 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 		filter.Regexp = filterRegexp
 	}
 
-	if !found {
-		diags.AddAttributeError(path, "Missing webhook filter", "Exactly one webhook filter operation must be known and non-null.")
+	if found != 1 {
+		diags.AddAttributeError(path, "Invalid webhook filter", "Exactly one webhook filter operation must be known and non-null.")
+	}
+
+	if diags.HasError() {
+		return cm.WebhookDefinitionFilter{}, diags
 	}
 
 	return filter, diags
@@ -110,10 +101,10 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 	diags := diag.Diagnostics{}
 
 	filterNot := cm.WebhookDefinitionFilterNot{}
-	found := false
+	found := 0
 
 	if equalsValue, equalsValueOk := value.Equals.GetValue(); equalsValueOk {
-		found = true
+		found++
 		path := path.AtName("equals")
 
 		equals, equalsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
@@ -123,7 +114,7 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 	}
 
 	if inValue, inValueOk := value.In.GetValue(); inValueOk {
-		found = true
+		found++
 		path := path.AtName("in")
 
 		in, inDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
@@ -133,7 +124,7 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 	}
 
 	if regexpValue, regexpValueOk := value.Regexp.GetValue(); regexpValueOk {
-		found = true
+		found++
 		path := path.AtName("regexp")
 
 		regexp, regexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
@@ -142,8 +133,12 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 		filterNot.Regexp = regexp
 	}
 
-	if !found {
-		diags.AddAttributeError(path, "Missing negated webhook filter", "Exactly one negated webhook filter operation must be known and non-null.")
+	if found != 1 {
+		diags.AddAttributeError(path, "Invalid negated webhook filter", "Exactly one negated webhook filter operation must be known and non-null.")
+	}
+
+	if diags.HasError() {
+		return cm.OptWebhookDefinitionFilterNot{}, diags
 	}
 
 	return cm.NewOptWebhookDefinitionFilterNot(filterNot), diags
@@ -161,6 +156,10 @@ func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value 
 
 	filterTermValue, filterTermValueDiags := toWebhookDefinitionFilterTermString(ctx, path.AtName("value"), value.Value)
 	diags.Append(filterTermValueDiags...)
+
+	if diags.HasError() {
+		return nil, diags
+	}
 
 	filter = append(filter, filterTermValue)
 
@@ -180,6 +179,10 @@ func ToWebhookDefinitionFilterIn(ctx context.Context, path path.Path, value Webh
 	filterTermValues, filterTermValuesDiags := toWebhookDefinitionFilterTermStringArray(ctx, path.AtName("values"), value.Values)
 	diags.Append(filterTermValuesDiags...)
 
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	filter = append(filter, filterTermValues)
 
 	return filter, diags
@@ -197,6 +200,10 @@ func ToWebhookDefinitionFilterRegexp(ctx context.Context, path path.Path, value 
 
 	filterTermPattern, filterTermPatternDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("pattern"), "pattern", value.Pattern)
 	diags.Append(filterTermPatternDiags...)
+
+	if diags.HasError() {
+		return nil, diags
+	}
 
 	filter = append(filter, filterTermPattern)
 
@@ -235,10 +242,14 @@ func toWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.Pat
 		return nil, diags
 	}
 
-	if encoder.Arr(func(encoder *jx.Encoder) {
-		values := make([]string, len(value.Elements()))
-		diags.Append(tfsdk.ValueAs(ctx, value, &values)...)
+	values := make([]string, len(value.Elements()))
+	diags.Append(tfsdk.ValueAs(ctx, value, &values)...)
 
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	if encoder.Arr(func(encoder *jx.Encoder) {
 		for index, v := range values {
 			path := path.AtListIndex(index)
 			if encoder.Str(v) {

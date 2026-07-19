@@ -348,7 +348,6 @@ func assertImportStatePassthroughUntouched(t *testing.T, resp *resource.ImportSt
 	assert.True(t, identitySpaceID.IsNull())
 	assert.True(t, identityEntryID.IsNull())
 }
-
 func importDiagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
 	t.Helper()
 

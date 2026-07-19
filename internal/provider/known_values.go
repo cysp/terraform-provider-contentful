@@ -1,8 +1,11 @@
 package provider
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -55,4 +58,31 @@ func KnownBoolValue(value types.Bool, valuePath path.Path) (bool, diag.Diagnosti
 	}
 
 	return false, diags
+}
+
+func KnownStringListValues(
+	ctx context.Context,
+	value TypedList[types.String],
+	valuePath path.Path,
+	unknownSummary string,
+	unknownDetail string,
+	nullSummary string,
+	nullDetail string,
+) ([]string, diag.Diagnostics) {
+	if value.IsUnknown() {
+		return nil, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, unknownSummary, unknownDetail)}
+	}
+
+	if value.IsNull() {
+		return nil, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, nullSummary, nullDetail)}
+	}
+
+	result := make([]string, len(value.Elements()))
+
+	diags := tfsdk.ValueAs(ctx, value, &result)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return result, diags
 }

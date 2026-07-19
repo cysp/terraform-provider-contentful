@@ -63,6 +63,10 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(c
 		marketplaceStrings = append(marketplaceStrings, value)
 	}
 
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	return marketplaceStrings, diags
 }
 

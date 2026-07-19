@@ -19,6 +19,10 @@ func ToOptContentTypeMetadata(ctx context.Context, path path.Path, m TypedObject
 	taxonomy, taxonomyDiags := ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(ctx, path.AtName("taxonomy"), value.Taxonomy)
 	diags.Append(taxonomyDiags...)
 
+	if taxonomyDiags.HasError() {
+		return cm.OptContentTypeMetadata{}, diags
+	}
+
 	var annotations []byte
 	if !value.Annotations.IsNull() && !value.Annotations.IsUnknown() {
 		annotations = []byte(value.Annotations.ValueString())
@@ -50,7 +54,13 @@ func ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
 		item, itemDiags := ToContentTypeMetadataTaxonomyItem(ctx, path.AtListIndex(index), itemValue)
 		diags.Append(itemDiags...)
 
-		requestItems = append(requestItems, item...)
+		if !itemDiags.HasError() {
+			requestItems = append(requestItems, item...)
+		}
+	}
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return requestItems, diags
@@ -68,48 +78,56 @@ func ToContentTypeMetadataTaxonomyItem(
 
 	diags := diag.Diagnostics{}
 	items := make([]cm.ContentTypeMetadataTaxonomyItem, 0, 1)
-	found := false
+	found := 0
 
 	taxonomyConceptScheme, taxonomyConceptSchemeOk := value.TaxonomyConceptScheme.GetValue()
 	if taxonomyConceptSchemeOk {
-		found = true
+		found++
 		conceptSchemeID, conceptSchemeIDDiags := KnownStringValue(taxonomyConceptScheme.ID, path.AtName("taxonomy_concept_scheme").AtName("id"))
 		diags.Append(conceptSchemeIDDiags...)
 
 		required, requiredDiags := KnownBoolValue(taxonomyConceptScheme.Required, path.AtName("taxonomy_concept_scheme").AtName("required"))
 		diags.Append(requiredDiags...)
 
-		items = append(items, cm.ContentTypeMetadataTaxonomyItem{
-			Sys: cm.ContentTypeMetadataTaxonomyItemSys{
-				Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
-				LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme,
-				ID:       conceptSchemeID,
-			},
-			Required: cm.NewOptBool(required),
-		})
+		if !conceptSchemeIDDiags.HasError() && !requiredDiags.HasError() {
+			items = append(items, cm.ContentTypeMetadataTaxonomyItem{
+				Sys: cm.ContentTypeMetadataTaxonomyItemSys{
+					Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
+					LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme,
+					ID:       conceptSchemeID,
+				},
+				Required: cm.NewOptBool(required),
+			})
+		}
 	}
 
 	taxonomyConcept, taxonomyConceptOk := value.TaxonomyConcept.GetValue()
 	if taxonomyConceptOk {
-		found = true
+		found++
 		conceptID, conceptIDDiags := KnownStringValue(taxonomyConcept.ID, path.AtName("taxonomy_concept").AtName("id"))
 		diags.Append(conceptIDDiags...)
 
 		required, requiredDiags := KnownBoolValue(taxonomyConcept.Required, path.AtName("taxonomy_concept").AtName("required"))
 		diags.Append(requiredDiags...)
 
-		items = append(items, cm.ContentTypeMetadataTaxonomyItem{
-			Sys: cm.ContentTypeMetadataTaxonomyItemSys{
-				Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
-				LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept,
-				ID:       conceptID,
-			},
-			Required: cm.NewOptBool(required),
-		})
+		if !conceptIDDiags.HasError() && !requiredDiags.HasError() {
+			items = append(items, cm.ContentTypeMetadataTaxonomyItem{
+				Sys: cm.ContentTypeMetadataTaxonomyItemSys{
+					Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
+					LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept,
+					ID:       conceptID,
+				},
+				Required: cm.NewOptBool(required),
+			})
+		}
 	}
 
-	if !found {
-		diags.AddAttributeError(path, "Missing content type taxonomy item", "Exactly one taxonomy concept or taxonomy concept scheme must be known and non-null.")
+	if found != 1 {
+		diags.AddAttributeError(path, "Invalid content type taxonomy item", "Exactly one taxonomy concept or taxonomy concept scheme must be known and non-null.")
+	}
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return items, diags

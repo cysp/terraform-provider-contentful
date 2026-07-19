@@ -33,6 +33,10 @@ func (m *ContentTypeModel) ToContentTypeRequestData(ctx context.Context) (cm.Con
 
 	request.Metadata = metadata
 
+	if diags.HasError() {
+		return cm.ContentTypeRequestData{}, diags
+	}
+
 	return request, diags
 }
 
@@ -49,25 +53,8 @@ func FieldsListToContentTypeRequestDataFields(ctx context.Context, path path.Pat
 		return nil, diags
 	}
 
-	fieldsValues := fieldsList.Elements()
-
-	fieldsItems := make([]cm.ContentTypeRequestDataFieldsItem, len(fieldsValues))
-
-	for index, fieldsValue := range fieldsValues {
-		path := path.AtListIndex(index)
-
-		value, valueDiags := KnownObjectValue(fieldsValue, path)
-		diags.Append(valueDiags...)
-
-		if valueDiags.HasError() {
-			continue
-		}
-
-		fieldsItem, fieldsItemDiags := ToContentTypeRequestDataFieldsItem(ctx, path, value)
-		diags.Append(fieldsItemDiags...)
-
-		fieldsItems[index] = fieldsItem
-	}
+	fieldsItems, fieldsDiags := ConvertKnownObjectListElements(ctx, path, fieldsList.Elements(), ToContentTypeRequestDataFieldsItem)
+	diags.Append(fieldsDiags...)
 
 	return fieldsItems, diags
 }
@@ -158,26 +145,18 @@ func ValidationsListToContentTypeRequestDataFieldValidations(ctx context.Context
 	return validations, diags
 }
 
-func AllowedResourceListToContentTypeRequestDataFieldAllowedResources(ctx context.Context, path path.Path, allowedResourcesList TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]]) ([]cm.ResourceLink, diag.Diagnostics) {
+func AllowedResourceListToContentTypeRequestDataFieldAllowedResources(ctx context.Context, valuePath path.Path, allowedResourcesList TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]]) ([]cm.ResourceLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	allowedResources := allowedResourcesList.Elements()
-	resourceLinks := make([]cm.ResourceLink, len(allowedResources))
-
-	for index, resource := range allowedResources {
-		resourcePath := path.AtListIndex(index)
-		value, valueDiags := KnownObjectValue(resource, resourcePath)
-		diags.Append(valueDiags...)
-
-		if valueDiags.HasError() {
-			continue
-		}
-
-		resourceLink, resourceDiags := value.ToResourceLink(ctx, resourcePath)
-		diags.Append(resourceDiags...)
-
-		resourceLinks[index] = resourceLink
-	}
+	resourceLinks, resourceDiags := ConvertKnownObjectListElements(
+		ctx,
+		valuePath,
+		allowedResourcesList.Elements(),
+		func(ctx context.Context, resourcePath path.Path, value ContentTypeFieldAllowedResourceItemValue) (cm.ResourceLink, diag.Diagnostics) {
+			return value.ToResourceLink(ctx, resourcePath)
+		},
+	)
+	diags.Append(resourceDiags...)
 
 	return resourceLinks, diags
 }

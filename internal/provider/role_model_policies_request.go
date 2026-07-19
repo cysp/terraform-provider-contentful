@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -26,25 +25,8 @@ func ToRoleDataPolicies(ctx context.Context, path path.Path, policies TypedList[
 		return nil, diags
 	}
 
-	policiesValues := policies.Elements()
-
-	rolePoliciesItems := make([]cm.RoleDataPoliciesItem, len(policiesValues))
-
-	for index, policiesValueElement := range policiesValues {
-		path := path.AtListIndex(index)
-
-		policy, policyDiags := KnownObjectValue(policiesValueElement, path)
-		diags.Append(policyDiags...)
-
-		if policyDiags.HasError() {
-			continue
-		}
-
-		policiesItem, policiesItemDiags := ToRoleDataPoliciesItem(ctx, path, policy)
-		diags.Append(policiesItemDiags...)
-
-		rolePoliciesItems[index] = policiesItem
-	}
+	rolePoliciesItems, policyDiags := ConvertKnownObjectListElements(ctx, path, policies.Elements(), ToRoleDataPoliciesItem)
+	diags.Append(policyDiags...)
 
 	return rolePoliciesItems, diags
 }
@@ -61,6 +43,10 @@ func ToRoleDataPoliciesItem(ctx context.Context, path path.Path, policy RolePoli
 	constraint, constraintDiags := ToOptRoleDataPoliciesItemConstraint(ctx, path.AtName("constraint"), policy.Constraint)
 	diags.Append(constraintDiags...)
 
+	if diags.HasError() {
+		return cm.RoleDataPoliciesItem{}, diags
+	}
+
 	return cm.RoleDataPoliciesItem{
 		Effect:     cm.RoleDataPoliciesItemEffect(effect),
 		Actions:    actions,
@@ -69,20 +55,19 @@ func ToRoleDataPoliciesItem(ctx context.Context, path path.Path, policy RolePoli
 }
 
 func ToRoleDataPoliciesItemActions(ctx context.Context, path path.Path, actions TypedList[types.String]) (cm.RoleDataPoliciesItemActions, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+	actionsStrings, diags := KnownStringListValues(
+		ctx,
+		actions,
+		path,
+		"Unexpected unknown policy actions",
+		"Policy actions must be known before they can be sent to Contentful.",
+		"Unexpected null policy actions",
+		"Policy actions are required.",
+	)
 
-	if actions.IsNull() || actions.IsUnknown() {
-		if actions.IsUnknown() {
-			diags.AddAttributeError(path, "Unexpected unknown policy actions", "Policy actions must be known before they can be sent to Contentful.")
-		} else {
-			diags.AddAttributeError(path, "Unexpected null policy actions", "Policy actions are required.")
-		}
-
+	if diags.HasError() {
 		return cm.RoleDataPoliciesItemActions{}, diags
 	}
-
-	actionsStrings := make([]string, len(actions.Elements()))
-	diags.Append(tfsdk.ValueAs(ctx, actions, &actionsStrings)...)
 
 	if slices.Contains(actionsStrings, "all") {
 		return cm.RoleDataPoliciesItemActions{

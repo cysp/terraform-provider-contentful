@@ -16,113 +16,77 @@ func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (c
 	if model.EditorLayout.IsNull() || model.EditorLayout.IsUnknown() {
 		request.EditorLayout.Reset()
 	} else {
-		editorLayoutPath := path.Root("editor_layout")
+		items, itemDiags := ConvertKnownObjectListElements(
+			ctx,
+			path.Root("editor_layout"),
+			model.EditorLayout.Elements(),
+			func(ctx context.Context, itemPath path.Path, value EditorInterfaceEditorLayoutItemValue) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+				return value.ToEditorInterfaceEditorLayoutItem(ctx, itemPath)
+			},
+		)
+		diags.Append(itemDiags...)
 
-		editorLayoutElementValues := model.EditorLayout.Elements()
-
-		requestEditorLayoutItems := make([]cm.EditorInterfaceEditorLayoutItem, len(editorLayoutElementValues))
-
-		for index, editorLayoutElement := range editorLayoutElementValues {
-			path := editorLayoutPath.AtListIndex(index)
-
-			value, valueDiags := KnownObjectValue(editorLayoutElement, path)
-			diags.Append(valueDiags...)
-
-			if valueDiags.HasError() {
-				continue
-			}
-
-			requestEditorLayoutItem, requestEditorLayoutItemDiags := value.ToEditorInterfaceEditorLayoutItem(ctx, path)
-			diags.Append(requestEditorLayoutItemDiags...)
-
-			requestEditorLayoutItems[index] = requestEditorLayoutItem
+		if !itemDiags.HasError() {
+			request.EditorLayout.SetTo(items)
 		}
-
-		request.EditorLayout.SetTo(requestEditorLayoutItems)
 	}
 
 	if model.Controls.IsNull() || model.Controls.IsUnknown() {
 		request.Controls.Reset()
 	} else {
-		controlsPath := path.Root("controls")
+		items, itemDiags := ConvertKnownObjectListElements(
+			ctx,
+			path.Root("controls"),
+			model.Controls.Elements(),
+			func(ctx context.Context, itemPath path.Path, value EditorInterfaceControlValue) (cm.EditorInterfaceDataControlsItem, diag.Diagnostics) {
+				return value.ToEditorInterfaceDataControlsItem(ctx, itemPath)
+			},
+		)
+		diags.Append(itemDiags...)
 
-		controlsElementValues := model.Controls.Elements()
-
-		requestControlsItems := make([]cm.EditorInterfaceDataControlsItem, len(controlsElementValues))
-
-		for index, controlsElement := range controlsElementValues {
-			path := controlsPath.AtListIndex(index)
-
-			value, valueDiags := KnownObjectValue(controlsElement, path)
-			diags.Append(valueDiags...)
-
-			if valueDiags.HasError() {
-				continue
-			}
-
-			requestControlsItem, requestControlsItemDiags := value.ToEditorInterfaceDataControlsItem(ctx, path)
-			diags.Append(requestControlsItemDiags...)
-
-			requestControlsItems[index] = requestControlsItem
+		if !itemDiags.HasError() {
+			request.Controls.SetTo(items)
 		}
-
-		request.Controls.SetTo(requestControlsItems)
 	}
 
 	if model.GroupControls.IsNull() || model.GroupControls.IsUnknown() {
 		request.GroupControls.Reset()
 	} else {
-		controlsPath := path.Root("group_controls")
+		items, itemDiags := ConvertKnownObjectListElements(
+			ctx,
+			path.Root("group_controls"),
+			model.GroupControls.Elements(),
+			func(ctx context.Context, itemPath path.Path, value EditorInterfaceGroupControlValue) (cm.EditorInterfaceDataGroupControlsItem, diag.Diagnostics) {
+				return value.ToEditorInterfaceDataGroupControlsItem(ctx, itemPath)
+			},
+		)
+		diags.Append(itemDiags...)
 
-		groupControlsElementValues := model.GroupControls.Elements()
-
-		requestGroupControlsItems := make([]cm.EditorInterfaceDataGroupControlsItem, len(groupControlsElementValues))
-
-		for index, groupControlsElement := range groupControlsElementValues {
-			path := controlsPath.AtListIndex(index)
-
-			value, valueDiags := KnownObjectValue(groupControlsElement, path)
-			diags.Append(valueDiags...)
-
-			if valueDiags.HasError() {
-				continue
-			}
-
-			requestGroupControlsItem, requestGroupControlsItemDiags := value.ToEditorInterfaceDataGroupControlsItem(ctx, path)
-			diags.Append(requestGroupControlsItemDiags...)
-
-			requestGroupControlsItems[index] = requestGroupControlsItem
+		if !itemDiags.HasError() {
+			request.GroupControls.SetTo(items)
 		}
-
-		request.GroupControls.SetTo(requestGroupControlsItems)
 	}
 
 	if model.Sidebar.IsNull() || model.Sidebar.IsUnknown() {
 		request.Sidebar.Reset()
 	} else {
-		sidebarPath := path.Root("sidebar")
+		items, itemDiags := ConvertKnownObjectListElements(
+			ctx,
+			path.Root("sidebar"),
+			model.Sidebar.Elements(),
+			func(ctx context.Context, itemPath path.Path, value EditorInterfaceSidebarValue) (cm.EditorInterfaceDataSidebarItem, diag.Diagnostics) {
+				return value.ToEditorInterfaceDataSidebarItem(ctx, itemPath)
+			},
+		)
+		diags.Append(itemDiags...)
 
-		sidebarElementValues := model.Sidebar.Elements()
-
-		requestSidebarItems := make([]cm.EditorInterfaceDataSidebarItem, len(sidebarElementValues))
-
-		for index, sidebarElement := range sidebarElementValues {
-			path := sidebarPath.AtListIndex(index)
-
-			value, valueDiags := KnownObjectValue(sidebarElement, path)
-			diags.Append(valueDiags...)
-
-			if valueDiags.HasError() {
-				continue
-			}
-
-			requestSidebarItem, requestSidebarItemDiags := value.ToEditorInterfaceDataSidebarItem(ctx, path)
-			diags.Append(requestSidebarItemDiags...)
-
-			requestSidebarItems[index] = requestSidebarItem
+		if !itemDiags.HasError() {
+			request.Sidebar.SetTo(items)
 		}
+	}
 
-		request.Sidebar.SetTo(requestSidebarItems)
+	if diags.HasError() {
+		return cm.EditorInterfaceData{}, diags
 	}
 
 	return request, diags

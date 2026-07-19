@@ -66,5 +66,9 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path pat
 
 	req.Transformation = transformation
 
+	if diags.HasError() {
+		return cm.WebhookDefinitionData{}, diags
+	}
+
 	return req, diags
 }
