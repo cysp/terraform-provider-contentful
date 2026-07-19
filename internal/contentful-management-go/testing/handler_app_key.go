@@ -81,7 +81,7 @@ func (ts *Handler) CreateAppKey(_ context.Context, req *cm.AppKeyRequestData, pa
 		return NewContentfulManagementErrorStatusCodeAccessDenied(new("Forbidden"), []byte(`{"reasons":"Usage exceeded."}`)), nil
 	}
 
-	ts.appKeys.Set(params.OrganizationID, params.AppDefinitionID, &appKey)
+	ts.appKeys.Set(params.OrganizationID, params.AppDefinitionID, appKey)
 
 	return &appKey, nil
 }
@@ -132,12 +132,12 @@ func (ts *Handler) GetAppKey(_ context.Context, params cm.GetAppKeyParams) (cm.G
 		return appDefinitionDoesNotExistError(), nil
 	}
 
-	appKey := ts.appKeys.Get(params.OrganizationID, params.AppDefinitionID, params.KeyKid)
-	if appKey == nil {
+	appKey, ok := ts.appKeys.Get(params.OrganizationID, params.AppDefinitionID, params.KeyKid)
+	if !ok {
 		return NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), []byte(`"AppKey does not exist."`)), nil
 	}
 
-	return appKey, nil
+	return &appKey, nil
 }
 
 //nolint:ireturn
@@ -149,8 +149,8 @@ func (ts *Handler) DeleteAppKey(_ context.Context, params cm.DeleteAppKeyParams)
 		return appDefinitionDoesNotExistError(), nil
 	}
 
-	appKey := ts.appKeys.Get(params.OrganizationID, params.AppDefinitionID, params.KeyKid)
-	if appKey == nil {
+	_, ok := ts.appKeys.Get(params.OrganizationID, params.AppDefinitionID, params.KeyKid)
+	if !ok {
 		return NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), []byte(`"AppKey does not exist."`)), nil
 	}
 

@@ -28,7 +28,7 @@ type Handler struct {
 	marketplaceAppDefinitions map[string]*cm.AppDefinition
 
 	appDefinitions                 map[string]*cm.AppDefinition
-	appKeys                        AppKeyMap
+	appKeys                        appKeyStore
 	appDefinitionResourceProviders map[string]*cm.ResourceProvider
 	appDefinitionResourceTypes     map[string]*cm.ResourceType
 	appSigningSecrets              map[string]*cm.AppSigningSecret
@@ -69,7 +69,7 @@ func NewHandler() *Handler {
 		environmentAliases:             cm.NewSpaceMap[*cm.EnvironmentAlias](),
 		marketplaceAppDefinitions:      make(map[string]*cm.AppDefinition),
 		appDefinitions:                 make(map[string]*cm.AppDefinition),
-		appKeys:                        NewAppKeyMap(),
+		appKeys:                        appKeyStore{},
 		appDefinitionResourceProviders: make(map[string]*cm.ResourceProvider),
 		appDefinitionResourceTypes:     make(map[string]*cm.ResourceType),
 		appSigningSecrets:              make(map[string]*cm.AppSigningSecret),
