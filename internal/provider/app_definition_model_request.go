@@ -116,7 +116,7 @@ func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(_ conte
 	return item
 }
 
-func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, _ path.Path) (cm.AppDefinitionParameter, diag.Diagnostics) {
+func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, parameterPath path.Path) (cm.AppDefinitionParameter, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	parameter := cm.AppDefinitionParameter{
@@ -127,23 +127,19 @@ func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, 
 		Required:    cm.NewOptPointerBool(model.Required),
 	}
 
-	if !model.Default.IsUnknown() {
+	if model.Default.IsUnknown() {
+		diags.AddAttributeError(parameterPath.AtName("default"), "Unexpected unknown parameter default", "The parameter default must be known before it can be sent to Contentful.")
+	} else {
 		value := model.Default.ValueStringPointer()
 		if value != nil {
 			parameter.Default = jx.Raw(*value)
 		}
 	}
 
-	if !model.Options.IsUnknown() && !model.Options.IsNull() {
-		options := make([]jx.Raw, 0, len(model.Options.Elements()))
+	options, optionsSet, optionsDiags := toAppDefinitionParameterOptions(model, parameterPath.AtName("options"))
+	diags.Append(optionsDiags...)
 
-		for _, option := range model.Options.Elements() {
-			value := option.ValueStringPointer()
-			if value != nil {
-				options = append(options, jx.Raw(*value))
-			}
-		}
-
+	if optionsSet {
 		parameter.Options = options
 	}
 
@@ -156,4 +152,35 @@ func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, 
 	}
 
 	return parameter, diags
+}
+
+func toAppDefinitionParameterOptions(model AppDefinitionParameter, optionsPath path.Path) ([]jx.Raw, bool, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	if model.Options.IsUnknown() {
+		diags.AddAttributeError(optionsPath, "Unexpected unknown parameter options", "Parameter options must be known before they can be sent to Contentful.")
+
+		return nil, false, diags
+	}
+
+	if model.Options.IsNull() {
+		return nil, false, nil
+	}
+
+	options := make([]jx.Raw, 0, len(model.Options.Elements()))
+
+	for index, option := range model.Options.Elements() {
+		optionPath := optionsPath.AtListIndex(index)
+
+		switch {
+		case option.IsUnknown():
+			diags.AddAttributeError(optionPath, "Unexpected unknown parameter option", "Parameter options must be known before they can be sent to Contentful.")
+		case option.IsNull():
+			diags.AddAttributeError(optionPath, "Unexpected null parameter option", "Parameter options cannot be null.")
+		default:
+			options = append(options, jx.Raw(option.ValueString()))
+		}
+	}
+
+	return options, true, diags
 }

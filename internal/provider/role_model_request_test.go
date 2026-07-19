@@ -5,7 +5,9 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRoleModelRoundTripToRoleData(t *testing.T) {
@@ -70,4 +72,24 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 	}, req.Policies[2])
 
 	assert.Empty(t, diags)
+}
+
+func TestRoleRequestRejectsNullAndUnknownPolicyObjects(t *testing.T) {
+	t.Parallel()
+
+	for name, value := range map[string]TypedObject[RolePolicyValue]{
+		"null":    NewTypedObjectNull[RolePolicyValue](),
+		"unknown": NewTypedObjectUnknown[RolePolicyValue](),
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := RoleModel{
+				Name:     types.StringValue("role"),
+				Policies: NewTypedList([]TypedObject[RolePolicyValue]{value}),
+			}
+			_, diags := model.ToRoleData(t.Context())
+			require.True(t, diags.HasError())
+		})
+	}
 }

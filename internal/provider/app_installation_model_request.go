@@ -31,8 +31,14 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx conte
 func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(ctx context.Context) ([]string, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if model.Marketplace.IsNull() || model.Marketplace.IsUnknown() {
+	if model.Marketplace.IsNull() {
 		return []string{}, diags
+	}
+
+	if model.Marketplace.IsUnknown() {
+		diags.AddAttributeError(path.Root("marketplace"), "Unexpected unknown marketplace", "Marketplace values must be known before they can be sent to Contentful.")
+
+		return nil, diags
 	}
 
 	marketplaceElements := make([]types.String, len(model.Marketplace.Elements()))
@@ -41,9 +47,20 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(c
 	marketplaceStrings := make([]string, 0, len(marketplaceElements))
 
 	for _, element := range marketplaceElements {
-		if !element.IsNull() && !element.IsUnknown() {
-			marketplaceStrings = append(marketplaceStrings, element.ValueString())
+		elementPath := path.Root("marketplace").AtSetValue(element)
+		if element.IsNull() || element.IsUnknown() {
+			// Null and unknown set elements cannot provide a stable value-based path.
+			elementPath = path.Root("marketplace")
 		}
+
+		value, valueDiags := KnownStringValue(element, elementPath)
+		diags.Append(valueDiags...)
+
+		if valueDiags.HasError() {
+			continue
+		}
+
+		marketplaceStrings = append(marketplaceStrings, value)
 	}
 
 	return marketplaceStrings, diags
@@ -56,7 +73,7 @@ func (model *AppInstallationModel) ToAppInstallationData() (cm.AppInstallationDa
 
 	switch {
 	case model.Parameters.IsUnknown():
-		diags.AddAttributeWarning(path.Root("parameters"), "Failed to update app installation parameters", "Parameters are unknown")
+		diags.AddAttributeError(path.Root("parameters"), "Unexpected unknown app installation parameters", "App installation parameters must be known before they can be sent to Contentful.")
 	case model.Parameters.IsNull():
 	default:
 		fields.Parameters = []byte(model.Parameters.ValueString())

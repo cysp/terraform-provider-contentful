@@ -25,7 +25,14 @@ func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (c
 		for index, editorLayoutElement := range editorLayoutElementValues {
 			path := editorLayoutPath.AtListIndex(index)
 
-			requestEditorLayoutItem, requestEditorLayoutItemDiags := editorLayoutElement.Value().ToEditorInterfaceEditorLayoutItem(ctx, path)
+			value, valueDiags := KnownObjectValue(editorLayoutElement, path)
+			diags.Append(valueDiags...)
+
+			if valueDiags.HasError() {
+				continue
+			}
+
+			requestEditorLayoutItem, requestEditorLayoutItemDiags := value.ToEditorInterfaceEditorLayoutItem(ctx, path)
 			diags.Append(requestEditorLayoutItemDiags...)
 
 			requestEditorLayoutItems[index] = requestEditorLayoutItem
@@ -46,7 +53,14 @@ func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (c
 		for index, controlsElement := range controlsElementValues {
 			path := controlsPath.AtListIndex(index)
 
-			requestControlsItem, requestControlsItemDiags := controlsElement.Value().ToEditorInterfaceDataControlsItem(ctx, path)
+			value, valueDiags := KnownObjectValue(controlsElement, path)
+			diags.Append(valueDiags...)
+
+			if valueDiags.HasError() {
+				continue
+			}
+
+			requestControlsItem, requestControlsItemDiags := value.ToEditorInterfaceDataControlsItem(ctx, path)
 			diags.Append(requestControlsItemDiags...)
 
 			requestControlsItems[index] = requestControlsItem
@@ -67,7 +81,14 @@ func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (c
 		for index, groupControlsElement := range groupControlsElementValues {
 			path := controlsPath.AtListIndex(index)
 
-			requestGroupControlsItem, requestGroupControlsItemDiags := groupControlsElement.Value().ToEditorInterfaceDataGroupControlsItem(ctx, path)
+			value, valueDiags := KnownObjectValue(groupControlsElement, path)
+			diags.Append(valueDiags...)
+
+			if valueDiags.HasError() {
+				continue
+			}
+
+			requestGroupControlsItem, requestGroupControlsItemDiags := value.ToEditorInterfaceDataGroupControlsItem(ctx, path)
 			diags.Append(requestGroupControlsItemDiags...)
 
 			requestGroupControlsItems[index] = requestGroupControlsItem
@@ -88,7 +109,14 @@ func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (c
 		for index, sidebarElement := range sidebarElementValues {
 			path := sidebarPath.AtListIndex(index)
 
-			requestSidebarItem, requestSidebarItemDiags := sidebarElement.Value().ToEditorInterfaceDataSidebarItem(ctx, path)
+			value, valueDiags := KnownObjectValue(sidebarElement, path)
+			diags.Append(valueDiags...)
+
+			if valueDiags.HasError() {
+				continue
+			}
+
+			requestSidebarItem, requestSidebarItemDiags := value.ToEditorInterfaceDataSidebarItem(ctx, path)
 			diags.Append(requestSidebarItemDiags...)
 
 			requestSidebarItems[index] = requestSidebarItem

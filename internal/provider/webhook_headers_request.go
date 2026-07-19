@@ -10,11 +10,17 @@ import (
 )
 
 func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model TypedMap[TypedObject[WebhookHeaderValue]]) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
-	if model.IsNull() || model.IsUnknown() {
+	if model.IsNull() {
 		return nil, nil
 	}
 
 	diags := diag.Diagnostics{}
+
+	if model.IsUnknown() {
+		diags.AddAttributeError(path, "Unexpected unknown headers", "Webhook headers must be known before they can be sent to Contentful.")
+
+		return nil, diags
+	}
 
 	headers := make(cm.WebhookDefinitionHeaders, len(model.Elements()))
 
@@ -33,8 +39,16 @@ func ToWebhookDefinitionHeaders(ctx context.Context, path path.Path, model Typed
 
 	for index, key := range headersKeys {
 		headersValue := headersValues[key]
+		headerPath := path.AtMapKey(key)
 
-		header, headerDiags := headersValue.Value().ToWebhookDefinitionHeader(ctx, path.AtMapKey(key), key)
+		value, valueDiags := KnownObjectValue(headersValue, headerPath)
+		diags.Append(valueDiags...)
+
+		if valueDiags.HasError() {
+			continue
+		}
+
+		header, headerDiags := value.ToWebhookDefinitionHeader(ctx, headerPath, key)
 		diags.Append(headerDiags...)
 
 		headers[index] = header

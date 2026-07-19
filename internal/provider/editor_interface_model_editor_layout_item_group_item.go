@@ -69,19 +69,21 @@ func NewEditorInterfaceEditorLayoutItemValueFromResponse(ctx context.Context, pa
 func (v EditorInterfaceEditorLayoutItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if !v.Field.IsUnknown() && !v.Field.IsNull() {
-		fieldItem, fieldItemDiags := v.Field.Value().ToEditorInterfaceEditorLayoutFieldItem(ctx, path.AtName("field"))
+	if field, ok := v.Field.GetValue(); ok {
+		fieldItem, fieldItemDiags := field.ToEditorInterfaceEditorLayoutFieldItem(ctx, path.AtName("field"))
 		diags.Append(fieldItemDiags...)
 
 		return cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(fieldItem), diags
 	}
 
-	if !v.Group.IsUnknown() && !v.Group.IsNull() {
-		groupItem, groupItemDiags := v.Group.Value().ToEditorInterfaceEditorLayoutGroupItem(ctx, path.AtName("group"))
+	if group, ok := v.Group.GetValue(); ok {
+		groupItem, groupItemDiags := group.ToEditorInterfaceEditorLayoutGroupItem(ctx, path.AtName("group"))
 		diags.Append(groupItemDiags...)
 
 		return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(groupItem), diags
 	}
+
+	diags.AddAttributeError(path, "Missing editor layout item", "Exactly one of field or group must be known and non-null.")
 
 	return cm.EditorInterfaceEditorLayoutItem{}, diags
 }

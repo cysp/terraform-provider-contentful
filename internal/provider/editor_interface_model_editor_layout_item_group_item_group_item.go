@@ -56,8 +56,12 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValueFromResponse(
 func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if !v.Field.IsUnknown() && !v.Field.IsNull() {
-		fieldItem, fieldItemDiags := v.Field.Value().ToEditorInterfaceEditorLayoutItem(ctx, path.AtName("field"))
+	fieldPath := path.AtName("field")
+	field, fieldDiags := KnownObjectValue(v.Field, fieldPath)
+	diags.Append(fieldDiags...)
+
+	if !fieldDiags.HasError() {
+		fieldItem, fieldItemDiags := field.ToEditorInterfaceEditorLayoutItem(ctx, fieldPath)
 		diags.Append(fieldItemDiags...)
 
 		return fieldItem, diags

@@ -8,16 +8,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *TeamModel) ToTeamData(_ context.Context, _ path.Path) (cm.TeamData, diag.Diagnostics) {
+func (model *TeamModel) ToTeamData(_ context.Context, modelPath path.Path) (cm.TeamData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fields := cm.TeamData{
 		Name: model.Name.ValueString(),
 	}
 
-	if !model.Description.IsNull() && !model.Description.IsUnknown() {
+	switch {
+	case model.Description.IsUnknown():
+		diags.AddAttributeError(modelPath.AtName("description"), "Unexpected unknown team description", "The optional team description must be known before it can be sent to Contentful.")
+	case !model.Description.IsNull():
 		fields.Description = cm.NewNilString(model.Description.ValueString())
-	} else {
+	default:
 		fields.Description = cm.NewNilStringNull()
 	}
 

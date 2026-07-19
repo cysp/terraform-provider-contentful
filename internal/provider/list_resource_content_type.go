@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/list"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -45,9 +46,21 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 		return
 	}
 
+	spaceID, spaceIDDiags := KnownStringValue(config.SpaceID, path.Root("space_id"))
+	configDiags.Append(spaceIDDiags...)
+
+	environmentID, environmentIDDiags := KnownStringValue(config.EnvironmentID, path.Root("environment_id"))
+	configDiags.Append(environmentIDDiags...)
+
+	if configDiags.HasError() {
+		stream.Results = list.ListResultsStreamDiagnostics(configDiags)
+
+		return
+	}
+
 	params := cm.GetContentTypesParams{
-		SpaceID:       config.SpaceID.ValueString(),
-		EnvironmentID: config.EnvironmentID.ValueString(),
+		SpaceID:       spaceID,
+		EnvironmentID: environmentID,
 		Order:         []string{"sys.id"},
 	}
 

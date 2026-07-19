@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRoundTripToEditorInterfaceData(t *testing.T) {
@@ -94,6 +95,25 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 		WidgetId:        "widget_id",
 		Settings:        []byte(`{"foo":"bar"}`),
 	}, req.Sidebar.Value[0])
+}
+
+func TestEditorInterfaceRequestRejectsNullAndUnknownObjects(t *testing.T) {
+	t.Parallel()
+
+	for name, value := range map[string]TypedObject[EditorInterfaceControlValue]{
+		"null":    NewTypedObjectNull[EditorInterfaceControlValue](),
+		"unknown": NewTypedObjectUnknown[EditorInterfaceControlValue](),
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := EditorInterfaceModel{
+				Controls: NewTypedList([]TypedObject[EditorInterfaceControlValue]{value}),
+			}
+			_, diags := model.ToEditorInterfaceData(t.Context())
+			require.True(t, diags.HasError())
+		})
+	}
 }
 
 func TestToEditorInterfaceData(t *testing.T) {

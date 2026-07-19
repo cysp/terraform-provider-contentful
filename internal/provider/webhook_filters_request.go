@@ -14,11 +14,17 @@ import (
 const webhookDefinitionBinaryFilterTermCount = 2
 
 func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList TypedList[TypedObject[WebhookFilterValue]]) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
-	if filterValuesList.IsNull() || filterValuesList.IsUnknown() {
+	if filterValuesList.IsNull() {
 		return cm.NewOptNilWebhookDefinitionFilterArrayNull(), nil
 	}
 
 	diags := diag.Diagnostics{}
+
+	if filterValuesList.IsUnknown() {
+		diags.AddAttributeError(path, "Unexpected unknown filters", "Webhook filters must be known before they can be sent to Contentful.")
+
+		return cm.OptNilWebhookDefinitionFilterArray{}, diags
+	}
 
 	filterValues := filterValuesList.Elements()
 
@@ -27,7 +33,14 @@ func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, f
 	for index, filterValue := range filterValues {
 		path := path.AtListIndex(index)
 
-		filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, filterValue.Value())
+		value, valueDiags := KnownObjectValue(filterValue, path)
+		diags.Append(valueDiags...)
+
+		if valueDiags.HasError() {
+			continue
+		}
+
+		filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, value)
 		diags.Append(filterDiags...)
 
 		filters[index] = filter
@@ -40,9 +53,11 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 	diags := diag.Diagnostics{}
 
 	filter := cm.WebhookDefinitionFilter{}
+	found := false
 
 	notValue, notValueOk := value.Not.GetValue()
 	if notValueOk {
+		found = true
 		path := path.AtName("not")
 
 		filterNot, filterNotDiags := ToWebhookDefinitionFilterNot(ctx, path, notValue)
@@ -53,6 +68,7 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	equalsValue, equalsValueOk := value.Equals.GetValue()
 	if equalsValueOk {
+		found = true
 		path := path.AtName("equals")
 
 		filterEquals, filterEqualsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
@@ -63,6 +79,7 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	inValue, inValueOk := value.In.GetValue()
 	if inValueOk {
+		found = true
 		path := path.AtName("in")
 
 		filterIn, filterInDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
@@ -73,12 +90,17 @@ func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value Webhoo
 
 	regexpValue, regexpValueOk := value.Regexp.GetValue()
 	if regexpValueOk {
+		found = true
 		path := path.AtName("regexp")
 
 		filterRegexp, filterRegexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
 		diags.Append(filterRegexpDiags...)
 
 		filter.Regexp = filterRegexp
+	}
+
+	if !found {
+		diags.AddAttributeError(path, "Missing webhook filter", "Exactly one webhook filter operation must be known and non-null.")
 	}
 
 	return filter, diags
@@ -88,8 +110,10 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 	diags := diag.Diagnostics{}
 
 	filterNot := cm.WebhookDefinitionFilterNot{}
+	found := false
 
 	if equalsValue, equalsValueOk := value.Equals.GetValue(); equalsValueOk {
+		found = true
 		path := path.AtName("equals")
 
 		equals, equalsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
@@ -99,6 +123,7 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 	}
 
 	if inValue, inValueOk := value.In.GetValue(); inValueOk {
+		found = true
 		path := path.AtName("in")
 
 		in, inDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
@@ -108,12 +133,17 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value Web
 	}
 
 	if regexpValue, regexpValueOk := value.Regexp.GetValue(); regexpValueOk {
+		found = true
 		path := path.AtName("regexp")
 
 		regexp, regexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
 		diags.Append(regexpDiags...)
 
 		filterNot.Regexp = regexp
+	}
+
+	if !found {
+		diags.AddAttributeError(path, "Missing negated webhook filter", "Exactly one negated webhook filter operation must be known and non-null.")
 	}
 
 	return cm.NewOptWebhookDefinitionFilterNot(filterNot), diags
@@ -177,7 +207,14 @@ func toWebhookDefinitionFilterTermString(_ context.Context, path path.Path, valu
 	diags := diag.Diagnostics{}
 	encoder := jx.Encoder{}
 
-	if encoder.Str(value.ValueString()) {
+	stringValue, valueDiags := KnownStringValue(value, path)
+	diags.Append(valueDiags...)
+
+	if valueDiags.HasError() {
+		return nil, diags
+	}
+
+	if encoder.Str(stringValue) {
 		diags.AddAttributeError(path, "failed to encode value", "")
 	}
 
@@ -187,6 +224,16 @@ func toWebhookDefinitionFilterTermString(_ context.Context, path path.Path, valu
 func toWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.Path, value TypedList[types.String]) (jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	encoder := jx.Encoder{}
+
+	if value.IsNull() || value.IsUnknown() {
+		if value.IsUnknown() {
+			diags.AddAttributeError(path, "Unexpected unknown filter values", "Webhook filter values must be known before they can be sent to Contentful.")
+		} else {
+			diags.AddAttributeError(path, "Unexpected null filter values", "Webhook filter values cannot be null.")
+		}
+
+		return nil, diags
+	}
 
 	if encoder.Arr(func(encoder *jx.Encoder) {
 		values := make([]string, len(value.Elements()))
@@ -209,8 +256,15 @@ func toWebhookDefinitionFilterTermStringObject(_ context.Context, path path.Path
 	diags := diag.Diagnostics{}
 	encoder := jx.Encoder{}
 
+	stringValue, valueDiags := KnownStringValue(value, path)
+	diags.Append(valueDiags...)
+
+	if valueDiags.HasError() {
+		return nil, diags
+	}
+
 	if encoder.Obj(func(encoder *jx.Encoder) {
-		if encoder.Field(name, func(encoder *jx.Encoder) { encoder.Str(value.ValueString()) }) {
+		if encoder.Field(name, func(encoder *jx.Encoder) { encoder.Str(stringValue) }) {
 			diags.AddAttributeError(path, "failed to encode value", "")
 		}
 	}) {
