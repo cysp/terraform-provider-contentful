@@ -38,7 +38,15 @@ func localizedStringAttribute(description string, required bool) schema.MapAttri
 }
 
 func optionalComputedStringList(description string) schema.ListAttribute {
-	return schema.ListAttribute{Description: description, Optional: true, Computed: true, ElementType: types.StringType}
+	return schema.ListAttribute{
+		Description: description,
+		Optional:    true,
+		Computed:    true,
+		ElementType: types.StringType,
+		PlanModifiers: []planmodifier.List{
+			UseStateForUnknown(),
+		},
+	}
 }
 
 func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
@@ -46,8 +54,24 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 	attributes["concept_id"] = schema.StringAttribute{Description: "Caller-defined ID of the taxonomy concept.", Required: true, Validators: taxonomyIDValidators(), PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}}
 	attributes["uri"] = schema.StringAttribute{Description: "Optional URI identifying the concept. Empty strings are rejected by Contentful.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
 	attributes["pref_label"] = localizedStringAttribute("Localized preferred labels.", true)
-	attributes["alt_labels"] = schema.MapAttribute{Description: "Localized alternative labels.", Optional: true, Computed: true, ElementType: types.ListType{ElemType: types.StringType}}
-	attributes["hidden_labels"] = schema.MapAttribute{Description: "Localized hidden labels.", Optional: true, Computed: true, ElementType: types.ListType{ElemType: types.StringType}}
+	attributes["alt_labels"] = schema.MapAttribute{
+		Description: "Localized alternative labels.",
+		Optional:    true,
+		Computed:    true,
+		ElementType: types.ListType{ElemType: types.StringType},
+		PlanModifiers: []planmodifier.Map{
+			UseStateForUnknown(),
+		},
+	}
+	attributes["hidden_labels"] = schema.MapAttribute{
+		Description: "Localized hidden labels.",
+		Optional:    true,
+		Computed:    true,
+		ElementType: types.ListType{ElemType: types.StringType},
+		PlanModifiers: []planmodifier.Map{
+			UseStateForUnknown(),
+		},
+	}
 
 	attributes["notations"] = optionalComputedStringList("Ordered notation values.")
 	for name, description := range map[string]string{

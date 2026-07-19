@@ -18,8 +18,12 @@ func (v EditorInterfaceEditorLayoutItemValue) ToEditorInterfaceEditorLayoutItem(
 	// 	return cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(fieldItem), diags
 	// }
 
-	if !v.Group.IsUnknown() && !v.Group.IsNull() {
-		groupItem, groupItemDiags := v.Group.Value().ToEditorInterfaceEditorLayoutItem(ctx, path.AtName("group"))
+	groupPath := path.AtName("group")
+	group, groupDiags := KnownObjectValue(v.Group, groupPath)
+	diags.Append(groupDiags...)
+
+	if !groupDiags.HasError() {
+		groupItem, groupItemDiags := group.ToEditorInterfaceEditorLayoutItem(ctx, groupPath)
 		diags.Append(groupItemDiags...)
 
 		return groupItem, diags

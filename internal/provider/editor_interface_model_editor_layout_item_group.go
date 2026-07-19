@@ -51,7 +51,15 @@ func (v EditorInterfaceEditorLayoutItemGroupValue) ToEditorInterfaceEditorLayout
 		itemItems := make([]cm.EditorInterfaceEditorLayoutItem, len(itemItemsValues))
 
 		for index, itemItem := range itemItemsValues {
-			itemItemObject, itemItemObjectDiags := itemItem.Value().ToEditorInterfaceEditorLayoutItem(ctx, path.AtListIndex(index))
+			itemPath := path.AtName("items").AtListIndex(index)
+			value, valueDiags := KnownObjectValue(itemItem, itemPath)
+			diags.Append(valueDiags...)
+
+			if valueDiags.HasError() {
+				continue
+			}
+
+			itemItemObject, itemItemObjectDiags := value.ToEditorInterfaceEditorLayoutItem(ctx, itemPath)
 			diags.Append(itemItemObjectDiags...)
 
 			itemItems[index] = itemItemObject

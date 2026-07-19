@@ -92,6 +92,20 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			},
 			expectedSuccess: false,
 		},
+		"config: url(unknown),access_token": {
+			config: map[string]any{
+				"url":          tftypes.UnknownValue,
+				"access_token": "CFPAT-12345",
+			},
+			expectedSuccess: false,
+		},
+		"config: url,access_token(unknown)": {
+			config: map[string]any{
+				"url":          "https://api.test.contentful.com",
+				"access_token": tftypes.UnknownValue,
+			},
+			expectedSuccess: false,
+		},
 		"env: url": {
 			env: map[string]string{
 				"CONTENTFUL_URL": "https://api.test.contentful.com",
@@ -141,6 +155,55 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			} else {
 				assert.NotEmpty(t, resp.Diagnostics)
 			}
+		})
+	}
+}
+
+func TestProtocol6ProviderServerConfigureRejectsUnknownValues(t *testing.T) {
+	t.Parallel()
+
+	if os.Getenv("TF_ACC") != "" {
+		return
+	}
+
+	tests := map[string]struct {
+		config          map[string]any
+		expectedSummary string
+	}{
+		"url": {
+			config: map[string]any{
+				"url":          tftypes.UnknownValue,
+				"access_token": "CFPAT-12345",
+			},
+			expectedSummary: "Unknown Contentful API URL",
+		},
+		"access_token": {
+			config: map[string]any{
+				"url":          "https://api.test.contentful.com",
+				"access_token": tftypes.UnknownValue,
+			},
+			expectedSummary: "Unknown Contentful management access token",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			providerServer, err := testAccProtoV6ProviderFactories["contentful"]()
+			require.NotNil(t, providerServer)
+			require.NoError(t, err)
+
+			providerConfigValue, err := providerConfigDynamicValue(test.config)
+			require.NoError(t, err)
+
+			resp, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{
+				Config: &providerConfigValue,
+			})
+			require.NoError(t, err)
+			require.Len(t, resp.Diagnostics, 1)
+			assert.Equal(t, test.expectedSummary, resp.Diagnostics[0].Summary)
+			assert.Equal(t, tfprotov6.DiagnosticSeverityError, resp.Diagnostics[0].Severity)
 		})
 	}
 }

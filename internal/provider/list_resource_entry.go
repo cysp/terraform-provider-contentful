@@ -7,6 +7,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/list"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -46,27 +47,58 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 		return
 	}
 
-	params := cm.GetEntriesParams{
-		SpaceID:       config.SpaceID.ValueString(),
-		EnvironmentID: config.EnvironmentID.ValueString(),
+	spaceID, spaceIDDiags := KnownStringValue(config.SpaceID, path.Root("space_id"))
+	configDiags.Append(spaceIDDiags...)
+
+	environmentID, environmentIDDiags := KnownStringValue(config.EnvironmentID, path.Root("environment_id"))
+	configDiags.Append(environmentIDDiags...)
+
+	params := cm.GetEntriesParams{SpaceID: spaceID, EnvironmentID: environmentID}
+
+	if config.ContentType.IsUnknown() {
+		configDiags.AddAttributeError(path.Root("content_type"), "Unexpected unknown content type", "The content type must be known before entries can be listed.")
+	} else if !config.ContentType.IsNull() {
+		configContentType := config.ContentType.ValueString()
+		if configContentType != "" {
+			params.ContentType.SetTo(configContentType)
+		}
 	}
 
-	configContentType := config.ContentType.ValueString()
-	if configContentType != "" {
-		params.ContentType.SetTo(configContentType)
-	}
+	if config.Order.IsUnknown() {
+		configDiags.AddAttributeError(path.Root("order"), "Unexpected unknown order", "Entry ordering must be known before entries can be listed.")
+	} else if !config.Order.IsNull() {
+		configOrder := config.Order.Elements()
 
-	configOrder := config.Order.Elements()
-	if configOrder != nil {
 		order := make([]string, 0, len(configOrder))
-		for _, orderElement := range configOrder {
-			orderElementString := orderElement.ValueString()
+		for index, orderElement := range configOrder {
+			orderElementString, orderElementDiags := KnownStringValue(orderElement, path.Root("order").AtListIndex(index))
+			configDiags.Append(orderElementDiags...)
+
+			if orderElementDiags.HasError() {
+				continue
+			}
+
 			if orderElementString != "" {
 				order = append(order, orderElementString)
 			}
 		}
 
 		params.Order = order
+	}
+
+	if config.Query.IsUnknown() {
+		configDiags.AddAttributeError(path.Root("query"), "Unexpected unknown query", "Entry query parameters must be known before entries can be listed.")
+	} else if !config.Query.IsNull() {
+		for key, value := range config.Query.Elements() {
+			_, valueDiags := KnownStringValue(value, path.Root("query").AtMapKey(key))
+			configDiags.Append(valueDiags...)
+		}
+	}
+
+	if configDiags.HasError() {
+		stream.Results = list.ListResultsStreamDiagnostics(configDiags)
+
+		return
 	}
 
 	getEntriesQueryOption := cm.WithEditRequest(func(req *http.Request) error {

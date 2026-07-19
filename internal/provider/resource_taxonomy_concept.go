@@ -177,6 +177,10 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 	request, requestDiags := plan.ToRequest(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	patch, patchErr := taxonomyPatch(taxonomyConceptRequestFromResponse(*current), request)
 	if patchErr != nil {
 		resp.Diagnostics.AddError("Failed to build taxonomy concept update", patchErr.Error())

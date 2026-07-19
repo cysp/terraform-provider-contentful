@@ -14,7 +14,13 @@ import (
 func ToRoleDataPermissions(ctx context.Context, path path.Path, permissions TypedMap[TypedList[types.String]]) (cm.RoleDataPermissions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if permissions.IsUnknown() {
+	if permissions.IsNull() || permissions.IsUnknown() {
+		if permissions.IsUnknown() {
+			diags.AddAttributeError(path, "Unexpected unknown permissions", "Permissions must be known before they can be sent to Contentful.")
+		} else {
+			diags.AddAttributeError(path, "Unexpected null permissions", "Permissions are required.")
+		}
+
 		return nil, diags
 	}
 
@@ -34,8 +40,18 @@ func ToRoleDataPermissions(ctx context.Context, path path.Path, permissions Type
 	return rolePermissionsItems, diags
 }
 
-func ToRoleDataPermissionsItem(ctx context.Context, _ path.Path, value TypedList[types.String]) (cm.RoleDataPermissionsItem, diag.Diagnostics) {
+func ToRoleDataPermissionsItem(ctx context.Context, path path.Path, value TypedList[types.String]) (cm.RoleDataPermissionsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
+
+	if value.IsNull() || value.IsUnknown() {
+		if value.IsUnknown() {
+			diags.AddAttributeError(path, "Unexpected unknown permission actions", "Permission actions must be known before they can be sent to Contentful.")
+		} else {
+			diags.AddAttributeError(path, "Unexpected null permission actions", "Permission actions cannot be null.")
+		}
+
+		return cm.RoleDataPermissionsItem{}, diags
+	}
 
 	actionStrings := make([]string, len(value.Elements()))
 	diags.Append(tfsdk.ValueAs(ctx, value, &actionStrings)...)

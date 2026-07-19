@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *TeamSpaceMembershipModel) ToTeamSpaceMembershipData(_ context.Context, _ path.Path) (cm.TeamSpaceMembershipData, diag.Diagnostics) {
+func (model *TeamSpaceMembershipModel) ToTeamSpaceMembershipData(_ context.Context, modelPath path.Path) (cm.TeamSpaceMembershipData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fields := cm.TeamSpaceMembershipData{
@@ -17,8 +17,11 @@ func (model *TeamSpaceMembershipModel) ToTeamSpaceMembershipData(_ context.Conte
 
 	if model.Roles != nil {
 		roles := make([]cm.RoleLink, 0, len(model.Roles))
-		for _, roleID := range model.Roles {
-			if roleID.IsNull() || roleID.IsUnknown() {
+		for index, roleID := range model.Roles {
+			roleIDString, roleIDDiags := KnownStringValue(roleID, modelPath.AtName("roles").AtListIndex(index))
+			diags.Append(roleIDDiags...)
+
+			if roleIDDiags.HasError() {
 				continue
 			}
 
@@ -26,7 +29,7 @@ func (model *TeamSpaceMembershipModel) ToTeamSpaceMembershipData(_ context.Conte
 				Sys: cm.RoleLinkSys{
 					Type:     cm.RoleLinkSysTypeLink,
 					LinkType: cm.RoleLinkSysLinkTypeRole,
-					ID:       roleID.ValueString(),
+					ID:       roleIDString,
 				},
 			}
 

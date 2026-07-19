@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTeamSpaceMembershipModelToRequestSkipsNullAndUnknownRoles(t *testing.T) {
+func TestTeamSpaceMembershipModelToRequestRejectsNullAndUnknownRoles(t *testing.T) {
 	t.Parallel()
 
 	model := provider.TeamSpaceMembershipModel{
@@ -25,7 +25,8 @@ func TestTeamSpaceMembershipModelToRequestSkipsNullAndUnknownRoles(t *testing.T)
 	}
 
 	request, diags := model.ToTeamSpaceMembershipData(t.Context(), path.Empty())
-	require.False(t, diags.HasError(), diags.Errors())
+	require.True(t, diags.HasError())
+	assert.Len(t, diags.Errors(), 2)
 
 	assert.True(t, request.Admin)
 	assert.Equal(t, []cm.RoleLink{

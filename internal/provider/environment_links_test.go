@@ -29,9 +29,7 @@ func TestToEnvironmentLinks(t *testing.T) {
 			value: NewTypedList([]types.String{
 				types.StringUnknown(),
 			}),
-			expected: []cm.EnvironmentLink{
-				cm.NewEnvironmentLink(""),
-			},
+			expected:      []cm.EnvironmentLink{},
 			expectedDiags: true,
 		},
 		"known and unknown elements": {
@@ -42,9 +40,15 @@ func TestToEnvironmentLinks(t *testing.T) {
 			}),
 			expected: []cm.EnvironmentLink{
 				cm.NewEnvironmentLink("a"),
-				cm.NewEnvironmentLink(""),
 				cm.NewEnvironmentLink("c"),
 			},
+			expectedDiags: true,
+		},
+		"null element": {
+			value: NewTypedList([]types.String{
+				types.StringNull(),
+			}),
+			expected:      []cm.EnvironmentLink{},
 			expectedDiags: true,
 		},
 		"empty": {

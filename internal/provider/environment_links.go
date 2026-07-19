@@ -23,11 +23,14 @@ func ToEnvironmentLinks(ctx context.Context, path path.Path, value TypedList[typ
 	for index, environmentIDValue := range environmentIDValues {
 		path := path.AtListIndex(index)
 
-		if environmentIDValue.IsUnknown() {
-			diags.AddAttributeError(path, "Unexpectedly unknown value", "")
+		environmentID, environmentIDDiags := KnownStringValue(environmentIDValue, path)
+		diags.Append(environmentIDDiags...)
+
+		if environmentIDDiags.HasError() {
+			continue
 		}
 
-		environmentsItem, environmentsItemDiags := ToEnvironmentLink(ctx, path, environmentIDValue.ValueString())
+		environmentsItem, environmentsItemDiags := ToEnvironmentLink(ctx, path, environmentID)
 		diags.Append(environmentsItemDiags...)
 
 		environments = append(environments, environmentsItem)

@@ -33,7 +33,7 @@ func assertRoleActionsFromResponse[T any](
 
 	if expectError {
 		assert.True(t, diags.HasError())
-		assert.True(t, actual.IsUnknown())
+		assert.True(t, actual.IsNull())
 
 		return
 	}
