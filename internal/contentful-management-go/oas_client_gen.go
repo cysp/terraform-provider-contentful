@@ -93,6 +93,12 @@ type Invoker interface {
 	//
 	// POST /organizations/{organization_id}/app_definitions
 	CreateAppDefinition(ctx context.Context, request *AppDefinitionData, params CreateAppDefinitionParams, options ...RequestOption) (CreateAppDefinitionRes, error)
+	// CreateAppKey invokes createAppKey operation.
+	//
+	// Create an app key.
+	//
+	// POST /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
+	CreateAppKey(ctx context.Context, request *AppKeyRequestData, params CreateAppKeyParams, options ...RequestOption) (CreateAppKeyRes, error)
 	// CreateDeliveryAPIKey invokes createDeliveryAPIKey operation.
 	//
 	// Create a delivery api key.
@@ -165,6 +171,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	DeleteAppInstallation(ctx context.Context, params DeleteAppInstallationParams, options ...RequestOption) (DeleteAppInstallationRes, error)
+	// DeleteAppKey invokes deleteAppKey operation.
+	//
+	// Delete an app key.
+	//
+	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/keys/{key_kid}
+	DeleteAppKey(ctx context.Context, params DeleteAppKeyParams, options ...RequestOption) (DeleteAppKeyRes, error)
 	// DeleteAppSigningSecret invokes deleteAppSigningSecret operation.
 	//
 	// Delete an app signing secret.
@@ -273,6 +285,18 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}
 	GetAppInstallation(ctx context.Context, params GetAppInstallationParams, options ...RequestOption) (GetAppInstallationRes, error)
+	// GetAppKey invokes getAppKey operation.
+	//
+	// Get one app key.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys/{key_kid}
+	GetAppKey(ctx context.Context, params GetAppKeyParams, options ...RequestOption) (GetAppKeyRes, error)
+	// GetAppKeys invokes getAppKeys operation.
+	//
+	// Get all app keys.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
+	GetAppKeys(ctx context.Context, params GetAppKeysParams, options ...RequestOption) (GetAppKeysRes, error)
 	// GetAppSigningSecret invokes getAppSigningSecret operation.
 	//
 	// Get one app signing secret.
@@ -856,6 +880,141 @@ func (c *Client) sendCreateAppDefinition(ctx context.Context, request *AppDefini
 	}
 
 	result, err := decodeCreateAppDefinitionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// CreateAppKey invokes createAppKey operation.
+//
+// Create an app key.
+//
+// POST /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
+func (c *Client) CreateAppKey(ctx context.Context, request *AppKeyRequestData, params CreateAppKeyParams, options ...RequestOption) (CreateAppKeyRes, error) {
+	res, err := c.sendCreateAppKey(ctx, request, params, options...)
+	return res, err
+}
+
+func (c *Client) sendCreateAppKey(ctx context.Context, request *AppKeyRequestData, params CreateAppKeyParams, requestOptions ...RequestOption) (res CreateAppKeyRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [5]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/keys"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeCreateAppKeyRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, CreateAppKeyOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeCreateAppKeyResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -2437,6 +2596,156 @@ func (c *Client) sendDeleteAppInstallation(ctx context.Context, params DeleteApp
 	}
 
 	result, err := decodeDeleteAppInstallationResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// DeleteAppKey invokes deleteAppKey operation.
+//
+// Delete an app key.
+//
+// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/keys/{key_kid}
+func (c *Client) DeleteAppKey(ctx context.Context, params DeleteAppKeyParams, options ...RequestOption) (DeleteAppKeyRes, error) {
+	res, err := c.sendDeleteAppKey(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendDeleteAppKey(ctx context.Context, params DeleteAppKeyParams, requestOptions ...RequestOption) (res DeleteAppKeyRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [6]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/keys/"
+	{
+		// Encode "key_kid" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "key_kid",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.KeyKid))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteAppKeyOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeDeleteAppKeyResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -4953,6 +5262,325 @@ func (c *Client) sendGetAppInstallation(ctx context.Context, params GetAppInstal
 	}
 
 	result, err := decodeGetAppInstallationResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetAppKey invokes getAppKey operation.
+//
+// Get one app key.
+//
+// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys/{key_kid}
+func (c *Client) GetAppKey(ctx context.Context, params GetAppKeyParams, options ...RequestOption) (GetAppKeyRes, error) {
+	res, err := c.sendGetAppKey(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendGetAppKey(ctx context.Context, params GetAppKeyParams, requestOptions ...RequestOption) (res GetAppKeyRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [6]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/keys/"
+	{
+		// Encode "key_kid" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "key_kid",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.KeyKid))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetAppKeyOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeGetAppKeyResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetAppKeys invokes getAppKeys operation.
+//
+// Get all app keys.
+//
+// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
+func (c *Client) GetAppKeys(ctx context.Context, params GetAppKeysParams, options ...RequestOption) (GetAppKeysRes, error) {
+	res, err := c.sendGetAppKeys(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendGetAppKeys(ctx context.Context, params GetAppKeysParams, requestOptions ...RequestOption) (res GetAppKeysRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [5]string
+	pathParts[0] = "/organizations/"
+	{
+		// Encode "organization_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "organization_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.OrganizationID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/app_definitions/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/keys"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	q := uri.NewQueryEncoder()
+	{
+		// Encode "skip" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "skip",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.Skip.Get(); ok {
+				return e.EncodeValue(conv.Int64ToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	{
+		// Encode "limit" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "limit",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.Limit.Get(); ok {
+				return e.EncodeValue(conv.Int64ToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	u.RawQuery = q.Values().Encode()
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetAppKeysOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeGetAppKeysResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

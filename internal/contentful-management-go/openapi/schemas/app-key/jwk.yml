@@ -1,0 +1,30 @@
+AppKeyJWK:
+  type: object
+  properties:
+    alg:
+      type: string
+      enum:
+        - RS256
+    kty:
+      type: string
+      enum:
+        - RSA
+    use:
+      type: string
+      enum:
+        - sig
+    x5c:
+      type: array
+      items:
+        type: string
+    kid:
+      type: string
+    x5t:
+      type: string
+  required:
+    - alg
+    - kty
+    - use
+    - x5c
+    - kid
+    - x5t

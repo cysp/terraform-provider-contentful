@@ -1,0 +1,6 @@
+type: object
+properties:
+  updatedBy:
+    $ref: "../links/user-link.yml#/UserLink"
+required:
+  - updatedBy

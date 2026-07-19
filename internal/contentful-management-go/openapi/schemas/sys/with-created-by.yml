@@ -1,0 +1,6 @@
+type: object
+properties:
+  createdBy:
+    $ref: "../links/user-link.yml#/UserLink"
+required:
+  - createdBy
