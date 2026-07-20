@@ -177,6 +177,7 @@ func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.
 		NewEnvironmentStatusReadyDataSource,
 		NewMarketplaceAppDefinitionDataSource,
 		NewPreviewAPIKeyDataSource,
+		NewTeamsDataSource,
 	}
 }
 
