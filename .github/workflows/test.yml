@@ -88,6 +88,8 @@ jobs:
     concurrency:
       group: testacc
       queue: max
+    env:
+      CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN != '' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -104,12 +106,14 @@ jobs:
       - run: go mod download
 
       - run: go test -v -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... -run '^TestAcc' ./internal/provider/
+        if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
         env:
           TF_ACC: "1"
           CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
         timeout-minutes: 10
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: testacc-${{ matrix.terraform }}
