@@ -65,6 +65,7 @@ const (
 	GetTaxonomyConceptSchemeOperation       OperationName = "GetTaxonomyConceptScheme"
 	GetTeamOperation                        OperationName = "GetTeam"
 	GetTeamSpaceMembershipOperation         OperationName = "GetTeamSpaceMembership"
+	GetTeamsOperation                       OperationName = "GetTeams"
 	GetWebhookDefinitionOperation           OperationName = "GetWebhookDefinition"
 	PatchTaxonomyConceptOperation           OperationName = "PatchTaxonomyConcept"
 	PatchTaxonomyConceptSchemeOperation     OperationName = "PatchTaxonomyConceptScheme"

@@ -237,6 +237,10 @@ type GetTeamSpaceMembershipRes interface {
 	getTeamSpaceMembershipRes()
 }
 
+type GetTeamsRes interface {
+	getTeamsRes()
+}
+
 type GetWebhookDefinitionRes interface {
 	getWebhookDefinitionRes()
 }

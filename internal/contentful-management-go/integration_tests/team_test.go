@@ -99,6 +99,88 @@ func TestGetTeamAcceptsJSONContentTypes(t *testing.T) {
 	}
 }
 
+func TestGetTeamsAcceptsListItemsWithoutVersion(t *testing.T) {
+	t.Parallel()
+
+	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/organizations/organization-id/teams", r.URL.Path)
+		assert.Equal(t, "Bearer "+cmt.ValidAccessToken, r.Header.Get("Authorization"))
+		assert.Equal(t, "0", r.URL.Query().Get("skip"))
+		assert.Equal(t, "100", r.URL.Query().Get("limit"))
+
+		w.Header().Set("Content-Type", "application/json")
+		assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
+			"sys": map[string]any{
+				"type": "Array",
+			},
+			"total": 1,
+			"skip":  0,
+			"limit": 100,
+			"items": []any{
+				map[string]any{
+					"sys": map[string]any{
+						"type": "Team",
+						"id":   "team-id",
+						"organization": map[string]any{
+							"sys": map[string]any{
+								"type":     "Link",
+								"linkType": "Organization",
+								"id":       "organization-id",
+							},
+						},
+					},
+					"name":        "Test Team",
+					"description": nil,
+				},
+			},
+		}))
+	}))
+	defer testserver.Close()
+
+	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+
+	response, err := client.GetTeams(t.Context(), cm.GetTeamsParams{
+		OrganizationID: "organization-id",
+		Skip:           cm.NewOptInt64(0),
+		Limit:          cm.NewOptInt64(100),
+	})
+	require.NoError(t, err)
+
+	teams, ok := response.(*cm.TeamCollection)
+	require.True(t, ok)
+	require.Len(t, teams.Items, 1)
+	require.Equal(t, "team-id", teams.Items[0].Sys.ID)
+	require.Equal(t, "Test Team", teams.Items[0].Name)
+}
+
+func TestGetTeamsAcceptsCollectionWithoutPaginationMetadata(t *testing.T) {
+	t.Parallel()
+
+	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
+			"sys":   map[string]any{"type": "Array"},
+			"items": []any{},
+		}))
+	}))
+	defer testserver.Close()
+
+	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+
+	response, err := client.GetTeams(t.Context(), cm.GetTeamsParams{
+		OrganizationID: "organization-id",
+	})
+	require.NoError(t, err)
+
+	teams, ok := response.(*cm.TeamCollection)
+	require.True(t, ok)
+	assert.Empty(t, teams.Items)
+	assert.False(t, teams.Total.IsSet())
+	assert.False(t, teams.Skip.IsSet())
+	assert.False(t, teams.Limit.IsSet())
+}
+
 func TestPutTeamAcceptsJSONContentTypes(t *testing.T) {
 	t.Parallel()
 

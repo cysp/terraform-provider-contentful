@@ -1,0 +1,9 @@
+TeamListItem:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./list-item-sys.yml#/TeamListItemSys"
+      required:
+        - sys
+    - $ref: "./data.yml#/TeamData"

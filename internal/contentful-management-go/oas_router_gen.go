@@ -58,6 +58,7 @@ var (
 		"PUT":    "Authorization,Content-Type",
 	}
 	rn25AllowedHeaders = map[string]string{
+		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
 	rn55AllowedHeaders = map[string]string{
@@ -716,13 +717,17 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 							if len(elem) == 0 {
 								switch r.Method {
+								case "GET":
+									s.handleGetTeamsRequest([1]string{
+										args[0],
+									}, elemIsEscaped, w, r)
 								case "POST":
 									s.handleCreateTeamRequest([1]string{
 										args[0],
 									}, elemIsEscaped, w, r)
 								default:
 									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "POST",
+										allowedMethods: "GET,POST",
 										allowedHeaders: rn25AllowedHeaders,
 										acceptPost:     "application/vnd.contentful.management.v1+json",
 										acceptPatch:    "",
@@ -2519,6 +2524,15 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 							if len(elem) == 0 {
 								switch method {
+								case "GET":
+									r.name = GetTeamsOperation
+									r.summary = "Get a collection of teams"
+									r.operationID = "getTeams"
+									r.operationGroup = ""
+									r.pathPattern = "/organizations/{organization_id}/teams"
+									r.args = args
+									r.count = 1
+									return r, true
 								case "POST":
 									r.name = CreateTeamOperation
 									r.summary = "Create a team"
