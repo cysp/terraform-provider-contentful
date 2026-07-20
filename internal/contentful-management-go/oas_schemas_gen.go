@@ -2007,6 +2007,7 @@ func (*ApplicationJSONError) getTaxonomyConceptRes()             {}
 func (*ApplicationJSONError) getTaxonomyConceptSchemeRes()       {}
 func (*ApplicationJSONError) getTeamRes()                        {}
 func (*ApplicationJSONError) getTeamSpaceMembershipRes()         {}
+func (*ApplicationJSONError) getTeamsRes()                       {}
 func (*ApplicationJSONError) getWebhookDefinitionRes()           {}
 func (*ApplicationJSONError) patchTaxonomyConceptRes()           {}
 func (*ApplicationJSONError) patchTaxonomyConceptSchemeRes()     {}
@@ -4608,6 +4609,7 @@ func (*ErrorStatusCode) getTaxonomyConceptRes()             {}
 func (*ErrorStatusCode) getTaxonomyConceptSchemeRes()       {}
 func (*ErrorStatusCode) getTeamRes()                        {}
 func (*ErrorStatusCode) getTeamSpaceMembershipRes()         {}
+func (*ErrorStatusCode) getTeamsRes()                       {}
 func (*ErrorStatusCode) getWebhookDefinitionRes()           {}
 func (*ErrorStatusCode) patchTaxonomyConceptRes()           {}
 func (*ErrorStatusCode) patchTaxonomyConceptSchemeRes()     {}
@@ -11681,6 +11683,115 @@ func (s *Team) SetDescription(val NilString) {
 
 func (*Team) getTeamRes() {}
 
+// Ref: #/TeamCollection
+type TeamCollection struct {
+	Sys   TeamCollectionSys `json:"sys"`
+	Total OptInt            `json:"total"`
+	Skip  OptInt            `json:"skip"`
+	Limit OptInt            `json:"limit"`
+	Items []TeamListItem    `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *TeamCollection) GetSys() TeamCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *TeamCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *TeamCollection) GetSkip() OptInt {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *TeamCollection) GetLimit() OptInt {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *TeamCollection) GetItems() []TeamListItem {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *TeamCollection) SetSys(val TeamCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *TeamCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *TeamCollection) SetSkip(val OptInt) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *TeamCollection) SetLimit(val OptInt) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *TeamCollection) SetItems(val []TeamListItem) {
+	s.Items = val
+}
+
+func (*TeamCollection) getTeamsRes() {}
+
+type TeamCollectionSys struct {
+	Type TeamCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *TeamCollectionSys) GetType() TeamCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *TeamCollectionSys) SetType(val TeamCollectionSysType) {
+	s.Type = val
+}
+
+type TeamCollectionSysType string
+
+const (
+	TeamCollectionSysTypeArray TeamCollectionSysType = "Array"
+)
+
+// AllValues returns all TeamCollectionSysType values.
+func (TeamCollectionSysType) AllValues() []TeamCollectionSysType {
+	return []TeamCollectionSysType{
+		TeamCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TeamCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TeamCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TeamCollectionSysType) UnmarshalText(data []byte) error {
+	switch TeamCollectionSysType(data) {
+	case TeamCollectionSysTypeArray:
+		*s = TeamCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/TeamData
 type TeamData struct {
 	Name        string    `json:"name"`
@@ -11825,6 +11936,118 @@ func (s *TeamLinkSysType) UnmarshalText(data []byte) error {
 	switch TeamLinkSysType(data) {
 	case TeamLinkSysTypeLink:
 		*s = TeamLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/TeamListItem
+type TeamListItem struct {
+	Sys         TeamListItemSys `json:"sys"`
+	Name        string          `json:"name"`
+	Description NilString       `json:"description"`
+}
+
+// GetSys returns the value of Sys.
+func (s *TeamListItem) GetSys() TeamListItemSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *TeamListItem) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *TeamListItem) GetDescription() NilString {
+	return s.Description
+}
+
+// SetSys sets the value of Sys.
+func (s *TeamListItem) SetSys(val TeamListItemSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *TeamListItem) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *TeamListItem) SetDescription(val NilString) {
+	s.Description = val
+}
+
+// Merged schema.
+// Ref: #/TeamListItemSys
+type TeamListItemSys struct {
+	Organization OrganizationLink `json:"organization"`
+	// Merged property.
+	Type TeamListItemSysType `json:"type"`
+	ID   string              `json:"id"`
+}
+
+// GetOrganization returns the value of Organization.
+func (s *TeamListItemSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetType returns the value of Type.
+func (s *TeamListItemSys) GetType() TeamListItemSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TeamListItemSys) GetID() string {
+	return s.ID
+}
+
+// SetOrganization sets the value of Organization.
+func (s *TeamListItemSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetType sets the value of Type.
+func (s *TeamListItemSys) SetType(val TeamListItemSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TeamListItemSys) SetID(val string) {
+	s.ID = val
+}
+
+// Merged schema.
+type TeamListItemSysType string
+
+const (
+	TeamListItemSysTypeTeam TeamListItemSysType = "Team"
+)
+
+// AllValues returns all TeamListItemSysType values.
+func (TeamListItemSysType) AllValues() []TeamListItemSysType {
+	return []TeamListItemSysType{
+		TeamListItemSysTypeTeam,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TeamListItemSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case TeamListItemSysTypeTeam:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TeamListItemSysType) UnmarshalText(data []byte) error {
+	switch TeamListItemSysType(data) {
+	case TeamListItemSysTypeTeam:
+		*s = TeamListItemSysTypeTeam
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

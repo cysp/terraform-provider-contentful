@@ -93,6 +93,7 @@ var operationRolesAccessToken = map[string][]string{
 	GetTaxonomyConceptSchemeOperation:       []string{},
 	GetTeamOperation:                        []string{},
 	GetTeamSpaceMembershipOperation:         []string{},
+	GetTeamsOperation:                       []string{},
 	GetWebhookDefinitionOperation:           []string{},
 	PatchTaxonomyConceptOperation:           []string{},
 	PatchTaxonomyConceptSchemeOperation:     []string{},

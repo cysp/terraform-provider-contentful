@@ -362,6 +362,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
 	GetTeamSpaceMembership(ctx context.Context, params GetTeamSpaceMembershipParams) (GetTeamSpaceMembershipRes, error)
+	// GetTeams implements getTeams operation.
+	//
+	// Get a collection of teams.
+	//
+	// GET /organizations/{organization_id}/teams
+	GetTeams(ctx context.Context, params GetTeamsParams) (GetTeamsRes, error)
 	// GetWebhookDefinition implements getWebhookDefinition operation.
 	//
 	// Get a webhook definition.

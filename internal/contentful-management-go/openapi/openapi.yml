@@ -703,6 +703,23 @@ paths:
   /organizations/{organization_id}/teams:
     parameters:
       - $ref: "#/components/parameters/organization_id"
+    get:
+      operationId: getTeams
+      summary: Get a collection of teams
+      parameters:
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        200:
+          description: A list of teams
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/team/collection.yml#/TeamCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
     post:
       operationId: createTeam
       summary: Create a team
