@@ -22,5 +22,5 @@ provider "contentful" {
 
 ### Optional
 
-- `access_token` (String, Sensitive)
-- `url` (String)
+- `access_token` (String, Sensitive) Contentful Management API access token. Can also be set with the CONTENTFUL_MANAGEMENT_ACCESS_TOKEN environment variable.
+- `url` (String) Contentful Management API base URL. Defaults to the public Contentful Management API. Can also be set with the CONTENTFUL_URL environment variable.
