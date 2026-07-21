@@ -15,17 +15,20 @@ func TestToOptNilWebhookDefinitionFilterArrayNil(t *testing.T) {
 	ctx := t.Context()
 
 	testcases := map[string]struct {
-		input TypedList[TypedObject[WebhookFilterValue]]
+		input       TypedList[TypedObject[WebhookFilterValue]]
+		expected    cm.OptNilWebhookDefinitionFilterArray
+		expectError bool
 	}{
 		"null": {
-			input: NewTypedListNull[TypedObject[WebhookFilterValue]](),
+			input:    NewTypedListNull[TypedObject[WebhookFilterValue]](),
+			expected: cm.NewOptNilWebhookDefinitionFilterArrayNull(),
 		},
 		"unknown": {
-			input: NewTypedListUnknown[TypedObject[WebhookFilterValue]](),
+			input:       NewTypedListUnknown[TypedObject[WebhookFilterValue]](),
+			expected:    cm.OptNilWebhookDefinitionFilterArray{},
+			expectError: true,
 		},
 	}
-
-	expected := cm.NewOptNilWebhookDefinitionFilterArrayNull()
 
 	for name, testcase := range testcases {
 		t.Run(name, func(t *testing.T) {
@@ -37,8 +40,8 @@ func TestToOptNilWebhookDefinitionFilterArrayNil(t *testing.T) {
 				testcase.input,
 			)
 
-			assert.Equal(t, expected, result)
-			assert.Empty(t, diags)
+			assert.Equal(t, testcase.expected, result)
+			assert.Equal(t, testcase.expectError, diags.HasError())
 		})
 	}
 }

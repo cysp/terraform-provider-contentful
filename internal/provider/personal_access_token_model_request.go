@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
@@ -13,6 +14,16 @@ func (model *PersonalAccessTokenModel) ToPersonalAccessTokenRequestData(ctx cont
 
 	req := cm.PersonalAccessTokenRequestData{
 		Name: model.Name.ValueString(),
+	}
+
+	if model.Scopes.IsNull() || model.Scopes.IsUnknown() {
+		if model.Scopes.IsUnknown() {
+			diags.AddAttributeError(path.Root("scopes"), "Unexpected unknown scopes", "Personal access token scopes must be known before they can be sent to Contentful.")
+		} else {
+			diags.AddAttributeError(path.Root("scopes"), "Unexpected null scopes", "Personal access token scopes are required.")
+		}
+
+		return req, diags
 	}
 
 	scopes := make([]string, len(model.Scopes.Elements()))

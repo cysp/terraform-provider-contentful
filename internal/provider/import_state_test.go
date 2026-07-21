@@ -77,6 +77,45 @@ func TestImportStatePassthroughMultipartIDFromIdentityRejectsNullComponent(t *te
 	}, resp)
 
 	assert.True(t, resp.Diagnostics.HasError())
+	assertImportStatePassthroughUntouched(t, resp)
+}
+
+func TestImportStatePassthroughMultipartIDFromIdentityRejectsUnknownComponent(t *testing.T) {
+	t.Parallel()
+
+	reqIdentity := importStatePassthroughIdentity(importStateRawValues("space", tftypes.UnknownValue))
+	resp := importStatePassthroughResponse()
+
+	provider.ImportStatePassthroughMultipartID(t.Context(), importStatePassthroughPaths, resource.ImportStateRequest{
+		Identity: reqIdentity,
+	}, resp)
+
+	assert.True(t, resp.Diagnostics.HasError())
+	assertImportStatePassthroughUntouched(t, resp)
+}
+
+func TestImportStatePassthroughMultipartIDFromIdentityRejectsDecodeError(t *testing.T) {
+	t.Parallel()
+
+	rawType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"space_id": tftypes.String,
+		"entry_id": tftypes.Bool,
+	}}
+	reqIdentity := &tfsdk.ResourceIdentity{
+		Schema: importStatePassthroughIdentitySchema,
+		Raw: tftypes.NewValue(rawType, map[string]tftypes.Value{
+			"space_id": tftypes.NewValue(tftypes.String, "space"),
+			"entry_id": tftypes.NewValue(tftypes.Bool, true),
+		}),
+	}
+	resp := importStatePassthroughResponse()
+
+	provider.ImportStatePassthroughMultipartID(t.Context(), importStatePassthroughPaths, resource.ImportStateRequest{
+		Identity: reqIdentity,
+	}, resp)
+
+	assert.True(t, resp.Diagnostics.HasError())
+	assertImportStatePassthroughUntouched(t, resp)
 }
 
 func importStatePassthroughIdentity(rawValues map[string]tftypes.Value) *tfsdk.ResourceIdentity {
@@ -98,4 +137,20 @@ func importStateRawValues(spaceID, entryID any) map[string]tftypes.Value {
 		"space_id": tftypes.NewValue(tftypes.String, spaceID),
 		"entry_id": tftypes.NewValue(tftypes.String, entryID),
 	}
+}
+
+func assertImportStatePassthroughUntouched(t *testing.T, resp *resource.ImportStateResponse) {
+	t.Helper()
+
+	var stateSpaceID, stateEntryID types.String
+	require.False(t, resp.State.GetAttribute(t.Context(), path.Root("space_id"), &stateSpaceID).HasError())
+	require.False(t, resp.State.GetAttribute(t.Context(), path.Root("entry_id"), &stateEntryID).HasError())
+	assert.True(t, stateSpaceID.IsNull())
+	assert.True(t, stateEntryID.IsNull())
+
+	var identitySpaceID, identityEntryID types.String
+	require.False(t, resp.Identity.GetAttribute(t.Context(), path.Root("space_id"), &identitySpaceID).HasError())
+	require.False(t, resp.Identity.GetAttribute(t.Context(), path.Root("entry_id"), &identityEntryID).HasError())
+	assert.True(t, identitySpaceID.IsNull())
+	assert.True(t, identityEntryID.IsNull())
 }

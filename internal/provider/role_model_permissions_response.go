@@ -45,5 +45,5 @@ func NewPermissionActionsListValueFromResponse(_ context.Context, path path.Path
 	diags := diag.Diagnostics{}
 	diags.AddAttributeError(path, "unexpected type for permission actions", "")
 
-	return NewTypedListUnknown[types.String](), diags
+	return NewTypedListNull[types.String](), diags
 }

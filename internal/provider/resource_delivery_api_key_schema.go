@@ -4,9 +4,11 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -48,6 +50,9 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Optional:    true,
 				Computed:    true,
+				Validators: []validator.List{
+					listvalidator.NoNullValues(),
+				},
 				PlanModifiers: []planmodifier.List{
 					UseStateForUnknown(),
 				},

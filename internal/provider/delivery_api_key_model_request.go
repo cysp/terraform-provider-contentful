@@ -22,5 +22,9 @@ func (model *DeliveryAPIKeyModel) ToAPIKeyRequestFields(ctx context.Context) (cm
 
 	req.Environments = environments
 
+	if diags.HasError() {
+		return cm.ApiKeyRequestData{}, diags
+	}
+
 	return req, diags
 }

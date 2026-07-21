@@ -26,5 +26,9 @@ func (model *RoleModel) ToRoleData(ctx context.Context) (cm.RoleData, diag.Diagn
 
 	request.Policies = policies
 
+	if diags.HasError() {
+		return cm.RoleData{}, diags
+	}
+
 	return request, diags
 }

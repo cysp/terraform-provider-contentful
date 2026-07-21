@@ -5,11 +5,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -98,6 +100,9 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 			PlanModifiers: []planmodifier.List{
 				UseStateForUnknown(),
 			},
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 		"tags": schema.ListAttribute{
 			ElementType: types.StringType,
@@ -107,6 +112,9 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 			Default:     listdefault.StaticValue(defaultTagsListValue),
 			PlanModifiers: []planmodifier.List{
 				UseStateForUnknown(),
+			},
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
 			},
 		},
 	}

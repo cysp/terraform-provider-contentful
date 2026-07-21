@@ -22,7 +22,7 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupValueFromResponse(ctx conte
 	}), diags
 }
 
-func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) ToEditorInterfaceEditorLayoutGroupItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutGroupItem, diag.Diagnostics) {
+func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) ToEditorInterfaceEditorLayoutGroupItem(ctx context.Context, valuePath path.Path) (cm.EditorInterfaceEditorLayoutGroupItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	groupItem := cm.EditorInterfaceEditorLayoutGroupItem{
@@ -31,18 +31,23 @@ func (v EditorInterfaceEditorLayoutItemGroupItemGroupValue) ToEditorInterfaceEdi
 	}
 
 	if !v.Items.IsNull() && !v.Items.IsUnknown() {
-		itemItemsValues := v.Items.Elements()
+		itemItems, itemDiags := ConvertKnownObjectListElements(
+			ctx,
+			valuePath.AtName("items"),
+			v.Items.Elements(),
+			func(ctx context.Context, itemPath path.Path, value EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+				return value.ToEditorInterfaceEditorLayoutItem(ctx, itemPath)
+			},
+		)
+		diags.Append(itemDiags...)
 
-		itemItems := make([]cm.EditorInterfaceEditorLayoutItem, len(itemItemsValues))
-
-		for index, itemItem := range itemItemsValues {
-			itemItemObject, itemItemObjectDiags := itemItem.Value().ToEditorInterfaceEditorLayoutItem(ctx, path.AtListIndex(index))
-			diags.Append(itemItemObjectDiags...)
-
-			itemItems[index] = itemItemObject
+		if !itemDiags.HasError() {
+			groupItem.Items = itemItems
 		}
+	}
 
-		groupItem.Items = itemItems
+	if diags.HasError() {
+		return cm.EditorInterfaceEditorLayoutGroupItem{}, diags
 	}
 
 	return groupItem, diags

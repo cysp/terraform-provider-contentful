@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -55,10 +56,14 @@ type TaxonomyConceptSchemeModel struct {
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func stringMap(ctx context.Context, value types.Map) (map[string]string, diag.Diagnostics) {
+func knownStringMap(ctx context.Context, value types.Map, valuePath path.Path) (map[string]string, diag.Diagnostics) {
 	result := map[string]string{}
-	if value.IsNull() || value.IsUnknown() {
-		return result, nil
+	if value.IsNull() {
+		return result, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Unexpected null value", "A known map value is required.")}
+	}
+
+	if value.IsUnknown() {
+		return result, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Unexpected unknown value", "A known map value is required.")}
 	}
 
 	diags := value.ElementsAs(ctx, &result, false)
@@ -66,19 +71,24 @@ func stringMap(ctx context.Context, value types.Map) (map[string]string, diag.Di
 	return result, diags
 }
 
-func stringList(ctx context.Context, value types.List) ([]string, diag.Diagnostics) {
-	result := []string{}
-	if value.IsNull() || value.IsUnknown() {
-		return result, nil
-	}
-
-	diags := value.ElementsAs(ctx, &result, false)
-
-	return result, diags
-}
-
-func stringListMap(ctx context.Context, value types.Map) (map[string][]string, diag.Diagnostics) {
+// optionalComputedStringMap converts an omitted Optional+Computed value to the
+// provider's create-time empty default. UseStateForUnknown preserves prior
+// state during updates, so unknown only reaches this function on initial create.
+func optionalComputedStringMap(ctx context.Context, value types.Map) (map[string][]string, diag.Diagnostics) {
 	result := map[string][]string{}
+	if value.IsNull() || value.IsUnknown() {
+		return result, nil
+	}
+
+	diags := value.ElementsAs(ctx, &result, false)
+
+	return result, diags
+}
+
+// optionalComputedStringList has the same lifecycle contract as
+// optionalComputedStringMap.
+func optionalComputedStringListValue(ctx context.Context, value types.List) ([]string, diag.Diagnostics) {
+	result := []string{}
 	if value.IsNull() || value.IsUnknown() {
 		return result, nil
 	}

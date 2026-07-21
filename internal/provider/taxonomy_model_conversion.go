@@ -13,20 +13,27 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var errTaxonomyLocaleNotPreserved = errors.New("contentful did not preserve configured taxonomy locale")
 
-func nullableLocalizedString(ctx context.Context, value types.Map, diags *diag.Diagnostics) cm.OptNilNullableLocalizedString {
-	if value.IsNull() || value.IsUnknown() {
+func nullableLocalizedString(ctx context.Context, value types.Map, valuePath path.Path, diags *diag.Diagnostics) cm.OptNilNullableLocalizedString {
+	if value.IsNull() {
 		var result cm.OptNilNullableLocalizedString
 		result.SetToNull()
 
 		return result
 	}
 
-	values, valueDiags := stringMap(ctx, value)
+	if value.IsUnknown() {
+		diags.AddAttributeError(valuePath, "Unexpected unknown value", "A nullable localized string must be known before it can be sent to Contentful.")
+
+		return cm.OptNilNullableLocalizedString{}
+	}
+
+	values, valueDiags := knownStringMap(ctx, value, valuePath)
 	*diags = append(*diags, valueDiags...)
 
 	return cm.NewOptNilNullableLocalizedString(cm.NullableLocalizedString(values))
@@ -63,11 +70,11 @@ func conceptLinkIDs(links []cm.TaxonomyConceptLink) []string {
 
 func (model TaxonomyConceptModel) ToRequest(ctx context.Context) (cm.TaxonomyConceptRequest, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-	prefLabel, valueDiags := stringMap(ctx, model.PrefLabel)
+	prefLabel, valueDiags := knownStringMap(ctx, model.PrefLabel, path.Root("pref_label"))
 	diags.Append(valueDiags...)
-	altLabels, valueDiags := stringListMap(ctx, model.AltLabels)
+	altLabels, valueDiags := optionalComputedStringMap(ctx, model.AltLabels)
 	diags.Append(valueDiags...)
-	hiddenLabels, valueDiags := stringListMap(ctx, model.HiddenLabels)
+	hiddenLabels, valueDiags := optionalComputedStringMap(ctx, model.HiddenLabels)
 	diags.Append(valueDiags...)
 
 	for locale := range prefLabel {
@@ -80,28 +87,35 @@ func (model TaxonomyConceptModel) ToRequest(ctx context.Context) (cm.TaxonomyCon
 		}
 	}
 
-	notations, valueDiags := stringList(ctx, model.Notations)
+	notations, valueDiags := optionalComputedStringListValue(ctx, model.Notations)
 	diags.Append(valueDiags...)
-	broader, valueDiags := stringList(ctx, model.BroaderConceptIDs)
+	broader, valueDiags := optionalComputedStringListValue(ctx, model.BroaderConceptIDs)
 	diags.Append(valueDiags...)
-	related, valueDiags := stringList(ctx, model.RelatedConceptIDs)
+	related, valueDiags := optionalComputedStringListValue(ctx, model.RelatedConceptIDs)
 	diags.Append(valueDiags...)
 
+	uri, uriDiags := optionalKnownStringPointer(model.URI, path.Root("uri"))
+	diags.Append(uriDiags...)
+
 	request := cm.TaxonomyConceptRequest{
-		URI:           cm.NewOptNilPointerString(model.URI.ValueStringPointer()),
+		URI:           cm.NewOptNilPointerString(uri),
 		PrefLabel:     cm.LocalizedString(prefLabel),
 		AltLabels:     cm.NewOptLocalizedStringList(cm.LocalizedStringList(altLabels)),
 		HiddenLabels:  cm.NewOptLocalizedStringList(cm.LocalizedStringList(hiddenLabels)),
 		Notations:     notations,
-		Note:          nullableLocalizedString(ctx, model.Note, &diags),
-		ChangeNote:    nullableLocalizedString(ctx, model.ChangeNote, &diags),
-		Definition:    nullableLocalizedString(ctx, model.Definition, &diags),
-		EditorialNote: nullableLocalizedString(ctx, model.EditorialNote, &diags),
-		Example:       nullableLocalizedString(ctx, model.Example, &diags),
-		HistoryNote:   nullableLocalizedString(ctx, model.HistoryNote, &diags),
-		ScopeNote:     nullableLocalizedString(ctx, model.ScopeNote, &diags),
+		Note:          nullableLocalizedString(ctx, model.Note, path.Root("note"), &diags),
+		ChangeNote:    nullableLocalizedString(ctx, model.ChangeNote, path.Root("change_note"), &diags),
+		Definition:    nullableLocalizedString(ctx, model.Definition, path.Root("definition"), &diags),
+		EditorialNote: nullableLocalizedString(ctx, model.EditorialNote, path.Root("editorial_note"), &diags),
+		Example:       nullableLocalizedString(ctx, model.Example, path.Root("example"), &diags),
+		HistoryNote:   nullableLocalizedString(ctx, model.HistoryNote, path.Root("history_note"), &diags),
+		ScopeNote:     nullableLocalizedString(ctx, model.ScopeNote, path.Root("scope_note"), &diags),
 		Broader:       conceptLinks(broader),
 		Related:       conceptLinks(related),
+	}
+
+	if diags.HasError() {
+		return cm.TaxonomyConceptRequest{}, diags
 	}
 
 	return request, diags
@@ -171,17 +185,40 @@ func labelMapWithConfiguredKeys(configured, returned types.Map) types.Map {
 
 func (model TaxonomyConceptSchemeModel) ToRequest(ctx context.Context) (cm.TaxonomyConceptSchemeRequest, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-	prefLabel, valueDiags := stringMap(ctx, model.PrefLabel)
+	prefLabel, valueDiags := knownStringMap(ctx, model.PrefLabel, path.Root("pref_label"))
 	diags.Append(valueDiags...)
-	topIDs, valueDiags := stringList(ctx, model.TopConceptIDs)
+	topIDs, valueDiags := optionalComputedStringListValue(ctx, model.TopConceptIDs)
 	diags.Append(valueDiags...)
-	ids, valueDiags := stringList(ctx, model.ConceptIDs)
+	ids, valueDiags := optionalComputedStringListValue(ctx, model.ConceptIDs)
 	diags.Append(valueDiags...)
 
-	return cm.TaxonomyConceptSchemeRequest{
-		URI: cm.NewOptNilPointerString(model.URI.ValueStringPointer()), PrefLabel: cm.LocalizedString(prefLabel),
-		Definition: nullableLocalizedString(ctx, model.Definition, &diags), TopConcepts: conceptLinks(topIDs), Concepts: conceptLinks(ids),
-	}, diags
+	uri, uriDiags := optionalKnownStringPointer(model.URI, path.Root("uri"))
+	diags.Append(uriDiags...)
+
+	request := cm.TaxonomyConceptSchemeRequest{
+		URI: cm.NewOptNilPointerString(uri), PrefLabel: cm.LocalizedString(prefLabel),
+		Definition: nullableLocalizedString(ctx, model.Definition, path.Root("definition"), &diags), TopConcepts: conceptLinks(topIDs), Concepts: conceptLinks(ids),
+	}
+
+	if diags.HasError() {
+		return cm.TaxonomyConceptSchemeRequest{}, diags
+	}
+
+	return request, diags
+}
+
+func optionalKnownStringPointer(value types.String, valuePath path.Path) (*string, diag.Diagnostics) {
+	if value.IsNull() {
+		return nil, nil
+	}
+
+	if value.IsUnknown() {
+		return nil, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Unexpected unknown value", "The optional string must be known before it can be sent to Contentful.")}
+	}
+
+	result := value.ValueString()
+
+	return &result, nil
 }
 
 func NewTaxonomyConceptSchemeModelFromResponse(ctx context.Context, response cm.TaxonomyConceptScheme) (TaxonomyConceptSchemeModel, diag.Diagnostics) {

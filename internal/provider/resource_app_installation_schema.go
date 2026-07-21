@@ -5,9 +5,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -46,6 +48,9 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				Description: "Marketplace information for the app.",
 				ElementType: types.StringType,
 				Optional:    true,
+				Validators: []validator.Set{
+					setvalidator.NoNullValues(),
+				},
 			},
 			"parameters": schema.StringAttribute{
 				Description: "App-specific configuration variables. Optional free-form object with values managed by the app. The stringified value cannot be longer than 16kB.",

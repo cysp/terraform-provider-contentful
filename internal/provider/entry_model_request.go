@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
 func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.Diagnostics) {
@@ -16,6 +17,10 @@ func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.D
 
 	metadata, metadataDiags := entryModelToOptEntryMetadata(ctx, m)
 	diags.Append(metadataDiags...)
+
+	if diags.HasError() {
+		return cm.EntryRequest{}, diags
+	}
 
 	return cm.EntryRequest{
 		Fields:   fields,
@@ -35,10 +40,22 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 	attrs := model.Fields.Elements()
 	for k, v := range attrs {
 		if v.IsNull() {
+			// Terraform null omits the field. A configured JSON null remains a
+			// known jsontypes.Normalized value and is sent as JSON null.
+			continue
+		}
+
+		if v.IsUnknown() {
+			diags.AddAttributeError(path.Root("fields").AtMapKey(k), "Unexpected unknown entry field", "Entry field values must be known before they can be sent to Contentful.")
+
 			continue
 		}
 
 		fields[k] = jx.Raw(v.ValueString())
+	}
+
+	if diags.HasError() {
+		return cm.OptEntryFields{}, diags
 	}
 
 	return cm.NewOptEntryFields(fields), diags
@@ -57,8 +74,14 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 	if !modelConcepts.IsNull() && !modelConcepts.IsUnknown() {
 		concepts := make([]cm.TaxonomyConceptLink, 0, len(modelConcepts.Elements()))
 
-		for _, concept := range modelConcepts.Elements() {
-			conceptValue := concept.ValueString()
+		for index, concept := range modelConcepts.Elements() {
+			conceptValue, conceptDiags := KnownStringValue(concept, path.Root("metadata").AtName("concepts").AtListIndex(index))
+			diags.Append(conceptDiags...)
+
+			if conceptDiags.HasError() {
+				continue
+			}
+
 			concepts = append(concepts, cm.NewTaxonomyConceptLink(conceptValue))
 		}
 
@@ -69,12 +92,22 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 	if !modelTags.IsNull() && !modelTags.IsUnknown() {
 		tags := make([]cm.TagLink, 0, len(modelTags.Elements()))
 
-		for _, tag := range modelTags.Elements() {
-			tagValue := tag.ValueString()
+		for index, tag := range modelTags.Elements() {
+			tagValue, tagDiags := KnownStringValue(tag, path.Root("metadata").AtName("tags").AtListIndex(index))
+			diags.Append(tagDiags...)
+
+			if tagDiags.HasError() {
+				continue
+			}
+
 			tags = append(tags, cm.NewTagLink(tagValue))
 		}
 
 		metadata.Tags = tags
+	}
+
+	if diags.HasError() {
+		return cm.OptEntryMetadata{}, diags
 	}
 
 	return cm.NewOptEntryMetadata(metadata), diags
