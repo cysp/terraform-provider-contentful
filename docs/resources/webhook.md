@@ -150,13 +150,11 @@ Required:
 <a id="nestedatt--headers"></a>
 ### Nested Schema for `headers`
 
-Required:
-
-- `value` (String)
-
 Optional:
 
 - `secret` (Boolean)
+- `value` (String)
+- `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments))
 
 
 <a id="nestedatt--timeouts"></a>

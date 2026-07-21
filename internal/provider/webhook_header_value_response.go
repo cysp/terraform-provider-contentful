@@ -27,6 +27,7 @@ func NewWebhookHeaderValueFromResponse(_ context.Context, _ path.Path, header cm
 	}
 
 	value.Secret = types.BoolValue(headerIsSecret)
+	value.ValueWO = types.StringNull()
 
 	return NewTypedObject(value), diags
 }
