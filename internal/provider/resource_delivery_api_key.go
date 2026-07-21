@@ -123,7 +123,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl
@@ -197,7 +197,7 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -221,7 +221,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 
 	var currentVersion int
 
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
+	currentVersion, currentVersionDiags := GetContentfulResourceVersion(ctx, req.Private)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
 	params := cm.UpdateDeliveryAPIKeyParams{
@@ -271,7 +271,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetContentfulResourceVersion(ctx, resp.Private, currentVersion)...)
 }
 
 //nolint:dupl
