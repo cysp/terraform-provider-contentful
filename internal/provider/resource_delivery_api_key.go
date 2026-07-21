@@ -1,4 +1,3 @@
-//nolint:dupl
 package provider
 
 import (
@@ -94,7 +93,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 	tflog.Info(ctx, "delivery_api_key.create", map[string]any{
 		"params":   params,
 		"request":  request,
-		"response": response,
+		"response": RedactForLogging(response, RedactPath("response.accessToken")),
 		"err":      err,
 	})
 
@@ -126,7 +125,6 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
-//nolint:dupl
 func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state DeliveryAPIKeyModel
 
@@ -157,7 +155,7 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	tflog.Info(ctx, "delivery_api_key.read", map[string]any{
 		"params":   params,
-		"response": response,
+		"response": RedactForLogging(response, RedactPath("accessToken")),
 		"err":      err,
 	})
 
@@ -242,7 +240,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 	tflog.Info(ctx, "delivery_api_key.update", map[string]any{
 		"params":   params,
 		"request":  request,
-		"response": response,
+		"response": RedactForLogging(response, RedactPath("response.accessToken")),
 		"err":      err,
 	})
 
@@ -274,7 +272,6 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
-//nolint:dupl
 func (r *deliveryAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state DeliveryAPIKeyModel
 
@@ -305,7 +302,7 @@ func (r *deliveryAPIKeyResource) Delete(ctx context.Context, req resource.Delete
 
 	tflog.Info(ctx, "delivery_api_key.delete", map[string]any{
 		"params":   params,
-		"response": response,
+		"response": RedactForLogging(response, RedactPath("accessToken")),
 		"err":      err,
 	})
 
