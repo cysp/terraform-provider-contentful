@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 )
 
 //nolint:ireturn
@@ -16,9 +15,5 @@ func WebhookHeadersSchema(ctx context.Context, optional bool) schema.Attribute {
 		},
 		CustomType: TypedMap[TypedObject[WebhookHeaderValue]]{}.CustomType(ctx),
 		Optional:   optional,
-		Computed:   true,
-		PlanModifiers: []planmodifier.Map{
-			UseStateForUnknown(),
-		},
 	}
 }

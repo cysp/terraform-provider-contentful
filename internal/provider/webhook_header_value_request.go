@@ -16,7 +16,7 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(_ context.Context, path pa
 	}
 
 	if v.Value.IsNull() || v.Value.IsUnknown() {
-		diags.AddAttributeError(path.AtName("value"), "Value is required", "")
+		diags.AddAttributeError(path.AtName("value"), "One of value or value_wo is required", "")
 	}
 
 	header.Value = cm.NewOptPointerString(v.Value.ValueStringPointer())
