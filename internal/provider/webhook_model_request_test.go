@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
@@ -215,4 +216,24 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestWebhookTopicsPreserveChildDiagnosticPathAndFailClosed(t *testing.T) {
+	t.Parallel()
+
+	model := WebhookModel{
+		Name:   types.StringValue("webhook"),
+		Active: types.BoolValue(true),
+		URL:    types.StringValue("https://example.com"),
+		Topics: NewTypedList([]types.String{
+			types.StringValue("Entry.create"),
+			types.StringUnknown(),
+		}),
+	}
+
+	actual, diags := model.ToWebhookDefinitionData(t.Context(), path.Empty())
+
+	assert.Zero(t, actual)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{"topics[1]"}, diagnosticPaths(t, diags))
 }

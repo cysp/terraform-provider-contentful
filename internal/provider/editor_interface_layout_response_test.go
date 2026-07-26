@@ -48,5 +48,34 @@ func TestEditorLayoutNestedGroupItemFieldRejectsGroupItem(t *testing.T) {
 	)
 
 	assert.True(t, diags.HasError())
-	assert.False(t, actual.IsNull())
+	assert.True(t, actual.IsNull())
+}
+
+func TestEditorLayoutRejectsUnknownItemTypes(t *testing.T) {
+	t.Parallel()
+
+	itemPath := path.Root("editor_layout").AtListIndex(0)
+	item := cm.EditorInterfaceEditorLayoutItem{
+		Type: cm.EditorInterfaceEditorLayoutItemType("unknown"),
+	}
+
+	groupItem, groupItemDiags := NewEditorInterfaceEditorLayoutItemValueFromResponse(t.Context(), itemPath, item)
+	assert.True(t, groupItemDiags.HasError())
+	assert.True(t, groupItem.IsNull())
+	assert.Equal(t, []string{itemPath.String()}, diagnosticPaths(t, groupItemDiags))
+
+	topLevelGroup, topLevelGroupDiags := NewEditorInterfaceEditorLayoutItemGroupValueFromResponse(t.Context(), itemPath, item)
+	assert.True(t, topLevelGroupDiags.HasError())
+	assert.True(t, topLevelGroup.IsNull())
+	assert.Equal(t, []string{itemPath.String()}, diagnosticPaths(t, topLevelGroupDiags))
+
+	nestedField, nestedFieldDiags := NewEditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValueFromResponse(t.Context(), itemPath, item)
+	assert.True(t, nestedFieldDiags.HasError())
+	assert.True(t, nestedField.IsNull())
+	assert.Equal(t, []string{itemPath.String()}, diagnosticPaths(t, nestedFieldDiags))
+
+	layout, layoutDiags := NewEditorInterfaceEditorLayoutListValueFromResponse(t.Context(), path.Root("editor_layout"), []cm.EditorInterfaceEditorLayoutItem{item})
+	assert.True(t, layoutDiags.HasError())
+	assert.True(t, layout.IsNull())
+	assert.Equal(t, []string{itemPath.String()}, diagnosticPaths(t, layoutDiags))
 }

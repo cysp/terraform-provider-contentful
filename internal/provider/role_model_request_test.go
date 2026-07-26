@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -95,4 +96,18 @@ func TestRoleRequestRejectsNullAndUnknownPolicyObjects(t *testing.T) {
 			assert.Equal(t, []string{"policies[0]"}, diagnosticPaths(t, diags))
 		})
 	}
+}
+
+func TestRolePermissionActionsPreserveChildDiagnosticPath(t *testing.T) {
+	t.Parallel()
+
+	actual, diags := ToRoleDataPermissionsItem(
+		t.Context(),
+		path.Root("permissions").AtMapKey("Entry"),
+		NewTypedList([]types.String{types.StringValue("read"), types.StringNull()}),
+	)
+
+	assert.Zero(t, actual)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{`permissions["Entry"][1]`}, diagnosticPaths(t, diags))
 }
