@@ -7,6 +7,7 @@ import (
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -114,6 +115,213 @@ func TestEditorInterfaceRequestRejectsNullAndUnknownObjects(t *testing.T) {
 			require.True(t, diags.HasError())
 			assert.False(t, request.Controls.Set)
 			assert.Equal(t, []string{"controls[0]"}, diagnosticPaths(t, diags))
+		})
+	}
+}
+
+func TestEditorInterfaceLayoutItemRequiresExactlyOneAlternative(t *testing.T) {
+	t.Parallel()
+
+	valuePath := path.Root("editor_layout").AtListIndex(0)
+	field := NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemFieldValue{
+		FieldID: types.StringValue("field"),
+	})
+	group := NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupValue{
+		GroupID: types.StringValue("group"),
+		Name:    types.StringValue("Group"),
+		Items:   NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]{}),
+	})
+
+	tests := map[string]struct {
+		value         EditorInterfaceEditorLayoutItemGroupItemValue
+		expected      cm.EditorInterfaceEditorLayoutItem
+		expectedPaths []string
+	}{
+		"field": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: field,
+				Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+			},
+			expected: cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(
+				cm.EditorInterfaceEditorLayoutFieldItem{FieldId: "field"},
+			),
+		},
+		"group": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: group,
+			},
+			expected: cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(
+				cm.EditorInterfaceEditorLayoutGroupItem{
+					GroupId: "group",
+					Name:    "Group",
+					Items:   []cm.EditorInterfaceEditorLayoutItem{},
+				},
+			),
+		},
+		"neither": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+			},
+			expectedPaths: []string{"editor_layout[0]"},
+		},
+		"both": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: field,
+				Group: group,
+			},
+			expectedPaths: []string{"editor_layout[0]"},
+		},
+		"unknown": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+			},
+			expectedPaths: []string{"editor_layout[0].field"},
+		},
+		"invalid field": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemFieldValue{
+					FieldID: types.StringUnknown(),
+				}),
+				Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+			},
+			expectedPaths: []string{"editor_layout[0].field.field_id"},
+		},
+		"invalid group ID": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupValue{
+					GroupID: types.StringUnknown(),
+					Name:    types.StringValue("Group"),
+					Items:   NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]{}),
+				}),
+			},
+			expectedPaths: []string{"editor_layout[0].group.group_id"},
+		},
+		"invalid group name": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupValue{
+					GroupID: types.StringValue("group"),
+					Name:    types.StringNull(),
+					Items:   NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]{}),
+				}),
+			},
+			expectedPaths: []string{"editor_layout[0].group.name"},
+		},
+		"unknown group items": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupValue{
+					GroupID: types.StringValue("group"),
+					Name:    types.StringValue("Group"),
+					Items:   NewTypedListUnknown[TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]](),
+				}),
+			},
+			expectedPaths: []string{"editor_layout[0].group.items"},
+		},
+		"null group items": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupValue{
+					GroupID: types.StringValue("group"),
+					Name:    types.StringValue("Group"),
+					Items:   NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]](),
+				}),
+			},
+			expectedPaths: []string{"editor_layout[0].group.items"},
+		},
+		"invalid nested field": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupValue{
+					GroupID: types.StringValue("group"),
+					Name:    types.StringValue("Group"),
+					Items: NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]{
+						NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{
+							Field: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{
+								FieldID: types.StringUnknown(),
+							}),
+						}),
+					}),
+				}),
+			},
+			expectedPaths: []string{"editor_layout[0].group.items[0].field.field_id"},
+		},
+		"null nested field": {
+			value: EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupValue{
+					GroupID: types.StringValue("group"),
+					Name:    types.StringValue("Group"),
+					Items: NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]{
+						NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{
+							Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](),
+						}),
+					}),
+				}),
+			},
+			expectedPaths: []string{"editor_layout[0].group.items[0].field"},
+		},
+	}
+
+	for name, value := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			actual, diags := value.value.ToEditorInterfaceEditorLayoutItem(t.Context(), valuePath)
+
+			assert.Equal(t, value.expected, actual)
+			assert.ElementsMatch(t, value.expectedPaths, diagnosticPaths(t, diags))
+		})
+	}
+}
+
+func TestEditorInterfaceTopLevelGroupRejectsInvalidValues(t *testing.T) {
+	t.Parallel()
+
+	valuePath := path.Root("editor_layout").AtListIndex(0).AtName("group")
+
+	tests := map[string]struct {
+		value        EditorInterfaceEditorLayoutItemGroupValue
+		expectedPath string
+	}{
+		"group ID": {
+			value: EditorInterfaceEditorLayoutItemGroupValue{
+				GroupID: types.StringUnknown(),
+				Name:    types.StringValue("Group"),
+				Items:   NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{}),
+			},
+			expectedPath: "editor_layout[0].group.group_id",
+		},
+		"name": {
+			value: EditorInterfaceEditorLayoutItemGroupValue{
+				GroupID: types.StringValue("group"),
+				Name:    types.StringNull(),
+				Items:   NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{}),
+			},
+			expectedPath: "editor_layout[0].group.name",
+		},
+		"items": {
+			value: EditorInterfaceEditorLayoutItemGroupValue{
+				GroupID: types.StringValue("group"),
+				Name:    types.StringValue("Group"),
+				Items:   NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]](),
+			},
+			expectedPath: "editor_layout[0].group.items",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			actual, diags := test.value.ToEditorInterfaceEditorLayoutItem(t.Context(), valuePath)
+
+			assert.Zero(t, actual)
+			assert.Equal(t, []string{test.expectedPath}, diagnosticPaths(t, diags))
 		})
 	}
 }
