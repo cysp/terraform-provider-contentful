@@ -111,6 +111,10 @@ func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req 
 		resp.Diagnostics.AddError("Failed to create resource provider definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identityModel ResourceProviderIdentityModel
@@ -120,8 +124,11 @@ func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req 
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Diagnostics, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl
@@ -181,6 +188,10 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 		resp.Diagnostics.AddError("Failed to read resource provider definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = state.Timeouts
 
 	var identityModel ResourceProviderIdentityModel
@@ -190,8 +201,11 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Diagnostics, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl
@@ -248,6 +262,10 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 		resp.Diagnostics.AddError("Failed to update resource provider definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identityModel ResourceProviderIdentityModel
@@ -257,8 +275,11 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Diagnostics, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl
