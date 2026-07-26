@@ -24,6 +24,10 @@ func NewEditorInterfaceEditorLayoutItemGroupValueFromResponse(ctx context.Contex
 		groupItemItems, groupItemItemsDiags := NewEditorInterfaceEditorLayoutItemGroupItemValueListFromResponse(ctx, path.AtName("items"), groupItem.Items)
 		diags.Append(groupItemItemsDiags...)
 
+		if diags.HasError() {
+			return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue](), diags
+		}
+
 		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupValue{
 			GroupID: types.StringValue(groupItem.GroupId),
 			Name:    types.StringValue(groupItem.Name),
@@ -32,35 +36,24 @@ func NewEditorInterfaceEditorLayoutItemGroupValueFromResponse(ctx context.Contex
 
 	case cm.EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem:
 		diags.AddAttributeError(path, "Failed to read editor layout item", "Expected group item")
+	default:
+		diags.AddAttributeError(path, "Failed to read editor layout item", "Contentful returned an unknown editor layout item type.")
 	}
 
 	return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue](), diags
 }
 
 func (v EditorInterfaceEditorLayoutItemGroupValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, valuePath path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	item := cm.EditorInterfaceEditorLayoutGroupItem{
-		GroupId: v.GroupID.ValueString(),
-		Name:    v.Name.ValueString(),
-	}
-
-	if !v.Items.IsNull() && !v.Items.IsUnknown() {
-		itemItems, itemDiags := ConvertKnownObjectListElements(
-			ctx,
-			valuePath.AtName("items"),
-			v.Items.Elements(),
-			func(ctx context.Context, itemPath path.Path, value EditorInterfaceEditorLayoutItemGroupItemValue) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
-				return value.ToEditorInterfaceEditorLayoutItem(ctx, itemPath)
-			},
-		)
-		diags.Append(itemDiags...)
-
-		if !itemDiags.HasError() {
-			item.Items = itemItems
-		}
-	}
-
+	item, diags := toEditorInterfaceEditorLayoutGroupItem(
+		ctx,
+		valuePath,
+		v.GroupID,
+		v.Name,
+		v.Items,
+		func(ctx context.Context, itemPath path.Path, value EditorInterfaceEditorLayoutItemGroupItemValue) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+			return value.ToEditorInterfaceEditorLayoutItem(ctx, itemPath)
+		},
+	)
 	if diags.HasError() {
 		return cm.EditorInterfaceEditorLayoutItem{}, diags
 	}

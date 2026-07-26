@@ -25,6 +25,10 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemValueListFromResponse(c
 		})
 	}
 
+	if diags.HasError() {
+		return NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]](), diags
+	}
+
 	list := NewTypedList(listElementValues)
 
 	return list, diags
@@ -37,20 +41,24 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValueFromResponse(
 	case cm.EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem:
 		diags.AddAttributeError(path, "Failed to read editor interface editor layout", "Unexpected group item")
 
+		return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](), diags
+
 	case cm.EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem:
 		itemFieldItem, itemFieldItemOk := item.GetEditorInterfaceEditorLayoutFieldItem()
 		if !itemFieldItemOk {
 			diags.AddAttributeError(path, "Failed to read field item", "Expected field item")
 
-			return NewTypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}), diags
+			return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](), diags
 		}
 
 		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{
 			FieldID: types.StringValue(itemFieldItem.FieldId),
 		}), diags
-	}
+	default:
+		diags.AddAttributeError(path, "Failed to read editor interface editor layout", "Contentful returned an unknown editor layout item type.")
 
-	return NewTypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}), diags
+		return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](), diags
+	}
 }
 
 func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
