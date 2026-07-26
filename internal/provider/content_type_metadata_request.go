@@ -78,11 +78,21 @@ func ToContentTypeMetadataTaxonomyItem(
 
 	diags := diag.Diagnostics{}
 	items := make([]cm.ContentTypeMetadataTaxonomyItem, 0, 1)
-	found := 0
+	conceptPath := path.AtName("taxonomy_concept")
+	conceptSchemePath := path.AtName("taxonomy_concept_scheme")
+	selected, selectionDiags := ExactlyOneKnownAlternative(
+		path,
+		KnownUnionAlternative{Name: "taxonomy_concept", Path: conceptPath, Value: value.TaxonomyConcept},
+		KnownUnionAlternative{Name: "taxonomy_concept_scheme", Path: conceptSchemePath, Value: value.TaxonomyConceptScheme},
+	)
+	diags.Append(selectionDiags...)
 
-	taxonomyConceptScheme, taxonomyConceptSchemeOk := value.TaxonomyConceptScheme.GetValue()
-	if taxonomyConceptSchemeOk {
-		found++
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	if selected.Name == "taxonomy_concept_scheme" {
+		taxonomyConceptScheme, _ := value.TaxonomyConceptScheme.GetValue()
 		conceptSchemeID, conceptSchemeIDDiags := KnownStringValue(taxonomyConceptScheme.ID, path.AtName("taxonomy_concept_scheme").AtName("id"))
 		diags.Append(conceptSchemeIDDiags...)
 
@@ -101,9 +111,8 @@ func ToContentTypeMetadataTaxonomyItem(
 		}
 	}
 
-	taxonomyConcept, taxonomyConceptOk := value.TaxonomyConcept.GetValue()
-	if taxonomyConceptOk {
-		found++
+	if selected.Name == "taxonomy_concept" {
+		taxonomyConcept, _ := value.TaxonomyConcept.GetValue()
 		conceptID, conceptIDDiags := KnownStringValue(taxonomyConcept.ID, path.AtName("taxonomy_concept").AtName("id"))
 		diags.Append(conceptIDDiags...)
 
@@ -120,10 +129,6 @@ func ToContentTypeMetadataTaxonomyItem(
 				Required: cm.NewOptBool(required),
 			})
 		}
-	}
-
-	if found != 1 {
-		diags.AddAttributeError(path, "Invalid content type taxonomy item", "Exactly one taxonomy concept or taxonomy concept scheme must be known and non-null.")
 	}
 
 	if diags.HasError() {

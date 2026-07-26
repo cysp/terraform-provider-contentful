@@ -12,19 +12,6 @@ import (
 
 const webhookDefinitionBinaryFilterTermCount = 2
 
-const (
-	webhookFilterNotIndex = iota
-	webhookFilterEqualsIndex
-	webhookFilterInIndex
-	webhookFilterRegexpIndex
-)
-
-const (
-	webhookNotFilterEqualsIndex = iota
-	webhookNotFilterInIndex
-	webhookNotFilterRegexpIndex
-)
-
 func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList TypedList[TypedObject[WebhookFilterValue]]) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
 	if filterValuesList.IsNull() {
 		return cm.NewOptNilWebhookDefinitionFilterArrayNull(), nil
@@ -67,17 +54,17 @@ func ToWebhookDefinitionFilter(ctx context.Context, valuePath path.Path, value W
 
 	filter := cm.WebhookDefinitionFilter{}
 
-	switch selected {
-	case webhookFilterNotIndex:
+	switch selected.Name {
+	case "not":
 		notValue, _ := value.Not.GetValue()
 		filter.Not, diags = ToWebhookDefinitionFilterNot(ctx, notPath, notValue)
-	case webhookFilterEqualsIndex:
+	case "equals":
 		equalsValue, _ := value.Equals.GetValue()
 		filter.Equals, diags = ToWebhookDefinitionFilterEquals(ctx, equalsPath, equalsValue)
-	case webhookFilterInIndex:
+	case "in":
 		inValue, _ := value.In.GetValue()
 		filter.In, diags = ToWebhookDefinitionFilterIn(ctx, inPath, inValue)
-	case webhookFilterRegexpIndex:
+	case "regexp":
 		regexpValue, _ := value.Regexp.GetValue()
 		filter.Regexp, diags = ToWebhookDefinitionFilterRegexp(ctx, regexpPath, regexpValue)
 	}
@@ -106,14 +93,14 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, valuePath path.Path, valu
 
 	filterNot := cm.WebhookDefinitionFilterNot{}
 
-	switch selected {
-	case webhookNotFilterEqualsIndex:
+	switch selected.Name {
+	case "equals":
 		equalsValue, _ := value.Equals.GetValue()
 		filterNot.Equals, diags = ToWebhookDefinitionFilterEquals(ctx, equalsPath, equalsValue)
-	case webhookNotFilterInIndex:
+	case "in":
 		inValue, _ := value.In.GetValue()
 		filterNot.In, diags = ToWebhookDefinitionFilterIn(ctx, inPath, inValue)
-	case webhookNotFilterRegexpIndex:
+	case "regexp":
 		regexpValue, _ := value.Regexp.GetValue()
 		filterNot.Regexp, diags = ToWebhookDefinitionFilterRegexp(ctx, regexpPath, regexpValue)
 	}

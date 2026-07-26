@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 const contentfulEntryAllowedResourceType = "Contentful:Entry"
@@ -95,6 +94,10 @@ func ToContentTypeRequestDataFieldsItem(ctx context.Context, path path.Path, v C
 		fieldsItem.AllowedResources.SetTo(fieldsItemAllowedResources)
 	}
 
+	if diags.HasError() {
+		return cm.ContentTypeRequestDataFieldsItem{}, diags
+	}
+
 	return fieldsItem, diags
 }
 
@@ -108,7 +111,13 @@ func ItemsObjectToOptContentTypeRequestDataFieldsItemItems(ctx context.Context, 
 		items, itemsDiags := itemsValue.ToContentTypeRequestDataFieldsItemItems(ctx, path)
 		diags.Append(itemsDiags...)
 
-		fieldsItemItems.SetTo(items)
+		if !itemsDiags.HasError() {
+			fieldsItemItems.SetTo(items)
+		}
+	}
+
+	if diags.HasError() {
+		return cm.OptContentTypeRequestDataFieldsItemItems{}, diags
 	}
 
 	return fieldsItemItems, diags
@@ -126,15 +135,26 @@ func (v ContentTypeFieldItemsValue) ToContentTypeRequestDataFieldsItemItems(ctx 
 		Validations: itemsValidations,
 	}
 
+	if diags.HasError() {
+		return cm.ContentTypeRequestDataFieldsItemItems{}, diags
+	}
+
 	return items, diags
 }
 
-func ValidationsListToContentTypeRequestDataFieldValidations(ctx context.Context, _ path.Path, validationsList TypedList[jsontypes.Normalized]) ([]jx.Raw, diag.Diagnostics) {
+func ValidationsListToContentTypeRequestDataFieldValidations(_ context.Context, valuePath path.Path, validationsList TypedList[jsontypes.Normalized]) ([]jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-
 	validationsStrings := []string{}
+
 	if !validationsList.IsNull() && !validationsList.IsUnknown() {
-		diags.Append(tfsdk.ValueAs(ctx, validationsList, &validationsStrings)...)
+		var valueDiags diag.Diagnostics
+
+		validationsStrings, valueDiags = KnownStringValues(validationsList.Elements(), valuePath)
+		diags.Append(valueDiags...)
+	}
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	validations := make([]jx.Raw, len(validationsStrings))
@@ -161,26 +181,32 @@ func AllowedResourceListToContentTypeRequestDataFieldAllowedResources(ctx contex
 	return resourceLinks, diags
 }
 
-func (v ContentTypeFieldAllowedResourceItemValue) ToResourceLink(ctx context.Context, path path.Path) (cm.ResourceLink, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func (v ContentTypeFieldAllowedResourceItemValue) ToResourceLink(ctx context.Context, valuePath path.Path) (cm.ResourceLink, diag.Diagnostics) {
+	externalPath := valuePath.AtName("external")
+	contentfulEntryPath := valuePath.AtName("contentful_entry")
+
+	selected, diags := ExactlyOneKnownAlternative(
+		valuePath,
+		KnownUnionAlternative{Name: "external", Path: externalPath, Value: v.External},
+		KnownUnionAlternative{Name: "contentful_entry", Path: contentfulEntryPath, Value: v.ContentfulEntry},
+	)
+	if diags.HasError() {
+		return cm.ResourceLink{}, diags
+	}
 
 	resourceLink := cm.ResourceLink{}
-	found := false
 
-	if external, ok := v.External.GetValue(); ok {
-		found = true
-
-		diags.Append(external.SetResourceLink(ctx, path.AtName("external"), &resourceLink)...)
+	switch selected.Name {
+	case "external":
+		external, _ := v.External.GetValue()
+		diags.Append(external.SetResourceLink(ctx, externalPath, &resourceLink)...)
+	case "contentful_entry":
+		contentfulEntry, _ := v.ContentfulEntry.GetValue()
+		diags.Append(contentfulEntry.SetResourceLink(ctx, contentfulEntryPath, &resourceLink)...)
 	}
 
-	if contentfulEntry, ok := v.ContentfulEntry.GetValue(); ok {
-		found = true
-
-		diags.Append(contentfulEntry.SetResourceLink(ctx, path.AtName("contentful_entry"), &resourceLink)...)
-	}
-
-	if !found {
-		diags.AddAttributeError(path, "Missing allowed resource type", "Exactly one external or Contentful entry resource type must be known and non-null.")
+	if diags.HasError() {
+		return cm.ResourceLink{}, diags
 	}
 
 	return resourceLink, diags
@@ -199,7 +225,7 @@ func (v ContentTypeFieldAllowedResourceItemExternalValue) SetResourceLink(_ cont
 	return diags
 }
 
-func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SetResourceLink(ctx context.Context, path path.Path, resourceLink *cm.ResourceLink) diag.Diagnostics {
+func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SetResourceLink(_ context.Context, path path.Path, resourceLink *cm.ResourceLink) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	if v.ContentTypes.IsNull() || v.ContentTypes.IsUnknown() {
@@ -208,13 +234,19 @@ func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SetResourceLink
 		} else {
 			diags.AddAttributeError(path.AtName("content_types"), "Unexpected null content types", "Allowed content types are required.")
 		}
+
+		return diags
 	}
 
-	contentTypes := make([]string, len(v.ContentTypes.Elements()))
-	diags.Append(tfsdk.ValueAs(ctx, v.ContentTypes, &contentTypes)...)
+	contentTypes, contentTypesDiags := KnownStringValues(v.ContentTypes.Elements(), path.AtName("content_types"))
+	diags.Append(contentTypesDiags...)
 
 	source, sourceDiags := KnownStringValue(v.Source, path.AtName("source"))
 	diags.Append(sourceDiags...)
+
+	if diags.HasError() {
+		return diags
+	}
 
 	resourceLink.Type = contentfulEntryAllowedResourceType
 	resourceLink.Source = cm.NewOptString(source)
