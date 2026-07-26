@@ -57,43 +57,34 @@ type TaxonomyConceptSchemeModel struct {
 }
 
 func knownStringMap(ctx context.Context, value types.Map, valuePath path.Path) (map[string]string, diag.Diagnostics) {
-	result := map[string]string{}
-	if value.IsNull() {
-		return result, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Unexpected null value", "A known map value is required.")}
-	}
+	_ = ctx
 
-	if value.IsUnknown() {
-		return result, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Unexpected unknown value", "A known map value is required.")}
-	}
-
-	diags := value.ElementsAs(ctx, &result, false)
-
-	return result, diags
+	return KnownStringMap(value, valuePath)
 }
 
 // optionalComputedStringMap converts an omitted Optional+Computed value to the
 // provider's create-time empty default. UseStateForUnknown preserves prior
 // state during updates, so unknown only reaches this function on initial create.
-func optionalComputedStringMap(ctx context.Context, value types.Map) (map[string][]string, diag.Diagnostics) {
+func optionalComputedStringMap(ctx context.Context, value types.Map, valuePath path.Path) (map[string][]string, diag.Diagnostics) {
+	_ = ctx
+
 	result := map[string][]string{}
 	if value.IsNull() || value.IsUnknown() {
 		return result, nil
 	}
 
-	diags := value.ElementsAs(ctx, &result, false)
-
-	return result, diags
+	return KnownStringListMap(value, valuePath)
 }
 
 // optionalComputedStringList has the same lifecycle contract as
 // optionalComputedStringMap.
-func optionalComputedStringListValue(ctx context.Context, value types.List) ([]string, diag.Diagnostics) {
+func optionalComputedStringListValue(ctx context.Context, value types.List, valuePath path.Path) ([]string, diag.Diagnostics) {
+	_ = ctx
+
 	result := []string{}
 	if value.IsNull() || value.IsUnknown() {
 		return result, nil
 	}
 
-	diags := value.ElementsAs(ctx, &result, false)
-
-	return result, diags
+	return KnownStringList(value, valuePath)
 }

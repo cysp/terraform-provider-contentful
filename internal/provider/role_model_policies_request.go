@@ -55,15 +55,22 @@ func ToRoleDataPoliciesItem(ctx context.Context, path path.Path, policy RolePoli
 }
 
 func ToRoleDataPoliciesItemActions(ctx context.Context, path path.Path, actions TypedList[types.String]) (cm.RoleDataPoliciesItemActions, diag.Diagnostics) {
-	actionsStrings, diags := KnownStringListValues(
-		ctx,
-		actions,
-		path,
-		"Unexpected unknown policy actions",
-		"Policy actions must be known before they can be sent to Contentful.",
-		"Unexpected null policy actions",
-		"Policy actions are required.",
-	)
+	_ = ctx
+
+	diags := diag.Diagnostics{}
+
+	if actions.IsUnknown() {
+		diags.AddAttributeError(path, "Unexpected unknown policy actions", "Policy actions must be known before they can be sent to Contentful.")
+	} else if actions.IsNull() {
+		diags.AddAttributeError(path, "Unexpected null policy actions", "Policy actions are required.")
+	}
+
+	if diags.HasError() {
+		return cm.RoleDataPoliciesItemActions{}, diags
+	}
+
+	actionsStrings, valueDiags := KnownStringValues(actions.Elements(), path)
+	diags.Append(valueDiags...)
 
 	if diags.HasError() {
 		return cm.RoleDataPoliciesItemActions{}, diags

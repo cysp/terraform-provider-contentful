@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -19,6 +20,10 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx conte
 	marketplaceStrings, marketplaceStringDiags := model.ToXContentfulMarketplaceHeaderValueElements(ctx)
 	diags.Append(marketplaceStringDiags...)
 
+	if diags.HasError() {
+		return cm.OptString{}, diags
+	}
+
 	if len(marketplaceStrings) > 0 {
 		slices.Sort(marketplaceStrings)
 
@@ -28,7 +33,7 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx conte
 	return value, diags
 }
 
-func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(ctx context.Context) ([]string, diag.Diagnostics) {
+func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(_ context.Context) ([]string, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if model.Marketplace.IsNull() {
@@ -41,19 +46,28 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(c
 		return nil, diags
 	}
 
-	marketplaceElements := make([]types.String, len(model.Marketplace.Elements()))
-	diags.Append(model.Marketplace.ElementsAs(ctx, &marketplaceElements, false)...)
-
+	marketplaceElements := model.Marketplace.Elements()
 	marketplaceStrings := make([]string, 0, len(marketplaceElements))
 
 	for _, element := range marketplaceElements {
-		elementPath := path.Root("marketplace").AtSetValue(element)
-		if element.IsNull() || element.IsUnknown() {
+		stringElement, ok := element.(types.String)
+		if !ok {
+			diags.AddAttributeError(
+				path.Root("marketplace"),
+				"Unexpected marketplace element type",
+				fmt.Sprintf("Expected a string value, got %T. This is a provider implementation error.", element),
+			)
+
+			continue
+		}
+
+		elementPath := path.Root("marketplace").AtSetValue(stringElement)
+		if stringElement.IsNull() || stringElement.IsUnknown() {
 			// Null and unknown set elements cannot provide a stable value-based path.
 			elementPath = path.Root("marketplace")
 		}
 
-		value, valueDiags := KnownStringValue(element, elementPath)
+		value, valueDiags := KnownStringValue(stringElement, elementPath)
 		diags.Append(valueDiags...)
 
 		if valueDiags.HasError() {

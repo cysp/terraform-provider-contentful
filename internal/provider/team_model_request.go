@@ -24,5 +24,9 @@ func (model *TeamModel) ToTeamData(_ context.Context, modelPath path.Path) (cm.T
 		fields.Description = cm.NewNilStringNull()
 	}
 
+	if diags.HasError() {
+		return cm.TeamData{}, diags
+	}
+
 	return fields, diags
 }

@@ -72,10 +72,14 @@ func (model TaxonomyConceptModel) ToRequest(ctx context.Context) (cm.TaxonomyCon
 	diags := diag.Diagnostics{}
 	prefLabel, valueDiags := knownStringMap(ctx, model.PrefLabel, path.Root("pref_label"))
 	diags.Append(valueDiags...)
-	altLabels, valueDiags := optionalComputedStringMap(ctx, model.AltLabels)
+	altLabels, valueDiags := optionalComputedStringMap(ctx, model.AltLabels, path.Root("alt_labels"))
 	diags.Append(valueDiags...)
-	hiddenLabels, valueDiags := optionalComputedStringMap(ctx, model.HiddenLabels)
+	hiddenLabels, valueDiags := optionalComputedStringMap(ctx, model.HiddenLabels, path.Root("hidden_labels"))
 	diags.Append(valueDiags...)
+
+	if diags.HasError() {
+		return cm.TaxonomyConceptRequest{}, diags
+	}
 
 	for locale := range prefLabel {
 		if _, ok := altLabels[locale]; !ok {
@@ -87,11 +91,11 @@ func (model TaxonomyConceptModel) ToRequest(ctx context.Context) (cm.TaxonomyCon
 		}
 	}
 
-	notations, valueDiags := optionalComputedStringListValue(ctx, model.Notations)
+	notations, valueDiags := optionalComputedStringListValue(ctx, model.Notations, path.Root("notations"))
 	diags.Append(valueDiags...)
-	broader, valueDiags := optionalComputedStringListValue(ctx, model.BroaderConceptIDs)
+	broader, valueDiags := optionalComputedStringListValue(ctx, model.BroaderConceptIDs, path.Root("broader_concept_ids"))
 	diags.Append(valueDiags...)
-	related, valueDiags := optionalComputedStringListValue(ctx, model.RelatedConceptIDs)
+	related, valueDiags := optionalComputedStringListValue(ctx, model.RelatedConceptIDs, path.Root("related_concept_ids"))
 	diags.Append(valueDiags...)
 
 	uri, uriDiags := optionalKnownStringPointer(model.URI, path.Root("uri"))
@@ -187,9 +191,9 @@ func (model TaxonomyConceptSchemeModel) ToRequest(ctx context.Context) (cm.Taxon
 	diags := diag.Diagnostics{}
 	prefLabel, valueDiags := knownStringMap(ctx, model.PrefLabel, path.Root("pref_label"))
 	diags.Append(valueDiags...)
-	topIDs, valueDiags := optionalComputedStringListValue(ctx, model.TopConceptIDs)
+	topIDs, valueDiags := optionalComputedStringListValue(ctx, model.TopConceptIDs, path.Root("top_concept_ids"))
 	diags.Append(valueDiags...)
-	ids, valueDiags := optionalComputedStringListValue(ctx, model.ConceptIDs)
+	ids, valueDiags := optionalComputedStringListValue(ctx, model.ConceptIDs, path.Root("concept_ids"))
 	diags.Append(valueDiags...)
 
 	uri, uriDiags := optionalKnownStringPointer(model.URI, path.Root("uri"))

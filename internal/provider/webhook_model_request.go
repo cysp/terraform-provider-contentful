@@ -6,7 +6,6 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
@@ -45,8 +44,8 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path pat
 	case model.Topics.IsUnknown():
 		diags.AddAttributeError(path.AtName("topics"), "Unexpected unknown webhook topics", "Webhook topics must be known before they can be sent to Contentful.")
 	default:
-		topics := make([]string, len(model.Topics.Elements()))
-		diags.Append(tfsdk.ValueAs(ctx, model.Topics, &topics)...)
+		topics, topicsDiags := KnownStringValues(model.Topics.Elements(), path.AtName("topics"))
+		diags.Append(topicsDiags...)
 
 		req.Topics = topics
 	}

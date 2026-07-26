@@ -40,43 +40,61 @@ func (model *AppDefinitionBaseModel) ToAppDefinitionData(ctx context.Context, pa
 	}
 
 	if model.Parameters != nil {
-		path := path.AtName("parameters")
+		parameters, parameterDiags := toAppDefinitionParameters(ctx, path.AtName("parameters"), *model.Parameters)
+		diags.Append(parameterDiags...)
 
-		var installationParameters, instanceParameters []cm.AppDefinitionParameter
-
-		if model.Parameters.Installation != nil {
-			path := path.AtName("installation")
-
-			installationParameters = make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Installation))
-
-			for index, element := range model.Parameters.Installation {
-				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, path.AtListIndex(index))
-				diags.Append(parameterDiags...)
-
-				installationParameters = append(installationParameters, parameter)
-			}
+		if !parameterDiags.HasError() {
+			fields.Parameters.SetTo(parameters)
 		}
+	}
 
-		if model.Parameters.Instance != nil {
-			path := path.AtName("instance")
-
-			instanceParameters = make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Instance))
-
-			for index, element := range model.Parameters.Instance {
-				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, path.AtListIndex(index))
-				diags.Append(parameterDiags...)
-
-				instanceParameters = append(instanceParameters, parameter)
-			}
-		}
-
-		fields.Parameters.SetTo(cm.AppDefinitionParameters{
-			Installation: installationParameters,
-			Instance:     instanceParameters,
-		})
+	if diags.HasError() {
+		return cm.AppDefinitionData{}, diags
 	}
 
 	return fields, diags
+}
+
+func toAppDefinitionParameters(ctx context.Context, valuePath path.Path, model AppDefinitionParameters) (cm.AppDefinitionParameters, diag.Diagnostics) {
+	installation, installationDiags := toAppDefinitionParameterList(ctx, valuePath.AtName("installation"), model.Installation)
+	instance, instanceDiags := toAppDefinitionParameterList(ctx, valuePath.AtName("instance"), model.Instance)
+
+	diags := diag.Diagnostics{}
+	diags.Append(installationDiags...)
+	diags.Append(instanceDiags...)
+
+	if diags.HasError() {
+		return cm.AppDefinitionParameters{}, diags
+	}
+
+	return cm.AppDefinitionParameters{
+		Installation: installation,
+		Instance:     instance,
+	}, diags
+}
+
+func toAppDefinitionParameterList(ctx context.Context, valuePath path.Path, models []AppDefinitionParameter) ([]cm.AppDefinitionParameter, diag.Diagnostics) {
+	if models == nil {
+		return nil, nil
+	}
+
+	parameters := make([]cm.AppDefinitionParameter, 0, len(models))
+	diags := diag.Diagnostics{}
+
+	for index, model := range models {
+		parameter, parameterDiags := model.ToAppDefinitionParameter(ctx, valuePath.AtListIndex(index))
+		diags.Append(parameterDiags...)
+
+		if !parameterDiags.HasError() {
+			parameters = append(parameters, parameter)
+		}
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return parameters, diags
 }
 
 func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(_ context.Context, _ path.Path) cm.AppDefinitionDataLocationsItem {
@@ -151,6 +169,10 @@ func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, 
 		})
 	}
 
+	if diags.HasError() {
+		return cm.AppDefinitionParameter{}, diags
+	}
+
 	return parameter, diags
 }
 
@@ -180,6 +202,10 @@ func toAppDefinitionParameterOptions(model AppDefinitionParameter, optionsPath p
 		default:
 			options = append(options, jx.Raw(option.ValueString()))
 		}
+	}
+
+	if diags.HasError() {
+		return nil, false, diags
 	}
 
 	return options, true, diags

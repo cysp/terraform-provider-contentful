@@ -21,10 +21,12 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(_ context.Context, path pa
 	secret, secretDiags := KnownBoolValue(v.Secret, path.AtName("secret"))
 	diags.Append(secretDiags...)
 
-	if !diags.HasError() {
-		header.Value = cm.NewOptString(value)
-		header.Secret = cm.NewOptBool(secret)
+	if diags.HasError() {
+		return cm.WebhookDefinitionHeader{}, diags
 	}
+
+	header.Value = cm.NewOptString(value)
+	header.Secret = cm.NewOptBool(secret)
 
 	return header, diags
 }

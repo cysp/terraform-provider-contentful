@@ -46,15 +46,22 @@ func ToRoleDataPermissions(ctx context.Context, path path.Path, permissions Type
 }
 
 func ToRoleDataPermissionsItem(ctx context.Context, path path.Path, value TypedList[types.String]) (cm.RoleDataPermissionsItem, diag.Diagnostics) {
-	actionStrings, diags := KnownStringListValues(
-		ctx,
-		value,
-		path,
-		"Unexpected unknown permission actions",
-		"Permission actions must be known before they can be sent to Contentful.",
-		"Unexpected null permission actions",
-		"Permission actions cannot be null.",
-	)
+	_ = ctx
+
+	diags := diag.Diagnostics{}
+
+	if value.IsUnknown() {
+		diags.AddAttributeError(path, "Unexpected unknown permission actions", "Permission actions must be known before they can be sent to Contentful.")
+	} else if value.IsNull() {
+		diags.AddAttributeError(path, "Unexpected null permission actions", "Permission actions cannot be null.")
+	}
+
+	if diags.HasError() {
+		return cm.RoleDataPermissionsItem{}, diags
+	}
+
+	actionStrings, valueDiags := KnownStringValues(value.Elements(), path)
+	diags.Append(valueDiags...)
 
 	if diags.HasError() {
 		return cm.RoleDataPermissionsItem{}, diags

@@ -22,6 +22,10 @@ func (model *ExtensionModel) ToExtensionData(ctx context.Context, path path.Path
 		fields.Parameters = []byte(model.Parameters.ValueString())
 	}
 
+	if diags.HasError() {
+		return cm.ExtensionData{}, diags
+	}
+
 	return fields, diags
 }
 
@@ -54,45 +58,16 @@ func (model *ExtensionModelExtension) ToExtensionExtensionData(ctx context.Conte
 	}
 
 	if model.Parameters != nil {
-		path := path.AtName("parameters")
+		parameters, parameterDiags := toAppDefinitionParameters(ctx, path.AtName("parameters"), *model.Parameters)
+		diags.Append(parameterDiags...)
 
-		parameters := cm.AppDefinitionParameters{}
-
-		if model.Parameters.Installation != nil {
-			path := path.AtName("installation")
-
-			installationParameters := make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Installation))
-
-			for index, parameter := range model.Parameters.Installation {
-				path := path.AtListIndex(index)
-
-				installationParameter, parameterDiags := parameter.ToAppDefinitionParameter(ctx, path)
-				diags.Append(parameterDiags...)
-
-				installationParameters = append(installationParameters, installationParameter)
-			}
-
-			parameters.Installation = installationParameters
+		if !parameterDiags.HasError() {
+			fields.Parameters.SetTo(parameters)
 		}
+	}
 
-		if model.Parameters.Instance != nil {
-			path := path.AtName("instance")
-
-			instanceParameters := make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Instance))
-
-			for index, parameter := range model.Parameters.Instance {
-				path := path.AtListIndex(index)
-
-				instanceParameter, parameterDiags := parameter.ToAppDefinitionParameter(ctx, path)
-				diags.Append(parameterDiags...)
-
-				instanceParameters = append(instanceParameters, instanceParameter)
-			}
-
-			parameters.Instance = instanceParameters
-		}
-
-		fields.Parameters.SetTo(parameters)
+	if diags.HasError() {
+		return cm.ExtensionDataExtension{}, diags
 	}
 
 	return fields, diags
