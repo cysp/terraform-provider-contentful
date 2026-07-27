@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -54,6 +56,9 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				ElementType: types.StringType,
 				CustomType:  TypedList[types.String]{}.CustomType(ctx),
 				Optional:    true,
+				Validators: []validator.List{
+					listvalidator.NoNullValues(),
+				},
 			},
 			"filters": WebhookFiltersSchema(ctx, true),
 			"http_basic_password": schema.StringAttribute{
