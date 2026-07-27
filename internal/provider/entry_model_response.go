@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"maps"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -52,6 +53,20 @@ func NewEntryFieldsFromResponse(_ context.Context, _ path.Path, fields cm.OptEnt
 	}
 
 	return NewTypedMap(elements), diags
+}
+
+func mergeMissingEntryFields(returned, configured TypedMap[jsontypes.Normalized]) TypedMap[jsontypes.Normalized] {
+	elements := make(map[string]jsontypes.Normalized, len(returned.Elements())+len(configured.Elements()))
+
+	maps.Copy(elements, returned.Elements())
+
+	for key, value := range configured.Elements() {
+		if _, ok := elements[key]; !ok {
+			elements[key] = value
+		}
+	}
+
+	return NewTypedMap(elements)
 }
 
 func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.OptEntryMetadata) (TypedObject[EntryMetadataValue], diag.Diagnostics) {

@@ -26,7 +26,7 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 			continue
 		}
 
-		entries = append(entries, *entry)
+		entries = append(entries, ts.entryResponse(*entry))
 	}
 
 	start := min(skip, int64(len(entries)))
@@ -59,7 +59,7 @@ func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params c
 
 	return &cm.EntryStatusCode{
 		StatusCode: http.StatusCreated,
-		Response:   newEntry,
+		Response:   ts.entryResponse(newEntry),
 	}, nil
 }
 
@@ -73,7 +73,9 @@ func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.Get
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
-	return entry, nil
+	response := ts.entryResponse(*entry)
+
+	return &response, nil
 }
 
 //nolint:ireturn
@@ -92,7 +94,7 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 
 		return &cm.EntryStatusCode{
 			StatusCode: http.StatusCreated,
-			Response:   newEntry,
+			Response:   ts.entryResponse(newEntry),
 		}, nil
 	}
 
@@ -104,7 +106,7 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 
 	return &cm.EntryStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *entry,
+		Response:   ts.entryResponse(*entry),
 	}, nil
 }
 
@@ -137,8 +139,16 @@ func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams)
 
 	return &cm.EntryStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *entry,
+		Response:   ts.entryResponse(*entry),
 	}, nil
+}
+
+func (ts *Handler) entryResponse(entry cm.Entry) cm.Entry {
+	if ts.omitEntryResponseFields {
+		entry.Fields = cm.OptEntryFields{}
+	}
+
+	return entry
 }
 
 //nolint:ireturn

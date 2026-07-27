@@ -15,8 +15,9 @@ var (
 type ServerOption func(*serverConfig) error
 
 type serverConfig struct {
-	rateLimitNow       func() time.Time
-	rateLimitPerSecond int
+	omitEntryResponseFields bool
+	rateLimitNow            func() time.Time
+	rateLimitPerSecond      int
 }
 
 func buildServerConfig(opts ...ServerOption) (serverConfig, error) {
@@ -37,6 +38,14 @@ func buildServerConfig(opts ...ServerOption) (serverConfig, error) {
 	}
 
 	return cfg, nil
+}
+
+func WithOmittedEntryResponseFields() ServerOption {
+	return func(cfg *serverConfig) error {
+		cfg.omitEntryResponseFields = true
+
+		return nil
+	}
 }
 
 func WithRateLimitNow(now func() time.Time) ServerOption {

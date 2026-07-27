@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
@@ -104,6 +105,11 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 			if req.IncludeResource {
 				responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
 				result.Diagnostics.Append(responseDiags...)
+
+				responseModel.Fields = mergeMissingEntryFields(
+					responseModel.Fields,
+					NewTypedMap(map[string]jsontypes.Normalized{}),
+				)
 
 				result.Diagnostics.Append(result.Resource.Set(ctx, &responseModel)...)
 			}
