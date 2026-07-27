@@ -36,9 +36,7 @@ func TestAccEntryListResource(t *testing.T) {
 		}),
 	})
 
-	server.SetEntry(spaceID, environmentID, "author", "33lT7CnYPNJGdls6nONU3t", cm.EntryRequest{
-		Fields: cm.NewOptEntryFields(cm.EntryFields{}),
-	})
+	server.SetEntry(spaceID, environmentID, "author", "33lT7CnYPNJGdls6nONU3t", cm.EntryRequest{})
 
 	server.SetEntry(spaceID, environmentID, "post", "post1", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{

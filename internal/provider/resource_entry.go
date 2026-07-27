@@ -97,11 +97,7 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
 
-	for fieldKey, fieldValue := range plan.Fields.Elements() {
-		if !responseModel.Fields.Has(fieldKey) {
-			responseModel.Fields.Set(fieldKey, fieldValue)
-		}
-	}
+	responseModel.Fields = mergeMissingEntryFields(responseModel.Fields, plan.Fields)
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)
@@ -189,11 +185,7 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
-	for fieldKey, fieldValue := range state.Fields.Elements() {
-		if !data.Fields.Has(fieldKey) {
-			data.Fields.Set(fieldKey, fieldValue)
-		}
-	}
+	data.Fields = mergeMissingEntryFields(data.Fields, state.Fields)
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -238,11 +230,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	var identityModel EntryIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
 
-	for fieldKey, fieldValue := range plan.Fields.Elements() {
-		if !responseModel.Fields.Has(fieldKey) {
-			responseModel.Fields.Set(fieldKey, fieldValue)
-		}
-	}
+	responseModel.Fields = mergeMissingEntryFields(responseModel.Fields, plan.Fields)
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)

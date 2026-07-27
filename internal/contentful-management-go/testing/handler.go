@@ -9,6 +9,8 @@ import (
 type Handler struct {
 	mu sync.Mutex
 
+	omitEntryResponseFields bool
+
 	me *cm.User
 
 	teams OrganizationMap[*cm.Team]

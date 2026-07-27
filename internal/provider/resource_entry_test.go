@@ -184,43 +184,6 @@ func TestAccEntryResourceImportPropertyOrderDiff(t *testing.T) {
 	})
 }
 
-func TestAccEntryResourceCreate(t *testing.T) {
-	t.Parallel()
-
-	server, _ := cmt.NewContentfulManagementServer()
-
-	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
-
-	configVariables := config.Variables{
-		"space_id":        config.StringVariable("0p38pssr0fi3"),
-		"environment_id":  config.StringVariable("test"),
-		"content_type_id": config.StringVariable("author"),
-		"fields": config.MapVariable(map[string]config.Variable{
-			"name":  config.StringVariable(`{"en-AU":"name"}`),
-			"blurb": config.StringVariable(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`),
-		}),
-	}
-
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields"), knownvalue.MapExact(map[string]knownvalue.Check{
-							"name": knownvalue.StringExact(`{"en-AU":"name"}`),
-							"blurb": knownvalue.StringFunc(func(actual string) error {
-								return checkJSONEqual(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`, actual)
-							}),
-						})),
-					},
-				},
-			},
-		},
-	})
-}
-
 func TestAccEntryResourceCreateWithID(t *testing.T) {
 	t.Parallel()
 
@@ -253,7 +216,7 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 func TestAccEntryResourceUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithOmittedEntryResponseFields())
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -262,7 +225,8 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 		"fields": config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(`{"en-AU":"name"}`),
+			"name":  config.StringVariable(`{"en-AU":"name"}`),
+			"blurb": config.StringVariable(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`),
 		}),
 	}
 
@@ -271,8 +235,18 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 		"fields": config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(`{"en-AU":"name (updated)"}`),
+			"name":  config.StringVariable(`{"en-AU":"name (updated)"}`),
+			"blurb": config.StringVariable(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`),
 		}),
+	}
+
+	expectEntryFields := func(name string) plancheck.PlanCheck {
+		return plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields"), knownvalue.MapExact(map[string]knownvalue.Check{
+			"name": knownvalue.StringExact(name),
+			"blurb": knownvalue.StringFunc(func(actual string) error {
+				return checkJSONEqual(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`, actual)
+			}),
+		}))
 	}
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
@@ -286,9 +260,11 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
+						expectEntryFields(`{"en-AU":"name"}`),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
+						expectEntryFields(`{"en-AU":"name"}`),
 					},
 				},
 			},
@@ -299,6 +275,12 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionUpdate),
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
+					},
+					PostApplyPreRefresh: []plancheck.PlanCheck{
+						expectEntryFields(`{"en-AU":"name (updated)"}`),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						expectEntryFields(`{"en-AU":"name (updated)"}`),
 					},
 				},
 			},
