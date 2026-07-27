@@ -3,7 +3,7 @@ module github.com/cysp/terraform-provider-contentful
 go 1.26.0
 
 require (
-	github.com/go-faster/errors v0.7.1
+	github.com/go-faster/errors v0.8.0
 	github.com/go-faster/jx v1.2.0
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/terraform-plugin-docs v0.25.0
