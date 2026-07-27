@@ -5,9 +5,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
@@ -91,6 +93,9 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 							Optional: true,
+							Validators: []validator.List{
+								listvalidator.NoNullValues(),
+							},
 						},
 						"navigation_item": schema.SingleNestedAttribute{
 							Description: "Navigation item configuration for page locations.",
@@ -109,6 +114,9 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Required: true,
+				Validators: []validator.List{
+					listvalidator.NoNullValues(),
+				},
 			},
 			"parameters": schema.SingleNestedAttribute{
 				Description: "Definitions of configuration parameters.",
@@ -119,6 +127,9 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 							Attributes: AppDefinitionParameterSchemaAttributes(ctx),
 						},
 						Optional: true,
+						Validators: []validator.List{
+							listvalidator.NoNullValues(),
+						},
 					},
 					"instance": schema.ListNestedAttribute{
 						Description: "Instance-level parameter definitions.",
@@ -126,6 +137,9 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 							Attributes: AppDefinitionParameterSchemaAttributes(ctx),
 						},
 						Optional: true,
+						Validators: []validator.List{
+							listvalidator.NoNullValues(),
+						},
 					},
 				},
 				Optional: true,
@@ -167,6 +181,9 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 		"labels": schema.SingleNestedAttribute{
 			Description: "Custom labels for Boolean parameter values.",

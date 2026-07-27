@@ -5,11 +5,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 func ExtensionResourceSchema(ctx context.Context) schema.Schema {
@@ -116,6 +118,9 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 				},
 			},
 			Required: true,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 		"sidebar": schema.BoolAttribute{
 			Optional: true,
@@ -129,12 +134,18 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 						Attributes: AppDefinitionParameterSchemaAttributes(ctx),
 					},
 					Optional: true,
+					Validators: []validator.List{
+						listvalidator.NoNullValues(),
+					},
 				},
 				"instance": schema.ListNestedAttribute{
 					NestedObject: schema.NestedAttributeObject{
 						Attributes: AppDefinitionParameterSchemaAttributes(ctx),
 					},
 					Optional: true,
+					Validators: []validator.List{
+						listvalidator.NoNullValues(),
+					},
 				},
 			},
 			Optional: true,

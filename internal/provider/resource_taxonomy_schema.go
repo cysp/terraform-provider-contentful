@@ -5,6 +5,8 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
@@ -36,7 +38,15 @@ func taxonomyIdentityAttributes(entityName string) map[string]schema.Attribute {
 }
 
 func localizedStringAttribute(description string, required bool) schema.MapAttribute {
-	return schema.MapAttribute{Description: description, Required: required, Optional: !required, ElementType: types.StringType}
+	return schema.MapAttribute{
+		Description: description,
+		Required:    required,
+		Optional:    !required,
+		ElementType: types.StringType,
+		Validators: []validator.Map{
+			mapvalidator.NoNullValues(),
+		},
+	}
 }
 
 func optionalComputedStringList(description string) schema.ListAttribute {
@@ -47,6 +57,9 @@ func optionalComputedStringList(description string) schema.ListAttribute {
 		ElementType: types.StringType,
 		PlanModifiers: []planmodifier.List{
 			listplanmodifier.UseStateForUnknown(),
+		},
+		Validators: []validator.List{
+			listvalidator.NoNullValues(),
 		},
 	}
 }
@@ -64,6 +77,10 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 		PlanModifiers: []planmodifier.Map{
 			mapplanmodifier.UseStateForUnknown(),
 		},
+		Validators: []validator.Map{
+			mapvalidator.NoNullValues(),
+			mapvalidator.ValueListsAre(listvalidator.NoNullValues()),
+		},
 	}
 	attributes["hidden_labels"] = schema.MapAttribute{
 		Description: "Localized hidden labels.",
@@ -72,6 +89,10 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 		ElementType: types.ListType{ElemType: types.StringType},
 		PlanModifiers: []planmodifier.Map{
 			mapplanmodifier.UseStateForUnknown(),
+		},
+		Validators: []validator.Map{
+			mapvalidator.NoNullValues(),
+			mapvalidator.ValueListsAre(listvalidator.NoNullValues()),
 		},
 	}
 

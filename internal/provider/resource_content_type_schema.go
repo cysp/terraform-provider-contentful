@@ -70,6 +70,9 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 				},
 				CustomType: NewTypedListUnknown[TypedObject[ContentTypeFieldValue]]().CustomType(ctx),
 				Required:   true,
+				Validators: []validator.List{
+					listvalidator.NoNullValues(),
+				},
 			},
 			"metadata": schema.SingleNestedAttribute{
 				Attributes:  ContentTypeMetadataValue{}.SchemaAttributes(ctx),
@@ -94,6 +97,9 @@ func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SchemaAttribute
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Required:    true,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 	}
 }
@@ -153,6 +159,9 @@ func (v ContentTypeFieldItemsValue) SchemaAttributes(ctx context.Context) map[st
 			Optional:    true,
 			Computed:    true,
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 	}
 }
@@ -211,6 +220,9 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Optional:    true,
 			Computed:    true,
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 		"allowed_resources": schema.ListNestedAttribute{
 			Description: "For Resource Link fields, defines the allowed resource types that can be linked.",
@@ -220,6 +232,9 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			},
 			CustomType: NewTypedListNull[TypedObject[ContentTypeFieldAllowedResourceItemValue]]().CustomType(ctx),
 			Optional:   true,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 	}
 }
@@ -307,6 +322,7 @@ func (v ContentTypeMetadataValue) SchemaAttributes(ctx context.Context) map[stri
 			Optional:    true,
 			Computed:    true,
 			Validators: []validator.List{
+				listvalidator.NoNullValues(),
 				listvalidator.AtLeastOneOf(
 					path.MatchRelative().AtParent().AtName("annotations"),
 					path.MatchRelative().AtParent().AtName("taxonomy"),

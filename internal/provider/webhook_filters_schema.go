@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -20,6 +22,9 @@ func WebhookFiltersSchema(ctx context.Context, optional bool) schema.Attribute {
 		},
 		CustomType: NewTypedListNull[TypedObject[WebhookFilterValue]]().CustomType(ctx),
 		Optional:   optional,
+		Validators: []validator.List{
+			listvalidator.NoNullValues(),
+		},
 	}
 }
 
@@ -43,6 +48,9 @@ func (v WebhookFilterInValue) SchemaAttributes(ctx context.Context) map[string]s
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Required:    true,
+			Validators: []validator.List{
+				listvalidator.NoNullValues(),
+			},
 		},
 	}
 }
