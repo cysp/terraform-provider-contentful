@@ -26,7 +26,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{

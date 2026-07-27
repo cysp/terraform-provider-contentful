@@ -16,7 +16,7 @@ func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"organization_id": schema.StringAttribute{
@@ -37,7 +37,7 @@ func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 				Description: "ID of the parent resource provider.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"resource_type_id": schema.StringAttribute{

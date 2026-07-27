@@ -18,7 +18,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{
@@ -32,7 +32,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Description: "System ID of the role.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{

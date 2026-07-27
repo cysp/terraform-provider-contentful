@@ -17,7 +17,7 @@ func TeamSpaceMembershipResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{
@@ -38,7 +38,7 @@ func TeamSpaceMembershipResourceSchema(ctx context.Context) schema.Schema {
 				Description: "System ID of the team space membership.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"admin": schema.BoolAttribute{

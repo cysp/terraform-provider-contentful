@@ -24,7 +24,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				Description: "Composite Terraform resource identifier in organization_id/app_definition_id/key_kid form.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"organization_id": schema.StringAttribute{
@@ -45,7 +45,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				Description: "Contentful App Key sys.id. This equals jwk.kid and jwk.x5t.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"jwk": schema.SingleNestedAttribute{
@@ -62,7 +62,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"updated_at": schema.StringAttribute{
@@ -70,7 +70,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"last_used_at": schema.StringAttribute{
@@ -78,7 +78,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Delete: true}),

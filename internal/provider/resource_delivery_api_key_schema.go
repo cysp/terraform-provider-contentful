@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -17,7 +18,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{
@@ -31,7 +32,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				Description: "System ID of the API key.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
@@ -49,7 +50,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.List{
-					UseStateForUnknown(),
+					listplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"access_token": schema.StringAttribute{
@@ -57,14 +58,14 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"preview_api_key_id": schema.StringAttribute{
 				Description: "ID of the corresponding preview API key.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
