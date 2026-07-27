@@ -42,9 +42,9 @@ type ContentfulProvider struct {
 	// testing.
 	version string
 
-	contentfulURL string
-	httpClient    *http.Client
-	accessToken   string
+	contentfulURLOverride string
+	httpClient            *http.Client
+	accessTokenOverride   string
 }
 
 type ContentfulProviderModel struct {
@@ -58,7 +58,7 @@ type Option func(*ContentfulProvider)
 
 func WithContentfulURL(url string) Option {
 	return func(p *ContentfulProvider) {
-		p.contentfulURL = url
+		p.contentfulURLOverride = url
 	}
 }
 
@@ -70,8 +70,24 @@ func WithHTTPClient(httpClient *http.Client) Option {
 
 func WithAccessToken(accessToken string) Option {
 	return func(p *ContentfulProvider) {
-		p.accessToken = accessToken
+		p.accessTokenOverride = accessToken
 	}
+}
+
+func resolveProviderString(override string, configured types.String, environmentVariable string) types.String {
+	if override != "" {
+		return types.StringValue(override)
+	}
+
+	if !configured.IsNull() {
+		return configured
+	}
+
+	if environmentValue, found := os.LookupEnv(environmentVariable); found {
+		return types.StringValue(environmentValue)
+	}
+
+	return types.StringNull()
 }
 
 func (p *ContentfulProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
@@ -98,16 +114,36 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	var contentfulURL string
-	if !data.URL.IsNull() {
-		contentfulURL = data.URL.ValueString()
-	} else if contentfulURLFromEnv, found := os.LookupEnv("CONTENTFUL_URL"); found {
-		contentfulURL = contentfulURLFromEnv
+	contentfulURLValue := resolveProviderString(p.contentfulURLOverride, data.URL, "CONTENTFUL_URL")
+	accessTokenValue := resolveProviderString(
+		p.accessTokenOverride,
+		data.AccessToken,
+		"CONTENTFUL_MANAGEMENT_ACCESS_TOKEN",
+	)
+
+	if contentfulURLValue.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("url"),
+			"Unknown Contentful API URL",
+			"The provider cannot create the Contentful client because the configured API URL is unknown. "+
+				"Apply the source of the value first or use a known URL.",
+		)
 	}
 
-	if p.contentfulURL != "" {
-		contentfulURL = p.contentfulURL
+	if accessTokenValue.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("access_token"),
+			"Unknown Contentful management access token",
+			"The provider cannot create the Contentful client because the configured management access token is unknown. "+
+				"Apply the source of the value first or use a known access token.",
+		)
 	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	contentfulURL := contentfulURLValue.ValueString()
 
 	if contentfulURL == "" {
 		contentfulURL = cm.DefaultServerURL
@@ -117,18 +153,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		resp.Diagnostics.AddAttributeError(path.Root("url"), "Failed to configure client", "No API URL provided")
 	}
 
-	var accessToken string
-	if !data.AccessToken.IsNull() {
-		accessToken = data.AccessToken.ValueString()
-	} else {
-		if accessTokenFromEnv, found := os.LookupEnv("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN"); found {
-			accessToken = accessTokenFromEnv
-		}
-	}
-
-	if p.accessToken != "" {
-		accessToken = p.accessToken
-	}
+	accessToken := accessTokenValue.ValueString()
 
 	if accessToken == "" {
 		resp.Diagnostics.AddAttributeError(path.Root("access_token"), "Failed to configure client", "No access token provided")
@@ -152,7 +177,9 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		cm.WithClient(cm.NewTransportClient(retryableClient.StandardClient(), "terraform-provider-contentful/"+p.version)),
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create Contentful client: %s", err.Error())
+		resp.Diagnostics.AddError("Failed to create Contentful client", err.Error())
+
+		return
 	}
 
 	providerData := ContentfulProviderData{
