@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -24,7 +26,7 @@ func taxonomyIDValidators() []validator.String {
 
 func taxonomyIdentityAttributes(entityName string) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"id": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{UseStateForUnknown()}},
+		"id": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		"organization_id": schema.StringAttribute{
 			Description:   "ID of the organization that owns the " + entityName + ".",
 			Required:      true,
@@ -38,7 +40,15 @@ func localizedStringAttribute(description string, required bool) schema.MapAttri
 }
 
 func optionalComputedStringList(description string) schema.ListAttribute {
-	return schema.ListAttribute{Description: description, Optional: true, Computed: true, ElementType: types.StringType}
+	return schema.ListAttribute{
+		Description: description,
+		Optional:    true,
+		Computed:    true,
+		ElementType: types.StringType,
+		PlanModifiers: []planmodifier.List{
+			listplanmodifier.UseStateForUnknown(),
+		},
+	}
 }
 
 func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
@@ -46,8 +56,24 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 	attributes["concept_id"] = schema.StringAttribute{Description: "Caller-defined ID of the taxonomy concept.", Required: true, Validators: taxonomyIDValidators(), PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}}
 	attributes["uri"] = schema.StringAttribute{Description: "Optional URI identifying the concept. Empty strings are rejected by Contentful.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
 	attributes["pref_label"] = localizedStringAttribute("Localized preferred labels.", true)
-	attributes["alt_labels"] = schema.MapAttribute{Description: "Localized alternative labels.", Optional: true, Computed: true, ElementType: types.ListType{ElemType: types.StringType}}
-	attributes["hidden_labels"] = schema.MapAttribute{Description: "Localized hidden labels.", Optional: true, Computed: true, ElementType: types.ListType{ElemType: types.StringType}}
+	attributes["alt_labels"] = schema.MapAttribute{
+		Description: "Localized alternative labels.",
+		Optional:    true,
+		Computed:    true,
+		ElementType: types.ListType{ElemType: types.StringType},
+		PlanModifiers: []planmodifier.Map{
+			mapplanmodifier.UseStateForUnknown(),
+		},
+	}
+	attributes["hidden_labels"] = schema.MapAttribute{
+		Description: "Localized hidden labels.",
+		Optional:    true,
+		Computed:    true,
+		ElementType: types.ListType{ElemType: types.StringType},
+		PlanModifiers: []planmodifier.Map{
+			mapplanmodifier.UseStateForUnknown(),
+		},
+	}
 
 	attributes["notations"] = optionalComputedStringList("Ordered notation values.")
 	for name, description := range map[string]string{

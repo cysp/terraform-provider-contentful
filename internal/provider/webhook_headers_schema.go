@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 )
 
@@ -18,7 +19,7 @@ func WebhookHeadersSchema(ctx context.Context, optional bool) schema.Attribute {
 		Optional:   optional,
 		Computed:   true,
 		PlanModifiers: []planmodifier.Map{
-			UseStateForUnknown(),
+			mapplanmodifier.UseStateForUnknown(),
 		},
 	}
 }

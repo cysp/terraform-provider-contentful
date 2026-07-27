@@ -19,7 +19,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{
@@ -41,7 +41,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"extension": schema.SingleNestedAttribute{
@@ -55,7 +55,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
@@ -75,7 +75,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			Computed:    true,
 			Default:     stringdefault.StaticString(""),
 			PlanModifiers: []planmodifier.String{
-				UseStateForUnknown(),
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"srcdoc": schema.StringAttribute{
@@ -84,7 +84,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			Computed:    true,
 			Default:     stringdefault.StaticString(""),
 			PlanModifiers: []planmodifier.String{
-				UseStateForUnknown(),
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"field_types": schema.ListNestedAttribute{

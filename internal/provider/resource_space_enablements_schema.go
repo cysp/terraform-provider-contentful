@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
@@ -16,7 +17,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{
@@ -31,7 +32,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
-					UseStateForUnknown(),
+					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_templates": schema.BoolAttribute{
@@ -39,7 +40,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
-					UseStateForUnknown(),
+					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"studio_experiences": schema.BoolAttribute{
@@ -47,7 +48,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
-					UseStateForUnknown(),
+					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"suggest_concepts": schema.BoolAttribute{
@@ -55,7 +56,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
-					UseStateForUnknown(),
+					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Update: true}),

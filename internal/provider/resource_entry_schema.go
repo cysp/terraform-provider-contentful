@@ -7,7 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -26,7 +28,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{
@@ -34,7 +36,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
@@ -42,7 +44,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"entry_id": schema.StringAttribute{
@@ -51,7 +53,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"content_type_id": schema.StringAttribute{
@@ -59,7 +61,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"fields": schema.MapAttribute{
@@ -76,7 +78,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Default:     objectdefault.StaticValue(defaultMetadataObjectValue),
 				PlanModifiers: []planmodifier.Object{
-					UseStateForUnknown(),
+					objectplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
@@ -96,7 +98,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 			Computed:    true,
 			Default:     listdefault.StaticValue(defaultConceptsListValue),
 			PlanModifiers: []planmodifier.List{
-				UseStateForUnknown(),
+				listplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"tags": schema.ListAttribute{
@@ -106,7 +108,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 			Computed:    true,
 			Default:     listdefault.StaticValue(defaultTagsListValue),
 			PlanModifiers: []planmodifier.List{
-				UseStateForUnknown(),
+				listplanmodifier.UseStateForUnknown(),
 			},
 		},
 	}
