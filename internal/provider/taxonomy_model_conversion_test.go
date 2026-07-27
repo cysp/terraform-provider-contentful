@@ -242,6 +242,72 @@ func TestTaxonomyCollectionConversions(t *testing.T) {
 	}
 }
 
+func TestTaxonomyRequestConversionsReportUnknownCollectionElements(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]func(*testing.T) diag.Diagnostics{
+		"concept string map": func(t *testing.T) diag.Diagnostics {
+			t.Helper()
+
+			model := taxonomyConceptUpdatePlan()
+			model.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{
+				"en-US": types.StringUnknown(),
+			})
+			_, diags := model.ToRequest(t.Context())
+
+			return diags
+		},
+		"concept string list map": func(t *testing.T) diag.Diagnostics {
+			t.Helper()
+
+			model := taxonomyConceptUpdatePlan()
+			model.AltLabels = types.MapValueMust(types.ListType{ElemType: types.StringType}, map[string]attr.Value{
+				"en-US": types.ListUnknown(types.StringType),
+			})
+			_, diags := model.ToRequest(t.Context())
+
+			return diags
+		},
+		"concept string list": func(t *testing.T) diag.Diagnostics {
+			t.Helper()
+
+			model := taxonomyConceptUpdatePlan()
+			model.Notations = types.ListValueMust(types.StringType, []attr.Value{types.StringUnknown()})
+			_, diags := model.ToRequest(t.Context())
+
+			return diags
+		},
+		"concept scheme string map": func(t *testing.T) diag.Diagnostics {
+			t.Helper()
+
+			model := taxonomyConceptSchemeUpdatePlan()
+			model.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{
+				"en-US": types.StringUnknown(),
+			})
+			_, diags := model.ToRequest(t.Context())
+
+			return diags
+		},
+		"concept scheme string list": func(t *testing.T) diag.Diagnostics {
+			t.Helper()
+
+			model := taxonomyConceptSchemeUpdatePlan()
+			model.TopConceptIDs = types.ListValueMust(types.StringType, []attr.Value{types.StringUnknown()})
+			_, diags := model.ToRequest(t.Context())
+
+			return diags
+		},
+	}
+
+	for name, convert := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			require.True(t, convert(t).HasError())
+		})
+	}
+}
+
 func TestTaxonomyConceptToRequestAddsPreferredLocalesToLabelMaps(t *testing.T) {
 	t.Parallel()
 
