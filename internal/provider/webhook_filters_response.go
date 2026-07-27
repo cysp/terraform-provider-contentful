@@ -28,6 +28,10 @@ func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path
 		filtersElements[index] = filtersElement
 	}
 
+	if diags.HasError() {
+		return NewTypedListNull[TypedObject[WebhookFilterValue]](), diags
+	}
+
 	filtersList := NewTypedList(filtersElements)
 
 	return filtersList, diags
@@ -36,7 +40,12 @@ func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path
 func ReadWebhookFilterValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilter) (TypedObject[WebhookFilterValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := WebhookFilterValue{}
+	value := WebhookFilterValue{
+		Not:    NewTypedObjectNull[WebhookFilterNotValue](),
+		Equals: NewTypedObjectNull[WebhookFilterEqualsValue](),
+		In:     NewTypedObjectNull[WebhookFilterInValue](),
+		Regexp: NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}
 
 	if filterNot, ok := input.Not.Get(); ok {
 		filterNotValue, filterNotValueDiags := ReadWebhookFilterNotValueFromResponse(ctx, path.AtName("not"), filterNot)
@@ -66,13 +75,21 @@ func ReadWebhookFilterValueFromResponse(ctx context.Context, path path.Path, inp
 		value.Regexp = filterRegexpValue
 	}
 
+	if diags.HasError() {
+		return NewTypedObjectNull[WebhookFilterValue](), diags
+	}
+
 	return NewTypedObject(value), diags
 }
 
 func ReadWebhookFilterNotValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilterNot) (TypedObject[WebhookFilterNotValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	value := WebhookFilterNotValue{}
+	value := WebhookFilterNotValue{
+		Equals: NewTypedObjectNull[WebhookFilterEqualsValue](),
+		In:     NewTypedObjectNull[WebhookFilterInValue](),
+		Regexp: NewTypedObjectNull[WebhookFilterRegexpValue](),
+	}
 
 	if input.Equals != nil {
 		filterEqualsValue, filterEqualsValueDiags := ReadWebhookFilterEqualsValueFromResponse(ctx, path.AtName("equals"), input.Equals)
@@ -95,12 +112,63 @@ func ReadWebhookFilterNotValueFromResponse(ctx context.Context, path path.Path, 
 		value.Regexp = filterRegexpValue
 	}
 
+	if diags.HasError() {
+		return NewTypedObjectNull[WebhookFilterNotValue](), diags
+	}
+
 	return NewTypedObject(value), diags
 }
 
-func ReadWebhookFilterEqualsValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilterEquals) (TypedObject[WebhookFilterEqualsValue], diag.Diagnostics) {
+func ReadWebhookFilterEqualsValueFromResponse(ctx context.Context, valuePath path.Path, input cm.WebhookDefinitionFilterEquals) (TypedObject[WebhookFilterEqualsValue], diag.Diagnostics) {
+	return readWebhookBinaryFilterValue(ctx, valuePath, input, func(ctx context.Context, filterPath path.Path, doc, term jx.Raw) (WebhookFilterEqualsValue, diag.Diagnostics) {
+		diags := diag.Diagnostics{}
+
+		valueDoc, valueDocDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, filterPath.AtName("doc"), "doc", doc)
+		diags.Append(valueDocDiags...)
+
+		value, valueDiags := ReadWebhookDefinitionFilterTermString(ctx, filterPath.AtName("value"), term)
+		diags.Append(valueDiags...)
+
+		return WebhookFilterEqualsValue{Doc: valueDoc, Value: value}, diags
+	})
+}
+
+func ReadWebhookFilterInValueFromResponse(ctx context.Context, valuePath path.Path, input cm.WebhookDefinitionFilterIn) (TypedObject[WebhookFilterInValue], diag.Diagnostics) {
+	return readWebhookBinaryFilterValue(ctx, valuePath, input, func(ctx context.Context, filterPath path.Path, doc, term jx.Raw) (WebhookFilterInValue, diag.Diagnostics) {
+		diags := diag.Diagnostics{}
+
+		valueDoc, valueDocDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, filterPath.AtName("doc"), "doc", doc)
+		diags.Append(valueDocDiags...)
+
+		values, valuesDiags := ReadWebhookDefinitionFilterTermStringArray(ctx, filterPath.AtName("values"), term)
+		diags.Append(valuesDiags...)
+
+		return WebhookFilterInValue{Doc: valueDoc, Values: values}, diags
+	})
+}
+
+func ReadWebhookFilterRegexpValueFromResponse(ctx context.Context, valuePath path.Path, input cm.WebhookDefinitionFilterRegexp) (TypedObject[WebhookFilterRegexpValue], diag.Diagnostics) {
+	return readWebhookBinaryFilterValue(ctx, valuePath, input, func(ctx context.Context, filterPath path.Path, doc, term jx.Raw) (WebhookFilterRegexpValue, diag.Diagnostics) {
+		diags := diag.Diagnostics{}
+
+		valueDoc, valueDocDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, filterPath.AtName("doc"), "doc", doc)
+		diags.Append(valueDocDiags...)
+
+		pattern, patternDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, filterPath.AtName("pattern"), "pattern", term)
+		diags.Append(patternDiags...)
+
+		return WebhookFilterRegexpValue{Doc: valueDoc, Pattern: pattern}, diags
+	})
+}
+
+func readWebhookBinaryFilterValue[T any](
+	ctx context.Context,
+	path path.Path,
+	input []jx.Raw,
+	decode func(context.Context, path.Path, jx.Raw, jx.Raw) (T, diag.Diagnostics),
+) (TypedObject[T], diag.Diagnostics) {
 	if input == nil {
-		return NewTypedObjectNull[WebhookFilterEqualsValue](), nil
+		return NewTypedObjectNull[T](), nil
 	}
 
 	//nolint:mnd
@@ -108,82 +176,14 @@ func ReadWebhookFilterEqualsValueFromResponse(ctx context.Context, path path.Pat
 		diags := diag.Diagnostics{}
 		diags.AddAttributeError(path, "failed to decode value", fmt.Sprintf("expected array of length 2, received array of length %d", len(input)))
 
-		return NewTypedObjectNull[WebhookFilterEqualsValue](), diags
+		return NewTypedObjectNull[T](), diags
 	}
 
-	diags := diag.Diagnostics{}
+	value, diags := decode(ctx, path, input[0], input[1])
 
-	value := WebhookFilterEqualsValue{}
-
-	valueDoc, valueDocDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", input[0])
-	diags.Append(valueDocDiags...)
-
-	value.Doc = valueDoc
-
-	valueValue, valueValueDiags := ReadWebhookDefinitionFilterTermString(ctx, path.AtName("value"), input[1])
-	diags.Append(valueValueDiags...)
-
-	value.Value = valueValue
-
-	return NewTypedObject(value), diags
-}
-
-func ReadWebhookFilterInValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilterIn) (TypedObject[WebhookFilterInValue], diag.Diagnostics) {
-	if input == nil {
-		return NewTypedObjectNull[WebhookFilterInValue](), nil
+	if diags.HasError() {
+		return NewTypedObjectNull[T](), diags
 	}
-
-	//nolint:mnd
-	if len(input) != 2 {
-		diags := diag.Diagnostics{}
-		diags.AddAttributeError(path, "failed to decode value", fmt.Sprintf("expected array of length 2, received array of length %d", len(input)))
-
-		return NewTypedObjectNull[WebhookFilterInValue](), diags
-	}
-
-	diags := diag.Diagnostics{}
-
-	value := WebhookFilterInValue{}
-
-	valueDoc, valueDocDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", input[0])
-	diags.Append(valueDocDiags...)
-
-	value.Doc = valueDoc
-
-	valueValues, valueValuesDiags := ReadWebhookDefinitionFilterTermStringArray(ctx, path.AtName("values"), input[1])
-	diags.Append(valueValuesDiags...)
-
-	value.Values = valueValues
-
-	return NewTypedObject(value), diags
-}
-
-func ReadWebhookFilterRegexpValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilterRegexp) (TypedObject[WebhookFilterRegexpValue], diag.Diagnostics) {
-	if input == nil {
-		return NewTypedObjectNull[WebhookFilterRegexpValue](), nil
-	}
-
-	//nolint:mnd
-	if len(input) != 2 {
-		diags := diag.Diagnostics{}
-		diags.AddAttributeError(path, "failed to decode value", fmt.Sprintf("expected array of length 2, received array of length %d", len(input)))
-
-		return NewTypedObjectNull[WebhookFilterRegexpValue](), diags
-	}
-
-	diags := diag.Diagnostics{}
-
-	value := WebhookFilterRegexpValue{}
-
-	valueDoc, valueDocDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", input[0])
-	diags.Append(valueDocDiags...)
-
-	value.Doc = valueDoc
-
-	valuePattern, valuePatternDiags := ReadWebhookDefinitionFilterTermStringObject(ctx, path.AtName("pattern"), "pattern", input[1])
-	diags.Append(valuePatternDiags...)
-
-	value.Pattern = valuePattern
 
 	return NewTypedObject(value), diags
 }
