@@ -131,6 +131,11 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 
 	data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, *concept)
 	resp.Diagnostics.Append(modelDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	preserveConfiguredLabelMapShape(&data, state)
 
 	data.Timeouts = state.Timeouts
@@ -164,6 +169,13 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
+	request, requestDiags := plan.ToRequest(ctx)
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	getParams := cm.GetTaxonomyConceptParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptID: plan.ConceptID.ValueString()}
 	currentResponse, err := r.providerData.client.GetTaxonomyConcept(ctx, getParams)
 
@@ -173,9 +185,6 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 
 		return
 	}
-
-	request, requestDiags := plan.ToRequest(ctx)
-	resp.Diagnostics.Append(requestDiags...)
 
 	patch, patchErr := taxonomyPatch(taxonomyConceptRequestFromResponse(*current), request)
 	if patchErr != nil {
@@ -187,6 +196,11 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 	if len(patch) == 0 {
 		data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, *current)
 		resp.Diagnostics.Append(modelDiags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		preserveConfiguredLabelMapShape(&data, plan)
 
 		data.Timeouts = plan.Timeouts
@@ -215,6 +229,11 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 
 	data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, *concept)
 	resp.Diagnostics.Append(modelDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	preserveConfiguredLabelMapShape(&data, plan)
 
 	data.Timeouts = plan.Timeouts
@@ -280,6 +299,11 @@ func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.Delet
 func (r *taxonomyConceptResource) setCreateState(ctx context.Context, prior TaxonomyConceptModel, concept cm.TaxonomyConcept, resp *resource.CreateResponse) {
 	data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, concept)
 	resp.Diagnostics.Append(modelDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	preserveConfiguredLabelMapShape(&data, prior)
 
 	data.Timeouts = prior.Timeouts

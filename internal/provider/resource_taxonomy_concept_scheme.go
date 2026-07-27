@@ -94,6 +94,10 @@ func (r *taxonomyConceptSchemeResource) Create(ctx context.Context, req resource
 	data, modelDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, *scheme)
 	resp.Diagnostics.Append(modelDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identity TaxonomyConceptSchemeIdentityModel
@@ -145,6 +149,10 @@ func (r *taxonomyConceptSchemeResource) Read(ctx context.Context, req resource.R
 	data, modelDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, *scheme)
 	resp.Diagnostics.Append(modelDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = state.Timeouts
 
 	var identity TaxonomyConceptSchemeIdentityModel
@@ -176,6 +184,13 @@ func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
+	request, requestDiags := plan.ToRequest(ctx)
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	getParams := cm.GetTaxonomyConceptSchemeParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptSchemeID: plan.ConceptSchemeID.ValueString()}
 	currentResponse, err := r.providerData.client.GetTaxonomyConceptScheme(ctx, getParams)
 
@@ -185,9 +200,6 @@ func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource
 
 		return
 	}
-
-	request, requestDiags := plan.ToRequest(ctx)
-	resp.Diagnostics.Append(requestDiags...)
 
 	patch, patchErr := taxonomyPatch(taxonomyConceptSchemeRequestFromResponse(*current), request)
 	if patchErr != nil {
@@ -199,6 +211,10 @@ func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource
 	if len(patch) == 0 {
 		data, modelDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, *current)
 		resp.Diagnostics.Append(modelDiags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
 		data.Timeouts = plan.Timeouts
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -226,6 +242,10 @@ func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource
 
 	data, modelDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, *scheme)
 	resp.Diagnostics.Append(modelDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	data.Timeouts = plan.Timeouts
 
