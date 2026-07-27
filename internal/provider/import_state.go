@@ -4,10 +4,17 @@ import (
 	"context"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+type importAttribute struct {
+	path  path.Path
+	value types.String
+}
 
 func ImportStatePassthroughMultipartID(ctx context.Context, attrPaths []path.Path, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	if req.ID != "" {
@@ -21,30 +28,83 @@ func ImportStatePassthroughMultipartID(ctx context.Context, attrPaths []path.Pat
 			return
 		}
 
+		attributes := make([]importAttribute, 0, len(attrPaths))
 		for i, attrPath := range attrPaths {
-			if resp.Identity != nil {
-				resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, attrPath, attrValues[i])...)
+			if attrValues[i] == "" {
+				resp.Diagnostics.AddAttributeError(attrPath, "Resource Import Passthrough Multipart ID Mismatch", "Import identity components must not be empty.")
+
+				return
 			}
 
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, attrPath, attrValues[i])...)
+			attributes = append(attributes, importAttribute{path: attrPath, value: types.StringValue(attrValues[i])})
 		}
+
+		resp.Diagnostics.Append(setImportAttributes(ctx, &resp.State, resp.Identity, attributes)...)
 
 		return
 	}
 
-	for _, attrPath := range attrPaths {
-		var identityComponentValue attr.Value
+	if req.Identity == nil {
+		resp.Diagnostics.AddError("Resource Import Passthrough Multipart ID Mismatch", "No import identity was provided.")
 
-		resp.Diagnostics.Append(req.Identity.GetAttribute(ctx, attrPath, &identityComponentValue)...)
-
-		if identityComponentValue.IsUnknown() || identityComponentValue.IsNull() {
-			resp.Diagnostics.AddAttributeError(attrPath, "Resource Import Passthrough Multipart ID Mismatch", "")
-		}
-
-		if resp.Identity != nil {
-			resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, attrPath, identityComponentValue)...)
-		}
-
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, attrPath, identityComponentValue)...)
+		return
 	}
+
+	attributes := make([]importAttribute, 0, len(attrPaths))
+	for _, attrPath := range attrPaths {
+		var identityValue types.String
+
+		getDiags := req.Identity.GetAttribute(ctx, attrPath, &identityValue)
+		resp.Diagnostics.Append(getDiags...)
+
+		if getDiags.HasError() {
+			return
+		}
+
+		if identityValue.IsUnknown() || identityValue.IsNull() || identityValue.ValueString() == "" {
+			resp.Diagnostics.AddAttributeError(attrPath, "Resource Import Passthrough Multipart ID Mismatch", "Import identity components must be known, non-null, and non-empty.")
+
+			return
+		}
+
+		attributes = append(attributes, importAttribute{path: attrPath, value: identityValue})
+	}
+
+	resp.Diagnostics.Append(setImportAttributes(ctx, &resp.State, resp.Identity, attributes)...)
+}
+
+func setImportAttributes(
+	ctx context.Context,
+	state *tfsdk.State,
+	identity *tfsdk.ResourceIdentity,
+	attributes []importAttribute,
+) diag.Diagnostics {
+	stagedState := *state
+
+	var stagedIdentity tfsdk.ResourceIdentity
+	if identity != nil {
+		stagedIdentity = *identity
+	}
+
+	diags := diag.Diagnostics{}
+
+	for _, attribute := range attributes {
+		if identity != nil {
+			diags.Append(stagedIdentity.SetAttribute(ctx, attribute.path, attribute.value)...)
+		}
+
+		diags.Append(stagedState.SetAttribute(ctx, attribute.path, attribute.value)...)
+	}
+
+	if diags.HasError() {
+		return diags
+	}
+
+	*state = stagedState
+
+	if identity != nil {
+		*identity = stagedIdentity
+	}
+
+	return diags
 }
