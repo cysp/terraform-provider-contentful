@@ -44,24 +44,26 @@ func (d *environmentStatusReadyDataSource) Configure(_ context.Context, req data
 }
 
 func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data EnvironmentStatusReadyModel
+	var config EnvironmentStatusReadyModel
 
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout, timeoutDiagnostics := data.Timeouts.Read(ctx, environmentStatusReadyTimeout)
+	timeout, timeoutDiagnostics := config.Timeouts.Read(ctx, environmentStatusReadyTimeout)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	configuredTimeouts := config.Timeouts
+
 	params := cm.GetEnvironmentParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
+		SpaceID:       config.SpaceID.ValueString(),
+		EnvironmentID: config.EnvironmentID.ValueString(),
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
@@ -81,21 +83,21 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 
 		switch response := response.(type) {
 		case *cm.Environment:
-			responseModel, responseModelDiags := NewEnvironmentStatusReadyModelFromResponse(ctx, *response)
-			resp.Diagnostics.Append(responseModelDiags...)
+			continuePolling, responseDiags := publishEnvironmentStatusReadyResponse(
+				ctx,
+				&resp.State,
+				*response,
+				configuredTimeouts,
+			)
+			resp.Diagnostics.Append(responseDiags...)
 
-			responseModel.Timeouts = data.Timeouts
-			data = responseModel
+			if resp.Diagnostics.HasError() || !continuePolling {
+				return
+			}
 
 		default:
 			resp.Diagnostics.AddError("Failed to read environment", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			return
-		}
-
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-
-		if data.Status.ValueString() == environmentStatusReadyValue {
 			return
 		}
 

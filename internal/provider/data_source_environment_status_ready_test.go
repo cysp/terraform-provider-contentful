@@ -11,6 +11,8 @@ import (
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type environmentStatusReadyTestHandler struct {
@@ -20,7 +22,7 @@ type environmentStatusReadyTestHandler struct {
 	environmentID string
 
 	readyOnRequest int
-	requestCount   int
+	statuses       []string
 }
 
 func (h *environmentStatusReadyTestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -30,12 +32,12 @@ func (h *environmentStatusReadyTestHandler) ServeHTTP(w http.ResponseWriter, r *
 		h.mu.Lock()
 		defer h.mu.Unlock()
 
-		h.requestCount++
-
 		status := "queued"
-		if h.requestCount >= h.readyOnRequest {
+		if len(h.statuses)+1 >= h.readyOnRequest {
 			status = "ready"
 		}
+
+		h.statuses = append(h.statuses, status)
 
 		environment := cm.Environment{
 			Sys:  cm.NewEnvironmentSys(h.spaceID, h.environmentID, status),
@@ -54,6 +56,13 @@ func (h *environmentStatusReadyTestHandler) ServeHTTP(w http.ResponseWriter, r *
 	}
 
 	http.NotFound(w, r)
+}
+
+func (h *environmentStatusReadyTestHandler) StatusesServed() []string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	return append([]string(nil), h.statuses...)
 }
 
 func TestAccEnvironmentStatusReadyDataSource(t *testing.T) {
@@ -114,6 +123,14 @@ func TestAccEnvironmentStatusReadyDataSourcePolling(t *testing.T) {
 			},
 		},
 	})
+
+	statuses := server.StatusesServed()
+	require.GreaterOrEqual(t, len(statuses), 2)
+	assert.Equal(t, []string{"queued", "ready"}, statuses[:2])
+
+	for _, status := range statuses[2:] {
+		assert.Equal(t, "ready", status)
+	}
 }
 
 func TestAccEnvironmentStatusReadyDataSourceNotFound(t *testing.T) {
