@@ -132,17 +132,124 @@ func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 	ctx := t.Context()
 	path := path.Root("test")
 
-	environmentLinks := []cm.EnvironmentLink{
-		cm.NewEnvironmentLink("env1"),
-		cm.NewEnvironmentLink("env2"),
+	tests := map[string]struct {
+		environmentLinks []cm.EnvironmentLink
+		expected         TypedList[types.String]
+	}{
+		"nil": {
+			environmentLinks: nil,
+			expected:         NewTypedListNull[types.String](),
+		},
+		"empty": {
+			environmentLinks: []cm.EnvironmentLink{},
+			expected:         NewTypedList([]types.String{}),
+		},
+		"known elements": {
+			environmentLinks: []cm.EnvironmentLink{
+				cm.NewEnvironmentLink("env1"),
+				cm.NewEnvironmentLink("env2"),
+			},
+			expected: NewTypedList([]types.String{
+				types.StringValue("env1"),
+				types.StringValue("env2"),
+			}),
+		},
 	}
 
-	expected := NewTypedList([]types.String{
-		types.StringValue("env1"),
-		types.StringValue("env2"),
-	})
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	result, diags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, path, environmentLinks)
-	assert.Empty(t, diags)
-	assert.Equal(t, expected, result)
+			result, diags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, path, test.environmentLinks)
+			assert.Empty(t, diags)
+			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
+func TestEnvironmentLinksRequestResponseRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	valuePath := path.Root("test")
+
+	for name, value := range map[string]TypedList[types.String]{
+		"null":  NewTypedListNull[types.String](),
+		"empty": NewTypedList([]types.String{}),
+		"known elements": NewTypedList([]types.String{
+			types.StringValue("env1"),
+			types.StringValue("env2"),
+		}),
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			environmentLinks, requestDiags := ToEnvironmentLinks(ctx, valuePath, value)
+			require.False(t, requestDiags.HasError(), requestDiags.Errors())
+
+			result, responseDiags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, valuePath, environmentLinks)
+			require.False(t, responseDiags.HasError(), responseDiags.Errors())
+
+			assert.Equal(t, value, result)
+		})
+	}
+}
+
+func TestEnvironmentLinksJSONRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	valuePath := path.Root("test")
+
+	for name, test := range map[string]struct {
+		value             TypedList[types.String]
+		environmentsField string
+	}{
+		"null": {
+			value:             NewTypedListNull[types.String](),
+			environmentsField: "",
+		},
+		"empty": {
+			value:             NewTypedList([]types.String{}),
+			environmentsField: `"environments":[]`,
+		},
+		"known elements": {
+			value: NewTypedList([]types.String{
+				types.StringValue("env1"),
+				types.StringValue("env2"),
+			}),
+			environmentsField: `"environments":[`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			environmentLinks, requestDiags := ToEnvironmentLinks(ctx, valuePath, test.value)
+			require.False(t, requestDiags.HasError(), requestDiags.Errors())
+
+			apiKey := cm.ApiKey{
+				Sys:          cm.NewAPIKeySys("space", "key"),
+				Name:         "key",
+				Environments: environmentLinks,
+				AccessToken:  "token",
+			}
+
+			encoded, err := apiKey.MarshalJSON()
+			require.NoError(t, err)
+
+			if test.environmentsField == "" {
+				assert.NotContains(t, string(encoded), `"environments"`)
+			} else {
+				assert.Contains(t, string(encoded), test.environmentsField)
+			}
+
+			var decoded cm.ApiKey
+			require.NoError(t, decoded.UnmarshalJSON(encoded))
+
+			result, responseDiags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, valuePath, decoded.Environments)
+			require.False(t, responseDiags.HasError(), responseDiags.Errors())
+
+			assert.Equal(t, test.value, result)
+		})
+	}
 }
