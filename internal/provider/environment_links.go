@@ -9,39 +9,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToEnvironmentLinks(ctx context.Context, path path.Path, value TypedList[types.String]) ([]cm.EnvironmentLink, diag.Diagnostics) {
+func ToEnvironmentLinks(_ context.Context, valuePath path.Path, value TypedList[types.String]) ([]cm.EnvironmentLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if value.IsUnknown() {
+	if value.IsNull() || value.IsUnknown() {
 		return nil, diags
 	}
 
-	environmentIDValues := value.Elements()
+	environmentIDs, environmentIDDiags := knownStringListElements(valuePath, value.Elements())
+	diags.Append(environmentIDDiags...)
 
-	environments := make([]cm.EnvironmentLink, 0, len(environmentIDValues))
+	if diags.HasError() {
+		return nil, diags
+	}
 
-	for index, environmentIDValue := range environmentIDValues {
-		path := path.AtListIndex(index)
+	environments := make([]cm.EnvironmentLink, 0, len(environmentIDs))
 
-		if environmentIDValue.IsUnknown() {
-			diags.AddAttributeError(path, "Unexpectedly unknown value", "")
-		}
-
-		environmentsItem, environmentsItemDiags := ToEnvironmentLink(ctx, path, environmentIDValue.ValueString())
-		diags.Append(environmentsItemDiags...)
-
-		environments = append(environments, environmentsItem)
+	for _, environmentID := range environmentIDs {
+		environments = append(environments, cm.NewEnvironmentLink(environmentID))
 	}
 
 	return environments, diags
-}
-
-func ToEnvironmentLink(_ context.Context, _ path.Path, environmentID string) (cm.EnvironmentLink, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	item := cm.NewEnvironmentLink(environmentID)
-
-	return item, diags
 }
 
 func NewEnvironmentIDsListValueFromEnvironmentLinks(_ context.Context, _ path.Path, environmentLinks []cm.EnvironmentLink) (TypedList[types.String], diag.Diagnostics) {
