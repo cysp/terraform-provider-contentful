@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestToEnvironmentLinks(t *testing.T) {
@@ -17,10 +18,14 @@ func TestToEnvironmentLinks(t *testing.T) {
 	path := path.Root("test")
 
 	tests := map[string]struct {
-		value         TypedList[types.String]
-		expected      []cm.EnvironmentLink
-		expectedDiags bool
+		value               TypedList[types.String]
+		expected            []cm.EnvironmentLink
+		expectedDiagnostics []string
 	}{
+		"null": {
+			value:    NewTypedListNull[types.String](),
+			expected: nil,
+		},
 		"unknown": {
 			value:    NewTypedListUnknown[types.String](),
 			expected: nil,
@@ -29,10 +34,8 @@ func TestToEnvironmentLinks(t *testing.T) {
 			value: NewTypedList([]types.String{
 				types.StringUnknown(),
 			}),
-			expected: []cm.EnvironmentLink{
-				cm.NewEnvironmentLink(""),
-			},
-			expectedDiags: true,
+			expected:            nil,
+			expectedDiagnostics: []string{"test[0]"},
 		},
 		"known and unknown elements": {
 			value: NewTypedList([]types.String{
@@ -40,12 +43,15 @@ func TestToEnvironmentLinks(t *testing.T) {
 				types.StringUnknown(),
 				types.StringValue("c"),
 			}),
-			expected: []cm.EnvironmentLink{
-				cm.NewEnvironmentLink("a"),
-				cm.NewEnvironmentLink(""),
-				cm.NewEnvironmentLink("c"),
-			},
-			expectedDiags: true,
+			expected:            nil,
+			expectedDiagnostics: []string{"test[1]"},
+		},
+		"null element": {
+			value: NewTypedList([]types.String{
+				types.StringNull(),
+			}),
+			expected:            nil,
+			expectedDiagnostics: []string{"test[0]"},
 		},
 		"empty": {
 			value:    NewTypedList([]types.String{}),
@@ -71,11 +77,51 @@ func TestToEnvironmentLinks(t *testing.T) {
 
 			assert.Equal(t, test.expected, result)
 
-			if test.expectedDiags {
-				assert.NotEmpty(t, diags)
+			if len(test.expectedDiagnostics) > 0 {
+				require.True(t, diags.HasError())
+				assert.Equal(t, test.expectedDiagnostics, attributeDiagnosticPaths(t, diags))
 			} else {
 				assert.Empty(t, diags)
 			}
+		})
+	}
+}
+
+func TestDeliveryAPIKeyEnvironmentRequestEncoding(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		environments TypedList[types.String]
+		expectedJSON string
+	}{
+		"null is omitted": {
+			environments: NewTypedListNull[types.String](),
+			expectedJSON: `{"name":"key","description":null}`,
+		},
+		"unknown is omitted": {
+			environments: NewTypedListUnknown[types.String](),
+			expectedJSON: `{"name":"key","description":null}`,
+		},
+		"known empty is explicit": {
+			environments: NewTypedList([]types.String{}),
+			expectedJSON: `{"name":"key","description":null,"environments":[]}`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := DeliveryAPIKeyModel{
+				Name:         types.StringValue("key"),
+				Description:  types.StringNull(),
+				Environments: test.environments,
+			}
+
+			request, diags := model.ToAPIKeyRequestFields(t.Context())
+			require.False(t, diags.HasError(), diags.Errors())
+
+			actualJSON, err := request.MarshalJSON()
+			require.NoError(t, err)
+			assert.JSONEq(t, test.expectedJSON, string(actualJSON))
 		})
 	}
 }
