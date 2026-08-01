@@ -93,7 +93,6 @@ func TestAccEnvironmentStatusReadyDataSource(t *testing.T) {
 			},
 		},
 	})
-
 }
 
 func TestAccEnvironmentStatusReadyDataSourcePolling(t *testing.T) {

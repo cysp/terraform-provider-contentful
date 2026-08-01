@@ -16,6 +16,7 @@ type KnownUnionAlternative[T any] struct {
 	Convert func() (T, diag.Diagnostics)
 }
 
+//nolint:ireturn // The selected alternative determines the concrete result type at each call site.
 func ConvertExactlyOneKnownAlternative[T any](unionPath path.Path, alternatives ...KnownUnionAlternative[T]) (T, diag.Diagnostics) {
 	var zero T
 
