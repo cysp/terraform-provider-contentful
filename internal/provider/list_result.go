@@ -18,8 +18,10 @@ func newListResultFromResponse[T any](
 	result.DisplayName = displayName
 
 	var model T
+
 	if req.IncludeResource {
 		var modelDiags diag.Diagnostics
+
 		model, modelDiags = convert()
 		result.Diagnostics.Append(modelDiags...)
 
@@ -30,17 +32,20 @@ func newListResultFromResponse[T any](
 
 	staged := req.NewListResult(ctx)
 	staged.DisplayName = displayName
-	staged.Diagnostics.Append(staged.Identity.Set(ctx, identity)...)
+	publicationDiags := staged.Identity.Set(ctx, identity)
 
-	if !staged.Diagnostics.HasError() && req.IncludeResource {
-		staged.Diagnostics.Append(staged.Resource.Set(ctx, model)...)
+	if !publicationDiags.HasError() && req.IncludeResource {
+		publicationDiags.Append(staged.Resource.Set(ctx, model)...)
 	}
 
-	if staged.Diagnostics.HasError() {
-		result.Diagnostics.Append(staged.Diagnostics...)
+	if publicationDiags.HasError() {
+		result.Diagnostics.Append(publicationDiags...)
 
 		return result
 	}
+
+	staged.Diagnostics.Append(result.Diagnostics...)
+	staged.Diagnostics.Append(publicationDiags...)
 
 	return staged
 }
