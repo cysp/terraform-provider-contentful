@@ -86,37 +86,25 @@ func (v EditorInterfaceEditorLayoutItemGroupItemValue) ToEditorInterfaceEditorLa
 	fieldPath := valuePath.AtName("field")
 	groupPath := valuePath.AtName("group")
 
-	selected, diags := ExactlyOneKnownAlternative(
+	return ConvertExactlyOneKnownAlternative(
 		valuePath,
-		KnownUnionAlternative{Name: "field", Path: fieldPath, Value: v.Field},
-		KnownUnionAlternative{Name: "group", Path: groupPath, Value: v.Group},
+		KnownUnionAlternative[cm.EditorInterfaceEditorLayoutItem]{
+			Name: "field", Path: fieldPath, Value: v.Field,
+			Convert: func() (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+				field, _ := v.Field.GetValue()
+				fieldItem, diags := field.ToEditorInterfaceEditorLayoutFieldItem(ctx, fieldPath)
+
+				return cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(fieldItem), diags
+			},
+		},
+		KnownUnionAlternative[cm.EditorInterfaceEditorLayoutItem]{
+			Name: "group", Path: groupPath, Value: v.Group,
+			Convert: func() (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+				group, _ := v.Group.GetValue()
+				groupItem, diags := group.ToEditorInterfaceEditorLayoutGroupItem(ctx, groupPath)
+
+				return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(groupItem), diags
+			},
+		},
 	)
-	if diags.HasError() {
-		return cm.EditorInterfaceEditorLayoutItem{}, diags
-	}
-
-	switch selected.Name {
-	case "field":
-		field, _ := v.Field.GetValue()
-		fieldItem, fieldItemDiags := field.ToEditorInterfaceEditorLayoutFieldItem(ctx, fieldPath)
-		diags.Append(fieldItemDiags...)
-
-		if diags.HasError() {
-			return cm.EditorInterfaceEditorLayoutItem{}, diags
-		}
-
-		return cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(fieldItem), diags
-	case "group":
-		group, _ := v.Group.GetValue()
-		groupItem, groupItemDiags := group.ToEditorInterfaceEditorLayoutGroupItem(ctx, groupPath)
-		diags.Append(groupItemDiags...)
-
-		if diags.HasError() {
-			return cm.EditorInterfaceEditorLayoutItem{}, diags
-		}
-
-		return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(groupItem), diags
-	default:
-		return cm.EditorInterfaceEditorLayoutItem{}, diags
-	}
 }

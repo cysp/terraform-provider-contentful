@@ -76,64 +76,55 @@ func ToContentTypeMetadataTaxonomyItem(
 		return nil, valueDiags
 	}
 
-	diags := diag.Diagnostics{}
-	items := make([]cm.ContentTypeMetadataTaxonomyItem, 0, 1)
 	conceptPath := path.AtName("taxonomy_concept")
 	conceptSchemePath := path.AtName("taxonomy_concept_scheme")
-	selected, selectionDiags := ExactlyOneKnownAlternative(
+	item, diags := ConvertExactlyOneKnownAlternative(
 		path,
-		KnownUnionAlternative{Name: "taxonomy_concept", Path: conceptPath, Value: value.TaxonomyConcept},
-		KnownUnionAlternative{Name: "taxonomy_concept_scheme", Path: conceptSchemePath, Value: value.TaxonomyConceptScheme},
+		KnownUnionAlternative[cm.ContentTypeMetadataTaxonomyItem]{
+			Name: "taxonomy_concept", Path: conceptPath, Value: value.TaxonomyConcept,
+			Convert: func() (cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
+				taxonomyConcept, _ := value.TaxonomyConcept.GetValue()
+				conceptID, conceptIDDiags := KnownStringValue(taxonomyConcept.ID, conceptPath.AtName("id"))
+				required, requiredDiags := KnownBoolValue(taxonomyConcept.Required, conceptPath.AtName("required"))
+				conversionDiags := diag.Diagnostics{}
+				conversionDiags.Append(conceptIDDiags...)
+				conversionDiags.Append(requiredDiags...)
+
+				return cm.ContentTypeMetadataTaxonomyItem{
+					Sys: cm.ContentTypeMetadataTaxonomyItemSys{
+						Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
+						LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept,
+						ID:       conceptID,
+					},
+					Required: cm.NewOptBool(required),
+				}, conversionDiags
+			},
+		},
+		KnownUnionAlternative[cm.ContentTypeMetadataTaxonomyItem]{
+			Name: "taxonomy_concept_scheme", Path: conceptSchemePath, Value: value.TaxonomyConceptScheme,
+			Convert: func() (cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
+				taxonomyConceptScheme, _ := value.TaxonomyConceptScheme.GetValue()
+				conceptSchemeID, conceptSchemeIDDiags := KnownStringValue(taxonomyConceptScheme.ID, conceptSchemePath.AtName("id"))
+				required, requiredDiags := KnownBoolValue(taxonomyConceptScheme.Required, conceptSchemePath.AtName("required"))
+				conversionDiags := diag.Diagnostics{}
+				conversionDiags.Append(conceptSchemeIDDiags...)
+				conversionDiags.Append(requiredDiags...)
+
+				return cm.ContentTypeMetadataTaxonomyItem{
+					Sys: cm.ContentTypeMetadataTaxonomyItemSys{
+						Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
+						LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme,
+						ID:       conceptSchemeID,
+					},
+					Required: cm.NewOptBool(required),
+				}, conversionDiags
+			},
+		},
 	)
-	diags.Append(selectionDiags...)
 
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	if selected.Name == "taxonomy_concept_scheme" {
-		taxonomyConceptScheme, _ := value.TaxonomyConceptScheme.GetValue()
-		conceptSchemeID, conceptSchemeIDDiags := KnownStringValue(taxonomyConceptScheme.ID, path.AtName("taxonomy_concept_scheme").AtName("id"))
-		diags.Append(conceptSchemeIDDiags...)
-
-		required, requiredDiags := KnownBoolValue(taxonomyConceptScheme.Required, path.AtName("taxonomy_concept_scheme").AtName("required"))
-		diags.Append(requiredDiags...)
-
-		if !conceptSchemeIDDiags.HasError() && !requiredDiags.HasError() {
-			items = append(items, cm.ContentTypeMetadataTaxonomyItem{
-				Sys: cm.ContentTypeMetadataTaxonomyItemSys{
-					Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
-					LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme,
-					ID:       conceptSchemeID,
-				},
-				Required: cm.NewOptBool(required),
-			})
-		}
-	}
-
-	if selected.Name == "taxonomy_concept" {
-		taxonomyConcept, _ := value.TaxonomyConcept.GetValue()
-		conceptID, conceptIDDiags := KnownStringValue(taxonomyConcept.ID, path.AtName("taxonomy_concept").AtName("id"))
-		diags.Append(conceptIDDiags...)
-
-		required, requiredDiags := KnownBoolValue(taxonomyConcept.Required, path.AtName("taxonomy_concept").AtName("required"))
-		diags.Append(requiredDiags...)
-
-		if !conceptIDDiags.HasError() && !requiredDiags.HasError() {
-			items = append(items, cm.ContentTypeMetadataTaxonomyItem{
-				Sys: cm.ContentTypeMetadataTaxonomyItemSys{
-					Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
-					LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept,
-					ID:       conceptID,
-				},
-				Required: cm.NewOptBool(required),
-			})
-		}
-	}
-
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	return items, diags
+	return []cm.ContentTypeMetadataTaxonomyItem{item}, diags
 }

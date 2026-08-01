@@ -41,39 +41,45 @@ func ToWebhookDefinitionFilter(ctx context.Context, valuePath path.Path, value W
 	inPath := valuePath.AtName("in")
 	regexpPath := valuePath.AtName("regexp")
 
-	selected, diags := ExactlyOneKnownAlternative(
+	return ConvertExactlyOneKnownAlternative(
 		valuePath,
-		KnownUnionAlternative{Name: "not", Path: notPath, Value: value.Not},
-		KnownUnionAlternative{Name: "equals", Path: equalsPath, Value: value.Equals},
-		KnownUnionAlternative{Name: "in", Path: inPath, Value: value.In},
-		KnownUnionAlternative{Name: "regexp", Path: regexpPath, Value: value.Regexp},
+		KnownUnionAlternative[cm.WebhookDefinitionFilter]{
+			Name: "not", Path: notPath, Value: value.Not,
+			Convert: func() (cm.WebhookDefinitionFilter, diag.Diagnostics) {
+				notValue, _ := value.Not.GetValue()
+				not, diags := ToWebhookDefinitionFilterNot(ctx, notPath, notValue)
+
+				return cm.WebhookDefinitionFilter{Not: not}, diags
+			},
+		},
+		KnownUnionAlternative[cm.WebhookDefinitionFilter]{
+			Name: "equals", Path: equalsPath, Value: value.Equals,
+			Convert: func() (cm.WebhookDefinitionFilter, diag.Diagnostics) {
+				equalsValue, _ := value.Equals.GetValue()
+				equals, diags := ToWebhookDefinitionFilterEquals(ctx, equalsPath, equalsValue)
+
+				return cm.WebhookDefinitionFilter{Equals: equals}, diags
+			},
+		},
+		KnownUnionAlternative[cm.WebhookDefinitionFilter]{
+			Name: "in", Path: inPath, Value: value.In,
+			Convert: func() (cm.WebhookDefinitionFilter, diag.Diagnostics) {
+				inValue, _ := value.In.GetValue()
+				in, diags := ToWebhookDefinitionFilterIn(ctx, inPath, inValue)
+
+				return cm.WebhookDefinitionFilter{In: in}, diags
+			},
+		},
+		KnownUnionAlternative[cm.WebhookDefinitionFilter]{
+			Name: "regexp", Path: regexpPath, Value: value.Regexp,
+			Convert: func() (cm.WebhookDefinitionFilter, diag.Diagnostics) {
+				regexpValue, _ := value.Regexp.GetValue()
+				regexp, diags := ToWebhookDefinitionFilterRegexp(ctx, regexpPath, regexpValue)
+
+				return cm.WebhookDefinitionFilter{Regexp: regexp}, diags
+			},
+		},
 	)
-	if diags.HasError() {
-		return cm.WebhookDefinitionFilter{}, diags
-	}
-
-	filter := cm.WebhookDefinitionFilter{}
-
-	switch selected.Name {
-	case "not":
-		notValue, _ := value.Not.GetValue()
-		filter.Not, diags = ToWebhookDefinitionFilterNot(ctx, notPath, notValue)
-	case "equals":
-		equalsValue, _ := value.Equals.GetValue()
-		filter.Equals, diags = ToWebhookDefinitionFilterEquals(ctx, equalsPath, equalsValue)
-	case "in":
-		inValue, _ := value.In.GetValue()
-		filter.In, diags = ToWebhookDefinitionFilterIn(ctx, inPath, inValue)
-	case "regexp":
-		regexpValue, _ := value.Regexp.GetValue()
-		filter.Regexp, diags = ToWebhookDefinitionFilterRegexp(ctx, regexpPath, regexpValue)
-	}
-
-	if diags.HasError() {
-		return cm.WebhookDefinitionFilter{}, diags
-	}
-
-	return filter, diags
 }
 
 func ToWebhookDefinitionFilterNot(ctx context.Context, valuePath path.Path, value WebhookFilterNotValue) (cm.OptWebhookDefinitionFilterNot, diag.Diagnostics) {
@@ -81,35 +87,36 @@ func ToWebhookDefinitionFilterNot(ctx context.Context, valuePath path.Path, valu
 	inPath := valuePath.AtName("in")
 	regexpPath := valuePath.AtName("regexp")
 
-	selected, diags := ExactlyOneKnownAlternative(
+	return ConvertExactlyOneKnownAlternative(
 		valuePath,
-		KnownUnionAlternative{Name: "equals", Path: equalsPath, Value: value.Equals},
-		KnownUnionAlternative{Name: "in", Path: inPath, Value: value.In},
-		KnownUnionAlternative{Name: "regexp", Path: regexpPath, Value: value.Regexp},
+		KnownUnionAlternative[cm.OptWebhookDefinitionFilterNot]{
+			Name: "equals", Path: equalsPath, Value: value.Equals,
+			Convert: func() (cm.OptWebhookDefinitionFilterNot, diag.Diagnostics) {
+				equalsValue, _ := value.Equals.GetValue()
+				equals, diags := ToWebhookDefinitionFilterEquals(ctx, equalsPath, equalsValue)
+
+				return cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{Equals: equals}), diags
+			},
+		},
+		KnownUnionAlternative[cm.OptWebhookDefinitionFilterNot]{
+			Name: "in", Path: inPath, Value: value.In,
+			Convert: func() (cm.OptWebhookDefinitionFilterNot, diag.Diagnostics) {
+				inValue, _ := value.In.GetValue()
+				in, diags := ToWebhookDefinitionFilterIn(ctx, inPath, inValue)
+
+				return cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{In: in}), diags
+			},
+		},
+		KnownUnionAlternative[cm.OptWebhookDefinitionFilterNot]{
+			Name: "regexp", Path: regexpPath, Value: value.Regexp,
+			Convert: func() (cm.OptWebhookDefinitionFilterNot, diag.Diagnostics) {
+				regexpValue, _ := value.Regexp.GetValue()
+				regexp, diags := ToWebhookDefinitionFilterRegexp(ctx, regexpPath, regexpValue)
+
+				return cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{Regexp: regexp}), diags
+			},
+		},
 	)
-	if diags.HasError() {
-		return cm.OptWebhookDefinitionFilterNot{}, diags
-	}
-
-	filterNot := cm.WebhookDefinitionFilterNot{}
-
-	switch selected.Name {
-	case "equals":
-		equalsValue, _ := value.Equals.GetValue()
-		filterNot.Equals, diags = ToWebhookDefinitionFilterEquals(ctx, equalsPath, equalsValue)
-	case "in":
-		inValue, _ := value.In.GetValue()
-		filterNot.In, diags = ToWebhookDefinitionFilterIn(ctx, inPath, inValue)
-	case "regexp":
-		regexpValue, _ := value.Regexp.GetValue()
-		filterNot.Regexp, diags = ToWebhookDefinitionFilterRegexp(ctx, regexpPath, regexpValue)
-	}
-
-	if diags.HasError() {
-		return cm.OptWebhookDefinitionFilterNot{}, diags
-	}
-
-	return cm.NewOptWebhookDefinitionFilterNot(filterNot), diags
 }
 
 func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value WebhookFilterEqualsValue) (cm.WebhookDefinitionFilterEquals, diag.Diagnostics) {

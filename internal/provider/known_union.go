@@ -9,14 +9,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-type KnownUnionAlternative struct {
-	Name  string
-	Path  path.Path
-	Value attr.Value
+type KnownUnionAlternative[T any] struct {
+	Name    string
+	Path    path.Path
+	Value   attr.Value
+	Convert func() (T, diag.Diagnostics)
 }
 
-func ExactlyOneKnownAlternative(unionPath path.Path, alternatives ...KnownUnionAlternative) (KnownUnionAlternative, diag.Diagnostics) {
-	selected := KnownUnionAlternative{}
+func ConvertExactlyOneKnownAlternative[T any](unionPath path.Path, alternatives ...KnownUnionAlternative[T]) (T, diag.Diagnostics) {
+	var zero T
+
+	selected := KnownUnionAlternative[T]{}
 	knownCount := 0
 	names := make([]string, 0, len(alternatives))
 	diags := diag.Diagnostics{}
@@ -43,7 +46,7 @@ func ExactlyOneKnownAlternative(unionPath path.Path, alternatives ...KnownUnionA
 	}
 
 	if diags.HasError() {
-		return KnownUnionAlternative{}, diags
+		return zero, diags
 	}
 
 	if knownCount != 1 {
@@ -53,8 +56,15 @@ func ExactlyOneKnownAlternative(unionPath path.Path, alternatives ...KnownUnionA
 			fmt.Sprintf("Exactly one of %s must be known and non-null.", strings.Join(names, ", ")),
 		)
 
-		return KnownUnionAlternative{}, diags
+		return zero, diags
 	}
 
-	return selected, diags
+	result, conversionDiags := selected.Convert()
+	diags.Append(conversionDiags...)
+
+	if diags.HasError() {
+		return zero, diags
+	}
+
+	return result, diags
 }

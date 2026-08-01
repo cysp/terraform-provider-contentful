@@ -185,31 +185,29 @@ func (v ContentTypeFieldAllowedResourceItemValue) ToResourceLink(ctx context.Con
 	externalPath := valuePath.AtName("external")
 	contentfulEntryPath := valuePath.AtName("contentful_entry")
 
-	selected, diags := ExactlyOneKnownAlternative(
+	return ConvertExactlyOneKnownAlternative(
 		valuePath,
-		KnownUnionAlternative{Name: "external", Path: externalPath, Value: v.External},
-		KnownUnionAlternative{Name: "contentful_entry", Path: contentfulEntryPath, Value: v.ContentfulEntry},
+		KnownUnionAlternative[cm.ResourceLink]{
+			Name: "external", Path: externalPath, Value: v.External,
+			Convert: func() (cm.ResourceLink, diag.Diagnostics) {
+				external, _ := v.External.GetValue()
+				resourceLink := cm.ResourceLink{}
+				diags := external.SetResourceLink(ctx, externalPath, &resourceLink)
+
+				return resourceLink, diags
+			},
+		},
+		KnownUnionAlternative[cm.ResourceLink]{
+			Name: "contentful_entry", Path: contentfulEntryPath, Value: v.ContentfulEntry,
+			Convert: func() (cm.ResourceLink, diag.Diagnostics) {
+				contentfulEntry, _ := v.ContentfulEntry.GetValue()
+				resourceLink := cm.ResourceLink{}
+				diags := contentfulEntry.SetResourceLink(ctx, contentfulEntryPath, &resourceLink)
+
+				return resourceLink, diags
+			},
+		},
 	)
-	if diags.HasError() {
-		return cm.ResourceLink{}, diags
-	}
-
-	resourceLink := cm.ResourceLink{}
-
-	switch selected.Name {
-	case "external":
-		external, _ := v.External.GetValue()
-		diags.Append(external.SetResourceLink(ctx, externalPath, &resourceLink)...)
-	case "contentful_entry":
-		contentfulEntry, _ := v.ContentfulEntry.GetValue()
-		diags.Append(contentfulEntry.SetResourceLink(ctx, contentfulEntryPath, &resourceLink)...)
-	}
-
-	if diags.HasError() {
-		return cm.ResourceLink{}, diags
-	}
-
-	return resourceLink, diags
 }
 
 func (v ContentTypeFieldAllowedResourceItemExternalValue) SetResourceLink(_ context.Context, path path.Path, resourceLink *cm.ResourceLink) diag.Diagnostics {
