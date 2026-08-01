@@ -44,24 +44,26 @@ func (d *environmentStatusReadyDataSource) Configure(_ context.Context, req data
 }
 
 func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data EnvironmentStatusReadyModel
+	var config EnvironmentStatusReadyModel
 
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout, timeoutDiagnostics := data.Timeouts.Read(ctx, environmentStatusReadyTimeout)
+	timeout, timeoutDiagnostics := config.Timeouts.Read(ctx, environmentStatusReadyTimeout)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	configuredTimeouts := config.Timeouts
+
 	params := cm.GetEnvironmentParams{
-		SpaceID:       data.SpaceID.ValueString(),
-		EnvironmentID: data.EnvironmentID.ValueString(),
+		SpaceID:       config.SpaceID.ValueString(),
+		EnvironmentID: config.EnvironmentID.ValueString(),
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
@@ -81,28 +83,21 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 
 		switch response := response.(type) {
 		case *cm.Environment:
-			responseModel, responseModelDiags := setEnvironmentStatusReadyState(
+			continuePolling, responseDiags := publishEnvironmentStatusReadyResponse(
 				ctx,
 				&resp.State,
-				data,
 				*response,
-				NewEnvironmentStatusReadyModelFromResponse,
+				configuredTimeouts,
 			)
-			resp.Diagnostics.Append(responseModelDiags...)
+			resp.Diagnostics.Append(responseDiags...)
 
-			if responseModelDiags.HasError() {
+			if resp.Diagnostics.HasError() || !continuePolling {
 				return
 			}
-
-			data = responseModel
 
 		default:
 			resp.Diagnostics.AddError("Failed to read environment", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			return
-		}
-
-		if data.Status.ValueString() == environmentStatusReadyValue {
 			return
 		}
 

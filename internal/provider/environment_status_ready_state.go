@@ -4,30 +4,39 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	datasourcetimeouts "github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
-type environmentStatusReadyResponseConverter func(context.Context, cm.Environment) (EnvironmentStatusReadyModel, diag.Diagnostics)
-
-func setEnvironmentStatusReadyState(
+func publishEnvironmentStatusReadyResponse(
 	ctx context.Context,
 	state *tfsdk.State,
-	current EnvironmentStatusReadyModel,
 	response cm.Environment,
-	convert environmentStatusReadyResponseConverter,
-) (EnvironmentStatusReadyModel, diag.Diagnostics) {
-	model, diags := convert(ctx, response)
+	configuredTimeouts datasourcetimeouts.Value,
+) (bool, diag.Diagnostics) {
+	model, diags := NewEnvironmentStatusReadyModelFromResponse(ctx, response)
+
+	return publishEnvironmentStatusReadyConversion(ctx, state, configuredTimeouts, model, diags)
+}
+
+func publishEnvironmentStatusReadyConversion(
+	ctx context.Context,
+	state *tfsdk.State,
+	configuredTimeouts datasourcetimeouts.Value,
+	model EnvironmentStatusReadyModel,
+	diags diag.Diagnostics,
+) (bool, diag.Diagnostics) {
 	if diags.HasError() {
-		return EnvironmentStatusReadyModel{}, diags
+		return false, diags
 	}
 
-	model.Timeouts = current.Timeouts
+	model.Timeouts = configuredTimeouts
 	diags.Append(state.Set(ctx, &model)...)
 
 	if diags.HasError() {
-		return EnvironmentStatusReadyModel{}, diags
+		return false, diags
 	}
 
-	return model, diags
+	return model.Status.ValueString() != environmentStatusReadyValue, diags
 }
