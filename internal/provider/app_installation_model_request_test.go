@@ -33,7 +33,22 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 			model: AppInstallationModel{
 				Marketplace: types.SetUnknown(types.StringType),
 			},
-			expected: cm.OptString{},
+			expectErrors: true,
+			expected:     cm.OptString{},
+		},
+		"null element": {
+			model: AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringNull()}),
+			},
+			expectErrors: true,
+			expected:     cm.OptString{},
+		},
+		"unknown element": {
+			model: AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringUnknown()}),
+			},
+			expectErrors: true,
+			expected:     cm.OptString{},
 		},
 		"empty": {
 			model: AppInstallationModel{
@@ -91,7 +106,7 @@ func TestToAppInstallationData(t *testing.T) {
 			model: AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedUnknown(),
 			},
-			expectWarnings:      true,
+			expectErrors:        true,
 			expectedRequestBody: "{}",
 		},
 		"empty": {

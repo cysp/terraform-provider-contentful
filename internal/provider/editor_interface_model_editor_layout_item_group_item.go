@@ -22,6 +22,10 @@ func NewEditorInterfaceEditorLayoutItemGroupItemValueListFromResponse(ctx contex
 		listElementValues[index] = editorLayoutValue
 	}
 
+	if diags.HasError() {
+		return NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]](), diags
+	}
+
 	list := NewTypedList(listElementValues)
 
 	return list, diags
@@ -36,13 +40,18 @@ func NewEditorInterfaceEditorLayoutItemValueFromResponse(ctx context.Context, pa
 		if !itemGroupItemOk {
 			diags.AddAttributeError(path, "Failed to read group item", "Expected group item")
 
-			return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{}), diags
+			return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](), diags
 		}
 
 		groupValue, groupValueDiags := NewEditorInterfaceEditorLayoutItemGroupItemGroupValueFromResponse(ctx, path, itemGroupItem)
 		diags.Append(groupValueDiags...)
 
+		if diags.HasError() {
+			return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](), diags
+		}
+
 		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{
+			Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
 			Group: groupValue,
 		}), diags
 
@@ -51,37 +60,51 @@ func NewEditorInterfaceEditorLayoutItemValueFromResponse(ctx context.Context, pa
 		if !itemFieldItemOk {
 			diags.AddAttributeError(path, "Failed to read field item", "Expected field item")
 
-			return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{}), diags
+			return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](), diags
 		}
 
 		fieldValue, fieldValueDiags := NewEditorInterfaceEditorLayoutItemGroupItemFieldValueFromResponse(ctx, path, itemFieldItem)
 		diags.Append(fieldValueDiags...)
 
+		if diags.HasError() {
+			return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](), diags
+		}
+
 		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{
 			Field: fieldValue,
+			Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
 		}), diags
 
 	default:
-		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{}), diags
+		diags.AddAttributeError(path, "Failed to read editor layout item", "Contentful returned an unknown editor layout item type.")
+
+		return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](), diags
 	}
 }
 
-func (v EditorInterfaceEditorLayoutItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func (v EditorInterfaceEditorLayoutItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, valuePath path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+	fieldPath := valuePath.AtName("field")
+	groupPath := valuePath.AtName("group")
 
-	if !v.Field.IsUnknown() && !v.Field.IsNull() {
-		fieldItem, fieldItemDiags := v.Field.Value().ToEditorInterfaceEditorLayoutFieldItem(ctx, path.AtName("field"))
-		diags.Append(fieldItemDiags...)
+	return ConvertExactlyOneKnownAlternative(
+		valuePath,
+		KnownUnionAlternative[cm.EditorInterfaceEditorLayoutItem]{
+			Name: "field", Path: fieldPath, Value: v.Field,
+			Convert: func() (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+				field, _ := v.Field.GetValue()
+				fieldItem, diags := field.ToEditorInterfaceEditorLayoutFieldItem(ctx, fieldPath)
 
-		return cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(fieldItem), diags
-	}
+				return cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(fieldItem), diags
+			},
+		},
+		KnownUnionAlternative[cm.EditorInterfaceEditorLayoutItem]{
+			Name: "group", Path: groupPath, Value: v.Group,
+			Convert: func() (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+				group, _ := v.Group.GetValue()
+				groupItem, diags := group.ToEditorInterfaceEditorLayoutGroupItem(ctx, groupPath)
 
-	if !v.Group.IsUnknown() && !v.Group.IsNull() {
-		groupItem, groupItemDiags := v.Group.Value().ToEditorInterfaceEditorLayoutGroupItem(ctx, path.AtName("group"))
-		diags.Append(groupItemDiags...)
-
-		return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(groupItem), diags
-	}
-
-	return cm.EditorInterfaceEditorLayoutItem{}, diags
+				return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(groupItem), diags
+			},
+		},
+	)
 }

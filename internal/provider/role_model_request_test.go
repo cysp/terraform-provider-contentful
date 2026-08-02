@@ -5,7 +5,10 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRoleModelRoundTripToRoleData(t *testing.T) {
@@ -70,4 +73,41 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 	}, req.Policies[2])
 
 	assert.Empty(t, diags)
+}
+
+func TestRoleRequestRejectsNullAndUnknownPolicyObjects(t *testing.T) {
+	t.Parallel()
+
+	for name, value := range map[string]TypedObject[RolePolicyValue]{
+		"null":    NewTypedObjectNull[RolePolicyValue](),
+		"unknown": NewTypedObjectUnknown[RolePolicyValue](),
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := RoleModel{
+				Name:        types.StringValue("role"),
+				Permissions: NewTypedMap(map[string]TypedList[types.String]{}),
+				Policies:    NewTypedList([]TypedObject[RolePolicyValue]{value}),
+			}
+			request, diags := model.ToRoleData(t.Context())
+			require.True(t, diags.HasError())
+			assert.Nil(t, request.Policies)
+			assert.Equal(t, []string{"policies[0]"}, diagnosticPaths(t, diags))
+		})
+	}
+}
+
+func TestRolePermissionActionsPreserveChildDiagnosticPath(t *testing.T) {
+	t.Parallel()
+
+	actual, diags := ToRoleDataPermissionsItem(
+		t.Context(),
+		path.Root("permissions").AtMapKey("Entry"),
+		NewTypedList([]types.String{types.StringValue("read"), types.StringNull()}),
+	)
+
+	assert.Zero(t, actual)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{`permissions["Entry"][1]`}, diagnosticPaths(t, diags))
 }

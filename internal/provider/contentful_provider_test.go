@@ -6,7 +6,9 @@ import (
 	"testing"
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	frameworkprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
@@ -92,6 +94,20 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			},
 			expectedSuccess: false,
 		},
+		"config: url(unknown),access_token": {
+			config: map[string]any{
+				"url":          tftypes.UnknownValue,
+				"access_token": "CFPAT-12345",
+			},
+			expectedSuccess: false,
+		},
+		"config: url,access_token(unknown)": {
+			config: map[string]any{
+				"url":          "https://api.test.contentful.com",
+				"access_token": tftypes.UnknownValue,
+			},
+			expectedSuccess: false,
+		},
 		"env: url": {
 			env: map[string]string{
 				"CONTENTFUL_URL": "https://api.test.contentful.com",
@@ -143,4 +159,127 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestProtocol6ProviderServerConfigureRejectsUnknownValues(t *testing.T) {
+	t.Parallel()
+
+	if os.Getenv("TF_ACC") != "" {
+		return
+	}
+
+	tests := map[string]struct {
+		config          map[string]any
+		expectedSummary string
+		expectedPath    *tftypes.AttributePath
+	}{
+		"url": {
+			config: map[string]any{
+				"url":          tftypes.UnknownValue,
+				"access_token": "CFPAT-12345",
+			},
+			expectedSummary: "Unknown Contentful API URL",
+			expectedPath:    tftypes.NewAttributePath().WithAttributeName("url"),
+		},
+		"access_token": {
+			config: map[string]any{
+				"url":          "https://api.test.contentful.com",
+				"access_token": tftypes.UnknownValue,
+			},
+			expectedSummary: "Unknown Contentful management access token",
+			expectedPath:    tftypes.NewAttributePath().WithAttributeName("access_token"),
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			providerServer, err := testAccProtoV6ProviderFactories["contentful"]()
+			require.NotNil(t, providerServer)
+			require.NoError(t, err)
+
+			providerConfigValue, err := providerConfigDynamicValue(test.config)
+			require.NoError(t, err)
+
+			resp, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{
+				Config: &providerConfigValue,
+			})
+			require.NoError(t, err)
+			require.Len(t, resp.Diagnostics, 1)
+			assert.Equal(t, test.expectedSummary, resp.Diagnostics[0].Summary)
+			assert.Equal(t, tfprotov6.DiagnosticSeverityError, resp.Diagnostics[0].Severity)
+			assert.Equal(t, test.expectedPath, resp.Diagnostics[0].Attribute)
+			assert.NotEmpty(t, resp.Diagnostics[0].Detail)
+		})
+	}
+}
+
+func TestProviderConfigureErrorsDoNotSetProviderData(t *testing.T) {
+	t.Parallel()
+
+	rawType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"url":          tftypes.String,
+		"access_token": tftypes.String,
+	}}
+
+	for name, url := range map[string]any{
+		"unknown configuration": tftypes.UnknownValue,
+		"invalid URL":           "url://an invalid url %/",
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			providerImplementation := New("test")
+			schemaResponse := &frameworkprovider.SchemaResponse{}
+			providerImplementation.Schema(t.Context(), frameworkprovider.SchemaRequest{}, schemaResponse)
+			config := tfsdk.Config{
+				Schema: schemaResponse.Schema,
+				Raw: tftypes.NewValue(rawType, map[string]tftypes.Value{
+					"url":          tftypes.NewValue(tftypes.String, url),
+					"access_token": tftypes.NewValue(tftypes.String, "CFPAT-12345"),
+				}),
+			}
+			response := &frameworkprovider.ConfigureResponse{}
+
+			providerImplementation.Configure(
+				t.Context(),
+				frameworkprovider.ConfigureRequest{Config: config},
+				response,
+			)
+
+			require.True(t, response.Diagnostics.HasError())
+			assert.Nil(t, response.ActionData)
+			assert.Nil(t, response.DataSourceData)
+			assert.Nil(t, response.ListResourceData)
+			assert.Nil(t, response.ResourceData)
+		})
+	}
+}
+
+func TestProtocol6ProviderServerConfigureOverridesUnknownValues(t *testing.T) {
+	t.Parallel()
+
+	if os.Getenv("TF_ACC") != "" {
+		return
+	}
+
+	providerFactories := makeTestAccProtoV6ProviderFactories(
+		WithContentfulURL("https://api.test.contentful.com"),
+		WithAccessToken("CFPAT-override"),
+	)
+	providerServer, err := providerFactories["contentful"]()
+	require.NoError(t, err)
+
+	providerConfigValue, err := providerConfigDynamicValue(map[string]any{
+		"url":          tftypes.UnknownValue,
+		"access_token": tftypes.UnknownValue,
+	})
+	require.NoError(t, err)
+
+	resp, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{
+		Config: &providerConfigValue,
+	})
+	require.NoError(t, err)
+	assert.Empty(t, resp.Diagnostics)
 }

@@ -40,43 +40,61 @@ func (model *AppDefinitionBaseModel) ToAppDefinitionData(ctx context.Context, pa
 	}
 
 	if model.Parameters != nil {
-		path := path.AtName("parameters")
+		parameters, parameterDiags := toAppDefinitionParameters(ctx, path.AtName("parameters"), *model.Parameters)
+		diags.Append(parameterDiags...)
 
-		var installationParameters, instanceParameters []cm.AppDefinitionParameter
-
-		if model.Parameters.Installation != nil {
-			path := path.AtName("installation")
-
-			installationParameters = make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Installation))
-
-			for index, element := range model.Parameters.Installation {
-				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, path.AtListIndex(index))
-				diags.Append(parameterDiags...)
-
-				installationParameters = append(installationParameters, parameter)
-			}
+		if !parameterDiags.HasError() {
+			fields.Parameters.SetTo(parameters)
 		}
+	}
 
-		if model.Parameters.Instance != nil {
-			path := path.AtName("instance")
-
-			instanceParameters = make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Instance))
-
-			for index, element := range model.Parameters.Instance {
-				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, path.AtListIndex(index))
-				diags.Append(parameterDiags...)
-
-				instanceParameters = append(instanceParameters, parameter)
-			}
-		}
-
-		fields.Parameters.SetTo(cm.AppDefinitionParameters{
-			Installation: installationParameters,
-			Instance:     instanceParameters,
-		})
+	if diags.HasError() {
+		return cm.AppDefinitionData{}, diags
 	}
 
 	return fields, diags
+}
+
+func toAppDefinitionParameters(ctx context.Context, valuePath path.Path, model AppDefinitionParameters) (cm.AppDefinitionParameters, diag.Diagnostics) {
+	installation, installationDiags := toAppDefinitionParameterList(ctx, valuePath.AtName("installation"), model.Installation)
+	instance, instanceDiags := toAppDefinitionParameterList(ctx, valuePath.AtName("instance"), model.Instance)
+
+	diags := diag.Diagnostics{}
+	diags.Append(installationDiags...)
+	diags.Append(instanceDiags...)
+
+	if diags.HasError() {
+		return cm.AppDefinitionParameters{}, diags
+	}
+
+	return cm.AppDefinitionParameters{
+		Installation: installation,
+		Instance:     instance,
+	}, diags
+}
+
+func toAppDefinitionParameterList(ctx context.Context, valuePath path.Path, models []AppDefinitionParameter) ([]cm.AppDefinitionParameter, diag.Diagnostics) {
+	if models == nil {
+		return nil, nil
+	}
+
+	parameters := make([]cm.AppDefinitionParameter, 0, len(models))
+	diags := diag.Diagnostics{}
+
+	for index, model := range models {
+		parameter, parameterDiags := model.ToAppDefinitionParameter(ctx, valuePath.AtListIndex(index))
+		diags.Append(parameterDiags...)
+
+		if !parameterDiags.HasError() {
+			parameters = append(parameters, parameter)
+		}
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return parameters, diags
 }
 
 func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(_ context.Context, _ path.Path) cm.AppDefinitionDataLocationsItem {
@@ -116,7 +134,7 @@ func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(_ conte
 	return item
 }
 
-func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, _ path.Path) (cm.AppDefinitionParameter, diag.Diagnostics) {
+func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, parameterPath path.Path) (cm.AppDefinitionParameter, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	parameter := cm.AppDefinitionParameter{
@@ -127,23 +145,19 @@ func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, 
 		Required:    cm.NewOptPointerBool(model.Required),
 	}
 
-	if !model.Default.IsUnknown() {
+	if model.Default.IsUnknown() {
+		diags.AddAttributeError(parameterPath.AtName("default"), "Unexpected unknown parameter default", "The parameter default must be known before it can be sent to Contentful.")
+	} else {
 		value := model.Default.ValueStringPointer()
 		if value != nil {
 			parameter.Default = jx.Raw(*value)
 		}
 	}
 
-	if !model.Options.IsUnknown() && !model.Options.IsNull() {
-		options := make([]jx.Raw, 0, len(model.Options.Elements()))
+	options, optionsSet, optionsDiags := toAppDefinitionParameterOptions(model, parameterPath.AtName("options"))
+	diags.Append(optionsDiags...)
 
-		for _, option := range model.Options.Elements() {
-			value := option.ValueStringPointer()
-			if value != nil {
-				options = append(options, jx.Raw(*value))
-			}
-		}
-
+	if optionsSet {
 		parameter.Options = options
 	}
 
@@ -155,5 +169,44 @@ func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, 
 		})
 	}
 
+	if diags.HasError() {
+		return cm.AppDefinitionParameter{}, diags
+	}
+
 	return parameter, diags
+}
+
+func toAppDefinitionParameterOptions(model AppDefinitionParameter, optionsPath path.Path) ([]jx.Raw, bool, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	if model.Options.IsUnknown() {
+		diags.AddAttributeError(optionsPath, "Unexpected unknown parameter options", "Parameter options must be known before they can be sent to Contentful.")
+
+		return nil, false, diags
+	}
+
+	if model.Options.IsNull() {
+		return nil, false, nil
+	}
+
+	options := make([]jx.Raw, 0, len(model.Options.Elements()))
+
+	for index, option := range model.Options.Elements() {
+		optionPath := optionsPath.AtListIndex(index)
+
+		switch {
+		case option.IsUnknown():
+			diags.AddAttributeError(optionPath, "Unexpected unknown parameter option", "Parameter options must be known before they can be sent to Contentful.")
+		case option.IsNull():
+			diags.AddAttributeError(optionPath, "Unexpected null parameter option", "Parameter options cannot be null.")
+		default:
+			options = append(options, jx.Raw(option.ValueString()))
+		}
+	}
+
+	if diags.HasError() {
+		return nil, false, diags
+	}
+
+	return options, true, diags
 }

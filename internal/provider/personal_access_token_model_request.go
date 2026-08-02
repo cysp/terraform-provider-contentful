@@ -11,27 +11,17 @@ import (
 func (model *PersonalAccessTokenModel) ToPersonalAccessTokenRequestData(_ context.Context) (cm.PersonalAccessTokenRequestData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if model.Scopes.IsUnknown() {
-		diags.AddAttributeError(
-			path.Root("scopes"),
-			"Unexpected unknown scopes",
-			"Personal access token scopes must be known before they can be sent to Contentful.",
-		)
+	if model.Scopes.IsNull() || model.Scopes.IsUnknown() {
+		if model.Scopes.IsUnknown() {
+			diags.AddAttributeError(path.Root("scopes"), "Unexpected unknown scopes", "Personal access token scopes must be known before they can be sent to Contentful.")
+		} else {
+			diags.AddAttributeError(path.Root("scopes"), "Unexpected null scopes", "Personal access token scopes are required.")
+		}
 
 		return cm.PersonalAccessTokenRequestData{}, diags
 	}
 
-	if model.Scopes.IsNull() {
-		diags.AddAttributeError(
-			path.Root("scopes"),
-			"Unexpected null scopes",
-			"Personal access token scopes are required.",
-		)
-
-		return cm.PersonalAccessTokenRequestData{}, diags
-	}
-
-	scopes, scopeDiags := knownStringListElements(path.Root("scopes"), model.Scopes.Elements())
+	scopes, scopeDiags := KnownStringValues(model.Scopes.Elements(), path.Root("scopes"))
 	diags.Append(scopeDiags...)
 
 	if diags.HasError() {

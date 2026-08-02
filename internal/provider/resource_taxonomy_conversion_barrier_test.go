@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -137,4 +138,57 @@ func taxonomyConceptSchemeUpdatePlan() TaxonomyConceptSchemeModel {
 		TotalConcepts: types.Int64Unknown(),
 		Timeouts:      TimeoutsNull(),
 	}
+}
+
+func TestTaxonomyConceptSchemeUpdateConversionErrorDoesNotPatch(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+
+	_, err = server.Handler().PutTaxonomyConceptScheme(ctx, &cm.TaxonomyConceptSchemeRequest{
+		PrefLabel: cm.LocalizedString{"en-US": "Scheme"},
+	}, cm.PutTaxonomyConceptSchemeParams{OrganizationID: "organization", TaxonomyConceptSchemeID: "scheme"})
+	require.NoError(t, err)
+
+	var patchCount atomic.Int64
+
+	testServer := httptest.NewServer(http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
+		if request.Method == http.MethodPatch {
+			patchCount.Add(1)
+		}
+
+		server.ServeHTTP(responseWriter, request)
+	}))
+	t.Cleanup(testServer.Close)
+
+	client, err := cm.NewClient(testServer.URL, cm.NewAccessTokenSecuritySource(cmt.ValidAccessToken))
+	require.NoError(t, err)
+
+	model := TaxonomyConceptSchemeModel{
+		IDIdentityModel: NewIDIdentityModelFromMultipartID("organization", "scheme"),
+		TaxonomyConceptSchemeIdentityModel: TaxonomyConceptSchemeIdentityModel{
+			OrganizationID:  types.StringValue("organization"),
+			ConceptSchemeID: types.StringValue("scheme"),
+		},
+		URI:           types.StringUnknown(),
+		PrefLabel:     types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Scheme")}),
+		Definition:    types.MapNull(types.StringType),
+		TopConceptIDs: types.ListNull(types.StringType),
+		ConceptIDs:    types.ListNull(types.StringType),
+		TotalConcepts: types.Int64Unknown(),
+		Timeouts:      TimeoutsNull(),
+	}
+
+	resourceSchema := TaxonomyConceptSchemeResourceSchema(ctx)
+	plan := tfsdk.Plan{Schema: resourceSchema}
+	require.False(t, plan.Set(ctx, &model).HasError())
+
+	implementation := taxonomyConceptSchemeResource{providerData: ContentfulProviderData{client: client}}
+	response := resource.UpdateResponse{State: tfsdk.State{Schema: resourceSchema}}
+	implementation.Update(ctx, resource.UpdateRequest{Plan: plan}, &response)
+
+	require.True(t, response.Diagnostics.HasError())
+	assert.Zero(t, patchCount.Load())
 }

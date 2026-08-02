@@ -8,14 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func ToOptNilWebhookDefinitionDataTransformation(_ context.Context, _ path.Path, value TypedObject[WebhookTransformationValue]) (cm.OptNilWebhookDefinitionDataTransformation, diag.Diagnostics) {
+func ToOptNilWebhookDefinitionDataTransformation(_ context.Context, valuePath path.Path, value TypedObject[WebhookTransformationValue]) (cm.OptNilWebhookDefinitionDataTransformation, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	optNilTransformation := cm.OptNilWebhookDefinitionDataTransformation{}
 
 	switch {
 	case value.IsUnknown():
-		//
+		diags.AddAttributeError(valuePath, "Unexpected unknown webhook transformation", "The webhook transformation must be known before it can be sent to Contentful.")
 	case value.IsNull():
 		optNilTransformation.SetToNull()
 	default:
@@ -23,12 +23,26 @@ func ToOptNilWebhookDefinitionDataTransformation(_ context.Context, _ path.Path,
 
 		value := value.Value()
 
-		transformation.Method = cm.NewOptPointerString(value.Method.ValueStringPointer())
-		transformation.ContentType = cm.NewOptPointerString(value.ContentType.ValueStringPointer())
-		transformation.IncludeContentLength = cm.NewOptPointerBool(value.IncludeContentLength.ValueBoolPointer())
+		if value.Method.IsUnknown() {
+			diags.AddAttributeError(valuePath.AtName("method"), "Unexpected unknown transformation method", "The transformation method must be known before it can be sent to Contentful.")
+		} else {
+			transformation.Method = cm.NewOptPointerString(value.Method.ValueStringPointer())
+		}
 
-		//nolint:revive
+		if value.ContentType.IsUnknown() {
+			diags.AddAttributeError(valuePath.AtName("content_type"), "Unexpected unknown transformation content type", "The transformation content type must be known before it can be sent to Contentful.")
+		} else {
+			transformation.ContentType = cm.NewOptPointerString(value.ContentType.ValueStringPointer())
+		}
+
+		if value.IncludeContentLength.IsUnknown() {
+			diags.AddAttributeError(valuePath.AtName("include_content_length"), "Unexpected unknown content-length setting", "The content-length setting must be known before it can be sent to Contentful.")
+		} else {
+			transformation.IncludeContentLength = cm.NewOptPointerBool(value.IncludeContentLength.ValueBoolPointer())
+		}
+
 		if value.Body.IsUnknown() {
+			diags.AddAttributeError(valuePath.AtName("body"), "Unexpected unknown transformation body", "The transformation body must be known before it can be sent to Contentful.")
 		} else {
 			bodyStringPointer := value.Body.ValueStringPointer()
 			if bodyStringPointer != nil {
@@ -38,7 +52,9 @@ func ToOptNilWebhookDefinitionDataTransformation(_ context.Context, _ path.Path,
 			}
 		}
 
-		optNilTransformation.SetTo(transformation)
+		if !diags.HasError() {
+			optNilTransformation.SetTo(transformation)
+		}
 	}
 
 	return optNilTransformation, diags

@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -55,35 +56,35 @@ type TaxonomyConceptSchemeModel struct {
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func stringMap(ctx context.Context, value types.Map) (map[string]string, diag.Diagnostics) {
-	result := map[string]string{}
-	if value.IsNull() || value.IsUnknown() {
-		return result, nil
-	}
+func knownStringMap(ctx context.Context, value types.Map, valuePath path.Path) (map[string]string, diag.Diagnostics) {
+	_ = ctx
 
-	diags := value.ElementsAs(ctx, &result, false)
-
-	return result, diags
+	return KnownStringMap(value, valuePath)
 }
 
-func stringList(ctx context.Context, value types.List) ([]string, diag.Diagnostics) {
-	result := []string{}
-	if value.IsNull() || value.IsUnknown() {
-		return result, nil
-	}
+// optionalComputedStringMap converts an omitted Optional+Computed value to the
+// provider's create-time empty default. UseStateForUnknown preserves prior
+// state during updates, so unknown only reaches this function on initial create.
+func optionalComputedStringMap(ctx context.Context, value types.Map, valuePath path.Path) (map[string][]string, diag.Diagnostics) {
+	_ = ctx
 
-	diags := value.ElementsAs(ctx, &result, false)
-
-	return result, diags
-}
-
-func stringListMap(ctx context.Context, value types.Map) (map[string][]string, diag.Diagnostics) {
 	result := map[string][]string{}
 	if value.IsNull() || value.IsUnknown() {
 		return result, nil
 	}
 
-	diags := value.ElementsAs(ctx, &result, false)
+	return KnownStringListMap(value, valuePath)
+}
 
-	return result, diags
+// optionalComputedStringList has the same lifecycle contract as
+// optionalComputedStringMap.
+func optionalComputedStringListValue(ctx context.Context, value types.List, valuePath path.Path) ([]string, diag.Diagnostics) {
+	_ = ctx
+
+	result := []string{}
+	if value.IsNull() || value.IsUnknown() {
+		return result, nil
+	}
+
+	return KnownStringList(value, valuePath)
 }

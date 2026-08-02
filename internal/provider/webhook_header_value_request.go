@@ -15,13 +15,18 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(_ context.Context, path pa
 		Key: key,
 	}
 
-	if v.Value.IsNull() || v.Value.IsUnknown() {
-		diags.AddAttributeError(path.AtName("value"), "Value is required", "")
+	value, valueDiags := KnownStringValue(v.Value, path.AtName("value"))
+	diags.Append(valueDiags...)
+
+	secret, secretDiags := KnownBoolValue(v.Secret, path.AtName("secret"))
+	diags.Append(secretDiags...)
+
+	if diags.HasError() {
+		return cm.WebhookDefinitionHeader{}, diags
 	}
 
-	header.Value = cm.NewOptPointerString(v.Value.ValueStringPointer())
-
-	header.Secret = cm.NewOptBool(v.Secret.ValueBool())
+	header.Value = cm.NewOptString(value)
+	header.Secret = cm.NewOptBool(secret)
 
 	return header, diags
 }

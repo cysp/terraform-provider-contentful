@@ -80,5 +80,5 @@ func NewPolicyActionsListValueFromResponse(_ context.Context, path path.Path, ac
 	diags := diag.Diagnostics{}
 	diags.AddAttributeError(path, "unexpected type for policy actions", "")
 
-	return NewTypedListUnknown[types.String](), diags
+	return NewTypedListNull[types.String](), diags
 }

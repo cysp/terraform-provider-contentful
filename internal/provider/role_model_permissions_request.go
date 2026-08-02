@@ -7,14 +7,19 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func ToRoleDataPermissions(ctx context.Context, path path.Path, permissions TypedMap[TypedList[types.String]]) (cm.RoleDataPermissions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if permissions.IsUnknown() {
+	if permissions.IsNull() || permissions.IsUnknown() {
+		if permissions.IsUnknown() {
+			diags.AddAttributeError(path, "Unexpected unknown permissions", "Permissions must be known before they can be sent to Contentful.")
+		} else {
+			diags.AddAttributeError(path, "Unexpected null permissions", "Permissions are required.")
+		}
+
 		return nil, diags
 	}
 
@@ -28,17 +33,39 @@ func ToRoleDataPermissions(ctx context.Context, path path.Path, permissions Type
 		permissionsItem, permissionsItemDiags := ToRoleDataPermissionsItem(ctx, path, permissionsValueElement)
 		diags.Append(permissionsItemDiags...)
 
-		rolePermissionsItems[key] = permissionsItem
+		if !permissionsItemDiags.HasError() {
+			rolePermissionsItems[key] = permissionsItem
+		}
+	}
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return rolePermissionsItems, diags
 }
 
-func ToRoleDataPermissionsItem(ctx context.Context, _ path.Path, value TypedList[types.String]) (cm.RoleDataPermissionsItem, diag.Diagnostics) {
+func ToRoleDataPermissionsItem(ctx context.Context, path path.Path, value TypedList[types.String]) (cm.RoleDataPermissionsItem, diag.Diagnostics) {
+	_ = ctx
+
 	diags := diag.Diagnostics{}
 
-	actionStrings := make([]string, len(value.Elements()))
-	diags.Append(tfsdk.ValueAs(ctx, value, &actionStrings)...)
+	if value.IsUnknown() {
+		diags.AddAttributeError(path, "Unexpected unknown permission actions", "Permission actions must be known before they can be sent to Contentful.")
+	} else if value.IsNull() {
+		diags.AddAttributeError(path, "Unexpected null permission actions", "Permission actions cannot be null.")
+	}
+
+	if diags.HasError() {
+		return cm.RoleDataPermissionsItem{}, diags
+	}
+
+	actionStrings, valueDiags := KnownStringValues(value.Elements(), path)
+	diags.Append(valueDiags...)
+
+	if diags.HasError() {
+		return cm.RoleDataPermissionsItem{}, diags
+	}
 
 	if slices.Contains(actionStrings, "all") {
 		return cm.RoleDataPermissionsItem{

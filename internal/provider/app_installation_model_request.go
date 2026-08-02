@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -19,6 +20,10 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx conte
 	marketplaceStrings, marketplaceStringDiags := model.ToXContentfulMarketplaceHeaderValueElements(ctx)
 	diags.Append(marketplaceStringDiags...)
 
+	if diags.HasError() {
+		return cm.OptString{}, diags
+	}
+
 	if len(marketplaceStrings) > 0 {
 		slices.Sort(marketplaceStrings)
 
@@ -28,22 +33,52 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx conte
 	return value, diags
 }
 
-func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(ctx context.Context) ([]string, diag.Diagnostics) {
+func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(_ context.Context) ([]string, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if model.Marketplace.IsNull() || model.Marketplace.IsUnknown() {
+	if model.Marketplace.IsNull() {
 		return []string{}, diags
 	}
 
-	marketplaceElements := make([]types.String, len(model.Marketplace.Elements()))
-	diags.Append(model.Marketplace.ElementsAs(ctx, &marketplaceElements, false)...)
+	if model.Marketplace.IsUnknown() {
+		diags.AddAttributeError(path.Root("marketplace"), "Unexpected unknown marketplace", "Marketplace values must be known before they can be sent to Contentful.")
 
+		return nil, diags
+	}
+
+	marketplaceElements := model.Marketplace.Elements()
 	marketplaceStrings := make([]string, 0, len(marketplaceElements))
 
 	for _, element := range marketplaceElements {
-		if !element.IsNull() && !element.IsUnknown() {
-			marketplaceStrings = append(marketplaceStrings, element.ValueString())
+		stringElement, ok := element.(types.String)
+		if !ok {
+			diags.AddAttributeError(
+				path.Root("marketplace"),
+				"Unexpected marketplace element type",
+				fmt.Sprintf("Expected a string value, got %T. This is a provider implementation error.", element),
+			)
+
+			continue
 		}
+
+		elementPath := path.Root("marketplace").AtSetValue(stringElement)
+		if stringElement.IsNull() || stringElement.IsUnknown() {
+			// Null and unknown set elements cannot provide a stable value-based path.
+			elementPath = path.Root("marketplace")
+		}
+
+		value, valueDiags := KnownStringValue(stringElement, elementPath)
+		diags.Append(valueDiags...)
+
+		if valueDiags.HasError() {
+			continue
+		}
+
+		marketplaceStrings = append(marketplaceStrings, value)
+	}
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return marketplaceStrings, diags
@@ -56,7 +91,7 @@ func (model *AppInstallationModel) ToAppInstallationData() (cm.AppInstallationDa
 
 	switch {
 	case model.Parameters.IsUnknown():
-		diags.AddAttributeWarning(path.Root("parameters"), "Failed to update app installation parameters", "Parameters are unknown")
+		diags.AddAttributeError(path.Root("parameters"), "Unexpected unknown app installation parameters", "App installation parameters must be known before they can be sent to Contentful.")
 	case model.Parameters.IsNull():
 	default:
 		fields.Parameters = []byte(model.Parameters.ValueString())

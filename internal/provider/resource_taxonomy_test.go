@@ -79,6 +79,17 @@ func TestAccTaxonomyResourcesLifecycle(t *testing.T) {
 			ConfigStateChecks: append(taxonomyLifecycleStateChecks(ids, taxonomyLifecycleUpdate), taxonomyConceptSchemeMembershipCheck(ids, true)),
 		},
 		{
+			Config: taxonomyLifecycleConfig(ids, taxonomyLifecyclePreserveComputed),
+			ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_taxonomy_concept.test", plancheck.ResourceActionUpdate),
+					plancheck.ExpectResourceAction("contentful_taxonomy_concept_scheme.test", plancheck.ResourceActionUpdate),
+				},
+				PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+			},
+			ConfigStateChecks: append(taxonomyLifecycleStateChecks(ids, taxonomyLifecyclePreserveComputed), taxonomyConceptSchemeMembershipCheck(ids, true)),
+		},
+		{
 			Config: taxonomyLifecycleConfig(ids, taxonomyLifecycleClear),
 			ConfigPlanChecks: resource.ConfigPlanChecks{
 				PreApply: []plancheck.PlanCheck{
@@ -120,6 +131,7 @@ type taxonomyLifecycleStage int
 const (
 	taxonomyLifecycleCreate taxonomyLifecycleStage = iota
 	taxonomyLifecycleUpdate
+	taxonomyLifecyclePreserveComputed
 	taxonomyLifecycleClear
 )
 
@@ -182,6 +194,15 @@ func taxonomyLifecycleStateChecks(ids taxonomyLifecycleIDs, stage taxonomyLifecy
 		schemeLabel = "Lifecycle scheme"
 		notations, broader, related = []string{"UPDATED"}, []string{ids.parent2}, []string{ids.parent1}
 		schemeConcepts, topConcepts = []string{ids.concept, ids.parent2}, []string{ids.parent2}
+	case taxonomyLifecyclePreserveComputed:
+		conceptURI = knownvalue.Null()
+		conceptDefinition = knownvalue.Null()
+		schemeURI = knownvalue.Null()
+		schemeDefinition = knownvalue.Null()
+		conceptLabel, altLabel = "Preserved concept", "Updated alternative"
+		schemeLabel = "Preserved scheme"
+		notations, broader, related = []string{"UPDATED"}, []string{ids.parent2}, []string{ids.parent1}
+		schemeConcepts, topConcepts = []string{ids.concept, ids.parent2}, []string{ids.parent2}
 	case taxonomyLifecycleClear:
 		conceptURI, conceptDefinition = knownvalue.Null(), knownvalue.Null()
 		schemeURI, schemeDefinition = knownvalue.Null(), knownvalue.Null()
@@ -214,7 +235,7 @@ func taxonomyLifecycleStateChecks(ids taxonomyLifecycleIDs, stage taxonomyLifecy
 		checks = append(checks, statecheck.ExpectKnownValue(conceptAddress, tfjsonpath.New("alt_labels"), knownvalue.MapExact(map[string]knownvalue.Check{
 			"en-US": knownvalue.ListExact([]knownvalue.Check{}),
 		})))
-	case taxonomyLifecycleUpdate:
+	case taxonomyLifecycleUpdate, taxonomyLifecyclePreserveComputed:
 		checks = append(checks, statecheck.ExpectKnownValue(conceptAddress, tfjsonpath.New("alt_labels"), knownvalue.MapExact(map[string]knownvalue.Check{
 			"en-US": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact(altLabel)}),
 		})))
@@ -280,6 +301,11 @@ func taxonomyLifecycleConfig(ids taxonomyLifecycleIDs, stage taxonomyLifecycleSt
   definition  = { "en-US" = "Updated scheme definition" }
   concept_ids = [contentful_taxonomy_concept.test.concept_id, contentful_taxonomy_concept.parent2.concept_id]
   top_concept_ids = [contentful_taxonomy_concept.parent2.concept_id]`
+	case taxonomyLifecyclePreserveComputed:
+		conceptLabel = "Preserved concept"
+		conceptAttributes = ""
+		schemeLabel = "Preserved scheme"
+		schemeAttributes = ""
 	case taxonomyLifecycleClear:
 		conceptLabel = "Cleared concept"
 		conceptAttributes = `
