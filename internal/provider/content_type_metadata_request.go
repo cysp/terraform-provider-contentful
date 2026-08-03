@@ -119,10 +119,8 @@ func contentTypeMetadataTaxonomyItem(
 	valuePath path.Path,
 	linkType cm.ContentTypeMetadataTaxonomyItemSysLinkType,
 ) (cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
-	// Keep scalar conversion local to Content Type; the reusable seam here is
-	// union selection, not a repository-wide value-conversion abstraction.
-	taxonomyID, idDiags := contentTypeRequiredString(idValue, valuePath.AtName("id"))
-	required, requiredDiags := contentTypeOptionalBool(requiredValue, valuePath.AtName("required"))
+	taxonomyID, idDiags := requestRequiredString(idValue, valuePath.AtName("id"))
+	required, requiredDiags := requestOmittableBool(requiredValue, valuePath.AtName("required"))
 	diags := diag.Diagnostics{}
 	diags.Append(idDiags...)
 	diags.Append(requiredDiags...)
