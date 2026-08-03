@@ -3,8 +3,10 @@ package provider_test
 import (
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -84,4 +86,178 @@ func TestContentTypeMetadataRequestSerialization(t *testing.T) {
 			assert.JSONEq(t, test.expected, string(requestBody))
 		})
 	}
+}
+
+func TestContentTypeMetadataRejectsUnknownAnnotations(t *testing.T) {
+	t.Parallel()
+
+	actual, diags := ToOptContentTypeMetadata(
+		t.Context(),
+		path.Root("metadata"),
+		NewTypedObject(ContentTypeMetadataValue{
+			Annotations: jsontypes.NewNormalizedUnknown(),
+			Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
+		}),
+	)
+
+	assert.Equal(t, cm.OptContentTypeMetadata{}, actual)
+	assert.Equal(t, []string{"metadata.annotations"}, attributeDiagnosticPaths(t, diags))
+}
+
+func TestContentTypeMetadataTaxonomyRejectsUnresolvedElements(t *testing.T) {
+	t.Parallel()
+
+	items := NewTypedList([]TypedObject[ContentTypeMetadataTaxonomyItemValue]{
+		NewTypedObject(ContentTypeMetadataTaxonomyItemValue{
+			TaxonomyConcept: NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{
+				ID:       types.StringValue("valid"),
+				Required: types.BoolValue(false),
+			}),
+			TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+		}),
+		NewTypedObjectNull[ContentTypeMetadataTaxonomyItemValue](),
+		NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemValue](),
+	})
+
+	result, diags := ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
+		t.Context(),
+		path.Root("metadata").AtName("taxonomy"),
+		items,
+	)
+
+	assert.Nil(t, result)
+	assert.Equal(t, []string{"metadata.taxonomy[1]", "metadata.taxonomy[2]"}, attributeDiagnosticPaths(t, diags))
+}
+
+func TestContentTypeMetadataTaxonomyRequiresExactlyOneAlternative(t *testing.T) {
+	t.Parallel()
+
+	valuePath := path.Root("metadata").AtName("taxonomy").AtListIndex(0)
+	concept := NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{
+		ID:       types.StringValue("concept"),
+		Required: types.BoolValue(false),
+	})
+	conceptScheme := NewTypedObject(ContentTypeMetadataTaxonomyItemConceptSchemeValue{
+		ID:       types.StringValue("scheme"),
+		Required: types.BoolValue(true),
+	})
+
+	tests := map[string]struct {
+		value         ContentTypeMetadataTaxonomyItemValue
+		expected      cm.ContentTypeMetadataTaxonomyItem
+		expectedPaths []string
+	}{
+		"concept": {
+			value: ContentTypeMetadataTaxonomyItemValue{
+				TaxonomyConcept:       concept,
+				TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+			},
+			expected: cm.ContentTypeMetadataTaxonomyItem{
+				Sys: cm.ContentTypeMetadataTaxonomyItemSys{
+					Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
+					LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept,
+					ID:       "concept",
+				},
+				Required: cm.NewOptBool(false),
+			},
+			expectedPaths: []string{},
+		},
+		"concept scheme": {
+			value: ContentTypeMetadataTaxonomyItemValue{
+				TaxonomyConcept:       NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue](),
+				TaxonomyConceptScheme: conceptScheme,
+			},
+			expected: cm.ContentTypeMetadataTaxonomyItem{
+				Sys: cm.ContentTypeMetadataTaxonomyItemSys{
+					Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
+					LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme,
+					ID:       "scheme",
+				},
+				Required: cm.NewOptBool(true),
+			},
+			expectedPaths: []string{},
+		},
+		"neither": {
+			value: ContentTypeMetadataTaxonomyItemValue{
+				TaxonomyConcept:       NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue](),
+				TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+			},
+			expectedPaths: []string{"metadata.taxonomy[0]"},
+		},
+		"both": {
+			value: ContentTypeMetadataTaxonomyItemValue{
+				TaxonomyConcept:       concept,
+				TaxonomyConceptScheme: conceptScheme,
+			},
+			expectedPaths: []string{"metadata.taxonomy[0]"},
+		},
+		"unknown concept": {
+			value: ContentTypeMetadataTaxonomyItemValue{
+				TaxonomyConcept:       NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemConceptValue](),
+				TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+			},
+			expectedPaths: []string{"metadata.taxonomy[0].taxonomy_concept"},
+		},
+		"unknown id": {
+			value: ContentTypeMetadataTaxonomyItemValue{
+				TaxonomyConcept: NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{
+					ID:       types.StringUnknown(),
+					Required: types.BoolValue(false),
+				}),
+				TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+			},
+			expectedPaths: []string{"metadata.taxonomy[0].taxonomy_concept.id"},
+		},
+		"unknown required": {
+			value: ContentTypeMetadataTaxonomyItemValue{
+				TaxonomyConcept: NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{
+					ID:       types.StringValue("concept"),
+					Required: types.BoolUnknown(),
+				}),
+				TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+			},
+			expectedPaths: []string{"metadata.taxonomy[0].taxonomy_concept.required"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			actual, diags := test.value.ToContentTypeMetadataTaxonomyItem(valuePath)
+
+			assert.Equal(t, test.expected, actual)
+			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
+		})
+	}
+}
+
+func TestContentTypeMetadataTaxonomyFailsWithoutPartialOutput(t *testing.T) {
+	t.Parallel()
+
+	items := NewTypedList([]TypedObject[ContentTypeMetadataTaxonomyItemValue]{
+		NewTypedObject(ContentTypeMetadataTaxonomyItemValue{
+			TaxonomyConcept: NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{
+				ID:       types.StringValue("valid"),
+				Required: types.BoolValue(false),
+			}),
+			TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+		}),
+		NewTypedObject(ContentTypeMetadataTaxonomyItemValue{
+			TaxonomyConcept: NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{
+				ID:       types.StringUnknown(),
+				Required: types.BoolValue(false),
+			}),
+			TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+		}),
+	})
+
+	result, diags := ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
+		t.Context(),
+		path.Root("metadata").AtName("taxonomy"),
+		items,
+	)
+
+	assert.Nil(t, result)
+	assert.Equal(t, []string{"metadata.taxonomy[1].taxonomy_concept.id"}, attributeDiagnosticPaths(t, diags))
 }
