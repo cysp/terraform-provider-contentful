@@ -7,214 +7,290 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const webhookDefinitionBinaryFilterTermCount = 2
+func ToOptNilWebhookDefinitionFilterArray(
+	ctx context.Context,
+	valuePath path.Path,
+	filterValuesList TypedList[TypedObject[WebhookFilterValue]],
+) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
+	if filterValuesList.IsUnknown() {
+		diags := diag.Diagnostics{}
+		diags.AddAttributeError(
+			valuePath,
+			"Unexpected unknown webhook filters",
+			"Webhook filters must be known before they can be sent to Contentful.",
+		)
 
-func ToOptNilWebhookDefinitionFilterArray(ctx context.Context, path path.Path, filterValuesList TypedList[TypedObject[WebhookFilterValue]]) (cm.OptNilWebhookDefinitionFilterArray, diag.Diagnostics) {
-	if filterValuesList.IsNull() || filterValuesList.IsUnknown() {
+		return cm.OptNilWebhookDefinitionFilterArray{}, diags
+	}
+
+	if filterValuesList.IsNull() {
 		return cm.NewOptNilWebhookDefinitionFilterArrayNull(), nil
 	}
 
-	diags := diag.Diagnostics{}
-
-	filterValues := filterValuesList.Elements()
-
-	filters := make([]cm.WebhookDefinitionFilter, len(filterValues))
-
-	for index, filterValue := range filterValues {
-		path := path.AtListIndex(index)
-
-		filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, filterValue.Value())
-		diags.Append(filterDiags...)
-
-		filters[index] = filter
+	filters, diags := convertKnownObjectListElements(
+		ctx,
+		valuePath,
+		filterValuesList.Elements(),
+		ToWebhookDefinitionFilter,
+	)
+	if diags.HasError() {
+		return cm.OptNilWebhookDefinitionFilterArray{}, diags
 	}
 
 	return cm.NewOptNilWebhookDefinitionFilterArray(filters), diags
 }
 
-func ToWebhookDefinitionFilter(ctx context.Context, path path.Path, value WebhookFilterValue) (cm.WebhookDefinitionFilter, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func ToWebhookDefinitionFilter(
+	ctx context.Context,
+	valuePath path.Path,
+	value WebhookFilterValue,
+) (cm.WebhookDefinitionFilter, diag.Diagnostics) {
+	return convertExactlyOneKnownAlternative(
+		valuePath,
+		knownUnionAlternative[cm.WebhookDefinitionFilter]{
+			Name:  "not",
+			Path:  valuePath.AtName("not"),
+			Value: value.Not,
+			Convert: func() (cm.WebhookDefinitionFilter, diag.Diagnostics) {
+				notValue, _ := value.Not.GetValue()
+				not, diags := ToWebhookDefinitionFilterNot(ctx, valuePath.AtName("not"), notValue)
 
-	filter := cm.WebhookDefinitionFilter{}
+				return cm.WebhookDefinitionFilter{Not: not}, diags
+			},
+		},
+		knownUnionAlternative[cm.WebhookDefinitionFilter]{
+			Name:  "equals",
+			Path:  valuePath.AtName("equals"),
+			Value: value.Equals,
+			Convert: func() (cm.WebhookDefinitionFilter, diag.Diagnostics) {
+				equalsValue, _ := value.Equals.GetValue()
+				equals, diags := ToWebhookDefinitionFilterEquals(ctx, valuePath.AtName("equals"), equalsValue)
 
-	notValue, notValueOk := value.Not.GetValue()
-	if notValueOk {
-		path := path.AtName("not")
+				return cm.WebhookDefinitionFilter{Equals: equals}, diags
+			},
+		},
+		knownUnionAlternative[cm.WebhookDefinitionFilter]{
+			Name:  "in",
+			Path:  valuePath.AtName("in"),
+			Value: value.In,
+			Convert: func() (cm.WebhookDefinitionFilter, diag.Diagnostics) {
+				inValue, _ := value.In.GetValue()
+				in, diags := ToWebhookDefinitionFilterIn(ctx, valuePath.AtName("in"), inValue)
 
-		filterNot, filterNotDiags := ToWebhookDefinitionFilterNot(ctx, path, notValue)
-		diags.Append(filterNotDiags...)
+				return cm.WebhookDefinitionFilter{In: in}, diags
+			},
+		},
+		knownUnionAlternative[cm.WebhookDefinitionFilter]{
+			Name:  "regexp",
+			Path:  valuePath.AtName("regexp"),
+			Value: value.Regexp,
+			Convert: func() (cm.WebhookDefinitionFilter, diag.Diagnostics) {
+				regexpValue, _ := value.Regexp.GetValue()
+				regexp, diags := ToWebhookDefinitionFilterRegexp(ctx, valuePath.AtName("regexp"), regexpValue)
 
-		filter.Not = filterNot
-	}
-
-	equalsValue, equalsValueOk := value.Equals.GetValue()
-	if equalsValueOk {
-		path := path.AtName("equals")
-
-		filterEquals, filterEqualsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
-		diags.Append(filterEqualsDiags...)
-
-		filter.Equals = filterEquals
-	}
-
-	inValue, inValueOk := value.In.GetValue()
-	if inValueOk {
-		path := path.AtName("in")
-
-		filterIn, filterInDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
-		diags.Append(filterInDiags...)
-
-		filter.In = filterIn
-	}
-
-	regexpValue, regexpValueOk := value.Regexp.GetValue()
-	if regexpValueOk {
-		path := path.AtName("regexp")
-
-		filterRegexp, filterRegexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
-		diags.Append(filterRegexpDiags...)
-
-		filter.Regexp = filterRegexp
-	}
-
-	return filter, diags
+				return cm.WebhookDefinitionFilter{Regexp: regexp}, diags
+			},
+		},
+	)
 }
 
-func ToWebhookDefinitionFilterNot(ctx context.Context, path path.Path, value WebhookFilterNotValue) (cm.OptWebhookDefinitionFilterNot, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func ToWebhookDefinitionFilterNot(
+	ctx context.Context,
+	valuePath path.Path,
+	value WebhookFilterNotValue,
+) (cm.OptWebhookDefinitionFilterNot, diag.Diagnostics) {
+	filterNot, diags := convertExactlyOneKnownAlternative(
+		valuePath,
+		knownUnionAlternative[cm.WebhookDefinitionFilterNot]{
+			Name:  "equals",
+			Path:  valuePath.AtName("equals"),
+			Value: value.Equals,
+			Convert: func() (cm.WebhookDefinitionFilterNot, diag.Diagnostics) {
+				equalsValue, _ := value.Equals.GetValue()
+				equals, diags := ToWebhookDefinitionFilterEquals(ctx, valuePath.AtName("equals"), equalsValue)
 
-	filterNot := cm.WebhookDefinitionFilterNot{}
+				return cm.WebhookDefinitionFilterNot{Equals: equals}, diags
+			},
+		},
+		knownUnionAlternative[cm.WebhookDefinitionFilterNot]{
+			Name:  "in",
+			Path:  valuePath.AtName("in"),
+			Value: value.In,
+			Convert: func() (cm.WebhookDefinitionFilterNot, diag.Diagnostics) {
+				inValue, _ := value.In.GetValue()
+				in, diags := ToWebhookDefinitionFilterIn(ctx, valuePath.AtName("in"), inValue)
 
-	if equalsValue, equalsValueOk := value.Equals.GetValue(); equalsValueOk {
-		path := path.AtName("equals")
+				return cm.WebhookDefinitionFilterNot{In: in}, diags
+			},
+		},
+		knownUnionAlternative[cm.WebhookDefinitionFilterNot]{
+			Name:  "regexp",
+			Path:  valuePath.AtName("regexp"),
+			Value: value.Regexp,
+			Convert: func() (cm.WebhookDefinitionFilterNot, diag.Diagnostics) {
+				regexpValue, _ := value.Regexp.GetValue()
+				regexp, diags := ToWebhookDefinitionFilterRegexp(ctx, valuePath.AtName("regexp"), regexpValue)
 
-		equals, equalsDiags := ToWebhookDefinitionFilterEquals(ctx, path, equalsValue)
-		diags.Append(equalsDiags...)
-
-		filterNot.Equals = equals
-	}
-
-	if inValue, inValueOk := value.In.GetValue(); inValueOk {
-		path := path.AtName("in")
-
-		in, inDiags := ToWebhookDefinitionFilterIn(ctx, path, inValue)
-		diags.Append(inDiags...)
-
-		filterNot.In = in
-	}
-
-	if regexpValue, regexpValueOk := value.Regexp.GetValue(); regexpValueOk {
-		path := path.AtName("regexp")
-
-		regexp, regexpDiags := ToWebhookDefinitionFilterRegexp(ctx, path, regexpValue)
-		diags.Append(regexpDiags...)
-
-		filterNot.Regexp = regexp
+				return cm.WebhookDefinitionFilterNot{Regexp: regexp}, diags
+			},
+		},
+	)
+	if diags.HasError() {
+		return cm.OptWebhookDefinitionFilterNot{}, diags
 	}
 
 	return cm.NewOptWebhookDefinitionFilterNot(filterNot), diags
 }
 
-func ToWebhookDefinitionFilterEquals(ctx context.Context, path path.Path, value WebhookFilterEqualsValue) (cm.WebhookDefinitionFilterEquals, diag.Diagnostics) {
+func ToWebhookDefinitionFilterEquals(
+	ctx context.Context,
+	valuePath path.Path,
+	value WebhookFilterEqualsValue,
+) (cm.WebhookDefinitionFilterEquals, diag.Diagnostics) {
+	doc, docDiags := toWebhookDefinitionFilterTermStringObject(ctx, valuePath.AtName("doc"), "doc", value.Doc)
+	filterValue, valueDiags := toWebhookDefinitionFilterTermString(ctx, valuePath.AtName("value"), value.Value)
 	diags := diag.Diagnostics{}
+	diags.Append(docDiags...)
+	diags.Append(valueDiags...)
 
-	filter := make(cm.WebhookDefinitionFilterEquals, 0, webhookDefinitionBinaryFilterTermCount)
+	if diags.HasError() {
+		return nil, diags
+	}
 
-	filterTermDoc, filterTermDocDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", value.Doc)
-	diags.Append(filterTermDocDiags...)
-
-	filter = append(filter, filterTermDoc)
-
-	filterTermValue, filterTermValueDiags := toWebhookDefinitionFilterTermString(ctx, path.AtName("value"), value.Value)
-	diags.Append(filterTermValueDiags...)
-
-	filter = append(filter, filterTermValue)
-
-	return filter, diags
+	return cm.WebhookDefinitionFilterEquals{doc, filterValue}, diags
 }
 
-func ToWebhookDefinitionFilterIn(ctx context.Context, path path.Path, value WebhookFilterInValue) (cm.WebhookDefinitionFilterIn, diag.Diagnostics) {
+func ToWebhookDefinitionFilterIn(
+	ctx context.Context,
+	valuePath path.Path,
+	value WebhookFilterInValue,
+) (cm.WebhookDefinitionFilterIn, diag.Diagnostics) {
+	doc, docDiags := toWebhookDefinitionFilterTermStringObject(ctx, valuePath.AtName("doc"), "doc", value.Doc)
+	values, valuesDiags := toWebhookDefinitionFilterTermStringArray(ctx, valuePath.AtName("values"), value.Values)
 	diags := diag.Diagnostics{}
+	diags.Append(docDiags...)
+	diags.Append(valuesDiags...)
 
-	filter := make(cm.WebhookDefinitionFilterIn, 0, webhookDefinitionBinaryFilterTermCount)
+	if diags.HasError() {
+		return nil, diags
+	}
 
-	filterTermDoc, filterTermDocDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", value.Doc)
-	diags.Append(filterTermDocDiags...)
-
-	filter = append(filter, filterTermDoc)
-
-	filterTermValues, filterTermValuesDiags := toWebhookDefinitionFilterTermStringArray(ctx, path.AtName("values"), value.Values)
-	diags.Append(filterTermValuesDiags...)
-
-	filter = append(filter, filterTermValues)
-
-	return filter, diags
+	return cm.WebhookDefinitionFilterIn{doc, values}, diags
 }
 
-func ToWebhookDefinitionFilterRegexp(ctx context.Context, path path.Path, value WebhookFilterRegexpValue) (cm.WebhookDefinitionFilterRegexp, diag.Diagnostics) {
+func ToWebhookDefinitionFilterRegexp(
+	ctx context.Context,
+	valuePath path.Path,
+	value WebhookFilterRegexpValue,
+) (cm.WebhookDefinitionFilterRegexp, diag.Diagnostics) {
+	doc, docDiags := toWebhookDefinitionFilterTermStringObject(ctx, valuePath.AtName("doc"), "doc", value.Doc)
+	pattern, patternDiags := toWebhookDefinitionFilterTermStringObject(ctx, valuePath.AtName("pattern"), "pattern", value.Pattern)
 	diags := diag.Diagnostics{}
+	diags.Append(docDiags...)
+	diags.Append(patternDiags...)
 
-	filter := make(cm.WebhookDefinitionFilterRegexp, 0, webhookDefinitionBinaryFilterTermCount)
+	if diags.HasError() {
+		return nil, diags
+	}
 
-	filterTermDoc, filterTermDocDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("doc"), "doc", value.Doc)
-	diags.Append(filterTermDocDiags...)
-
-	filter = append(filter, filterTermDoc)
-
-	filterTermPattern, filterTermPatternDiags := toWebhookDefinitionFilterTermStringObject(ctx, path.AtName("pattern"), "pattern", value.Pattern)
-	diags.Append(filterTermPatternDiags...)
-
-	filter = append(filter, filterTermPattern)
-
-	return filter, diags
+	return cm.WebhookDefinitionFilterRegexp{doc, pattern}, diags
 }
 
-func toWebhookDefinitionFilterTermString(_ context.Context, path path.Path, value types.String) (jx.Raw, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func toWebhookDefinitionFilterTermString(_ context.Context, valuePath path.Path, value types.String) (jx.Raw, diag.Diagnostics) {
+	stringValue, diags := requestRequiredString(value, valuePath)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	encoder := jx.Encoder{}
+	if encoder.Str(stringValue) {
+		diags.AddAttributeError(valuePath, "failed to encode value", "")
+	}
 
-	if encoder.Str(value.ValueString()) {
-		diags.AddAttributeError(path, "failed to encode value", "")
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return encoder.Bytes(), diags
 }
 
-func toWebhookDefinitionFilterTermStringArray(ctx context.Context, path path.Path, value TypedList[types.String]) (jx.Raw, diag.Diagnostics) {
+func toWebhookDefinitionFilterTermStringArray(
+	_ context.Context,
+	valuePath path.Path,
+	value TypedList[types.String],
+) (jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
+
+	switch {
+	case value.IsUnknown():
+		diags.AddAttributeError(
+			valuePath,
+			"Unexpected unknown webhook filter values",
+			"Webhook filter values must be known before they can be sent to Contentful.",
+		)
+	case value.IsNull():
+		diags.AddAttributeError(
+			valuePath,
+			"Unexpected null webhook filter values",
+			"Required webhook filter values cannot be null.",
+		)
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	values, valueDiags := knownStringListElements(valuePath, value.Elements())
+	diags.Append(valueDiags...)
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	encoder := jx.Encoder{}
-
 	if encoder.Arr(func(encoder *jx.Encoder) {
-		values := make([]string, len(value.Elements()))
-		diags.Append(tfsdk.ValueAs(ctx, value, &values)...)
-
-		for index, v := range values {
-			path := path.AtListIndex(index)
-			if encoder.Str(v) {
-				diags.AddAttributeError(path, "failed to encode value", "")
+		for index, stringValue := range values {
+			elementPath := valuePath.AtListIndex(index)
+			if encoder.Str(stringValue) {
+				diags.AddAttributeError(elementPath, "failed to encode value", "")
 			}
 		}
 	}) {
-		diags.AddAttributeError(path, "failed to encode value", "")
+		diags.AddAttributeError(valuePath, "failed to encode value", "")
+	}
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return encoder.Bytes(), diags
 }
 
-func toWebhookDefinitionFilterTermStringObject(_ context.Context, path path.Path, name string, value types.String) (jx.Raw, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-	encoder := jx.Encoder{}
+func toWebhookDefinitionFilterTermStringObject(
+	_ context.Context,
+	valuePath path.Path,
+	name string,
+	value types.String,
+) (jx.Raw, diag.Diagnostics) {
+	stringValue, diags := requestRequiredString(value, valuePath)
+	if diags.HasError() {
+		return nil, diags
+	}
 
+	encoder := jx.Encoder{}
 	if encoder.Obj(func(encoder *jx.Encoder) {
-		if encoder.Field(name, func(encoder *jx.Encoder) { encoder.Str(value.ValueString()) }) {
-			diags.AddAttributeError(path, "failed to encode value", "")
+		if encoder.Field(name, func(encoder *jx.Encoder) { encoder.Str(stringValue) }) {
+			diags.AddAttributeError(valuePath, "failed to encode value", "")
 		}
 	}) {
-		diags.AddAttributeError(path, "failed to encode value", "")
+		diags.AddAttributeError(valuePath, "failed to encode value", "")
+	}
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return encoder.Bytes(), diags
