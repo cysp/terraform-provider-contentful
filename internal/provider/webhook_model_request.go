@@ -4,7 +4,6 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -13,19 +12,41 @@ import (
 func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
+	name, nameDiags := requestRequiredString(model.Name, path.AtName("name"))
+	diags.Append(nameDiags...)
+
+	url, urlDiags := requestRequiredString(model.URL, path.AtName("url"))
+	diags.Append(urlDiags...)
+
+	active, activeDiags := requestRequiredBool(model.Active, path.AtName("active"))
+	diags.Append(activeDiags...)
+
+	httpBasicUsername, httpBasicUsernameDiags := webhookOptionalNullableString(model.HTTPBasicUsername, path.AtName("http_basic_username"))
+	diags.Append(httpBasicUsernameDiags...)
+
+	httpBasicPassword, httpBasicPasswordDiags := webhookOptionalNullableString(model.HTTPBasicPassword, path.AtName("http_basic_password"))
+	diags.Append(httpBasicPasswordDiags...)
+
 	req := cm.WebhookDefinitionData{
-		Name:              model.Name.ValueString(),
-		URL:               model.URL.ValueString(),
-		Active:            util.BoolValueToOptBool(model.Active),
-		HttpBasicUsername: cm.NewOptNilPointerString(model.HTTPBasicUsername.ValueStringPointer()),
-		HttpBasicPassword: cm.NewOptNilPointerString(model.HTTPBasicPassword.ValueStringPointer()),
+		Name:              name,
+		URL:               url,
+		Active:            cm.NewOptBool(active),
+		HttpBasicUsername: httpBasicUsername,
+		HttpBasicPassword: httpBasicPassword,
 	}
 
-	if model.Topics.IsNull() || model.Topics.IsUnknown() {
+	switch {
+	case model.Topics.IsUnknown():
+		diags.AddAttributeError(
+			path.AtName("topics"),
+			"Unexpected unknown webhook topics",
+			"Webhook topics must be known before they can be sent to Contentful.",
+		)
+	case model.Topics.IsNull():
 		req.Topics = nil
-	} else {
-		topics := make([]string, len(model.Topics.Elements()))
-		diags.Append(tfsdk.ValueAs(ctx, model.Topics, &topics)...)
+	default:
+		topics, topicDiags := knownStringListElements(path.AtName("topics"), model.Topics.Elements())
+		diags.Append(topicDiags...)
 
 		req.Topics = topics
 	}
@@ -61,6 +82,10 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path pat
 	diags.Append(transformationDiags...)
 
 	req.Transformation = transformation
+
+	if diags.HasError() {
+		return cm.WebhookDefinitionData{}, diags
+	}
 
 	return req, diags
 }
