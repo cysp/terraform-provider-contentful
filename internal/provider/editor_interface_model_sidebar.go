@@ -11,25 +11,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v EditorInterfaceSidebarValue) ToEditorInterfaceDataSidebarItem(_ context.Context, _ path.Path) (cm.EditorInterfaceDataSidebarItem, diag.Diagnostics) {
+func (v EditorInterfaceSidebarValue) ToEditorInterfaceDataSidebarItem(_ context.Context, valuePath path.Path) (cm.EditorInterfaceDataSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.EditorInterfaceDataSidebarItem{
-		WidgetNamespace: v.WidgetNamespace.ValueString(),
-		WidgetId:        v.WidgetID.ValueString(),
+	widgetNamespace, widgetNamespaceDiags := requestRequiredString(v.WidgetNamespace, valuePath.AtName("widget_namespace"))
+	diags.Append(widgetNamespaceDiags...)
+
+	widgetID, widgetIDDiags := requestRequiredString(v.WidgetID, valuePath.AtName("widget_id"))
+	diags.Append(widgetIDDiags...)
+
+	disabled, disabledDiags := requestOptionalBool(v.Disabled, valuePath.AtName("disabled"))
+	diags.Append(disabledDiags...)
+
+	settings, settingsDiags := editorInterfaceOptionalSettings(v.Settings, valuePath.AtName("settings"))
+	diags.Append(settingsDiags...)
+
+	if diags.HasError() {
+		return cm.EditorInterfaceDataSidebarItem{}, diags
 	}
 
-	modelDisabled := v.Disabled.ValueBoolPointer()
-	if modelDisabled != nil {
-		item.Disabled.SetTo(*modelDisabled)
-	}
-
-	modelSettingsString := v.Settings.ValueString()
-	if modelSettingsString != "" {
-		item.Settings = []byte(modelSettingsString)
-	}
-
-	return item, diags
+	return cm.EditorInterfaceDataSidebarItem{
+		WidgetNamespace: widgetNamespace,
+		WidgetId:        widgetID,
+		Disabled:        disabled,
+		Settings:        settings,
+	}, diags
 }
 
 func NewEditorInterfaceSidebarValueFromResponse(path path.Path, item cm.EditorInterfaceSidebarItem) (TypedObject[EditorInterfaceSidebarValue], diag.Diagnostics) {

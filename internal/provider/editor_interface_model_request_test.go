@@ -7,8 +7,10 @@ import (
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRoundTripToEditorInterfaceData(t *testing.T) {
@@ -268,4 +270,434 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 	}, req)
 
 	assert.Empty(t, diags)
+}
+
+func TestToEditorInterfaceDataOptionalListStates(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		setValue     func(*EditorInterfaceModel, bool)
+		expectedPath string
+		assertSet    func(*testing.T, cm.EditorInterfaceData)
+	}{
+		"editor layout": {
+			setValue: func(model *EditorInterfaceModel, unknown bool) {
+				if unknown {
+					model.EditorLayout = NewTypedListUnknown[TypedObject[EditorInterfaceEditorLayoutItemValue]]()
+				} else {
+					model.EditorLayout = NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemValue]{})
+				}
+			},
+			expectedPath: "editor_layout",
+			assertSet: func(t *testing.T, request cm.EditorInterfaceData) {
+				t.Helper()
+				assert.True(t, request.EditorLayout.Set)
+				assert.NotNil(t, request.EditorLayout.Value)
+				assert.Empty(t, request.EditorLayout.Value)
+			},
+		},
+		"controls": {
+			setValue: func(model *EditorInterfaceModel, unknown bool) {
+				if unknown {
+					model.Controls = NewTypedListUnknown[TypedObject[EditorInterfaceControlValue]]()
+				} else {
+					model.Controls = NewTypedList([]TypedObject[EditorInterfaceControlValue]{})
+				}
+			},
+			expectedPath: "controls",
+			assertSet: func(t *testing.T, request cm.EditorInterfaceData) {
+				t.Helper()
+				assert.True(t, request.Controls.Set)
+				assert.NotNil(t, request.Controls.Value)
+				assert.Empty(t, request.Controls.Value)
+			},
+		},
+		"group controls": {
+			setValue: func(model *EditorInterfaceModel, unknown bool) {
+				if unknown {
+					model.GroupControls = NewTypedListUnknown[TypedObject[EditorInterfaceGroupControlValue]]()
+				} else {
+					model.GroupControls = NewTypedList([]TypedObject[EditorInterfaceGroupControlValue]{})
+				}
+			},
+			expectedPath: "group_controls",
+			assertSet: func(t *testing.T, request cm.EditorInterfaceData) {
+				t.Helper()
+				assert.True(t, request.GroupControls.Set)
+				assert.NotNil(t, request.GroupControls.Value)
+				assert.Empty(t, request.GroupControls.Value)
+			},
+		},
+		"sidebar": {
+			setValue: func(model *EditorInterfaceModel, unknown bool) {
+				if unknown {
+					model.Sidebar = NewTypedListUnknown[TypedObject[EditorInterfaceSidebarValue]]()
+				} else {
+					model.Sidebar = NewTypedList([]TypedObject[EditorInterfaceSidebarValue]{})
+				}
+			},
+			expectedPath: "sidebar",
+			assertSet: func(t *testing.T, request cm.EditorInterfaceData) {
+				t.Helper()
+				assert.True(t, request.Sidebar.Set)
+				assert.NotNil(t, request.Sidebar.Value)
+				assert.Empty(t, request.Sidebar.Value)
+			},
+		},
+	} {
+		t.Run(name+" null is omitted", func(t *testing.T) {
+			t.Parallel()
+
+			model := newNullEditorInterfaceModel()
+			request, diags := model.ToEditorInterfaceData(t.Context())
+
+			require.False(t, diags.HasError(), diags.Errors())
+			assert.Equal(t, cm.EditorInterfaceData{}, request)
+		})
+
+		t.Run(name+" known empty is preserved", func(t *testing.T) {
+			t.Parallel()
+
+			model := newNullEditorInterfaceModel()
+			test.setValue(&model, false)
+
+			request, diags := model.ToEditorInterfaceData(t.Context())
+
+			require.False(t, diags.HasError(), diags.Errors())
+			test.assertSet(t, request)
+		})
+
+		t.Run(name+" unknown is rejected", func(t *testing.T) {
+			t.Parallel()
+
+			model := newNullEditorInterfaceModel()
+			test.setValue(&model, true)
+
+			request, diags := model.ToEditorInterfaceData(t.Context())
+
+			assert.Equal(t, cm.EditorInterfaceData{}, request)
+			require.True(t, diags.HasError())
+			assert.Equal(t, []string{test.expectedPath}, diagnosticPaths(t, diags))
+		})
+	}
+}
+
+//nolint:dupl // Parallel table tests intentionally exercise matching request model shapes.
+func TestEditorInterfaceControlRequestValues(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		mutate       func(*EditorInterfaceControlValue)
+		expectedPath string
+	}{
+		"field id":         {mutate: func(value *EditorInterfaceControlValue) { value.FieldID = types.StringUnknown() }, expectedPath: "controls[2].field_id"},
+		"widget namespace": {mutate: func(value *EditorInterfaceControlValue) { value.WidgetNamespace = types.StringUnknown() }, expectedPath: "controls[2].widget_namespace"},
+		"widget id":        {mutate: func(value *EditorInterfaceControlValue) { value.WidgetID = types.StringUnknown() }, expectedPath: "controls[2].widget_id"},
+		"settings":         {mutate: func(value *EditorInterfaceControlValue) { value.Settings = jsontypes.NewNormalizedUnknown() }, expectedPath: "controls[2].settings"},
+	} {
+		t.Run(name+" unknown", func(t *testing.T) {
+			t.Parallel()
+
+			value := validEditorInterfaceControlValue()
+			test.mutate(&value)
+
+			item, diags := value.ToEditorInterfaceDataControlsItem(t.Context(), path.Root("controls").AtListIndex(2))
+
+			assert.Equal(t, cm.EditorInterfaceDataControlsItem{}, item)
+			require.True(t, diags.HasError())
+			assert.Equal(t, []string{test.expectedPath}, diagnosticPaths(t, diags))
+		})
+	}
+
+	value := validEditorInterfaceControlValue()
+	value.WidgetNamespace = types.StringNull()
+	value.WidgetID = types.StringNull()
+	value.Settings = jsontypes.NewNormalizedNull()
+
+	item, diags := value.ToEditorInterfaceDataControlsItem(t.Context(), path.Root("controls").AtListIndex(0))
+
+	require.False(t, diags.HasError(), diags.Errors())
+	assert.Equal(t, cm.EditorInterfaceDataControlsItem{FieldId: "field"}, item)
+}
+
+//nolint:dupl // Parallel table tests intentionally exercise matching request model shapes.
+func TestEditorInterfaceGroupControlRequestValues(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		mutate       func(*EditorInterfaceGroupControlValue)
+		expectedPath string
+	}{
+		"group id":         {mutate: func(value *EditorInterfaceGroupControlValue) { value.GroupID = types.StringUnknown() }, expectedPath: "group_controls[1].group_id"},
+		"widget namespace": {mutate: func(value *EditorInterfaceGroupControlValue) { value.WidgetNamespace = types.StringUnknown() }, expectedPath: "group_controls[1].widget_namespace"},
+		"widget id":        {mutate: func(value *EditorInterfaceGroupControlValue) { value.WidgetID = types.StringUnknown() }, expectedPath: "group_controls[1].widget_id"},
+		"settings":         {mutate: func(value *EditorInterfaceGroupControlValue) { value.Settings = jsontypes.NewNormalizedUnknown() }, expectedPath: "group_controls[1].settings"},
+	} {
+		t.Run(name+" unknown", func(t *testing.T) {
+			t.Parallel()
+
+			value := validEditorInterfaceGroupControlValue()
+			test.mutate(&value)
+
+			item, diags := value.ToEditorInterfaceDataGroupControlsItem(t.Context(), path.Root("group_controls").AtListIndex(1))
+
+			assert.Equal(t, cm.EditorInterfaceDataGroupControlsItem{}, item)
+			require.True(t, diags.HasError())
+			assert.Equal(t, []string{test.expectedPath}, diagnosticPaths(t, diags))
+		})
+	}
+
+	value := validEditorInterfaceGroupControlValue()
+	value.WidgetNamespace = types.StringNull()
+	value.WidgetID = types.StringNull()
+	value.Settings = jsontypes.NewNormalizedNull()
+
+	item, diags := value.ToEditorInterfaceDataGroupControlsItem(t.Context(), path.Root("group_controls").AtListIndex(0))
+
+	require.False(t, diags.HasError(), diags.Errors())
+	assert.Equal(t, cm.EditorInterfaceDataGroupControlsItem{GroupId: "group"}, item)
+}
+
+//nolint:dupl // Parallel table tests intentionally exercise matching request model shapes.
+func TestEditorInterfaceSidebarRequestValues(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		mutate       func(*EditorInterfaceSidebarValue)
+		expectedPath string
+	}{
+		"widget namespace": {mutate: func(value *EditorInterfaceSidebarValue) { value.WidgetNamespace = types.StringUnknown() }, expectedPath: "sidebar[3].widget_namespace"},
+		"widget id":        {mutate: func(value *EditorInterfaceSidebarValue) { value.WidgetID = types.StringUnknown() }, expectedPath: "sidebar[3].widget_id"},
+		"settings":         {mutate: func(value *EditorInterfaceSidebarValue) { value.Settings = jsontypes.NewNormalizedUnknown() }, expectedPath: "sidebar[3].settings"},
+		"disabled":         {mutate: func(value *EditorInterfaceSidebarValue) { value.Disabled = types.BoolUnknown() }, expectedPath: "sidebar[3].disabled"},
+	} {
+		t.Run(name+" unknown", func(t *testing.T) {
+			t.Parallel()
+
+			value := validEditorInterfaceSidebarValue()
+			test.mutate(&value)
+
+			item, diags := value.ToEditorInterfaceDataSidebarItem(t.Context(), path.Root("sidebar").AtListIndex(3))
+
+			assert.Equal(t, cm.EditorInterfaceDataSidebarItem{}, item)
+			require.True(t, diags.HasError())
+			assert.Equal(t, []string{test.expectedPath}, diagnosticPaths(t, diags))
+		})
+	}
+
+	value := validEditorInterfaceSidebarValue()
+	value.Settings = jsontypes.NewNormalizedNull()
+	value.Disabled = types.BoolNull()
+
+	item, diags := value.ToEditorInterfaceDataSidebarItem(t.Context(), path.Root("sidebar").AtListIndex(0))
+
+	require.False(t, diags.HasError(), diags.Errors())
+	assert.Equal(t, cm.EditorInterfaceDataSidebarItem{WidgetNamespace: "builtin", WidgetId: "widget"}, item)
+}
+
+func TestEditorInterfaceEditorLayoutRejectsUnresolvedNestedValues(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		item         EditorInterfaceEditorLayoutItemValue
+		expectedPath string
+	}{
+		"required top-level group": {
+			item:         EditorInterfaceEditorLayoutItemValue{Group: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupValue]()},
+			expectedPath: "editor_layout[0].group",
+		},
+		"null top-level group": {
+			item:         EditorInterfaceEditorLayoutItemValue{Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue]()},
+			expectedPath: "editor_layout[0].group",
+		},
+		"group id": {
+			item: editorLayoutGroup(types.StringUnknown(), types.StringValue("name"), NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{
+				NewTypedObject(editorLayoutFieldUnion(types.StringValue("field"))),
+			})),
+			expectedPath: "editor_layout[0].group.group_id",
+		},
+		"group name": {
+			item: editorLayoutGroup(types.StringValue("group"), types.StringNull(), NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{
+				NewTypedObject(editorLayoutFieldUnion(types.StringValue("field"))),
+			})),
+			expectedPath: "editor_layout[0].group.name",
+		},
+		"group items": {
+			item:         editorLayoutGroup(types.StringValue("group"), types.StringValue("name"), NewTypedListUnknown[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]]()),
+			expectedPath: "editor_layout[0].group.items",
+		},
+		"null group items": {
+			item:         editorLayoutGroup(types.StringValue("group"), types.StringValue("name"), NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]]()),
+			expectedPath: "editor_layout[0].group.items",
+		},
+		"no union alternative": {
+			item: editorLayoutGroup(types.StringValue("group"), types.StringValue("name"), NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{
+				NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{
+					Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+					Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+				}),
+			})),
+			expectedPath: "editor_layout[0].group.items[0]",
+		},
+		"unknown union alternative": {
+			item: editorLayoutGroup(types.StringValue("group"), types.StringValue("name"), NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{
+				NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{
+					Field: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+					Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+				}),
+			})),
+			expectedPath: "editor_layout[0].group.items[0].field",
+		},
+		"field id": {
+			item: editorLayoutGroup(types.StringValue("group"), types.StringValue("name"), NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{
+				NewTypedObject(editorLayoutFieldUnion(types.StringUnknown())),
+			})),
+			expectedPath: "editor_layout[0].group.items[0].field.field_id",
+		},
+		"nested field object": {
+			item: editorLayoutGroup(types.StringValue("group"), types.StringValue("name"), NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{
+				NewTypedObject(editorLayoutNestedGroupUnion(NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]{
+					NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{
+						Field: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](),
+					}),
+				}))),
+			})),
+			expectedPath: "editor_layout[0].group.items[0].group.items[0].field",
+		},
+		"null nested field object": {
+			item: editorLayoutGroup(types.StringValue("group"), types.StringValue("name"), NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{
+				NewTypedObject(editorLayoutNestedGroupUnion(NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]{
+					NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{
+						Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](),
+					}),
+				}))),
+			})),
+			expectedPath: "editor_layout[0].group.items[0].group.items[0].field",
+		},
+		"nested field id": {
+			item: editorLayoutGroup(types.StringValue("group"), types.StringValue("name"), NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{
+				NewTypedObject(editorLayoutNestedGroupUnion(NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]{
+					NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemValue{
+						Field: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{FieldID: types.StringUnknown()}),
+					}),
+				}))),
+			})),
+			expectedPath: "editor_layout[0].group.items[0].group.items[0].field.field_id",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := newNullEditorInterfaceModel()
+			model.EditorLayout = NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemValue]{NewTypedObject(test.item)})
+
+			request, diags := model.ToEditorInterfaceData(t.Context())
+
+			assert.Equal(t, cm.EditorInterfaceData{}, request)
+			require.True(t, diags.HasError())
+			assert.Equal(t, []string{test.expectedPath}, diagnosticPaths(t, diags))
+		})
+	}
+}
+
+func TestToEditorInterfaceDataFailsAtomically(t *testing.T) {
+	t.Parallel()
+
+	model := newNullEditorInterfaceModel()
+	model.Controls = NewTypedList([]TypedObject[EditorInterfaceControlValue]{NewTypedObject(validEditorInterfaceControlValue())})
+	invalidSidebar := validEditorInterfaceSidebarValue()
+	invalidSidebar.WidgetID = types.StringUnknown()
+	model.Sidebar = NewTypedList([]TypedObject[EditorInterfaceSidebarValue]{NewTypedObject(invalidSidebar)})
+
+	request, diags := model.ToEditorInterfaceData(t.Context())
+
+	assert.Equal(t, cm.EditorInterfaceData{}, request)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{"sidebar[0].widget_id"}, diagnosticPaths(t, diags))
+}
+
+func TestToEditorInterfaceDataRejectsUnknownListElement(t *testing.T) {
+	t.Parallel()
+
+	model := newNullEditorInterfaceModel()
+	model.Controls = NewTypedList([]TypedObject[EditorInterfaceControlValue]{
+		NewTypedObject(validEditorInterfaceControlValue()),
+		NewTypedObjectUnknown[EditorInterfaceControlValue](),
+	})
+
+	request, diags := model.ToEditorInterfaceData(t.Context())
+
+	assert.Equal(t, cm.EditorInterfaceData{}, request)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{"controls[1]"}, diagnosticPaths(t, diags))
+}
+
+func newNullEditorInterfaceModel() EditorInterfaceModel {
+	return EditorInterfaceModel{
+		EditorLayout:  NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]](),
+		Controls:      NewTypedListNull[TypedObject[EditorInterfaceControlValue]](),
+		GroupControls: NewTypedListNull[TypedObject[EditorInterfaceGroupControlValue]](),
+		Sidebar:       NewTypedListNull[TypedObject[EditorInterfaceSidebarValue]](),
+	}
+}
+
+func validEditorInterfaceControlValue() EditorInterfaceControlValue {
+	return EditorInterfaceControlValue{
+		FieldID:         types.StringValue("field"),
+		WidgetNamespace: types.StringValue("builtin"),
+		WidgetID:        types.StringValue("widget"),
+		Settings:        NewNormalizedJSONTypesNormalizedValue([]byte(`{"key":"value"}`)),
+	}
+}
+
+func validEditorInterfaceGroupControlValue() EditorInterfaceGroupControlValue {
+	return EditorInterfaceGroupControlValue{
+		GroupID:         types.StringValue("group"),
+		WidgetNamespace: types.StringValue("builtin"),
+		WidgetID:        types.StringValue("widget"),
+		Settings:        NewNormalizedJSONTypesNormalizedValue([]byte(`{"key":"value"}`)),
+	}
+}
+
+func validEditorInterfaceSidebarValue() EditorInterfaceSidebarValue {
+	return EditorInterfaceSidebarValue{
+		WidgetNamespace: types.StringValue("builtin"),
+		WidgetID:        types.StringValue("widget"),
+		Settings:        NewNormalizedJSONTypesNormalizedValue([]byte(`{"key":"value"}`)),
+		Disabled:        types.BoolValue(false),
+	}
+}
+
+func editorLayoutGroup(
+	groupID types.String,
+	name types.String,
+	items TypedList[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]],
+) EditorInterfaceEditorLayoutItemValue {
+	return EditorInterfaceEditorLayoutItemValue{
+		Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupValue{
+			GroupID: groupID,
+			Name:    name,
+			Items:   items,
+		}),
+	}
+}
+
+func editorLayoutFieldUnion(fieldID types.String) EditorInterfaceEditorLayoutItemGroupItemValue {
+	return EditorInterfaceEditorLayoutItemGroupItemValue{
+		Field: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemFieldValue{FieldID: fieldID}),
+		Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+	}
+}
+
+func editorLayoutNestedGroupUnion(
+	items TypedList[TypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue]],
+) EditorInterfaceEditorLayoutItemGroupItemValue {
+	return EditorInterfaceEditorLayoutItemGroupItemValue{
+		Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+		Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupValue{
+			GroupID: types.StringValue("nested-group"),
+			Name:    types.StringValue("nested name"),
+			Items:   items,
+		}),
+	}
 }
