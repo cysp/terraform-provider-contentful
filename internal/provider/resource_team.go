@@ -80,7 +80,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		OrganizationID: plan.OrganizationID.ValueString(),
 	}
 
-	request, requestDiags := plan.ToTeamData(ctx, path.Empty())
+	request, requestDiags := plan.ToTeamData(path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -229,7 +229,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		XContentfulVersion: currentVersion,
 	}
 
-	request, requestDiags := plan.ToTeamData(ctx, path.Empty())
+	request, requestDiags := plan.ToTeamData(path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
