@@ -3,7 +3,10 @@ package provider
 import (
 	"context"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	listschema "github.com/hashicorp/terraform-plugin-framework/list/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -13,6 +16,56 @@ type entryListResourceConfig struct {
 	ContentType   types.String            `tfsdk:"content_type"`
 	Order         TypedList[types.String] `tfsdk:"order"`
 	Query         TypedMap[types.String]  `tfsdk:"query"`
+}
+
+type entryListResourceRequest struct {
+	params cm.GetEntriesParams
+	query  map[string]string
+}
+
+func (c entryListResourceConfig) request() (entryListResourceRequest, diag.Diagnostics) {
+	spaceID, spaceIDDiags := knownListResourceString(path.Root("space_id"), c.SpaceID)
+	environmentID, environmentIDDiags := knownListResourceString(path.Root("environment_id"), c.EnvironmentID)
+	contentType, contentTypePresent, contentTypeDiags := knownOptionalListResourceString(path.Root("content_type"), c.ContentType)
+	order, orderDiags := knownOptionalListResourceStringList(path.Root("order"), c.Order)
+	query, queryDiags := knownOptionalListResourceStringMap(path.Root("query"), c.Query)
+
+	if order != nil {
+		filteredOrder := make([]string, 0, len(order))
+		for _, value := range order {
+			if value != "" {
+				filteredOrder = append(filteredOrder, value)
+			}
+		}
+
+		order = filteredOrder
+	}
+
+	diags := diag.Diagnostics{}
+	diags.Append(spaceIDDiags...)
+	diags.Append(environmentIDDiags...)
+	diags.Append(contentTypeDiags...)
+	diags.Append(orderDiags...)
+	diags.Append(queryDiags...)
+
+	if diags.HasError() {
+		return entryListResourceRequest{}, diags
+	}
+
+	request := entryListResourceRequest{
+		params: cm.GetEntriesParams{
+			SpaceID:       spaceID,
+			EnvironmentID: environmentID,
+			Order:         order,
+		},
+		query: query,
+	}
+
+	if contentTypePresent && contentType != "" {
+		request.params.ContentType.SetTo(contentType)
+	}
+
+	return request, diags
 }
 
 func EntryListResourceConfigSchema(ctx context.Context) listschema.Schema {
