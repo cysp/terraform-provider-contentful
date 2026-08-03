@@ -47,34 +47,18 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 		return
 	}
 
-	params := cm.GetEntriesParams{
-		SpaceID:       config.SpaceID.ValueString(),
-		EnvironmentID: config.EnvironmentID.ValueString(),
-	}
+	request, requestDiags := config.request()
+	if requestDiags.HasError() {
+		stream.Results = list.ListResultsStreamDiagnostics(requestDiags)
 
-	configContentType := config.ContentType.ValueString()
-	if configContentType != "" {
-		params.ContentType.SetTo(configContentType)
-	}
-
-	configOrder := config.Order.Elements()
-	if configOrder != nil {
-		order := make([]string, 0, len(configOrder))
-		for _, orderElement := range configOrder {
-			orderElementString := orderElement.ValueString()
-			if orderElementString != "" {
-				order = append(order, orderElementString)
-			}
-		}
-
-		params.Order = order
+		return
 	}
 
 	getEntriesQueryOption := cm.WithEditRequest(func(req *http.Request) error {
 		urlQuery := req.URL.Query()
 
-		for key, value := range config.Query.Elements() {
-			setEntryListQueryParam(urlQuery, key, value.ValueString())
+		for key, value := range request.query {
+			setEntryListQueryParam(urlQuery, key, value)
 		}
 
 		req.URL.RawQuery = urlQuery.Encode()
@@ -85,7 +69,7 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 	stream.Results = paginateContentfulCollectionItemsAsListResults(ctx, req,
 		"Failed to list entries",
 		func(ctx context.Context, skip int64, limit int64) (cm.GetEntriesRes, error) {
-			pageParams := params
+			pageParams := request.params
 			pageParams.Skip = cm.NewOptInt64(skip)
 			pageParams.Limit = cm.NewOptInt64(limit)
 
