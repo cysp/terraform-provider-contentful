@@ -100,7 +100,7 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 			t.Fatalf("Failed to convert Extension to ExtensionModel: %v", modelDiags)
 		}
 
-		extensionFields, extensionFieldsDiags := model.ToExtensionData(t.Context(), path.Empty())
+		extensionFields, extensionFieldsDiags := model.ToExtensionData(path.Empty())
 		if extensionFieldsDiags.HasError() {
 			t.Fatalf("Failed to convert ExtensionModel to ExtensionData: %v", extensionFieldsDiags)
 		}
