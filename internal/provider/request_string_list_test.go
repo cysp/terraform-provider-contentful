@@ -4,6 +4,7 @@ package provider
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -50,6 +51,63 @@ func TestKnownStringListElements(t *testing.T) {
 		require.True(t, diags.HasError())
 		assert.Equal(t, []string{"values[1]", "values[2]"}, requestDiagnosticPaths(t, diags))
 	})
+}
+
+func TestKnownOptionalStringSetElements(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		value               types.Set
+		expected            []string
+		expectedDiagnostics []string
+	}{
+		"known": {
+			value: types.SetValueMust(types.StringType, []attr.Value{
+				types.StringValue("first"),
+				types.StringValue("second"),
+			}),
+			expected: []string{"first", "second"},
+		},
+		"known empty": {
+			value:    types.SetValueMust(types.StringType, []attr.Value{}),
+			expected: []string{},
+		},
+		"null container": {
+			value:    types.SetNull(types.StringType),
+			expected: []string{},
+		},
+		"unknown container": {
+			value:               types.SetUnknown(types.StringType),
+			expectedDiagnostics: []string{"values"},
+		},
+		"invalid children fail closed with set value paths": {
+			value: types.SetValueMust(types.StringType, []attr.Value{
+				types.StringValue("first"),
+				types.StringNull(),
+				types.StringUnknown(),
+				types.StringValue("last"),
+			}),
+			expectedDiagnostics: []string{"values[Value(<null>)]", "values[Value(<unknown>)]"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			actual, diags := knownOptionalStringSetElements(path.Root("values"), test.value)
+
+			if len(test.expectedDiagnostics) == 0 {
+				require.False(t, diags.HasError(), diags.Errors())
+				require.NotNil(t, actual)
+				assert.ElementsMatch(t, test.expected, actual)
+
+				return
+			}
+
+			assert.Nil(t, actual)
+			require.True(t, diags.HasError())
+			assert.Equal(t, test.expectedDiagnostics, requestDiagnosticPaths(t, diags))
+		})
+	}
 }
 
 func requestDiagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
