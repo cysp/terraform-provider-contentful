@@ -24,7 +24,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItem(t *testing
 		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
 	}))
 
-	item, diags := model.Value().ToEditorInterfaceDataControlsItem(ctx, path)
+	item, diags := model.Value().ToEditorInterfaceDataControlsItem(path)
 
 	assert.Equal(t, "field_id", item.FieldId)
 	assert.Equal(t, cm.NewOptString("widget_namespace"), item.WidgetNamespace)
@@ -47,7 +47,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItemInvalidSett
 		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`invalid json`)),
 	}))
 
-	controlsItem, diags := model.Value().ToEditorInterfaceDataControlsItem(ctx, path)
+	controlsItem, diags := model.Value().ToEditorInterfaceDataControlsItem(path)
 
 	assert.NotNil(t, controlsItem)
 	assert.Empty(t, diags)

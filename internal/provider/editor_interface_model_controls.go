@@ -12,21 +12,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v EditorInterfaceControlValue) ToEditorInterfaceDataControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceDataControlsItem, diag.Diagnostics) {
+func (v EditorInterfaceControlValue) ToEditorInterfaceDataControlsItem(valuePath path.Path) (cm.EditorInterfaceDataControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.EditorInterfaceDataControlsItem{
-		FieldId:         v.FieldID.ValueString(),
-		WidgetNamespace: util.StringValueToOptString(v.WidgetNamespace),
-		WidgetId:        util.StringValueToOptString(v.WidgetID),
+	fieldID, fieldIDDiags := requestRequiredString(v.FieldID, valuePath.AtName("field_id"))
+	diags.Append(fieldIDDiags...)
+
+	widgetNamespace, widgetNamespaceDiags := requestOmittableString(v.WidgetNamespace, valuePath.AtName("widget_namespace"))
+	diags.Append(widgetNamespaceDiags...)
+
+	widgetID, widgetIDDiags := requestOmittableString(v.WidgetID, valuePath.AtName("widget_id"))
+	diags.Append(widgetIDDiags...)
+
+	settings, settingsDiags := editorInterfaceOptionalSettings(v.Settings, valuePath.AtName("settings"))
+	diags.Append(settingsDiags...)
+
+	if diags.HasError() {
+		return cm.EditorInterfaceDataControlsItem{}, diags
 	}
 
-	modelSettingsString := v.Settings.ValueString()
-	if modelSettingsString != "" {
-		item.Settings = []byte(modelSettingsString)
-	}
-
-	return item, diags
+	return cm.EditorInterfaceDataControlsItem{
+		FieldId:         fieldID,
+		WidgetNamespace: widgetNamespace,
+		WidgetId:        widgetID,
+		Settings:        settings,
+	}, diags
 }
 
 func NewEditorInterfaceControlListValueFromResponse(_ context.Context, path path.Path, controlsItems []cm.EditorInterfaceControlsItem) (TypedList[TypedObject[EditorInterfaceControlValue]], diag.Diagnostics) {

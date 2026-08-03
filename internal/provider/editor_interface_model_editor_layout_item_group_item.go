@@ -66,22 +66,41 @@ func NewEditorInterfaceEditorLayoutItemValueFromResponse(ctx context.Context, pa
 	}
 }
 
-func (v EditorInterfaceEditorLayoutItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func (v EditorInterfaceEditorLayoutItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, valuePath path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+	fieldPath := valuePath.AtName("field")
+	groupPath := valuePath.AtName("group")
 
-	if !v.Field.IsUnknown() && !v.Field.IsNull() {
-		fieldItem, fieldItemDiags := v.Field.Value().ToEditorInterfaceEditorLayoutFieldItem(ctx, path.AtName("field"))
-		diags.Append(fieldItemDiags...)
+	return convertExactlyOneKnownAlternative(
+		valuePath,
+		knownUnionAlternative[cm.EditorInterfaceEditorLayoutItem]{
+			Name:  "field",
+			Path:  fieldPath,
+			Value: v.Field,
+			Convert: func() (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+				field, _ := v.Field.GetValue()
+				fieldItem, diags := field.ToEditorInterfaceEditorLayoutFieldItem(fieldPath)
 
-		return cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(fieldItem), diags
-	}
+				if diags.HasError() {
+					return cm.EditorInterfaceEditorLayoutItem{}, diags
+				}
 
-	if !v.Group.IsUnknown() && !v.Group.IsNull() {
-		groupItem, groupItemDiags := v.Group.Value().ToEditorInterfaceEditorLayoutGroupItem(ctx, path.AtName("group"))
-		diags.Append(groupItemDiags...)
+				return cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(fieldItem), diags
+			},
+		},
+		knownUnionAlternative[cm.EditorInterfaceEditorLayoutItem]{
+			Name:  "group",
+			Path:  groupPath,
+			Value: v.Group,
+			Convert: func() (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+				group, _ := v.Group.GetValue()
+				groupItem, diags := group.ToEditorInterfaceEditorLayoutGroupItem(ctx, groupPath)
 
-		return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(groupItem), diags
-	}
+				if diags.HasError() {
+					return cm.EditorInterfaceEditorLayoutItem{}, diags
+				}
 
-	return cm.EditorInterfaceEditorLayoutItem{}, diags
+				return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(groupItem), diags
+			},
+		},
+	)
 }
