@@ -80,7 +80,7 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 		OrganizationID: plan.OrganizationID.ValueString(),
 	}
 
-	request, requestDiags := plan.ToAppDefinitionData(ctx, path.Empty())
+	request, requestDiags := plan.ToAppDefinitionData(path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -217,7 +217,7 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 		AppDefinitionID: plan.AppDefinitionID.ValueString(),
 	}
 
-	request, requestDiags := plan.ToAppDefinitionData(ctx, path.Empty())
+	request, requestDiags := plan.ToAppDefinitionData(path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

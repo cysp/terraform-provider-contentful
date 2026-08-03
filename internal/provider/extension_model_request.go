@@ -1,19 +1,17 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *ExtensionModel) ToExtensionData(ctx context.Context, path path.Path) (cm.ExtensionData, diag.Diagnostics) {
+func (model *ExtensionModel) ToExtensionData(path path.Path) (cm.ExtensionData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fields := cm.ExtensionData{}
 
-	fieldsExtension, fieldsExtensionDiags := model.Extension.ToExtensionExtensionData(ctx, path.AtName("extension"))
+	fieldsExtension, fieldsExtensionDiags := model.Extension.ToExtensionExtensionData(path.AtName("extension"))
 	diags.Append(fieldsExtensionDiags...)
 
 	fields.Extension = fieldsExtension
@@ -22,96 +20,101 @@ func (model *ExtensionModel) ToExtensionData(ctx context.Context, path path.Path
 		fields.Parameters = []byte(model.Parameters.ValueString())
 	}
 
+	if diags.HasError() {
+		return cm.ExtensionData{}, diags
+	}
+
 	return fields, diags
 }
 
-func (model *ExtensionModelExtension) ToExtensionExtensionData(ctx context.Context, path path.Path) (cm.ExtensionDataExtension, diag.Diagnostics) {
+func (model *ExtensionModelExtension) ToExtensionExtensionData(path path.Path) (cm.ExtensionDataExtension, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
+	name, nameDiags := appRequestRequiredString(model.Name, path.AtName("name"))
+	diags.Append(nameDiags...)
+
+	var sidebar *bool
+
+	switch {
+	case model.Sidebar.IsUnknown():
+		diags.AddAttributeError(
+			path.AtName("sidebar"),
+			"Unexpected unknown request value",
+			"This value must be known before it can be sent to Contentful.",
+		)
+	case model.Sidebar.IsNull():
+	default:
+		sidebar = model.Sidebar.ValueBoolPointer()
+	}
+
 	fields := cm.ExtensionDataExtension{
-		Name:    model.Name.ValueString(),
-		Sidebar: cm.NewOptPointerBool(model.Sidebar.ValueBoolPointer()),
+		Name:    name,
+		Sidebar: cm.NewOptPointerBool(sidebar),
 	}
 
-	src := model.Src.ValueString()
-	if src != "" {
-		fields.Src = cm.NewOptString(src)
+	if !model.Src.IsUnknown() && !model.Src.IsNull() && model.Src.ValueString() != "" {
+		fields.Src = cm.NewOptString(model.Src.ValueString())
 	}
 
-	srcdoc := model.SrcDoc.ValueString()
-	if srcdoc != "" {
-		fields.Srcdoc = cm.NewOptString(srcdoc)
+	if !model.SrcDoc.IsUnknown() && !model.SrcDoc.IsNull() && model.SrcDoc.ValueString() != "" {
+		fields.Srcdoc = cm.NewOptString(model.SrcDoc.ValueString())
 	}
 
 	if model.FieldTypes != nil {
 		fieldTypes := make([]cm.ExtensionDataExtensionFieldTypesItem, 0, len(model.FieldTypes))
 
-		for _, fieldType := range model.FieldTypes {
-			fieldTypes = append(fieldTypes, AppDefinitionLocationFieldTypesItemToExtensionDataExtensionFieldTypesItem(fieldType))
+		for index, fieldType := range model.FieldTypes {
+			requestFieldType, fieldTypeDiags := appDefinitionLocationFieldTypeToExtensionDataExtensionFieldTypesItem(
+				fieldType,
+				path.AtName("field_types").AtListIndex(index),
+			)
+			diags.Append(fieldTypeDiags...)
+
+			if !fieldTypeDiags.HasError() {
+				fieldTypes = append(fieldTypes, requestFieldType)
+			}
 		}
 
 		fields.FieldTypes = fieldTypes
 	}
 
 	if model.Parameters != nil {
-		path := path.AtName("parameters")
+		parameters, parameterDiags := model.Parameters.ToAppDefinitionParameters(path.AtName("parameters"))
+		diags.Append(parameterDiags...)
 
-		parameters := cm.AppDefinitionParameters{}
-
-		if model.Parameters.Installation != nil {
-			path := path.AtName("installation")
-
-			installationParameters := make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Installation))
-
-			for index, parameter := range model.Parameters.Installation {
-				path := path.AtListIndex(index)
-
-				installationParameter, parameterDiags := parameter.ToAppDefinitionParameter(ctx, path)
-				diags.Append(parameterDiags...)
-
-				installationParameters = append(installationParameters, installationParameter)
-			}
-
-			parameters.Installation = installationParameters
+		if !parameterDiags.HasError() {
+			fields.Parameters.SetTo(parameters)
 		}
+	}
 
-		if model.Parameters.Instance != nil {
-			path := path.AtName("instance")
-
-			instanceParameters := make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Instance))
-
-			for index, parameter := range model.Parameters.Instance {
-				path := path.AtListIndex(index)
-
-				instanceParameter, parameterDiags := parameter.ToAppDefinitionParameter(ctx, path)
-				diags.Append(parameterDiags...)
-
-				instanceParameters = append(instanceParameters, instanceParameter)
-			}
-
-			parameters.Instance = instanceParameters
-		}
-
-		fields.Parameters.SetTo(parameters)
+	if diags.HasError() {
+		return cm.ExtensionDataExtension{}, diags
 	}
 
 	return fields, diags
 }
 
-func AppDefinitionLocationFieldTypesItemToExtensionDataExtensionFieldTypesItem(
+func appDefinitionLocationFieldTypeToExtensionDataExtensionFieldTypesItem(
 	fieldType AppDefinitionLocationFieldTypesItem,
-) cm.ExtensionDataExtensionFieldTypesItem {
-	fieldTypesItem := cm.ExtensionDataExtensionFieldTypesItem{
-		Type:     fieldType.Type.ValueString(),
-		LinkType: cm.NewOptPointerString(fieldType.LinkType.ValueStringPointer()),
+	path path.Path,
+) (cm.ExtensionDataExtensionFieldTypesItem, diag.Diagnostics) {
+	requestFieldType, diags := appDefinitionLocationFieldTypeToRequest(fieldType, path)
+
+	if diags.HasError() {
+		return cm.ExtensionDataExtensionFieldTypesItem{}, diags
 	}
 
-	if fieldType.Items != nil {
+	fieldTypesItem := cm.ExtensionDataExtensionFieldTypesItem{
+		Type:     requestFieldType.Type,
+		LinkType: cm.NewOptPointerString(requestFieldType.LinkType),
+	}
+
+	if requestFieldType.Items != nil {
 		fieldTypesItem.Items.SetTo(cm.ExtensionDataExtensionFieldTypesItemItems{
-			Type:     fieldType.Items.Type.ValueString(),
-			LinkType: cm.NewOptPointerString(fieldType.Items.LinkType.ValueStringPointer()),
+			Type:     requestFieldType.Items.Type,
+			LinkType: cm.NewOptPointerString(requestFieldType.Items.LinkType),
 		})
 	}
 
-	return fieldTypesItem
+	return fieldTypesItem, diags
 }

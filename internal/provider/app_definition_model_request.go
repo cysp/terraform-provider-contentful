@@ -1,22 +1,22 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *AppDefinitionBaseModel) ToAppDefinitionData(ctx context.Context, path path.Path) (cm.AppDefinitionData, diag.Diagnostics) {
+func (model *AppDefinitionBaseModel) ToAppDefinitionData(path path.Path) (cm.AppDefinitionData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
+	name, nameDiags := appRequestRequiredString(model.Name, path.AtName("name"))
+	diags.Append(nameDiags...)
+
 	fields := cm.AppDefinitionData{
-		Name: model.Name.ValueString(),
+		Name: name,
 	}
 
-	if !model.Src.IsUnknown() {
+	if !model.Src.IsUnknown() && !model.Src.IsNull() {
 		fields.Src = cm.NewOptPointerString(model.Src.ValueStringPointer())
 	}
 
@@ -28,75 +28,67 @@ func (model *AppDefinitionBaseModel) ToAppDefinitionData(ctx context.Context, pa
 		path := path.AtName("locations")
 
 		locations := make([]cm.AppDefinitionDataLocationsItem, 0, len(model.Locations))
-		for _, location := range model.Locations {
-			path := path.AtListIndex(len(locations))
+		for index, location := range model.Locations {
+			requestLocation, locationDiags := location.ToAppDefinitionDataLocationsItem(path.AtListIndex(index))
+			diags.Append(locationDiags...)
 
-			locationsItem := location.ToAppDefinitionDataLocationsItem(ctx, path)
-
-			locations = append(locations, locationsItem)
+			if !locationDiags.HasError() {
+				locations = append(locations, requestLocation)
+			}
 		}
 
 		fields.Locations = locations
 	}
 
 	if model.Parameters != nil {
-		path := path.AtName("parameters")
+		parameters, parameterDiags := model.Parameters.ToAppDefinitionParameters(path.AtName("parameters"))
+		diags.Append(parameterDiags...)
 
-		var installationParameters, instanceParameters []cm.AppDefinitionParameter
-
-		if model.Parameters.Installation != nil {
-			path := path.AtName("installation")
-
-			installationParameters = make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Installation))
-
-			for index, element := range model.Parameters.Installation {
-				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, path.AtListIndex(index))
-				diags.Append(parameterDiags...)
-
-				installationParameters = append(installationParameters, parameter)
-			}
+		if !parameterDiags.HasError() {
+			fields.Parameters.SetTo(parameters)
 		}
+	}
 
-		if model.Parameters.Instance != nil {
-			path := path.AtName("instance")
-
-			instanceParameters = make([]cm.AppDefinitionParameter, 0, len(model.Parameters.Instance))
-
-			for index, element := range model.Parameters.Instance {
-				parameter, parameterDiags := element.ToAppDefinitionParameter(ctx, path.AtListIndex(index))
-				diags.Append(parameterDiags...)
-
-				instanceParameters = append(instanceParameters, parameter)
-			}
-		}
-
-		fields.Parameters.SetTo(cm.AppDefinitionParameters{
-			Installation: installationParameters,
-			Instance:     instanceParameters,
-		})
+	if diags.HasError() {
+		return cm.AppDefinitionData{}, diags
 	}
 
 	return fields, diags
 }
 
-func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(_ context.Context, _ path.Path) cm.AppDefinitionDataLocationsItem {
+func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(path path.Path) (cm.AppDefinitionDataLocationsItem, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	location, locationDiags := appRequestRequiredString(model.Location, path.AtName("location"))
+	diags.Append(locationDiags...)
+
 	item := cm.AppDefinitionDataLocationsItem{
-		Location: model.Location.ValueString(),
+		Location: location,
 	}
 
 	if model.FieldTypes != nil {
 		fieldTypes := make([]cm.AppDefinitionDataLocationsItemFieldTypesItem, 0, len(model.FieldTypes))
 
-		for _, fieldType := range model.FieldTypes {
+		for index, fieldType := range model.FieldTypes {
+			fieldType, fieldTypeDiags := appDefinitionLocationFieldTypeToRequest(
+				fieldType,
+				path.AtName("field_types").AtListIndex(index),
+			)
+			diags.Append(fieldTypeDiags...)
+
+			if fieldTypeDiags.HasError() {
+				continue
+			}
+
 			fieldTypesItem := cm.AppDefinitionDataLocationsItemFieldTypesItem{
-				Type:     fieldType.Type.ValueString(),
-				LinkType: cm.NewOptPointerString(fieldType.LinkType.ValueStringPointer()),
+				Type:     fieldType.Type,
+				LinkType: cm.NewOptPointerString(fieldType.LinkType),
 			}
 
 			if fieldType.Items != nil {
 				fieldTypesItem.Items.SetTo(cm.AppDefinitionDataLocationsItemFieldTypesItemItems{
-					Type:     fieldType.Items.Type.ValueString(),
-					LinkType: cm.NewOptPointerString(fieldType.Items.LinkType.ValueStringPointer()),
+					Type:     fieldType.Items.Type,
+					LinkType: cm.NewOptPointerString(fieldType.Items.LinkType),
 				})
 			}
 
@@ -107,53 +99,64 @@ func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(_ conte
 	}
 
 	if model.NavigationItem != nil {
+		name, nameDiags := appRequestRequiredString(model.NavigationItem.Name, path.AtName("navigation_item").AtName("name"))
+		pathValue, pathDiags := appRequestRequiredString(model.NavigationItem.Path, path.AtName("navigation_item").AtName("path"))
+
+		diags.Append(nameDiags...)
+		diags.Append(pathDiags...)
+
 		item.NavigationItem.SetTo(cm.AppDefinitionDataLocationsItemNavigationItem{
-			Name: model.NavigationItem.Name.ValueString(),
-			Path: model.NavigationItem.Path.ValueString(),
+			Name: name,
+			Path: pathValue,
 		})
 	}
 
-	return item
+	if diags.HasError() {
+		return cm.AppDefinitionDataLocationsItem{}, diags
+	}
+
+	return item, diags
 }
 
-func (model AppDefinitionParameter) ToAppDefinitionParameter(_ context.Context, _ path.Path) (cm.AppDefinitionParameter, diag.Diagnostics) {
+type appDefinitionLocationFieldTypeRequest struct {
+	Type     string
+	LinkType *string
+	Items    *appDefinitionLocationFieldTypeRequest
+}
+
+func appDefinitionLocationFieldTypeToRequest(
+	model AppDefinitionLocationFieldTypesItem,
+	path path.Path,
+) (appDefinitionLocationFieldTypeRequest, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	parameter := cm.AppDefinitionParameter{
-		ID:          model.ID,
-		Name:        model.Name,
-		Description: cm.NewOptPointerString(model.Description),
-		Type:        model.Type,
-		Required:    cm.NewOptPointerBool(model.Required),
+	typeValue, typeDiags := appRequestRequiredString(model.Type, path.AtName("type"))
+	linkType, linkTypeDiags := appRequestOptionalString(model.LinkType, path.AtName("link_type"))
+
+	diags.Append(typeDiags...)
+	diags.Append(linkTypeDiags...)
+
+	fieldType := appDefinitionLocationFieldTypeRequest{
+		Type:     typeValue,
+		LinkType: linkType,
 	}
 
-	if !model.Default.IsUnknown() {
-		value := model.Default.ValueStringPointer()
-		if value != nil {
-			parameter.Default = jx.Raw(*value)
+	if model.Items != nil {
+		itemsType, itemsTypeDiags := appRequestRequiredString(model.Items.Type, path.AtName("items").AtName("type"))
+		itemsLinkType, itemsLinkTypeDiags := appRequestOptionalString(model.Items.LinkType, path.AtName("items").AtName("link_type"))
+
+		diags.Append(itemsTypeDiags...)
+		diags.Append(itemsLinkTypeDiags...)
+
+		fieldType.Items = &appDefinitionLocationFieldTypeRequest{
+			Type:     itemsType,
+			LinkType: itemsLinkType,
 		}
 	}
 
-	if !model.Options.IsUnknown() && !model.Options.IsNull() {
-		options := make([]jx.Raw, 0, len(model.Options.Elements()))
-
-		for _, option := range model.Options.Elements() {
-			value := option.ValueStringPointer()
-			if value != nil {
-				options = append(options, jx.Raw(*value))
-			}
-		}
-
-		parameter.Options = options
+	if diags.HasError() {
+		return appDefinitionLocationFieldTypeRequest{}, diags
 	}
 
-	if model.Labels != nil {
-		parameter.Labels.SetTo(cm.AppDefinitionParameterLabels{
-			Empty: cm.NewOptPointerString(model.Labels.Empty),
-			True:  cm.NewOptPointerString(model.Labels.True),
-			False: cm.NewOptPointerString(model.Labels.False),
-		})
-	}
-
-	return parameter, diags
+	return fieldType, diags
 }
