@@ -58,6 +58,30 @@ func TestRequestRequiredBool(t *testing.T) {
 	}
 }
 
+func TestRequestNullableString(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		value         types.String
+		expected      cm.OptNilString
+		expectedPaths []string
+	}{
+		"known":       {value: types.StringValue("value"), expected: cm.NewOptNilString("value"), expectedPaths: []string{}},
+		"known empty": {value: types.StringValue(""), expected: cm.NewOptNilString(""), expectedPaths: []string{}},
+		"null":        {value: types.StringNull(), expected: cm.NewOptNilStringNull(), expectedPaths: []string{}},
+		"unknown":     {value: types.StringUnknown(), expectedPaths: []string{"value"}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			actual, diags := requestNullableString(test.value, path.Root("value"))
+
+			assert.Equal(t, test.expected, actual)
+			assert.Equal(t, test.expectedPaths, requestDiagnosticPaths(t, diags))
+		})
+	}
+}
+
 func TestRequestOmittableString(t *testing.T) {
 	t.Parallel()
 
@@ -111,15 +135,18 @@ func TestRequestPrimitiveErrorsReturnZeroValues(t *testing.T) {
 
 	stringValue, stringDiags := requestRequiredString(types.StringUnknown(), path.Root("string"))
 	boolValue, boolDiags := requestRequiredBool(types.BoolUnknown(), path.Root("bool"))
+	nullableString, nullableStringDiags := requestNullableString(types.StringUnknown(), path.Root("nullable_string"))
 	omittableString, omittableStringDiags := requestOmittableString(types.StringUnknown(), path.Root("omittable_string"))
 	omittableBool, omittableBoolDiags := requestOmittableBool(types.BoolUnknown(), path.Root("omittable_bool"))
 
 	require.True(t, stringDiags.HasError())
 	require.True(t, boolDiags.HasError())
+	require.True(t, nullableStringDiags.HasError())
 	require.True(t, omittableStringDiags.HasError())
 	require.True(t, omittableBoolDiags.HasError())
 	assert.Empty(t, stringValue)
 	assert.False(t, boolValue)
+	assert.Equal(t, cm.OptNilString{}, nullableString)
 	assert.Equal(t, cm.OptString{}, omittableString)
 	assert.Equal(t, cm.OptBool{}, omittableBool)
 }

@@ -28,17 +28,8 @@ func (model *RoleModel) ToRoleData() (cm.RoleData, diag.Diagnostics) {
 		name = model.Name.ValueString()
 	}
 
-	description := cm.NewOptNilStringNull()
-
-	if model.Description.IsUnknown() {
-		diags.AddAttributeError(
-			path.Root("description"),
-			"Unexpected unknown role description",
-			"The role description must be known before it can be sent to Contentful.",
-		)
-	} else if !model.Description.IsNull() {
-		description = cm.NewOptNilString(model.Description.ValueString())
-	}
+	description, descriptionDiags := requestNullableString(model.Description, path.Root("description"))
+	diags.Append(descriptionDiags...)
 
 	permissions, permissionsDiags := ToRoleDataPermissions(path.Root("permissions"), model.Permissions)
 	diags.Append(permissionsDiags...)
