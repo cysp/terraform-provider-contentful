@@ -24,21 +24,32 @@ func TestContentTypeMetadataRequestSerialization(t *testing.T) {
 	}{
 		"absent metadata": {
 			metadata: NewTypedObjectNull[ContentTypeMetadataValue](),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[]}`,
+			expected: `{"name":"Test","description":"A test content type","displayField":"title","fields":[]}`,
+		},
+		"unresolved computed metadata": {
+			metadata: NewTypedObjectUnknown[ContentTypeMetadataValue](),
+			expected: `{"name":"Test","description":"A test content type","displayField":"title","fields":[]}`,
 		},
 		"annotations with taxonomy omitted": {
 			metadata: NewTypedObject(ContentTypeMetadataValue{
 				Annotations: NewNormalizedJSONTypesNormalizedValue([]byte(`{"ContentType":[]}`)),
 				Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 			}),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[],"metadata":{"annotations":{"ContentType":[]}}}`,
+			expected: `{"name":"Test","description":"A test content type","displayField":"title","fields":[],"metadata":{"annotations":{"ContentType":[]}}}`,
+		},
+		"annotations with unresolved computed taxonomy": {
+			metadata: NewTypedObject(ContentTypeMetadataValue{
+				Annotations: NewNormalizedJSONTypesNormalizedValue([]byte(`{"ContentType":[]}`)),
+				Taxonomy:    NewTypedListUnknown[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
+			}),
+			expected: `{"name":"Test","description":"A test content type","displayField":"title","fields":[],"metadata":{"annotations":{"ContentType":[]}}}`,
 		},
 		"empty taxonomy": {
 			metadata: NewTypedObject(ContentTypeMetadataValue{
 				Annotations: jsontypes.NewNormalizedNull(),
 				Taxonomy:    NewTypedList([]TypedObject[ContentTypeMetadataTaxonomyItemValue]{}),
 			}),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[],"metadata":{"taxonomy":[]}}`,
+			expected: `{"name":"Test","description":"A test content type","displayField":"title","fields":[],"metadata":{"taxonomy":[]}}`,
 		},
 		"populated taxonomy": {
 			metadata: NewTypedObject(ContentTypeMetadataValue{
@@ -50,7 +61,7 @@ func TestContentTypeMetadataRequestSerialization(t *testing.T) {
 					}),
 				}),
 			}),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[],"metadata":{"taxonomy":[{"sys":{"type":"Link","id":"furniture","linkType":"TaxonomyConceptScheme"},"required":true}]}}`,
+			expected: `{"name":"Test","description":"A test content type","displayField":"title","fields":[],"metadata":{"taxonomy":[{"sys":{"type":"Link","id":"furniture","linkType":"TaxonomyConceptScheme"},"required":true}]}}`,
 		},
 	}
 
@@ -60,6 +71,7 @@ func TestContentTypeMetadataRequestSerialization(t *testing.T) {
 
 			model := ContentTypeModel{
 				Name:         types.StringValue("Test"),
+				Description:  types.StringValue("A test content type"),
 				DisplayField: types.StringValue("title"),
 				Fields:       NewTypedList([]TypedObject[ContentTypeFieldValue]{}),
 				Metadata:     test.metadata,
