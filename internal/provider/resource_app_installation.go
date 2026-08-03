@@ -78,7 +78,7 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue(ctx)
+	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue()
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
 
 	params := cm.PutAppInstallationParams{
@@ -220,7 +220,7 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue(ctx)
+	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue()
 	resp.Diagnostics.Append(xContentfulMarketplaceDiags...)
 
 	params := cm.PutAppInstallationParams{
