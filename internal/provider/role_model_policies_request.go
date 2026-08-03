@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"context"
 	"slices"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -9,43 +8,103 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToRoleDataPolicies(ctx context.Context, path path.Path, policies TypedList[TypedObject[RolePolicyValue]]) ([]cm.RoleDataPoliciesItem, diag.Diagnostics) {
+func ToRoleDataPolicies(path path.Path, policies TypedList[TypedObject[RolePolicyValue]]) ([]cm.RoleDataPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if policies.IsUnknown() {
+	switch {
+	case policies.IsUnknown():
+		diags.AddAttributeError(
+			path,
+			"Unexpected unknown policies",
+			"Policies must be known before they can be sent to Contentful.",
+		)
+
+		return nil, diags
+	case policies.IsNull():
+		diags.AddAttributeError(
+			path,
+			"Unexpected null policies",
+			"Policies are required.",
+		)
+
 		return nil, diags
 	}
 
 	policiesValues := policies.Elements()
 
-	rolePoliciesItems := make([]cm.RoleDataPoliciesItem, len(policiesValues))
+	rolePoliciesItems := make([]cm.RoleDataPoliciesItem, 0, len(policiesValues))
 
 	for index, policiesValueElement := range policiesValues {
-		path := path.AtListIndex(index)
+		itemPath := path.AtListIndex(index)
 
-		policiesItem, policiesItemDiags := ToRoleDataPoliciesItem(ctx, path, policiesValueElement)
+		policiesItem, policiesItemDiags := ToRoleDataPoliciesItem(itemPath, policiesValueElement)
 		diags.Append(policiesItemDiags...)
 
-		rolePoliciesItems[index] = policiesItem
+		if !policiesItemDiags.HasError() {
+			rolePoliciesItems = append(rolePoliciesItems, policiesItem)
+		}
+	}
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return rolePoliciesItems, diags
 }
 
-func ToRoleDataPoliciesItem(ctx context.Context, path path.Path, policy TypedObject[RolePolicyValue]) (cm.RoleDataPoliciesItem, diag.Diagnostics) {
+func ToRoleDataPoliciesItem(path path.Path, policy TypedObject[RolePolicyValue]) (cm.RoleDataPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	effect := policy.Value().Effect.ValueString()
+	policyValue, ok := policy.GetValue()
+	if !ok {
+		if policy.IsUnknown() {
+			diags.AddAttributeError(
+				path,
+				"Unexpected unknown policy",
+				"The policy must be known before it can be sent to Contentful.",
+			)
+		} else {
+			diags.AddAttributeError(
+				path,
+				"Unexpected null policy",
+				"Null policies cannot be sent to Contentful.",
+			)
+		}
 
-	actions, actionsDiags := ToRoleDataPoliciesItemActions(ctx, path.AtName("actions"), policy.Value().Actions)
+		return cm.RoleDataPoliciesItem{}, diags
+	}
+
+	var effect string
+
+	switch {
+	case policyValue.Effect.IsUnknown():
+		diags.AddAttributeError(
+			path.AtName("effect"),
+			"Unexpected unknown policy effect",
+			"The policy effect must be known before it can be sent to Contentful.",
+		)
+	case policyValue.Effect.IsNull():
+		diags.AddAttributeError(
+			path.AtName("effect"),
+			"Unexpected null policy effect",
+			"The policy effect cannot be null.",
+		)
+	default:
+		effect = policyValue.Effect.ValueString()
+	}
+
+	actions, actionsDiags := ToRoleDataPoliciesItemActions(path.AtName("actions"), policyValue.Actions)
 	diags.Append(actionsDiags...)
 
-	constraint, constraintDiags := ToOptRoleDataPoliciesItemConstraint(ctx, path.AtName("constraint"), policy.Value().Constraint)
+	constraint, constraintDiags := ToOptRoleDataPoliciesItemConstraint(path.AtName("constraint"), policyValue.Constraint)
 	diags.Append(constraintDiags...)
+
+	if diags.HasError() {
+		return cm.RoleDataPoliciesItem{}, diags
+	}
 
 	return cm.RoleDataPoliciesItem{
 		Effect:     cm.RoleDataPoliciesItemEffect(effect),
@@ -54,11 +113,34 @@ func ToRoleDataPoliciesItem(ctx context.Context, path path.Path, policy TypedObj
 	}, diags
 }
 
-func ToRoleDataPoliciesItemActions(ctx context.Context, _ path.Path, actions TypedList[types.String]) (cm.RoleDataPoliciesItemActions, diag.Diagnostics) {
+func ToRoleDataPoliciesItemActions(path path.Path, actions TypedList[types.String]) (cm.RoleDataPoliciesItemActions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	actionsStrings := make([]string, len(actions.Elements()))
-	diags.Append(tfsdk.ValueAs(ctx, actions, &actionsStrings)...)
+	switch {
+	case actions.IsUnknown():
+		diags.AddAttributeError(
+			path,
+			"Unexpected unknown policy actions",
+			"Policy actions must be known before they can be sent to Contentful.",
+		)
+
+		return cm.RoleDataPoliciesItemActions{}, diags
+	case actions.IsNull():
+		diags.AddAttributeError(
+			path,
+			"Unexpected null policy actions",
+			"Policy actions are required.",
+		)
+
+		return cm.RoleDataPoliciesItemActions{}, diags
+	}
+
+	actionsStrings, actionDiags := knownStringListElements(path, actions.Elements())
+	diags.Append(actionDiags...)
+
+	if diags.HasError() {
+		return cm.RoleDataPoliciesItemActions{}, diags
+	}
 
 	if slices.Contains(actionsStrings, "all") {
 		return cm.RoleDataPoliciesItemActions{
@@ -73,10 +155,20 @@ func ToRoleDataPoliciesItemActions(ctx context.Context, _ path.Path, actions Typ
 	}, diags
 }
 
-func ToOptRoleDataPoliciesItemConstraint(_ context.Context, _ path.Path, constraint jsontypes.Normalized) (jx.Raw, diag.Diagnostics) {
+func ToOptRoleDataPoliciesItemConstraint(path path.Path, constraint jsontypes.Normalized) (jx.Raw, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if constraint.IsNull() {
+		return nil, diags
+	}
+
+	if constraint.IsUnknown() {
+		diags.AddAttributeError(
+			path,
+			"Unexpected unknown policy constraint",
+			"The policy constraint must be known before it can be sent to Contentful.",
+		)
+
 		return nil, diags
 	}
 
