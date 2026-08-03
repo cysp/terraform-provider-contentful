@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 const contentfulEntryAllowedResourceType = "Contentful:Entry"
@@ -16,13 +15,13 @@ const contentfulEntryAllowedResourceType = "Contentful:Entry"
 func (m *ContentTypeModel) ToContentTypeRequestData(ctx context.Context) (cm.ContentTypeRequestData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	name, nameDiags := contentTypeRequiredString(m.Name, path.Root("name"))
+	name, nameDiags := requestRequiredString(m.Name, path.Root("name"))
 	diags.Append(nameDiags...)
 
-	description, descriptionDiags := contentTypeRequiredString(m.Description, path.Root("description"))
+	description, descriptionDiags := requestRequiredString(m.Description, path.Root("description"))
 	diags.Append(descriptionDiags...)
 
-	displayField, displayFieldDiags := contentTypeRequiredString(m.DisplayField, path.Root("display_field"))
+	displayField, displayFieldDiags := requestRequiredString(m.DisplayField, path.Root("display_field"))
 	diags.Append(displayFieldDiags...)
 
 	fields, fieldsDiags := FieldsListToContentTypeRequestDataFields(ctx, path.Root("fields"), m.Fields)
@@ -80,28 +79,28 @@ func ToContentTypeRequestDataFieldsItem(
 ) (cm.ContentTypeRequestDataFieldsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	fieldID, idDiags := contentTypeRequiredString(v.ID, valuePath.AtName("id"))
+	fieldID, idDiags := requestRequiredString(v.ID, valuePath.AtName("id"))
 	diags.Append(idDiags...)
 
-	name, nameDiags := contentTypeRequiredString(v.Name, valuePath.AtName("name"))
+	name, nameDiags := requestRequiredString(v.Name, valuePath.AtName("name"))
 	diags.Append(nameDiags...)
 
-	fieldType, fieldTypeDiags := contentTypeRequiredString(v.FieldType, valuePath.AtName("type"))
+	fieldType, fieldTypeDiags := requestRequiredString(v.FieldType, valuePath.AtName("type"))
 	diags.Append(fieldTypeDiags...)
 
-	localized, localizedDiags := contentTypeRequiredBool(v.Localized, valuePath.AtName("localized"))
+	localized, localizedDiags := requestRequiredBool(v.Localized, valuePath.AtName("localized"))
 	diags.Append(localizedDiags...)
 
-	required, requiredDiags := contentTypeRequiredBool(v.Required, valuePath.AtName("required"))
+	required, requiredDiags := requestRequiredBool(v.Required, valuePath.AtName("required"))
 	diags.Append(requiredDiags...)
 
-	linkType, linkTypeDiags := contentTypeOptionalString(v.LinkType, valuePath.AtName("link_type"))
+	linkType, linkTypeDiags := requestOptionalString(v.LinkType, valuePath.AtName("link_type"))
 	diags.Append(linkTypeDiags...)
 
-	disabled, disabledDiags := contentTypeOptionalBool(v.Disabled, valuePath.AtName("disabled"))
+	disabled, disabledDiags := requestOptionalBool(v.Disabled, valuePath.AtName("disabled"))
 	diags.Append(disabledDiags...)
 
-	omitted, omittedDiags := contentTypeOptionalBool(v.Omitted, valuePath.AtName("omitted"))
+	omitted, omittedDiags := requestOptionalBool(v.Omitted, valuePath.AtName("omitted"))
 	diags.Append(omittedDiags...)
 
 	items, itemsDiags := ItemsObjectToOptContentTypeRequestDataFieldsItemItems(ctx, valuePath.AtName("items"), v.Items)
@@ -201,10 +200,10 @@ func (v ContentTypeFieldItemsValue) ToContentTypeRequestDataFieldsItemItems(
 ) (cm.ContentTypeRequestDataFieldsItemItems, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	itemsType, itemsTypeDiags := contentTypeRequiredString(v.ItemsType, valuePath.AtName("type"))
+	itemsType, itemsTypeDiags := requestRequiredString(v.ItemsType, valuePath.AtName("type"))
 	diags.Append(itemsTypeDiags...)
 
-	linkType, linkTypeDiags := contentTypeOptionalString(v.LinkType, valuePath.AtName("link_type"))
+	linkType, linkTypeDiags := requestOptionalString(v.LinkType, valuePath.AtName("link_type"))
 	diags.Append(linkTypeDiags...)
 
 	validations, validationsDiags := ValidationsListToContentTypeRequestDataFieldValidations(ctx, valuePath.AtName("validations"), v.Validations)
@@ -334,7 +333,7 @@ func (v ContentTypeFieldAllowedResourceItemExternalValue) ToResourceLink(
 	_ context.Context,
 	valuePath path.Path,
 ) (cm.ResourceLink, diag.Diagnostics) {
-	typeID, diags := contentTypeRequiredString(v.TypeID, valuePath.AtName("type"))
+	typeID, diags := requestRequiredString(v.TypeID, valuePath.AtName("type"))
 	if diags.HasError() {
 		return cm.ResourceLink{}, diags
 	}
@@ -348,7 +347,7 @@ func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) ToResourceLink(
 ) (cm.ResourceLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	source, sourceDiags := contentTypeRequiredString(v.Source, valuePath.AtName("source"))
+	source, sourceDiags := requestRequiredString(v.Source, valuePath.AtName("source"))
 	diags.Append(sourceDiags...)
 
 	contentTypesPath := valuePath.AtName("content_types")
@@ -383,90 +382,4 @@ func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) ToResourceLink(
 		Source:       cm.NewOptString(source),
 		ContentTypes: contentTypes,
 	}, diags
-}
-
-func contentTypeRequiredString(value types.String, valuePath path.Path) (string, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	switch {
-	case value.IsUnknown():
-		diags.AddAttributeError(
-			valuePath,
-			"Unexpected unknown string",
-			"The string value must be known before it can be sent to Contentful.",
-		)
-	case value.IsNull():
-		diags.AddAttributeError(
-			valuePath,
-			"Unexpected null string",
-			"The required string value cannot be null.",
-		)
-	default:
-		return value.ValueString(), diags
-	}
-
-	return "", diags
-}
-
-func contentTypeRequiredBool(value types.Bool, valuePath path.Path) (bool, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	switch {
-	case value.IsUnknown():
-		diags.AddAttributeError(
-			valuePath,
-			"Unexpected unknown boolean",
-			"The boolean value must be known before it can be sent to Contentful.",
-		)
-	case value.IsNull():
-		diags.AddAttributeError(
-			valuePath,
-			"Unexpected null boolean",
-			"The required boolean value cannot be null.",
-		)
-	default:
-		return value.ValueBool(), diags
-	}
-
-	return false, diags
-}
-
-func contentTypeOptionalString(value types.String, valuePath path.Path) (cm.OptString, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	if value.IsUnknown() {
-		diags.AddAttributeError(
-			valuePath,
-			"Unexpected unknown string",
-			"The string value must be known before it can be sent to Contentful.",
-		)
-
-		return cm.OptString{}, diags
-	}
-
-	if value.IsNull() {
-		return cm.OptString{}, diags
-	}
-
-	return cm.NewOptString(value.ValueString()), diags
-}
-
-func contentTypeOptionalBool(value types.Bool, valuePath path.Path) (cm.OptBool, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	if value.IsUnknown() {
-		diags.AddAttributeError(
-			valuePath,
-			"Unexpected unknown boolean",
-			"The boolean value must be known before it can be sent to Contentful.",
-		)
-
-		return cm.OptBool{}, diags
-	}
-
-	if value.IsNull() {
-		return cm.OptBool{}, diags
-	}
-
-	return cm.NewOptBool(value.ValueBool()), diags
 }
