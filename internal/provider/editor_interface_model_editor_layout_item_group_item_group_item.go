@@ -54,21 +54,19 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValueFromResponse(
 }
 
 func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+	fieldPath := path.AtName("field")
+	field, diags := editorInterfaceRequiredObject(v.Field, fieldPath)
 
-	if !v.Field.IsUnknown() && !v.Field.IsNull() {
-		fieldItem, fieldItemDiags := v.Field.Value().ToEditorInterfaceEditorLayoutItem(ctx, path.AtName("field"))
-		diags.Append(fieldItemDiags...)
-
-		return fieldItem, diags
+	if diags.HasError() {
+		return cm.EditorInterfaceEditorLayoutItem{}, diags
 	}
 
-	// if !v.Group.IsUnknown() && !v.Group.IsNull() {
-	// 	groupItem, groupItemDiags := v.Group.Value().ToEditorInterfaceEditorLayoutGroupItem(ctx, path.AtName("group"))
-	// 	diags.Append(groupItemDiags...)
+	item, itemDiags := field.ToEditorInterfaceEditorLayoutItem(ctx, fieldPath)
+	diags.Append(itemDiags...)
 
-	// 	return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(groupItem), diags
-	// }
+	if diags.HasError() {
+		return cm.EditorInterfaceEditorLayoutItem{}, diags
+	}
 
-	return cm.EditorInterfaceEditorLayoutItem{}, diags
+	return item, diags
 }

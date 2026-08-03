@@ -12,21 +12,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v EditorInterfaceGroupControlValue) ToEditorInterfaceDataGroupControlsItem(_ context.Context, _ path.Path) (cm.EditorInterfaceDataGroupControlsItem, diag.Diagnostics) {
+func (v EditorInterfaceGroupControlValue) ToEditorInterfaceDataGroupControlsItem(_ context.Context, valuePath path.Path) (cm.EditorInterfaceDataGroupControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	item := cm.EditorInterfaceDataGroupControlsItem{
-		GroupId:         v.GroupID.ValueString(),
-		WidgetNamespace: util.StringValueToOptString(v.WidgetNamespace),
-		WidgetId:        util.StringValueToOptString(v.WidgetID),
+	groupID, groupIDDiags := requestRequiredString(v.GroupID, valuePath.AtName("group_id"))
+	diags.Append(groupIDDiags...)
+
+	widgetNamespace, widgetNamespaceDiags := requestOptionalString(v.WidgetNamespace, valuePath.AtName("widget_namespace"))
+	diags.Append(widgetNamespaceDiags...)
+
+	widgetID, widgetIDDiags := requestOptionalString(v.WidgetID, valuePath.AtName("widget_id"))
+	diags.Append(widgetIDDiags...)
+
+	settings, settingsDiags := editorInterfaceOptionalSettings(v.Settings, valuePath.AtName("settings"))
+	diags.Append(settingsDiags...)
+
+	if diags.HasError() {
+		return cm.EditorInterfaceDataGroupControlsItem{}, diags
 	}
 
-	modelSettingsString := v.Settings.ValueString()
-	if modelSettingsString != "" {
-		item.Settings = []byte(modelSettingsString)
-	}
-
-	return item, diags
+	return cm.EditorInterfaceDataGroupControlsItem{
+		GroupId:         groupID,
+		WidgetNamespace: widgetNamespace,
+		WidgetId:        widgetID,
+		Settings:        settings,
+	}, diags
 }
 
 func NewEditorInterfaceGroupControlListValueFromResponse(_ context.Context, path path.Path, groupControlsItems []cm.EditorInterfaceGroupControlsItem) (TypedList[TypedObject[EditorInterfaceGroupControlValue]], diag.Diagnostics) {

@@ -17,21 +17,27 @@ func NewEditorInterfaceEditorLayoutItemGroupItemFieldValueFromResponse(_ context
 	}), diags
 }
 
-func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue) ToEditorInterfaceEditorLayoutItem(_ context.Context, _ path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue) ToEditorInterfaceEditorLayoutItem(_ context.Context, valuePath path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+	fieldID, diags := requestRequiredString(v.FieldID, valuePath.AtName("field_id"))
+	if diags.HasError() {
+		return cm.EditorInterfaceEditorLayoutItem{}, diags
+	}
 
 	fieldItem := cm.EditorInterfaceEditorLayoutFieldItem{
-		FieldId: v.FieldID.ValueString(),
+		FieldId: fieldID,
 	}
 
 	return cm.NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(fieldItem), diags
 }
 
-func (v EditorInterfaceEditorLayoutItemGroupItemFieldValue) ToEditorInterfaceEditorLayoutFieldItem(_ context.Context, _ path.Path) (cm.EditorInterfaceEditorLayoutFieldItem, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func (v EditorInterfaceEditorLayoutItemGroupItemFieldValue) ToEditorInterfaceEditorLayoutFieldItem(_ context.Context, valuePath path.Path) (cm.EditorInterfaceEditorLayoutFieldItem, diag.Diagnostics) {
+	fieldID, diags := requestRequiredString(v.FieldID, valuePath.AtName("field_id"))
+	if diags.HasError() {
+		return cm.EditorInterfaceEditorLayoutFieldItem{}, diags
+	}
 
 	fieldItem := cm.EditorInterfaceEditorLayoutFieldItem{
-		FieldId: v.FieldID.ValueString(),
+		FieldId: fieldID,
 	}
 
 	return fieldItem, diags

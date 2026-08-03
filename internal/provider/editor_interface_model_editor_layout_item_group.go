@@ -37,27 +37,19 @@ func NewEditorInterfaceEditorLayoutItemGroupValueFromResponse(ctx context.Contex
 	return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue](), diags
 }
 
-func (v EditorInterfaceEditorLayoutItemGroupValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	item := cm.EditorInterfaceEditorLayoutGroupItem{
-		GroupId: v.GroupID.ValueString(),
-		Name:    v.Name.ValueString(),
-	}
-
-	if !v.Items.IsNull() && !v.Items.IsUnknown() {
-		itemItemsValues := v.Items.Elements()
-
-		itemItems := make([]cm.EditorInterfaceEditorLayoutItem, len(itemItemsValues))
-
-		for index, itemItem := range itemItemsValues {
-			itemItemObject, itemItemObjectDiags := itemItem.Value().ToEditorInterfaceEditorLayoutItem(ctx, path.AtListIndex(index))
-			diags.Append(itemItemObjectDiags...)
-
-			itemItems[index] = itemItemObject
-		}
-
-		item.Items = itemItems
+func (v EditorInterfaceEditorLayoutItemGroupValue) ToEditorInterfaceEditorLayoutItem(ctx context.Context, valuePath path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+	item, diags := toEditorInterfaceEditorLayoutGroupItem(
+		ctx,
+		valuePath,
+		v.GroupID,
+		v.Name,
+		v.Items,
+		func(ctx context.Context, valuePath path.Path, value EditorInterfaceEditorLayoutItemGroupItemValue) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {
+			return value.ToEditorInterfaceEditorLayoutItem(ctx, valuePath)
+		},
+	)
+	if diags.HasError() {
+		return cm.EditorInterfaceEditorLayoutItem{}, diags
 	}
 
 	return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(item), diags
