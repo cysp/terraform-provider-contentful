@@ -6,7 +6,6 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
@@ -51,27 +50,10 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path pat
 		req.Topics = topics
 	}
 
-	if model.Filters.IsNull() || model.Filters.IsUnknown() {
-		req.Filters = cm.NewOptNilWebhookDefinitionFilterArrayNull()
-	} else {
-		path := path.AtName("filters")
+	filters, filterDiags := ToOptNilWebhookDefinitionFilterArray(ctx, path.AtName("filters"), model.Filters)
+	diags.Append(filterDiags...)
 
-		modelFilters := make([]WebhookFilterValue, len(model.Filters.Elements()))
-		diags.Append(tfsdk.ValueAs(ctx, model.Filters, &modelFilters)...)
-
-		filters := make([]cm.WebhookDefinitionFilter, len(modelFilters))
-
-		for index, modelFilter := range modelFilters {
-			path := path.AtListIndex(index)
-
-			filter, filterDiags := ToWebhookDefinitionFilter(ctx, path, modelFilter)
-			diags.Append(filterDiags...)
-
-			filters[index] = filter
-		}
-
-		req.Filters = cm.NewOptNilWebhookDefinitionFilterArray(filters)
-	}
+	req.Filters = filters
 
 	headersList, headersListDiags := ToWebhookDefinitionHeaders(ctx, path.AtName("headers"), model.Headers)
 	diags.Append(headersListDiags...)

@@ -216,3 +216,58 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 		})
 	}
 }
+
+func TestWebhookModelFilterContainerSemantics(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		filters       TypedList[TypedObject[WebhookFilterValue]]
+		expected      cm.OptNilWebhookDefinitionFilterArray
+		expectedPaths []string
+	}{
+		"null is omitted": {
+			filters:       NewTypedListNull[TypedObject[WebhookFilterValue]](),
+			expected:      cm.NewOptNilWebhookDefinitionFilterArrayNull(),
+			expectedPaths: []string{},
+		},
+		"known empty is explicit": {
+			filters:       NewTypedList([]TypedObject[WebhookFilterValue]{}),
+			expected:      cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{}),
+			expectedPaths: []string{},
+		},
+		"unknown fails closed": {
+			filters:       NewTypedListUnknown[TypedObject[WebhookFilterValue]](),
+			expectedPaths: []string{"filters"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := WebhookModel{
+				Name:              types.StringValue("filters-webhook"),
+				URL:               types.StringValue("https://example.com/webhook"),
+				Topics:            NewTypedListNull[types.String](),
+				Filters:           test.filters,
+				HTTPBasicUsername: types.StringNull(),
+				HTTPBasicPassword: types.StringNull(),
+				Headers:           NewTypedMapNull[TypedObject[WebhookHeaderValue]](),
+				Transformation:    NewTypedObjectNull[WebhookTransformationValue](),
+				Active:            types.BoolValue(true),
+			}
+
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), path.Empty())
+
+			assert.Equal(t, test.expectedPaths, diagnosticPaths(t, diags))
+
+			if len(test.expectedPaths) > 0 {
+				assert.Equal(t, cm.WebhookDefinitionData{}, actual)
+
+				return
+			}
+
+			assert.Equal(t, test.expected, actual.Filters)
+		})
+	}
+}
