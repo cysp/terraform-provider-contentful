@@ -53,6 +53,29 @@ func requestRequiredBool(value types.Bool, valuePath path.Path) (bool, diag.Diag
 	return false, diags
 }
 
+// requestNullableString converts a Terraform string whose wire contract is:
+// null sends an explicit null property, unknown is invalid at the request
+// boundary, and every known value (including the empty string) is sent explicitly.
+func requestNullableString(value types.String, valuePath path.Path) (cm.OptNilString, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	if value.IsUnknown() {
+		diags.AddAttributeError(
+			valuePath,
+			"Unexpected unknown string",
+			"The string value must be known before it can be sent to Contentful.",
+		)
+
+		return cm.OptNilString{}, diags
+	}
+
+	if value.IsNull() {
+		return cm.NewOptNilStringNull(), diags
+	}
+
+	return cm.NewOptNilString(value.ValueString()), diags
+}
+
 // requestOmittableString converts a Terraform string whose wire contract is:
 // null omits the property, unknown is invalid at the request boundary, and every
 // known value (including the empty string) is sent explicitly.

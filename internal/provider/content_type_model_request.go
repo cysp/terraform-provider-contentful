@@ -18,17 +18,8 @@ func (m *ContentTypeModel) ToContentTypeRequestData(ctx context.Context) (cm.Con
 	name, nameDiags := requestRequiredString(m.Name, path.Root("name"))
 	diags.Append(nameDiags...)
 
-	description := cm.NewOptNilStringNull()
-
-	if m.Description.IsUnknown() {
-		diags.AddAttributeError(
-			path.Root("description"),
-			"Unexpected unknown string",
-			"The string value must be known before it can be sent to Contentful.",
-		)
-	} else if !m.Description.IsNull() {
-		description = cm.NewOptNilString(m.Description.ValueString())
-	}
+	description, descriptionDiags := requestNullableString(m.Description, path.Root("description"))
+	diags.Append(descriptionDiags...)
 
 	displayField, displayFieldDiags := requestRequiredString(m.DisplayField, path.Root("display_field"))
 	diags.Append(displayFieldDiags...)
