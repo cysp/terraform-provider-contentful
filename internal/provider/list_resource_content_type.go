@@ -45,10 +45,11 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 		return
 	}
 
-	params := cm.GetContentTypesParams{
-		SpaceID:       config.SpaceID.ValueString(),
-		EnvironmentID: config.EnvironmentID.ValueString(),
-		Order:         []string{"sys.id"},
+	params, paramsDiags := config.requestParams()
+	if paramsDiags.HasError() {
+		stream.Results = list.ListResultsStreamDiagnostics(paramsDiags)
+
+		return
 	}
 
 	stream.Results = paginateContentfulCollectionItemsAsListResults(ctx, req,
