@@ -26,10 +26,21 @@ func TestContentTypeMetadataRequestSerialization(t *testing.T) {
 			metadata: NewTypedObjectNull[ContentTypeMetadataValue](),
 			expected: `{"name":"Test","description":null,"displayField":"title","fields":[]}`,
 		},
+		"unresolved computed metadata": {
+			metadata: NewTypedObjectUnknown[ContentTypeMetadataValue](),
+			expected: `{"name":"Test","description":null,"displayField":"title","fields":[]}`,
+		},
 		"annotations with taxonomy omitted": {
 			metadata: NewTypedObject(ContentTypeMetadataValue{
 				Annotations: NewNormalizedJSONTypesNormalizedValue([]byte(`{"ContentType":[]}`)),
 				Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
+			}),
+			expected: `{"name":"Test","description":null,"displayField":"title","fields":[],"metadata":{"annotations":{"ContentType":[]}}}`,
+		},
+		"annotations with unresolved computed taxonomy": {
+			metadata: NewTypedObject(ContentTypeMetadataValue{
+				Annotations: NewNormalizedJSONTypesNormalizedValue([]byte(`{"ContentType":[]}`)),
+				Taxonomy:    NewTypedListUnknown[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 			}),
 			expected: `{"name":"Test","description":null,"displayField":"title","fields":[],"metadata":{"annotations":{"ContentType":[]}}}`,
 		},

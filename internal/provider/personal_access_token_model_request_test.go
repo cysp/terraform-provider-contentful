@@ -5,7 +5,6 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -72,19 +71,4 @@ func TestPersonalAccessTokenModelToRequestScopes(t *testing.T) {
 			assert.Equal(t, test.expectedDiagnostics, attributeDiagnosticPaths(t, diags))
 		})
 	}
-}
-
-func attributeDiagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
-	t.Helper()
-
-	paths := make([]string, 0, len(diags.Errors()))
-
-	for _, diagnostic := range diags.Errors() {
-		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
-		require.True(t, ok)
-
-		paths = append(paths, withPath.Path().String())
-	}
-
-	return paths
 }
