@@ -6,88 +6,138 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToOptContentTypeMetadata(ctx context.Context, path path.Path, m TypedObject[ContentTypeMetadataValue]) (cm.OptContentTypeMetadata, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	value, valueOk := m.GetValue()
-	if !valueOk {
-		return cm.OptContentTypeMetadata{}, diags
+func ToOptContentTypeMetadata(
+	ctx context.Context,
+	valuePath path.Path,
+	metadataObject TypedObject[ContentTypeMetadataValue],
+) (cm.OptContentTypeMetadata, diag.Diagnostics) {
+	value, ok := metadataObject.GetValue()
+	if !ok {
+		// Optional+Computed metadata uses both null and unknown to represent omission
+		// while plan reconciliation preserves remote taxonomy configuration.
+		return cm.OptContentTypeMetadata{}, nil
 	}
 
-	taxonomy := ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(ctx, path.AtName("taxonomy"), value.Taxonomy)
+	diags := diag.Diagnostics{}
+	taxonomy, taxonomyDiags := ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
+		ctx,
+		valuePath.AtName("taxonomy"),
+		value.Taxonomy,
+	)
+	diags.Append(taxonomyDiags...)
 
 	var annotations []byte
-	if !value.Annotations.IsNull() && !value.Annotations.IsUnknown() {
+
+	if value.Annotations.IsUnknown() {
+		diags.AddAttributeError(
+			valuePath.AtName("annotations"),
+			"Unexpected unknown content type metadata annotations",
+			"Content type metadata annotations must be known before they can be sent to Contentful.",
+		)
+	} else if !value.Annotations.IsNull() {
 		annotations = []byte(value.Annotations.ValueString())
 	}
 
-	metadata := cm.ContentTypeMetadata{
-		Annotations: annotations,
-		Taxonomy:    taxonomy,
+	if diags.HasError() {
+		return cm.OptContentTypeMetadata{}, diags
 	}
 
-	return cm.NewOptContentTypeMetadata(metadata), diags
+	return cm.NewOptContentTypeMetadata(cm.ContentTypeMetadata{
+		Annotations: annotations,
+		Taxonomy:    taxonomy,
+	}), diags
 }
 
 func ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
 	ctx context.Context,
-	path path.Path,
+	valuePath path.Path,
 	items TypedList[TypedObject[ContentTypeMetadataTaxonomyItemValue]],
-) []cm.ContentTypeMetadataTaxonomyItem {
+) ([]cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
 	if items.IsNull() || items.IsUnknown() {
-		return nil
+		// taxonomy is Optional+Computed: an unresolved container represents
+		// omission, while a known empty list explicitly removes taxonomy items.
+		return nil, nil
 	}
 
-	itemValues := items.Elements()
-
-	requestItems := make([]cm.ContentTypeMetadataTaxonomyItem, 0, len(itemValues))
-
-	for index, itemValue := range itemValues {
-		item := ToContentTypeMetadataTaxonomyItem(ctx, path.AtListIndex(index), itemValue)
-
-		requestItems = append(requestItems, item...)
-	}
-
-	return requestItems
+	return convertKnownObjectListElements(
+		ctx,
+		valuePath,
+		items.Elements(),
+		func(ctx context.Context, itemPath path.Path, value ContentTypeMetadataTaxonomyItemValue) (cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
+			return value.ToContentTypeMetadataTaxonomyItem(ctx, itemPath)
+		},
+	)
 }
 
-func ToContentTypeMetadataTaxonomyItem(
+func (value ContentTypeMetadataTaxonomyItemValue) ToContentTypeMetadataTaxonomyItem(
 	_ context.Context,
-	_ path.Path,
-	object TypedObject[ContentTypeMetadataTaxonomyItemValue],
-) []cm.ContentTypeMetadataTaxonomyItem {
-	value, valueOk := object.GetValue()
-	if !valueOk {
-		return nil
-	}
+	valuePath path.Path,
+) (cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
+	conceptPath := valuePath.AtName("taxonomy_concept")
+	conceptSchemePath := valuePath.AtName("taxonomy_concept_scheme")
 
-	items := make([]cm.ContentTypeMetadataTaxonomyItem, 0, 1)
+	return convertExactlyOneKnownAlternative(
+		valuePath,
+		knownUnionAlternative[cm.ContentTypeMetadataTaxonomyItem]{
+			Name:  "taxonomy_concept",
+			Path:  conceptPath,
+			Value: value.TaxonomyConcept,
+			Convert: func() (cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
+				concept, _ := value.TaxonomyConcept.GetValue()
 
-	taxonomyConceptScheme, taxonomyConceptSchemeOk := value.TaxonomyConceptScheme.GetValue()
-	if taxonomyConceptSchemeOk {
-		items = append(items, cm.ContentTypeMetadataTaxonomyItem{
-			Sys: cm.ContentTypeMetadataTaxonomyItemSys{
-				Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
-				LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme,
-				ID:       taxonomyConceptScheme.ID.ValueString(),
+				return contentTypeMetadataTaxonomyItem(
+					concept.ID,
+					concept.Required,
+					conceptPath,
+					cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept,
+				)
 			},
-			Required: cm.NewOptPointerBool(taxonomyConceptScheme.Required.ValueBoolPointer()),
-		})
-	}
+		},
+		knownUnionAlternative[cm.ContentTypeMetadataTaxonomyItem]{
+			Name:  "taxonomy_concept_scheme",
+			Path:  conceptSchemePath,
+			Value: value.TaxonomyConceptScheme,
+			Convert: func() (cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
+				conceptScheme, _ := value.TaxonomyConceptScheme.GetValue()
 
-	taxonomyConcept, taxonomyConceptOk := value.TaxonomyConcept.GetValue()
-	if taxonomyConceptOk {
-		items = append(items, cm.ContentTypeMetadataTaxonomyItem{
-			Sys: cm.ContentTypeMetadataTaxonomyItemSys{
-				Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
-				LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept,
-				ID:       taxonomyConcept.ID.ValueString(),
+				return contentTypeMetadataTaxonomyItem(
+					conceptScheme.ID,
+					conceptScheme.Required,
+					conceptSchemePath,
+					cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme,
+				)
 			},
-			Required: cm.NewOptPointerBool(taxonomyConcept.Required.ValueBoolPointer()),
-		})
+		},
+	)
+}
+
+func contentTypeMetadataTaxonomyItem(
+	idValue types.String,
+	requiredValue types.Bool,
+	valuePath path.Path,
+	linkType cm.ContentTypeMetadataTaxonomyItemSysLinkType,
+) (cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
+	// Keep scalar conversion local to Content Type; the reusable seam here is
+	// union selection, not a repository-wide value-conversion abstraction.
+	taxonomyID, idDiags := contentTypeRequiredString(idValue, valuePath.AtName("id"))
+	required, requiredDiags := contentTypeOptionalBool(requiredValue, valuePath.AtName("required"))
+	diags := diag.Diagnostics{}
+	diags.Append(idDiags...)
+	diags.Append(requiredDiags...)
+
+	if diags.HasError() {
+		return cm.ContentTypeMetadataTaxonomyItem{}, diags
 	}
 
-	return items
+	return cm.ContentTypeMetadataTaxonomyItem{
+		Sys: cm.ContentTypeMetadataTaxonomyItemSys{
+			Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
+			LinkType: linkType,
+			ID:       taxonomyID,
+		},
+		Required: required,
+	}, diags
 }
