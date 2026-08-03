@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -303,47 +302,87 @@ func (v ContentTypeFieldAllowedResourceItemValue) ToResourceLink(
 	ctx context.Context,
 	valuePath path.Path,
 ) (cm.ResourceLink, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-	resourceLink := cm.ResourceLink{}
+	externalPath := valuePath.AtName("external")
+	contentfulEntryPath := valuePath.AtName("contentful_entry")
 
-	if external, ok := v.External.GetValue(); ok {
-		diags.Append(external.SetResourceLink(ctx, valuePath.AtName("external"), &resourceLink)...)
-	}
+	return convertExactlyOneKnownAlternative(
+		valuePath,
+		knownUnionAlternative[cm.ResourceLink]{
+			Name:  "external",
+			Path:  externalPath,
+			Value: v.External,
+			Convert: func() (cm.ResourceLink, diag.Diagnostics) {
+				external, _ := v.External.GetValue()
 
-	if contentfulEntry, ok := v.ContentfulEntry.GetValue(); ok {
-		diags.Append(contentfulEntry.SetResourceLink(ctx, valuePath.AtName("contentful_entry"), &resourceLink)...)
-	}
+				return external.ToResourceLink(ctx, externalPath)
+			},
+		},
+		knownUnionAlternative[cm.ResourceLink]{
+			Name:  "contentful_entry",
+			Path:  contentfulEntryPath,
+			Value: v.ContentfulEntry,
+			Convert: func() (cm.ResourceLink, diag.Diagnostics) {
+				contentfulEntry, _ := v.ContentfulEntry.GetValue()
 
-	return resourceLink, diags
+				return contentfulEntry.ToResourceLink(ctx, contentfulEntryPath)
+			},
+		},
+	)
 }
 
-func (v ContentTypeFieldAllowedResourceItemExternalValue) SetResourceLink(
+func (v ContentTypeFieldAllowedResourceItemExternalValue) ToResourceLink(
 	_ context.Context,
-	_ path.Path,
-	resourceLink *cm.ResourceLink,
-) diag.Diagnostics {
-	resourceLink.Type = v.TypeID.ValueString()
-	resourceLink.Source = cm.OptString{}
-	resourceLink.ContentTypes = nil
+	valuePath path.Path,
+) (cm.ResourceLink, diag.Diagnostics) {
+	typeID, diags := contentTypeRequiredString(v.TypeID, valuePath.AtName("type"))
+	if diags.HasError() {
+		return cm.ResourceLink{}, diags
+	}
 
-	return nil
+	return cm.ResourceLink{Type: typeID}, diags
 }
 
-func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) SetResourceLink(
-	ctx context.Context,
-	_ path.Path,
-	resourceLink *cm.ResourceLink,
-) diag.Diagnostics {
+func (v ContentTypeFieldAllowedResourceItemContentfulEntryValue) ToResourceLink(
+	_ context.Context,
+	valuePath path.Path,
+) (cm.ResourceLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	contentTypes := make([]string, len(v.ContentTypes.Elements()))
-	diags.Append(tfsdk.ValueAs(ctx, v.ContentTypes, &contentTypes)...)
+	source, sourceDiags := contentTypeRequiredString(v.Source, valuePath.AtName("source"))
+	diags.Append(sourceDiags...)
 
-	resourceLink.Type = contentfulEntryAllowedResourceType
-	resourceLink.Source = cm.NewOptString(v.Source.ValueString())
-	resourceLink.ContentTypes = contentTypes
+	contentTypesPath := valuePath.AtName("content_types")
+	contentTypes := []string(nil)
 
-	return diags
+	switch {
+	case v.ContentTypes.IsUnknown():
+		diags.AddAttributeError(
+			contentTypesPath,
+			"Unexpected unknown content types",
+			"Allowed content types must be known before they can be sent to Contentful.",
+		)
+	case v.ContentTypes.IsNull():
+		diags.AddAttributeError(
+			contentTypesPath,
+			"Unexpected null content types",
+			"Allowed content types are required.",
+		)
+	default:
+		var contentTypeDiags diag.Diagnostics
+
+		contentTypes, contentTypeDiags = knownStringListElements(contentTypesPath, v.ContentTypes.Elements())
+		diags.Append(contentTypeDiags...)
+	}
+
+	if diags.HasError() {
+		return cm.ResourceLink{}, diags
+	}
+
+	return cm.ResourceLink{
+		Type:         contentfulEntryAllowedResourceType,
+		Source:       cm.NewOptString(source),
+		ContentTypes: contentTypes,
+	}, diags
 }
 
 func contentTypeRequiredString(value types.String, valuePath path.Path) (string, diag.Diagnostics) {
