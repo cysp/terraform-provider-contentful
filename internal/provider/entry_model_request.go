@@ -6,6 +6,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
 func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.Diagnostics) {
@@ -17,6 +18,10 @@ func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.D
 	metadata, metadataDiags := entryModelToOptEntryMetadata(ctx, m)
 	diags.Append(metadataDiags...)
 
+	if diags.HasError() {
+		return cm.EntryRequest{}, diags
+	}
+
 	return cm.EntryRequest{
 		Fields:   fields,
 		Metadata: metadata,
@@ -24,8 +29,26 @@ func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.D
 }
 
 func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntryFields, diag.Diagnostics) {
-	if model.Fields.IsNull() || model.Fields.IsUnknown() {
-		return cm.OptEntryFields{}, nil
+	if model.Fields.IsUnknown() {
+		diags := diag.Diagnostics{}
+		diags.AddAttributeError(
+			path.Root("fields"),
+			"Unexpected unknown entry fields",
+			"Entry fields must be known before they can be sent to Contentful.",
+		)
+
+		return cm.OptEntryFields{}, diags
+	}
+
+	if model.Fields.IsNull() {
+		diags := diag.Diagnostics{}
+		diags.AddAttributeError(
+			path.Root("fields"),
+			"Unexpected null entry fields",
+			"Entry fields are required.",
+		)
+
+		return cm.OptEntryFields{}, diags
 	}
 
 	diags := diag.Diagnostics{}
@@ -35,10 +58,26 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 	attrs := model.Fields.Elements()
 	for k, v := range attrs {
 		if v.IsNull() {
+			// Terraform null omits the field. A configured JSON null remains a
+			// known jsontypes.Normalized value and is sent as JSON null.
+			continue
+		}
+
+		if v.IsUnknown() {
+			diags.AddAttributeError(
+				path.Root("fields").AtMapKey(k),
+				"Unexpected unknown entry field",
+				"Entry field values must be known before they can be sent to Contentful.",
+			)
+
 			continue
 		}
 
 		fields[k] = jx.Raw(v.ValueString())
+	}
+
+	if diags.HasError() {
+		return cm.OptEntryFields{}, diags
 	}
 
 	return cm.NewOptEntryFields(fields), diags
@@ -55,10 +94,14 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 
 	modelConcepts := model.Metadata.Value().Concepts
 	if !modelConcepts.IsNull() && !modelConcepts.IsUnknown() {
-		concepts := make([]cm.TaxonomyConceptLink, 0, len(modelConcepts.Elements()))
+		conceptValues, conceptDiags := knownStringListElements(
+			path.Root("metadata").AtName("concepts"),
+			modelConcepts.Elements(),
+		)
+		diags.Append(conceptDiags...)
 
-		for _, concept := range modelConcepts.Elements() {
-			conceptValue := concept.ValueString()
+		concepts := make([]cm.TaxonomyConceptLink, 0, len(conceptValues))
+		for _, conceptValue := range conceptValues {
 			concepts = append(concepts, cm.NewTaxonomyConceptLink(conceptValue))
 		}
 
@@ -67,14 +110,22 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 
 	modelTags := model.Metadata.Value().Tags
 	if !modelTags.IsNull() && !modelTags.IsUnknown() {
-		tags := make([]cm.TagLink, 0, len(modelTags.Elements()))
+		tagValues, tagDiags := knownStringListElements(
+			path.Root("metadata").AtName("tags"),
+			modelTags.Elements(),
+		)
+		diags.Append(tagDiags...)
 
-		for _, tag := range modelTags.Elements() {
-			tagValue := tag.ValueString()
+		tags := make([]cm.TagLink, 0, len(tagValues))
+		for _, tagValue := range tagValues {
 			tags = append(tags, cm.NewTagLink(tagValue))
 		}
 
 		metadata.Tags = tags
+	}
+
+	if diags.HasError() {
+		return cm.OptEntryMetadata{}, diags
 	}
 
 	return cm.NewOptEntryMetadata(metadata), diags
