@@ -11,20 +11,51 @@ import (
 func (model *RoleModel) ToRoleData(ctx context.Context) (cm.RoleData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	request := cm.RoleData{
-		Name:        model.Name.ValueString(),
-		Description: cm.NewOptNilPointerString(model.Description.ValueStringPointer()),
+	var name string
+
+	switch {
+	case model.Name.IsUnknown():
+		diags.AddAttributeError(
+			path.Root("name"),
+			"Unexpected unknown role name",
+			"The role name must be known before it can be sent to Contentful.",
+		)
+	case model.Name.IsNull():
+		diags.AddAttributeError(
+			path.Root("name"),
+			"Unexpected null role name",
+			"The role name is required.",
+		)
+	default:
+		name = model.Name.ValueString()
+	}
+
+	description := cm.NewOptNilStringNull()
+
+	if model.Description.IsUnknown() {
+		diags.AddAttributeError(
+			path.Root("description"),
+			"Unexpected unknown role description",
+			"The role description must be known before it can be sent to Contentful.",
+		)
+	} else if !model.Description.IsNull() {
+		description = cm.NewOptNilString(model.Description.ValueString())
 	}
 
 	permissions, permissionsDiags := ToRoleDataPermissions(ctx, path.Root("permissions"), model.Permissions)
 	diags.Append(permissionsDiags...)
 
-	request.Permissions = permissions
-
 	policies, policiesDiags := ToRoleDataPolicies(ctx, path.Root("policies"), model.Policies)
 	diags.Append(policiesDiags...)
 
-	request.Policies = policies
+	if diags.HasError() {
+		return cm.RoleData{}, diags
+	}
 
-	return request, diags
+	return cm.RoleData{
+		Name:        name,
+		Description: description,
+		Permissions: permissions,
+		Policies:    policies,
+	}, diags
 }
