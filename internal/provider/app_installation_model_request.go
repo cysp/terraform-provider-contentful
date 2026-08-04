@@ -8,7 +8,6 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx context.Context) (cm.OptString, diag.Diagnostics) {
@@ -28,25 +27,8 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue(ctx conte
 	return value, diags
 }
 
-func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(ctx context.Context) ([]string, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	if model.Marketplace.IsNull() || model.Marketplace.IsUnknown() {
-		return []string{}, diags
-	}
-
-	marketplaceElements := make([]types.String, len(model.Marketplace.Elements()))
-	diags.Append(model.Marketplace.ElementsAs(ctx, &marketplaceElements, false)...)
-
-	marketplaceStrings := make([]string, 0, len(marketplaceElements))
-
-	for _, element := range marketplaceElements {
-		if !element.IsNull() && !element.IsUnknown() {
-			marketplaceStrings = append(marketplaceStrings, element.ValueString())
-		}
-	}
-
-	return marketplaceStrings, diags
+func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValueElements(_ context.Context) ([]string, diag.Diagnostics) {
+	return knownOptionalStringSetElements(path.Root("marketplace"), model.Marketplace)
 }
 
 func (model *AppInstallationModel) ToAppInstallationData() (cm.AppInstallationData, diag.Diagnostics) {
@@ -56,7 +38,13 @@ func (model *AppInstallationModel) ToAppInstallationData() (cm.AppInstallationDa
 
 	switch {
 	case model.Parameters.IsUnknown():
-		diags.AddAttributeWarning(path.Root("parameters"), "Failed to update app installation parameters", "Parameters are unknown")
+		diags.AddAttributeError(
+			path.Root("parameters"),
+			"Unexpected unknown app installation parameters",
+			"App installation parameters must be known before they can be sent to Contentful.",
+		)
+
+		return cm.AppInstallationData{}, diags
 	case model.Parameters.IsNull():
 	default:
 		fields.Parameters = []byte(model.Parameters.ValueString())

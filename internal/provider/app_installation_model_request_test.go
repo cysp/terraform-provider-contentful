@@ -9,15 +9,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		model        AppInstallationModel
-		expectErrors bool
-		expected     cm.OptString
+		model               AppInstallationModel
+		expected            cm.OptString
+		expectedDiagnostics []string
 	}{
 		"absent": {
 			model:    AppInstallationModel{},
@@ -33,7 +34,32 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 			model: AppInstallationModel{
 				Marketplace: types.SetUnknown(types.StringType),
 			},
-			expected: cm.OptString{},
+			expected:            cm.OptString{},
+			expectedDiagnostics: []string{"marketplace"},
+		},
+		"null child": {
+			model: AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringNull()}),
+			},
+			expected:            cm.OptString{},
+			expectedDiagnostics: []string{"marketplace[Value(<null>)]"},
+		},
+		"unknown child": {
+			model: AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringUnknown()}),
+			},
+			expected:            cm.OptString{},
+			expectedDiagnostics: []string{"marketplace[Value(<unknown>)]"},
+		},
+		"mixed valid and unknown children fails closed": {
+			model: AppInstallationModel{
+				Marketplace: types.SetValueMust(types.StringType, []attr.Value{
+					types.StringValue("foo"),
+					types.StringUnknown(),
+				}),
+			},
+			expected:            cm.OptString{},
+			expectedDiagnostics: []string{"marketplace[Value(<unknown>)]"},
 		},
 		"empty": {
 			model: AppInstallationModel{
@@ -63,8 +89,9 @@ func TestToXContentfulMarketplaceHeaderValue(t *testing.T) {
 
 			assert.Equal(t, test.expected, value)
 
-			if test.expectErrors {
-				assert.NotEmpty(t, diags.Errors())
+			if len(test.expectedDiagnostics) > 0 {
+				require.True(t, diags.HasError())
+				assert.Equal(t, test.expectedDiagnostics, attributeDiagnosticPaths(t, diags))
 			} else {
 				assert.Empty(t, diags.Errors())
 			}
@@ -91,7 +118,7 @@ func TestToAppInstallationData(t *testing.T) {
 			model: AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedUnknown(),
 			},
-			expectWarnings:      true,
+			expectErrors:        true,
 			expectedRequestBody: "{}",
 		},
 		"empty": {
@@ -125,7 +152,9 @@ func TestToAppInstallationData(t *testing.T) {
 			assert.Equal(t, test.expectedRequestBody, string(requestBody))
 
 			if test.expectErrors {
-				assert.NotEmpty(t, diags.Errors())
+				require.True(t, diags.HasError())
+				assert.Equal(t, cm.AppInstallationData{}, req)
+				assert.Equal(t, []string{"parameters"}, attributeDiagnosticPaths(t, diags))
 			} else {
 				assert.Empty(t, diags.Errors())
 			}

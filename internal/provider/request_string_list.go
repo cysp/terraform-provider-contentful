@@ -37,3 +37,60 @@ func knownStringListElements(valuePath path.Path, elements []types.String) ([]st
 
 	return values, diags
 }
+
+func knownOptionalStringSetElements(valuePath path.Path, value types.Set) ([]string, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	switch {
+	case value.IsUnknown():
+		diags.AddAttributeError(
+			valuePath,
+			"Unexpected unknown string set",
+			"The string set must be known before it can be sent to Contentful.",
+		)
+
+		return nil, diags
+	case value.IsNull():
+		return []string{}, diags
+	}
+
+	values := make([]string, 0, len(value.Elements()))
+
+	for _, rawElement := range value.Elements() {
+		elementPath := valuePath.AtSetValue(rawElement)
+		element, ok := rawElement.(types.String)
+
+		if !ok {
+			diags.AddAttributeError(
+				elementPath,
+				"Unexpected string set element type",
+				"The set element must be a string before it can be sent to Contentful.",
+			)
+
+			continue
+		}
+
+		switch {
+		case element.IsUnknown():
+			diags.AddAttributeError(
+				elementPath,
+				"Unexpected unknown string set element",
+				"The string value must be known before it can be sent to Contentful.",
+			)
+		case element.IsNull():
+			diags.AddAttributeError(
+				elementPath,
+				"Unexpected null string set element",
+				"The string value cannot be null when it is sent to Contentful.",
+			)
+		default:
+			values = append(values, element.ValueString())
+		}
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return values, diags
+}
