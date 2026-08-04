@@ -103,3 +103,21 @@ func TestPrivateDataSetInf(t *testing.T) {
 
 	assert.NotEmpty(t, diags)
 }
+
+func TestContentfulResourceVersionGetSet(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	privateData := newProviderPrivateData()
+
+	diags := SetContentfulResourceVersion(ctx, privateData, 42)
+
+	assert.Equal(t, []byte{'4', '2'}, privateData.data["version"])
+	assert.Empty(t, diags)
+
+	value, diags := GetContentfulResourceVersion(ctx, privateData)
+
+	assert.Equal(t, 42, value)
+	assert.Empty(t, diags)
+}
