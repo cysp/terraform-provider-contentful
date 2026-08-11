@@ -82,7 +82,7 @@ func TestWriteOnlySecretHashesChanged(t *testing.T) {
 	hash, err := writeOnlySecretHash(argumentPath, value)
 	require.NoError(t, err)
 
-	private := fakePrivateState{
+	private := &fakePrivateState{
 		values: map[string][]byte{
 			writeOnlySecretHashesPrivateKey: mustJSONMarshal(t, []writeOnlySecretHashRecord{{
 				Path: argumentPath.String(),
@@ -109,7 +109,7 @@ func TestWriteOnlySecretHashesChanged(t *testing.T) {
 func TestReadWriteOnlySecretHashesRejectsOversizedPrivateState(t *testing.T) {
 	t.Parallel()
 
-	private := fakePrivateState{
+	private := &fakePrivateState{
 		values: map[string][]byte{
 			writeOnlySecretHashesPrivateKey: bytes.Repeat([]byte(" "), writeOnlySecretHashesMaxLength+1),
 		},
@@ -120,12 +120,31 @@ func TestReadWriteOnlySecretHashesRejectsOversizedPrivateState(t *testing.T) {
 	assert.True(t, diags.HasError())
 }
 
+func TestWriteWriteOnlySecretHashesRejectsOversizedPrivateState(t *testing.T) {
+	t.Parallel()
+
+	private := &fakePrivateState{values: map[string][]byte{}}
+	diags := writeWriteOnlySecretHashes(context.Background(), private, WriteOnlySecretValues{{
+		Path:  path.Root(strings.Repeat("x", writeOnlySecretHashesMaxLength)),
+		Value: types.StringValue("secret"),
+	}})
+
+	assert.True(t, diags.HasError())
+	assert.NotContains(t, private.values, writeOnlySecretHashesPrivateKey)
+}
+
 type fakePrivateState struct {
 	values map[string][]byte
 }
 
-func (s fakePrivateState) GetKey(_ context.Context, key string) ([]byte, diag.Diagnostics) {
+func (s *fakePrivateState) GetKey(_ context.Context, key string) ([]byte, diag.Diagnostics) {
 	return s.values[key], nil
+}
+
+func (s *fakePrivateState) SetKey(_ context.Context, key string, value []byte) diag.Diagnostics {
+	s.values[key] = value
+
+	return nil
 }
 
 func mustJSONMarshal(t *testing.T, value any) []byte {

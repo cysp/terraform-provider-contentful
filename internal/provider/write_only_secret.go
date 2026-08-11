@@ -256,6 +256,15 @@ func writeWriteOnlySecretHashes(ctx context.Context, private privateStateWriter,
 		return diags
 	}
 
+	if len(data) > writeOnlySecretHashesMaxLength {
+		diags.AddError(
+			"Invalid write-only secret hashes",
+			fmt.Sprintf("Write-only secret private state exceeds the %d-byte limit.", writeOnlySecretHashesMaxLength),
+		)
+
+		return diags
+	}
+
 	diags.Append(private.SetKey(ctx, writeOnlySecretHashesPrivateKey, data)...)
 
 	return diags
