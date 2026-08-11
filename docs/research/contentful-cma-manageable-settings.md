@@ -38,9 +38,9 @@ Conclusions use deliberately narrow standards:
 
 ## Provider and generated-client baseline
 
-The provider currently registers these 21 Terraform resource types:
+The provider currently registers these 22 Terraform resource types:
 
-`app_definition`, `app_signing_secret`, `app_installation`, `content_type`, `delivery_api_key`, `editor_interface`, `environment_alias`, `environment`, `entry`, `extension`, `personal_access_token`, `resource_provider`, `resource_type`, `role`, `space_enablements`, `tag`, `taxonomy_concept`, `taxonomy_concept_scheme`, `team`, `team_space_membership`, and `webhook`.
+`app_definition`, `app_key`, `app_signing_secret`, `app_installation`, `content_type`, `delivery_api_key`, `editor_interface`, `environment_alias`, `environment`, `entry`, `extension`, `personal_access_token`, `resource_provider`, `resource_type`, `role`, `space_enablements`, `tag`, `taxonomy_concept`, `taxonomy_concept_scheme`, `team`, `team_space_membership`, and `webhook`.
 
 The checked-in [`openapi.yml`](../../internal/contentful-management-go/openapi/openapi.yml) does not contain the investigated locale, UI Config, security-contact, organization-metadata, organization-enablement, direct-membership, preview-configuration, access-policy, identity-provider, or embargoed-mode paths. It does contain other organization-scoped resource families. This is a generated-client implementation gap, not evidence that the confirmed public APIs are absent.
 
@@ -224,7 +224,7 @@ The CMA overview recommends fetching a resource, modifying it, and sending the c
 
 ### UI Config complete-object client behavior
 
-The public management SDK deep-copies the supplied UI Config, removes `sys`, and sends the remaining object with the current version. Its example modifies a fetched object rather than constructing a one-field request. The provider should therefore preserve unknown mutable fields and avoid claiming exclusive ownership of this shared document. The live client also sent the complete shared document, including unrelated Home, publishing, and entry-list configuration. Server behavior for an intentionally omitted field remains unverified. [UI Config endpoint source](https://github.com/contentful/contentful-management.js/blob/main/lib/adapters/REST/endpoints/ui-config.ts) [UI Config API source](https://github.com/contentful/contentful-management.js/blob/main/lib/create-ui-config-api.ts)
+The public management SDK deep-copies the supplied UI Config, removes `sys`, and sends the remaining object with the current version. Its example modifies a fetched object rather than constructing a one-field request. The provider should therefore preserve unknown mutable fields and avoid claiming exclusive ownership of this shared document. The live client also sent the complete shared document, including unrelated Home, publishing, and entry-list configuration. Server behavior for an intentionally omitted field remains unverified. [UI Config endpoint source](https://github.com/contentful/contentful-management.js/blob/83d6a3f5fcbc9773c21b6779fe66c7fe59349f66/lib/adapters/REST/endpoints/ui-config.ts) [UI Config API source](https://github.com/contentful/contentful-management.js/blob/83d6a3f5fcbc9773c21b6779fe66c7fe59349f66/lib/create-ui-config-api.ts)
 
 ### Preview-environment lifecycle and rank action
 
@@ -262,11 +262,11 @@ The `PUT` body is exactly `{ "protectionMode": value }`, and the inspected clien
 
 ### Locale fallback deletion
 
-The public SDK sends a complete mutable locale representation on update, removing `sys`, the read-only `default` property, and internal fields. The web app cannot directly delete a locale referenced as another locale's fallback. It first updates every dependent locale with its own current version, then deletes the target. The dependent updates run concurrently and no transaction or rollback is evident, so partial failure can leave some dependents changed while the target remains. This should be modeled as a multi-resource transition with explicit recovery, not as one atomic delete. [Locale endpoint source](https://github.com/contentful/contentful-management.js/blob/main/lib/adapters/REST/endpoints/locale.ts) [Locales](https://www.contentful.com/developers/docs/references/content-management-api/locales/) [Captured web-app implementation evidence](#captured-web-app-implementation-evidence)
+The public SDK sends a complete mutable locale representation on update, removing `sys`, the read-only `default` property, and internal fields. The web app cannot directly delete a locale referenced as another locale's fallback. It first updates every dependent locale with its own current version, then deletes the target. The dependent updates run concurrently and no transaction or rollback is evident, so partial failure can leave some dependents changed while the target remains. This should be modeled as a multi-resource transition with explicit recovery, not as one atomic delete. [Locale endpoint source](https://github.com/contentful/contentful-management.js/blob/83d6a3f5fcbc9773c21b6779fe66c7fe59349f66/lib/adapters/REST/endpoints/locale.ts) [Locales](https://www.contentful.com/developers/docs/references/content-management-api/locales/) [Captured web-app implementation evidence](#captured-web-app-implementation-evidence)
 
 ### Unresolved organization preference mutation
 
-The public organization representation contains `defaultUserLanguage`, and the public CMA exposes organization update. The exact web-app save request, body ownership, and concurrency behavior for this field were not established. It remains unresolved rather than inheriting semantics from unrelated organization resources. [Organization entity source](https://github.com/contentful/contentful-management.js/blob/main/lib/entities/organization.ts) [Organizations](https://www.contentful.com/developers/docs/references/content-management-api/organizations/)
+The public organization representation contains `defaultUserLanguage`, and the public CMA exposes organization update. The exact web-app save request, body ownership, and concurrency behavior for this field were not established. It remains unresolved rather than inheriting semantics from unrelated organization resources. [Organization entity source](https://github.com/contentful/contentful-management.js/blob/83d6a3f5fcbc9773c21b6779fe66c7fe59349f66/lib/entities/organization.ts) [Organizations](https://www.contentful.com/developers/docs/references/content-management-api/organizations/)
 
 ## Tier A: publicly documented gaps
 
