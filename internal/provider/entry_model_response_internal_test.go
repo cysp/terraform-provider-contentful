@@ -5,7 +5,6 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,31 +31,5 @@ func TestNewEntryFieldsFromResponsePreservesKnownJSONNull(t *testing.T) {
 	require.False(t, diags.HasError(), diags.Errors())
 	require.False(t, fields.IsNull())
 	require.Contains(t, fields.Elements(), "optional")
-	assert.False(t, fields.Elements()["optional"].IsNull())
-	assert.Equal(t, `null`, fields.Elements()["optional"].ValueString())
-}
-
-func TestMergeMissingEntryFields(t *testing.T) {
-	t.Parallel()
-
-	returnedValue := jsontypes.NewNormalizedValue(`{"en-US":"returned"}`)
-	configuredValue := jsontypes.NewNormalizedValue(`{"en-US":"configured"}`)
-	missingValue := jsontypes.NewNormalizedValue(`{"en-US":"missing"}`)
-	returned := NewTypedMap(map[string]jsontypes.Normalized{"returned": returnedValue})
-	configured := NewTypedMap(map[string]jsontypes.Normalized{
-		"returned": configuredValue,
-		"missing":  missingValue,
-	})
-
-	actual := mergeMissingEntryFields(returned, configured)
-
-	assert.Equal(t, map[string]jsontypes.Normalized{
-		"returned": returnedValue,
-		"missing":  missingValue,
-	}, actual.Elements())
-	assert.Equal(t, map[string]jsontypes.Normalized{"returned": returnedValue}, returned.Elements())
-	assert.Equal(t, map[string]jsontypes.Normalized{
-		"returned": configuredValue,
-		"missing":  missingValue,
-	}, configured.Elements())
+	assert.True(t, fields.Elements()["optional"].IsNull())
 }

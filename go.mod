@@ -7,7 +7,6 @@ require (
 	github.com/go-faster/jx v1.2.0
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/hcl/v2 v2.24.0
-	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/hashicorp/terraform-plugin-docs v0.25.0
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
 	github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0
@@ -19,8 +18,8 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/ogen-go/ogen v1.23.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/sync v0.22.0
 	github.com/zclconf/go-cty v1.19.0
+	golang.org/x/sync v0.22.0
 	pgregory.net/rapid v1.3.0
 )
 

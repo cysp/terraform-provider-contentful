@@ -253,17 +253,14 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 
 func mergeMissingEntryFields(target *TypedMap[TypedMap[jsontypes.Normalized]], fallback TypedMap[TypedMap[jsontypes.Normalized]]) {
 	fallbackElements := fallback.Elements()
-	if len(fallbackElements) == 0 {
-		return
-	}
-
-	if target.IsNull() || target.IsUnknown() {
+	if target.IsNull() || target.IsUnknown() || target.Elements() == nil {
 		*target = NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{})
 	}
 
+	targetElements := target.Elements()
 	for fieldKey, fieldValue := range fallbackElements {
-		if !target.Has(fieldKey) {
-			target.Set(fieldKey, fieldValue)
+		if _, ok := targetElements[fieldKey]; !ok {
+			targetElements[fieldKey] = fieldValue
 		}
 	}
 }

@@ -15,10 +15,14 @@ func TestEntryRequestDistinguishesTerraformNullFromJSONNull(t *testing.T) {
 	t.Parallel()
 
 	model := EntryModel{
-		Fields: NewTypedMap(map[string]jsontypes.Normalized{
-			"terraform_null": jsontypes.NewNormalizedNull(),
-			"json_null":      NewNormalizedJSONTypesNormalizedValue([]byte("null")),
-			"value":          NewNormalizedJSONTypesNormalizedValue([]byte(`{"en-US":"value"}`)),
+		Fields: NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{
+			"terraform_null": NewTypedMapNull[jsontypes.Normalized](),
+			"json_null": NewTypedMap(map[string]jsontypes.Normalized{
+				"en-US": NewNormalizedJSONTypesNormalizedValue([]byte("null")),
+			}),
+			"value": NewTypedMap(map[string]jsontypes.Normalized{
+				"en-US": NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
+			}),
 		}),
 		Metadata: NewTypedObjectNull[EntryMetadataValue](),
 	}
@@ -29,7 +33,7 @@ func TestEntryRequestDistinguishesTerraformNullFromJSONNull(t *testing.T) {
 	fields, ok := request.Fields.Get()
 	require.True(t, ok)
 	assert.NotContains(t, fields, "terraform_null")
-	assert.JSONEq(t, "null", string(fields["json_null"]))
+	assert.JSONEq(t, `{"en-US":null}`, string(fields["json_null"]))
 	assert.JSONEq(t, `{"en-US":"value"}`, string(fields["value"]))
 }
 
@@ -37,9 +41,11 @@ func TestEntryRequestUnknownFieldFailsWithoutPartialOutput(t *testing.T) {
 	t.Parallel()
 
 	model := EntryModel{
-		Fields: NewTypedMap(map[string]jsontypes.Normalized{
-			"known":   NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
-			"unknown": jsontypes.NewNormalizedUnknown(),
+		Fields: NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{
+			"known": NewTypedMap(map[string]jsontypes.Normalized{
+				"en-US": NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
+			}),
+			"unknown": NewTypedMapUnknown[jsontypes.Normalized](),
 		}),
 		Metadata: knownEntryMetadata(),
 	}
@@ -53,9 +59,9 @@ func TestEntryRequestUnknownFieldFailsWithoutPartialOutput(t *testing.T) {
 func TestEntryRequestUnresolvedFieldsContainerFailsWithoutPartialOutput(t *testing.T) {
 	t.Parallel()
 
-	for name, fields := range map[string]TypedMap[jsontypes.Normalized]{
-		"null":    NewTypedMapNull[jsontypes.Normalized](),
-		"unknown": NewTypedMapUnknown[jsontypes.Normalized](),
+	for name, fields := range map[string]TypedMap[TypedMap[jsontypes.Normalized]]{
+		"null":    NewTypedMapNull[TypedMap[jsontypes.Normalized]](),
+		"unknown": NewTypedMapUnknown[TypedMap[jsontypes.Normalized]](),
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -84,7 +90,7 @@ func TestEntryRequestOmitsUnresolvedOptionalComputedMetadataContainer(t *testing
 			t.Parallel()
 
 			model := EntryModel{
-				Fields:   NewTypedMap(map[string]jsontypes.Normalized{}),
+				Fields:   NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{}),
 				Metadata: metadata,
 			}
 
@@ -123,8 +129,10 @@ func TestEntryRequestInvalidMetadataChildrenFailWithoutPartialOutput(t *testing.
 			t.Parallel()
 
 			model := EntryModel{
-				Fields: NewTypedMap(map[string]jsontypes.Normalized{
-					"known": NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
+				Fields: NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{
+					"known": NewTypedMap(map[string]jsontypes.Normalized{
+						"en-US": NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
+					}),
 				}),
 				Metadata: metadata,
 			}
@@ -147,8 +155,10 @@ func TestEntryRequestKnownMetadata(t *testing.T) {
 	t.Parallel()
 
 	model := EntryModel{
-		Fields: NewTypedMap(map[string]jsontypes.Normalized{
-			"known": NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
+		Fields: NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{
+			"known": NewTypedMap(map[string]jsontypes.Normalized{
+				"en-US": NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
+			}),
 		}),
 		Metadata: knownEntryMetadata(),
 	}
