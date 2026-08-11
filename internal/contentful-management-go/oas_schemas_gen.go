@@ -5422,7 +5422,6 @@ type Locale struct {
 	ContentManagementApi bool      `json:"contentManagementApi"`
 	Optional             bool      `json:"optional"`
 	Default              bool      `json:"default"`
-	InternalCode         string    `json:"internal_code"`
 }
 
 // GetSys returns the value of Sys.
@@ -5465,11 +5464,6 @@ func (s *Locale) GetDefault() bool {
 	return s.Default
 }
 
-// GetInternalCode returns the value of InternalCode.
-func (s *Locale) GetInternalCode() string {
-	return s.InternalCode
-}
-
 // SetSys sets the value of Sys.
 func (s *Locale) SetSys(val LocaleSys) {
 	s.Sys = val
@@ -5508,11 +5502,6 @@ func (s *Locale) SetOptional(val bool) {
 // SetDefault sets the value of Default.
 func (s *Locale) SetDefault(val bool) {
 	s.Default = val
-}
-
-// SetInternalCode sets the value of InternalCode.
-func (s *Locale) SetInternalCode(val string) {
-	s.InternalCode = val
 }
 
 func (*Locale) getLocaleRes() {}

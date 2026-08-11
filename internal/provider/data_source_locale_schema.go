@@ -54,10 +54,6 @@ func LocaleDataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "Whether this is the environment's default locale.",
 				Computed:    true,
 			},
-			"internal_code": schema.StringAttribute{
-				Description: "Contentful internal locale code.",
-				Computed:    true,
-			},
 			"timeouts": timeouts.Attributes(ctx),
 		},
 	}

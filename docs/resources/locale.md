@@ -46,7 +46,6 @@ resource "contentful_locale" "example" {
 
 - `default` (Boolean) Whether this is the environment's default locale.
 - `id` (String) The ID of this resource.
-- `internal_code` (String) Contentful internal locale code.
 - `locale_id` (String) ID of the locale.
 
 <a id="nestedatt--timeouts"></a>

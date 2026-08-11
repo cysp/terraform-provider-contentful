@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"errors"
 	"maps"
 	"testing"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
+
+var errLocaleIDMatchesCode = errors.New("locale ID must be generated independently of locale code")
 
 func TestAccLocaleResource(t *testing.T) {
 	t.Parallel()
@@ -48,8 +51,14 @@ func TestAccLocaleResource(t *testing.T) {
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables1,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_locale.test", "id", "space-id/master/"+localeCode),
-					resource.TestCheckResourceAttr("contentful_locale.test", "locale_id", localeCode),
+					resource.TestCheckResourceAttrSet("contentful_locale.test", "id"),
+					resource.TestCheckResourceAttrWith("contentful_locale.test", "locale_id", func(value string) error {
+						if value == localeCode {
+							return errLocaleIDMatchesCode
+						}
+
+						return nil
+					}),
 					resource.TestCheckResourceAttr("contentful_locale.test", "name", "German"),
 					resource.TestCheckResourceAttr("contentful_locale.test", "code", localeCode),
 					resource.TestCheckResourceAttr("contentful_locale.test", "fallback_code", "en-US"),
@@ -57,7 +66,6 @@ func TestAccLocaleResource(t *testing.T) {
 					resource.TestCheckResourceAttr("contentful_locale.test", "content_management_api", "true"),
 					resource.TestCheckResourceAttr("contentful_locale.test", "optional", "false"),
 					resource.TestCheckResourceAttr("contentful_locale.test", "default", "false"),
-					resource.TestCheckResourceAttr("contentful_locale.test", "internal_code", localeCode),
 				),
 			},
 			{
@@ -72,7 +80,6 @@ func TestAccLocaleResource(t *testing.T) {
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables2,
 				ImportState:     true,
-				ImportStateId:   "space-id/master/" + localeCode,
 				ResourceName:    "contentful_locale.test",
 			},
 		},

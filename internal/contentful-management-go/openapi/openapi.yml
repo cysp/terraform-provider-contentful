@@ -1536,7 +1536,7 @@ paths:
         200:
           description: A collection of locales
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/locale/collection.yml#/LocaleCollection"
         401:
@@ -1556,7 +1556,7 @@ paths:
         2XX:
           description: A locale
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/locale/locale.yml#/Locale"
         401:
@@ -1575,7 +1575,7 @@ paths:
         200:
           description: A locale
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/locale/locale.yml#/Locale"
         401:
@@ -1600,7 +1600,7 @@ paths:
         2XX:
           description: A locale
           content:
-            application/vnd.contentful.management.v1+json:
+            application/json:
               schema:
                 $ref: "./schemas/locale/locale.yml#/Locale"
         401:

@@ -41,7 +41,6 @@ data "contentful_locale" "default" {
 - `default` (Boolean) Whether this is the environment's default locale.
 - `fallback_code` (String) Code of the locale to use as a fallback when this locale is empty.
 - `id` (String) The ID of this resource.
-- `internal_code` (String) Contentful internal locale code.
 - `name` (String) Name of the locale.
 - `optional` (Boolean) Whether the locale can be empty for required localized fields.
 

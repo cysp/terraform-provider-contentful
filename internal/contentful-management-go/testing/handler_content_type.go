@@ -14,7 +14,7 @@ import (
 // each field was omitted in that publication.
 type contentTypePublicationSnapshot map[string]bool
 
-//nolint:ireturn,dupl
+//nolint:ireturn
 func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesParams) (cm.GetContentTypesRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()

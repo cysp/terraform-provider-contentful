@@ -332,7 +332,7 @@ func encodeCreateLocaleResponse(response CreateLocaleRes, w http.ResponseWriter)
 		return nil
 
 	case *LocaleStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
@@ -2473,7 +2473,7 @@ func encodeGetExtensionResponse(response GetExtensionRes, w http.ResponseWriter)
 func encodeGetLocaleResponse(response GetLocaleRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Locale:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -2524,7 +2524,7 @@ func encodeGetLocaleResponse(response GetLocaleRes, w http.ResponseWriter) error
 func encodeGetLocalesResponse(response GetLocalesRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *LocaleCollection:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
 		e := new(jx.Encoder)
@@ -3895,7 +3895,7 @@ func encodePutLocaleResponse(response PutLocaleRes, w http.ResponseWriter) error
 		return nil
 
 	case *LocaleStatusCode:
-		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		code := response.StatusCode
 		if code == 0 {
 			// Set default status code.
