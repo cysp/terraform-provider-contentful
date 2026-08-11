@@ -145,7 +145,7 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 					EntryID:       types.StringUnknown(),
 				},
 				ContentTypeID: types.StringValue("content-type"),
-				Fields:        NewTypedMapUnknown[jsontypes.Normalized](),
+				Fields:        NewTypedMapUnknown[TypedMap[jsontypes.Normalized]](),
 				Metadata: NewTypedObject(EntryMetadataValue{
 					Concepts: NewTypedList([]types.String{}),
 					Tags:     NewTypedList([]types.String{}),
@@ -495,7 +495,7 @@ func TestEntryUpdateRequestConversionErrorStopsBeforeAPIRequest(t *testing.T) {
 			EntryID:       types.StringValue("entry"),
 		},
 		ContentTypeID: types.StringValue("content-type"),
-		Fields:        NewTypedMapUnknown[jsontypes.Normalized](),
+		Fields:        NewTypedMapUnknown[TypedMap[jsontypes.Normalized]](),
 		Metadata: NewTypedObject(EntryMetadataValue{
 			Concepts: NewTypedList([]types.String{}),
 			Tags:     NewTypedList([]types.String{}),

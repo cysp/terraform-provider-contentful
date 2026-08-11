@@ -24,6 +24,7 @@ func TestUpgradeEntryResourceStateV0ToV1LocalizesFields(t *testing.T) {
 		IDIdentityModel:    NewIDIdentityModelFromMultipartID("space", "environment", "entry"),
 		EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
 		ContentTypeID:      types.StringValue("author"),
+		PublishedVersion:   types.Int64Null(),
 		Fields: NewTypedMap(map[string]jsontypes.Normalized{
 			"name":  NewNormalizedJSONTypesNormalizedValue([]byte(`{"en-AU":"Name","en-US":"Name"}`)),
 			"blurb": NewNormalizedJSONTypesNormalizedValue([]byte(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`)),
@@ -81,6 +82,7 @@ func TestUpgradeEntryResourceStateV0ToV1PreservesNullFields(t *testing.T) {
 		IDIdentityModel:    NewIDIdentityModelFromMultipartID("space", "environment", "entry"),
 		EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
 		ContentTypeID:      types.StringValue("author"),
+		PublishedVersion:   types.Int64Null(),
 		Fields:             NewTypedMapNull[jsontypes.Normalized](),
 		Metadata:           NewTypedObjectNull[EntryMetadataValue](),
 		Timeouts:           TimeoutsNull(),
@@ -114,6 +116,7 @@ func TestUpgradeEntryResourceStateV0ToV1ReportsInvalidLocalizedField(t *testing.
 		IDIdentityModel:    NewIDIdentityModelFromMultipartID("space", "environment", "entry"),
 		EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
 		ContentTypeID:      types.StringValue("author"),
+		PublishedVersion:   types.Int64Null(),
 		Fields: NewTypedMap(map[string]jsontypes.Normalized{
 			"title":       NewNormalizedJSONTypesNormalizedValue([]byte(`[]`)),
 			"name":        NewNormalizedJSONTypesNormalizedValue([]byte(`{"en-AU":"Name"}`)),
@@ -154,6 +157,7 @@ func TestUpgradeEntryResourceStateV0ToV1PreservesRawNullFieldValue(t *testing.T)
 		IDIdentityModel:    NewIDIdentityModelFromMultipartID("space", "environment", "entry"),
 		EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
 		ContentTypeID:      types.StringValue("author"),
+		PublishedVersion:   types.Int64Null(),
 		Fields: NewTypedMap(map[string]jsontypes.Normalized{
 			"title": NewNormalizedJSONTypesNormalizedValue([]byte(`null`)),
 		}),

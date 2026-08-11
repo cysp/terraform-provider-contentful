@@ -93,8 +93,8 @@ func NewEntryLocalizedFieldFromRaw(path path.Path, raw []byte) (TypedMap[jsontyp
 	return NewTypedMap(elements), diags
 }
 
-func mergeEntryFieldsWithFallback(responseFields, fallbackFields TypedMap[jsontypes.Normalized]) TypedMap[jsontypes.Normalized] {
-	elements := make(map[string]jsontypes.Normalized, len(responseFields.Elements())+len(fallbackFields.Elements()))
+func mergeEntryFieldsWithFallback(responseFields, fallbackFields TypedMap[TypedMap[jsontypes.Normalized]]) TypedMap[TypedMap[jsontypes.Normalized]] {
+	elements := make(map[string]TypedMap[jsontypes.Normalized], len(responseFields.Elements())+len(fallbackFields.Elements()))
 
 	maps.Copy(elements, responseFields.Elements())
 
@@ -159,7 +159,7 @@ func entryStringListUnorderedEquivalent(left, right TypedList[types.String]) boo
 	return true
 }
 
-func entryFieldsEquivalent(ctx context.Context, left, right TypedMap[jsontypes.Normalized]) (bool, diag.Diagnostics) {
+func entryFieldsEquivalent(ctx context.Context, left, right TypedMap[TypedMap[jsontypes.Normalized]]) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	left = entryFieldsRequestProjection(left)
@@ -190,7 +190,7 @@ func entryFieldsEquivalent(ctx context.Context, left, right TypedMap[jsontypes.N
 			continue
 		}
 
-		equivalent, elementDiags := leftElement.StringSemanticEquals(ctx, rightElement)
+		equivalent, elementDiags := entryLocalizedFieldEquivalent(ctx, leftElement, rightElement)
 		diags.Append(elementDiags...)
 
 		if diags.HasError() || !equivalent {
@@ -201,7 +201,44 @@ func entryFieldsEquivalent(ctx context.Context, left, right TypedMap[jsontypes.N
 	return true, diags
 }
 
-func mergeEntryResponseFieldsWithOmissionFallback(response, fallback TypedMap[jsontypes.Normalized]) TypedMap[jsontypes.Normalized] {
+func entryLocalizedFieldEquivalent(ctx context.Context, left, right TypedMap[jsontypes.Normalized]) (bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if left.IsNull() || left.IsUnknown() || right.IsNull() || right.IsUnknown() {
+		return left.Equal(right), diags
+	}
+
+	leftElements := left.Elements()
+	rightElements := right.Elements()
+	if len(leftElements) != len(rightElements) {
+		return false, diags
+	}
+
+	for locale, leftValue := range leftElements {
+		rightValue, ok := rightElements[locale]
+		if !ok {
+			return false, diags
+		}
+
+		if leftValue.IsNull() || leftValue.IsUnknown() || rightValue.IsNull() || rightValue.IsUnknown() {
+			if !leftValue.Equal(rightValue) {
+				return false, diags
+			}
+
+			continue
+		}
+
+		equivalent, valueDiags := leftValue.StringSemanticEquals(ctx, rightValue)
+		diags.Append(valueDiags...)
+		if diags.HasError() || !equivalent {
+			return false, diags
+		}
+	}
+
+	return true, diags
+}
+
+func mergeEntryResponseFieldsWithOmissionFallback(response, fallback TypedMap[TypedMap[jsontypes.Normalized]]) TypedMap[TypedMap[jsontypes.Normalized]] {
 	if response.IsUnknown() || fallback.IsNull() || fallback.IsUnknown() {
 		return response
 	}
@@ -210,14 +247,14 @@ func mergeEntryResponseFieldsWithOmissionFallback(response, fallback TypedMap[js
 		return fallback
 	}
 
-	responseElements := make(map[string]jsontypes.Normalized, len(response.Elements())+len(fallback.Elements()))
+	responseElements := make(map[string]TypedMap[jsontypes.Normalized], len(response.Elements())+len(fallback.Elements()))
 	maps.Copy(responseElements, response.Elements())
 
 	changed := false
 
 	for fieldID, value := range fallback.Elements() {
 		if _, exists := responseElements[fieldID]; exists ||
-			(!value.IsNull() && !entryFieldIsRawJSONNull(value) && !entryFieldHasOnlyEmptyLocalizedArrays(value)) {
+			(!value.IsNull() && !entryLocalizedFieldHasOnlyEmptyArrays(value)) {
 			continue
 		}
 
@@ -232,32 +269,24 @@ func mergeEntryResponseFieldsWithOmissionFallback(response, fallback TypedMap[js
 	return NewTypedMap(responseElements)
 }
 
-func entryFieldIsRawJSONNull(value jsontypes.Normalized) bool {
+func entryLocalizedFieldHasOnlyEmptyArrays(value TypedMap[jsontypes.Normalized]) bool {
 	if value.IsNull() || value.IsUnknown() {
 		return false
 	}
 
-	var decoded any
-
-	return json.Unmarshal([]byte(value.ValueString()), &decoded) == nil && decoded == nil
-}
-
-func entryFieldHasOnlyEmptyLocalizedArrays(value jsontypes.Normalized) bool {
-	if value.IsNull() || value.IsUnknown() {
-		return false
-	}
-
-	var localized map[string]json.RawMessage
-
-	err := json.Unmarshal([]byte(value.ValueString()), &localized)
-	if err != nil || len(localized) == 0 {
+	localized := value.Elements()
+	if len(localized) == 0 {
 		return false
 	}
 
 	for _, localeValue := range localized {
+		if localeValue.IsNull() || localeValue.IsUnknown() {
+			return false
+		}
+
 		var decoded any
 
-		err = json.Unmarshal(localeValue, &decoded)
+		err := json.Unmarshal([]byte(localeValue.ValueString()), &decoded)
 		if err != nil {
 			return false
 		}
@@ -330,7 +359,7 @@ func projectEntryMutationResponse(
 
 func entryResponseFieldsConsistent(
 	ctx context.Context,
-	plan, response TypedMap[jsontypes.Normalized],
+	plan, response TypedMap[TypedMap[jsontypes.Normalized]],
 	policy entryResponseFieldPolicy,
 ) (bool, diag.Diagnostics) {
 	if policy != entryResponseFieldsCreationDefaults {
@@ -342,7 +371,7 @@ func entryResponseFieldsConsistent(
 	}
 
 	plan = entryFieldsRequestProjection(plan)
-	responsePlanFields := make(map[string]jsontypes.Normalized, len(plan.Elements()))
+	responsePlanFields := make(map[string]TypedMap[jsontypes.Normalized], len(plan.Elements()))
 
 	responseElements := response.Elements()
 	for fieldID := range plan.Elements() {
@@ -353,7 +382,6 @@ func entryResponseFieldsConsistent(
 
 	return entryFieldsEquivalent(ctx, plan, NewTypedMap(responsePlanFields))
 }
-
 func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.OptEntryMetadata) (TypedObject[EntryMetadataValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 

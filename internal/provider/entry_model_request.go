@@ -88,6 +88,8 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 		}
 
 		if localizedValues.IsNull() {
+			// Terraform null omits the field. A configured JSON null remains a
+			// known jsontypes.Normalized value in a locale and is sent as JSON null.
 			continue
 		}
 

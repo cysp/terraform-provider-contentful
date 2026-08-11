@@ -228,6 +228,9 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 			"name": {
 				"en-AU": `"name"`,
 			},
+			"blurb": {
+				"en-AU": `{"nodeType":"document","data":{},"content":[]}`,
+			},
 		}),
 	}
 
@@ -256,6 +259,9 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 			"name": {
 				"en-AU": `"name"`,
 			},
+			"blurb": {
+				"en-AU": `{"nodeType":"document","data":{},"content":[]}`,
+			},
 		}),
 	}
 
@@ -267,14 +273,21 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 			"name": {
 				"en-AU": `"name (updated)"`,
 			},
+			"blurb": {
+				"en-AU": `{"nodeType":"document","data":{},"content":[]}`,
+			},
 		}),
 	}
 
 	expectEntryFields := func(name string) plancheck.PlanCheck {
 		return plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields"), knownvalue.MapExact(map[string]knownvalue.Check{
-			"name": knownvalue.StringExact(name),
-			"blurb": knownvalue.StringFunc(func(actual string) error {
-				return checkJSONEqual(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`, actual)
+			"name": knownvalue.MapExact(map[string]knownvalue.Check{
+				"en-AU": knownvalue.StringExact(name),
+			}),
+			"blurb": knownvalue.MapExact(map[string]knownvalue.Check{
+				"en-AU": knownvalue.StringFunc(func(actual string) error {
+					return checkJSONEqual(`{"nodeType":"document","data":{},"content":[]}`, actual)
+				}),
 			}),
 		}))
 	}
@@ -290,11 +303,11 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
-						expectEntryFields(`{"en-AU":"name"}`),
+						expectEntryFields(`"name"`),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
-						expectEntryFields(`{"en-AU":"name"}`),
+						expectEntryFields(`"name"`),
 					},
 				},
 			},
@@ -308,10 +321,10 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 						plancheck.ExpectUnknownValue("contentful_entry.test", tfjsonpath.New("published_version")),
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
-						expectEntryFields(`{"en-AU":"name (updated)"}`),
+						expectEntryFields(`"name (updated)"`),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
-						expectEntryFields(`{"en-AU":"name (updated)"}`),
+						expectEntryFields(`"name (updated)"`),
 					},
 				},
 			},

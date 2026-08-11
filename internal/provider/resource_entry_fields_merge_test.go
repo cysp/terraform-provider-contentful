@@ -18,7 +18,7 @@ func TestMergeMissingEntryFieldsInitializesNullTarget(t *testing.T) {
 		}),
 	})
 
-	mergeMissingEntryFields(&target, fallback)
+	target = mergeEntryFieldsWithFallback(target, fallback)
 
 	assert.False(t, target.IsNull())
 	assert.Equal(t, `"name"`, target.Elements()["name"].Elements()["en-AU"].ValueString())
@@ -41,7 +41,7 @@ func TestMergeMissingEntryFieldsPreservesExistingValues(t *testing.T) {
 		}),
 	})
 
-	mergeMissingEntryFields(&target, fallback)
+	target = mergeEntryFieldsWithFallback(target, fallback)
 
 	assert.Equal(t, `"server"`, target.Elements()["name"].Elements()["en-AU"].ValueString())
 	assert.Equal(t, `"added"`, target.Elements()["blurb"].Elements()["en-AU"].ValueString())

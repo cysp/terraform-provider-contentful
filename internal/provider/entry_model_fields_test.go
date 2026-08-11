@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEntryModelToOptEntryFieldsPreservesNullAndSkipsUnknownValues(t *testing.T) {
+func TestEntryModelToOptEntryFieldsPreservesNullValues(t *testing.T) {
 	t.Parallel()
 
 	fields, diags := entryModelToOptEntryFields(context.Background(), EntryModel{
@@ -21,21 +21,48 @@ func TestEntryModelToOptEntryFieldsPreservesNullAndSkipsUnknownValues(t *testing
 			"title": NewTypedMap(map[string]jsontypes.Normalized{
 				"en-AU": NewNormalizedJSONTypesNormalizedValue([]byte(`"Title"`)),
 				"en-US": jsontypes.NewNormalizedNull(),
-				"fr-FR": jsontypes.NewNormalizedUnknown(),
 			}),
-			"ignored-null":    NewTypedMapNull[jsontypes.Normalized](),
-			"ignored-unknown": NewTypedMapUnknown[jsontypes.Normalized](),
+			"ignored-null": NewTypedMapNull[jsontypes.Normalized](),
 		}),
 	})
 
 	require.False(t, diags.HasError())
 	require.True(t, fields.IsSet())
 	assert.JSONEq(t, `{"en-AU":"Title"}`, string(fields.Value["title"]))
-	assert.Equal(t, "null", string(fields.Value["ignored-null"]))
-	assert.NotContains(t, fields.Value, "ignored-unknown")
+	assert.NotContains(t, fields.Value, "ignored-null")
 }
 
-func TestEntryModelToOptEntryFieldsPreservesNullFieldValue(t *testing.T) {
+func TestEntryModelToOptEntryFieldsRejectsUnknownValuesWithoutPartialOutput(t *testing.T) {
+	t.Parallel()
+
+	fields, diags := entryModelToOptEntryFields(context.Background(), EntryModel{
+		Fields: NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{
+			"title": NewTypedMap(map[string]jsontypes.Normalized{
+				"en-AU": NewNormalizedJSONTypesNormalizedValue([]byte(`"Title"`)),
+				"fr-FR": jsontypes.NewNormalizedUnknown(),
+			}),
+			"ignored-unknown": NewTypedMapUnknown[jsontypes.Normalized](),
+		}),
+	})
+
+	assert.False(t, fields.IsSet())
+	require.True(t, diags.HasError())
+
+	paths := make([]string, 0, len(diags))
+	for _, diagnostic := range diags {
+		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
+		require.True(t, ok)
+
+		paths = append(paths, withPath.Path().String())
+	}
+
+	assert.ElementsMatch(t, []string{
+		`fields["title"]["fr-FR"]`,
+		`fields["ignored-unknown"]`,
+	}, paths)
+}
+
+func TestEntryModelToOptEntryFieldsOmitsNullFieldValue(t *testing.T) {
 	t.Parallel()
 
 	fields, diags := entryModelToOptEntryFields(context.Background(), EntryModel{
@@ -46,7 +73,7 @@ func TestEntryModelToOptEntryFieldsPreservesNullFieldValue(t *testing.T) {
 
 	require.False(t, diags.HasError())
 	require.True(t, fields.IsSet())
-	assert.Equal(t, "null", string(fields.Value["title"]))
+	assert.NotContains(t, fields.Value, "title")
 }
 
 func TestEntryModelToOptEntryFieldsReportsInvalidLocalizedJSON(t *testing.T) {
@@ -61,8 +88,7 @@ func TestEntryModelToOptEntryFieldsReportsInvalidLocalizedJSON(t *testing.T) {
 	})
 
 	require.True(t, diags.HasError())
-	require.True(t, fields.IsSet())
-	assert.Empty(t, fields.Value)
+	assert.False(t, fields.IsSet())
 	require.Len(t, diags, 1)
 
 	diagWithPath, ok := diags[0].(diag.DiagnosticWithPath)
