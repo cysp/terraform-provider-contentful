@@ -12,6 +12,12 @@ import (
 
 func (model *PreviewEnvironmentModel) ToPreviewEnvironmentData(_ context.Context, modelPath path.Path) (cm.PreviewEnvironmentData, diag.Diagnostics) {
 	configurations, diagnostics := previewEnvironmentContentTypeConfigurationValues(model, modelPath)
+	name, nameDiagnostics := requestRequiredString(model.Name, modelPath.AtName("name"))
+	diagnostics.Append(nameDiagnostics...)
+
+	description, descriptionDiagnostics := requestRequiredString(model.Description, modelPath.AtName("description"))
+	diagnostics.Append(descriptionDiagnostics...)
+
 	if diagnostics.HasError() {
 		return cm.PreviewEnvironmentData{}, diagnostics
 	}
@@ -27,7 +33,7 @@ func (model *PreviewEnvironmentModel) ToPreviewEnvironmentData(_ context.Context
 		))
 	}
 
-	return model.newPreviewEnvironmentData(requestConfigurations), diagnostics
+	return newPreviewEnvironmentData(name, description, requestConfigurations), diagnostics
 }
 
 func ToPreviewEnvironmentUpdateData(
@@ -40,6 +46,12 @@ func ToPreviewEnvironmentUpdateData(
 
 	planConfigurations, planDiagnostics := previewEnvironmentContentTypeConfigurationValues(plan, modelPath)
 	diagnostics.Append(planDiagnostics...)
+
+	name, nameDiagnostics := requestRequiredString(plan.Name, modelPath.AtName("name"))
+	diagnostics.Append(nameDiagnostics...)
+
+	description, descriptionDiagnostics := requestRequiredString(plan.Description, modelPath.AtName("description"))
+	diagnostics.Append(descriptionDiagnostics...)
 
 	if diagnostics.HasError() {
 		return cm.PreviewEnvironmentData{}, diagnostics
@@ -74,7 +86,7 @@ func ToPreviewEnvironmentUpdateData(
 		))
 	}
 
-	return plan.newPreviewEnvironmentData(requestConfigurations), diagnostics
+	return newPreviewEnvironmentData(name, description, requestConfigurations), diagnostics
 }
 
 func ValidatePreviewEnvironmentUpdateResponse(
@@ -201,12 +213,14 @@ func newPreviewEnvironmentConfigurationData(contentTypeID, url string, enabled b
 	}
 }
 
-func (model *PreviewEnvironmentModel) newPreviewEnvironmentData(
+func newPreviewEnvironmentData(
+	name string,
+	description string,
 	configurations []cm.PreviewEnvironmentConfigurationData,
 ) cm.PreviewEnvironmentData {
 	return cm.PreviewEnvironmentData{
-		Name:           model.Name.ValueString(),
-		Description:    model.Description.ValueString(),
+		Name:           name,
+		Description:    description,
 		Configurations: configurations,
 	}
 }

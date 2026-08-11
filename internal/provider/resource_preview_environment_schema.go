@@ -20,7 +20,7 @@ func PreviewEnvironmentResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{
@@ -36,7 +36,7 @@ func PreviewEnvironmentResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
@@ -49,7 +49,7 @@ func PreviewEnvironmentResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Default:     stringdefault.StaticString(""),
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"content_type_configurations": schema.MapNestedAttribute{
@@ -61,6 +61,7 @@ func PreviewEnvironmentResourceSchema(ctx context.Context) schema.Schema {
 				CustomType: TypedMap[TypedObject[PreviewEnvironmentContentTypeConfigurationValue]]{}.CustomType(ctx),
 				Required:   true,
 				Validators: []validator.Map{
+					mapvalidator.NoNullValues(),
 					mapvalidator.KeysAre(stringvalidator.LengthAtLeast(1)),
 				},
 			},

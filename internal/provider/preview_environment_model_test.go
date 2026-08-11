@@ -208,6 +208,61 @@ func TestPreviewEnvironmentModelRequestRejectsNullConfiguration(t *testing.T) {
 	require.True(t, diagnostics.HasError())
 }
 
+func TestPreviewEnvironmentModelRequestRejectsUnresolvedTopLevelValues(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]func(*PreviewEnvironmentModel){
+		"unknown name": func(model *PreviewEnvironmentModel) {
+			model.Name = types.StringUnknown()
+		},
+		"null name": func(model *PreviewEnvironmentModel) {
+			model.Name = types.StringNull()
+		},
+		"unknown description": func(model *PreviewEnvironmentModel) {
+			model.Description = types.StringUnknown()
+		},
+		"null description": func(model *PreviewEnvironmentModel) {
+			model.Description = types.StringNull()
+		},
+	}
+
+	for name, mutate := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := previewEnvironmentModel(map[string]string{
+				"page": "https://preview.invalid/page",
+			})
+			mutate(&model)
+
+			request, diagnostics := model.ToPreviewEnvironmentData(t.Context(), path.Empty())
+			require.True(t, diagnostics.HasError())
+			assert.Empty(t, request.Name)
+			assert.Empty(t, request.Description)
+			assert.Empty(t, request.Configurations)
+
+			state := previewEnvironmentModel(map[string]string{
+				"page": "https://preview.invalid/page",
+			})
+			plan := previewEnvironmentModel(map[string]string{
+				"page": "https://preview.invalid/page-new",
+			})
+			mutate(&plan)
+
+			request, diagnostics = ToPreviewEnvironmentUpdateData(
+				t.Context(),
+				path.Empty(),
+				&state,
+				&plan,
+			)
+			require.True(t, diagnostics.HasError())
+			assert.Empty(t, request.Name)
+			assert.Empty(t, request.Description)
+			assert.Empty(t, request.Configurations)
+		})
+	}
+}
+
 func TestPreviewEnvironmentUpdateDataUsesStateToPlanDelta(t *testing.T) {
 	t.Parallel()
 
