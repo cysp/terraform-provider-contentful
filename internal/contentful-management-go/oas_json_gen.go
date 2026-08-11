@@ -13176,13 +13176,9 @@ func (s *Locale) encodeFields(e *jx.Encoder) {
 		e.FieldStart("default")
 		e.Bool(s.Default)
 	}
-	{
-		e.FieldStart("internal_code")
-		e.Str(s.InternalCode)
-	}
 }
 
-var jsonFieldsNameOfLocale = [9]string{
+var jsonFieldsNameOfLocale = [8]string{
 	0: "sys",
 	1: "name",
 	2: "code",
@@ -13191,7 +13187,6 @@ var jsonFieldsNameOfLocale = [9]string{
 	5: "contentManagementApi",
 	6: "optional",
 	7: "default",
-	8: "internal_code",
 }
 
 // Decode decodes Locale from json.
@@ -13199,7 +13194,7 @@ func (s *Locale) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode Locale to nil")
 	}
-	var requiredBitSet [2]uint8
+	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -13295,18 +13290,6 @@ func (s *Locale) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"default\"")
 			}
-		case "internal_code":
-			requiredBitSet[1] |= 1 << 0
-			if err := func() error {
-				v, err := d.Str()
-				s.InternalCode = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"internal_code\"")
-			}
 		default:
 			return d.Skip()
 		}
@@ -13316,9 +13299,8 @@ func (s *Locale) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [2]uint8{
+	for i, mask := range [1]uint8{
 		0b11111111,
-		0b00000001,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

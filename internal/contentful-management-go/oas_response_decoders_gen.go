@@ -838,7 +838,7 @@ func decodeCreateLocaleResponse(resp *http.Response) (res CreateLocaleRes, _ err
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err
@@ -6442,7 +6442,7 @@ func decodeGetLocaleResponse(resp *http.Response) (res GetLocaleRes, _ error) {
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -6587,7 +6587,7 @@ func decodeGetLocalesResponse(resp *http.Response) (res GetLocalesRes, _ error) 
 			return res, errors.Wrap(err, "parse media type")
 		}
 		switch {
-		case ct == "application/vnd.contentful.management.v1+json":
+		case ct == "application/json":
 			buf, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return res, err
@@ -10347,7 +10347,7 @@ func decodePutLocaleResponse(resp *http.Response) (res PutLocaleRes, _ error) {
 				return res, errors.Wrap(err, "parse media type")
 			}
 			switch {
-			case ct == "application/vnd.contentful.management.v1+json":
+			case ct == "application/json":
 				buf, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return res, err

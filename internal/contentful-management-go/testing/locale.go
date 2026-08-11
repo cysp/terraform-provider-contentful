@@ -9,7 +9,6 @@ func NewLocaleFromData(spaceID, environmentID, localeID string, data cm.LocaleDa
 
 	UpdateLocaleFromData(&locale, data)
 	locale.Default = defaultLocale
-	locale.InternalCode = data.Code
 
 	return locale
 }
@@ -23,5 +22,4 @@ func UpdateLocaleFromData(locale *cm.Locale, data cm.LocaleData) {
 	locale.ContentDeliveryApi = data.ContentDeliveryApi
 	locale.ContentManagementApi = data.ContentManagementApi
 	locale.Optional = data.Optional
-	locale.InternalCode = data.Code
 }

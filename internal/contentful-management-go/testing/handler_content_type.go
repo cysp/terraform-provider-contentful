@@ -10,7 +10,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-//nolint:ireturn,dupl
+//nolint:ireturn
 func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesParams) (cm.GetContentTypesRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()

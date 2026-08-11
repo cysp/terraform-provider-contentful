@@ -46,23 +46,11 @@ func (r *localeListResource) List(ctx context.Context, req list.ListRequest, str
 		return
 	}
 
-	params := cm.GetLocalesParams{
-		SpaceID:       config.SpaceID.ValueString(),
-		EnvironmentID: config.EnvironmentID.ValueString(),
-		Order:         []string{"sys.id"},
-	}
+	params, paramsDiags := config.requestParams()
+	if paramsDiags.HasError() {
+		stream.Results = list.ListResultsStreamDiagnostics(paramsDiags)
 
-	configOrder := config.Order.Elements()
-	if configOrder != nil {
-		order := make([]string, 0, len(configOrder))
-		for _, orderElement := range configOrder {
-			orderElementString := orderElement.ValueString()
-			if orderElementString != "" {
-				order = append(order, orderElementString)
-			}
-		}
-
-		params.Order = order
+		return
 	}
 
 	stream.Results = paginateContentfulCollectionItemsAsListResults(ctx, req,

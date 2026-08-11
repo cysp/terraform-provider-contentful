@@ -17,7 +17,7 @@ func LocaleResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{
@@ -38,7 +38,7 @@ func LocaleResourceSchema(ctx context.Context) schema.Schema {
 				Description: "ID of the locale.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateForUnknown(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
@@ -73,10 +73,6 @@ func LocaleResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default": schema.BoolAttribute{
 				Description: "Whether this is the environment's default locale.",
-				Computed:    true,
-			},
-			"internal_code": schema.StringAttribute{
-				Description: "Contentful internal locale code.",
 				Computed:    true,
 			},
 			"timeouts": timeouts.AttributesAll(ctx),

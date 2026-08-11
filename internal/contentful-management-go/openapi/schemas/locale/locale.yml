@@ -11,8 +11,5 @@ Locale:
       properties:
         default:
           type: boolean
-        internal_code:
-          type: string
       required:
         - default
-        - internal_code

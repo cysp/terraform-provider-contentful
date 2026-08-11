@@ -83,7 +83,6 @@ func (d *localeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			ContentManagementAPI: responseModel.ContentManagementAPI,
 			Optional:             responseModel.Optional,
 			Default:              responseModel.Default,
-			InternalCode:         responseModel.InternalCode,
 			Timeouts:             data.Timeouts,
 		}
 

@@ -1,4 +1,3 @@
-//nolint:dupl
 package cmtesting
 
 import (
@@ -6,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"slices"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
@@ -19,9 +19,15 @@ func (ts *Handler) CreateLocale(_ context.Context, req *cm.LocaleData, params cm
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
-	localeID := req.Code
-	if ts.locales.Get(params.SpaceID, params.EnvironmentID, localeID) != nil {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	for _, locale := range ts.locales.List(params.SpaceID, params.EnvironmentID) {
+		if locale.Code == req.Code {
+			return NewContentfulManagementErrorStatusCodeValidationFailed(new("A locale with this code already exists"), nil), nil
+		}
+	}
+
+	localeID := generateResourceID()
+	for ts.locales.Get(params.SpaceID, params.EnvironmentID, localeID) != nil {
+		localeID = generateResourceID()
 	}
 
 	newLocale := NewLocaleFromData(params.SpaceID, params.EnvironmentID, localeID, *req, false)
@@ -50,11 +56,19 @@ func (ts *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm
 	}
 
 	slices.SortFunc(items, func(a, b cm.Locale) int {
-		return cmp.Compare(a.Sys.ID, b.Sys.ID)
+		return compareLocalesByOrder(a, b, params.Order)
 	})
 
-	skip := max(params.Skip.Or(0), 0)
-	limit := max(params.Limit.Or(100), 0) //nolint:mnd
+	skip := params.Skip.Or(0)
+	if skip < 0 {
+		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "skip" is invalid. Please provide a value larger than or equal to 0`), nil), nil
+	}
+
+	limit := params.Limit.Or(100) //nolint:mnd
+	if limit < 0 || limit > 1000 {
+		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "limit" is invalid. Please provide a value between 0 and 1000`), nil), nil
+	}
+
 	start := min(skip, int64(len(items)))
 	end := min(start+limit, int64(len(items)))
 
@@ -63,8 +77,46 @@ func (ts *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm
 			Type: cm.LocaleCollectionSysTypeArray,
 		},
 		Total: cm.NewOptInt(len(locales)),
+		Skip:  cm.NewOptInt(int(start)),
+		Limit: cm.NewOptInt(int(limit)),
 		Items: items[start:end],
 	}, nil
+}
+
+func compareLocalesByOrder(leftLocale, rightLocale cm.Locale, order []string) int {
+	for _, field := range order {
+		field, descending := strings.CutPrefix(field, "-")
+
+		result, supported := compareLocaleOrderField(leftLocale, rightLocale, field)
+		if !supported {
+			continue
+		}
+
+		if descending {
+			result = -result
+		}
+
+		if result != 0 {
+			return result
+		}
+	}
+
+	return cmp.Compare(leftLocale.Sys.ID, rightLocale.Sys.ID)
+}
+
+func compareLocaleOrderField(leftLocale, rightLocale cm.Locale, field string) (int, bool) {
+	switch field {
+	case "sys.id":
+		return cmp.Compare(leftLocale.Sys.ID, rightLocale.Sys.ID), true
+	case "name":
+		return cmp.Compare(leftLocale.Name, rightLocale.Name), true
+	case "code":
+		return cmp.Compare(leftLocale.Code, rightLocale.Code), true
+	case "fallbackCode":
+		return cmp.Compare(leftLocale.FallbackCode.Or(""), rightLocale.FallbackCode.Or("")), true
+	default:
+		return 0, false
+	}
 }
 
 //nolint:ireturn

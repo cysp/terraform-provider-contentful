@@ -6,6 +6,5 @@ func NewLocaleSys(spaceID, environmentID, localeID string) LocaleSys {
 		Environment: NewEnvironmentLink(environmentID),
 		Type:        LocaleSysTypeLocale,
 		ID:          localeID,
-		Version:     1,
 	}
 }
