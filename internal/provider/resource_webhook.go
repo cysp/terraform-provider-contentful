@@ -106,7 +106,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	requestModel, writeOnlySecrets, modelDiags := WebhookModelWithWriteOnlySecrets(plan, config)
 	resp.Diagnostics.Append(modelDiags...)
 
-	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, path.Empty())
+	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, config, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -266,7 +266,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	requestModel, writeOnlySecrets, modelDiags := WebhookModelWithWriteOnlySecrets(plan, config)
 	resp.Diagnostics.Append(modelDiags...)
 
-	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, path.Empty())
+	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, config, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
