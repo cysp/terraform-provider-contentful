@@ -1,8 +1,10 @@
 package provider //nolint:testpackage
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -20,10 +22,24 @@ func TestResolveStringSecretConflicts(t *testing.T) {
 		types.StringValue("write-only"),
 		path.Root("value"),
 		path.Root("value_wo"),
-		true,
 	)
 
 	assert.True(t, diags.HasError())
+}
+
+func TestResolveStringSecretDefersUnknownWriteOnlyValue(t *testing.T) {
+	t.Parallel()
+
+	value, usedWriteOnly, diags := resolveStringSecret(
+		types.StringNull(),
+		types.StringUnknown(),
+		path.Root("value"),
+		path.Root("value_wo"),
+	)
+
+	require.False(t, diags.HasError(), diags)
+	assert.True(t, value.IsUnknown())
+	assert.True(t, usedWriteOnly)
 }
 
 func TestWriteOnlySecretHashIncludesPath(t *testing.T) {
@@ -38,6 +54,22 @@ func TestWriteOnlySecretHashIncludesPath(t *testing.T) {
 
 	assert.True(t, writeOnlySecretHashMatches(valuePath, value, hash))
 	assert.False(t, writeOnlySecretHashMatches(headerPath, value, hash))
+}
+
+func TestWriteOnlySecretHashRejectsUntrustedArgon2Parameters(t *testing.T) {
+	t.Parallel()
+
+	hash := "$argon2id$v=19$m=4294967295,t=255,p=255$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+
+	assert.False(t, writeOnlySecretHashMatches(path.Root("value_wo"), types.StringValue("secret"), hash))
+}
+
+func TestWriteOnlySecretHashRejectsOversizedPrivateStateValue(t *testing.T) {
+	t.Parallel()
+
+	hash := "$argon2id$v=19$m=65536,t=1,p=4$" + strings.Repeat("A", writeOnlySecretHashMaxLength)
+
+	assert.False(t, writeOnlySecretHashMatches(path.Root("value_wo"), types.StringValue("secret"), hash))
 }
 
 func TestWriteOnlySecretHashesChanged(t *testing.T) {
@@ -72,6 +104,20 @@ func TestWriteOnlySecretHashesChanged(t *testing.T) {
 	}})
 	require.False(t, diags.HasError(), diags)
 	assert.True(t, changed)
+}
+
+func TestReadWriteOnlySecretHashesRejectsOversizedPrivateState(t *testing.T) {
+	t.Parallel()
+
+	private := fakePrivateState{
+		values: map[string][]byte{
+			writeOnlySecretHashesPrivateKey: bytes.Repeat([]byte(" "), writeOnlySecretHashesMaxLength+1),
+		},
+	}
+
+	_, diags := readWriteOnlySecretHashes(context.Background(), private)
+
+	assert.True(t, diags.HasError())
 }
 
 type fakePrivateState struct {

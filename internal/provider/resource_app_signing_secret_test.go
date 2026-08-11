@@ -132,6 +132,43 @@ resource "contentful_app_signing_secret" "test" {
 	}
 }
 
+func TestAccAppSigningSecretResourceWriteOnly(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
+		Name: "Test App",
+	})
+
+	signingSecretConfig := fmt.Sprintf(`
+resource "contentful_app_signing_secret" "test" {
+  organization_id   = "organization-id"
+  app_definition_id = "app-definition-id"
+  value_wo          = %q
+}
+`, testAppSigningSecretValue)
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: signingSecretConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("contentful_app_signing_secret.test", "value"),
+					resource.TestCheckNoResourceAttr("contentful_app_signing_secret.test", "value_wo"),
+				),
+			},
+			{
+				Config: signingSecretConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_app_signing_secret.test", plancheck.ResourceActionNoop),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAccAppSigningSecretImport(t *testing.T) {
 	t.Parallel()
 

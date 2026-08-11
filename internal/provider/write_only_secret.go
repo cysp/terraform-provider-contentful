@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -19,13 +18,14 @@ import (
 
 const (
 	writeOnlySecretHashesPrivateKey = "write_only_secret_hashes" // #nosec G101 -- private state key, not a credential.
+	writeOnlySecretHashesMaxLength  = 1 << 20
 
 	writeOnlySecretArgon2IDMemory      = 64 * 1024
 	writeOnlySecretArgon2IDTime        = 1
 	writeOnlySecretArgon2IDParallelism = 4
 	writeOnlySecretSaltLength          = 16
 	writeOnlySecretKeyLength           = 32
-	writeOnlySecretParameterPartCount  = 3
+	writeOnlySecretHashMaxLength       = 128
 )
 
 type privateStateReader interface {
@@ -54,8 +54,12 @@ func writeOnlyStringConfigured(value types.String) bool {
 	return !value.IsNull() && !value.IsUnknown()
 }
 
-func resolveStringSecret(legacy, writeOnly types.String, legacyPath, writeOnlyPath path.Path, required bool) (types.String, bool, diag.Diagnostics) {
+func resolveStringSecret(legacy, writeOnly types.String, legacyPath, writeOnlyPath path.Path) (types.String, bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
+	if legacy.IsUnknown() || writeOnly.IsUnknown() {
+		return types.StringUnknown(), writeOnly.IsUnknown(), diags
+	}
 
 	legacyConfigured := writeOnlyStringConfigured(legacy)
 	writeOnlyConfigured := writeOnlyStringConfigured(writeOnly)
@@ -77,12 +81,10 @@ func resolveStringSecret(legacy, writeOnly types.String, legacyPath, writeOnlyPa
 		return legacy, false, diags
 	}
 
-	if required {
-		diags.AddError(
-			"Missing secret argument",
-			"One of "+legacyPath.String()+" or "+writeOnlyPath.String()+" must be configured.",
-		)
-	}
+	diags.AddError(
+		"Missing secret argument",
+		"One of "+legacyPath.String()+" or "+writeOnlyPath.String()+" must be configured.",
+	)
 
 	return types.StringNull(), false, diags
 }
@@ -120,53 +122,26 @@ func writeOnlySecretHash(argumentPath path.Path, value types.String) (string, er
 }
 
 func writeOnlySecretHashMatches(argumentPath path.Path, value types.String, hash string) bool {
+	if len(hash) > writeOnlySecretHashMaxLength {
+		return false
+	}
+
 	parts := strings.Split(hash, "$")
 	if len(parts) != 6 || parts[1] != "argon2id" {
 		return false
 	}
 
-	version, hasVersion := strings.CutPrefix(parts[2], "v=")
-	if !hasVersion {
+	if parts[2] != fmt.Sprintf("v=%d", argon2.Version) {
 		return false
 	}
 
-	parsedVersion, err := strconv.Atoi(version)
-	if err != nil || parsedVersion != argon2.Version {
-		return false
-	}
-
-	parameters, hasMemoryParameter := strings.CutPrefix(parts[3], "m=")
-	if !hasMemoryParameter {
-		return false
-	}
-
-	parameterParts := strings.Split(parameters, ",")
-	if len(parameterParts) != writeOnlySecretParameterPartCount {
-		return false
-	}
-
-	memory, err := strconv.ParseUint(parameterParts[0], 10, 32)
-	if err != nil {
-		return false
-	}
-
-	timePart, hasTimeParameter := strings.CutPrefix(parameterParts[1], "t=")
-	if !hasTimeParameter {
-		return false
-	}
-
-	time, err := strconv.ParseUint(timePart, 10, 32)
-	if err != nil {
-		return false
-	}
-
-	parallelismPart, hasParallelismParameter := strings.CutPrefix(parameterParts[2], "p=")
-	if !hasParallelismParameter {
-		return false
-	}
-
-	parallelism, err := strconv.ParseUint(parallelismPart, 10, 8)
-	if err != nil {
+	expectedParameters := fmt.Sprintf(
+		"m=%d,t=%d,p=%d",
+		writeOnlySecretArgon2IDMemory,
+		writeOnlySecretArgon2IDTime,
+		writeOnlySecretArgon2IDParallelism,
+	)
+	if parts[3] != expectedParameters {
 		return false
 	}
 
@@ -180,16 +155,16 @@ func writeOnlySecretHashMatches(argumentPath path.Path, value types.String, hash
 		return false
 	}
 
-	if len(expectedKey) != writeOnlySecretKeyLength {
+	if len(salt) != writeOnlySecretSaltLength || len(expectedKey) != writeOnlySecretKeyLength {
 		return false
 	}
 
 	actualKey := argon2.IDKey(
 		writeOnlySecretPreimage(argumentPath, value),
 		salt,
-		uint32(time),
-		uint32(memory),
-		uint8(parallelism),
+		writeOnlySecretArgon2IDTime,
+		writeOnlySecretArgon2IDMemory,
+		writeOnlySecretArgon2IDParallelism,
 		writeOnlySecretKeyLength,
 	)
 
@@ -212,6 +187,15 @@ func readWriteOnlySecretHashes(ctx context.Context, private privateStateReader) 
 	diags.Append(getDiags...)
 
 	if diags.HasError() || len(data) == 0 {
+		return nil, diags
+	}
+
+	if len(data) > writeOnlySecretHashesMaxLength {
+		diags.AddError(
+			"Invalid write-only secret private state",
+			fmt.Sprintf("Write-only secret private state exceeds the %d-byte limit.", writeOnlySecretHashesMaxLength),
+		)
+
 		return nil, diags
 	}
 
@@ -242,6 +226,16 @@ func writeWriteOnlySecretHashes(ctx context.Context, private privateStateWriter,
 
 	hashes := make([]writeOnlySecretHashRecord, 0, len(values))
 	for _, value := range values {
+		if value.Value.IsNull() || value.Value.IsUnknown() {
+			diags.AddAttributeError(
+				value.Path,
+				"Invalid write-only secret value",
+				"Write-only secret values must be known and non-null before they can be stored in private state.",
+			)
+
+			return diags
+		}
+
 		hash, err := writeOnlySecretHash(value.Path, value.Value)
 		if err != nil {
 			diags.AddError("Failed to create write-only secret hash", err.Error())
@@ -280,6 +274,10 @@ func writeOnlySecretHashesChanged(ctx context.Context, private privateStateReade
 	remaining := append([]writeOnlySecretHashRecord(nil), stored...)
 
 	for _, value := range configured {
+		if value.Value.IsUnknown() {
+			return true, diags
+		}
+
 		matched := false
 
 		for index, record := range remaining {

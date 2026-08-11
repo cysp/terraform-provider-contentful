@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -69,7 +70,18 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				Description: "HTTP Basic authentication username.",
 				Optional:    true,
 			},
-			"headers":        WebhookHeadersSchema(ctx, true),
+			"headers": WebhookHeadersSchema(ctx, true),
+			"header_values_wo": schema.MapAttribute{
+				Description: "Write-only header values keyed by the same header names configured in headers.",
+				ElementType: types.StringType,
+				CustomType:  TypedMap[types.String]{}.CustomType(ctx),
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
+				Validators: []validator.Map{
+					mapvalidator.NoNullValues(),
+				},
+			},
 			"transformation": WebhookTransformationSchema(ctx, true),
 			"timeouts":       timeouts.AttributesAll(ctx),
 		},

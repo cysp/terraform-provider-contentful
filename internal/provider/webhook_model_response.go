@@ -42,6 +42,7 @@ func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 	diags.Append(headersListDiags...)
 
 	model.Headers = headersList
+	model.HeaderValuesWO = NewTypedMapNull[types.String]()
 
 	transformationValue, transformationValueDiags := ReadWebhookTransformationValueFromResponse(ctx, path.Root("transformation"), webhookDefinition.Transformation)
 	diags.Append(transformationValueDiags...)
