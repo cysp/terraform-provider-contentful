@@ -12,22 +12,33 @@ import (
 func NewWebhookHeaderValueFromResponse(_ context.Context, _ path.Path, header cm.WebhookDefinitionHeader, existingHeaderValue TypedObject[WebhookHeaderValue]) (TypedObject[WebhookHeaderValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	headerIsSecret := header.Secret.Or(false)
-
 	value := WebhookHeaderValue{}
+	existingValueIsNull := false
 
 	if existingHeaderValue, existingHeaderValueOk := existingHeaderValue.GetValue(); existingHeaderValueOk {
 		value.Value = existingHeaderValue.Value
+		value.Secret = existingHeaderValue.Secret
+		existingValueIsNull = existingHeaderValue.Value.IsNull()
 	}
 
-	if headerValue, ok := header.Value.Get(); ok {
+	headerIsSecret := false
+	if headerSecret, ok := header.Secret.Get(); ok {
+		headerIsSecret = headerSecret
+	} else if !value.Secret.IsNull() && !value.Secret.IsUnknown() {
+		headerIsSecret = value.Secret.ValueBool()
+	}
+
+	if existingValueIsNull && !value.Secret.IsNull() && !value.Secret.IsUnknown() && value.Secret.ValueBool() {
+		headerIsSecret = true
+	}
+
+	if headerValue, ok := header.Value.Get(); ok && !existingValueIsNull {
 		value.Value = types.StringValue(headerValue)
 	} else if !headerIsSecret {
 		value.Value = types.StringNull()
 	}
 
 	value.Secret = types.BoolValue(headerIsSecret)
-	value.ValueWO = types.StringNull()
 
 	return NewTypedObject(value), diags
 }

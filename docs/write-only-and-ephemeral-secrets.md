@@ -1,8 +1,6 @@
 # Write-only arguments and ephemeral secret use cases
 
-This note evaluates where the provider could use Terraform write-only arguments or ephemeral resources to reduce secret persistence in plan and state artifacts.
-
-It is intentionally scoped to potential use cases. It does not propose changing existing resource behavior without a compatibility decision.
+This note records where the provider uses or could use Terraform write-only arguments or ephemeral resources to reduce secret persistence in plan and state artifacts. The app signing secret and webhook header decisions below are implemented; the personal access token discussion remains exploratory.
 
 ## Sources
 
@@ -72,13 +70,19 @@ Important constraints:
 
 ### Current provider behavior
 
-`contentful_app_signing_secret.value` is currently a required sensitive string:
+`contentful_app_signing_secret` supports the existing sensitive `value` argument and a compatibility-preserving write-only alternative:
 
 ```go
 "value": schema.StringAttribute{
 	Description: "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters long and contain only alphanumeric characters (a-z, A-Z, 0-9).",
-	Required:    true,
+	Optional:    true,
 	Sensitive:   true,
+},
+"value_wo": schema.StringAttribute{
+	Description: "Write-only alternative to value. The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters long and contain only alphanumeric characters (a-z, A-Z, 0-9).",
+	Optional:    true,
+	Sensitive:   true,
+	WriteOnly:   true,
 },
 ```
 
@@ -106,13 +110,9 @@ The secret is supplied by the practitioner and sent to Contentful. Contentful do
 
 A write-only replacement or companion argument would align with Terraform's intended use case for secrets that the provider consumes in an API request.
 
-### Open design choices
+### Implemented decision
 
-- Keep the existing `value` argument for compatibility and add a new `value_wo` argument.
-- Replace `value` with a write-only argument in a breaking release.
-- Add a version/checksum companion argument, such as `value_wo_version`, so users can intentionally trigger updates when the write-only value changes.
-
-The version/checksum choice matters because Terraform cannot diff a write-only value against state.
+The provider keeps `value` for compatibility and adds `value_wo`. Exactly one must be configured. Because Terraform cannot diff a write-only value against state, the provider stores a salted, path-separated, bounded Argon2id verifier in provider-private state. An unchanged value therefore plans no action, while a changed or unknown value marks the resource for update without persisting plaintext.
 
 ## Possible write-only candidate: secret webhook header values
 
@@ -138,14 +138,16 @@ Source: `internal/contentful-management-go/openapi/schemas/webhook-definition/he
 
 The provider currently models webhook headers as a map of nested objects, each containing `value` and `secret`.
 
-On read, the provider preserves the prior configured value when Contentful omits the value for a secret header:
+On read, the provider preserves a legacy configured value when Contentful omits the value for a secret header. A null existing value acts as the write-only confidentiality marker and is not replaced even if an API response echoes plaintext or omits the optional `secret` flag:
 
 ```go
 if existingHeaderValue, existingHeaderValueOk := existingHeaderValue.GetValue(); existingHeaderValueOk {
 	value.Value = existingHeaderValue.Value
+	value.Secret = existingHeaderValue.Secret
+	existingValueIsNull = existingHeaderValue.Value.IsNull()
 }
 
-if headerValue, ok := header.Value.Get(); ok {
+if headerValue, ok := header.Value.Get(); ok && !existingValueIsNull {
 	value.Value = types.StringValue(headerValue)
 } else if !headerIsSecret {
 	value.Value = types.StringNull()
@@ -160,15 +162,11 @@ Secret webhook headers are a real state-exposure concern. The current state-pres
 
 A write-only path would better match Contentful's secret-header semantics when `secret = true`.
 
-This case is less straightforward than app signing secrets because the secret is nested inside a map attribute. Terraform supports write-only nested attributes, but the schema shape must be checked carefully against framework constraints. The framework explicitly disallows write-only arguments in set attributes, set nested attributes, and set nested blocks. The current schema uses a map nested attribute, which is more promising than a set, but the exact provider framework version and generated schema behavior still need verification before implementation.
+The nested design is invalid for this resource: `headers` is Optional+Computed, and the Plugin Framework rejects a Computed nested attribute containing a write-only child. Removing `Computed` would break the existing remote-state lifecycle contract.
 
-### Open design choices
+### Implemented decision
 
-- Add a write-only nested field such as `headers.<name>.value_wo` for secret headers and keep `headers.<name>.value` for non-secret or compatibility behavior.
-- Add a parallel map such as `secret_header_values_wo` to avoid mixing write-only and persisted fields inside the same nested object.
-- Do not change this until the app signing secret case has established the provider's write-only pattern.
-
-The parallel-map option is less elegant but may be easier to validate and document.
+The provider therefore keeps `headers` Optional+Computed and adds a parallel top-level `header_values_wo` map keyed by the same header names. A write-only map entry is accepted only when the matching header has `secret = true`; unmatched or nonsecret entries fail before an API request. Legacy `headers.<name>.value` remains available for compatibility and nonsecret values.
 
 ## Potential ephemeral resource: create a personal access token
 
@@ -317,19 +315,16 @@ This is a state-exposure concern, but not a Contentful one-time retrieval proble
 
 These do not show the same one-time secret or practitioner-supplied secret semantics in the reviewed provider schemas. They are not good write-only or ephemeral candidates based on the evidence reviewed here.
 
-## Recommended implementation order
+## Implementation status and next step
 
-1. Decide the compatibility policy for `contentful_app_signing_secret.value`.
-2. If write-only support is accepted, implement the app signing secret case first.
-3. Validate Terraform Plugin Framework support for write-only nested attributes inside map nested attributes before changing webhook headers.
-4. Treat ephemeral PAT support as a separate feature with an explicit lifecycle decision: revoke on close, require bounded expiry, or do not implement.
+1. App signing secret write-only support is compatibility-preserving and implemented.
+2. Webhook header write-only support uses a validated parallel-map schema and is implemented.
+3. Ephemeral PAT support remains a separate feature requiring an explicit lifecycle decision: revoke on close, require bounded expiry, or do not implement.
 
 ## Decisions needed
 
-Before implementation, choose:
+The remaining decisions concern ephemeral resources:
 
-1. Should write-only support be compatibility-preserving, with new `*_wo` arguments, or breaking, by changing existing arguments?
-2. Should write-only secrets require a companion trigger/version argument so users can force updates when a write-only value changes?
-3. For ephemeral PATs, should the provider revoke the token on close?
-4. Should an ephemeral PAT require `expires_in` and enforce a maximum TTL?
-5. Should readable API tokens, such as delivery and preview API keys, remain normal sensitive values or get separate ephemeral variants under a stricter no-token-state policy?
+1. For ephemeral PATs, should the provider revoke the token on close?
+2. Should an ephemeral PAT require `expires_in` and enforce a maximum TTL?
+3. Should readable API tokens, such as delivery and preview API keys, remain normal sensitive values or get separate ephemeral variants under a stricter no-token-state policy?

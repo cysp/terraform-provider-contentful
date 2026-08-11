@@ -116,11 +116,6 @@ func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schem
 		"value": schema.StringAttribute{
 			Optional: true,
 		},
-		"value_wo": schema.StringAttribute{
-			Optional:  true,
-			Sensitive: true,
-			WriteOnly: true,
-		},
 		"secret": schema.BoolAttribute{
 			Optional: true,
 			Computed: true,

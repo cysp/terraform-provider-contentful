@@ -9,11 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (m *AppSigningSecretModel) ToAppSigningSecretRequest(_ context.Context, _ path.Path) (cm.AppSigningSecretRequestData, diag.Diagnostics) {
+func (m *AppSigningSecretModel) ToAppSigningSecretRequest(_ context.Context, valuePath path.Path) (cm.AppSigningSecretRequestData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
+	value, valueDiags := requestRequiredString(m.Value, valuePath.AtName("value"))
+	diags.Append(valueDiags...)
+
 	req := cm.AppSigningSecretRequestData{
-		Value: m.Value.ValueString(),
+		Value: value,
 	}
 
 	return req, diags
@@ -30,7 +33,6 @@ func AppSigningSecretModelWithWriteOnlySecrets(plan, config AppSigningSecretMode
 		config.ValueWO,
 		path.Root("value"),
 		path.Root("value_wo"),
-		true,
 	)
 	diags.Append(valueDiags...)
 
