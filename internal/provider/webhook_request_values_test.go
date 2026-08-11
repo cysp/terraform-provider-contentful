@@ -132,24 +132,29 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 	ctx := t.Context()
 
 	validHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringValue("value"),
-		"secret": types.BoolValue(false),
+		"value":    types.StringValue("value"),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolValue(false),
 	}))
 	unknownValueHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringUnknown(),
-		"secret": types.BoolValue(false),
+		"value":    types.StringUnknown(),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolValue(false),
 	}))
 	unknownSecretHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringValue("value"),
-		"secret": types.BoolUnknown(),
+		"value":    types.StringValue("value"),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolUnknown(),
 	}))
 	nullValueHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringNull(),
-		"secret": types.BoolValue(false),
+		"value":    types.StringNull(),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolValue(false),
 	}))
 	nullSecretHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringValue("value"),
-		"secret": types.BoolNull(),
+		"value":    types.StringValue("value"),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolNull(),
 	}))
 
 	tests := map[string]struct {
