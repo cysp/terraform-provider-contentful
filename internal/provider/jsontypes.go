@@ -1,7 +1,10 @@
 package provider
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"io"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 )
@@ -9,8 +12,16 @@ import (
 func NormalizeJSON(rawJSON []byte) string {
 	var v any
 
-	err := json.Unmarshal(rawJSON, &v)
+	decoder := json.NewDecoder(bytes.NewReader(rawJSON))
+	decoder.UseNumber()
+
+	err := decoder.Decode(&v)
 	if err != nil {
+		return string(rawJSON)
+	}
+
+	err = decoder.Decode(new(any))
+	if !errors.Is(err, io.EOF) {
 		return string(rawJSON)
 	}
 

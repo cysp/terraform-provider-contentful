@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -56,6 +57,21 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 				},
 				Marketplace: types.SetNull(types.StringType),
 				Parameters:  NewNormalizedJSONTypesNormalizedValue([]byte("{\"foo\":\"bar\"}")),
+			},
+		},
+		"large integer": {
+			appInstallation: cm.AppInstallation{
+				Parameters: []byte(`{"externalId":9007199254740993}`),
+			},
+			expectedModel: AppInstallationModel{
+				IDIdentityModel: NewIDIdentityModelFromMultipartID("", "", ""),
+				AppInstallationIdentityModel: AppInstallationIdentityModel{
+					SpaceID:         types.StringValue(""),
+					EnvironmentID:   types.StringValue(""),
+					AppDefinitionID: types.StringValue(""),
+				},
+				Marketplace: types.SetNull(types.StringType),
+				Parameters:  jsontypes.NewNormalizedValue(`{"externalId":9007199254740993}`),
 			},
 		},
 	}
