@@ -34,6 +34,18 @@ func TestNormalizeJSON(t *testing.T) {
 			input:    `[1,2,3]`,
 			expected: `[1,2,3]`,
 		},
+		"integer beyond float64 exact range": {
+			input:    `{"value":9007199254740993}`,
+			expected: `{"value":9007199254740993}`,
+		},
+		"high precision decimal": {
+			input:    `{"value":0.12345678901234567890123456789}`,
+			expected: `{"value":0.12345678901234567890123456789}`,
+		},
+		"exponent notation": {
+			input:    `{"value":1.234567890123456789e+100}`,
+			expected: `{"value":1.234567890123456789e+100}`,
+		},
 		"invalid JSON": {
 			input:    `{invalid}`,
 			expected: `{invalid}`,

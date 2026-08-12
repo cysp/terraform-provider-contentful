@@ -49,6 +49,18 @@ func TestJxNormalizeOpaqueBytes(t *testing.T) {
 			input:    []byte(`123`),
 			expected: []byte(`123`),
 		},
+		"integer beyond float64 exact range": {
+			input:    []byte(`9007199254740993`),
+			expected: []byte(`9007199254740993`),
+		},
+		"high precision decimal": {
+			input:    []byte(`0.12345678901234567890123456789`),
+			expected: []byte(`0.12345678901234567890123456789`),
+		},
+		"exponent notation": {
+			input:    []byte(`1.234567890123456789e+100`),
+			expected: []byte(`1.234567890123456789e+100`),
+		},
 		"boolean": {
 			input:    []byte(`true`),
 			expected: []byte(`true`),
@@ -99,7 +111,7 @@ func TestJxDecodeOpaque(t *testing.T) {
 	input := []byte(`{"a": "b", "c": 4, "d": true}`)
 	expected := map[string]any{
 		"a": "b",
-		"c": float64(4),
+		"c": json.Number("4"),
 		"d": true,
 	}
 
@@ -145,8 +157,9 @@ func TestJxEncodeOpaqueOrdered(t *testing.T) {
 			float64(-1.797693134862315708145274237317043567981e+308),
 			float64(1.797693134862315708145274237317043567981e+308),
 		},
-		"bool": []any{true, false},
-		"null": []any{nil},
+		"bool":   []any{true, false},
+		"null":   []any{nil},
+		"number": json.Number("9007199254740993"),
 	}
 	expected := `{` +
 		`"array":["b","d","c","a"],` +
@@ -159,6 +172,7 @@ func TestJxEncodeOpaqueOrdered(t *testing.T) {
 		`"int64":[-9223372036854775808,9223372036854775807],` +
 		`"int8":[-128,127],` +
 		`"null":[null],` +
+		`"number":9007199254740993,` +
 		`"object":{"a":4,"b":1,"c":3,"d":2},` +
 		`"string":"abcd",` +
 		`"uint":42,` +
@@ -194,6 +208,9 @@ func TestJxEncodeOpaqueOrderedInvalid(t *testing.T) {
 		"array": {input: []any{
 			Unencodable{},
 		}},
+		"invalid number": {
+			input: json.Number("not-a-number"),
+		},
 	}
 
 	for name, testcase := range tests {

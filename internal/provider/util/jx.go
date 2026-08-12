@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"errors"
 	"slices"
 
@@ -57,7 +58,9 @@ func JxDecodeOpaque(decoder *jx.Decoder) (any, error) {
 		return decoder.Str()
 
 	case jx.Number:
-		return decoder.Float64()
+		number, err := decoder.Num()
+
+		return json.Number(string(number)), err
 
 	case jx.Bool:
 		return decoder.Bool()
@@ -87,66 +90,6 @@ func JxEncodeOpaqueOrdered(encoder *jx.Encoder, value any, options JxEncodeOpaqu
 	case string:
 		return jxEncodeOpaqueOrderedString(encoder, value, options)
 
-	case int:
-		encoder.Int(value)
-
-		return nil
-
-	case int8:
-		encoder.Int8(value)
-
-		return nil
-
-	case int16:
-		encoder.Int16(value)
-
-		return nil
-
-	case int32:
-		encoder.Int32(value)
-
-		return nil
-
-	case int64:
-		encoder.Int64(value)
-
-		return nil
-
-	case uint:
-		encoder.UInt(value)
-
-		return nil
-
-	case uint8:
-		encoder.UInt8(value)
-
-		return nil
-
-	case uint16:
-		encoder.UInt16(value)
-
-		return nil
-
-	case uint32:
-		encoder.UInt32(value)
-
-		return nil
-
-	case uint64:
-		encoder.UInt64(value)
-
-		return nil
-
-	case float32:
-		encoder.Float32(value)
-
-		return nil
-
-	case float64:
-		encoder.Float64(value)
-
-		return nil
-
 	case bool:
 		encoder.Bool(value)
 
@@ -158,8 +101,59 @@ func JxEncodeOpaqueOrdered(encoder *jx.Encoder, value any, options JxEncodeOpaqu
 		return nil
 
 	default:
+		return jxEncodeOpaqueNumber(encoder, value)
+	}
+}
+
+func jxEncodeOpaqueNumber(encoder *jx.Encoder, value any) error {
+	switch value := value.(type) {
+	case json.Number:
+		number, err := json.Marshal(value)
+		if err != nil || encoder.Num(jx.Num(number)) {
+			return errInvalid
+		}
+
+	case int:
+		encoder.Int(value)
+
+	case int8:
+		encoder.Int8(value)
+
+	case int16:
+		encoder.Int16(value)
+
+	case int32:
+		encoder.Int32(value)
+
+	case int64:
+		encoder.Int64(value)
+
+	case uint:
+		encoder.UInt(value)
+
+	case uint8:
+		encoder.UInt8(value)
+
+	case uint16:
+		encoder.UInt16(value)
+
+	case uint32:
+		encoder.UInt32(value)
+
+	case uint64:
+		encoder.UInt64(value)
+
+	case float32:
+		encoder.Float32(value)
+
+	case float64:
+		encoder.Float64(value)
+
+	default:
 		return errInvalid
 	}
+
+	return nil
 }
 
 func jxEncodeOpaqueOrderedObject(encoder *jx.Encoder, value map[string]any, options JxEncodeOpaqueOptions) error {
