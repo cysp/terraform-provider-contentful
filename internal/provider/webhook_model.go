@@ -21,6 +21,7 @@ type WebhookModel struct {
 	HTTPBasicPassword types.String                               `tfsdk:"http_basic_password"`
 	HTTPBasicUsername types.String                               `tfsdk:"http_basic_username"`
 	Headers           TypedMap[TypedObject[WebhookHeaderValue]]  `tfsdk:"headers"`
+	HeaderValuesWO    TypedMap[types.String]                     `tfsdk:"header_values_wo"`
 	Transformation    TypedObject[WebhookTransformationValue]    `tfsdk:"transformation"`
 	Active            types.Bool                                 `tfsdk:"active"`
 

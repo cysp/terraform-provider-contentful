@@ -114,7 +114,7 @@ func (v WebhookFilterValue) SchemaAttributes(ctx context.Context) map[string]sch
 func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"value": schema.StringAttribute{
-			Required: true,
+			Optional: true,
 		},
 		"secret": schema.BoolAttribute{
 			Optional: true,

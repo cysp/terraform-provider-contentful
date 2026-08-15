@@ -17,6 +17,7 @@ var (
 	_ resource.ResourceWithConfigure   = (*appSigningSecretResource)(nil)
 	_ resource.ResourceWithIdentity    = (*appSigningSecretResource)(nil)
 	_ resource.ResourceWithImportState = (*appSigningSecretResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*appSigningSecretResource)(nil)
 )
 
 //nolint:ireturn
@@ -56,10 +57,31 @@ func (r *appSigningSecretResource) ImportState(ctx context.Context, req resource
 	}, req, resp)
 }
 
-func (r *appSigningSecretResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan AppSigningSecretModel
+func (r *appSigningSecretResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan, config AppSigningSecretModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, values, modelDiags := AppSigningSecretModelWithWriteOnlySecrets(plan, config)
+	resp.Diagnostics.Append(modelDiags...)
+
+	markWriteOnlySecretChange(ctx, req, resp, values)
+}
+
+func (r *appSigningSecretResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan, config AppSigningSecretModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -80,7 +102,10 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		AppDefinitionID: plan.AppDefinitionID.ValueString(),
 	}
 
-	request, requestDiags := plan.ToAppSigningSecretRequest(ctx, path.Empty())
+	requestModel, writeOnlySecrets, modelDiags := AppSigningSecretModelWithWriteOnlySecrets(plan, config)
+	resp.Diagnostics.Append(modelDiags...)
+
+	request, requestDiags := requestModel.ToAppSigningSecretRequest(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -90,10 +115,8 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 	response, err := r.providerData.client.PutAppSigningSecret(ctx, &request, params)
 
 	tflog.Info(ctx, "app_signing_secret.create", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data AppSigningSecretModel
@@ -103,8 +126,8 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
 
-		if responseModel.Value.IsNull() && !plan.Value.IsUnknown() {
-			responseModel.Value = plan.Value
+		if responseModel.Value.IsNull() && !requestModel.Value.IsUnknown() && !writeOnlyStringConfigured(config.ValueWO) {
+			responseModel.Value = requestModel.Value
 		}
 
 		data = responseModel
@@ -124,6 +147,7 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
 }
 
 func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -155,9 +179,8 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 	response, err := r.providerData.client.GetAppSigningSecret(ctx, params)
 
 	tflog.Info(ctx, "app_signing_secret.read", map[string]any{
-		"params":   params,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data AppSigningSecretModel
@@ -200,10 +223,11 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *appSigningSecretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var state, plan AppSigningSecretModel
+	var state, plan, config AppSigningSecretModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -224,7 +248,10 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		AppDefinitionID: plan.AppDefinitionID.ValueString(),
 	}
 
-	request, requestDiags := plan.ToAppSigningSecretRequest(ctx, path.Empty())
+	requestModel, writeOnlySecrets, modelDiags := AppSigningSecretModelWithWriteOnlySecrets(plan, config)
+	resp.Diagnostics.Append(modelDiags...)
+
+	request, requestDiags := requestModel.ToAppSigningSecretRequest(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -234,10 +261,8 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 	response, err := r.providerData.client.PutAppSigningSecret(ctx, &request, params)
 
 	tflog.Info(ctx, "app_signing_secret.update", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data AppSigningSecretModel
@@ -248,10 +273,12 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		if responseModel.Value.IsNull() {
-			if !plan.Value.IsUnknown() {
-				responseModel.Value = plan.Value
-			} else if !state.Value.IsUnknown() {
-				responseModel.Value = state.Value
+			if !writeOnlyStringConfigured(config.ValueWO) {
+				if !requestModel.Value.IsUnknown() {
+					responseModel.Value = requestModel.Value
+				} else if !state.Value.IsUnknown() {
+					responseModel.Value = state.Value
+				}
 			}
 		}
 
@@ -272,6 +299,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
 }
 
 //nolint:dupl

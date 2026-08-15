@@ -17,6 +17,7 @@ var (
 	_ resource.ResourceWithConfigure   = (*webhookResource)(nil)
 	_ resource.ResourceWithIdentity    = (*webhookResource)(nil)
 	_ resource.ResourceWithImportState = (*webhookResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*webhookResource)(nil)
 )
 
 //nolint:ireturn
@@ -56,10 +57,31 @@ func (r *webhookResource) ImportState(ctx context.Context, req resource.ImportSt
 	}, req, resp)
 }
 
-func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan WebhookModel
+func (r *webhookResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan, config WebhookModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, values, modelDiags := WebhookModelWithWriteOnlySecrets(plan, config)
+	resp.Diagnostics.Append(modelDiags...)
+
+	markWriteOnlySecretChange(ctx, req, resp, values)
+}
+
+func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan, config WebhookModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -81,7 +103,10 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		SpaceID: plan.SpaceID.ValueString(),
 	}
 
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
+	requestModel, writeOnlySecrets, modelDiags := WebhookModelWithWriteOnlySecrets(plan, config)
+	resp.Diagnostics.Append(modelDiags...)
+
+	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -91,17 +116,15 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	response, err := r.providerData.client.CreateWebhookDefinition(ctx, &request, params)
 
 	tflog.Info(ctx, "webhook.create", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data WebhookModel
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, plan.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, plan.Headers)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -123,6 +146,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -154,9 +178,8 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 	response, err := r.providerData.client.GetWebhookDefinition(ctx, params)
 
 	tflog.Info(ctx, "webhook.read", map[string]any{
-		"params":   params,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	currentVersion := 0
@@ -165,7 +188,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinition:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -199,9 +222,10 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan WebhookModel
+	var plan, config WebhookModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -228,7 +252,10 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		XContentfulVersion:  currentVersion,
 	}
 
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
+	requestModel, writeOnlySecrets, modelDiags := WebhookModelWithWriteOnlySecrets(plan, config)
+	resp.Diagnostics.Append(modelDiags...)
+
+	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -238,17 +265,15 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	response, err := r.providerData.client.UpdateWebhookDefinition(ctx, &request, params)
 
 	tflog.Info(ctx, "webhook.update", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data WebhookModel
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, plan.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, response.Response, plan.Headers)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -270,6 +295,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
 }
 
 //nolint:dupl

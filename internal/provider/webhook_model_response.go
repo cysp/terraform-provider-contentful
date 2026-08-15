@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, existingHeaderValues map[string]TypedObject[WebhookHeaderValue]) (WebhookModel, diag.Diagnostics) {
+func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, existingHeaderValues TypedMap[TypedObject[WebhookHeaderValue]]) (WebhookModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := webhookDefinition.Sys.Space.Sys.ID
@@ -42,6 +42,7 @@ func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 	diags.Append(headersListDiags...)
 
 	model.Headers = headersList
+	model.HeaderValuesWO = NewTypedMapNull[types.String]()
 
 	transformationValue, transformationValueDiags := ReadWebhookTransformationValueFromResponse(ctx, path.Root("transformation"), webhookDefinition.Transformation)
 	diags.Append(transformationValueDiags...)
