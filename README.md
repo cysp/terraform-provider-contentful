@@ -14,6 +14,7 @@ A Terraform provider for managing Contentful spaces and related configuration in
 ## Documentation
 
 - Terraform Registry: [cysp/contentful](https://registry.terraform.io/providers/cysp/contentful)
+- Development workflow: [DEVELOPMENT.md](DEVELOPMENT.md)
 
 ## Getting Started
 
