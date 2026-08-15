@@ -2,9 +2,12 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
@@ -56,16 +59,10 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 	fields := make(cm.EntryFields)
 
 	attrs := model.Fields.Elements()
-	for k, v := range attrs {
-		if v.IsNull() {
-			// Terraform null omits the field. A configured JSON null remains a
-			// known jsontypes.Normalized value and is sent as JSON null.
-			continue
-		}
-
-		if v.IsUnknown() {
+	for fieldID, localizedValues := range attrs {
+		if localizedValues.IsUnknown() {
 			diags.AddAttributeError(
-				path.Root("fields").AtMapKey(k),
+				path.Root("fields").AtMapKey(fieldID),
 				"Unexpected unknown entry field",
 				"Entry field values must be known before they can be sent to Contentful.",
 			)
@@ -73,7 +70,20 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 			continue
 		}
 
-		fields[k] = jx.Raw(v.ValueString())
+		if localizedValues.IsNull() {
+			// Terraform null omits the field. A configured JSON null remains a
+			// known jsontypes.Normalized value in a locale and is sent as JSON null.
+			continue
+		}
+
+		fieldValue, fieldValueDiags := entryLocalizedFieldToRaw(path.Root("fields").AtMapKey(fieldID), localizedValues)
+		diags.Append(fieldValueDiags...)
+
+		if fieldValueDiags.HasError() {
+			continue
+		}
+
+		fields[fieldID] = fieldValue
 	}
 
 	if diags.HasError() {
@@ -81,6 +91,48 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 	}
 
 	return cm.NewOptEntryFields(fields), diags
+}
+
+func entryLocalizedFieldToRaw(path path.Path, localizedValues TypedMap[jsontypes.Normalized]) (jx.Raw, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	values := map[string]json.RawMessage{}
+
+	for locale, value := range localizedValues.Elements() {
+		if value.IsNull() {
+			continue
+		}
+
+		if value.IsUnknown() {
+			diags.AddAttributeError(
+				path.AtMapKey(locale),
+				"Unexpected unknown entry field value",
+				"Entry field values must be known before they can be sent to Contentful.",
+			)
+
+			continue
+		}
+
+		raw := []byte(value.ValueString())
+		if !json.Valid(raw) {
+			diags.AddAttributeError(path.AtMapKey(locale), "Invalid Entry Field Value", "Expected a valid JSON value.")
+
+			continue
+		}
+
+		values[locale] = json.RawMessage(raw)
+	}
+
+	encoded, err := json.Marshal(values)
+	if err != nil {
+		diags.AddAttributeError(path, "Invalid Entry Field Value", err.Error())
+	}
+
+	return jx.Raw(encoded), diags
+}
+
+func isRawJSONNull(raw []byte) bool {
+	return strings.TrimSpace(string(raw)) == "null"
 }
 
 func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEntryMetadata, diag.Diagnostics) {

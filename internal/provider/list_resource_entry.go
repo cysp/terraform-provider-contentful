@@ -90,10 +90,7 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 				responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
 				result.Diagnostics.Append(responseDiags...)
 
-				responseModel.Fields = mergeMissingEntryFields(
-					responseModel.Fields,
-					NewTypedMap(map[string]jsontypes.Normalized{}),
-				)
+				mergeMissingEntryFields(&responseModel.Fields, NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{}))
 
 				result.Diagnostics.Append(result.Resource.Set(ctx, &responseModel)...)
 			}
