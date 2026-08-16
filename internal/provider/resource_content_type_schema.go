@@ -21,7 +21,7 @@ import (
 
 func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Content Type.",
+		Description: "Manages a Contentful Content Type and maintains it in the activated state. After refresh, a deactivated or changed Content Type is planned for activation. Activation publishes the current Contentful draft, including preserved values changed outside Terraform.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -61,6 +61,10 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 			"display_field": schema.StringAttribute{
 				Description: "Field ID to use as the display field for entries of this content type.",
 				Required:    true,
+			},
+			"published_version": schema.Int64Attribute{
+				Description: "The Contentful version most recently activated, or null when the content type is not activated.",
+				Computed:    true,
 			},
 			"fields": schema.ListNestedAttribute{
 				Description: "List of fields that belong to this content type.",

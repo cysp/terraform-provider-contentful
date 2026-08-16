@@ -5,10 +5,134 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestContentTypeMutationStateRestoresKnownPlanOwnedValues(t *testing.T) {
+	t.Parallel()
+
+	plannedFields := contentTypeMutationStateTestFields("planned-field", "Planned field", NewTypedObjectNull[ContentTypeFieldItemsValue]())
+	mutationResponse := contentTypeMutationStateTestResponse()
+
+	mutationState, mutationStateDiags := NewContentTypeResourceModelForMutationState(t.Context(), mutationResponse, ContentTypeModel{
+		IDIdentityModel: NewIDIdentityModelFromMultipartID("planned-space", "planned-environment", "planned-content-type"),
+		ContentTypeIdentityModel: ContentTypeIdentityModel{
+			SpaceID:       types.StringValue("planned-space"),
+			EnvironmentID: types.StringValue("planned-environment"),
+			ContentTypeID: types.StringValue("planned-content-type"),
+		},
+		Name:             types.StringValue("Planned name"),
+		Description:      types.StringValue("Planned description"),
+		DisplayField:     types.StringValue("planned-field"),
+		PublishedVersion: types.Int64Value(99),
+		Fields:           plannedFields,
+		Metadata:         NewTypedObjectNull[ContentTypeMetadataValue](),
+	})
+	require.False(t, mutationStateDiags.HasError())
+	assert.Len(t, mutationStateDiags.Warnings(), 1)
+
+	assert.Equal(t, types.StringValue("response-space/response-environment/response-content-type"), mutationState.ID)
+	assert.Equal(t, types.StringValue("response-space"), mutationState.SpaceID)
+	assert.Equal(t, types.StringValue("response-environment"), mutationState.EnvironmentID)
+	assert.Equal(t, types.StringValue("response-content-type"), mutationState.ContentTypeID)
+	assert.Equal(t, types.Int64Value(7), mutationState.PublishedVersion)
+	assert.Equal(t, types.StringValue("Planned name"), mutationState.Name)
+	assert.Equal(t, types.StringValue("Planned description"), mutationState.Description)
+	assert.Equal(t, types.StringValue("planned-field"), mutationState.DisplayField)
+	assert.True(t, mutationState.Fields.Equal(plannedFields))
+}
+
+func TestContentTypeMutationStateUsesResponseFieldsWhenPlanFieldsAreNotFullyKnown(t *testing.T) {
+	t.Parallel()
+
+	nestedUnknownItems := NewTypedObject(ContentTypeFieldItemsValue{
+		ItemsType:   types.StringValue("Link"),
+		LinkType:    types.StringValue("Entry"),
+		Validations: NewTypedListUnknown[jsontypes.Normalized](),
+	})
+
+	for name, plannedFields := range map[string]TypedList[TypedObject[ContentTypeFieldValue]]{
+		"unknown list": NewTypedListUnknown[TypedObject[ContentTypeFieldValue]](),
+		"nested unknown": contentTypeMutationStateTestFields(
+			"planned-field",
+			"Planned field",
+			nestedUnknownItems,
+		),
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			mutationState, mutationStateDiags := NewContentTypeResourceModelForMutationState(t.Context(), contentTypeMutationStateTestResponse(), ContentTypeModel{
+				Name:         types.StringValue("Planned name"),
+				Description:  types.StringValue("Planned description"),
+				DisplayField: types.StringValue("planned-field"),
+				Fields:       plannedFields,
+				Metadata:     NewTypedObjectUnknown[ContentTypeMetadataValue](),
+			})
+			require.False(t, mutationStateDiags.HasError())
+			assert.Len(t, mutationStateDiags.Warnings(), 1)
+			assert.False(t, mutationState.Fields.IsUnknown())
+			require.Len(t, mutationState.Fields.Elements(), 1)
+			assert.Equal(t, "response-field", mutationState.Fields.Elements()[0].Value().ID.ValueString())
+			assert.Equal(t, "Response field", mutationState.Fields.Elements()[0].Value().Name.ValueString())
+			assert.Equal(t, types.Int64Value(7), mutationState.PublishedVersion)
+		})
+	}
+}
+
+func contentTypeMutationStateTestResponse() cm.ContentType {
+	response := cm.ContentType{
+		Sys:          cm.NewContentTypeSys("response-space", "response-environment", "response-content-type"),
+		Name:         "Response name",
+		Description:  cm.NewOptNilString("Response description"),
+		DisplayField: cm.NewNilString("response-field"),
+		Fields: []cm.ContentTypeFieldsItem{{
+			ID:          "response-field",
+			Name:        "Response field",
+			Type:        "Symbol",
+			Validations: []jx.Raw{},
+		}},
+		Metadata: cm.NewOptContentTypeMetadata(cm.ContentTypeMetadata{
+			Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{{
+				Sys: cm.ContentTypeMetadataTaxonomyItemSys{
+					LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkType("future-link-type"),
+				},
+			}},
+		}),
+	}
+	response.Sys.Version = 8
+	response.Sys.PublishedVersion.SetTo(7)
+
+	return response
+}
+
+func contentTypeMutationStateTestFields(fieldID, fieldName string, fieldItems TypedObject[ContentTypeFieldItemsValue]) TypedList[TypedObject[ContentTypeFieldValue]] {
+	fieldType := "Symbol"
+	if !fieldItems.IsNull() {
+		fieldType = "Array"
+	}
+
+	return NewTypedList([]TypedObject[ContentTypeFieldValue]{
+		NewTypedObject(ContentTypeFieldValue{
+			ID:               types.StringValue(fieldID),
+			Name:             types.StringValue(fieldName),
+			FieldType:        types.StringValue(fieldType),
+			LinkType:         types.StringNull(),
+			Disabled:         types.BoolValue(false),
+			Omitted:          types.BoolValue(false),
+			Required:         types.BoolValue(true),
+			DefaultValue:     jsontypes.NewNormalizedNull(),
+			Items:            fieldItems,
+			Localized:        types.BoolValue(false),
+			Validations:      NewTypedList([]jsontypes.Normalized{}),
+			AllowedResources: NewTypedListNull[TypedObject[ContentTypeFieldAllowedResourceItemValue]](),
+		}),
+	})
+}
 
 func TestContentTypeMutationStateRestoresKnownPlanOwnedMetadata(t *testing.T) {
 	t.Parallel()

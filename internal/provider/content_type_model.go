@@ -24,11 +24,12 @@ type ContentTypeModel struct {
 	IDIdentityModel
 	ContentTypeIdentityModel
 
-	Name         types.String                                  `tfsdk:"name"`
-	Description  types.String                                  `tfsdk:"description"`
-	DisplayField types.String                                  `tfsdk:"display_field"`
-	Fields       TypedList[TypedObject[ContentTypeFieldValue]] `tfsdk:"fields"`
-	Metadata     TypedObject[ContentTypeMetadataValue]         `tfsdk:"metadata"`
+	Name             types.String                                  `tfsdk:"name"`
+	Description      types.String                                  `tfsdk:"description"`
+	DisplayField     types.String                                  `tfsdk:"display_field"`
+	PublishedVersion types.Int64                                   `tfsdk:"published_version"`
+	Fields           TypedList[TypedObject[ContentTypeFieldValue]] `tfsdk:"fields"`
+	Metadata         TypedObject[ContentTypeMetadataValue]         `tfsdk:"metadata"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
