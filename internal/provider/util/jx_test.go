@@ -100,9 +100,21 @@ func TestJxNormalizeOpaqueBytes(t *testing.T) {
 func TestJxNormalizeOpaqueBytesInvalid(t *testing.T) {
 	t.Parallel()
 
-	_, err := util.JxNormalizeOpaqueBytes([]byte("invalid"), util.JxEncodeOpaqueOptions{})
+	tests := map[string][]byte{
+		"invalid value":      []byte("invalid"),
+		"trailing value":     []byte("true false"),
+		"trailing non-value": []byte("9007199254740993 trailing"),
+	}
 
-	assert.Error(t, err)
+	for name, input := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := util.JxNormalizeOpaqueBytes(input, util.JxEncodeOpaqueOptions{})
+
+			assert.Error(t, err)
+		})
+	}
 }
 
 func TestJxDecodeOpaque(t *testing.T) {
@@ -157,9 +169,13 @@ func TestJxEncodeOpaqueOrdered(t *testing.T) {
 			float64(-1.797693134862315708145274237317043567981e+308),
 			float64(1.797693134862315708145274237317043567981e+308),
 		},
-		"bool":   []any{true, false},
-		"null":   []any{nil},
-		"number": json.Number("9007199254740993"),
+		"bool": []any{true, false},
+		"null": []any{nil},
+		"number": []any{
+			json.Number("-0"),
+			json.Number("9007199254740993"),
+			json.Number("1.234567890123456789e+100"),
+		},
 	}
 	expected := `{` +
 		`"array":["b","d","c","a"],` +
@@ -172,7 +188,7 @@ func TestJxEncodeOpaqueOrdered(t *testing.T) {
 		`"int64":[-9223372036854775808,9223372036854775807],` +
 		`"int8":[-128,127],` +
 		`"null":[null],` +
-		`"number":9007199254740993,` +
+		`"number":[-0,9007199254740993,1.234567890123456789e+100],` +
 		`"object":{"a":4,"b":1,"c":3,"d":2},` +
 		`"string":"abcd",` +
 		`"uint":42,` +
@@ -210,6 +226,9 @@ func TestJxEncodeOpaqueOrderedInvalid(t *testing.T) {
 		}},
 		"invalid number": {
 			input: json.Number("not-a-number"),
+		},
+		"empty number": {
+			input: json.Number(""),
 		},
 	}
 

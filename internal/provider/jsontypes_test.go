@@ -46,9 +46,17 @@ func TestNormalizeJSON(t *testing.T) {
 			input:    `{"value":1.234567890123456789e+100}`,
 			expected: `{"value":1.234567890123456789e+100}`,
 		},
+		"negative zero": {
+			input:    `{"value":-0}`,
+			expected: `{"value":-0}`,
+		},
 		"invalid JSON": {
 			input:    `{invalid}`,
 			expected: `{invalid}`,
+		},
+		"trailing JSON": {
+			input:    `{"value":1} {"value":2}`,
+			expected: `{"value":1} {"value":2}`,
 		},
 	}
 

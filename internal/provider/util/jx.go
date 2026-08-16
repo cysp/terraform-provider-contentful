@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"slices"
 
 	"github.com/go-faster/jx"
@@ -16,6 +17,11 @@ func JxNormalizeOpaqueBytes(bytes []byte, options JxEncodeOpaqueOptions) ([]byte
 	value, err := JxDecodeOpaque(decoder)
 	if err != nil {
 		return []byte{}, err
+	}
+
+	err = decoder.Skip()
+	if !errors.Is(err, io.EOF) {
+		return []byte{}, errInvalid
 	}
 
 	encoder := jx.Encoder{}
@@ -108,6 +114,10 @@ func JxEncodeOpaqueOrdered(encoder *jx.Encoder, value any, options JxEncodeOpaqu
 func jxEncodeOpaqueNumber(encoder *jx.Encoder, value any) error {
 	switch value := value.(type) {
 	case json.Number:
+		if value == "" {
+			return errInvalid
+		}
+
 		number, err := json.Marshal(value)
 		if err != nil || encoder.Num(jx.Num(number)) {
 			return errInvalid
