@@ -22,6 +22,7 @@ func ContentTypeModel(spaceID, environmentID, contentTypeID string) *rapid.Gener
 			Name:                     rapid.Map(AlphanumericStringOfN(1, 10), types.StringValue).Draw(t, "name"),
 			Description:              rapid.Map(rapid.StringN(1, 20, 20), types.StringValue).Draw(t, "description"),
 			DisplayField:             types.StringValue(displayField),
+			PublishedVersion:         types.Int64Null(),
 			Fields:                   ContentTypeFields(fieldIds).Draw(t, "fields"),
 			Metadata:                 rapid.Map(ContentTypeMetadataValue(), provider.NewTypedObject).Draw(t, "metadata"),
 			Timeouts:                 provider.TimeoutsNull(),

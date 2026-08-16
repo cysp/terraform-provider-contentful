@@ -3,12 +3,12 @@
 page_title: "contentful_content_type Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Content Type.
+  Manages a Contentful Content Type and maintains it in the activated state. After refresh, a deactivated or changed Content Type is planned for activation. Activation publishes the current Contentful draft, including preserved values changed outside Terraform.
 ---
 
 # contentful_content_type (Resource)
 
-Manages a Contentful Content Type.
+Manages a Contentful Content Type and maintains it in the activated state. After refresh, a deactivated or changed Content Type is planned for activation. Activation publishes the current Contentful draft, including preserved values changed outside Terraform.
 
 ## Example Usage
 
@@ -69,6 +69,7 @@ resource "contentful_content_type" "author" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `published_version` (Number) The Contentful version most recently activated, or null when the content type is not activated.
 
 <a id="nestedatt--fields"></a>
 ### Nested Schema for `fields`

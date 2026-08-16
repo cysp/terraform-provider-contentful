@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/querycheck/queryfilter"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccContentTypeListResource(t *testing.T) {
@@ -50,6 +51,14 @@ func TestAccContentTypeListResource(t *testing.T) {
 			},
 		},
 	})
+	activationResponse, err := server.Handler().ActivateContentType(t.Context(), cm.ActivateContentTypeParams{
+		SpaceID:            "0p38pssr0fi3",
+		EnvironmentID:      "master",
+		ContentTypeID:      "author",
+		XContentfulVersion: 1,
+	})
+	require.NoError(t, err)
+	require.IsType(t, &cm.ContentTypeStatusCode{}, activationResponse)
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -100,6 +109,10 @@ func TestAccContentTypeListResource(t *testing.T) {
 						{
 							Path:       tfjsonpath.New("name"),
 							KnownValue: knownvalue.StringExact("Author"),
+						},
+						{
+							Path:       tfjsonpath.New("published_version"),
+							KnownValue: knownvalue.NotNull(),
 						},
 						{
 							Path: tfjsonpath.New("fields"),

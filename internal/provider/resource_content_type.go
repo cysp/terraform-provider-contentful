@@ -6,9 +6,12 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -27,6 +30,11 @@ func NewContentTypeResource() resource.Resource {
 
 type contentTypeResource struct {
 	providerData ContentfulProviderData
+}
+
+type contentTypeMutationResult struct {
+	state   ContentTypeModel
+	version int
 }
 
 func (r *contentTypeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -73,11 +81,43 @@ func (r *contentTypeResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	plannedMetadata, modified := reconcileContentTypeMetadataPlan(configMetadata, stateMetadata)
-	if !modified {
+	if modified {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("metadata"), plannedMetadata)...)
+	}
+
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("metadata"), plannedMetadata)...)
+	var state ContentTypeModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	var version int
+	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &version)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Substitute the prior computed publication result so equality reflects
+	// whether any other planned value requires a mutation.
+	planWithStatePublishedVersion := resp.Plan
+	resp.Diagnostics.Append(planWithStatePublishedVersion.SetAttribute(ctx, path.Root("published_version"), state.PublishedVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	configurationMatchesState := planWithStatePublishedVersion.Raw.Equal(req.State.Raw)
+
+	plannedPublishedVersion := state.PublishedVersion
+	if !configurationMatchesState {
+		plannedPublishedVersion = types.Int64Unknown()
+	} else if state.PublishedVersion.IsNull() || state.PublishedVersion.ValueInt64() < int64(version-1) {
+		plannedPublishedVersion = types.Int64Value(int64(version))
+	}
+
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("published_version"), plannedPublishedVersion)...)
 }
 
 func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -110,81 +150,27 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	currentVersion := 1
-
-	params := cm.PutContentTypeParams{
-		SpaceID:            plan.SpaceID.ValueString(),
-		EnvironmentID:      plan.EnvironmentID.ValueString(),
-		ContentTypeID:      plan.ContentTypeID.ValueString(),
-		XContentfulVersion: currentVersion,
-	}
-
-	response, err := r.providerData.client.PutContentType(ctx, &request, params)
-
-	tflog.Info(ctx, "content_type.create", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
-	})
-
-	var data ContentTypeModel
-
-	switch response := response.(type) {
-	case *cm.ContentTypeStatusCode:
-		mutationState, mutationStateDiags := NewContentTypeResourceModelForMutationState(ctx, response.Response, plan)
-		resp.Diagnostics.Append(mutationStateDiags...)
-
-		data = mutationState
-		currentVersion = response.Response.Sys.Version
-
-	default:
-		resp.Diagnostics.AddError("Failed to create content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
-	}
+	draft, draftDiagnostics := r.putContentTypeDraft(ctx, plan, request, 1)
+	resp.Diagnostics.Append(draftDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	data.Timeouts = plan.Timeouts
-
-	activateContentTypeParams := cm.ActivateContentTypeParams{
-		SpaceID:            plan.SpaceID.ValueString(),
-		EnvironmentID:      plan.EnvironmentID.ValueString(),
-		ContentTypeID:      plan.ContentTypeID.ValueString(),
-		XContentfulVersion: currentVersion,
-	}
-
-	activateContentTypeResponse, err := r.providerData.client.ActivateContentType(ctx, activateContentTypeParams)
-
-	tflog.Info(ctx, "content_type.create.activate", map[string]any{
-		"params":   activateContentTypeParams,
-		"response": activateContentTypeResponse,
-		"err":      err,
-	})
-
-	switch response := activateContentTypeResponse.(type) {
-	case *cm.ContentTypeStatusCode:
-		currentVersion = response.Response.Sys.Version
-
-	default:
-		resp.Diagnostics.AddError("Failed to activate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
-	}
-
-	var identityModel ContentTypeIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	activated, activationDiagnostics := r.activateContentType(ctx, plan, draft.version)
+	resp.Diagnostics.Append(activationDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, activated)...)
 }
 
 //nolint:dupl
@@ -300,86 +286,54 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
+	var version int
 
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
-
-	putContentTypeParams := cm.PutContentTypeParams{
-		SpaceID:            plan.SpaceID.ValueString(),
-		EnvironmentID:      plan.EnvironmentID.ValueString(),
-		ContentTypeID:      plan.ContentTypeID.ValueString(),
-		XContentfulVersion: currentVersion,
-	}
-
-	putContentTypeResponse, err := r.providerData.client.PutContentType(ctx, &putContentTypeRequest, putContentTypeParams)
-
-	tflog.Info(ctx, "content_type.update", map[string]any{
-		"params":   putContentTypeParams,
-		"request":  putContentTypeRequest,
-		"response": putContentTypeResponse,
-		"err":      err,
-	})
-
-	var data ContentTypeModel
-
-	switch response := putContentTypeResponse.(type) {
-	case *cm.ContentTypeStatusCode:
-		mutationState, mutationStateDiags := NewContentTypeResourceModelForMutationState(ctx, response.Response, plan)
-		resp.Diagnostics.Append(mutationStateDiags...)
-
-		data = mutationState
-		currentVersion = response.Response.Sys.Version
-
-	default:
-		resp.Diagnostics.AddError("Failed to update content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
-	}
+	versionDiags := GetPrivateProviderData(ctx, req.Private, "version", &version)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	data.Timeouts = plan.Timeouts
+	expectedPublishedVersionAfterActivation := int64(version)
+	activationOnly := !plan.PublishedVersion.IsNull() &&
+		!plan.PublishedVersion.IsUnknown() &&
+		plan.PublishedVersion.ValueInt64() == expectedPublishedVersionAfterActivation
+	activationVersion := version
 
-	activateContentTypeParams := cm.ActivateContentTypeParams{
-		SpaceID:            plan.SpaceID.ValueString(),
-		EnvironmentID:      plan.EnvironmentID.ValueString(),
-		ContentTypeID:      plan.ContentTypeID.ValueString(),
-		XContentfulVersion: currentVersion,
+	if activationOnly {
+		resp.State = req.State
+	} else {
+		draft, draftDiagnostics := r.putContentTypeDraft(ctx, plan, putContentTypeRequest, version)
+		resp.Diagnostics.Append(draftDiagnostics...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		activationVersion = draft.version
 	}
 
-	activateContentTypeResponse, err := r.providerData.client.ActivateContentType(ctx, activateContentTypeParams)
-
-	tflog.Info(ctx, "content_type.update.activate", map[string]any{
-		"params":   activateContentTypeParams,
-		"response": activateContentTypeResponse,
-		"err":      err,
-	})
-
-	switch response := activateContentTypeResponse.(type) {
-	case *cm.ContentTypeStatusCode:
-		currentVersion = response.Response.Sys.Version
-
-	default:
-		resp.Diagnostics.AddError("Failed to activate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
-	}
-
-	var identityModel ContentTypeIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+	activated, activationDiagnostics := r.activateContentType(ctx, plan, activationVersion)
+	resp.Diagnostics.Append(activationDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, activated)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
-
-	r.providerData.editorInterfaceVersionOffset.Increment(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Increment(activated.state.SpaceID.ValueString(), activated.state.EnvironmentID.ValueString(), activated.state.ContentTypeID.ValueString())
 }
 
 func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -474,4 +428,114 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 			resp.Diagnostics.AddError("Failed to delete content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
 	}
+}
+
+func (r *contentTypeResource) putContentTypeDraft(
+	ctx context.Context,
+	appliedPlan ContentTypeModel,
+	request cm.ContentTypeRequestData,
+	expectedVersion int,
+) (contentTypeMutationResult, diag.Diagnostics) {
+	var diagnostics diag.Diagnostics
+
+	params := cm.PutContentTypeParams{
+		SpaceID:            appliedPlan.SpaceID.ValueString(),
+		EnvironmentID:      appliedPlan.EnvironmentID.ValueString(),
+		ContentTypeID:      appliedPlan.ContentTypeID.ValueString(),
+		XContentfulVersion: expectedVersion,
+	}
+
+	response, err := r.providerData.client.PutContentType(ctx, &request, params)
+
+	tflog.Info(ctx, "content_type.put", map[string]any{
+		"params":   params,
+		"request":  request,
+		"response": response,
+		"err":      err,
+	})
+
+	if response, ok := response.(*cm.ContentTypeStatusCode); ok {
+		mutationState, mutationStateDiagnostics := NewContentTypeResourceModelForMutationState(ctx, response.Response, appliedPlan)
+		diagnostics.Append(mutationStateDiagnostics...)
+
+		mutationState.Timeouts = appliedPlan.Timeouts
+
+		return contentTypeMutationResult{
+			state:   mutationState,
+			version: response.Response.Sys.Version,
+		}, diagnostics
+	}
+
+	diagnostics.AddError("Failed to save content type draft", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
+	return contentTypeMutationResult{}, diagnostics
+}
+
+func (r *contentTypeResource) activateContentType(
+	ctx context.Context,
+	appliedPlan ContentTypeModel,
+	expectedVersion int,
+) (contentTypeMutationResult, diag.Diagnostics) {
+	var diagnostics diag.Diagnostics
+
+	params := cm.ActivateContentTypeParams{
+		SpaceID:            appliedPlan.SpaceID.ValueString(),
+		EnvironmentID:      appliedPlan.EnvironmentID.ValueString(),
+		ContentTypeID:      appliedPlan.ContentTypeID.ValueString(),
+		XContentfulVersion: expectedVersion,
+	}
+
+	response, err := r.providerData.client.ActivateContentType(ctx, params)
+
+	tflog.Info(ctx, "content_type.activate", map[string]any{
+		"params":   params,
+		"response": response,
+		"err":      err,
+	})
+
+	responseContentType, ok := response.(*cm.ContentTypeStatusCode)
+	if !ok {
+		diagnostics.AddError("Failed to activate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
+		return contentTypeMutationResult{}, diagnostics
+	}
+
+	mutationState, mutationStateDiagnostics := NewContentTypeResourceModelForMutationState(ctx, responseContentType.Response, appliedPlan)
+	diagnostics.Append(mutationStateDiagnostics...)
+
+	mutationState.Timeouts = appliedPlan.Timeouts
+
+	return contentTypeMutationResult{
+		state:   mutationState,
+		version: responseContentType.Response.Sys.Version,
+	}, diagnostics
+}
+
+// setContentTypeIdentityStateAndVersion derives and sets the identity and
+// state, then records the private version. Each phase stops on errors; private
+// data is not transactional with identity and state.
+func setContentTypeIdentityStateAndVersion(
+	ctx context.Context,
+	identity *tfsdk.ResourceIdentity,
+	state *tfsdk.State,
+	private PrivateProviderData,
+	result contentTypeMutationResult,
+) diag.Diagnostics {
+	var identityModel ContentTypeIdentityModel
+
+	diags := CopyAttributeValues(ctx, &identityModel, &result.state)
+
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(setResourceIdentityAndState(ctx, identity, state, &identityModel, &result.state)...)
+
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(SetPrivateProviderData(ctx, private, "version", result.version)...)
+
+	return diags
 }
