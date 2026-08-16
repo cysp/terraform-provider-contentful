@@ -5,6 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -61,16 +63,19 @@ func (v WebhookFilterNotValue) SchemaAttributes(ctx context.Context) map[string]
 			Attributes: WebhookFilterEqualsValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookFilterEqualsValue]().CustomType(ctx),
 			Optional:   true,
+			Validators: exactlyOneWebhookFilterOperator("equals", "in", "regexp"),
 		},
 		"in": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterInValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookFilterInValue]().CustomType(ctx),
 			Optional:   true,
+			Validators: exactlyOneWebhookFilterOperator("equals", "in", "regexp"),
 		},
 		"regexp": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterRegexpValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookFilterRegexpValue]().CustomType(ctx),
 			Optional:   true,
+			Validators: exactlyOneWebhookFilterOperator("equals", "in", "regexp"),
 		},
 	}
 }
@@ -92,23 +97,36 @@ func (v WebhookFilterValue) SchemaAttributes(ctx context.Context) map[string]sch
 			Attributes: WebhookFilterNotValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookFilterNotValue]().CustomType(ctx),
 			Optional:   true,
+			Validators: exactlyOneWebhookFilterOperator("not", "equals", "in", "regexp"),
 		},
 		"equals": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterEqualsValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookFilterEqualsValue]().CustomType(ctx),
 			Optional:   true,
+			Validators: exactlyOneWebhookFilterOperator("not", "equals", "in", "regexp"),
 		},
 		"in": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterInValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookFilterInValue]().CustomType(ctx),
 			Optional:   true,
+			Validators: exactlyOneWebhookFilterOperator("not", "equals", "in", "regexp"),
 		},
 		"regexp": schema.SingleNestedAttribute{
 			Attributes: WebhookFilterRegexpValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookFilterRegexpValue]().CustomType(ctx),
 			Optional:   true,
+			Validators: exactlyOneWebhookFilterOperator("not", "equals", "in", "regexp"),
 		},
 	}
+}
+
+func exactlyOneWebhookFilterOperator(names ...string) []validator.Object {
+	expressions := make([]path.Expression, 0, len(names))
+	for _, name := range names {
+		expressions = append(expressions, path.MatchRelative().AtParent().AtName(name))
+	}
+
+	return []validator.Object{objectvalidator.ExactlyOneOf(expressions...)}
 }
 
 func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
