@@ -79,7 +79,7 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestData{
 		Name:         "Author",
@@ -105,13 +105,14 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 			},
 		}),
 	})
+	handler := &contentTypeActivationTestHandler{delegate: server}
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
 		"environment_id": config.StringVariable("test"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.StaticDirectory("testdata/TestAccContentTypeResourceImport"),
@@ -126,7 +127,41 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 				ImportState:        true,
 				ImportStateId:      "0p38pssr0fi3/test/author",
 				ImportStatePersist: true,
-				ConfigStateChecks:  contentTypeTaxonomyStateChecks("contentful_content_type.author"),
+				ConfigStateChecks: append(
+					contentTypeTaxonomyStateChecks("contentful_content_type.author"),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.author",
+						tfjsonpath.New("published_version"),
+						knownvalue.Null(),
+					),
+				),
+			},
+			{
+				PreConfig: func() {
+					handler.puts.Store(0)
+					handler.activations.Store(0)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceImport"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.author", plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(
+							"contentful_content_type.author",
+							tfjsonpath.New("published_version"),
+							knownvalue.Int64Exact(1),
+						),
+					},
+				},
+				ConfigStateChecks: append(
+					contentTypeTaxonomyStateChecks("contentful_content_type.author"),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.author",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(1),
+					),
+				),
+				Check: contentTypeActivationRequestCheck(handler, 0, 1),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceImport"),
@@ -136,7 +171,6 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 						plancheck.ExpectResourceAction("contentful_content_type.author", plancheck.ResourceActionNoop),
 					},
 				},
-				ConfigStateChecks: contentTypeTaxonomyStateChecks("contentful_content_type.author"),
 			},
 		},
 	})
@@ -187,7 +221,7 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile(`Failed to create content type`),
+				ExpectError:     regexp.MustCompile(`Failed to save content type draft`),
 			},
 		},
 	})
@@ -213,6 +247,13 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(1),
+					),
+				},
 			},
 		},
 	})
@@ -251,8 +292,16 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue("contentful_content_type.test", tfjsonpath.New("published_version")),
 						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionNoop),
 					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(3),
+					),
 				},
 			},
 			{
@@ -271,8 +320,16 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue("contentful_content_type.test", tfjsonpath.New("published_version")),
 						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionNoop),
 					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(5),
+					),
 				},
 			},
 		},
@@ -419,7 +476,12 @@ func TestAccContentTypeResourceTaxonomyDrift(t *testing.T) {
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(
+							"contentful_content_type.test",
+							tfjsonpath.New("published_version"),
+							knownvalue.Int64Exact(3),
+						),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -427,6 +489,11 @@ func TestAccContentTypeResourceTaxonomyDrift(t *testing.T) {
 						"contentful_content_type.test",
 						tfjsonpath.New("metadata").AtMapKey("taxonomy"),
 						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(3),
 					),
 				},
 			},
