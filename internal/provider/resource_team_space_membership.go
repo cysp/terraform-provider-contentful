@@ -111,6 +111,10 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 		resp.Diagnostics.AddError("Failed to create team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identityModel TeamSpaceMembershipIdentityModel
@@ -120,8 +124,11 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl
@@ -181,6 +188,10 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 		resp.Diagnostics.AddError("Failed to read team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = state.Timeouts
 
 	var identityModel TeamSpaceMembershipIdentityModel
@@ -190,8 +201,11 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl
@@ -248,6 +262,10 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 		resp.Diagnostics.AddError("Failed to update team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identityModel TeamSpaceMembershipIdentityModel
@@ -257,8 +275,11 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl

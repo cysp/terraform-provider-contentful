@@ -107,8 +107,11 @@ func (r *taxonomyConceptSchemeResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *taxonomyConceptSchemeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -162,8 +165,11 @@ func (r *taxonomyConceptSchemeResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -256,8 +262,11 @@ func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *taxonomyConceptSchemeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

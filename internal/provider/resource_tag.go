@@ -105,6 +105,10 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 		resp.Diagnostics.AddError("Failed to create tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identityModel TagIdentityModel
@@ -114,8 +118,12 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
@@ -175,6 +183,10 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		resp.Diagnostics.AddError("Failed to read tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = state.Timeouts
 
 	var identityModel TagIdentityModel
@@ -184,8 +196,12 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
@@ -240,6 +256,10 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		resp.Diagnostics.AddError("Failed to update tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identityModel TagIdentityModel
@@ -249,8 +269,12 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 

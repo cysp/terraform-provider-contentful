@@ -271,3 +271,30 @@ func TestProviderConfigureErrorsDoNotSetProviderData(t *testing.T) {
 		})
 	}
 }
+
+func TestProtocol6ProviderServerConfigureOverridesUnknownValues(t *testing.T) {
+	t.Parallel()
+
+	if os.Getenv("TF_ACC") != "" {
+		return
+	}
+
+	providerFactories := makeTestAccProtoV6ProviderFactories(
+		WithContentfulURL("https://api.test.contentful.com"),
+		WithAccessToken("CFPAT-override"),
+	)
+	providerServer, err := providerFactories["contentful"]()
+	require.NoError(t, err)
+
+	providerConfigValue, err := providerConfigDynamicValue(map[string]any{
+		"url":          tftypes.UnknownValue,
+		"access_token": tftypes.UnknownValue,
+	})
+	require.NoError(t, err)
+
+	resp, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{
+		Config: &providerConfigValue,
+	})
+	require.NoError(t, err)
+	assert.Empty(t, resp.Diagnostics)
+}

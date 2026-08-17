@@ -103,6 +103,10 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
 
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		if responseModel.Value.IsNull() && !plan.Value.IsUnknown() {
 			responseModel.Value = plan.Value
 		}
@@ -111,6 +115,10 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	default:
 		resp.Diagnostics.AddError("Failed to create app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	data.Timeouts = plan.Timeouts
@@ -122,8 +130,11 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -167,6 +178,10 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, *response)
 		resp.Diagnostics.Append(responseModelDiags...)
 
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		if responseModel.Value.IsNull() && !state.Value.IsUnknown() {
 			responseModel.Value = state.Value
 		}
@@ -186,6 +201,10 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 		resp.Diagnostics.AddError("Failed to read app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = state.Timeouts
 
 	var identityModel AppSigningSecretIdentityModel
@@ -195,8 +214,11 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *appSigningSecretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -247,6 +269,10 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
 		resp.Diagnostics.Append(responseModelDiags...)
 
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		if responseModel.Value.IsNull() {
 			if !plan.Value.IsUnknown() {
 				responseModel.Value = plan.Value
@@ -261,6 +287,10 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		resp.Diagnostics.AddError("Failed to update app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identityModel AppSigningSecretIdentityModel
@@ -270,8 +300,11 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl

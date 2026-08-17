@@ -88,19 +88,27 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		responseModel, currentVersion = r.updateEntry(ctx, plan, currentVersion, &resp.Diagnostics)
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	responseModel.Timeouts = plan.Timeouts
+
+	var identityModel EntryIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var identityModel EntryIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
-
 	responseModel.Fields = mergeMissingEntryFields(responseModel.Fields, plan.Fields)
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &responseModel)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
 	if resp.Diagnostics.HasError() {
@@ -176,19 +184,27 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		resp.Diagnostics.AddError("Failed to read entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = state.Timeouts
+
+	var identityModel EntryIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var identityModel EntryIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
 	data.Fields = mergeMissingEntryFields(data.Fields, state.Fields)
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 }
 
@@ -221,19 +237,27 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	responseModel, currentVersion := r.updateEntry(ctx, plan, currentVersion, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	responseModel.Timeouts = plan.Timeouts
+
+	var identityModel EntryIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var identityModel EntryIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
-
 	responseModel.Fields = mergeMissingEntryFields(responseModel.Fields, plan.Fields)
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &responseModel)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &responseModel)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
 
 	if resp.Diagnostics.HasError() {

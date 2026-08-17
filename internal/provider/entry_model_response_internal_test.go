@@ -60,3 +60,16 @@ func TestMergeMissingEntryFields(t *testing.T) {
 		"missing":  missingValue,
 	}, configured.Elements())
 }
+
+func TestMergeMissingEntryFieldsInitializesNullResponse(t *testing.T) {
+	t.Parallel()
+
+	value := jsontypes.NewNormalizedValue(`{"en-US":"configured"}`)
+	actual := mergeMissingEntryFields(
+		NewTypedMapNull[jsontypes.Normalized](),
+		NewTypedMap(map[string]jsontypes.Normalized{"field": value}),
+	)
+
+	assert.False(t, actual.IsNull())
+	assert.Equal(t, map[string]jsontypes.Normalized{"field": value}, actual.Elements())
+}
