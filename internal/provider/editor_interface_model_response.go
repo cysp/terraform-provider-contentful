@@ -63,3 +63,17 @@ func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 
 	return model, diags
 }
+
+// NewEditorInterfaceResourceModelFromMutationResponse preserves every known
+// planned editor_layout value, including null, after a lossy response
+// projection. An unknown plan is projected from the response and is never
+// copied into state.
+func NewEditorInterfaceResourceModelFromMutationResponse(ctx context.Context, editorInterface cm.EditorInterface, plan EditorInterfaceModel) (EditorInterfaceModel, diag.Diagnostics) {
+	model, diags := NewEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
+
+	if !plan.EditorLayout.IsUnknown() {
+		model.EditorLayout = plan.EditorLayout
+	}
+
+	return model, diags
+}

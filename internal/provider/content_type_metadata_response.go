@@ -27,11 +27,19 @@ func NewContentTypeMetadataFromResponse(ctx context.Context, path path.Path, opt
 	taxonomy, taxonomyDiags := NewContentTypeMetadataTaxonomyItemsFromResponse(ctx, path.AtName("taxonomy"), metadata.Taxonomy)
 	diags.Append(taxonomyDiags...)
 
+	if diags.HasError() {
+		return NewTypedObjectNull[ContentTypeMetadataValue](), diags
+	}
+
 	model, modelDiags := NewTypedObjectFromAttributes[ContentTypeMetadataValue](ctx, map[string]attr.Value{
 		"annotations": annotations,
 		"taxonomy":    taxonomy,
 	})
 	diags.Append(modelDiags...)
+
+	if diags.HasError() {
+		return NewTypedObjectNull[ContentTypeMetadataValue](), diags
+	}
 
 	return model, diags
 }
@@ -56,6 +64,10 @@ func NewContentTypeMetadataTaxonomyItemsFromResponse(
 		items = append(items, itemValue)
 	}
 
+	if diags.HasError() {
+		return NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](), diags
+	}
+
 	list := NewTypedList(items)
 
 	return list, diags
@@ -63,7 +75,7 @@ func NewContentTypeMetadataTaxonomyItemsFromResponse(
 
 func NewContentTypeMetadataTaxonomyItemFromResponse(
 	ctx context.Context,
-	_ path.Path,
+	itemPath path.Path,
 	item cm.ContentTypeMetadataTaxonomyItem,
 ) (TypedObject[ContentTypeMetadataTaxonomyItemValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
@@ -90,7 +102,23 @@ func NewContentTypeMetadataTaxonomyItemFromResponse(
 
 		attributes["taxonomy_concept_scheme"] = NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue]()
 		attributes["taxonomy_concept"] = value
+	default:
+		// Preserve an unsupported response discriminator as a known empty-union
+		// sentinel so the list position and surrounding metadata remain visible.
+		// Request conversion remains strict and rejects this sentinel before an
+		// update.
+		diags.AddAttributeWarning(itemPath, "Unsupported taxonomy metadata item", "Contentful returned an unknown taxonomy link type. Terraform state retains the item as an empty known union; a later request conversion will reject it until configured as a supported alternative.")
+
+		attributes["taxonomy_concept_scheme"] = NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue]()
+		attributes["taxonomy_concept"] = NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue]()
 	}
 
-	return NewTypedObjectFromAttributes[ContentTypeMetadataTaxonomyItemValue](ctx, attributes)
+	result, resultDiags := NewTypedObjectFromAttributes[ContentTypeMetadataTaxonomyItemValue](ctx, attributes)
+	diags.Append(resultDiags...)
+
+	if diags.HasError() {
+		return NewTypedObjectNull[ContentTypeMetadataTaxonomyItemValue](), diags
+	}
+
+	return result, diags
 }

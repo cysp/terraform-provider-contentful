@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -26,10 +27,6 @@ func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path
 		diags.Append(filtersElementDiags...)
 
 		filtersElements[index] = filtersElement
-	}
-
-	if diags.HasError() {
-		return NewTypedListNull[TypedObject[WebhookFilterValue]](), diags
 	}
 
 	filtersList := NewTypedList(filtersElements)
@@ -75,10 +72,6 @@ func ReadWebhookFilterValueFromResponse(ctx context.Context, path path.Path, inp
 		value.Regexp = filterRegexpValue
 	}
 
-	if diags.HasError() {
-		return NewTypedObjectNull[WebhookFilterValue](), diags
-	}
-
 	return NewTypedObject(value), diags
 }
 
@@ -110,10 +103,6 @@ func ReadWebhookFilterNotValueFromResponse(ctx context.Context, path path.Path, 
 		diags.Append(filterRegexpValueDiags...)
 
 		value.Regexp = filterRegexpValue
-	}
-
-	if diags.HasError() {
-		return NewTypedObjectNull[WebhookFilterNotValue](), diags
 	}
 
 	return NewTypedObject(value), diags
@@ -174,7 +163,7 @@ func readWebhookBinaryFilterValue[T any](
 	//nolint:mnd
 	if len(input) != 2 {
 		diags := diag.Diagnostics{}
-		diags.AddAttributeError(path, "failed to decode value", fmt.Sprintf("expected array of length 2, received array of length %d", len(input)))
+		diags.AddAttributeWarning(path, "Unsupported webhook filter value", fmt.Sprintf("Contentful returned an array of length %d; this filter requires exactly two terms. Terraform state retains a null alternative; a later request conversion will reject it until configured.", len(input)))
 
 		return NewTypedObjectNull[T](), diags
 	}
@@ -190,68 +179,122 @@ func readWebhookBinaryFilterValue[T any](
 
 func ReadWebhookDefinitionFilterTermString(_ context.Context, path path.Path, input jx.Raw) (types.String, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-	decoder := jx.DecodeBytes(input)
+	if !json.Valid(input) {
+		diags.AddAttributeError(path, "Failed to decode webhook filter value", "Contentful returned invalid JSON.")
 
-	valueValue, valueValueErr := decoder.Str()
-	if valueValueErr != nil {
-		diags.AddAttributeError(path, "failed to decode value", valueValueErr.Error())
+		return types.StringNull(), diags
 	}
 
-	decoder.Next()
+	var value *string
 
-	return types.StringValue(valueValue), diags
+	err := json.Unmarshal(input, &value)
+	if err != nil {
+		diags.AddAttributeWarning(path, "Unsupported webhook filter value", "Contentful returned a JSON value where this filter requires a string. Terraform state retains a null value; a later request conversion will reject it until configured.")
+
+		return types.StringNull(), diags
+	}
+
+	if value == nil {
+		diags.AddAttributeWarning(path, "Unsupported webhook filter value", "Contentful returned JSON null where this filter requires a string. Terraform state retains a null value; a later request conversion will reject it until configured.")
+
+		return types.StringNull(), diags
+	}
+
+	return types.StringValue(*value), diags
 }
 
 func ReadWebhookDefinitionFilterTermStringArray(_ context.Context, path path.Path, input jx.Raw) (TypedList[types.String], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-	decoder := jx.DecodeBytes(input)
+	if !json.Valid(input) {
+		diags.AddAttributeError(path, "Failed to decode webhook filter values", "Contentful returned invalid JSON.")
 
-	valueElements := make([]types.String, 0)
-
-	arrDecodeErr := decoder.Arr(func(decoder *jx.Decoder) error {
-		valueValue, valueValueErr := decoder.Str()
-		if valueValueErr != nil {
-			//nolint:wrapcheck
-			return valueValueErr
-		}
-
-		valueElements = append(valueElements, types.StringValue(valueValue))
-
-		return nil
-	})
-	if arrDecodeErr != nil {
-		diags.AddAttributeError(path, "failed to decode value", "")
+		return NewTypedListNull[types.String](), diags
 	}
 
-	valueValuesList := NewTypedList(valueElements)
+	var rawElements []json.RawMessage
 
-	return valueValuesList, diags
+	err := json.Unmarshal(input, &rawElements)
+	if err != nil {
+		diags.AddAttributeWarning(path, "Unsupported webhook filter values", "Contentful returned a JSON value where this filter requires an array of strings. Terraform state retains a null value; a later request conversion will reject it until configured.")
+
+		return NewTypedListNull[types.String](), diags
+	}
+
+	if rawElements == nil {
+		diags.AddAttributeWarning(path, "Unsupported webhook filter values", "Contentful returned JSON null where this filter requires an array of strings. Terraform state retains a null value; a later request conversion will reject it until configured.")
+
+		return NewTypedListNull[types.String](), diags
+	}
+
+	valueElements := make([]types.String, len(rawElements))
+	for index, rawElement := range rawElements {
+		var value *string
+
+		err := json.Unmarshal(rawElement, &value)
+		if err != nil {
+			diags.AddAttributeWarning(path.AtListIndex(index), "Unsupported webhook filter value", "Contentful returned a non-string array element. Terraform state retains a null element; a later request conversion will reject it until configured.")
+			valueElements[index] = types.StringNull()
+
+			continue
+		}
+
+		if value == nil {
+			diags.AddAttributeWarning(path.AtListIndex(index), "Unsupported webhook filter value", "Contentful returned a null array element where this filter requires a string. Terraform state retains a null element; a later request conversion will reject it until configured.")
+			valueElements[index] = types.StringNull()
+
+			continue
+		}
+
+		valueElements[index] = types.StringValue(*value)
+	}
+
+	return NewTypedList(valueElements), diags
 }
 
 func ReadWebhookDefinitionFilterTermStringObject(_ context.Context, path path.Path, name string, input jx.Raw) (types.String, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-	decoder := jx.DecodeBytes(input)
+	if !json.Valid(input) {
+		diags.AddAttributeError(path, "Failed to decode webhook filter value", "Contentful returned invalid JSON.")
 
-	value := types.StringNull()
-
-	objDecodeErr := decoder.Obj(func(decoder *jx.Decoder, key string) error {
-		if key != name {
-			return decoder.Skip()
-		}
-
-		valuePattern, valuePatternErr := decoder.Str()
-		if valuePatternErr != nil {
-			//nolint:wrapcheck
-			return valuePatternErr
-		}
-
-		value = types.StringValue(valuePattern)
-
-		return nil
-	})
-	if objDecodeErr != nil {
-		diags.AddAttributeError(path, "failed to decode value", objDecodeErr.Error())
+		return types.StringNull(), diags
 	}
 
-	return value, diags
+	var object map[string]json.RawMessage
+
+	err := json.Unmarshal(input, &object)
+	if err != nil {
+		diags.AddAttributeWarning(path, "Unsupported webhook filter value", "Contentful returned a JSON value where this filter requires an object. Terraform state retains a null value; a later request conversion will reject it until configured.")
+
+		return types.StringNull(), diags
+	}
+
+	if object == nil {
+		diags.AddAttributeWarning(path, "Unsupported webhook filter value", "Contentful returned JSON null where this filter requires an object. Terraform state retains a null value; a later request conversion will reject it until configured.")
+
+		return types.StringNull(), diags
+	}
+
+	rawValue, ok := object[name]
+	if !ok {
+		diags.AddAttributeWarning(path, "Unsupported webhook filter value", fmt.Sprintf("Contentful returned an object without the required %q property. Terraform state retains a null value; a later request conversion will reject it until configured.", name))
+
+		return types.StringNull(), diags
+	}
+
+	var value *string
+
+	err = json.Unmarshal(rawValue, &value)
+	if err != nil {
+		diags.AddAttributeWarning(path, "Unsupported webhook filter value", fmt.Sprintf("Contentful returned a non-string %q property. Terraform state retains a null value; a later request conversion will reject it until configured.", name))
+
+		return types.StringNull(), diags
+	}
+
+	if value == nil {
+		diags.AddAttributeWarning(path, "Unsupported webhook filter value", fmt.Sprintf("Contentful returned a null %q property where this filter requires a string. Terraform state retains a null value; a later request conversion will reject it until configured.", name))
+
+		return types.StringNull(), diags
+	}
+
+	return types.StringValue(*value), diags
 }

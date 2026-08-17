@@ -128,7 +128,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 
 	switch response := response.(type) {
 	case *cm.ContentTypeStatusCode:
-		responseModel, responseModelDiags := NewContentTypeResourceModelFromResponse(ctx, response.Response)
+		responseModel, responseModelDiags := NewContentTypeResourceModelFromMutationResponse(ctx, response.Response, plan)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -317,7 +317,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 
 	switch response := putContentTypeResponse.(type) {
 	case *cm.ContentTypeStatusCode:
-		responseModel, responseModelDiags := NewContentTypeResourceModelFromResponse(ctx, response.Response)
+		responseModel, responseModelDiags := NewContentTypeResourceModelFromMutationResponse(ctx, response.Response, plan)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel

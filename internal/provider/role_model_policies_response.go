@@ -34,12 +34,16 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 	diags := diag.Diagnostics{}
 
 	effect, err := item.Effect.MarshalText()
+	effectValue := types.StringNull()
+
 	if err != nil {
-		diags.AddAttributeError(path.AtName("effect"), "Failed to read policy effect", err.Error())
+		diags.AddAttributeWarning(path.AtName("effect"), "Unsupported policy effect", "Contentful returned an unsupported policy effect. Terraform state retains a null value; a later request conversion will reject it until configured with a supported effect.")
+	} else {
+		effectValue = types.StringValue(string(effect))
 	}
 
 	value := RolePolicyValue{
-		Effect: types.StringValue(string(effect)),
+		Effect: effectValue,
 	}
 
 	actionsListValue, actionsListValueDiags := NewPolicyActionsListValueFromResponse(ctx, path.AtName("actions"), item.Actions)
@@ -78,7 +82,7 @@ func NewPolicyActionsListValueFromResponse(_ context.Context, path path.Path, ac
 	}
 
 	diags := diag.Diagnostics{}
-	diags.AddAttributeError(path, "unexpected type for policy actions", "")
+	diags.AddAttributeWarning(path, "Unsupported policy actions", "Contentful returned an unsupported policy action shape. Terraform state retains a known null list; a later request conversion will reject it until configured with a supported shape.")
 
-	return NewTypedListUnknown[types.String](), diags
+	return NewTypedListNull[types.String](), diags
 }

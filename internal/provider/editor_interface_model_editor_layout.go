@@ -24,6 +24,10 @@ func NewEditorInterfaceEditorLayoutListValueFromResponse(ctx context.Context, pa
 		})
 	}
 
+	if diags.HasError() {
+		return NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]](), diags
+	}
+
 	list := NewTypedList(listElementValues)
 
 	return list, diags

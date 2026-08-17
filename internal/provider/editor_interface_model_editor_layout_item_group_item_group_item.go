@@ -35,22 +35,26 @@ func NewEditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValueFromResponse(
 
 	switch item.Type {
 	case cm.EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem:
-		diags.AddAttributeError(path, "Failed to read editor interface editor layout", "Unexpected group item")
+		diags.AddAttributeWarning(path, "Unsupported editor layout item", "Contentful returned a group where this layout position requires a field. Terraform state retains a known null value; a later request conversion will reject it until configured.")
+
+		return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](), diags
 
 	case cm.EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem:
 		itemFieldItem, itemFieldItemOk := item.GetEditorInterfaceEditorLayoutFieldItem()
 		if !itemFieldItemOk {
-			diags.AddAttributeError(path, "Failed to read field item", "Expected field item")
+			diags.AddAttributeWarning(path, "Unsupported editor layout item", "Contentful returned a field layout item without its field payload. Terraform state retains a known null value; a later request conversion will reject it until configured.")
 
-			return NewTypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}), diags
+			return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](), diags
 		}
 
 		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{
 			FieldID: types.StringValue(itemFieldItem.FieldId),
 		}), diags
-	}
+	default:
+		diags.AddAttributeWarning(path, "Unsupported editor layout item", "Contentful returned an unknown editor layout item type. Terraform state retains a known null value; a later request conversion will reject it until configured.")
 
-	return NewTypedObject[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue{}), diags
+		return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](), diags
+	}
 }
 
 func (v EditorInterfaceEditorLayoutItemGroupItemGroupItemValue) ToEditorInterfaceEditorLayoutItem(path path.Path) (cm.EditorInterfaceEditorLayoutItem, diag.Diagnostics) {

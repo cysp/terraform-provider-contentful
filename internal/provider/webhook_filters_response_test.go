@@ -68,7 +68,7 @@ func TestReadWebhookFilterValueFromResponsePreservesRepresentableAlternatives(t 
 	})
 }
 
-func TestReadWebhookFilterValueFromResponseReturnsNullAfterConversionError(t *testing.T) {
+func TestReadWebhookFilterValueFromResponsePreservesValidJSONShapeMismatch(t *testing.T) {
 	t.Parallel()
 
 	filterPath := path.Root("filters").AtListIndex(0)
@@ -96,14 +96,15 @@ func TestReadWebhookFilterValueFromResponseReturnsNullAfterConversionError(t *te
 
 			actual, diags := ReadWebhookFilterValueFromResponse(t.Context(), filterPath, test.input)
 
-			require.True(t, diags.HasError())
-			assert.True(t, actual.IsNull())
-			assert.Contains(t, webhookDiagnosticPaths(t, diags), test.expectedPath.String())
+			require.False(t, diags.HasError())
+			require.Len(t, diags.Warnings(), 1)
+			assert.Equal(t, test.expectedPath.String(), webhookWarningPaths(t, diags)[0])
+			assert.False(t, actual.IsNull())
 		})
 	}
 }
 
-func TestReadWebhookFiltersListValueFromResponseReturnsNullAfterElementError(t *testing.T) {
+func TestReadWebhookFiltersListValueFromResponsePreservesSiblingsAndPositions(t *testing.T) {
 	t.Parallel()
 
 	input := cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
@@ -117,9 +118,12 @@ func TestReadWebhookFiltersListValueFromResponseReturnsNullAfterElementError(t *
 
 	actual, diags := ReadWebhookFiltersListValueFromResponse(t.Context(), path.Root("filters"), input)
 
-	require.True(t, diags.HasError())
-	assert.True(t, actual.IsNull())
-	assert.Contains(t, webhookDiagnosticPaths(t, diags), "filters[1].equals")
+	require.False(t, diags.HasError())
+	require.Len(t, diags.Warnings(), 1)
+	assert.Equal(t, "filters[1].equals", webhookWarningPaths(t, diags)[0])
+	require.Len(t, actual.Elements(), 2)
+	assert.False(t, actual.Elements()[0].Value().Equals.IsNull())
+	assert.True(t, actual.Elements()[1].Value().Equals.IsNull())
 }
 
 func TestReadWebhookDefinitionFilterTermString(t *testing.T) {
@@ -141,7 +145,7 @@ func TestReadWebhookDefinitionFilterTermString(t *testing.T) {
 		},
 		"wrong type": {
 			input:       []byte(`123`),
-			expectError: true,
+			expectError: false,
 		},
 	}
 
@@ -164,11 +168,11 @@ func TestReadWebhookDefinitionFilterTermString(t *testing.T) {
 	}
 }
 
-func webhookDiagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
+func webhookWarningPaths(t *testing.T, diags diag.Diagnostics) []string {
 	t.Helper()
 
-	paths := make([]string, 0, len(diags.Errors()))
-	for _, diagnostic := range diags.Errors() {
+	paths := make([]string, 0, len(diags.Warnings()))
+	for _, diagnostic := range diags.Warnings() {
 		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
 		require.True(t, ok)
 
@@ -197,11 +201,11 @@ func TestReadWebhookDefinitionFilterTermStringArray(t *testing.T) {
 		},
 		"wrong type": {
 			input:       []byte(`"abc"`),
-			expectError: true,
+			expectError: false,
 		},
 		"wrong element type": {
 			input:       []byte(`["abc",123]`),
-			expectError: true,
+			expectError: false,
 		},
 	}
 
@@ -252,9 +256,9 @@ func TestReadWebhookDefinitionFilterTermStringObject(t *testing.T) {
 			expectNull: true,
 		},
 		"value wrong type": {
-			input:       []byte(`{"value":123}`),
-			name:        "value",
-			expectError: true,
+			input:      []byte(`{"value":123}`),
+			name:       "value",
+			expectNull: true,
 		},
 		"invalid json": {
 			input:       []byte(`{invalid`),
@@ -262,9 +266,9 @@ func TestReadWebhookDefinitionFilterTermStringObject(t *testing.T) {
 			expectError: true,
 		},
 		"wrong type": {
-			input:       []byte(`123`),
-			name:        "value",
-			expectError: true,
+			input:      []byte(`123`),
+			name:       "value",
+			expectNull: true,
 		},
 	}
 
@@ -294,4 +298,113 @@ func TestReadWebhookDefinitionFilterTermStringObject(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReadWebhookDefinitionFilterTermsWarnForRepresentableShapeMismatches(t *testing.T) {
+	t.Parallel()
+
+	valuePath := path.Root("filter")
+
+	stringValue, stringDiags := ReadWebhookDefinitionFilterTermString(t.Context(), valuePath, []byte(`123`))
+	assert.True(t, stringValue.IsNull())
+	assert.False(t, stringDiags.HasError())
+	assert.Equal(t, []string{valuePath.String()}, webhookWarningPaths(t, stringDiags))
+	nullStringValue, nullStringDiags := ReadWebhookDefinitionFilterTermString(t.Context(), valuePath, []byte(`null`))
+	assert.True(t, nullStringValue.IsNull())
+	assert.False(t, nullStringDiags.HasError())
+	assert.Equal(t, []string{valuePath.String()}, webhookWarningPaths(t, nullStringDiags))
+
+	arrayValue, arrayDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(`["valid",123]`))
+	assert.False(t, arrayDiags.HasError())
+	assert.Equal(t, []string{valuePath.AtListIndex(1).String()}, webhookWarningPaths(t, arrayDiags))
+	assert.Equal(t, []types.String{types.StringValue("valid"), types.StringNull()}, arrayValue.Elements())
+	nullArrayValue, nullArrayDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(`["valid",null]`))
+	assert.False(t, nullArrayDiags.HasError())
+	assert.Equal(t, []string{valuePath.AtListIndex(1).String()}, webhookWarningPaths(t, nullArrayDiags))
+	assert.Equal(t, []types.String{types.StringValue("valid"), types.StringNull()}, nullArrayValue.Elements())
+
+	objectValue, objectDiags := ReadWebhookDefinitionFilterTermStringObject(t.Context(), valuePath, "doc", []byte(`{"doc":123}`))
+	assert.True(t, objectValue.IsNull())
+	assert.False(t, objectDiags.HasError())
+	assert.Equal(t, []string{valuePath.String()}, webhookWarningPaths(t, objectDiags))
+	nullObjectValue, nullObjectDiags := ReadWebhookDefinitionFilterTermStringObject(t.Context(), valuePath, "doc", []byte(`{"doc":null}`))
+	assert.True(t, nullObjectValue.IsNull())
+	assert.False(t, nullObjectDiags.HasError())
+	assert.Equal(t, []string{valuePath.String()}, webhookWarningPaths(t, nullObjectDiags))
+}
+
+func TestReadWebhookDefinitionFilterTermStringArrayDistinguishesNullFromEmpty(t *testing.T) {
+	t.Parallel()
+
+	valuePath := path.Root("filter")
+
+	nullValue, nullDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(`null`))
+	assert.True(t, nullValue.IsNull())
+	assert.False(t, nullDiags.HasError())
+	assert.Equal(t, []string{valuePath.String()}, webhookWarningPaths(t, nullDiags))
+
+	emptyValue, emptyDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(`[]`))
+	assert.False(t, emptyValue.IsNull())
+	assert.Empty(t, emptyValue.Elements())
+	assert.Empty(t, emptyDiags)
+}
+
+func TestWebhookMutationResponsePreservesConfiguredFiltersAfterLossyProjection(t *testing.T) {
+	t.Parallel()
+
+	configuredFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue("Entry")),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+	})
+	plan := WebhookModel{
+		Filters: configuredFilters,
+		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+	}
+	response := cm.WebhookDefinition{
+		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
+		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`123`)}},
+		}),
+	}
+
+	mutationModel, mutationDiags := NewWebhookResourceModelFromMutationResponse(t.Context(), response, plan)
+	assert.False(t, mutationDiags.HasError())
+	assert.Len(t, mutationDiags.Warnings(), 1)
+	assert.True(t, mutationModel.Filters.Equal(configuredFilters))
+
+	readModel, readDiags := NewWebhookResourceModelFromResponse(t.Context(), response, plan.Headers.Elements())
+	assert.False(t, readDiags.HasError())
+	assert.Len(t, readDiags.Warnings(), 1)
+	assert.True(t, readModel.Filters.Elements()[0].Value().Equals.Value().Value.IsNull())
+}
+
+func TestWebhookMutationResponseRespectsFilterPlanOwnership(t *testing.T) {
+	t.Parallel()
+
+	response := cm.WebhookDefinition{
+		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
+		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)}},
+		}),
+	}
+	plan := WebhookModel{
+		Filters: NewTypedListUnknown[TypedObject[WebhookFilterValue]](),
+		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+	}
+
+	model, diags := NewWebhookResourceModelFromMutationResponse(t.Context(), response, plan)
+
+	assert.False(t, diags.HasError())
+	assert.False(t, model.Filters.IsUnknown())
+	assert.False(t, model.Filters.IsNull())
+	assert.Equal(t, "Entry", model.Filters.Elements()[0].Value().Equals.Value().Value.ValueString())
+
+	plan.Filters = NewTypedListNull[TypedObject[WebhookFilterValue]]()
+	nullModel, nullDiags := NewWebhookResourceModelFromMutationResponse(t.Context(), response, plan)
+	assert.False(t, nullDiags.HasError())
+	assert.True(t, nullModel.Filters.IsNull())
 }
