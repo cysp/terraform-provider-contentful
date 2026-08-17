@@ -43,7 +43,7 @@ func NewPermissionActionsListValueFromResponse(_ context.Context, path path.Path
 	}
 
 	diags := diag.Diagnostics{}
-	diags.AddAttributeError(path, "unexpected type for permission actions", "")
+	diags.AddAttributeWarning(path, "Unsupported permission actions", "Contentful returned an unsupported permission action shape. Terraform state retains a known null list; a later request conversion will reject it until configured with a supported shape.")
 
-	return NewTypedListUnknown[types.String](), diags
+	return NewTypedListNull[types.String](), diags
 }

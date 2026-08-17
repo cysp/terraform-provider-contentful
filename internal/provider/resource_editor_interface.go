@@ -107,7 +107,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
-		responseModel, responseModelDiags := NewEditorInterfaceResourceModelFromResponse(ctx, response.Response)
+		responseModel, responseModelDiags := NewEditorInterfaceResourceModelFromMutationResponse(ctx, response.Response, plan)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -278,7 +278,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
-		responseModel, responseModelDiags := NewEditorInterfaceResourceModelFromResponse(ctx, response.Response)
+		responseModel, responseModelDiags := NewEditorInterfaceResourceModelFromMutationResponse(ctx, response.Response, plan)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel

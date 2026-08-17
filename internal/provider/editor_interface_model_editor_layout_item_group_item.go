@@ -34,35 +34,56 @@ func NewEditorInterfaceEditorLayoutItemValueFromResponse(ctx context.Context, pa
 	case cm.EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem:
 		itemGroupItem, itemGroupItemOk := item.GetEditorInterfaceEditorLayoutGroupItem()
 		if !itemGroupItemOk {
-			diags.AddAttributeError(path, "Failed to read group item", "Expected group item")
+			diags.AddAttributeWarning(path, "Unsupported editor layout item", "Contentful returned a group layout item without its group payload. Terraform state retains a known empty union; a later request conversion will reject it until configured.")
 
-			return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{}), diags
+			return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+			}), diags
 		}
 
 		groupValue, groupValueDiags := NewEditorInterfaceEditorLayoutItemGroupItemGroupValueFromResponse(ctx, path, itemGroupItem)
 		diags.Append(groupValueDiags...)
 
+		if diags.HasError() {
+			return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](), diags
+		}
+
 		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{
+			Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
 			Group: groupValue,
 		}), diags
 
 	case cm.EditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem:
 		itemFieldItem, itemFieldItemOk := item.GetEditorInterfaceEditorLayoutFieldItem()
 		if !itemFieldItemOk {
-			diags.AddAttributeError(path, "Failed to read field item", "Expected field item")
+			diags.AddAttributeWarning(path, "Unsupported editor layout item", "Contentful returned a field layout item without its field payload. Terraform state retains a known empty union; a later request conversion will reject it until configured.")
 
-			return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{}), diags
+			return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{
+				Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+				Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+			}), diags
 		}
 
 		fieldValue, fieldValueDiags := NewEditorInterfaceEditorLayoutItemGroupItemFieldValueFromResponse(ctx, path, itemFieldItem)
 		diags.Append(fieldValueDiags...)
 
+		if diags.HasError() {
+			return NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](), diags
+		}
+
 		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{
+			Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
 			Field: fieldValue,
 		}), diags
 
 	default:
-		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{}), diags
+		diags.AddAttributeWarning(path, "Unsupported editor layout item", "Contentful returned an unknown editor layout item type. Terraform state retains a known empty union; a later request conversion will reject it until configured.")
+
+		return NewTypedObject(EditorInterfaceEditorLayoutItemGroupItemValue{
+			Field: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+			Group: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+		}), diags
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRoleActionsFromResponse(t *testing.T) {
@@ -19,6 +20,23 @@ func TestRoleActionsFromResponse(t *testing.T) {
 	assertRoleActionsFromResponse(t, cm.RolePermissionsItem{}, NewPermissionActionsListValueFromResponse, true)
 	assertRoleActionsFromResponse(t, cm.NewStringRolePoliciesItemActions("read"), NewPolicyActionsListValueFromResponse, false)
 	assertRoleActionsFromResponse(t, cm.RolePoliciesItemActions{}, NewPolicyActionsListValueFromResponse, true)
+}
+
+func TestRolePolicyResponsePreservesUnknownEffect(t *testing.T) {
+	t.Parallel()
+
+	valuePath := path.Root("policies").AtListIndex(0)
+	actual, diags := NewPoliciesValueFromResponse(t.Context(), valuePath, cm.RolePoliciesItem{
+		Effect:  cm.RolePoliciesItemEffect("future"),
+		Actions: cm.NewStringRolePoliciesItemActions("read"),
+	})
+
+	assert.False(t, diags.HasError())
+	require.Len(t, diags.Warnings(), 1)
+	diagnostic, ok := diags.Warnings()[0].(diag.DiagnosticWithPath)
+	require.True(t, ok)
+	assert.Equal(t, valuePath.AtName("effect"), diagnostic.Path())
+	assert.True(t, actual.Value().Effect.IsNull())
 }
 
 func assertRoleActionsFromResponse[T any](
@@ -32,8 +50,12 @@ func assertRoleActionsFromResponse[T any](
 	actual, diags := convert(t.Context(), path.Root("actions"), input)
 
 	if expectError {
-		assert.True(t, diags.HasError())
-		assert.True(t, actual.IsUnknown())
+		assert.False(t, diags.HasError())
+		require.Len(t, diags.Warnings(), 1)
+		diagnostic, ok := diags.Warnings()[0].(diag.DiagnosticWithPath)
+		require.True(t, ok)
+		assert.Equal(t, path.Root("actions"), diagnostic.Path())
+		assert.True(t, actual.IsNull())
 
 		return
 	}

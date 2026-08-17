@@ -38,3 +38,21 @@ func NewRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleMo
 
 	return model, diags
 }
+
+// NewRoleResourceModelFromMutationResponse preserves known planned permissions
+// and policies after a lossy response projection for Terraform plan
+// consistency. Defensive null or unknown inputs retain the known response
+// projection.
+func NewRoleResourceModelFromMutationResponse(ctx context.Context, role cm.Role, plan RoleModel) (RoleModel, diag.Diagnostics) {
+	model, diags := NewRoleResourceModelFromResponse(ctx, role)
+
+	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
+		model.Permissions = plan.Permissions
+	}
+
+	if !plan.Policies.IsNull() && !plan.Policies.IsUnknown() {
+		model.Policies = plan.Policies
+	}
+
+	return model, diags
+}

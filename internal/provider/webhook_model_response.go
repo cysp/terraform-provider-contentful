@@ -52,3 +52,17 @@ func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 
 	return model, diags
 }
+
+// NewWebhookResourceModelFromMutationResponse preserves every known planned
+// value for filters, including null, after a lossy mutation response so
+// mutations remain plan-consistent. Unknown filters fall back to the response
+// projection; Read continues to project remote filters so later refreshes
+// expose drift.
+func NewWebhookResourceModelFromMutationResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, plan WebhookModel) (WebhookModel, diag.Diagnostics) {
+	model, diags := NewWebhookResourceModelFromResponse(ctx, webhookDefinition, plan.Headers.Elements())
+	if !plan.Filters.IsUnknown() {
+		model.Filters = plan.Filters
+	}
+
+	return model, diags
+}
