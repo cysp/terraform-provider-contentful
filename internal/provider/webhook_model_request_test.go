@@ -271,3 +271,23 @@ func TestWebhookModelFilterContainerSemantics(t *testing.T) {
 		})
 	}
 }
+
+func TestWebhookTopicsPreserveChildDiagnosticPathAndFailClosed(t *testing.T) {
+	t.Parallel()
+
+	model := WebhookModel{
+		Name:   types.StringValue("webhook"),
+		Active: types.BoolValue(true),
+		URL:    types.StringValue("https://example.com"),
+		Topics: NewTypedList([]types.String{
+			types.StringValue("Entry.create"),
+			types.StringUnknown(),
+		}),
+	}
+
+	actual, diags := model.ToWebhookDefinitionData(t.Context(), path.Empty())
+
+	assert.Zero(t, actual)
+	assert.True(t, diags.HasError())
+	assert.Equal(t, []string{"topics[1]"}, attributeDiagnosticPaths(t, diags))
+}

@@ -1,10 +1,9 @@
 package provider
 
 import (
-	"context"
-
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -55,35 +54,29 @@ type TaxonomyConceptSchemeModel struct {
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func stringMap(ctx context.Context, value types.Map) (map[string]string, diag.Diagnostics) {
-	result := map[string]string{}
-	if value.IsNull() || value.IsUnknown() {
-		return result, nil
-	}
-
-	diags := value.ElementsAs(ctx, &result, false)
-
-	return result, diags
-}
-
-func stringList(ctx context.Context, value types.List) ([]string, diag.Diagnostics) {
-	result := []string{}
-	if value.IsNull() || value.IsUnknown() {
-		return result, nil
-	}
-
-	diags := value.ElementsAs(ctx, &result, false)
-
-	return result, diags
-}
-
-func stringListMap(ctx context.Context, value types.Map) (map[string][]string, diag.Diagnostics) {
+// optionalComputedStringMap encodes a null or unknown Optional+Computed map as
+// empty at request conversion. Conversion receives only the plan, so it cannot
+// distinguish omitted configuration from genuinely unknown configuration.
+// UseStateForUnknown normally supplies prior state for an omitted Update.
+func optionalComputedStringMap(value types.Map, valuePath path.Path) (map[string][]string, diag.Diagnostics) {
 	result := map[string][]string{}
 	if value.IsNull() || value.IsUnknown() {
 		return result, nil
 	}
 
-	diags := value.ElementsAs(ctx, &result, false)
+	return RequireKnownStringListMap(value, valuePath)
+}
 
-	return result, diags
+// optionalComputedStringListValue encodes a null or unknown Optional+Computed
+// list as empty at request conversion. Conversion receives only the plan, so it
+// cannot distinguish omitted configuration from genuinely unknown
+// configuration. UseStateForUnknown normally supplies prior state for an
+// omitted Update.
+func optionalComputedStringListValue(value types.List, valuePath path.Path) ([]string, diag.Diagnostics) {
+	result := []string{}
+	if value.IsNull() || value.IsUnknown() {
+		return result, nil
+	}
+
+	return RequireKnownStringList(value, valuePath)
 }
