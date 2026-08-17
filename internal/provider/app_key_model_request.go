@@ -13,6 +13,10 @@ func (m *AppKeyModel) ToAppKeyRequestData(ctx context.Context) (cm.AppKeyRequest
 	jwkModel, _ := m.JWK.GetValue()
 	jwk, diags := jwkModel.ToAppKeyJWK(ctx, path.Root("jwk"))
 
+	if diags.HasError() {
+		return cm.AppKeyRequestData{}, diags
+	}
+
 	return cm.NewAppKeyRequestData(jwk), diags
 }
 
@@ -73,6 +77,10 @@ func (m AppKeyJWKModel) ToAppKeyJWK(_ context.Context, attrPath path.Path) (cm.A
 
 	if !diags.HasError() {
 		diags.Append(validateAppKeyJWKMaterial(jwk, attrPath)...)
+	}
+
+	if diags.HasError() {
+		return cm.AppKeyJWK{}, diags
 	}
 
 	return jwk, diags

@@ -8,6 +8,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -218,11 +219,11 @@ func TestTaxonomyCollectionConversions(t *testing.T) {
 		"null":    types.MapNull(types.StringType),
 		"unknown": types.MapUnknown(types.StringType),
 	} {
-		t.Run("string map "+name, func(t *testing.T) {
+		t.Run("known string map "+name, func(t *testing.T) {
 			t.Parallel()
 
-			actual, diags := stringMap(t.Context(), value)
-			require.False(t, diags.HasError())
+			actual, diags := RequireKnownStringMap(value, path.Root("pref_label"))
+			require.True(t, diags.HasError())
 			assert.Empty(t, actual)
 		})
 	}
@@ -232,10 +233,10 @@ func TestTaxonomyCollectionConversions(t *testing.T) {
 		"null":    types.MapNull(listType),
 		"unknown": types.MapUnknown(listType),
 	} {
-		t.Run("string list map "+name, func(t *testing.T) {
+		t.Run("optional computed string map "+name, func(t *testing.T) {
 			t.Parallel()
 
-			actual, diags := stringListMap(t.Context(), value)
+			actual, diags := optionalComputedStringMap(value, path.Root("value"))
 			require.False(t, diags.HasError())
 			assert.Empty(t, actual)
 		})
@@ -332,6 +333,55 @@ func TestTaxonomyConceptToRequestAddsPreferredLocalesToLabelMaps(t *testing.T) {
 	assert.Equal(t, cm.LocalizedStringList{"en-US": {}}, hiddenLabels)
 }
 
+func TestTaxonomyConceptToRequestRejectsInvalidLabelChildrenWithoutPanicking(t *testing.T) {
+	t.Parallel()
+
+	listType := types.ListType{ElemType: types.StringType}
+
+	for _, attributeName := range []string{"alt_labels", "hidden_labels"} {
+		for valueName, invalidValue := range map[string]attr.Value{
+			"null":    types.StringNull(),
+			"unknown": types.StringUnknown(),
+		} {
+			t.Run(attributeName+" "+valueName, func(t *testing.T) {
+				t.Parallel()
+
+				invalidLabels := types.MapValueMust(listType, map[string]attr.Value{
+					"en-US": types.ListValueMust(types.StringType, []attr.Value{
+						types.StringValue("known"),
+						invalidValue,
+					}),
+				})
+				model := TaxonomyConceptModel{
+					PrefLabel:         types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Chair")}),
+					AltLabels:         types.MapNull(listType),
+					HiddenLabels:      types.MapNull(listType),
+					Notations:         types.ListNull(types.StringType),
+					BroaderConceptIDs: types.ListNull(types.StringType),
+					RelatedConceptIDs: types.ListNull(types.StringType),
+				}
+
+				switch attributeName {
+				case "alt_labels":
+					model.AltLabels = invalidLabels
+				case "hidden_labels":
+					model.HiddenLabels = invalidLabels
+				}
+
+				request, diags := model.ToRequest(t.Context())
+
+				assert.Equal(t, cm.TaxonomyConceptRequest{}, request)
+				require.True(t, diags.HasError())
+				require.Len(t, diags.Errors(), 1)
+
+				pathDiagnostic, ok := diags.Errors()[0].(diag.DiagnosticWithPath)
+				require.True(t, ok)
+				assert.Equal(t, path.Root(attributeName).AtMapKey("en-US").AtListIndex(1), pathDiagnostic.Path())
+			})
+		}
+	}
+}
+
 func TestValidateTaxonomyConceptSchemeResponse(t *testing.T) {
 	t.Parallel()
 
@@ -349,17 +399,68 @@ func TestLocalizedStringConversions(t *testing.T) {
 
 	ctx := t.Context()
 	diags := diag.Diagnostics{}
-	null := nullableLocalizedString(ctx, types.MapNull(types.StringType), &diags)
+	null := nullableLocalizedString(types.MapNull(types.StringType), path.Root("definition"), &diags)
 	require.False(t, diags.HasError())
 	assert.True(t, null.IsNull())
 	assert.True(t, localizedStringValue(ctx, null, &diags).IsNull())
 
 	configured := types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Description")})
-	known := nullableLocalizedString(ctx, configured, &diags)
+	known := nullableLocalizedString(configured, path.Root("definition"), &diags)
 	require.False(t, diags.HasError())
 
 	value, ok := known.Get()
 	require.True(t, ok)
 	assert.Equal(t, cm.NullableLocalizedString{"en-US": "Description"}, value)
 	assert.Equal(t, configured, localizedStringValue(ctx, known, &diags))
+}
+
+func TestTaxonomyToRequestRejectsUnknownOptionalValues(t *testing.T) {
+	t.Parallel()
+
+	model := TaxonomyConceptModel{
+		URI:               types.StringUnknown(),
+		PrefLabel:         types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Chair")}),
+		AltLabels:         types.MapNull(types.ListType{ElemType: types.StringType}),
+		HiddenLabels:      types.MapNull(types.ListType{ElemType: types.StringType}),
+		Notations:         types.ListNull(types.StringType),
+		Note:              types.MapUnknown(types.StringType),
+		BroaderConceptIDs: types.ListNull(types.StringType),
+		RelatedConceptIDs: types.ListNull(types.StringType),
+	}
+
+	_, diags := model.ToRequest(t.Context())
+	require.True(t, diags.HasError())
+
+	paths := make([]string, 0, len(diags.Errors()))
+	for _, diagnostic := range diags.Errors() {
+		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
+		require.True(t, ok)
+
+		paths = append(paths, withPath.Path().String())
+	}
+
+	assert.Contains(t, paths, "uri")
+	assert.Contains(t, paths, "note")
+}
+
+func TestOptionalComputedStringListValuePreservesChildPathAndFailsClosed(t *testing.T) {
+	t.Parallel()
+
+	value := types.ListValueMust(types.StringType, []attr.Value{
+		types.StringValue("known"),
+		types.StringNull(),
+	})
+
+	actual, diags := optionalComputedStringListValue(
+		value,
+		path.Root("broader_concept_ids"),
+	)
+
+	assert.Nil(t, actual)
+	require.True(t, diags.HasError())
+	require.Len(t, diags.Errors(), 1)
+
+	pathDiagnostic, ok := diags.Errors()[0].(diag.DiagnosticWithPath)
+	require.True(t, ok)
+	assert.Equal(t, path.Root("broader_concept_ids").AtListIndex(1), pathDiagnostic.Path())
 }
