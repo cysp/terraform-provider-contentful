@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestKnownStringListElements(t *testing.T) {
+func TestRequireKnownStringListElements(t *testing.T) {
 	t.Parallel()
 
 	t.Run("known", func(t *testing.T) {

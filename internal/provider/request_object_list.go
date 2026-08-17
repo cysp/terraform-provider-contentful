@@ -20,23 +20,10 @@ func convertKnownObjectListElements[T any, R any](
 
 	for index, element := range elements {
 		elementPath := valuePath.AtListIndex(index)
-		value, ok := element.GetValue()
+		value, valueDiags := RequireKnownObject(element, elementPath)
+		diags.Append(valueDiags...)
 
-		if !ok {
-			if element.IsUnknown() {
-				diags.AddAttributeError(
-					elementPath,
-					"Unexpected unknown object",
-					"The object value must be known before it can be sent to Contentful.",
-				)
-			} else {
-				diags.AddAttributeError(
-					elementPath,
-					"Unexpected null object",
-					"Null object values are not valid collection elements.",
-				)
-			}
-
+		if valueDiags.HasError() {
 			continue
 		}
 
