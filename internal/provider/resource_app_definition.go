@@ -109,6 +109,10 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 		resp.Diagnostics.AddError("Failed to create app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identityModel AppDefinitionIdentityModel
@@ -118,8 +122,11 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl
@@ -179,6 +186,10 @@ func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadReque
 		resp.Diagnostics.AddError("Failed to read app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = state.Timeouts
 
 	var identityModel AppDefinitionIdentityModel
@@ -188,8 +199,11 @@ func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl
@@ -246,6 +260,10 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 		resp.Diagnostics.AddError("Failed to update app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
 	var identityModel AppDefinitionIdentityModel
@@ -255,8 +273,11 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 //nolint:dupl
