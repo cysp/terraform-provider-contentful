@@ -99,7 +99,9 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 
 	tflog.Info(ctx, "app_installation.create", map[string]any{
 		"params": params,
-		"err":    err,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data AppInstallationModel
@@ -166,7 +168,8 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 
 	tflog.Info(ctx, "app_installation.read", map[string]any{
 		"params": params,
-		"err":    err,
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data AppInstallationModel
@@ -252,7 +255,9 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 
 	tflog.Info(ctx, "app_installation.update", map[string]any{
 		"params": params,
-		"err":    err,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data AppInstallationModel

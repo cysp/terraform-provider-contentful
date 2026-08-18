@@ -92,7 +92,9 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	tflog.Info(ctx, "webhook.create", map[string]any{
 		"params": params,
-		"err":    err,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data WebhookModel
@@ -161,7 +163,8 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	tflog.Info(ctx, "webhook.read", map[string]any{
 		"params": params,
-		"err":    err,
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	currentVersion := 0
@@ -252,7 +255,9 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	tflog.Info(ctx, "webhook.update", map[string]any{
 		"params": params,
-		"err":    err,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data WebhookModel

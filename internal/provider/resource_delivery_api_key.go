@@ -93,7 +93,9 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 
 	tflog.Info(ctx, "delivery_api_key.create", map[string]any{
 		"params": params,
-		"err":    err,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data DeliveryAPIKeyModel
@@ -163,7 +165,8 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	tflog.Info(ctx, "delivery_api_key.read", map[string]any{
 		"params": params,
-		"err":    err,
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	currentVersion := 0
@@ -254,7 +257,9 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 
 	tflog.Info(ctx, "delivery_api_key.update", map[string]any{
 		"params": params,
-		"err":    err,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data DeliveryAPIKeyModel
