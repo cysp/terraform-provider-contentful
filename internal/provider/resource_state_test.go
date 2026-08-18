@@ -25,7 +25,7 @@ type invalidPublicationModel struct {
 	Missing types.String `tfsdk:"missing"`
 }
 
-func TestSetResourceIdentityAndStateIsAtomicAfterIdentityError(t *testing.T) {
+func TestSetResourceIdentityAndStateLeavesBothTargetsUnchangedAfterIdentityEncodingError(t *testing.T) {
 	t.Parallel()
 
 	identity, state := emptyPublicationTargets()
@@ -41,7 +41,7 @@ func TestSetResourceIdentityAndStateIsAtomicAfterIdentityError(t *testing.T) {
 	assertPublicationTargetsNull(t, identity, state)
 }
 
-func TestSetResourceIdentityAndStateIsAtomicAfterStateError(t *testing.T) {
+func TestSetResourceIdentityAndStateLeavesBothTargetsUnchangedAfterStateEncodingError(t *testing.T) {
 	t.Parallel()
 
 	identity, state := emptyPublicationTargets()
@@ -57,7 +57,7 @@ func TestSetResourceIdentityAndStateIsAtomicAfterStateError(t *testing.T) {
 	assertPublicationTargetsNull(t, identity, state)
 }
 
-func TestSetResourceIdentityAndStatePublishesBoth(t *testing.T) {
+func TestSetResourceIdentityAndStateSetsBothTargets(t *testing.T) {
 	t.Parallel()
 
 	identity, state := emptyPublicationTargets()

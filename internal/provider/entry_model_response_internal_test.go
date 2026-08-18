@@ -36,7 +36,7 @@ func TestNewEntryFieldsFromResponsePreservesKnownJSONNull(t *testing.T) {
 	assert.Equal(t, `null`, fields.Elements()["optional"].ValueString())
 }
 
-func TestMergeMissingEntryFields(t *testing.T) {
+func TestMergeEntryFieldsWithFallback(t *testing.T) {
 	t.Parallel()
 
 	returnedValue := jsontypes.NewNormalizedValue(`{"en-US":"returned"}`)
@@ -48,7 +48,7 @@ func TestMergeMissingEntryFields(t *testing.T) {
 		"missing":  missingValue,
 	})
 
-	actual := mergeMissingEntryFields(returned, configured)
+	actual := mergeEntryFieldsWithFallback(returned, configured)
 
 	assert.Equal(t, map[string]jsontypes.Normalized{
 		"returned": returnedValue,
@@ -61,11 +61,11 @@ func TestMergeMissingEntryFields(t *testing.T) {
 	}, configured.Elements())
 }
 
-func TestMergeMissingEntryFieldsInitializesNullResponse(t *testing.T) {
+func TestMergeEntryFieldsWithFallbackInitializesNullResponse(t *testing.T) {
 	t.Parallel()
 
 	value := jsontypes.NewNormalizedValue(`{"en-US":"configured"}`)
-	actual := mergeMissingEntryFields(
+	actual := mergeEntryFieldsWithFallback(
 		NewTypedMapNull[jsontypes.Normalized](),
 		NewTypedMap(map[string]jsontypes.Normalized{"field": value}),
 	)

@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestListResultConversionErrorLeavesResultUnpublished(t *testing.T) {
+func TestListResultProjectionErrorLeavesIdentityAndResourceUnset(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -48,7 +48,7 @@ func TestListResultConversionErrorLeavesResultUnpublished(t *testing.T) {
 	assert.True(t, result.Identity.Raw.IsNull())
 }
 
-func TestListResultConversionWarningIsPublishedWithResult(t *testing.T) {
+func TestListResultProjectionWarningSetsIdentityAndResource(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -97,7 +97,7 @@ func TestListResultConversionWarningIsPublishedWithResult(t *testing.T) {
 	assert.False(t, result.Resource.Raw.IsNull())
 }
 
-func TestListResultSetterErrorLeavesResultUnpublished(t *testing.T) {
+func TestListResultEncodingErrorLeavesIdentityAndResourceUnset(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -116,12 +116,12 @@ func TestListResultSetterErrorLeavesResultUnpublished(t *testing.T) {
 	}
 
 	for name, test := range map[string]struct {
-		identity any
-		convert  func() (any, diag.Diagnostics)
+		identity        any
+		projectResource func() (any, diag.Diagnostics)
 	}{
 		"identity": {
 			identity: struct{}{},
-			convert: func() (any, diag.Diagnostics) {
+			projectResource: func() (any, diag.Diagnostics) {
 				return ContentTypeModel{}, nil
 			},
 		},
@@ -131,7 +131,7 @@ func TestListResultSetterErrorLeavesResultUnpublished(t *testing.T) {
 				EnvironmentID: types.StringValue("environment"),
 				ContentTypeID: types.StringValue("content-type"),
 			},
-			convert: func() (any, diag.Diagnostics) {
+			projectResource: func() (any, diag.Diagnostics) {
 				return struct{}{}, nil
 			},
 		},
@@ -139,7 +139,7 @@ func TestListResultSetterErrorLeavesResultUnpublished(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result := newListResultFromResponse(ctx, req, "malformed", test.identity, test.convert)
+			result := newListResultFromResponse(ctx, req, "malformed", test.identity, test.projectResource)
 
 			require.True(t, result.Diagnostics.HasError())
 			assert.True(t, result.Identity.Raw.IsNull())

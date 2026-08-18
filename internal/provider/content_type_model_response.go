@@ -45,36 +45,36 @@ func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm
 	return model, diags
 }
 
-// NewContentTypeResourceModelFromMutationResponse preserves configuration-owned
-// metadata children after a lossy response projection. metadata and taxonomy
-// are Optional+Computed, so null and unknown values are response-owned.
-// annotations is Optional-only, so every known value, including null, remains
-// configuration-owned. This merge never writes a nested unknown into state.
-func NewContentTypeResourceModelFromMutationResponse(ctx context.Context, contentType cm.ContentType, plan ContentTypeModel) (ContentTypeModel, diag.Diagnostics) {
-	model, diags := NewContentTypeResourceModelFromResponse(ctx, contentType)
+// NewContentTypeResourceModelForMutationState starts with the response
+// projection and restores known plan-owned metadata children. Known Optional
+// annotations, including null, are restored. Optional+Computed taxonomy is
+// restored only when known and non-null; the response supplies omitted taxonomy
+// and resolves unknown children so none enter state. Read skips reconciliation.
+func NewContentTypeResourceModelForMutationState(ctx context.Context, contentType cm.ContentType, appliedPlan ContentTypeModel) (ContentTypeModel, diag.Diagnostics) {
+	mutationState, diags := NewContentTypeResourceModelFromResponse(ctx, contentType)
 
-	planMetadata, planMetadataOk := plan.Metadata.GetValue()
-	if !planMetadataOk {
-		return model, diags
+	plannedMetadata, plannedMetadataIsKnown := appliedPlan.Metadata.GetValue()
+	if !plannedMetadataIsKnown {
+		return mutationState, diags
 	}
 
-	responseMetadata, responseMetadataOk := model.Metadata.GetValue()
-	if !responseMetadataOk {
-		responseMetadata = ContentTypeMetadataValue{
+	stateMetadata, stateMetadataIsKnown := mutationState.Metadata.GetValue()
+	if !stateMetadataIsKnown {
+		stateMetadata = ContentTypeMetadataValue{
 			Annotations: jsontypes.NewNormalizedNull(),
 			Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 		}
 	}
 
-	if !planMetadata.Annotations.IsUnknown() {
-		responseMetadata.Annotations = planMetadata.Annotations
+	if !plannedMetadata.Annotations.IsUnknown() {
+		stateMetadata.Annotations = plannedMetadata.Annotations
 	}
 
-	if !planMetadata.Taxonomy.IsNull() && !planMetadata.Taxonomy.IsUnknown() {
-		responseMetadata.Taxonomy = planMetadata.Taxonomy
+	if !plannedMetadata.Taxonomy.IsNull() && !plannedMetadata.Taxonomy.IsUnknown() {
+		stateMetadata.Taxonomy = plannedMetadata.Taxonomy
 	}
 
-	model.Metadata = NewTypedObject(responseMetadata)
+	mutationState.Metadata = NewTypedObject(stateMetadata)
 
-	return model, diags
+	return mutationState, diags
 }

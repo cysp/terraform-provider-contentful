@@ -85,7 +85,7 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 				NewEntryIdentityModel(item.Sys.Space.Sys.ID, item.Sys.Environment.Sys.ID, item.Sys.ID),
 				func() (*EntryModel, diag.Diagnostics) {
 					responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, item)
-					responseModel.Fields = mergeMissingEntryFields(
+					responseModel.Fields = mergeEntryFieldsWithFallback(
 						responseModel.Fields,
 						NewTypedMap(map[string]jsontypes.Normalized{}),
 					)

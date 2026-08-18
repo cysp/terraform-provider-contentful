@@ -101,10 +101,10 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromMutationResponse(ctx, response.Response, plan)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewWebhookResourceModelForMutationState(ctx, response.Response, plan)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
-		data = responseModel
+		data = mutationState
 		currentVersion = response.Response.Sys.Version
 
 	default:
@@ -264,10 +264,10 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromMutationResponse(ctx, response.Response, plan)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewWebhookResourceModelForMutationState(ctx, response.Response, plan)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
-		data = responseModel
+		data = mutationState
 		currentVersion = response.Response.Sys.Version
 
 	default:

@@ -15,40 +15,40 @@ func newListResultFromResponse[T any](
 	req list.ListRequest,
 	displayName string,
 	identity any,
-	convert func() (T, diag.Diagnostics),
+	projectResource func() (T, diag.Diagnostics),
 ) list.ListResult {
 	result := req.NewListResult(ctx)
 	result.DisplayName = displayName
 
-	var model T
+	var resourceModel T
 
 	if req.IncludeResource {
-		var modelDiags diag.Diagnostics
+		var resourceModelDiags diag.Diagnostics
 
-		model, modelDiags = convert()
-		result.Diagnostics.Append(modelDiags...)
+		resourceModel, resourceModelDiags = projectResource()
+		result.Diagnostics.Append(resourceModelDiags...)
 
 		if result.Diagnostics.HasError() {
 			return result
 		}
 	}
 
-	staged := req.NewListResult(ctx)
-	staged.DisplayName = displayName
-	publicationDiags := staged.Identity.Set(ctx, identity)
+	stagedResult := req.NewListResult(ctx)
+	stagedResult.DisplayName = displayName
+	encodingDiags := stagedResult.Identity.Set(ctx, identity)
 
-	if !publicationDiags.HasError() && req.IncludeResource {
-		publicationDiags.Append(staged.Resource.Set(ctx, model)...)
+	if !encodingDiags.HasError() && req.IncludeResource {
+		encodingDiags.Append(stagedResult.Resource.Set(ctx, resourceModel)...)
 	}
 
-	if publicationDiags.HasError() {
-		result.Diagnostics.Append(publicationDiags...)
+	if encodingDiags.HasError() {
+		result.Diagnostics.Append(encodingDiags...)
 
 		return result
 	}
 
-	staged.Diagnostics.Append(result.Diagnostics...)
-	staged.Diagnostics.Append(publicationDiags...)
+	stagedResult.Diagnostics.Append(result.Diagnostics...)
+	stagedResult.Diagnostics.Append(encodingDiags...)
 
-	return staged
+	return stagedResult
 }

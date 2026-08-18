@@ -128,10 +128,10 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 
 	switch response := response.(type) {
 	case *cm.ContentTypeStatusCode:
-		responseModel, responseModelDiags := NewContentTypeResourceModelFromMutationResponse(ctx, response.Response, plan)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewContentTypeResourceModelForMutationState(ctx, response.Response, plan)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
-		data = responseModel
+		data = mutationState
 		currentVersion = response.Response.Sys.Version
 
 	default:
@@ -317,10 +317,10 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 
 	switch response := putContentTypeResponse.(type) {
 	case *cm.ContentTypeStatusCode:
-		responseModel, responseModelDiags := NewContentTypeResourceModelFromMutationResponse(ctx, response.Response, plan)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewContentTypeResourceModelForMutationState(ctx, response.Response, plan)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
-		data = responseModel
+		data = mutationState
 		currentVersion = response.Response.Sys.Version
 
 	default:
