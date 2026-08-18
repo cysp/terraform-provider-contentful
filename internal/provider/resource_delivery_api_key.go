@@ -92,10 +92,8 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 	response, err := r.providerData.client.CreateDeliveryAPIKey(ctx, &request, params)
 
 	tflog.Info(ctx, "delivery_api_key.create", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data DeliveryAPIKeyModel
@@ -164,9 +162,8 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 	response, err := r.providerData.client.GetDeliveryAPIKey(ctx, params)
 
 	tflog.Info(ctx, "delivery_api_key.read", map[string]any{
-		"params":   params,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	currentVersion := 0
@@ -256,10 +253,8 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 	response, err := r.providerData.client.UpdateDeliveryAPIKey(ctx, &request, params)
 
 	tflog.Info(ctx, "delivery_api_key.update", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data DeliveryAPIKeyModel

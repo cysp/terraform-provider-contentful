@@ -98,10 +98,8 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 	response, err := r.providerData.client.PutAppInstallation(ctx, &request, params)
 
 	tflog.Info(ctx, "app_installation.create", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data AppInstallationModel
@@ -167,9 +165,8 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 	response, err := r.providerData.client.GetAppInstallation(ctx, params)
 
 	tflog.Info(ctx, "app_installation.read", map[string]any{
-		"params":   params,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data AppInstallationModel
@@ -254,10 +251,8 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	response, err := r.providerData.client.PutAppInstallation(ctx, &request, params)
 
 	tflog.Info(ctx, "app_installation.update", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data AppInstallationModel
