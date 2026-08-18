@@ -83,9 +83,7 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 	response, err := r.providerData.client.CreatePersonalAccessToken(ctx, &request)
 
 	tflog.Info(ctx, "personal_access_token.create", map[string]any{
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"err": err,
 	})
 
 	var data PersonalAccessTokenModel
@@ -149,9 +147,8 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 	response, err := r.providerData.client.GetPersonalAccessToken(ctx, params)
 
 	tflog.Info(ctx, "personal_access_token.read", map[string]any{
-		"params":   params,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	var data PersonalAccessTokenModel
@@ -228,9 +225,8 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 	response, err := r.providerData.client.RevokePersonalAccessToken(ctx, params)
 
 	tflog.Info(ctx, "personal_access_token.delete", map[string]any{
-		"params":   params,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	switch response := response.(type) {

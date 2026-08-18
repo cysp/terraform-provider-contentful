@@ -1,4 +1,3 @@
-//nolint:dupl
 package provider
 
 import (
@@ -63,9 +62,8 @@ func (d *previewAPIKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 	response, err := d.providerData.client.GetPreviewAPIKey(ctx, params)
 
 	tflog.Info(ctx, "preview_api_key.read", map[string]any{
-		"params":   params,
-		"response": response,
-		"err":      err,
+		"params": params,
+		"err":    err,
 	})
 
 	switch response := response.(type) {
