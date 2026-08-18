@@ -43,6 +43,17 @@ func TestSecretBearingOperationLogsExcludePayloads(t *testing.T) {
 			"webhook.update",
 		},
 	}
+	requestPayloadMessages := map[string]struct{}{
+		"app_installation.create":      {},
+		"app_installation.update":      {},
+		"app_signing_secret.create":    {},
+		"app_signing_secret.update":    {},
+		"delivery_api_key.create":      {},
+		"delivery_api_key.update":      {},
+		"personal_access_token.create": {},
+		"webhook.create":               {},
+		"webhook.update":               {},
+	}
 
 	for filename, messages := range logMessages {
 		t.Run(filename, func(t *testing.T) {
@@ -54,9 +65,16 @@ func TestSecretBearingOperationLogsExcludePayloads(t *testing.T) {
 			for _, message := range messages {
 				fields := directInfoLogFields(t, string(source), message)
 
-				assert.NotContains(t, fields, `"request":`, "%s must not log its request payload", message)
-				assert.NotContains(t, fields, `"response":`, "%s must not log its response payload", message)
-				assert.Contains(t, fields, `"err":`, "%s must retain error context", message)
+				assert.Contains(t, fields, `// "response": response, omitted to avoid logging sensitive values`, message)
+
+				if _, ok := requestPayloadMessages[message]; ok {
+					assert.Contains(t, fields, `// "request": request, omitted to avoid logging sensitive values`, message)
+				}
+
+				activeFields := uncommentedLogFields(fields)
+				assert.NotContains(t, activeFields, `"request":`, "%s must not log its request payload", message)
+				assert.NotContains(t, activeFields, `"response":`, "%s must not log its response payload", message)
+				assert.Contains(t, activeFields, `"err":`, "%s must retain error context", message)
 			}
 		})
 	}
@@ -73,4 +91,17 @@ func directInfoLogFields(t *testing.T, source string, message string) string {
 	require.True(t, found, "%s log fields end not found", message)
 
 	return fields
+}
+
+func uncommentedLogFields(fields string) string {
+	lines := strings.Split(fields, "\n")
+	activeLines := lines[:0]
+
+	for _, line := range lines {
+		if !strings.HasPrefix(strings.TrimSpace(line), "//") {
+			activeLines = append(activeLines, line)
+		}
+	}
+
+	return strings.Join(activeLines, "\n")
 }

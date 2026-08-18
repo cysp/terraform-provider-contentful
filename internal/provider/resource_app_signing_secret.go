@@ -91,7 +91,9 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	tflog.Info(ctx, "app_signing_secret.create", map[string]any{
 		"params": params,
-		"err":    err,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data AppSigningSecretModel
@@ -165,7 +167,8 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 	tflog.Info(ctx, "app_signing_secret.read", map[string]any{
 		"params": params,
-		"err":    err,
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data AppSigningSecretModel
@@ -254,7 +257,9 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	tflog.Info(ctx, "app_signing_secret.update", map[string]any{
 		"params": params,
-		"err":    err,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data AppSigningSecretModel

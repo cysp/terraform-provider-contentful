@@ -63,7 +63,8 @@ func (d *previewAPIKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	tflog.Info(ctx, "preview_api_key.read", map[string]any{
 		"params": params,
-		"err":    err,
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	switch response := response.(type) {
