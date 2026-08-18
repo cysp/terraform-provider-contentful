@@ -349,10 +349,10 @@ func TestReadWebhookDefinitionFilterTermStringArrayDistinguishesNullFromEmpty(t 
 	assert.Empty(t, emptyDiags)
 }
 
-func TestWebhookMutationResponsePreservesConfiguredFiltersAfterLossyProjection(t *testing.T) {
+func TestWebhookMutationStateReconcilesKnownPlannedFilters(t *testing.T) {
 	t.Parallel()
 
-	configuredFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
+	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
 		NewTypedObject(webhookFilterValue(
 			NewTypedObjectNull[WebhookFilterNotValue](),
 			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue("Entry")),
@@ -361,7 +361,7 @@ func TestWebhookMutationResponsePreservesConfiguredFiltersAfterLossyProjection(t
 		)),
 	})
 	plan := WebhookModel{
-		Filters: configuredFilters,
+		Filters: plannedFilters,
 		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
 	}
 	response := cm.WebhookDefinition{
@@ -371,18 +371,18 @@ func TestWebhookMutationResponsePreservesConfiguredFiltersAfterLossyProjection(t
 		}),
 	}
 
-	mutationModel, mutationDiags := NewWebhookResourceModelFromMutationResponse(t.Context(), response, plan)
-	assert.False(t, mutationDiags.HasError())
-	assert.Len(t, mutationDiags.Warnings(), 1)
-	assert.True(t, mutationModel.Filters.Equal(configuredFilters))
+	mutationState, mutationStateDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	assert.False(t, mutationStateDiags.HasError())
+	assert.Len(t, mutationStateDiags.Warnings(), 1)
+	assert.True(t, mutationState.Filters.Equal(plannedFilters))
 
-	readModel, readDiags := NewWebhookResourceModelFromResponse(t.Context(), response, plan.Headers.Elements())
+	readState, readDiags := NewWebhookResourceModelFromResponse(t.Context(), response, plan.Headers.Elements())
 	assert.False(t, readDiags.HasError())
 	assert.Len(t, readDiags.Warnings(), 1)
-	assert.True(t, readModel.Filters.Elements()[0].Value().Equals.Value().Value.IsNull())
+	assert.True(t, readState.Filters.Elements()[0].Value().Equals.Value().Value.IsNull())
 }
 
-func TestWebhookMutationResponseRespectsFilterPlanOwnership(t *testing.T) {
+func TestWebhookMutationStateUsesResponseForUnknownFilters(t *testing.T) {
 	t.Parallel()
 
 	response := cm.WebhookDefinition{
@@ -396,15 +396,15 @@ func TestWebhookMutationResponseRespectsFilterPlanOwnership(t *testing.T) {
 		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
 	}
 
-	model, diags := NewWebhookResourceModelFromMutationResponse(t.Context(), response, plan)
+	mutationState, mutationStateDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
 
-	assert.False(t, diags.HasError())
-	assert.False(t, model.Filters.IsUnknown())
-	assert.False(t, model.Filters.IsNull())
-	assert.Equal(t, "Entry", model.Filters.Elements()[0].Value().Equals.Value().Value.ValueString())
+	assert.False(t, mutationStateDiags.HasError())
+	assert.False(t, mutationState.Filters.IsUnknown())
+	assert.False(t, mutationState.Filters.IsNull())
+	assert.Equal(t, "Entry", mutationState.Filters.Elements()[0].Value().Equals.Value().Value.ValueString())
 
 	plan.Filters = NewTypedListNull[TypedObject[WebhookFilterValue]]()
-	nullModel, nullDiags := NewWebhookResourceModelFromMutationResponse(t.Context(), response, plan)
-	assert.False(t, nullDiags.HasError())
-	assert.True(t, nullModel.Filters.IsNull())
+	nullPlanState, nullPlanDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	assert.False(t, nullPlanDiags.HasError())
+	assert.True(t, nullPlanState.Filters.IsNull())
 }

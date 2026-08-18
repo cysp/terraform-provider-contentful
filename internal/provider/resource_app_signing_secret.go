@@ -100,18 +100,18 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	switch response := response.(type) {
 	case *cm.AppSigningSecretStatusCode:
-		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		if responseModel.Value.IsNull() && !plan.Value.IsUnknown() {
-			responseModel.Value = plan.Value
+		if mutationState.Value.IsNull() && !plan.Value.IsUnknown() {
+			mutationState.Value = plan.Value
 		}
 
-		data = responseModel
+		data = mutationState
 
 	default:
 		resp.Diagnostics.AddError("Failed to create app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -175,18 +175,18 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 	switch response := response.(type) {
 	case *cm.AppSigningSecret:
-		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
+		readState, readStateDiags := NewAppSigningSecretResourceModelFromResponse(ctx, *response)
+		resp.Diagnostics.Append(readStateDiags...)
 
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		if responseModel.Value.IsNull() && !state.Value.IsUnknown() {
-			responseModel.Value = state.Value
+		if readState.Value.IsNull() && !state.Value.IsUnknown() {
+			readState.Value = state.Value
 		}
 
-		data = responseModel
+		data = readState
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -266,22 +266,22 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	switch response := response.(type) {
 	case *cm.AppSigningSecretStatusCode:
-		responseModel, responseModelDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		if responseModel.Value.IsNull() {
+		if mutationState.Value.IsNull() {
 			if !plan.Value.IsUnknown() {
-				responseModel.Value = plan.Value
+				mutationState.Value = plan.Value
 			} else if !state.Value.IsUnknown() {
-				responseModel.Value = state.Value
+				mutationState.Value = state.Value
 			}
 		}
 
-		data = responseModel
+		data = mutationState
 
 	default:
 		resp.Diagnostics.AddError("Failed to update app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))

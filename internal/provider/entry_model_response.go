@@ -55,12 +55,12 @@ func NewEntryFieldsFromResponse(_ context.Context, _ path.Path, fields cm.OptEnt
 	return NewTypedMap(elements), diags
 }
 
-func mergeMissingEntryFields(returned, configured TypedMap[jsontypes.Normalized]) TypedMap[jsontypes.Normalized] {
-	elements := make(map[string]jsontypes.Normalized, len(returned.Elements())+len(configured.Elements()))
+func mergeEntryFieldsWithFallback(responseFields, fallbackFields TypedMap[jsontypes.Normalized]) TypedMap[jsontypes.Normalized] {
+	elements := make(map[string]jsontypes.Normalized, len(responseFields.Elements())+len(fallbackFields.Elements()))
 
-	maps.Copy(elements, returned.Elements())
+	maps.Copy(elements, responseFields.Elements())
 
-	for key, value := range configured.Elements() {
+	for key, value := range fallbackFields.Elements() {
 		if _, ok := elements[key]; !ok {
 			elements[key] = value
 		}

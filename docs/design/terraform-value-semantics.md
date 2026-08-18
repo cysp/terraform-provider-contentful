@@ -80,12 +80,12 @@ represent, wholly or partially.
 ## Lifecycle ownership and plan consistency
 
 After Create or Update, state must remain consistent with every known
-configuration-owned value in the plan. Mutation response conversion therefore
-overlays each such planned value onto the response projection. Unknown and
-response-owned values come from the response; unknown plan values are never
-copied into state. Projection warnings are retained. A later Read projects the
-remote representation without the mutation overlay so meaningful remote drift
-remains visible.
+configuration-owned value in the plan. Post-mutation state construction
+therefore starts with the response projection and restores each known
+plan-owned value. Unknown and response-owned values come from the response;
+unknown plan values are never copied into state. Projection warnings are
+retained. A later Read skips this reconciliation and projects the remote
+representation so meaningful remote drift remains visible.
 
 Ownership follows the schema at the individual attribute, including attributes
 nested inside known objects:
@@ -114,7 +114,7 @@ response conversion.
 
 Contentful has previously canonicalized both omission and `[]` to a non-empty
 default environment. When that happens, an explicitly configured empty list
-cannot equal the mutation response, and Terraform may report an inconsistent
+cannot equal the post-mutation state, and Terraform may report an inconsistent
 result. Rejecting empty lists would avoid that symptom only by making current
 service behavior a permanent provider restriction. The provider instead keeps
 empty input valid and treats the canonicalization conflict as a known

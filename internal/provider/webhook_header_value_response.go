@@ -9,15 +9,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewWebhookHeaderValueFromResponse(_ context.Context, _ path.Path, header cm.WebhookDefinitionHeader, existingHeaderValue TypedObject[WebhookHeaderValue]) (TypedObject[WebhookHeaderValue], diag.Diagnostics) {
+func NewWebhookHeaderValueFromResponse(_ context.Context, _ path.Path, header cm.WebhookDefinitionHeader, fallbackHeader TypedObject[WebhookHeaderValue]) (TypedObject[WebhookHeaderValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	headerIsSecret := header.Secret.Or(false)
 
 	value := WebhookHeaderValue{}
 
-	if existingHeaderValue, existingHeaderValueOk := existingHeaderValue.GetValue(); existingHeaderValueOk {
-		value.Value = existingHeaderValue.Value
+	if fallbackHeaderValue, fallbackHeaderIsKnown := fallbackHeader.GetValue(); fallbackHeaderIsKnown {
+		value.Value = fallbackHeaderValue.Value
 	}
 
 	if headerValue, ok := header.Value.Get(); ok {

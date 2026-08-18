@@ -101,7 +101,7 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	responseModel.Fields = mergeMissingEntryFields(responseModel.Fields, plan.Fields)
+	responseModel.Fields = mergeEntryFieldsWithFallback(responseModel.Fields, plan.Fields)
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &responseModel)...)
 
@@ -197,7 +197,7 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	data.Fields = mergeMissingEntryFields(data.Fields, state.Fields)
+	data.Fields = mergeEntryFieldsWithFallback(data.Fields, state.Fields)
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
 
@@ -250,7 +250,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	responseModel.Fields = mergeMissingEntryFields(responseModel.Fields, plan.Fields)
+	responseModel.Fields = mergeEntryFieldsWithFallback(responseModel.Fields, plan.Fields)
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &responseModel)...)
 

@@ -102,10 +102,10 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
-		responseModel, responseModelDiags := NewRoleResourceModelFromMutationResponse(ctx, response.Response, plan)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewRoleResourceModelForMutationState(ctx, response.Response, plan)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
-		data = responseModel
+		data = mutationState
 		currentVersion = response.Response.Sys.Version
 
 	default:
@@ -266,10 +266,10 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
-		responseModel, responseModelDiags := NewRoleResourceModelFromMutationResponse(ctx, response.Response, plan)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewRoleResourceModelForMutationState(ctx, response.Response, plan)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
-		data = responseModel
+		data = mutationState
 		currentVersion = response.Response.Sys.Version
 
 	default:

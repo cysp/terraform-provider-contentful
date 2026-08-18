@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, existingHeaderValues map[string]TypedObject[WebhookHeaderValue]) (WebhookModel, diag.Diagnostics) {
+func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, fallbackHeaderValues map[string]TypedObject[WebhookHeaderValue]) (WebhookModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := webhookDefinition.Sys.Space.Sys.ID
@@ -38,7 +38,7 @@ func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 	model.HTTPBasicUsername = types.StringPointerValue(webhookDefinition.HttpBasicUsername.ValueStringPointer())
 	model.HTTPBasicPassword = types.StringPointerValue(webhookDefinition.HttpBasicPassword.ValueStringPointer())
 
-	headersList, headersListDiags := ReadHeaderValueMapFromResponse(ctx, path.Root("headers"), webhookDefinition.Headers, existingHeaderValues)
+	headersList, headersListDiags := ReadHeaderValueMapFromResponse(ctx, path.Root("headers"), webhookDefinition.Headers, fallbackHeaderValues)
 	diags.Append(headersListDiags...)
 
 	model.Headers = headersList
@@ -53,16 +53,16 @@ func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 	return model, diags
 }
 
-// NewWebhookResourceModelFromMutationResponse preserves every known planned
-// value for filters, including null, after a lossy mutation response so
-// mutations remain plan-consistent. Unknown filters fall back to the response
-// projection; Read continues to project remote filters so later refreshes
-// expose drift.
-func NewWebhookResourceModelFromMutationResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, plan WebhookModel) (WebhookModel, diag.Diagnostics) {
-	model, diags := NewWebhookResourceModelFromResponse(ctx, webhookDefinition, plan.Headers.Elements())
-	if !plan.Filters.IsUnknown() {
-		model.Filters = plan.Filters
+// NewWebhookResourceModelForMutationState starts with the response projection,
+// reconciles known planned filters (including null), and uses fallback headers
+// to preserve values omitted from secret or redacted responses. The response
+// resolves unknown filters, which are never copied into state. Read skips
+// filter reconciliation so it can expose remote drift.
+func NewWebhookResourceModelForMutationState(ctx context.Context, webhookDefinition cm.WebhookDefinition, appliedPlan WebhookModel) (WebhookModel, diag.Diagnostics) {
+	mutationState, diags := NewWebhookResourceModelFromResponse(ctx, webhookDefinition, appliedPlan.Headers.Elements())
+	if !appliedPlan.Filters.IsUnknown() {
+		mutationState.Filters = appliedPlan.Filters
 	}
 
-	return model, diags
+	return mutationState, diags
 }

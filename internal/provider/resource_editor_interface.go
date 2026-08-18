@@ -107,10 +107,10 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
-		responseModel, responseModelDiags := NewEditorInterfaceResourceModelFromMutationResponse(ctx, response.Response, plan)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewEditorInterfaceResourceModelForMutationState(ctx, response.Response, plan)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
-		data = responseModel
+		data = mutationState
 		currentVersion = response.Response.Sys.Version
 
 	default:
@@ -278,10 +278,10 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
-		responseModel, responseModelDiags := NewEditorInterfaceResourceModelFromMutationResponse(ctx, response.Response, plan)
-		resp.Diagnostics.Append(responseModelDiags...)
+		mutationState, mutationStateDiags := NewEditorInterfaceResourceModelForMutationState(ctx, response.Response, plan)
+		resp.Diagnostics.Append(mutationStateDiags...)
 
-		data = responseModel
+		data = mutationState
 		currentVersion = response.Response.Sys.Version
 
 	default:
