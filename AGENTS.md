@@ -13,7 +13,7 @@
 
 ## Documentation and workflow
 
-- Keep durable documentation current: record user-visible contracts, invariants, evidence, and limitations; omit audit inventories, cleanup chronology, and completed plans.
+- Keep durable documentation current: record user-visible contracts, invariants, evidence, and limitations; do not retain dated audit inventories, cleanup chronology, or completed plans.
 - Leave unrelated concerns out of each change, preserve unrelated worktree changes, and use a separate worktree and pull request when concurrently pursuing an independent concern; keep history reviewable.
 - Use Conventional Commit messages. Choose a scope for the affected codebase area, following recent repository history when a matching scope exists.
 - After changing a schema or another input to generated code or documentation, run `go generate ./...` and inspect the generated diff.
