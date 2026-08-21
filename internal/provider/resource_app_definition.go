@@ -58,9 +58,20 @@ func (r *appDefinitionResource) ImportState(ctx context.Context, req resource.Im
 }
 
 func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan AppDefinitionResourceModel
+	var (
+		plan   AppDefinitionResourceModel
+		config AppDefinitionResourceModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToAppDefinitionData(config.AppDefinitionBaseModel, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -78,13 +89,6 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 
 	params := cm.CreateAppDefinitionParams{
 		OrganizationID: plan.OrganizationID.ValueString(),
-	}
-
-	request, requestDiags := plan.ToAppDefinitionData(path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.CreateAppDefinition(ctx, &request, params)
@@ -208,9 +212,20 @@ func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadReque
 
 //nolint:dupl
 func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan AppDefinitionResourceModel
+	var (
+		plan   AppDefinitionResourceModel
+		config AppDefinitionResourceModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToAppDefinitionData(config.AppDefinitionBaseModel, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -229,13 +244,6 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 	params := cm.PutAppDefinitionParams{
 		OrganizationID:  plan.OrganizationID.ValueString(),
 		AppDefinitionID: plan.AppDefinitionID.ValueString(),
-	}
-
-	request, requestDiags := plan.ToAppDefinitionData(path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.PutAppDefinition(ctx, &request, params)

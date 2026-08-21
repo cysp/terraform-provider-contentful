@@ -77,8 +77,12 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	params := plan.ToPutTagParams()
-	request := plan.ToTagRequest()
+	params, request, requestDiags := plan.ToPutTagRequest(path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	response, err := r.providerData.client.PutTag(ctx, &request, params)
 
@@ -228,10 +232,14 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
 
-	params := plan.ToPutTagParams()
-	params.XContentfulVersion.SetTo(currentVersion)
+	params, request, requestDiags := plan.ToPutTagRequest(path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
 
-	request := plan.ToTagRequest()
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	params.XContentfulVersion.SetTo(currentVersion)
 
 	response, err := r.providerData.client.PutTag(ctx, &request, params)
 

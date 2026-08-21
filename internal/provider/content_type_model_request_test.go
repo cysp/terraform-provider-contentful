@@ -59,7 +59,7 @@ func TestContentTypeRequestRejectsUnresolvedValues(t *testing.T) {
 			model := validContentTypeRequestModel()
 			test.mutate(&model)
 
-			actual, diags := model.ToContentTypeRequestData(t.Context())
+			actual, diags := model.ToContentTypeRequestData(t.Context(), ContentTypeModel{})
 
 			assert.Equal(t, cm.ContentTypeRequestData{}, actual)
 			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
@@ -93,7 +93,7 @@ func TestContentTypeRequestPreservesDescriptionPresence(t *testing.T) {
 			model := validContentTypeRequestModel()
 			model.Description = test.description
 
-			actual, diags := model.ToContentTypeRequestData(t.Context())
+			actual, diags := model.ToContentTypeRequestData(t.Context(), ContentTypeModel{})
 
 			assert.False(t, diags.HasError(), diags.Errors())
 			assert.Equal(t, test.expected, actual.Description)

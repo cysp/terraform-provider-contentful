@@ -81,9 +81,20 @@ func (r *contentTypeResource) ModifyPlan(ctx context.Context, req resource.Modif
 }
 
 func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ContentTypeModel
+	var (
+		plan   ContentTypeModel
+		config ContentTypeModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToContentTypeRequestData(ctx, config)
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -106,13 +117,6 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		EnvironmentID:      plan.EnvironmentID.ValueString(),
 		ContentTypeID:      plan.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
-	}
-
-	request, requestDiags := plan.ToContentTypeRequestData(ctx)
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.PutContentType(ctx, &request, params)
@@ -267,9 +271,20 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan ContentTypeModel
+	var (
+		plan   ContentTypeModel
+		config ContentTypeModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	putContentTypeRequest, putContentTypeRequestDiags := plan.ToContentTypeRequestData(ctx, config)
+	resp.Diagnostics.Append(putContentTypeRequestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -295,13 +310,6 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 		EnvironmentID:      plan.EnvironmentID.ValueString(),
 		ContentTypeID:      plan.ContentTypeID.ValueString(),
 		XContentfulVersion: currentVersion,
-	}
-
-	putContentTypeRequest, putContentTypeRequestDiags := plan.ToContentTypeRequestData(ctx)
-	resp.Diagnostics.Append(putContentTypeRequestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	putContentTypeResponse, err := r.providerData.client.PutContentType(ctx, &putContentTypeRequest, putContentTypeParams)

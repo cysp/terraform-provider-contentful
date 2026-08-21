@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, config WebhookModel, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
+	diags := rejectUnknownConfigurationOwnedRequestValue(model.Headers, config.Headers, path.AtName("headers"))
 
 	name, nameDiags := requestRequiredString(model.Name, path.AtName("name"))
 	diags.Append(nameDiags...)

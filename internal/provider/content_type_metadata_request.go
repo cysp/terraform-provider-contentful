@@ -16,8 +16,9 @@ func ToOptContentTypeMetadata(
 ) (cm.OptContentTypeMetadata, diag.Diagnostics) {
 	value, ok := metadataObject.GetValue()
 	if !ok {
-		// Optional+Computed metadata uses both null and unknown to represent omission
-		// while plan reconciliation preserves remote taxonomy configuration.
+		// A remaining unknown plan is valid only for response-owned, omitted
+		// Optional+Computed metadata. Plan reconciliation preserves remote
+		// taxonomy configuration when appropriate.
 		return cm.OptContentTypeMetadata{}, nil
 	}
 
@@ -57,8 +58,8 @@ func ContentTypeMetadataTaxonomyItemsToContentTypeMetadataTaxonomySlice(
 	items TypedList[TypedObject[ContentTypeMetadataTaxonomyItemValue]],
 ) ([]cm.ContentTypeMetadataTaxonomyItem, diag.Diagnostics) {
 	if items.IsNull() || items.IsUnknown() {
-		// taxonomy is Optional+Computed: an unresolved container represents
-		// omission, while a known empty list explicitly removes taxonomy items.
+		// A remaining unknown plan is valid only for response-owned, omitted
+		// Optional+Computed taxonomy. A known empty list explicitly removes items.
 		return nil, nil
 	}
 

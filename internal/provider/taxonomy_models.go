@@ -56,8 +56,9 @@ type TaxonomyConceptSchemeModel struct {
 
 // optionalComputedStringMap encodes a null or unknown Optional+Computed map as
 // empty at request conversion. Conversion receives only the plan, so it cannot
-// distinguish omitted configuration from genuinely unknown configuration.
-// UseStateForUnknown normally supplies prior state for an omitted Update.
+// distinguish omitted configuration from an unknown planned value for a
+// configuration-owned collection. UseStateForUnknown normally supplies prior
+// state for an omitted Update.
 func optionalComputedStringMap(value types.Map, valuePath path.Path) (map[string][]string, diag.Diagnostics) {
 	result := map[string][]string{}
 	if value.IsNull() || value.IsUnknown() {
@@ -69,9 +70,9 @@ func optionalComputedStringMap(value types.Map, valuePath path.Path) (map[string
 
 // optionalComputedStringListValue encodes a null or unknown Optional+Computed
 // list as empty at request conversion. Conversion receives only the plan, so it
-// cannot distinguish omitted configuration from genuinely unknown
-// configuration. UseStateForUnknown normally supplies prior state for an
-// omitted Update.
+// cannot distinguish omitted configuration from an unknown planned value for a
+// configuration-owned collection. UseStateForUnknown normally supplies prior
+// state for an omitted Update.
 func optionalComputedStringListValue(value types.List, valuePath path.Path) ([]string, diag.Diagnostics) {
 	result := []string{}
 	if value.IsNull() || value.IsUnknown() {

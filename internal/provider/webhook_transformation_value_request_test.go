@@ -147,7 +147,7 @@ func TestWebhookModelFailsClosedForNestedRequestError(t *testing.T) {
 		"body":                   jsontypes.NewNormalizedNull(),
 	}))
 
-	actual, diags := model.ToWebhookDefinitionData(t.Context(), path.Empty())
+	actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
 
 	require.True(t, diags.HasError())
 	assert.Equal(t, []string{"transformation.content_type"}, attributeDiagnosticPaths(t, diags))

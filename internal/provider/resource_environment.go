@@ -82,10 +82,10 @@ func (r *environmentResource) Create(ctx context.Context, req resource.CreateReq
 		EnvironmentID: plan.EnvironmentID.ValueString(),
 	}
 
-	sourceEnvironmentID := plan.SourceEnvironmentID.ValueString()
-	if sourceEnvironmentID != "" {
-		params.XContentfulSourceEnvironment.SetTo(sourceEnvironmentID)
-	}
+	sourceEnvironment, sourceEnvironmentDiags := plan.ToSourceEnvironmentHeader()
+	resp.Diagnostics.Append(sourceEnvironmentDiags...)
+
+	params.XContentfulSourceEnvironment = sourceEnvironment
 
 	request, requestDiags := plan.ToEnvironmentData(ctx)
 	resp.Diagnostics.Append(requestDiags...)

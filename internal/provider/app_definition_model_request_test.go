@@ -113,7 +113,7 @@ func TestAppDefinitionRequestRejectsUnresolvedScalars(t *testing.T) {
 			model := validAppDefinitionRequestModel()
 			test.mutate(&model)
 
-			actual, diags := model.ToAppDefinitionData(path.Empty())
+			actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{}, path.Empty())
 
 			assert.Equal(t, cm.AppDefinitionData{}, actual)
 			require.True(t, diags.HasError())
@@ -131,7 +131,7 @@ func TestAppDefinitionRequestFailsAtomically(t *testing.T) {
 	model.Locations[0].FieldTypes[0].Items.LinkType = types.StringUnknown()
 	model.Locations[0].NavigationItem.Path = types.StringUnknown()
 
-	actual, diags := model.ToAppDefinitionData(path.Empty())
+	actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{}, path.Empty())
 
 	assert.Equal(t, cm.AppDefinitionData{}, actual)
 	require.True(t, diags.HasError())
@@ -141,6 +141,70 @@ func TestAppDefinitionRequestFailsAtomically(t *testing.T) {
 		"locations[0].field_types[0].items.link_type",
 		"locations[0].navigation_item.path",
 	}, attributeDiagnosticPaths(t, diags))
+}
+
+func TestAppDefinitionRequestOptionalComputedOwnership(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		configured    types.String
+		planned       types.String
+		expectedValue string
+		expectedSet   bool
+		expectedError bool
+	}{
+		"config null plan unknown omits response-owned value": {
+			configured: types.StringNull(),
+			planned:    types.StringUnknown(),
+		},
+		"config null plan known uses default or state-preserved value": {
+			configured:    types.StringNull(),
+			planned:       types.StringValue("https://planned.example/from-state.js"),
+			expectedValue: "https://planned.example/from-state.js",
+			expectedSet:   true,
+		},
+		"config known plan known sends plan rather than config": {
+			configured:    types.StringValue("https://configured.example/expression.js"),
+			planned:       types.StringValue("https://planned.example/resolved.js"),
+			expectedValue: "https://planned.example/resolved.js",
+			expectedSet:   true,
+		},
+		"config known plan unknown fails closed": {
+			configured:    types.StringValue("https://configured.example/expression.js"),
+			planned:       types.StringUnknown(),
+			expectedError: true,
+		},
+		"known empty remains explicit": {
+			configured:  types.StringValue(""),
+			planned:     types.StringValue(""),
+			expectedSet: true,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := validAppDefinitionRequestModel()
+			model.Src = test.planned
+
+			actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{Src: test.configured}, path.Empty())
+
+			if test.expectedError {
+				require.True(t, diags.HasError())
+				assert.Equal(t, []string{"src"}, attributeDiagnosticPaths(t, diags))
+				assert.Equal(t, cm.AppDefinitionData{}, actual)
+
+				return
+			}
+
+			require.False(t, diags.HasError(), diags.Errors())
+
+			if test.expectedSet {
+				assert.Equal(t, test.expectedValue, requireOptString(t, actual.Src))
+			} else {
+				assert.False(t, actual.Src.IsSet())
+			}
+		})
+	}
 }
 
 func TestAppDefinitionRequestPreservesOptionalScalarPresence(t *testing.T) {
@@ -153,7 +217,7 @@ func TestAppDefinitionRequestPreservesOptionalScalarPresence(t *testing.T) {
 	model.Locations[0].FieldTypes[0].LinkType = types.StringValue("")
 	model.Locations[0].FieldTypes[0].Items.LinkType = types.StringValue("")
 
-	actual, diags := model.ToAppDefinitionData(path.Empty())
+	actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{}, path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.Empty(t, actual.Name)
@@ -172,7 +236,7 @@ func TestAppDefinitionRequestOmitsOptionalComputedUnknownsAndNullLinks(t *testin
 
 	model := validAppDefinitionRequestModel()
 
-	actual, diags := model.ToAppDefinitionData(path.Empty())
+	actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{}, path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.False(t, actual.Src.IsSet())
@@ -190,7 +254,7 @@ func TestAppDefinitionRequestOmitsOptionalComputedNulls(t *testing.T) {
 	model.Src = types.StringNull()
 	model.BundleID = types.StringNull()
 
-	actual, diags := model.ToAppDefinitionData(path.Empty())
+	actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{}, path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.False(t, actual.Src.IsSet())
@@ -240,7 +304,7 @@ func TestAppDefinitionParameterListsPreserveNullAndEmpty(t *testing.T) {
 		},
 	}
 
-	actual, diags := model.ToAppDefinitionData(path.Empty())
+	actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{}, path.Empty())
 
 	require.False(t, diags.HasError())
 

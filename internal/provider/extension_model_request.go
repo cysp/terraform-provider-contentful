@@ -6,16 +6,48 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *ExtensionModel) ToExtensionData(path path.Path) (cm.ExtensionData, diag.Diagnostics) {
+func (model *ExtensionModel) validateRequestConfiguration(config ExtensionModel, modelPath path.Path) diag.Diagnostics {
 	diags := diag.Diagnostics{}
+	diags.Append(rejectUnknownConfigurationOwnedRequestValue(model.Parameters, config.Parameters, modelPath.AtName("parameters"))...)
+
+	if model.Extension != nil {
+		extensionPath := modelPath.AtName("extension")
+
+		var configured ExtensionModelExtension
+
+		if config.Extension != nil {
+			configured = *config.Extension
+		}
+
+		diags.Append(rejectUnknownConfigurationOwnedRequestValue(model.Extension.Src, configured.Src, extensionPath.AtName("src"))...)
+		diags.Append(rejectUnknownConfigurationOwnedRequestValue(model.Extension.SrcDoc, configured.SrcDoc, extensionPath.AtName("srcdoc"))...)
+	}
+
+	return diags
+}
+
+func (model *ExtensionModel) ToExtensionData(config ExtensionModel, path path.Path) (cm.ExtensionData, diag.Diagnostics) {
+	diags := model.validateRequestConfiguration(config, path)
 
 	fields := cm.ExtensionData{}
+
+	if model.Extension == nil {
+		diags.AddAttributeError(
+			path.AtName("extension"),
+			"Unexpected null extension configuration",
+			"The extension configuration is required before an extension request can be sent to Contentful.",
+		)
+
+		return cm.ExtensionData{}, diags
+	}
 
 	fieldsExtension, fieldsExtensionDiags := model.Extension.ToExtensionExtensionData(path.AtName("extension"))
 	diags.Append(fieldsExtensionDiags...)
 
 	fields.Extension = fieldsExtension
 
+	// An unknown Optional+Computed plan is omitted only when configuration is
+	// null. Every known plan value remains the request source.
 	if !model.Parameters.IsUnknown() && !model.Parameters.IsNull() {
 		fields.Parameters = []byte(model.Parameters.ValueString())
 	}
@@ -27,7 +59,9 @@ func (model *ExtensionModel) ToExtensionData(path path.Path) (cm.ExtensionData, 
 	return fields, diags
 }
 
-func (model *ExtensionModelExtension) ToExtensionExtensionData(path path.Path) (cm.ExtensionDataExtension, diag.Diagnostics) {
+func (model *ExtensionModelExtension) ToExtensionExtensionData(
+	path path.Path,
+) (cm.ExtensionDataExtension, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	name, nameDiags := appRequestRequiredString(model.Name, path.AtName("name"))
@@ -52,11 +86,11 @@ func (model *ExtensionModelExtension) ToExtensionExtensionData(path path.Path) (
 		Sidebar: cm.NewOptPointerBool(sidebar),
 	}
 
-	if !model.Src.IsUnknown() && !model.Src.IsNull() && model.Src.ValueString() != "" {
+	if !model.Src.IsUnknown() && !model.Src.IsNull() {
 		fields.Src = cm.NewOptString(model.Src.ValueString())
 	}
 
-	if !model.SrcDoc.IsUnknown() && !model.SrcDoc.IsNull() && model.SrcDoc.ValueString() != "" {
+	if !model.SrcDoc.IsUnknown() && !model.SrcDoc.IsNull() {
 		fields.Srcdoc = cm.NewOptString(model.SrcDoc.ValueString())
 	}
 

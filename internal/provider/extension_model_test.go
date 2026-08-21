@@ -88,11 +88,11 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 		input.Sys.Environment.Sys.LinkType = cm.EnvironmentLinkSysLinkTypeEnvironment
 
 		if input.Extension.Src.Value == "" {
-			input.Extension.Src.Reset()
+			input.Extension.Src.SetTo("")
 		}
 
 		if input.Extension.Srcdoc.Value == "" {
-			input.Extension.Srcdoc.Reset()
+			input.Extension.Srcdoc.SetTo("")
 		}
 
 		model, modelDiags := NewExtensionModelFromResponse(t.Context(), input)
@@ -100,7 +100,7 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 			t.Fatalf("Failed to convert Extension to ExtensionModel: %v", modelDiags)
 		}
 
-		extensionFields, extensionFieldsDiags := model.ToExtensionData(path.Empty())
+		extensionFields, extensionFieldsDiags := model.ToExtensionData(model, path.Empty())
 		if extensionFieldsDiags.HasError() {
 			t.Fatalf("Failed to convert ExtensionModel to ExtensionData: %v", extensionFieldsDiags)
 		}

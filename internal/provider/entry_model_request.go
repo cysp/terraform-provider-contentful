@@ -84,7 +84,18 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 }
 
 func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEntryMetadata, diag.Diagnostics) {
-	if model.Metadata.IsNull() || model.Metadata.IsUnknown() {
+	if model.Metadata.IsUnknown() {
+		diags := diag.Diagnostics{}
+		diags.AddAttributeError(
+			path.Root("metadata"),
+			"Unexpected unknown entry metadata",
+			"Entry metadata must be known before it can be sent to Contentful.",
+		)
+
+		return cm.OptEntryMetadata{}, diags
+	}
+
+	if model.Metadata.IsNull() {
 		return cm.OptEntryMetadata{}, nil
 	}
 
@@ -93,7 +104,13 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 	metadata := cm.EntryMetadata{}
 
 	modelConcepts := model.Metadata.Value().Concepts
-	if !modelConcepts.IsNull() && !modelConcepts.IsUnknown() {
+	if modelConcepts.IsUnknown() {
+		diags.AddAttributeError(
+			path.Root("metadata").AtName("concepts"),
+			"Unexpected unknown entry concepts",
+			"Entry concepts must be known before they can be sent to Contentful.",
+		)
+	} else if !modelConcepts.IsNull() {
 		conceptValues, conceptDiags := knownStringListElements(
 			path.Root("metadata").AtName("concepts"),
 			modelConcepts.Elements(),
@@ -109,7 +126,13 @@ func entryModelToOptEntryMetadata(_ context.Context, model EntryModel) (cm.OptEn
 	}
 
 	modelTags := model.Metadata.Value().Tags
-	if !modelTags.IsNull() && !modelTags.IsUnknown() {
+	if modelTags.IsUnknown() {
+		diags.AddAttributeError(
+			path.Root("metadata").AtName("tags"),
+			"Unexpected unknown entry tags",
+			"Entry tags must be known before they can be sent to Contentful.",
+		)
+	} else if !modelTags.IsNull() {
 		tagValues, tagDiags := knownStringListElements(
 			path.Root("metadata").AtName("tags"),
 			modelTags.Elements(),

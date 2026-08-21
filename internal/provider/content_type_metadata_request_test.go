@@ -78,7 +78,7 @@ func TestContentTypeMetadataRequestSerialization(t *testing.T) {
 				Metadata:     test.metadata,
 			}
 
-			request, diags := model.ToContentTypeRequestData(t.Context())
+			request, diags := model.ToContentTypeRequestData(t.Context(), ContentTypeModel{})
 			require.Empty(t, diags.Errors())
 
 			requestBody, err := request.MarshalJSON()

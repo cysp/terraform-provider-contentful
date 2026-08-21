@@ -84,7 +84,7 @@ func TestExtensionRequestRejectsUnresolvedScalars(t *testing.T) {
 			model := validExtensionRequestModel()
 			test.mutate(&model)
 
-			actual, diags := model.ToExtensionData(path.Empty())
+			actual, diags := model.ToExtensionData(ExtensionModel{}, path.Empty())
 
 			assert.Equal(t, cm.ExtensionData{}, actual)
 			require.True(t, diags.HasError())
@@ -102,7 +102,7 @@ func TestExtensionRequestFailsAtomically(t *testing.T) {
 	model.Extension.FieldTypes[0].Items.Type = types.StringNull()
 	model.Extension.Sidebar = types.BoolUnknown()
 
-	actual, diags := model.ToExtensionData(path.Empty())
+	actual, diags := model.ToExtensionData(ExtensionModel{}, path.Empty())
 
 	assert.Equal(t, cm.ExtensionData{}, actual)
 	require.True(t, diags.HasError())
@@ -119,18 +119,22 @@ func TestExtensionRequestPreservesOptionalScalarPresence(t *testing.T) {
 
 	model := validExtensionRequestModel()
 	model.Extension.Name = types.StringValue("")
-	model.Extension.Src = types.StringValue("")
+	model.Extension.Src = types.StringNull()
 	model.Extension.SrcDoc = types.StringValue("")
 	model.Extension.FieldTypes[0].LinkType = types.StringValue("")
 	model.Extension.FieldTypes[0].Items.LinkType = types.StringValue("")
 	model.Extension.Sidebar = types.BoolValue(false)
 
-	actual, diags := model.ToExtensionData(path.Empty())
+	actual, diags := model.ToExtensionData(ExtensionModel{
+		Extension: &ExtensionModelExtension{
+			SrcDoc: types.StringValue(""),
+		},
+	}, path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.Empty(t, actual.Extension.Name)
 	assert.False(t, actual.Extension.Src.IsSet())
-	assert.False(t, actual.Extension.Srcdoc.IsSet())
+	assert.Empty(t, requireOptString(t, actual.Extension.Srcdoc))
 	assert.Empty(t, requireOptString(t, actual.Extension.FieldTypes[0].LinkType))
 	items, ok := actual.Extension.FieldTypes[0].Items.Get()
 	require.True(t, ok)
@@ -141,6 +145,73 @@ func TestExtensionRequestPreservesOptionalScalarPresence(t *testing.T) {
 	assert.False(t, sidebar)
 }
 
+func TestExtensionRequestUsesKnownPlanSourcesWhenConfigurationIsNull(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		src               types.String
+		srcdoc            types.String
+		expectedSrc       string
+		expectedSrcSet    bool
+		expectedSrcdoc    string
+		expectedSrcdocSet bool
+	}{
+		"known src from plan": {
+			src:            types.StringValue("https://example.com/extension.js"),
+			srcdoc:         types.StringUnknown(),
+			expectedSrc:    "https://example.com/extension.js",
+			expectedSrcSet: true,
+		},
+		"known empty srcdoc from plan": {
+			src:               types.StringUnknown(),
+			srcdoc:            types.StringValue(""),
+			expectedSrcdocSet: true,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := validExtensionRequestModel()
+			model.Extension.Src = test.src
+			model.Extension.SrcDoc = test.srcdoc
+
+			actual, diags := model.ToExtensionData(ExtensionModel{
+				Extension: &ExtensionModelExtension{
+					Src:    types.StringNull(),
+					SrcDoc: types.StringNull(),
+				},
+			}, path.Empty())
+
+			require.False(t, diags.HasError(), diags.Errors())
+
+			if !test.expectedSrcSet {
+				assert.False(t, actual.Extension.Src.IsSet())
+			} else {
+				assert.Equal(t, test.expectedSrc, requireOptString(t, actual.Extension.Src))
+			}
+
+			if !test.expectedSrcdocSet {
+				assert.False(t, actual.Extension.Srcdoc.IsSet())
+			} else {
+				assert.Equal(t, test.expectedSrcdoc, requireOptString(t, actual.Extension.Srcdoc))
+			}
+		})
+	}
+}
+
+func TestExtensionRequestRejectsNullExtensionWithoutPanic(t *testing.T) {
+	t.Parallel()
+
+	model := validExtensionRequestModel()
+	model.Extension = nil
+
+	actual, diags := model.ToExtensionData(ExtensionModel{}, path.Empty())
+
+	assert.Equal(t, cm.ExtensionData{}, actual)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{"extension"}, attributeDiagnosticPaths(t, diags))
+}
+
 func TestExtensionRequestOmitsSchemaConsistentNulls(t *testing.T) {
 	t.Parallel()
 
@@ -149,7 +220,7 @@ func TestExtensionRequestOmitsSchemaConsistentNulls(t *testing.T) {
 	model.Extension.SrcDoc = types.StringNull()
 	model.Extension.Sidebar = types.BoolNull()
 
-	actual, diags := model.ToExtensionData(path.Empty())
+	actual, diags := model.ToExtensionData(ExtensionModel{}, path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.False(t, actual.Extension.Src.IsSet())
@@ -169,7 +240,12 @@ func TestExtensionRequestPreservesKnownSources(t *testing.T) {
 	model.Extension.SrcDoc = types.StringValue("<html></html>")
 	model.Parameters = jsontypes.NewNormalizedValue(`{"known":true}`)
 
-	actual, diags := model.ToExtensionData(path.Empty())
+	actual, diags := model.ToExtensionData(ExtensionModel{
+		Extension: &ExtensionModelExtension{
+			Src:    types.StringValue("https://example.com"),
+			SrcDoc: types.StringValue("<html></html>"),
+		},
+	}, path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.Equal(t, "https://example.com", requireOptString(t, actual.Extension.Src))
@@ -203,7 +279,7 @@ func TestExtensionParameterListsFailClosed(t *testing.T) {
 		Parameters: jsontypes.NewNormalizedNull(),
 	}
 
-	actual, diags := model.ToExtensionData(path.Empty())
+	actual, diags := model.ToExtensionData(ExtensionModel{}, path.Empty())
 
 	assert.Equal(t, cm.ExtensionData{}, actual)
 	require.True(t, diags.HasError())
@@ -224,7 +300,7 @@ func TestExtensionParameterListsPreserveNilAndEmpty(t *testing.T) {
 		Parameters: jsontypes.NewNormalizedNull(),
 	}
 
-	actual, diags := model.ToExtensionData(path.Empty())
+	actual, diags := model.ToExtensionData(ExtensionModel{}, path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
 
@@ -247,7 +323,7 @@ func TestExtensionOptionalComputedValuesCanRemainUnknown(t *testing.T) {
 		Parameters: jsontypes.NewNormalizedUnknown(),
 	}
 
-	actual, diags := model.ToExtensionData(path.Empty())
+	actual, diags := model.ToExtensionData(ExtensionModel{}, path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.False(t, actual.Extension.Src.IsSet())

@@ -85,8 +85,8 @@ Optional:
 
 - `parameters` (Attributes) (see [below for nested schema](#nestedatt--extension--parameters))
 - `sidebar` (Boolean)
-- `src` (String) URL where the root HTML document of the extension can be found. Must be HTTPS.
-- `srcdoc` (String) String representation of the extension (e.g. inline HTML code).
+- `src` (String) URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Exactly one of src or srcdoc must be configured.
+- `srcdoc` (String) String representation of the extension (e.g. inline HTML code). Exactly one of src or srcdoc must be configured. Contentful accepts an explicitly empty srcdoc.
 
 <a id="nestedatt--extension--field_types"></a>
 ### Nested Schema for `extension.field_types`

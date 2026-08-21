@@ -11,6 +11,9 @@ import (
 func (model *TeamSpaceMembershipModel) ToTeamSpaceMembershipData(_ context.Context, modelPath path.Path) (cm.TeamSpaceMembershipData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
+	admin, adminDiags := requestRequiredBool(model.Admin, modelPath.AtName("admin"))
+	diags.Append(adminDiags...)
+
 	roleIDs, roleIDDiags := knownStringListElements(modelPath.AtName("roles"), model.Roles)
 	diags.Append(roleIDDiags...)
 
@@ -31,7 +34,7 @@ func (model *TeamSpaceMembershipModel) ToTeamSpaceMembershipData(_ context.Conte
 	}
 
 	return cm.TeamSpaceMembershipData{
-		Admin: model.Admin.ValueBool(),
+		Admin: admin,
 		Roles: roles,
 	}, diags
 }

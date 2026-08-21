@@ -152,7 +152,7 @@ func TestAppDefinitionParameterListsFailClosed(t *testing.T) {
 		},
 	}
 
-	actual, diags := model.ToAppDefinitionData(path.Empty())
+	actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{}, path.Empty())
 
 	assert.Equal(t, cm.AppDefinitionData{}, actual)
 	require.True(t, diags.HasError())
@@ -194,7 +194,7 @@ func TestAppDefinitionParameterListsPreserveNilAndEmpty(t *testing.T) {
 				Parameters: test.parameters,
 			}
 
-			actual, diags := model.ToAppDefinitionData(path.Empty())
+			actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{}, path.Empty())
 
 			require.False(t, diags.HasError(), diags.Errors())
 

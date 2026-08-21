@@ -8,13 +8,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (m *ResourceProviderModel) ToResourceProviderRequest(_ context.Context, _ path.Path) (cm.ResourceProviderRequest, diag.Diagnostics) {
+func (m *ResourceProviderModel) ToResourceProviderRequest(_ context.Context, modelPath path.Path) (cm.ResourceProviderRequest, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
+	resourceProviderID, resourceProviderIDDiags := requestRequiredString(m.ResourceProviderID, modelPath.AtName("resource_provider_id"))
+	diags.Append(resourceProviderIDDiags...)
+
+	functionID, functionIDDiags := requestRequiredString(m.FunctionID, modelPath.AtName("function_id"))
+	diags.Append(functionIDDiags...)
+
+	if diags.HasError() {
+		return cm.ResourceProviderRequest{}, diags
+	}
+
 	req := cm.ResourceProviderRequest{
-		Sys:      cm.NewResourceProviderRequestSys(m.ResourceProviderID.ValueString()),
+		Sys:      cm.NewResourceProviderRequestSys(resourceProviderID),
 		Type:     cm.ResourceProviderRequestTypeFunction,
-		Function: cm.NewFunctionLink(m.FunctionID.ValueString()),
+		Function: cm.NewFunctionLink(functionID),
 	}
 
 	return req, diags

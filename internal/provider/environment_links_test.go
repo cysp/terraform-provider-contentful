@@ -91,19 +91,39 @@ func TestDeliveryAPIKeyEnvironmentRequestEncoding(t *testing.T) {
 	t.Parallel()
 
 	for name, test := range map[string]struct {
-		environments TypedList[types.String]
-		expectedJSON string
+		planned       TypedList[types.String]
+		configured    TypedList[types.String]
+		expectedJSON  string
+		expectedError bool
 	}{
-		"null is omitted": {
-			environments: NewTypedListNull[types.String](),
+		"config null plan null is omitted": {
+			planned:      NewTypedListNull[types.String](),
+			configured:   NewTypedListNull[types.String](),
 			expectedJSON: `{"name":"key","description":null}`,
 		},
-		"unknown is omitted": {
-			environments: NewTypedListUnknown[types.String](),
+		"config null plan unknown is response-owned and omitted": {
+			planned:      NewTypedListUnknown[types.String](),
+			configured:   NewTypedListNull[types.String](),
 			expectedJSON: `{"name":"key","description":null}`,
+		},
+		"config null plan known uses planned value": {
+			planned:      NewTypedListFromStringSlice([]string{"planned-default"}),
+			configured:   NewTypedListNull[types.String](),
+			expectedJSON: `{"name":"key","description":null,"environments":[{"sys":{"type":"Link","linkType":"Environment","id":"planned-default"}}]}`,
+		},
+		"config known plan known uses plan": {
+			planned:      NewTypedListFromStringSlice([]string{"resolved-plan"}),
+			configured:   NewTypedListFromStringSlice([]string{"configured-expression"}),
+			expectedJSON: `{"name":"key","description":null,"environments":[{"sys":{"type":"Link","linkType":"Environment","id":"resolved-plan"}}]}`,
+		},
+		"config known plan unknown fails closed": {
+			planned:       NewTypedListUnknown[types.String](),
+			configured:    NewTypedListFromStringSlice([]string{"configured-expression"}),
+			expectedError: true,
 		},
 		"known empty is explicit": {
-			environments: NewTypedList([]types.String{}),
+			planned:      NewTypedList([]types.String{}),
+			configured:   NewTypedList([]types.String{}),
 			expectedJSON: `{"name":"key","description":null,"environments":[]}`,
 		},
 	} {
@@ -113,10 +133,18 @@ func TestDeliveryAPIKeyEnvironmentRequestEncoding(t *testing.T) {
 			model := DeliveryAPIKeyModel{
 				Name:         types.StringValue("key"),
 				Description:  types.StringNull(),
-				Environments: test.environments,
+				Environments: test.planned,
 			}
 
-			request, diags := model.ToAPIKeyRequestFields(t.Context())
+			request, diags := model.ToAPIKeyRequestFields(t.Context(), DeliveryAPIKeyModel{Environments: test.configured})
+			if test.expectedError {
+				require.True(t, diags.HasError())
+				assert.Equal(t, []string{"environments"}, attributeDiagnosticPaths(t, diags))
+				assert.Equal(t, cm.ApiKeyRequestData{}, request)
+
+				return
+			}
+
 			require.False(t, diags.HasError(), diags.Errors())
 
 			actualJSON, err := request.MarshalJSON()

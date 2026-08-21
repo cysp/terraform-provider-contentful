@@ -6,8 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *AppDefinitionBaseModel) ToAppDefinitionData(path path.Path) (cm.AppDefinitionData, diag.Diagnostics) {
+func (model *AppDefinitionBaseModel) ToAppDefinitionData(config AppDefinitionBaseModel, path path.Path) (cm.AppDefinitionData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
+	diags.Append(rejectUnknownConfigurationOwnedRequestValue(model.Src, config.Src, path.AtName("src"))...)
+	diags.Append(rejectUnknownConfigurationOwnedRequestValue(model.BundleID, config.BundleID, path.AtName("bundle_id"))...)
 
 	name, nameDiags := appRequestRequiredString(model.Name, path.AtName("name"))
 	diags.Append(nameDiags...)
@@ -16,6 +18,9 @@ func (model *AppDefinitionBaseModel) ToAppDefinitionData(path path.Path) (cm.App
 		Name: name,
 	}
 
+	// An unknown Optional+Computed plan is omitted only when configuration is
+	// null, meaning the value is response-owned. Every known plan value remains
+	// the request source, including defaults and values preserved from state.
 	if !model.Src.IsUnknown() && !model.Src.IsNull() {
 		fields.Src = cm.NewOptPointerString(model.Src.ValueStringPointer())
 	}

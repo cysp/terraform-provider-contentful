@@ -10,6 +10,8 @@ import (
 
 func ToWebhookDefinitionHeaders(path path.Path, model TypedMap[TypedObject[WebhookHeaderValue]]) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
 	if model.IsNull() || model.IsUnknown() {
+		// The lifecycle rejects configuration-owned unknown plans. A remaining
+		// unknown represents response-owned, omitted Optional+Computed headers.
 		return nil, nil
 	}
 
