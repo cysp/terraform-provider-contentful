@@ -55,9 +55,20 @@ func (r *spaceEnablementsResource) ImportState(ctx context.Context, req resource
 }
 
 func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan SpaceEnablementsModel
+	var (
+		plan   SpaceEnablementsModel
+		config SpaceEnablementsModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToSpaceEnablementData(ctx, config)
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -78,13 +89,6 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 	params := cm.PutSpaceEnablementsParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		XContentfulVersion: currentVersion,
-	}
-
-	request, requestDiags := plan.ToSpaceEnablementData(ctx)
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.PutSpaceEnablements(ctx, &request, params)
@@ -213,9 +217,20 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan SpaceEnablementsModel
+	var (
+		plan   SpaceEnablementsModel
+		config SpaceEnablementsModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToSpaceEnablementData(ctx, config)
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -239,13 +254,6 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 	params := cm.PutSpaceEnablementsParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		XContentfulVersion: currentVersion,
-	}
-
-	request, requestDiags := plan.ToSpaceEnablementData(ctx)
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.PutSpaceEnablements(ctx, &request, params)

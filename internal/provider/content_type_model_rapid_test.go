@@ -23,7 +23,7 @@ func TestContentTypeModelRoundTrip(t *testing.T) {
 
 		model := testdata.ContentTypeModel(spaceID, environmentID, contentTypeID).Draw(t, "model")
 
-		request, diags := model.ToContentTypeRequestData(ctx)
+		request, diags := model.ToContentTypeRequestData(ctx, ContentTypeModel{})
 		if diags.HasError() {
 			t.Fatalf("ToContentTypeRequestData failed: %v", diags.Errors())
 		}

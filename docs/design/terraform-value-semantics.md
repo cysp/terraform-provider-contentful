@@ -34,6 +34,24 @@ before remote mutation. It must:
 - reject invalid null children with path-specific errors; and
 - require exactly one known, non-null alternative for a closed request union.
 
+Resource Create and Update configuration is known when the lifecycle method
+runs. For Optional+Computed attributes, request conversion uses configuration
+only to distinguish ownership/presence; payloads are always constructed from
+the plan:
+
+- Config null + Plan unknown: omission can be valid because the attribute is
+  response-owned.
+- Config null + Plan known: send the known planned value, including a default or
+  a value preserved from prior state.
+- Config known + Plan known: send the planned value.
+- Config known + Plan unknown: fail closed. Never substitute Config for Plan.
+
+The configuration-owned Optional+Computed case is the production-reachable
+ownership hazard addressed by this rule. Required and Optional-only request
+values are also rejected when unknown as defensive converter hardening, even
+though Framework lifecycle guarantees normally prevent those values from
+reaching Create or Update unresolved.
+
 All conversion diagnostics are appended to the lifecycle response. If any are
 errors, request construction stops before patch construction or network I/O. A
 partially converted request is never sent.
@@ -45,14 +63,15 @@ rule. For whole null or unknown plan collections `alt_labels`, `hidden_labels`,
 `notations`, `broader_concept_ids`, `related_concept_ids`, `top_concept_ids`,
 and `concept_ids`, it currently encodes an empty collection. The conversion
 receives only `req.Plan`, so at that boundary it cannot distinguish omitted
-configuration from genuinely unknown configuration.
+configuration from an unknown planned value for a configuration-owned
+collection.
 
 `UseStateForUnknown` normally preserves prior state for an omitted Update. It
-does not replace a genuinely unknown configured value, which can therefore
-remain unknown until this conversion and be encoded as an empty collection,
-potentially clearing the remote value. This is a current, narrowly-scoped
-limitation; a follow-up requires configuration-aware taxonomy request
-conversion rather than a plan modifier that changes the planned value.
+does not replace an unknown planned value owned by configuration, which can
+therefore remain unknown until this conversion and be encoded as an empty
+collection, potentially clearing the remote value. This is a current,
+narrowly-scoped limitation; a follow-up requires configuration-aware taxonomy
+request conversion rather than a plan modifier that changes the planned value.
 
 ## Response projection
 
@@ -96,8 +115,8 @@ nested inside known objects:
   known configured values remain configuration-owned.
 - Computed-only values are response-owned.
 - Plan modifiers may preserve prior state for unknown computed plans, but must
-  not replace unknown configuration or turn known empty configuration into
-  unknown.
+  not replace an unknown planned value for a configuration-owned attribute or
+  turn known empty configuration into unknown.
 
 Null, omission, and known empty values remain distinct throughout request and
 response conversion.
@@ -106,8 +125,11 @@ response conversion.
 
 `delivery_api_key.environments` has a deliberate forward-compatibility policy:
 
-- null or unknown omits the request member and asks Contentful to choose its
-  default;
+- Config null with a null or unknown Plan omits the request member and asks
+  Contentful to choose its default;
+- a known Plan is serialized even when Config is null, so a default or
+  state-preserved value remains the request source;
+- Config known with Plan unknown is rejected before Contentful I/O;
 - known empty serializes an explicit `[]`; and
 - response conversion reflects the environment links returned by Contentful
   without inventing a default identifier.
@@ -120,6 +142,15 @@ service behavior a permanent provider restriction. The provider instead keeps
 empty input valid and treats the canonicalization conflict as a known
 limitation. The supporting observations and their date are recorded in the
 [Delivery API key environments note](../research/delivery-api-key-environments.md).
+
+### Extension sources
+
+Contentful requires exactly one of `extension.src` or `extension.srcdoc`.
+An empty `src` is invalid, while an explicitly empty `srcdoc` is accepted and
+round-trips. The provider validates that contract in configuration and does not
+silently rewrite either explicit value to omission. The first-party contract
+and live CMA observations are recorded in the
+[Extension source values note](../research/extension-source-values.md).
 
 ## Diagnostics and local publication
 

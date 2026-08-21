@@ -57,9 +57,20 @@ func (r *webhookResource) ImportState(ctx context.Context, req resource.ImportSt
 }
 
 func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan WebhookModel
+	var (
+		plan   WebhookModel
+		config WebhookModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -79,13 +90,6 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	params := cm.CreateWebhookDefinitionParams{
 		SpaceID: plan.SpaceID.ValueString(),
-	}
-
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.CreateWebhookDefinition(ctx, &request, params)
@@ -215,9 +219,20 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan WebhookModel
+	var (
+		plan   WebhookModel
+		config WebhookModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -242,13 +257,6 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		SpaceID:             plan.SpaceID.ValueString(),
 		WebhookDefinitionID: plan.WebhookID.ValueString(),
 		XContentfulVersion:  currentVersion,
-	}
-
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.UpdateWebhookDefinition(ctx, &request, params)

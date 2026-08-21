@@ -2,6 +2,8 @@ package provider
 
 import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
 func (model *TagModel) ToGetTagParams() cm.GetTagParams {
@@ -12,18 +14,45 @@ func (model *TagModel) ToGetTagParams() cm.GetTagParams {
 	}
 }
 
-func (model *TagModel) ToPutTagParams() cm.PutTagParams {
+func (model *TagModel) ToPutTagRequest(modelPath path.Path) (cm.PutTagParams, cm.TagRequest, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	spaceID, spaceIDDiags := requestRequiredString(model.SpaceID, modelPath.AtName("space_id"))
+	diags.Append(spaceIDDiags...)
+
+	environmentID, environmentIDDiags := requestRequiredString(model.EnvironmentID, modelPath.AtName("environment_id"))
+	diags.Append(environmentIDDiags...)
+
+	tagID, tagIDDiags := requestRequiredString(model.TagID, modelPath.AtName("tag_id"))
+	diags.Append(tagIDDiags...)
+
+	name, nameDiags := requestRequiredString(model.Name, modelPath.AtName("name"))
+	diags.Append(nameDiags...)
+
+	visibility, visibilityDiags := requestRequiredString(model.Visibility, modelPath.AtName("visibility"))
+	diags.Append(visibilityDiags...)
+
+	if diags.HasError() {
+		return cm.PutTagParams{}, cm.TagRequest{}, diags
+	}
+
 	params := cm.PutTagParams{
-		SpaceID:       model.SpaceID.ValueString(),
-		EnvironmentID: model.EnvironmentID.ValueString(),
-		TagID:         model.TagID.ValueString(),
+		SpaceID:       spaceID,
+		EnvironmentID: environmentID,
+		TagID:         tagID,
+	}
+	params.XContentfulTagVisibility.SetTo(visibility)
+
+	request := cm.TagRequest{
+		Sys: cm.TagRequestSys{
+			Type:       cm.TagRequestSysTypeTag,
+			ID:         cm.NewOptString(tagID),
+			Visibility: cm.NewOptString(visibility),
+		},
+		Name: name,
 	}
 
-	if !model.Visibility.IsUnknown() && !model.Visibility.IsNull() {
-		params.XContentfulTagVisibility.SetTo(model.Visibility.ValueString())
-	}
-
-	return params
+	return params, request, diags
 }
 
 func (model *TagModel) ToDeleteTagParams() cm.DeleteTagParams {
@@ -32,25 +61,4 @@ func (model *TagModel) ToDeleteTagParams() cm.DeleteTagParams {
 		EnvironmentID: model.EnvironmentID.ValueString(),
 		TagID:         model.TagID.ValueString(),
 	}
-}
-
-func (model *TagModel) ToTagRequest() cm.TagRequest {
-	request := cm.TagRequest{
-		Sys: cm.TagRequestSys{
-			Type: cm.TagRequestSysTypeTag,
-		},
-		Name: model.Name.ValueString(),
-	}
-
-	if !model.TagID.IsUnknown() && !model.TagID.IsNull() {
-		reqID := model.TagID.ValueString()
-		request.Sys.ID = cm.NewOptString(reqID)
-	}
-
-	if !model.Visibility.IsUnknown() && !model.Visibility.IsNull() {
-		visibility := model.Visibility.ValueString()
-		request.Sys.Visibility = cm.NewOptString(visibility)
-	}
-
-	return request
 }

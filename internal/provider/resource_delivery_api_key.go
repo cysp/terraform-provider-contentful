@@ -58,9 +58,20 @@ func (r *deliveryAPIKeyResource) ImportState(ctx context.Context, req resource.I
 }
 
 func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan DeliveryAPIKeyModel
+	var (
+		plan   DeliveryAPIKeyModel
+		config DeliveryAPIKeyModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToAPIKeyRequestFields(ctx, config)
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -80,13 +91,6 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 
 	params := cm.CreateDeliveryAPIKeyParams{
 		SpaceID: plan.SpaceID.ValueString(),
-	}
-
-	request, requestDiags := plan.ToAPIKeyRequestFields(ctx)
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.CreateDeliveryAPIKey(ctx, &request, params)
@@ -217,9 +221,20 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 }
 
 func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan DeliveryAPIKeyModel
+	var (
+		plan   DeliveryAPIKeyModel
+		config DeliveryAPIKeyModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToAPIKeyRequestFields(ctx, config)
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -244,13 +259,6 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 		SpaceID:            plan.SpaceID.ValueString(),
 		APIKeyID:           plan.APIKeyID.ValueString(),
 		XContentfulVersion: currentVersion,
-	}
-
-	request, requestDiags := plan.ToAPIKeyRequestFields(ctx)
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.UpdateDeliveryAPIKey(ctx, &request, params)

@@ -4,27 +4,29 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *DeliveryAPIKeyModel) ToAPIKeyRequestFields(ctx context.Context) (cm.ApiKeyRequestData, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func (model *DeliveryAPIKeyModel) ToAPIKeyRequestFields(ctx context.Context, config DeliveryAPIKeyModel) (cm.ApiKeyRequestData, diag.Diagnostics) {
+	diags := rejectUnknownConfigurationOwnedRequestValue(model.Environments, config.Environments, path.Root("environments"))
 
-	req := cm.ApiKeyRequestData{
-		Name:        model.Name.ValueString(),
-		Description: util.StringValueToOptNilString(model.Description),
-	}
+	name, nameDiags := requestRequiredString(model.Name, path.Root("name"))
+	diags.Append(nameDiags...)
+
+	description, descriptionDiags := requestNullableString(model.Description, path.Root("description"))
+	diags.Append(descriptionDiags...)
 
 	environments, environmentsDiags := ToEnvironmentLinks(ctx, path.Root("environments"), model.Environments)
 	diags.Append(environmentsDiags...)
-
-	req.Environments = environments
 
 	if diags.HasError() {
 		return cm.ApiKeyRequestData{}, diags
 	}
 
-	return req, diags
+	return cm.ApiKeyRequestData{
+		Name:         name,
+		Description:  description,
+		Environments: environments,
+	}, diags
 }

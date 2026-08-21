@@ -12,6 +12,9 @@ import (
 func ToEnvironmentLinks(_ context.Context, valuePath path.Path, value TypedList[types.String]) ([]cm.EnvironmentLink, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
+	// Configuration-aware lifecycle conversion rejects an unknown planned value
+	// for a configuration-owned collection before calling this value converter.
+	// Null or unknown here therefore means omission/response ownership.
 	if value.IsNull() || value.IsUnknown() {
 		return nil, diags
 	}

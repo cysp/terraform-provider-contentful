@@ -65,7 +65,7 @@ func assertTaxonomyUpdateRequestConversionErrorStopsBeforeAPIRequest(
 	t.Helper()
 
 	ctx := t.Context()
-	client, requestCount := taxonomyRequestCountingClient(t)
+	client, requestCount := mutationRequestCountingClient(t)
 
 	plan := tfsdk.Plan{Schema: resourceSchema}
 	require.False(t, plan.Set(ctx, model).HasError())
@@ -75,27 +75,6 @@ func assertTaxonomyUpdateRequestConversionErrorStopsBeforeAPIRequest(
 
 	require.True(t, response.Diagnostics.HasError())
 	assert.Zero(t, requestCount.Load())
-}
-
-func taxonomyRequestCountingClient(t *testing.T) (*cm.Client, *atomic.Int64) {
-	t.Helper()
-
-	requestCount := &atomic.Int64{}
-
-	testServer := httptest.NewServer(http.HandlerFunc(func(responseWriter http.ResponseWriter, _ *http.Request) {
-		requestCount.Add(1)
-		http.Error(responseWriter, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-	}))
-	t.Cleanup(testServer.Close)
-
-	client, err := cm.NewClient(
-		testServer.URL,
-		cm.NewAccessTokenSecuritySource("access-token"),
-		cm.WithClient(testServer.Client()),
-	)
-	require.NoError(t, err)
-
-	return client, requestCount
 }
 
 func taxonomyConceptUpdatePlan() TaxonomyConceptModel {

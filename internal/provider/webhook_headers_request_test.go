@@ -66,3 +66,66 @@ func TestWebhookHeadersFailWithoutPartialOutputAndSortKeys(t *testing.T) {
 	require.True(t, diags.HasError())
 	assert.Equal(t, []string{`headers["broken"].value`}, diagnosticPaths(t, diags))
 }
+
+func TestWebhookRequestDoesNotReplaceUnavailableSecretWithEmptyValue(t *testing.T) {
+	t.Parallel()
+
+	model := validWebhookRequestModel()
+	model.Headers = NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
+		"authorization": NewTypedObject(WebhookHeaderValue{
+			Value:  types.StringNull(),
+			Secret: types.BoolValue(true),
+		}),
+	})
+
+	actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{
+		Headers: NewTypedMapNull[TypedObject[WebhookHeaderValue]](),
+	}, path.Empty())
+
+	assert.Equal(t, cm.WebhookDefinitionData{}, actual)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{`headers["authorization"].value`}, diagnosticPaths(t, diags))
+}
+
+func TestWebhookSecretResponseUsesOnlyKnownFallback(t *testing.T) {
+	t.Parallel()
+
+	responseHeader := cm.WebhookDefinitionHeader{
+		Key:    "authorization",
+		Secret: cm.NewOptBool(true),
+	}
+
+	t.Run("configured secret is preserved when Contentful redacts it", func(t *testing.T) {
+		t.Parallel()
+
+		fallback := NewTypedObject(WebhookHeaderValue{
+			Value:  types.StringValue("configured-secret"),
+			Secret: types.BoolValue(true),
+		})
+		actual, diags := NewWebhookHeaderValueFromResponse(t.Context(), path.Root("headers").AtMapKey("authorization"), responseHeader, fallback)
+
+		require.False(t, diags.HasError(), diags.Errors())
+
+		value, ok := actual.GetValue()
+		require.True(t, ok)
+		assert.Equal(t, "configured-secret", value.Value.ValueString())
+	})
+
+	t.Run("imported redacted secret remains unavailable rather than empty", func(t *testing.T) {
+		t.Parallel()
+
+		actual, diags := NewWebhookHeaderValueFromResponse(
+			t.Context(),
+			path.Root("headers").AtMapKey("authorization"),
+			responseHeader,
+			NewTypedObjectNull[WebhookHeaderValue](),
+		)
+
+		require.False(t, diags.HasError(), diags.Errors())
+
+		value, ok := actual.GetValue()
+		require.True(t, ok)
+		assert.True(t, value.Value.IsNull())
+		assert.NotEqual(t, types.StringValue(""), value.Value)
+	})
+}

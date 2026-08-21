@@ -6,10 +6,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
@@ -72,22 +73,20 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			Required:    true,
 		},
 		"src": schema.StringAttribute{
-			Description: "URL where the root HTML document of the extension can be found. Must be HTTPS.",
+			Description: "URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Exactly one of src or srcdoc must be configured.",
 			Optional:    true,
 			Computed:    true,
-			Default:     stringdefault.StaticString(""),
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+				stringvalidator.ExactlyOneOf(
+					path.MatchRelative().AtParent().AtName("srcdoc"),
+				),
 			},
 		},
 		"srcdoc": schema.StringAttribute{
-			Description: "String representation of the extension (e.g. inline HTML code).",
+			Description: "String representation of the extension (e.g. inline HTML code). Exactly one of src or srcdoc must be configured. Contentful accepts an explicitly empty srcdoc.",
 			Optional:    true,
 			Computed:    true,
-			Default:     stringdefault.StaticString(""),
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"field_types": schema.ListNestedAttribute{
 			Description: "Field types where an extension can be used.",

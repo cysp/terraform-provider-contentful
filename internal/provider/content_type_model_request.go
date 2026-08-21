@@ -12,8 +12,27 @@ import (
 
 const contentfulEntryAllowedResourceType = "Contentful:Entry"
 
-func (m *ContentTypeModel) ToContentTypeRequestData(ctx context.Context) (cm.ContentTypeRequestData, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func (m *ContentTypeModel) validateRequestConfiguration(config ContentTypeModel) diag.Diagnostics {
+	metadataPath := path.Root("metadata")
+	if m.Metadata.IsUnknown() {
+		return rejectUnknownConfigurationOwnedRequestValue(m.Metadata, config.Metadata, metadataPath)
+	}
+
+	metadata, ok := m.Metadata.GetValue()
+	if !ok || !metadata.Taxonomy.IsUnknown() {
+		return nil
+	}
+
+	configuredMetadata, configuredOK := config.Metadata.GetValue()
+	if !configuredOK {
+		return nil
+	}
+
+	return rejectUnknownConfigurationOwnedRequestValue(metadata.Taxonomy, configuredMetadata.Taxonomy, metadataPath.AtName("taxonomy"))
+}
+
+func (m *ContentTypeModel) ToContentTypeRequestData(ctx context.Context, config ContentTypeModel) (cm.ContentTypeRequestData, diag.Diagnostics) {
+	diags := m.validateRequestConfiguration(config)
 
 	name, nameDiags := requestRequiredString(m.Name, path.Root("name"))
 	diags.Append(nameDiags...)

@@ -59,9 +59,20 @@ func (r *extensionResource) ImportState(ctx context.Context, req resource.Import
 }
 
 func (r *extensionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ExtensionModel
+	var (
+		plan   ExtensionModel
+		config ExtensionModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToExtensionData(config, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -83,13 +94,6 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 		SpaceID:       plan.SpaceID.ValueString(),
 		EnvironmentID: plan.EnvironmentID.ValueString(),
 		ExtensionID:   plan.ExtensionID.ValueString(),
-	}
-
-	request, requestDiags := plan.ToExtensionData(path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.PutExtension(ctx, &request, params)
@@ -221,9 +225,20 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 func (r *extensionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan ExtensionModel
+	var (
+		plan   ExtensionModel
+		config ExtensionModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToExtensionData(config, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -249,13 +264,6 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 		EnvironmentID:      plan.EnvironmentID.ValueString(),
 		ExtensionID:        plan.ExtensionID.ValueString(),
 		XContentfulVersion: currentVersion,
-	}
-
-	request, requestDiags := plan.ToExtensionData(path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
 	}
 
 	response, err := r.providerData.client.PutExtension(ctx, &request, params)

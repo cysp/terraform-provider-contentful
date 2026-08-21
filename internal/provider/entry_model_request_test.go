@@ -73,22 +73,38 @@ func TestEntryRequestUnresolvedFieldsContainerFailsWithoutPartialOutput(t *testi
 	}
 }
 
-func TestEntryRequestOmitsUnresolvedOptionalComputedMetadataContainer(t *testing.T) {
+func TestEntryRequestHandlesOptionalComputedMetadataContainer(t *testing.T) {
 	t.Parallel()
 
-	for name, metadata := range map[string]TypedObject[EntryMetadataValue]{
-		"null":    NewTypedObjectNull[EntryMetadataValue](),
-		"unknown": NewTypedObjectUnknown[EntryMetadataValue](),
+	for name, test := range map[string]struct {
+		metadata     TypedObject[EntryMetadataValue]
+		expectedPath string
+	}{
+		"null is omitted": {
+			metadata: NewTypedObjectNull[EntryMetadataValue](),
+		},
+		"unknown is rejected": {
+			metadata:     NewTypedObjectUnknown[EntryMetadataValue](),
+			expectedPath: "metadata",
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
 			model := EntryModel{
 				Fields:   NewTypedMap(map[string]jsontypes.Normalized{}),
-				Metadata: metadata,
+				Metadata: test.metadata,
 			}
 
 			request, diags := model.ToEntryRequest(t.Context())
+			if test.expectedPath != "" {
+				assert.Equal(t, cm.EntryRequest{}, request)
+				require.True(t, diags.HasError())
+				assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
+
+				return
+			}
+
 			require.False(t, diags.HasError(), diags.Errors())
 			assert.Equal(t, cm.OptEntryMetadata{}, request.Metadata)
 			fields, ok := request.Fields.Get()
@@ -96,6 +112,24 @@ func TestEntryRequestOmitsUnresolvedOptionalComputedMetadataContainer(t *testing
 			assert.Empty(t, fields)
 		})
 	}
+}
+
+func TestEntryRequestRejectsUnknownMetadataCollections(t *testing.T) {
+	t.Parallel()
+
+	model := EntryModel{
+		Fields: NewTypedMap(map[string]jsontypes.Normalized{}),
+		Metadata: NewTypedObject(EntryMetadataValue{
+			Concepts: NewTypedListUnknown[types.String](),
+			Tags:     NewTypedListUnknown[types.String](),
+		}),
+	}
+
+	request, diags := model.ToEntryRequest(t.Context())
+
+	assert.Equal(t, cm.EntryRequest{}, request)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{"metadata.concepts", "metadata.tags"}, attributeDiagnosticPaths(t, diags))
 }
 
 func TestEntryRequestInvalidMetadataChildrenFailWithoutPartialOutput(t *testing.T) {
