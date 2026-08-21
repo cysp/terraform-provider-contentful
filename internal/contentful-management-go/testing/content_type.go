@@ -8,7 +8,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-func contentTypeMetadataIsEmpty(metadata cm.ContentTypeMetadata) bool {
+func contentTypeMetadataIsRejectedAsEmpty(metadata cm.ContentTypeMetadata) bool {
 	annotations := bytes.TrimSpace(metadata.Annotations)
 	if len(annotations) == 0 {
 		return metadata.Taxonomy == nil
@@ -21,7 +21,7 @@ func contentTypeMetadataIsEmpty(metadata cm.ContentTypeMetadata) bool {
 		return false
 	}
 
-	return len(annotationAssignments) == 0 && metadata.Taxonomy == nil
+	return len(annotationAssignments) == 0
 }
 
 func NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID string, contentTypeFields cm.ContentTypeRequestData) cm.ContentType {

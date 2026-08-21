@@ -10,6 +10,11 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
+type contentTypePublicationSnapshot struct {
+	fieldIDs        []string
+	omittedFieldIDs map[string]struct{}
+}
+
 //nolint:ireturn
 func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesParams) (cm.GetContentTypesRes, error) {
 	ts.mu.Lock()
@@ -75,7 +80,7 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
-	if metadata, metadataSet := req.Metadata.Get(); metadataSet && contentTypeMetadataIsEmpty(metadata) {
+	if metadata, metadataSet := req.Metadata.Get(); metadataSet && contentTypeMetadataIsRejectedAsEmpty(metadata) {
 		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil), nil
 	}
 
@@ -92,6 +97,20 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 
 	if params.XContentfulVersion != contentType.Sys.Version {
 		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
+	if contentType.Sys.PublishedVersion.IsSet() {
+		publicationSnapshot := ts.contentTypePublications.Get(
+			params.SpaceID,
+			params.EnvironmentID,
+			params.ContentTypeID,
+		)
+		if removesNonOmittedPublishedField(publicationSnapshot, req.Fields) {
+			return NewContentfulManagementErrorStatusCodeBadRequest(
+				new("You need to omit a field before deleting it"),
+				nil,
+			), nil
+		}
 	}
 
 	UpdateContentTypeFromRequestFields(contentType, *req)
@@ -117,7 +136,7 @@ func (ts *Handler) DeleteContentType(_ context.Context, params cm.DeleteContentT
 	}
 
 	ts.contentTypes.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
-	ts.publishedContentTypeFieldIDs.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	ts.contentTypePublications.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	ts.editorInterfaces.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 
 	return &cm.NoContent{}, nil
@@ -144,21 +163,72 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 		newEditorInterface := NewDefaultEditorInterface(params.SpaceID, params.EnvironmentID, params.ContentTypeID, contentType.Fields)
 		ts.editorInterfaces.Set(params.SpaceID, params.EnvironmentID, params.ContentTypeID, &newEditorInterface)
 	} else {
-		previousFieldIDs := ts.publishedContentTypeFieldIDs.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+		previousPublicationSnapshot := ts.contentTypePublications.Get(
+			params.SpaceID,
+			params.EnvironmentID,
+			params.ContentTypeID,
+		)
+
+		var previousFieldIDs []string
+		if previousPublicationSnapshot != nil {
+			previousFieldIDs = previousPublicationSnapshot.fieldIDs
+		}
+
 		SyncEditorInterfaceWithContentType(editorInterface, previousFieldIDs, contentType.Fields)
 	}
 
-	ts.publishedContentTypeFieldIDs.Set(
+	ts.contentTypePublications.Set(
 		params.SpaceID,
 		params.EnvironmentID,
 		params.ContentTypeID,
-		contentTypeFieldIDs(contentType.Fields),
+		newContentTypePublicationSnapshot(contentType.Fields),
 	)
 
 	return &cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *contentType,
 	}, nil
+}
+
+func newContentTypePublicationSnapshot(fields []cm.ContentTypeFieldsItem) *contentTypePublicationSnapshot {
+	omittedFieldIDs := make(map[string]struct{})
+
+	for _, field := range fields {
+		if field.Omitted.Or(false) {
+			omittedFieldIDs[field.ID] = struct{}{}
+		}
+	}
+
+	return &contentTypePublicationSnapshot{
+		fieldIDs:        contentTypeFieldIDs(fields),
+		omittedFieldIDs: omittedFieldIDs,
+	}
+}
+
+func removesNonOmittedPublishedField(
+	publicationSnapshot *contentTypePublicationSnapshot,
+	requestedFields []cm.ContentTypeRequestDataFieldsItem,
+) bool {
+	if publicationSnapshot == nil {
+		return false
+	}
+
+	requestedFieldIDs := make(map[string]struct{}, len(requestedFields))
+	for _, field := range requestedFields {
+		requestedFieldIDs[field.ID] = struct{}{}
+	}
+
+	for _, fieldID := range publicationSnapshot.fieldIDs {
+		if _, retained := requestedFieldIDs[fieldID]; retained {
+			continue
+		}
+
+		if _, wasOmitted := publicationSnapshot.omittedFieldIDs[fieldID]; !wasOmitted {
+			return true
+		}
+	}
+
+	return false
 }
 
 //nolint:ireturn
