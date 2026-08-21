@@ -89,13 +89,29 @@ func TestPutContentTypeReplacesMetadataWhenPresent(t *testing.T) {
 	assert.NotNil(t, metadata.Taxonomy)
 }
 
+func TestPutContentTypeAcceptsTaxonomyOnlyEmptyList(t *testing.T) {
+	t.Parallel()
+
+	handler := newContentTypeTestHandler()
+	request := newContentTypeRequest()
+	request.Metadata.SetTo(cm.ContentTypeMetadata{Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{}})
+
+	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	metadata, metadataOK := created.Metadata.Get()
+	require.True(t, metadataOK)
+	assert.Nil(t, metadata.Annotations)
+	assert.Empty(t, metadata.Taxonomy)
+	assert.NotNil(t, metadata.Taxonomy)
+}
+
 func TestPutContentTypeRejectsEmptyMetadataObject(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]cm.ContentTypeMetadata{
-		"absent properties": {},
-		"empty annotations": {Annotations: jx.Raw(`{ }`)},
-		"null annotations":  {Annotations: jx.Raw(`null`)},
+		"absent properties":                     {},
+		"empty annotations":                     {Annotations: jx.Raw(`{ }`)},
+		"empty annotations with empty taxonomy": {Annotations: jx.Raw(`{ }`), Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{}},
+		"null annotations":                      {Annotations: jx.Raw(`null`)},
 	}
 
 	for name, metadata := range testCases {

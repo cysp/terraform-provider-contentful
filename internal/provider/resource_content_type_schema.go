@@ -21,7 +21,7 @@ import (
 
 func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Content Type and maintains it in the activated state. After refresh, a deactivated or changed Content Type is planned for activation. Activation publishes the current Contentful draft, including preserved values changed outside Terraform.",
+		Description: "Manages a Contentful Content Type in the activated state. External deactivation is activation drift. If an observed newer unpublished draft otherwise matches modeled configuration, Terraform activates that exact draft without replacing it, preserving its unmodeled values. Modeled drift instead sends a complete draft update for provider-modeled fields, so unmodeled values are not guaranteed to survive. During Update, if activation fails after that draft update, Terraform checkpoints the returned draft and an unchanged retry activates it without repeating the draft update. During Create, the provider also checkpoints the draft before returning an activation error, but Terraform Core taints any resource whose Create returns an error; the next normal plan therefore replaces the resource and repeats the draft PUT. Every activation uses its exact observed or returned version and fails on concurrent change. The provider does not issue a confirming read after an activation error; the next normal Terraform refresh establishes whether activation succeeded or remains pending. Resources created before published_version was tracked must refresh normally after upgrading. With -refresh=false, missing legacy publication state is indistinguishable from an observed unpublished state and may conservatively schedule activation.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -210,7 +210,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Default:     booldefault.StaticBool(false),
 		},
 		"omitted": schema.BoolAttribute{
-			Description: "Whether the field is omitted from API responses.",
+			Description: "Whether the field is omitted from API responses. Before removing a field while the content type is activated, set omitted to true and apply so Contentful activates that change, then remove the field in a later apply.",
 			Optional:    true,
 			Computed:    true,
 			Default:     booldefault.StaticBool(false),
