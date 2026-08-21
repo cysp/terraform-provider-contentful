@@ -100,13 +100,46 @@ represent, wholly or partially.
 
 ## Lifecycle ownership and plan consistency
 
+`contentful_content_type` owns activation state: the resource represents an
+activated Content Type, not an arbitrary draft definition. The lifecycle has
+four deliberate reconciliation paths:
+
+- During Update, after Terraform saves a modeled draft and activation fails,
+  the provider checkpoints the returned draft and exact version. An unchanged
+  retry activates that version without repeating the draft update.
+- During Create, the provider likewise checkpoints the returned draft before
+  returning an activation error. Terraform Core taints any resource whose
+  Create returns an error, however, so the next normal plan replaces the
+  resource and repeats the draft PUT. The checkpoint preserves truthful state
+  for recovery and cleanup; it cannot turn a failed Create into an in-place
+  Update without suppressing the activation error.
+- External deactivation plans an activation-only update of the exact observed
+  draft version.
+- A newer external draft with no modeled drift is intentionally activated in
+  place. Because no complete draft update is sent, values outside the provider
+  schema survive unchanged.
+- A newer external draft with modeled drift is first replaced by the complete
+  provider-modeled request using the exact observed prior version. The provider
+  checkpoints and activates the exact returned version; unmodeled values are
+  not guaranteed to survive that complete update.
+
+No activation path fetches and retries a newer draft. Concurrent draft changes
+therefore fail Contentful's optimistic-concurrency check instead of publishing
+another actor's version. A lost or otherwise ambiguous activation response is
+not interpreted as success: a normal refresh establishes publication truth
+before Terraform decides whether another activation is required.
+
 After Create or Update, state must remain consistent with every known
-configuration-owned value in the plan. Post-mutation state construction
-therefore starts with the response projection and restores each known
-plan-owned value. Unknown and response-owned values come from the response;
-unknown plan values are never copied into state. Projection warnings are
-retained. A later Read skips this reconciliation and projects the remote
-representation so meaningful remote drift remains visible.
+configuration-owned value in the plan. Post-mutation state construction starts
+with the complete response projection, compares each owned value against it,
+and restores the exact plan representation only after every comparison is
+semantically equivalent. If Contentful meaningfully contradicts the plan, the
+provider emits an attribute-scoped consistency error and retains complete,
+truthful response-derived recovery state; it never hides the contradiction by
+copying plan values over it. Unknown and response-owned values come from the
+response. Projection warnings are retained. A later Read skips this
+reconciliation and projects the remote representation so meaningful remote
+drift remains visible.
 
 Ownership follows the schema at the individual attribute, including attributes
 nested inside known objects:

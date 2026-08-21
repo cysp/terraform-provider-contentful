@@ -3,12 +3,12 @@
 page_title: "contentful_content_type Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Content Type and maintains it in the activated state. After refresh, a deactivated or changed Content Type is planned for activation. Activation publishes the current Contentful draft, including preserved values changed outside Terraform.
+  Manages a Contentful Content Type in the activated state. External deactivation is activation drift. If an observed newer unpublished draft otherwise matches modeled configuration, Terraform activates that exact draft without replacing it, preserving its unmodeled values. Modeled drift instead sends a complete draft update for provider-modeled fields, so unmodeled values are not guaranteed to survive. During Update, if activation fails after that draft update, Terraform checkpoints the returned draft and an unchanged retry activates it without repeating the draft update. During Create, the provider also checkpoints the draft before returning an activation error, but Terraform Core taints any resource whose Create returns an error; the next normal plan therefore replaces the resource and repeats the draft PUT. Every activation uses its exact observed or returned version and fails on concurrent change. After an ambiguous activation outcome, refresh before retrying. Resources created before published_version was tracked must refresh normally after upgrading; with -refresh=false, missing publication state conservatively may schedule activation.
 ---
 
 # contentful_content_type (Resource)
 
-Manages a Contentful Content Type and maintains it in the activated state. After refresh, a deactivated or changed Content Type is planned for activation. Activation publishes the current Contentful draft, including preserved values changed outside Terraform.
+Manages a Contentful Content Type in the activated state. External deactivation is activation drift. If an observed newer unpublished draft otherwise matches modeled configuration, Terraform activates that exact draft without replacing it, preserving its unmodeled values. Modeled drift instead sends a complete draft update for provider-modeled fields, so unmodeled values are not guaranteed to survive. During Update, if activation fails after that draft update, Terraform checkpoints the returned draft and an unchanged retry activates it without repeating the draft update. During Create, the provider also checkpoints the draft before returning an activation error, but Terraform Core taints any resource whose Create returns an error; the next normal plan therefore replaces the resource and repeats the draft PUT. Every activation uses its exact observed or returned version and fails on concurrent change. After an ambiguous activation outcome, refresh before retrying. Resources created before published_version was tracked must refresh normally after upgrading; with -refresh=false, missing publication state conservatively may schedule activation.
 
 ## Example Usage
 
@@ -89,7 +89,7 @@ Optional:
 - `disabled` (Boolean) Whether the field is disabled (not editable in the UI).
 - `items` (Attributes) For Array fields, defines the type of items in the array. (see [below for nested schema](#nestedatt--fields--items))
 - `link_type` (String) For Link or Array of Links fields, specifies the type of resource being linked to (e.g., Entry, Asset).
-- `omitted` (Boolean) Whether the field is omitted from API responses.
+- `omitted` (Boolean) Whether the field is omitted from API responses. Before removing a field while the content type is activated, set omitted to true and apply so Contentful activates that change, then remove the field in a later apply.
 - `validations` (List of String)
 
 <a id="nestedatt--fields--allowed_resources"></a>
