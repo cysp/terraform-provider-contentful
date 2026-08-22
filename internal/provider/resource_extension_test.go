@@ -31,6 +31,7 @@ var (
 	errUnexpectedExtensionResponse = errors.New("unexpected extension response")
 	errExtensionSourceMismatch     = errors.New("extension source mismatch")
 	errResolvedSrcdocOmitted       = errors.New("resolved srcdoc was omitted from Contentful request")
+	errMissingExtensionPut         = errors.New("no extension PUT request was recorded")
 )
 
 func TestAccExtensionResource(t *testing.T) {
@@ -398,18 +399,19 @@ func (r *extensionPutRecorder) checkLastSource(wantKey string) resource.TestChec
 		defer r.mu.Unlock()
 
 		if len(r.bodies) == 0 {
-			return errors.New("no extension PUT request was recorded")
+			return errMissingExtensionPut
 		}
 
 		last := r.bodies[len(r.bodies)-1]
 		_, srcSet := last["src"]
 		_, srcdocSet := last["srcdoc"]
+
 		if srcSet == srcdocSet {
-			return fmt.Errorf("extension PUT source keys were src=%t srcdoc=%t, want exactly one", srcSet, srcdocSet)
+			return fmt.Errorf("%w: PUT keys were src=%t srcdoc=%t, want exactly one", errExtensionSourceMismatch, srcSet, srcdocSet)
 		}
 
 		if _, ok := last[wantKey]; !ok {
-			return fmt.Errorf("extension PUT source was %v, want %q", last, wantKey)
+			return fmt.Errorf("%w: PUT source was %v, want %q", errExtensionSourceMismatch, last, wantKey)
 		}
 
 		return nil

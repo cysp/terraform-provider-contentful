@@ -131,6 +131,7 @@ func TestExtensionModifyPlanReconcilesSourceOwnership(t *testing.T) {
 
 			configPlan := tfsdk.Plan{Schema: resourceSchema}
 			require.False(t, configPlan.Set(ctx, configModel).HasError())
+
 			plan := tfsdk.Plan{Schema: resourceSchema}
 			require.False(t, plan.Set(ctx, plannedModel).HasError())
 
@@ -148,9 +149,13 @@ func TestExtensionModifyPlanReconcilesSourceOwnership(t *testing.T) {
 			}
 			response := resource.ModifyPlanResponse{Plan: plan}
 
-			NewExtensionResource().(resource.ResourceWithModifyPlan).ModifyPlan(ctx, request, &response)
+			resourceWithModifyPlan, ok := NewExtensionResource().(resource.ResourceWithModifyPlan)
+			require.True(t, ok)
+
+			resourceWithModifyPlan.ModifyPlan(ctx, request, &response)
 
 			assert.Equal(t, test.wantDiagnostics, response.Diagnostics.HasError(), response.Diagnostics)
+
 			if test.wantDiagnostics {
 				assert.Equal(t, []string{test.wantPath}, attributeDiagnosticPaths(t, response.Diagnostics))
 

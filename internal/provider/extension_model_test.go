@@ -89,6 +89,7 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 
 		_, srcSet := input.Extension.Src.Get()
 		_, srcdocSet := input.Extension.Srcdoc.Get()
+
 		if srcSet == srcdocSet {
 			t.Skip("Skipping response that violates the Contentful extension source union")
 		}

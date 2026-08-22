@@ -21,6 +21,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var errWebhookUpdateMismatch = errors.New("webhook update mismatch")
+
 //nolint:paralleltest
 func TestAccWebhookResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
@@ -114,7 +116,7 @@ resource "contentful_webhook" "test" {
 					func(*terraform.State) error {
 						stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 						if !ok {
-							return errors.New("updated webhook was not stored")
+							return fmt.Errorf("%w: updated webhook was not stored", errWebhookUpdateMismatch)
 						}
 
 						for _, header := range stored.Headers {
@@ -123,7 +125,7 @@ resource "contentful_webhook" "test" {
 							}
 						}
 
-						return fmt.Errorf("stored secret header was not preserved: %#v", stored.Headers)
+						return fmt.Errorf("%w: stored secret header was not preserved: %#v", errWebhookUpdateMismatch, stored.Headers)
 					},
 				),
 			},
@@ -142,11 +144,11 @@ resource "contentful_webhook" "test" {
 
 						webhook, ok := response.(*cm.WebhookDefinition)
 						if !ok {
-							return fmt.Errorf("unexpected webhook response %T", response)
+							return fmt.Errorf("%w: unexpected response %T", errWebhookUpdateMismatch, response)
 						}
 
 						if len(webhook.Headers) != 0 {
-							return fmt.Errorf("webhook headers were not cleared: %#v", webhook.Headers)
+							return fmt.Errorf("%w: headers were not cleared: %#v", errWebhookUpdateMismatch, webhook.Headers)
 						}
 
 						return nil
@@ -187,35 +189,43 @@ func (r *webhookUpdateRecorder) checkPreservedHeadersRequest() resource.TestChec
 		defer r.mu.Unlock()
 
 		if len(r.bodies) != 1 {
-			return fmt.Errorf("recorded %d webhook updates, want exactly 1", len(r.bodies))
+			return fmt.Errorf("%w: recorded %d updates, want exactly 1", errWebhookUpdateMismatch, len(r.bodies))
 		}
 
 		var headers []map[string]json.RawMessage
-		if err := json.Unmarshal(r.bodies[0]["headers"], &headers); err != nil {
+
+		err := json.Unmarshal(r.bodies[0]["headers"], &headers)
+		if err != nil {
 			return fmt.Errorf("decode webhook headers: %w", err)
 		}
+
 		if len(headers) != 2 {
-			return fmt.Errorf("sent %d webhook headers, want 2", len(headers))
+			return fmt.Errorf("%w: sent %d headers, want 2", errWebhookUpdateMismatch, len(headers))
 		}
 
 		byKey := make(map[string]map[string]json.RawMessage, len(headers))
 		for _, header := range headers {
 			var key string
-			if err := json.Unmarshal(header["key"], &key); err != nil {
+
+			err = json.Unmarshal(header["key"], &key)
+			if err != nil {
 				return fmt.Errorf("decode webhook header key: %w", err)
 			}
+
 			byKey[key] = header
 		}
 
 		if string(byKey["X-Ordinary"]["value"]) != `"ordinary"` {
-			return fmt.Errorf("ordinary header value was %s", byKey["X-Ordinary"]["value"])
+			return fmt.Errorf("%w: ordinary header value was %s", errWebhookUpdateMismatch, byKey["X-Ordinary"]["value"])
 		}
+
 		secret := byKey["X-Secret"]
 		if string(secret["secret"]) != "true" {
-			return fmt.Errorf("secret header marker was %s", secret["secret"])
+			return fmt.Errorf("%w: secret header marker was %s", errWebhookUpdateMismatch, secret["secret"])
 		}
+
 		if _, ok := secret["value"]; ok {
-			return fmt.Errorf("secret header request included value %s; want the member omitted", secret["value"])
+			return fmt.Errorf("%w: secret header request included value %s; want the member omitted", errWebhookUpdateMismatch, secret["value"])
 		}
 
 		return nil
@@ -228,10 +238,11 @@ func (r *webhookUpdateRecorder) checkEmptyHeadersRequest() resource.TestCheckFun
 		defer r.mu.Unlock()
 
 		if len(r.bodies) != 2 {
-			return fmt.Errorf("recorded %d webhook updates, want exactly 2", len(r.bodies))
+			return fmt.Errorf("%w: recorded %d updates, want exactly 2", errWebhookUpdateMismatch, len(r.bodies))
 		}
+
 		if body, ok := r.bodies[1]["headers"]; !ok || string(body) != "[]" {
-			return errors.New("explicit empty headers did not produce an empty headers array")
+			return fmt.Errorf("%w: explicit empty headers did not produce an empty array", errWebhookUpdateMismatch)
 		}
 
 		return nil

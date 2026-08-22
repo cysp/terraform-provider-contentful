@@ -33,6 +33,7 @@ func TestExtensionResponsePreservesSourcePresence(t *testing.T) {
 
 			require.False(t, diags.HasError(), diags.Errors())
 			assert.Equal(t, test.wantSrcNull, actual.Src.IsNull())
+
 			if test.response.Srcdoc.IsSet() {
 				assert.False(t, actual.SrcDoc.IsNull())
 				assert.Equal(t, test.wantSrcdoc, actual.SrcDoc.ValueString())

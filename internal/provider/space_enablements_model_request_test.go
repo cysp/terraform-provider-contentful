@@ -65,9 +65,11 @@ func TestSpaceEnablementsRequestRequiresKnownEqualCoupledValues(t *testing.T) {
 			}
 
 			require.False(t, diags.HasError(), diags.Errors())
+
 			crossSpaceLinks, ok := actual.CrossSpaceLinks.Get()
 			require.True(t, ok)
 			assert.False(t, crossSpaceLinks.Enabled)
+
 			spaceTemplates, ok := actual.SpaceTemplates.Get()
 			require.True(t, ok)
 			assert.False(t, spaceTemplates.Enabled)

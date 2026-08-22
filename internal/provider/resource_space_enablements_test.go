@@ -20,6 +20,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var errSpaceEnablementsRequestMismatch = errors.New("space enablements request mismatch")
+
 //nolint:paralleltest
 func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
@@ -72,11 +74,14 @@ func TestAccSpaceEnablementsResourceRequiresCoupledValuesBeforeContentful(t *tes
 
 			server, err := cmt.NewContentfulManagementServer()
 			require.NoError(t, err)
+
 			var requestCount atomic.Int64
+
 			handler := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
 				if request.Method == http.MethodPut && request.URL.Path == "/spaces/space/enablements" {
 					requestCount.Add(1)
 				}
+
 				server.ServeHTTP(responseWriter, request)
 			})
 
@@ -116,10 +121,12 @@ func TestAccSpaceEnablementsResourceRejectsInvalidUpdateBeforeContentful(t *test
 			server.RegisterSpaceEnvironment("space", "master")
 
 			var requestCount atomic.Int64
+
 			handler := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
 				if request.Method == http.MethodPut && request.URL.Path == "/spaces/space/enablements" {
 					requestCount.Add(1)
 				}
+
 				server.ServeHTTP(responseWriter, request)
 			})
 
@@ -207,27 +214,32 @@ func (r *spaceEnablementsPutRecorder) checkImportedPairRequest() resource.TestCh
 		defer r.mu.Unlock()
 
 		if len(r.bodies) != 1 {
-			return fmt.Errorf("recorded %d space enablement PUTs, want exactly 1", len(r.bodies))
+			return fmt.Errorf("%w: recorded %d PUTs, want exactly 1", errSpaceEnablementsRequestMismatch, len(r.bodies))
 		}
 
 		for _, key := range []string{"crossSpaceLinks", "spaceTemplates"} {
 			var field struct {
 				Enabled bool `json:"enabled"`
 			}
+
 			body, ok := r.bodies[0][key]
+
 			if !ok {
-				return fmt.Errorf("space enablement PUT omitted %s", key)
+				return fmt.Errorf("%w: PUT omitted %s", errSpaceEnablementsRequestMismatch, key)
 			}
-			if err := json.Unmarshal(body, &field); err != nil {
+
+			err := json.Unmarshal(body, &field)
+			if err != nil {
 				return fmt.Errorf("decode %s: %w", key, err)
 			}
+
 			if !field.Enabled {
-				return fmt.Errorf("space enablement PUT sent %s.enabled=false, want true", key)
+				return fmt.Errorf("%w: PUT sent %s.enabled=false, want true", errSpaceEnablementsRequestMismatch, key)
 			}
 		}
 
 		if body, ok := r.bodies[0]["suggestConcepts"]; !ok || !bytes.Contains(body, []byte(`"enabled":true`)) {
-			return errors.New("space enablement PUT did not send configured suggestConcepts=true")
+			return fmt.Errorf("%w: PUT did not send configured suggestConcepts=true", errSpaceEnablementsRequestMismatch)
 		}
 
 		return nil

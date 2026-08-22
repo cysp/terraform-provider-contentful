@@ -102,6 +102,7 @@ func TestWebhookRequestPreservesConfiguredEmptyHeaderValues(t *testing.T) {
 
 	require.False(t, diags.HasError(), diags.Errors())
 	require.Len(t, actual, 2)
+
 	for _, header := range actual {
 		assert.True(t, header.Value.IsSet(), "configured empty value for %q must be present on the wire", header.Key)
 		assert.Empty(t, header.Value.Or("not-empty"))

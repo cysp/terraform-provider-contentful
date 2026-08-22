@@ -18,6 +18,7 @@ func UpdateWebhookDefinitionFromFields(webhookDefinition *cm.WebhookDefinition, 
 	webhookDefinition.URL = webhookDefinitionFields.URL
 	webhookDefinition.HttpBasicUsername = webhookDefinitionFields.HttpBasicUsername
 	webhookDefinition.HttpBasicPassword = webhookDefinitionFields.HttpBasicPassword
+
 	headers := make(cm.WebhookDefinitionHeaders, len(webhookDefinitionFields.Headers))
 	for index, header := range webhookDefinitionFields.Headers {
 		headers[index] = header
