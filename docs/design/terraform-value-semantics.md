@@ -53,8 +53,10 @@ though Framework lifecycle guarantees normally prevent those values from
 reaching Create or Update unresolved.
 
 All conversion diagnostics are appended to the lifecycle response. If any are
-errors, request construction stops before patch construction or network I/O. A
-partially converted request is never sent.
+errors, the lifecycle returns before invoking the Contentful client with a
+mutation payload containing unresolved values. Harmless required-known identity
+or version parameter objects may already have been constructed; a partially
+converted payload is never sent.
 
 ### Current taxonomy Optional+Computed limitation
 

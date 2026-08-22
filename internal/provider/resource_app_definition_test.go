@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"sync/atomic"
@@ -37,36 +38,71 @@ func TestAccAppDefinitionResource(t *testing.T) {
 	})
 }
 
-func TestAccAppDefinitionResourceRejectsEmptySourceBeforeContentful(t *testing.T) {
+func TestAccAppDefinitionResourceRejectsEmptySourceBeforeContentfulMutation(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
-	require.NoError(t, err)
-
-	var requestCount atomic.Int64
-
-	handler := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
-		requestCount.Add(1)
-		server.ServeHTTP(responseWriter, request)
-	})
-
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
-		Steps: []resource.TestStep{
-			{
-				Config: `
+	config := func(name, src string) string {
+		return fmt.Sprintf(`
 resource "contentful_app_definition" "test" {
   organization_id = "organization"
-  name            = "Empty source"
-  src             = ""
+  name            = %q
+  src             = %q
   locations       = []
 }
-`,
+`, name, src)
+	}
+
+	for name, test := range map[string]struct {
+		mutationMethod string
+		steps          []resource.TestStep
+	}{
+		"create": {
+			mutationMethod: http.MethodPost,
+			steps: []resource.TestStep{{
+				Config:      config("Empty source", ""),
 				ExpectError: regexp.MustCompile(`at least 1`),
+			}},
+		},
+		"update": {
+			mutationMethod: http.MethodPut,
+			steps: []resource.TestStep{
+				{Config: config("Valid source", "https://example.com/app.js")},
+				{
+					Config:      config("Empty source update", ""),
+					ExpectError: regexp.MustCompile(`at least 1`),
+				},
+				{
+					Config:  config("Valid source", "https://example.com/app.js"),
+					Destroy: true,
+				},
 			},
 		},
-	})
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	require.Zero(t, requestCount.Load())
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			var mutationCount atomic.Int64
+
+			handler := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
+				if request.Method == test.mutationMethod {
+					mutationCount.Add(1)
+				}
+
+				server.ServeHTTP(responseWriter, request)
+			})
+
+			if name == "update" {
+				test.steps[1].PreConfig = func() { mutationCount.Store(0) }
+			}
+
+			ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: test.steps})
+
+			require.Zero(t, mutationCount.Load())
+		})
+	}
 }
 
 func TestAccAppDefinitionResourceImport(t *testing.T) {
