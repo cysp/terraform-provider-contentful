@@ -71,9 +71,13 @@ func TestRequestConvertersRejectUnknownPlannedConfigurationOwnedValues(t *testin
 	t.Run("space enablement bool", func(t *testing.T) {
 		t.Parallel()
 
-		model := SpaceEnablementsModel{CrossSpaceLinks: types.BoolUnknown()}
+		model := SpaceEnablementsModel{
+			CrossSpaceLinks: types.BoolUnknown(),
+			SpaceTemplates:  types.BoolValue(false),
+		}
 		actual, diags := model.ToSpaceEnablementData(t.Context(), SpaceEnablementsModel{
 			CrossSpaceLinks: types.BoolValue(false),
+			SpaceTemplates:  types.BoolValue(false),
 		})
 
 		require.True(t, diags.HasError())
@@ -173,13 +177,19 @@ func TestConfigurationAwareConvertersPreserveKnownEmptyPlanValues(t *testing.T) 
 	t.Run("false boolean", func(t *testing.T) {
 		t.Parallel()
 
-		model := SpaceEnablementsModel{CrossSpaceLinks: types.BoolValue(false)}
-		actual, diags := model.ToSpaceEnablementData(t.Context(), SpaceEnablementsModel{CrossSpaceLinks: types.BoolValue(false)})
+		model := SpaceEnablementsModel{
+			CrossSpaceLinks: types.BoolValue(false),
+			SpaceTemplates:  types.BoolValue(false),
+		}
+		actual, diags := model.ToSpaceEnablementData(t.Context(), model)
 
 		require.False(t, diags.HasError(), diags.Errors())
 
 		crossSpaceLinks, ok := actual.CrossSpaceLinks.Get()
 		require.True(t, ok)
 		assert.False(t, crossSpaceLinks.Enabled)
+		spaceTemplates, ok := actual.SpaceTemplates.Get()
+		require.True(t, ok)
+		assert.False(t, spaceTemplates.Enabled)
 	})
 }

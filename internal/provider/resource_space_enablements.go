@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -17,6 +18,7 @@ var (
 	_ resource.ResourceWithConfigure   = (*spaceEnablementsResource)(nil)
 	_ resource.ResourceWithIdentity    = (*spaceEnablementsResource)(nil)
 	_ resource.ResourceWithImportState = (*spaceEnablementsResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*spaceEnablementsResource)(nil)
 )
 
 //nolint:ireturn
@@ -52,6 +54,67 @@ func (r *spaceEnablementsResource) ImportState(ctx context.Context, req resource
 	ImportStatePassthroughMultipartID(ctx, []path.Path{
 		path.Root("space_id"),
 	}, req, resp)
+}
+
+func (r *spaceEnablementsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	crossSpaceLinksPath := path.Root("cross_space_links")
+	spaceTemplatesPath := path.Root("space_templates")
+
+	var crossSpaceLinks, spaceTemplates types.Bool
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, crossSpaceLinksPath, &crossSpaceLinks)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, spaceTemplatesPath, &spaceTemplates)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if crossSpaceLinks.IsNull() && spaceTemplates.IsNull() {
+		if req.State.Raw.IsNull() {
+			resp.Diagnostics.AddAttributeError(
+				crossSpaceLinksPath,
+				"Missing coupled space enablements",
+				"cross_space_links and space_templates must both be configured when creating space enablements.",
+			)
+		}
+
+		return
+	}
+
+	if crossSpaceLinks.IsNull() {
+		resp.Diagnostics.AddAttributeError(
+			crossSpaceLinksPath,
+			"Missing coupled space enablement",
+			"cross_space_links must be configured whenever space_templates is configured.",
+		)
+
+		return
+	}
+
+	if spaceTemplates.IsNull() {
+		resp.Diagnostics.AddAttributeError(
+			spaceTemplatesPath,
+			"Missing coupled space enablement",
+			"space_templates must be configured whenever cross_space_links is configured.",
+		)
+
+		return
+	}
+
+	if crossSpaceLinks.IsUnknown() || spaceTemplates.IsUnknown() {
+		return
+	}
+
+	if crossSpaceLinks.ValueBool() != spaceTemplates.ValueBool() {
+		resp.Diagnostics.AddAttributeError(
+			spaceTemplatesPath,
+			"Unequal coupled space enablements",
+			"cross_space_links and space_templates must have the same value.",
+		)
+	}
 }
 
 func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

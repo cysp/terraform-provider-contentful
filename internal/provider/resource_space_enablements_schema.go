@@ -28,7 +28,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"cross_space_links": schema.BoolAttribute{
-				Description: "Enable cross-space references to link content across multiple spaces. Must be set together with space_templates.",
+				Description: "Enable cross-space references to link content across multiple spaces. Must be configured with the same value as space_templates when either is configured.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
@@ -36,7 +36,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_templates": schema.BoolAttribute{
-				Description: "Enable space templates feature. Must be set together with cross_space_links.",
+				Description: "Enable space templates feature. Must be configured with the same value as cross_space_links when either is configured.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
