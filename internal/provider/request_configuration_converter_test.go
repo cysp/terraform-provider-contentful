@@ -32,6 +32,7 @@ func TestRequestConvertersRejectUnknownPlannedConfigurationOwnedValues(t *testin
 		t.Parallel()
 
 		model := validExtensionRequestModel()
+		model.Extension.Src = types.StringUnknown()
 		actual, diags := model.ToExtensionData(ExtensionModel{
 			Extension: &ExtensionModelExtension{Src: types.StringValue("https://configured.example/extension.js")},
 		}, path.Empty())
