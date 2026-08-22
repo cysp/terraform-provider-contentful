@@ -19,10 +19,11 @@ func (ts *Handler) CreateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 
 	webhookDefinition := NewWebhookDefinitionFromFields(params.SpaceID, generateResourceID(), *req)
 	ts.webhookDefinitions.Set(params.SpaceID, webhookDefinition.Sys.ID, &webhookDefinition)
+	response := redactWebhookDefinitionSecrets(webhookDefinition)
 
 	return &cm.WebhookDefinitionStatusCode{
 		StatusCode: http.StatusCreated,
-		Response:   webhookDefinition,
+		Response:   response,
 	}, nil
 }
 
@@ -36,7 +37,9 @@ func (ts *Handler) GetWebhookDefinition(_ context.Context, params cm.GetWebhookD
 		return NewContentfulManagementErrorStatusCodeNotFound(new("WebhookDefinition not found"), nil), nil
 	}
 
-	return webhookDefinition, nil
+	response := redactWebhookDefinitionSecrets(*webhookDefinition)
+
+	return &response, nil
 }
 
 //nolint:ireturn
@@ -52,10 +55,11 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	if webhookDefinition == nil {
 		newWebhookDefinition := NewWebhookDefinitionFromFields(params.SpaceID, params.WebhookDefinitionID, *req)
 		ts.webhookDefinitions.Set(params.SpaceID, newWebhookDefinition.Sys.ID, &newWebhookDefinition)
+		response := redactWebhookDefinitionSecrets(newWebhookDefinition)
 
 		return &cm.WebhookDefinitionStatusCode{
 			StatusCode: http.StatusCreated,
-			Response:   newWebhookDefinition,
+			Response:   response,
 		}, nil
 	}
 
@@ -64,10 +68,11 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	}
 
 	UpdateWebhookDefinitionFromFields(webhookDefinition, *req)
+	response := redactWebhookDefinitionSecrets(*webhookDefinition)
 
 	return &cm.WebhookDefinitionStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *webhookDefinition,
+		Response:   response,
 	}, nil
 }
 

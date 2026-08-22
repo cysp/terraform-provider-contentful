@@ -17,6 +17,7 @@ func TestWebhookHeadersUnknownContainerIsOmitted(t *testing.T) {
 	headers, diags := ToWebhookDefinitionHeaders(
 		path.Root("headers"),
 		NewTypedMapUnknown[TypedObject[WebhookHeaderValue]](),
+		NewTypedMapNull[TypedObject[WebhookHeaderValue]](),
 	)
 
 	assert.Nil(t, headers)
@@ -34,7 +35,7 @@ func TestWebhookHeadersRejectNullAndUnknownObjects(t *testing.T) {
 			t.Parallel()
 
 			headers := NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{"authorization": value})
-			result, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers)
+			result, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
 			assert.Nil(t, result)
 			require.True(t, diags.HasError())
 			assert.Equal(t, []string{`headers["authorization"]`}, diagnosticPaths(t, diags))
@@ -49,7 +50,7 @@ func TestWebhookHeadersFailWithoutPartialOutputAndSortKeys(t *testing.T) {
 		"z": NewTypedObject(WebhookHeaderValue{Value: types.StringValue("last"), Secret: types.BoolValue(false)}),
 		"a": NewTypedObject(WebhookHeaderValue{Value: types.StringValue("first"), Secret: types.BoolValue(true)}),
 	})
-	result, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers)
+	result, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.Equal(t, cm.WebhookDefinitionHeaders{
 		{Key: "a", Value: cm.NewOptString("first"), Secret: cm.NewOptBool(true)},
@@ -61,13 +62,13 @@ func TestWebhookHeadersFailWithoutPartialOutputAndSortKeys(t *testing.T) {
 		"a":      NewTypedObject(WebhookHeaderValue{Value: types.StringValue("first"), Secret: types.BoolValue(true)}),
 		"broken": NewTypedObject(WebhookHeaderValue{Value: types.StringUnknown(), Secret: types.BoolValue(false)}),
 	})
-	result, diags = ToWebhookDefinitionHeaders(path.Root("headers"), headers)
+	result, diags = ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
 	assert.Nil(t, result)
 	require.True(t, diags.HasError())
 	assert.Equal(t, []string{`headers["broken"].value`}, diagnosticPaths(t, diags))
 }
 
-func TestWebhookRequestDoesNotReplaceUnavailableSecretWithEmptyValue(t *testing.T) {
+func TestWebhookRequestPreservesResponseOwnedSecretWithoutSendingAValue(t *testing.T) {
 	t.Parallel()
 
 	model := validWebhookRequestModel()
@@ -82,9 +83,29 @@ func TestWebhookRequestDoesNotReplaceUnavailableSecretWithEmptyValue(t *testing.
 		Headers: NewTypedMapNull[TypedObject[WebhookHeaderValue]](),
 	}, path.Empty())
 
-	assert.Equal(t, cm.WebhookDefinitionData{}, actual)
-	require.True(t, diags.HasError())
-	assert.Equal(t, []string{`headers["authorization"].value`}, diagnosticPaths(t, diags))
+	require.False(t, diags.HasError(), diags.Errors())
+	require.Len(t, actual.Headers, 1)
+	assert.Equal(t, "authorization", actual.Headers[0].Key)
+	assert.Equal(t, cm.NewOptBool(true), actual.Headers[0].Secret)
+	assert.False(t, actual.Headers[0].Value.IsSet())
+}
+
+func TestWebhookRequestPreservesConfiguredEmptyHeaderValues(t *testing.T) {
+	t.Parallel()
+
+	headers := NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
+		"ordinary": NewTypedObject(WebhookHeaderValue{Value: types.StringValue(""), Secret: types.BoolValue(false)}),
+		"secret":   NewTypedObject(WebhookHeaderValue{Value: types.StringValue(""), Secret: types.BoolValue(true)}),
+	})
+
+	actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
+
+	require.False(t, diags.HasError(), diags.Errors())
+	require.Len(t, actual, 2)
+	for _, header := range actual {
+		assert.True(t, header.Value.IsSet(), "configured empty value for %q must be present on the wire", header.Key)
+		assert.Empty(t, header.Value.Or("not-empty"))
+	}
 }
 
 func TestWebhookSecretResponseUsesOnlyKnownFallback(t *testing.T) {

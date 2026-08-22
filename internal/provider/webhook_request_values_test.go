@@ -220,7 +220,7 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), test.headers)
+			actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), test.headers, test.headers)
 
 			if len(test.expectedPaths) > 0 {
 				require.True(t, diags.HasError())

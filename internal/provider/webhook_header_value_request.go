@@ -6,11 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (v WebhookHeaderValue) ToWebhookDefinitionHeader(path path.Path, key string) (cm.WebhookDefinitionHeader, diag.Diagnostics) {
+func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
+	path path.Path,
+	key string,
+	configuredHeaders TypedMap[TypedObject[WebhookHeaderValue]],
+) (cm.WebhookDefinitionHeader, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-
-	value, valueDiags := requestRequiredString(v.Value, path.AtName("value"))
-	diags.Append(valueDiags...)
 
 	secret, secretDiags := requestRequiredBool(v.Secret, path.AtName("secret"))
 	diags.Append(secretDiags...)
@@ -19,9 +20,26 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(path path.Path, key string
 		return cm.WebhookDefinitionHeader{}, diags
 	}
 
-	return cm.WebhookDefinitionHeader{
+	header := cm.WebhookDefinitionHeader{
 		Key:    key,
-		Value:  cm.NewOptString(value),
 		Secret: cm.NewOptBool(secret),
-	}, diags
+	}
+
+	if v.Value.IsNull() && secret && configuredHeaders.IsNull() {
+		// Contentful redacts secret values. For response-owned imported
+		// headers, sending secret=true without value asks CMA to retain the
+		// existing secret during an update.
+		return header, diags
+	}
+
+	value, valueDiags := requestRequiredString(v.Value, path.AtName("value"))
+	diags.Append(valueDiags...)
+
+	if diags.HasError() {
+		return cm.WebhookDefinitionHeader{}, diags
+	}
+
+	header.Value = cm.NewOptString(value)
+
+	return header, diags
 }

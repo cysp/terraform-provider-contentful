@@ -8,7 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func ToWebhookDefinitionHeaders(path path.Path, model TypedMap[TypedObject[WebhookHeaderValue]]) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
+func ToWebhookDefinitionHeaders(
+	path path.Path,
+	model TypedMap[TypedObject[WebhookHeaderValue]],
+	configured TypedMap[TypedObject[WebhookHeaderValue]],
+) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
 	if model.IsNull() || model.IsUnknown() {
 		// The lifecycle rejects configuration-owned unknown plans. A remaining
 		// unknown represents response-owned, omitted Optional+Computed headers.
@@ -55,7 +59,7 @@ func ToWebhookDefinitionHeaders(path path.Path, model TypedMap[TypedObject[Webho
 			continue
 		}
 
-		header, headerDiags := headerValue.ToWebhookDefinitionHeader(headerPath, key)
+		header, headerDiags := headerValue.ToWebhookDefinitionHeader(headerPath, key, configured)
 		diags.Append(headerDiags...)
 
 		if !headerDiags.HasError() {
