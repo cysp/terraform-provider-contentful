@@ -154,6 +154,16 @@ explicit value to omission. The first-party contract and live CMA observations
 are recorded in the
 [Extension source values note](../research/extension-source-values.md).
 
+### Space enablements
+
+Every Contentful Space Enablements mutation request requires both
+`cross_space_links` and `space_templates`, and their `enabled` values must be
+equal. Create therefore requires both attributes in configuration. On Update,
+omitting both from configuration is valid response ownership: the known values
+preserved in the plan are still sent. Configuring only one does not combine it
+with prior state. `studio_experiences` and `suggest_concepts` remain independent
+Optional+Computed attributes whose response-owned unknown plans may be omitted.
+
 ## Diagnostics and local publication
 
 Warnings from a representable response projection accompany the published

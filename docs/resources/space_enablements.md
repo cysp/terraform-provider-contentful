@@ -17,6 +17,7 @@ resource "contentful_space_enablements" "this" {
   space_id = var.contentful_space_id
 
   cross_space_links = true
+  space_templates   = true
 }
 ```
 
@@ -29,8 +30,8 @@ resource "contentful_space_enablements" "this" {
 
 ### Optional
 
-- `cross_space_links` (Boolean) Enable cross-space references to link content across multiple spaces. Must be set together with space_templates.
-- `space_templates` (Boolean) Enable space templates feature. Must be set together with cross_space_links.
+- `cross_space_links` (Boolean) Enable cross-space references to link content across multiple spaces. Must be configured with the same value as space_templates when either is configured.
+- `space_templates` (Boolean) Enable space templates feature. Must be configured with the same value as cross_space_links when either is configured.
 - `studio_experiences` (Boolean) Enable Studio Experiences feature.
 - `suggest_concepts` (Boolean) Enable concept suggestions feature.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
