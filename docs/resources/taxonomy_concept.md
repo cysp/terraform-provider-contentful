@@ -40,17 +40,17 @@ resource "contentful_taxonomy_concept" "furniture" {
 
 ### Optional
 
-- `alt_labels` (Map of List of String) Localized alternative labels.
-- `broader_concept_ids` (List of String) Ordered IDs of broader concepts.
+- `alt_labels` (Map of List of String) Localized alternative labels. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
+- `broader_concept_ids` (List of String) Ordered IDs of broader concepts. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
 - `change_note` (Map of String) Localized change notes.
 - `definition` (Map of String) Localized definitions.
 - `editorial_note` (Map of String) Localized editorial notes.
 - `example` (Map of String) Localized examples.
-- `hidden_labels` (Map of List of String) Localized hidden labels.
+- `hidden_labels` (Map of List of String) Localized hidden labels. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
 - `history_note` (Map of String) Localized history notes.
-- `notations` (List of String) Ordered notation values.
+- `notations` (List of String) Ordered notation values. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
 - `note` (Map of String) Localized notes.
-- `related_concept_ids` (List of String) Ordered IDs of related concepts.
+- `related_concept_ids` (List of String) Ordered IDs of related concepts. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
 - `scope_note` (Map of String) Localized scope notes.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `uri` (String) Optional URI identifying the concept. Empty strings are rejected by Contentful.
