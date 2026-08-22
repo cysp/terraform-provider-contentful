@@ -1,0 +1,18 @@
+PreviewEnvironment:
+  type: object
+  properties:
+    sys:
+      $ref: "./sys.yml#/PreviewEnvironmentSys"
+    name:
+      type: string
+    description:
+      type: string
+    configurations:
+      type: array
+      items:
+        $ref: "./configuration.yml#/PreviewEnvironmentConfiguration"
+  required:
+    - sys
+    - name
+    - description
+    - configurations
