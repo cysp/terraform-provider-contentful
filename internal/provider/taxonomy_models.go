@@ -2,8 +2,6 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -52,32 +50,4 @@ type TaxonomyConceptSchemeModel struct {
 	TotalConcepts types.Int64  `tfsdk:"total_concepts"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
-}
-
-// optionalComputedStringMap encodes a null or unknown Optional+Computed map as
-// empty at request conversion. Conversion receives only the plan, so it cannot
-// distinguish omitted configuration from an unknown planned value for a
-// configuration-owned collection. UseStateForUnknown normally supplies prior
-// state for an omitted Update.
-func optionalComputedStringMap(value types.Map, valuePath path.Path) (map[string][]string, diag.Diagnostics) {
-	result := map[string][]string{}
-	if value.IsNull() || value.IsUnknown() {
-		return result, nil
-	}
-
-	return RequireKnownStringListMap(value, valuePath)
-}
-
-// optionalComputedStringListValue encodes a null or unknown Optional+Computed
-// list as empty at request conversion. Conversion receives only the plan, so it
-// cannot distinguish omitted configuration from an unknown planned value for a
-// configuration-owned collection. UseStateForUnknown normally supplies prior
-// state for an omitted Update.
-func optionalComputedStringListValue(value types.List, valuePath path.Path) ([]string, diag.Diagnostics) {
-	result := []string{}
-	if value.IsNull() || value.IsUnknown() {
-		return result, nil
-	}
-
-	return RequireKnownStringList(value, valuePath)
 }

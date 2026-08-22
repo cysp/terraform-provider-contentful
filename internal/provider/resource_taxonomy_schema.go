@@ -9,8 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -49,15 +47,14 @@ func localizedStringAttribute(description string, required bool) schema.MapAttri
 	}
 }
 
+const taxonomyOptionalComputedCollectionDescription = "When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful."
+
 func optionalComputedStringList(description string) schema.ListAttribute {
 	return schema.ListAttribute{
-		Description: description,
+		Description: description + " " + taxonomyOptionalComputedCollectionDescription,
 		Optional:    true,
 		Computed:    true,
 		ElementType: types.StringType,
-		PlanModifiers: []planmodifier.List{
-			listplanmodifier.UseStateForUnknown(),
-		},
 		Validators: []validator.List{
 			listvalidator.NoNullValues(),
 		},
@@ -70,26 +67,20 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 	attributes["uri"] = schema.StringAttribute{Description: "Optional URI identifying the concept. Empty strings are rejected by Contentful.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
 	attributes["pref_label"] = localizedStringAttribute("Localized preferred labels.", true)
 	attributes["alt_labels"] = schema.MapAttribute{
-		Description: "Localized alternative labels.",
+		Description: "Localized alternative labels. " + taxonomyOptionalComputedCollectionDescription,
 		Optional:    true,
 		Computed:    true,
 		ElementType: types.ListType{ElemType: types.StringType},
-		PlanModifiers: []planmodifier.Map{
-			mapplanmodifier.UseStateForUnknown(),
-		},
 		Validators: []validator.Map{
 			mapvalidator.NoNullValues(),
 			mapvalidator.ValueListsAre(listvalidator.NoNullValues()),
 		},
 	}
 	attributes["hidden_labels"] = schema.MapAttribute{
-		Description: "Localized hidden labels.",
+		Description: "Localized hidden labels. " + taxonomyOptionalComputedCollectionDescription,
 		Optional:    true,
 		Computed:    true,
 		ElementType: types.ListType{ElemType: types.StringType},
-		PlanModifiers: []planmodifier.Map{
-			mapplanmodifier.UseStateForUnknown(),
-		},
 		Validators: []validator.Map{
 			mapvalidator.NoNullValues(),
 			mapvalidator.ValueListsAre(listvalidator.NoNullValues()),

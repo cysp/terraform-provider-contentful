@@ -428,6 +428,13 @@ func (r *taxonomyRequestBodyRecorder) matchingRequests(method, path string) []ta
 	return matches
 }
 
+func (r *taxonomyRequestBodyRecorder) reset() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.requests = nil
+}
+
 func (r *taxonomyRequestBodyRecorder) request(method, path string) (map[string]json.RawMessage, bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
