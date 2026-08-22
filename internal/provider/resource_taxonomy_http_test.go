@@ -363,13 +363,6 @@ func (m *taxonomyResponseMutator) dropPreferredLabelOnce(method, path, locale st
 	m.method, m.path, m.locale, m.add, m.responseVersion = method, path, locale, false, nil
 }
 
-func (m *taxonomyResponseMutator) addEmptyLabelLocaleOnce(method, path, locale string) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	m.method, m.path, m.locale, m.add, m.responseVersion = method, path, locale, true, nil
-}
-
 func (m *taxonomyResponseMutator) versionOnce(method, path string, version int) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
