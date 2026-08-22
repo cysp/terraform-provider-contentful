@@ -28,6 +28,9 @@ func (model *ExtensionModel) validateRequestConfiguration(config ExtensionModel,
 
 func (model *ExtensionModel) ToExtensionData(config ExtensionModel, path path.Path) (cm.ExtensionData, diag.Diagnostics) {
 	diags := model.validateRequestConfiguration(config, path)
+	if diags.HasError() {
+		return cm.ExtensionData{}, diags
+	}
 
 	fields := cm.ExtensionData{}
 
