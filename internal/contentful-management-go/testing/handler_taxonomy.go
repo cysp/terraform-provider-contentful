@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"maps"
+	"slices"
+	"strconv"
 	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -29,18 +30,73 @@ func taxonomyConceptFromRequest(organizationID, id string, req *cm.TaxonomyConce
 
 func updateTaxonomyConcept(concept *cm.TaxonomyConcept, req *cm.TaxonomyConceptRequest) {
 	concept.Sys.Version++
-	concept.URI, concept.PrefLabel = req.URI, req.PrefLabel
-	concept.AltLabels = normalizeTaxonomyLabels(req.PrefLabel, req.AltLabels)
-	concept.HiddenLabels = normalizeTaxonomyLabels(req.PrefLabel, req.HiddenLabels)
-	concept.Notations, concept.Note, concept.ChangeNote, concept.Definition = req.Notations, req.Note, req.ChangeNote, req.Definition
-	concept.EditorialNote, concept.Example, concept.HistoryNote, concept.ScopeNote = req.EditorialNote, req.Example, req.HistoryNote, req.ScopeNote
+	concept.URI, concept.PrefLabel = normalizeTaxonomyURI(req.URI), normalizeTaxonomyPrefLabel(req.PrefLabel)
+	concept.AltLabels = normalizeTaxonomyLabels(concept.PrefLabel, req.AltLabels)
+	concept.HiddenLabels = normalizeTaxonomyLabels(concept.PrefLabel, req.HiddenLabels)
+	concept.Notations = make([]string, len(req.Notations))
+	copy(concept.Notations, req.Notations)
+	concept.Note = normalizeTaxonomyLocalizedString(req.Note)
+	concept.ChangeNote = normalizeTaxonomyLocalizedString(req.ChangeNote)
+	concept.Definition = normalizeTaxonomyLocalizedString(req.Definition)
+	concept.EditorialNote = normalizeTaxonomyLocalizedString(req.EditorialNote)
+	concept.Example = normalizeTaxonomyLocalizedString(req.Example)
+	concept.HistoryNote = normalizeTaxonomyLocalizedString(req.HistoryNote)
+	concept.ScopeNote = normalizeTaxonomyLocalizedString(req.ScopeNote)
 	concept.Broader, concept.Related = req.Broader, req.Related
+}
+
+func normalizeTaxonomyPrefLabel(value cm.LocalizedString) cm.LocalizedString {
+	result := cm.LocalizedString{}
+	if label, ok := value["en-US"]; ok {
+		result["en-US"] = label
+	}
+
+	return result
+}
+
+func normalizeTaxonomyURI(value cm.OptNilString) cm.OptNilString {
+	if value.IsEmpty() {
+		value.SetToNull()
+	}
+
+	return value
+}
+
+func normalizeTaxonomyLocalizedString(value cm.OptNilNullableLocalizedString) cm.OptNilNullableLocalizedString {
+	if value.IsEmpty() {
+		value.SetToNull()
+
+		return value
+	}
+
+	localized, ok := value.Get()
+	if !ok {
+		return value
+	}
+
+	normalized := cm.NullableLocalizedString{}
+	if label, ok := localized["en-US"]; ok {
+		normalized["en-US"] = label
+	}
+
+	if len(normalized) == 0 {
+		value.SetToNull()
+
+		return value
+	}
+
+	value.SetTo(normalized)
+
+	return value
 }
 
 func normalizeTaxonomyLabels(prefLabels cm.LocalizedString, labels cm.OptLocalizedStringList) cm.OptLocalizedStringList {
 	configured, _ := labels.Get()
-	normalized := make(cm.LocalizedStringList, len(configured))
-	maps.Copy(normalized, configured)
+
+	normalized := cm.LocalizedStringList{}
+	if labels, ok := configured["en-US"]; ok {
+		normalized["en-US"] = labels
+	}
 
 	for locale := range prefLabels {
 		if _, ok := normalized[locale]; !ok {
@@ -49,6 +105,141 @@ func normalizeTaxonomyLabels(prefLabels cm.LocalizedString, labels cm.OptLocaliz
 	}
 
 	return cm.NewOptLocalizedStringList(normalized)
+}
+
+type taxonomyLabelValidationDetails struct {
+	Flatten struct {
+		FormErrors  []string            `json:"formErrors"`
+		FieldErrors map[string][]string `json:"fieldErrors"`
+	} `json:"flatten"`
+	Errors []taxonomyLabelValidationError `json:"errors"`
+}
+
+type taxonomyLabelValidationError struct {
+	Name    string   `json:"name"`
+	Path    []string `json:"path"`
+	Details string   `json:"details"`
+}
+
+type taxonomyConceptLabelMaps struct {
+	altLabels    cm.OptLocalizedStringList
+	hiddenLabels cm.OptLocalizedStringList
+}
+
+func taxonomyConceptLabelValidationResponse(
+	prefLabels cm.LocalizedString,
+	labelMaps taxonomyConceptLabelMaps,
+) (*cm.ErrorStatusCode, error) {
+	const detail = "Invalid input: expected array, received undefined"
+
+	details := taxonomyLabelValidationDetails{}
+	details.Flatten.FormErrors = []string{}
+	details.Flatten.FieldErrors = map[string][]string{}
+
+	appendErrors := func(field string, labels cm.OptLocalizedStringList) {
+		if !labels.IsSet() {
+			return
+		}
+
+		configured, _ := labels.Get()
+
+		locales := make([]string, 0, len(prefLabels))
+		for locale := range prefLabels {
+			locales = append(locales, locale)
+		}
+
+		slices.Sort(locales)
+
+		for _, locale := range locales {
+			if _, ok := configured[locale]; ok {
+				continue
+			}
+
+			details.Flatten.FieldErrors[field] = append(details.Flatten.FieldErrors[field], detail)
+			details.Errors = append(details.Errors, taxonomyLabelValidationError{
+				Name: "invalid_type", Path: []string{field, locale}, Details: detail,
+			})
+		}
+	}
+	appendErrors("altLabels", labelMaps.altLabels)
+	appendErrors("hiddenLabels", labelMaps.hiddenLabels)
+
+	if len(details.Errors) == 0 {
+		return nil, nil //nolint:nilnil // No validation response is the successful result.
+	}
+
+	encoded, err := json.Marshal(&details)
+	if err != nil {
+		return nil, fmt.Errorf("encode taxonomy label validation details: %w", err)
+	}
+
+	return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), encoded), nil
+}
+
+func taxonomyPrefLabelValidationResponse(prefLabels cm.LocalizedString) (*cm.ErrorStatusCode, error) {
+	if _, ok := normalizeTaxonomyPrefLabel(prefLabels)["en-US"]; ok {
+		return nil, nil //nolint:nilnil // No validation response is the successful result.
+	}
+
+	const detail = "Invalid input: expected string, received undefined"
+
+	details := taxonomyLabelValidationDetails{}
+	details.Flatten.FormErrors = []string{}
+	details.Flatten.FieldErrors = map[string][]string{"prefLabel": {detail}}
+	details.Errors = []taxonomyLabelValidationError{{Name: "invalid_type", Path: []string{"prefLabel", "en-US"}, Details: detail}}
+
+	encoded, err := json.Marshal(&details)
+	if err != nil {
+		return nil, fmt.Errorf("encode taxonomy prefLabel validation details: %w", err)
+	}
+
+	return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), encoded), nil
+}
+
+func taxonomyLabelRemovalValidationResponse(field string) (*cm.ErrorStatusCode, error) {
+	const detail = "Invalid input: expected object, received null"
+
+	details := taxonomyLabelValidationDetails{}
+	details.Flatten.FormErrors = []string{}
+	details.Flatten.FieldErrors = map[string][]string{field: {detail}}
+	details.Errors = []taxonomyLabelValidationError{{Name: "invalid_type", Path: []string{field}, Details: detail}}
+
+	encoded, err := json.Marshal(&details)
+	if err != nil {
+		return nil, fmt.Errorf("encode taxonomy label removal validation details: %w", err)
+	}
+
+	return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), encoded), nil
+}
+
+func taxonomyDeleteVersionValidationDetails(name, detail string) ([]byte, error) {
+	details := taxonomyLabelValidationDetails{}
+	details.Flatten.FormErrors = []string{}
+	details.Flatten.FieldErrors = map[string][]string{"x-contentful-version": {detail}}
+	details.Errors = []taxonomyLabelValidationError{{Name: name, Path: []string{"x-contentful-version"}, Details: detail}}
+
+	encoded, err := json.Marshal(&details)
+	if err != nil {
+		return nil, fmt.Errorf("encode taxonomy DELETE version validation details: %w", err)
+	}
+
+	return encoded, nil
+}
+
+func taxonomyDeleteVersionValidationResponse(name, detail string) (*cm.ErrorStatusCode, error) {
+	details, err := taxonomyDeleteVersionValidationDetails(name, detail)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), details), nil
+}
+
+func taxonomyDeleteVersionMismatchResponse(expected, actual int) *cm.ErrorStatusCode {
+	message := "Version mismatch"
+	details := []byte(strconv.Quote(fmt.Sprintf("Version mismatch, expected %d, got %d.", expected, actual)))
+
+	return NewContentfulManagementErrorStatusCodeVersionMismatch(&message, details)
 }
 
 func taxonomyConceptSchemeFromRequest(organizationID, id string, req *cm.TaxonomyConceptSchemeRequest) cm.TaxonomyConceptScheme {
@@ -62,7 +253,8 @@ func taxonomyConceptSchemeFromRequest(organizationID, id string, req *cm.Taxonom
 
 func updateTaxonomyConceptScheme(scheme *cm.TaxonomyConceptScheme, req *cm.TaxonomyConceptSchemeRequest) {
 	scheme.Sys.Version++
-	scheme.URI, scheme.PrefLabel, scheme.Definition = req.URI, req.PrefLabel, req.Definition
+	scheme.URI, scheme.PrefLabel = normalizeTaxonomyURI(req.URI), normalizeTaxonomyPrefLabel(req.PrefLabel)
+	scheme.Definition = normalizeTaxonomyLocalizedString(req.Definition)
 	scheme.TopConcepts, scheme.Concepts, scheme.TotalConcepts = req.TopConcepts, req.Concepts, len(req.Concepts)
 }
 
@@ -135,6 +327,13 @@ func (h *Handler) validateSchemeLinks(organizationID string, req *cm.TaxonomyCon
 }
 
 func applyTaxonomyPatch(current any, patch cm.TaxonomyPatch, destination any) error {
+	switch request := current.(type) {
+	case cm.TaxonomyConceptRequest:
+		current = &request
+	case cm.TaxonomyConceptSchemeRequest:
+		current = &request
+	}
+
 	data, err := json.Marshal(current)
 	if err != nil {
 		return fmt.Errorf("encode current taxonomy request: %w", err)
@@ -153,14 +352,24 @@ func applyTaxonomyPatch(current any, patch cm.TaxonomyPatch, destination any) er
 		}
 
 		key := strings.TrimPrefix(operation.Path, "/")
-		if _, ok := fields[key]; !ok {
+		if !knownTaxonomyPatchField(current, key) {
 			return fmt.Errorf("%w: %q", errUnknownTaxonomyPatchPath, operation.Path)
 		}
 
 		switch operation.Op {
-		case cm.TaxonomyPatchItemOpAdd, cm.TaxonomyPatchItemOpReplace:
+		case cm.TaxonomyPatchItemOpAdd:
 			fields[key] = json.RawMessage(operation.Value)
-		case cm.TaxonomyPatchItemOpRemove:
+		case cm.TaxonomyPatchItemOpReplace, cm.TaxonomyPatchItemOpRemove:
+			if _, ok := fields[key]; !ok {
+				return fmt.Errorf("%w: %q", errUnknownTaxonomyPatchPath, operation.Path)
+			}
+
+			if operation.Op == cm.TaxonomyPatchItemOpReplace {
+				fields[key] = json.RawMessage(operation.Value)
+
+				continue
+			}
+
 			delete(fields, key)
 		default:
 			return fmt.Errorf("%w: %q", errUnsupportedTaxonomyPatchOp, operation.Op)
@@ -178,6 +387,23 @@ func applyTaxonomyPatch(current any, patch cm.TaxonomyPatch, destination any) er
 	}
 
 	return nil
+}
+
+func knownTaxonomyPatchField(current any, key string) bool {
+	switch current.(type) {
+	case *cm.TaxonomyConceptRequest:
+		switch key {
+		case "uri", "prefLabel", "altLabels", "hiddenLabels", "notations", "note", "changeNote", "definition", "editorialNote", "example", "historyNote", "scopeNote", "broader", "related":
+			return true
+		}
+	case *cm.TaxonomyConceptSchemeRequest:
+		switch key {
+		case "uri", "prefLabel", "definition", "topConcepts", "concepts":
+			return true
+		}
+	}
+
+	return false
 }
 
 //nolint:ireturn
@@ -200,6 +426,26 @@ func (h *Handler) PutTaxonomyConcept(_ context.Context, req *cm.TaxonomyConceptR
 
 	if h.taxonomyConcepts.Get(params.OrganizationID, params.TaxonomyConceptID) != nil {
 		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
+	prefLabelValidationResponse, err := taxonomyPrefLabelValidationResponse(req.PrefLabel)
+	if err != nil {
+		return nil, err
+	}
+
+	if prefLabelValidationResponse != nil {
+		return prefLabelValidationResponse, nil
+	}
+
+	labelValidationResponse, err := taxonomyConceptLabelValidationResponse(normalizeTaxonomyPrefLabel(req.PrefLabel), taxonomyConceptLabelMaps{
+		altLabels: req.AltLabels, hiddenLabels: req.HiddenLabels,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if labelValidationResponse != nil {
+		return labelValidationResponse, nil
 	}
 
 	validationMessage := h.validateConceptLinks(params.OrganizationID, params.TaxonomyConceptID, req)
@@ -238,6 +484,47 @@ func (h *Handler) PatchTaxonomyConcept(_ context.Context, req cm.TaxonomyPatch, 
 		return nil, err
 	}
 
+	if !updated.AltLabels.IsSet() {
+		return taxonomyLabelRemovalValidationResponse("altLabels")
+	}
+
+	if !updated.HiddenLabels.IsSet() {
+		return taxonomyLabelRemovalValidationResponse("hiddenLabels")
+	}
+
+	patchedLabelMaps := taxonomyConceptLabelMaps{}
+
+	for _, operation := range req {
+		if operation.Op != cm.TaxonomyPatchItemOpAdd && operation.Op != cm.TaxonomyPatchItemOpReplace {
+			continue
+		}
+
+		switch operation.Path {
+		case "/altLabels":
+			patchedLabelMaps.altLabels = updated.AltLabels
+		case "/hiddenLabels":
+			patchedLabelMaps.hiddenLabels = updated.HiddenLabels
+		}
+	}
+
+	prefLabelValidationResponse, err := taxonomyPrefLabelValidationResponse(updated.PrefLabel)
+	if err != nil {
+		return nil, err
+	}
+
+	if prefLabelValidationResponse != nil {
+		return prefLabelValidationResponse, nil
+	}
+
+	labelValidationResponse, err := taxonomyConceptLabelValidationResponse(normalizeTaxonomyPrefLabel(updated.PrefLabel), patchedLabelMaps)
+	if err != nil {
+		return nil, err
+	}
+
+	if labelValidationResponse != nil {
+		return labelValidationResponse, nil
+	}
+
 	validationMessage := h.validateConceptLinks(params.OrganizationID, params.TaxonomyConceptID, &updated)
 	if validationMessage != "" {
 		return NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil), nil
@@ -260,8 +547,12 @@ func (h *Handler) DeleteTaxonomyConcept(_ context.Context, params cm.DeleteTaxon
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept not found"), nil), nil
 	}
 
+	if params.XContentfulVersion <= 0 {
+		return taxonomyDeleteVersionValidationResponse("too_small", "Too small: expected number to be >0")
+	}
+
 	if params.XContentfulVersion != concept.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return taxonomyDeleteVersionMismatchResponse(concept.Sys.Version, params.XContentfulVersion), nil
 	}
 
 	h.taxonomyConcepts.Delete(params.OrganizationID, params.TaxonomyConceptID)
@@ -313,6 +604,15 @@ func (h *Handler) PutTaxonomyConceptScheme(_ context.Context, req *cm.TaxonomyCo
 		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
 	}
 
+	prefLabelValidationResponse, err := taxonomyPrefLabelValidationResponse(req.PrefLabel)
+	if err != nil {
+		return nil, err
+	}
+
+	if prefLabelValidationResponse != nil {
+		return prefLabelValidationResponse, nil
+	}
+
 	validationMessage := h.validateSchemeLinks(params.OrganizationID, req)
 	if validationMessage != "" {
 		return NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil), nil
@@ -351,6 +651,15 @@ func (h *Handler) PatchTaxonomyConceptScheme(_ context.Context, req cm.TaxonomyP
 		return nil, err
 	}
 
+	prefLabelValidationResponse, err := taxonomyPrefLabelValidationResponse(updated.PrefLabel)
+	if err != nil {
+		return nil, err
+	}
+
+	if prefLabelValidationResponse != nil {
+		return prefLabelValidationResponse, nil
+	}
+
 	validationMessage := h.validateSchemeLinks(params.OrganizationID, &updated)
 	if validationMessage != "" {
 		return NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil), nil
@@ -374,8 +683,12 @@ func (h *Handler) DeleteTaxonomyConceptScheme(_ context.Context, params cm.Delet
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept scheme not found"), nil), nil
 	}
 
+	if params.XContentfulVersion <= 0 {
+		return taxonomyDeleteVersionValidationResponse("too_small", "Too small: expected number to be >0")
+	}
+
 	if params.XContentfulVersion != scheme.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return taxonomyDeleteVersionMismatchResponse(scheme.Sys.Version, params.XContentfulVersion), nil
 	}
 
 	h.syncConceptSchemeMembership(params.OrganizationID, params.TaxonomyConceptSchemeID, scheme.Concepts, nil)

@@ -23446,20 +23446,24 @@ func (s *TaxonomyConceptSchemeRequest) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
-		e.FieldStart("topConcepts")
-		e.ArrStart()
-		for _, elem := range s.TopConcepts {
-			elem.Encode(e)
+		if s.TopConcepts != nil {
+			e.FieldStart("topConcepts")
+			e.ArrStart()
+			for _, elem := range s.TopConcepts {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
 		}
-		e.ArrEnd()
 	}
 	{
-		e.FieldStart("concepts")
-		e.ArrStart()
-		for _, elem := range s.Concepts {
-			elem.Encode(e)
+		if s.Concepts != nil {
+			e.FieldStart("concepts")
+			e.ArrStart()
+			for _, elem := range s.Concepts {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
 		}
-		e.ArrEnd()
 	}
 }
 
@@ -23511,7 +23515,6 @@ func (s *TaxonomyConceptSchemeRequest) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"definition\"")
 			}
 		case "topConcepts":
-			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				s.TopConcepts = make([]TaxonomyConceptLink, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
@@ -23529,7 +23532,6 @@ func (s *TaxonomyConceptSchemeRequest) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"topConcepts\"")
 			}
 		case "concepts":
-			requiredBitSet[0] |= 1 << 4
 			if err := func() error {
 				s.Concepts = make([]TaxonomyConceptLink, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
@@ -23556,7 +23558,7 @@ func (s *TaxonomyConceptSchemeRequest) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00011010,
+		0b00000010,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

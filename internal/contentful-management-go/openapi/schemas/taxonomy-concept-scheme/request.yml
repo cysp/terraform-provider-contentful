@@ -18,5 +18,3 @@ TaxonomyConceptSchemeRequest:
         $ref: "../links/taxonomy-concept-link.yml#/TaxonomyConceptLink"
   required:
     - prefLabel
-    - topConcepts
-    - concepts
