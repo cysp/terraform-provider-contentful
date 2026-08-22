@@ -56,8 +56,12 @@ func TestTaxonomyHandlerLifecycleAndConstraints(t *testing.T) {
 	require.Equal(t, http.StatusUnprocessableEntity, invalidSchemeStatus.GetStatusCode())
 
 	schemeRequest := cm.TaxonomyConceptSchemeRequest{PrefLabel: cm.LocalizedString{"en-US": "Scheme"}, TopConcepts: []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("parent")}, Concepts: []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("parent"), cm.NewTaxonomyConceptLink("child")}}
-	_, err = handler.PutTaxonomyConceptScheme(ctx, &schemeRequest, cm.PutTaxonomyConceptSchemeParams{OrganizationID: organizationID, TaxonomyConceptSchemeID: "scheme"})
+	schemeResponse, err := handler.PutTaxonomyConceptScheme(ctx, &schemeRequest, cm.PutTaxonomyConceptSchemeParams{OrganizationID: organizationID, TaxonomyConceptSchemeID: "scheme"})
 	require.NoError(t, err)
+
+	scheme, ok := schemeResponse.(*cm.TaxonomyConceptScheme)
+	require.True(t, ok)
+	require.Equal(t, 1, scheme.Sys.Version)
 	require.Len(t, child.ConceptSchemes, 1)
 
 	staleDelete, err := handler.DeleteTaxonomyConcept(ctx, cm.DeleteTaxonomyConceptParams{OrganizationID: organizationID, TaxonomyConceptID: "parent", XContentfulVersion: 2})
@@ -75,6 +79,63 @@ func TestTaxonomyHandlerLifecycleAndConstraints(t *testing.T) {
 	childGetResponse, err := handler.GetTaxonomyConcept(ctx, cm.GetTaxonomyConceptParams{OrganizationID: organizationID, TaxonomyConceptID: "child"})
 	require.NoError(t, err)
 	require.Same(t, child, childGetResponse)
+}
+
+func TestTaxonomyHandlerCanonicalizesOmittedCollections(t *testing.T) {
+	t.Parallel()
+
+	handler := cmt.NewHandler()
+	conceptRequest := cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Concept"}}
+	conceptResponse, err := handler.PutTaxonomyConcept(t.Context(), &conceptRequest, cm.PutTaxonomyConceptParams{
+		OrganizationID: "organization", TaxonomyConceptID: "concept",
+	})
+	require.NoError(t, err)
+
+	concept, ok := conceptResponse.(*cm.TaxonomyConcept)
+	require.True(t, ok)
+	require.True(t, concept.URI.IsNull())
+	require.Equal(t, cm.LocalizedStringList{"en-US": {}}, taxonomyLabels(t, concept.AltLabels))
+	require.Equal(t, cm.LocalizedStringList{"en-US": {}}, taxonomyLabels(t, concept.HiddenLabels))
+	require.NotNil(t, concept.Notations)
+	require.Empty(t, concept.Notations)
+	require.True(t, concept.Note.IsNull())
+	require.True(t, concept.ChangeNote.IsNull())
+	require.True(t, concept.Definition.IsNull())
+	require.True(t, concept.EditorialNote.IsNull())
+	require.True(t, concept.Example.IsNull())
+	require.True(t, concept.HistoryNote.IsNull())
+	require.True(t, concept.ScopeNote.IsNull())
+	require.NotNil(t, concept.Broader)
+	require.Empty(t, concept.Broader)
+	require.NotNil(t, concept.Related)
+	require.Empty(t, concept.Related)
+	require.NotNil(t, concept.ConceptSchemes)
+	require.Empty(t, concept.ConceptSchemes)
+
+	schemeRequest := cm.TaxonomyConceptSchemeRequest{PrefLabel: cm.LocalizedString{"en-US": "Scheme"}}
+	schemeResponse, err := handler.PutTaxonomyConceptScheme(t.Context(), &schemeRequest, cm.PutTaxonomyConceptSchemeParams{
+		OrganizationID: "organization", TaxonomyConceptSchemeID: "scheme",
+	})
+	require.NoError(t, err)
+
+	scheme, ok := schemeResponse.(*cm.TaxonomyConceptScheme)
+	require.True(t, ok)
+	require.True(t, scheme.URI.IsNull())
+	require.True(t, scheme.Definition.IsNull())
+	require.NotNil(t, scheme.TopConcepts)
+	require.Empty(t, scheme.TopConcepts)
+	require.NotNil(t, scheme.Concepts)
+	require.Empty(t, scheme.Concepts)
+	require.Zero(t, scheme.TotalConcepts)
+}
+
+func taxonomyLabels(t *testing.T, labels cm.OptLocalizedStringList) cm.LocalizedStringList {
+	t.Helper()
+
+	value, ok := labels.Get()
+	require.True(t, ok)
+
+	return value
 }
 
 func TestTaxonomyConceptHandlerConstraints(t *testing.T) {
@@ -265,6 +326,7 @@ func TestTaxonomyPatchRejectsInvalidDocumentsAtomically(t *testing.T) {
 
 			handler := cmt.NewHandler()
 			concept := putTaxonomyConcept(t, handler, "concept")
+			initialVersion := concept.Sys.Version
 
 			response, err := handler.PatchTaxonomyConcept(t.Context(), patch, cm.PatchTaxonomyConceptParams{
 				OrganizationID: "organization", TaxonomyConceptID: "concept", XContentfulVersion: 1,
@@ -274,7 +336,7 @@ func TestTaxonomyPatchRejectsInvalidDocumentsAtomically(t *testing.T) {
 
 			persisted := getTaxonomyConcept(t, handler, "concept")
 			require.Same(t, concept, persisted)
-			require.Equal(t, 1, persisted.Sys.Version)
+			require.Equal(t, initialVersion, persisted.Sys.Version)
 			require.Equal(t, "concept", persisted.PrefLabel["en-US"])
 		})
 	}
@@ -296,6 +358,8 @@ func TestTaxonomyConceptSchemePatchValidationIsAtomic(t *testing.T) {
 
 	scheme, ok := response.(*cm.TaxonomyConceptScheme)
 	require.True(t, ok)
+
+	initialVersion := scheme.Sys.Version
 
 	tests := map[string][]cm.TaxonomyConceptLink{
 		"missing member":              {cm.NewTaxonomyConceptLink("missing")},
@@ -325,7 +389,7 @@ func TestTaxonomyConceptSchemePatchValidationIsAtomic(t *testing.T) {
 			persisted, ok := persistedResponse.(*cm.TaxonomyConceptScheme)
 			require.True(t, ok)
 			require.Same(t, scheme, persisted)
-			require.Equal(t, 1, persisted.Sys.Version)
+			require.Equal(t, initialVersion, persisted.Sys.Version)
 			require.Equal(t, []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("member")}, persisted.Concepts)
 			require.Equal(t, []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("member")}, persisted.TopConcepts)
 			require.Len(t, getTaxonomyConcept(t, handler, "member").ConceptSchemes, 1)
@@ -361,6 +425,7 @@ func TestDeletingTaxonomyConceptUpdatesReferencesAndSchemes(t *testing.T) {
 	require.IsType(t, &cm.NoContent{}, deletedResponse)
 
 	referencing := getTaxonomyConcept(t, handler, "referencing")
+	require.Equal(t, 1, referencing.Sys.Version)
 	require.Empty(t, referencing.Broader)
 	require.Len(t, referencing.ConceptSchemes, 1)
 	require.Equal(t, "scheme", referencing.ConceptSchemes[0].Sys.ID)
@@ -372,6 +437,7 @@ func TestDeletingTaxonomyConceptUpdatesReferencesAndSchemes(t *testing.T) {
 
 	updatedScheme, ok := updatedSchemeResponse.(*cm.TaxonomyConceptScheme)
 	require.True(t, ok)
+	require.Equal(t, 1, updatedScheme.Sys.Version)
 	require.Equal(t, []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("referencing")}, updatedScheme.Concepts)
 	require.Empty(t, updatedScheme.TopConcepts)
 	require.Equal(t, 1, updatedScheme.TotalConcepts)
@@ -476,8 +542,8 @@ func taxonomyConceptRequest(conceptID string, broader, related []string) cm.Taxo
 	return cm.TaxonomyConceptRequest{
 		URI:           cm.NewOptNilPointerString(nil),
 		PrefLabel:     cm.LocalizedString{"en-US": conceptID},
-		AltLabels:     cm.NewOptLocalizedStringList(cm.LocalizedStringList{}),
-		HiddenLabels:  cm.NewOptLocalizedStringList(cm.LocalizedStringList{}),
+		AltLabels:     cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {}}),
+		HiddenLabels:  cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {}}),
 		Notations:     []string{},
 		Note:          localizedNull,
 		ChangeNote:    localizedNull,

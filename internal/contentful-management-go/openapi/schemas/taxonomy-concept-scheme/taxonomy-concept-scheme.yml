@@ -18,4 +18,6 @@ TaxonomyConceptScheme:
         totalConcepts:
           type: integer
       required:
+        - topConcepts
+        - concepts
         - totalConcepts
