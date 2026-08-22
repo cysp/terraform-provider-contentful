@@ -1,7 +1,14 @@
 package provider_test
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
 	"regexp"
+	"sync"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -10,6 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/stretchr/testify/require"
 )
 
 //nolint:paralleltest
@@ -58,6 +67,175 @@ func TestAccWebhookResourceImport(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccWebhookResourcePreservesImportedSecretHeadersOnUpdate(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+	server.SetWebhookDefinition("space", "imported-webhook", cm.WebhookDefinitionData{
+		Name: "Imported webhook",
+		URL:  "https://example.com/webhook",
+		Headers: cm.WebhookDefinitionHeaders{
+			{Key: "X-Ordinary", Value: cm.NewOptString("ordinary"), Secret: cm.NewOptBool(false)},
+			{Key: "X-Secret", Value: cm.NewOptString("existing-secret"), Secret: cm.NewOptBool(true)},
+		},
+		Topics: []string{},
+	})
+
+	recorder := &webhookUpdateRecorder{next: server}
+	config := func(name, headers string) string {
+		return fmt.Sprintf(`
+resource "contentful_webhook" "test" {
+  space_id = "space"
+  name     = %q
+  url      = "https://example.com/webhook"
+  topics   = []
+  %s
+}
+`, name, headers)
+	}
+
+	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config:             config("Imported webhook", ""),
+				ResourceName:       "contentful_webhook.test",
+				ImportState:        true,
+				ImportStateId:      "space/imported-webhook",
+				ImportStatePersist: true,
+			},
+			{
+				Config: config("Updated webhook", ""),
+				Check: resource.ComposeTestCheckFunc(
+					recorder.checkPreservedHeadersRequest(),
+					func(*terraform.State) error {
+						stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
+						if !ok {
+							return errors.New("updated webhook was not stored")
+						}
+
+						for _, header := range stored.Headers {
+							if header.Key == "X-Secret" && header.Value == cm.NewOptString("existing-secret") {
+								return nil
+							}
+						}
+
+						return fmt.Errorf("stored secret header was not preserved: %#v", stored.Headers)
+					},
+				),
+			},
+			{
+				Config: config("Cleared webhook", "headers = {}"),
+				Check: resource.ComposeTestCheckFunc(
+					recorder.checkEmptyHeadersRequest(),
+					func(*terraform.State) error {
+						response, getErr := server.Handler().GetWebhookDefinition(t.Context(), cm.GetWebhookDefinitionParams{
+							SpaceID:             "space",
+							WebhookDefinitionID: "imported-webhook",
+						})
+						if getErr != nil {
+							return fmt.Errorf("get webhook after clearing headers: %w", getErr)
+						}
+
+						webhook, ok := response.(*cm.WebhookDefinition)
+						if !ok {
+							return fmt.Errorf("unexpected webhook response %T", response)
+						}
+
+						if len(webhook.Headers) != 0 {
+							return fmt.Errorf("webhook headers were not cleared: %#v", webhook.Headers)
+						}
+
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+type webhookUpdateRecorder struct {
+	next   http.Handler
+	mu     sync.Mutex
+	bodies []map[string]json.RawMessage
+}
+
+func (r *webhookUpdateRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodPut && request.URL.Path == "/spaces/space/webhook_definitions/imported-webhook" {
+		body, err := io.ReadAll(request.Body)
+		if err == nil {
+			request.Body = io.NopCloser(bytes.NewReader(body))
+
+			var decoded map[string]json.RawMessage
+			if json.Unmarshal(body, &decoded) == nil {
+				r.mu.Lock()
+				r.bodies = append(r.bodies, decoded)
+				r.mu.Unlock()
+			}
+		}
+	}
+
+	r.next.ServeHTTP(responseWriter, request)
+}
+
+func (r *webhookUpdateRecorder) checkPreservedHeadersRequest() resource.TestCheckFunc {
+	return func(*terraform.State) error {
+		r.mu.Lock()
+		defer r.mu.Unlock()
+
+		if len(r.bodies) != 1 {
+			return fmt.Errorf("recorded %d webhook updates, want exactly 1", len(r.bodies))
+		}
+
+		var headers []map[string]json.RawMessage
+		if err := json.Unmarshal(r.bodies[0]["headers"], &headers); err != nil {
+			return fmt.Errorf("decode webhook headers: %w", err)
+		}
+		if len(headers) != 2 {
+			return fmt.Errorf("sent %d webhook headers, want 2", len(headers))
+		}
+
+		byKey := make(map[string]map[string]json.RawMessage, len(headers))
+		for _, header := range headers {
+			var key string
+			if err := json.Unmarshal(header["key"], &key); err != nil {
+				return fmt.Errorf("decode webhook header key: %w", err)
+			}
+			byKey[key] = header
+		}
+
+		if string(byKey["X-Ordinary"]["value"]) != `"ordinary"` {
+			return fmt.Errorf("ordinary header value was %s", byKey["X-Ordinary"]["value"])
+		}
+		secret := byKey["X-Secret"]
+		if string(secret["secret"]) != "true" {
+			return fmt.Errorf("secret header marker was %s", secret["secret"])
+		}
+		if _, ok := secret["value"]; ok {
+			return fmt.Errorf("secret header request included value %s; want the member omitted", secret["value"])
+		}
+
+		return nil
+	}
+}
+
+func (r *webhookUpdateRecorder) checkEmptyHeadersRequest() resource.TestCheckFunc {
+	return func(*terraform.State) error {
+		r.mu.Lock()
+		defer r.mu.Unlock()
+
+		if len(r.bodies) != 2 {
+			return fmt.Errorf("recorded %d webhook updates, want exactly 2", len(r.bodies))
+		}
+		if body, ok := r.bodies[1]["headers"]; !ok || string(body) != "[]" {
+			return errors.New("explicit empty headers did not produce an empty headers array")
+		}
+
+		return nil
+	}
 }
 
 //nolint:paralleltest

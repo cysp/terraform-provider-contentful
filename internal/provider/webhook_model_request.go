@@ -55,7 +55,7 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, config W
 
 	req.Filters = filters
 
-	headersList, headersListDiags := ToWebhookDefinitionHeaders(path.AtName("headers"), model.Headers)
+	headersList, headersListDiags := ToWebhookDefinitionHeaders(path.AtName("headers"), model.Headers, config.Headers)
 	diags.Append(headersListDiags...)
 
 	req.Headers = headersList

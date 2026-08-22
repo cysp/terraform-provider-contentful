@@ -764,56 +764,6 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 	}
 }
 
-func TestWebhookUpdateWithUnavailableImportedSecretStopsBeforeAPIRequest(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-	resourceSchema := WebhookResourceSchema(ctx)
-	planModel := WebhookModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringValue("space/webhook")},
-		WebhookIdentityModel: WebhookIdentityModel{
-			SpaceID:   types.StringValue("space"),
-			WebhookID: types.StringValue("webhook"),
-		},
-		Name:              types.StringValue("Renamed webhook"),
-		URL:               types.StringValue("https://example.com/webhook"),
-		Topics:            NewTypedListNull[types.String](),
-		Filters:           NewTypedListNull[TypedObject[WebhookFilterValue]](),
-		HTTPBasicPassword: types.StringNull(),
-		HTTPBasicUsername: types.StringNull(),
-		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
-			"authorization": NewTypedObject(WebhookHeaderValue{
-				Value:  types.StringNull(),
-				Secret: types.BoolValue(true),
-			}),
-		}),
-		Transformation: NewTypedObjectNull[WebhookTransformationValue](),
-		Active:         types.BoolValue(true),
-		Timeouts:       TimeoutsNull(),
-	}
-	configModel := planModel
-	configModel.Headers = NewTypedMapNull[TypedObject[WebhookHeaderValue]]()
-
-	plan := tfsdk.Plan{Schema: resourceSchema}
-	planDiags := plan.Set(ctx, planModel)
-	require.False(t, planDiags.HasError(), planDiags.Errors())
-
-	configPlan := tfsdk.Plan{Schema: resourceSchema}
-	configDiags := configPlan.Set(ctx, configModel)
-	require.False(t, configDiags.HasError(), configDiags.Errors())
-
-	config := tfsdk.Config{Raw: configPlan.Raw, Schema: resourceSchema}
-
-	client, requestCount := mutationRequestCountingClient(t)
-	implementation := webhookResource{providerData: ContentfulProviderData{client: client}}
-	response := resource.UpdateResponse{State: tfsdk.State{Schema: resourceSchema}}
-	implementation.Update(ctx, resource.UpdateRequest{Config: config, Plan: plan}, &response)
-
-	require.True(t, response.Diagnostics.HasError())
-	assert.Contains(t, mutationDiagnosticPaths(t, response.Diagnostics), `headers["authorization"].value`)
-	assert.Zero(t, requestCount.Load())
-}
-
 func mutationDiagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
 	t.Helper()
 
