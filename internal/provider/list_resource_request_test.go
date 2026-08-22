@@ -120,6 +120,102 @@ func TestEntryListResourceConfigRequestRejectsUnresolvedValues(t *testing.T) {
 	}
 }
 
+func TestLocaleListResourceConfigRequestParamsRejectsUnresolvedValues(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		configure           func(*localeListResourceConfig)
+		expectedDiagnostics []string
+	}{
+		"required identifiers": {
+			configure: func(config *localeListResourceConfig) {
+				config.SpaceID = types.StringUnknown()
+				config.EnvironmentID = types.StringNull()
+			},
+			expectedDiagnostics: []string{"space_id", "environment_id"},
+		},
+		"order container": {
+			configure: func(config *localeListResourceConfig) {
+				config.Order = NewTypedListUnknown[types.String]()
+			},
+			expectedDiagnostics: []string{"order"},
+		},
+		"order elements": {
+			configure: func(config *localeListResourceConfig) {
+				config.Order = NewTypedList([]types.String{
+					types.StringValue("sys.id"),
+					types.StringNull(),
+					types.StringUnknown(),
+				})
+			},
+			expectedDiagnostics: []string{"order[1]", "order[2]"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			config := validLocaleListResourceConfig()
+			test.configure(&config)
+
+			params, diags := config.requestParams()
+
+			assert.Empty(t, params)
+			require.True(t, diags.HasError())
+			assert.Equal(t, test.expectedDiagnostics, requestDiagnosticPaths(t, diags))
+		})
+	}
+}
+
+func TestLocaleListResourceConfigRequestParamsPreservesOptionalOrderSemantics(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		order    TypedList[types.String]
+		expected []string
+	}{
+		"null uses stable default": {
+			order:    NewTypedListNull[types.String](),
+			expected: []string{"sys.id"},
+		},
+		"known empty remains empty": {
+			order:    NewTypedList([]types.String{}),
+			expected: []string{},
+		},
+		"empty elements are omitted": {
+			order: NewTypedList([]types.String{
+				types.StringValue(""),
+				types.StringValue("-code"),
+				types.StringValue(""),
+			}),
+			expected: []string{"-code"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			config := validLocaleListResourceConfig()
+			config.Order = test.order
+
+			params, diags := config.requestParams()
+
+			require.False(t, diags.HasError(), diags.Errors())
+			assert.Equal(t, test.expected, params.Order)
+		})
+	}
+}
+
+func validLocaleListResourceConfig() localeListResourceConfig {
+	return localeListResourceConfig{
+		SpaceID:       types.StringValue("space"),
+		EnvironmentID: types.StringValue("environment"),
+		Order:         NewTypedListNull[types.String](),
+	}
+}
+
 func TestEntryListResourceConfigRequestPreservesExistingOptionalSemantics(t *testing.T) {
 	t.Parallel()
 

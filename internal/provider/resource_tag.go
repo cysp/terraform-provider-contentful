@@ -58,6 +58,7 @@ func (r *tagResource) ImportState(ctx context.Context, req resource.ImportStateR
 	}, req, resp)
 }
 
+//nolint:dupl
 func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan TagModel
 

@@ -45,6 +45,7 @@ provider "contentful" {
 - [`contentful_environment`](docs/resources/environment.md)
 - [`contentful_environment_alias`](docs/resources/environment_alias.md)
 - [`contentful_extension`](docs/resources/extension.md)
+- [`contentful_locale`](docs/resources/locale.md)
 - [`contentful_personal_access_token`](docs/resources/personal_access_token.md)
 - [`contentful_resource_provider`](docs/resources/resource_provider.md)
 - [`contentful_resource_type`](docs/resources/resource_type.md)
@@ -59,11 +60,13 @@ provider "contentful" {
 
 - [`contentful_content_type`](docs/list-resources/content_type.md)
 - [`contentful_entry`](docs/list-resources/entry.md)
+- [`contentful_locale`](docs/list-resources/locale.md)
 
 ## Data Sources
 
 - [`contentful_app_definition`](docs/data-sources/app_definition.md)
 - [`contentful_environment_status_ready`](docs/data-sources/environment_status_ready.md)
+- [`contentful_locale`](docs/data-sources/locale.md)
 - [`contentful_marketplace_app_definition`](docs/data-sources/marketplace_app_definition.md)
 - [`contentful_preview_api_key`](docs/data-sources/preview_api_key.md)
 
