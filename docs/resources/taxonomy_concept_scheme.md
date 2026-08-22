@@ -46,10 +46,10 @@ resource "contentful_taxonomy_concept_scheme" "products" {
 
 ### Optional
 
-- `concept_ids` (List of String) Ordered IDs of concepts in the scheme.
+- `concept_ids` (List of String) Ordered IDs of concepts in the scheme. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
 - `definition` (Map of String) Localized definitions.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `top_concept_ids` (List of String) Ordered IDs of top concepts. Every top concept must also occur in concept_ids.
+- `top_concept_ids` (List of String) Ordered IDs of top concepts. Every top concept must also occur in concept_ids. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
 - `uri` (String) Optional URI identifying the concept scheme. Empty strings are rejected by Contentful.
 
 ### Read-Only

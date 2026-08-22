@@ -70,8 +70,14 @@ func assertTaxonomyUpdateRequestConversionErrorStopsBeforeAPIRequest(
 	plan := tfsdk.Plan{Schema: resourceSchema}
 	require.False(t, plan.Set(ctx, model).HasError())
 
+	state := tfsdk.State{Schema: resourceSchema}
+	require.False(t, state.Set(ctx, model).HasError())
+
+	config := tfsdk.Config{Schema: resourceSchema}
+	config.Raw = plan.Raw
+
 	response := resource.UpdateResponse{State: tfsdk.State{Schema: resourceSchema}}
-	update(client, resource.UpdateRequest{Plan: plan}, &response)
+	update(client, resource.UpdateRequest{Config: config, Plan: plan, State: state}, &response)
 
 	require.True(t, response.Diagnostics.HasError())
 	assert.Zero(t, requestCount.Load())
@@ -164,9 +170,15 @@ func TestTaxonomyConceptSchemeUpdateConversionErrorDoesNotPatch(t *testing.T) {
 	plan := tfsdk.Plan{Schema: resourceSchema}
 	require.False(t, plan.Set(ctx, &model).HasError())
 
+	state := tfsdk.State{Schema: resourceSchema}
+	require.False(t, state.Set(ctx, &model).HasError())
+
+	config := tfsdk.Config{Schema: resourceSchema}
+	config.Raw = plan.Raw
+
 	implementation := taxonomyConceptSchemeResource{providerData: ContentfulProviderData{client: client}}
 	response := resource.UpdateResponse{State: tfsdk.State{Schema: resourceSchema}}
-	implementation.Update(ctx, resource.UpdateRequest{Plan: plan}, &response)
+	implementation.Update(ctx, resource.UpdateRequest{Config: config, Plan: plan, State: state}, &response)
 
 	require.True(t, response.Diagnostics.HasError())
 	assert.Zero(t, patchCount.Load())
