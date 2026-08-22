@@ -164,14 +164,12 @@ func (r *taxonomyConceptSchemeResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	data, modelDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, *scheme)
+	data, modelDiags := newTaxonomyConceptSchemeRefreshState(ctx, state, *scheme)
 	resp.Diagnostics.Append(modelDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	data.Timeouts = state.Timeouts
 
 	var identity TaxonomyConceptSchemeIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)

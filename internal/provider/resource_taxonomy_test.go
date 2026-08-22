@@ -394,9 +394,9 @@ func TestAccTaxonomyResourcesRecoverFromDeletion(t *testing.T) {
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "id", "organization-id/furniture"),
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "pref_label.en-US", "Furniture"),
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-GB.0", "Furniture"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-US.0", "Furniture"),
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-GB.0", "Furnishings"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-US.0", "Furnishings"),
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "total_concepts", "1"),
 			),
 		},
@@ -700,7 +700,6 @@ func TestAccTaxonomyResourcesRejectResponseIdentityRetargeting(t *testing.T) {
 }
 
 //nolint:paralleltest
-
 func TestAccTaxonomyResourcesRejectNegativeResponseVersionsWithoutState(t *testing.T) {
 	parallelWhenMocked(t)
 
@@ -835,9 +834,9 @@ func TestAccTaxonomyConceptProjectsOutOfBandLabelLocalesByOwnership(t *testing.T
 			expectedAction: plancheck.ResourceActionUpdate,
 			check: resource.ComposeAggregateTestCheckFunc(
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-GB.0", "Furniture"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-US.0", "Furniture"),
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-GB.0", "Furnishings"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-US.0", "Furnishings"),
 			),
 		},
 		"explicit empty maps remove drift": {
@@ -871,7 +870,7 @@ func TestAccTaxonomyConceptProjectsOutOfBandLabelLocalesByOwnership(t *testing.T
 				{Config: test.config},
 				{
 					PreConfig: func() {
-						addTaxonomyConceptLabelLocaleOutOfBand(t, server, "organization-id", "furniture", "fr-FR", "Fauteuil", "Siege")
+						injectTaxonomyConceptLabelLocaleIntoStoredResponse(t, server, "organization-id", "furniture", "fr-FR", "Fauteuil", "Siege")
 					},
 					Config: test.config,
 					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
@@ -969,7 +968,7 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 			mismatchedConfig: taxonomyConceptRecoveryLabelMapsConfig("Home furniture", "Furniture"),
 			recoveredConfig:  taxonomyConceptRecoveredLabelMapConfig("Final furniture"),
 			mutateRemote: func(server *cmt.Server) error {
-				return mutateTaxonomyConceptAltLabels(server, "en-GB", []string{"Remote furniture"})
+				return mutateTaxonomyConceptAltLabels(server, "en-US", []string{"Remote furniture"})
 			},
 		},
 		"scheme owned concepts": {
@@ -1382,8 +1381,8 @@ resource "contentful_taxonomy_concept" "test" {
   organization_id = "organization-id"
   concept_id      = "furniture"
   pref_label      = { "en-US" = %q }
-  alt_labels      = { "en-GB" = ["Furniture"] }
-  hidden_labels   = { "en-GB" = ["Furnishings"] }
+  alt_labels      = { "en-US" = ["Furniture"] }
+  hidden_labels   = { "en-US" = ["Furnishings"] }
 }
 `, label)
 }
@@ -1422,8 +1421,8 @@ resource "contentful_taxonomy_concept" "test" {
   organization_id = "organization-id"
   concept_id      = "furniture"
   pref_label      = { "en-US" = %q }
-  alt_labels      = { "en-GB" = [%q] }
-  hidden_labels   = { "en-GB" = ["Furnishings"] }
+  alt_labels      = { "en-US" = [%q] }
+  hidden_labels   = { "en-US" = ["Furnishings"] }
   notations       = []
   broader_concept_ids = []
   related_concept_ids = []
@@ -1432,19 +1431,15 @@ resource "contentful_taxonomy_concept" "test" {
 }
 
 func taxonomyConceptEmptyLabelMapsConfig(label string) string {
-	return taxonomyConceptEmptyLabelMapsConfigForLocale("en-US", label)
-}
-
-func taxonomyConceptEmptyLabelMapsConfigForLocale(locale, label string) string {
 	return fmt.Sprintf(`
 resource "contentful_taxonomy_concept" "test" {
   organization_id = "organization-id"
   concept_id      = "furniture"
-  pref_label      = { %q = %q }
+  pref_label      = { "en-US" = %q }
   alt_labels      = {}
   hidden_labels   = {}
 }
-`, locale, label)
+`, label)
 }
 
 func taxonomyConceptSchemeConfig(label string) string {
@@ -1599,7 +1594,10 @@ func bumpTaxonomyConceptSchemeVersion(server *cmt.Server) error {
 	return nil
 }
 
-func addTaxonomyConceptLabelLocaleOutOfBand(t *testing.T, server *cmt.Server, organizationID, conceptID, locale, altLabel, hiddenLabel string) {
+// injectTaxonomyConceptLabelLocaleIntoStoredResponse creates an adversarial
+// response-only locale that CMA normalization would not currently return. It
+// deliberately bypasses request handling to exercise Read ownership policy.
+func injectTaxonomyConceptLabelLocaleIntoStoredResponse(t *testing.T, server *cmt.Server, organizationID, conceptID, locale, altLabel, hiddenLabel string) {
 	t.Helper()
 
 	ctx := context.Background()
@@ -1623,32 +1621,11 @@ func addTaxonomyConceptLabelLocaleOutOfBand(t *testing.T, server *cmt.Server, or
 	altLabels[locale] = []string{altLabel}
 	hiddenLabels[locale] = []string{hiddenLabel}
 
-	encodedAltLabels, err := json.Marshal(altLabels)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	encodedHiddenLabels, err := json.Marshal(hiddenLabels)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	patch := cm.TaxonomyPatch{
-		{Op: cm.TaxonomyPatchItemOpAdd, Path: "/altLabels", Value: jx.Raw(encodedAltLabels)},
-		{Op: cm.TaxonomyPatchItemOpAdd, Path: "/hiddenLabels", Value: jx.Raw(encodedHiddenLabels)},
-	}
-
-	patchResponse, err := server.Handler().PatchTaxonomyConcept(ctx, patch, cm.PatchTaxonomyConceptParams{
-		OrganizationID: organizationID, TaxonomyConceptID: conceptID, XContentfulVersion: concept.Sys.Version,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if _, ok := patchResponse.(*cm.TaxonomyConcept); !ok {
-		t.Fatalf("patch taxonomy concept returned %T", patchResponse)
-	}
+	concept.AltLabels = cm.NewOptLocalizedStringList(altLabels)
+	concept.HiddenLabels = cm.NewOptLocalizedStringList(hiddenLabels)
+	concept.Sys.Version++
 }
+
 func taxonomyConfigVariables(conceptLabel, schemeLabel string) config.Variables {
 	return config.Variables{
 		"organization_id":   config.StringVariable("organization-id"),
@@ -1659,6 +1636,7 @@ func taxonomyConfigVariables(conceptLabel, schemeLabel string) config.Variables 
 	}
 }
 
+//nolint:paralleltest
 func TestAccTaxonomyReadIdentityFailuresRetainPriorState(t *testing.T) {
 	parallelWhenMocked(t)
 
@@ -1710,3 +1688,173 @@ func TestAccTaxonomyReadIdentityFailuresRetainPriorState(t *testing.T) {
 }
 
 //nolint:paralleltest
+func TestAccTaxonomyExplicitEmptyLocalizedMapsRemainStable(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
+		resourceName string
+		path         string
+		config       string
+		seedDrift    func(*cmt.Server) error
+		fields       []string
+	}{
+		"concept": {
+			resourceName: "contentful_taxonomy_concept.test", path: "/taxonomy/concepts/furniture", config: taxonomyConceptEmptyLocalizedStringsConfig("Furniture"),
+			seedDrift: func(server *cmt.Server) error {
+				response, err := server.Handler().PatchTaxonomyConcept(t.Context(), cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/note", Value: jx.Raw(`{"en-US":"remote"}`)}}, cm.PatchTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture", XContentfulVersion: 1})
+				if err != nil {
+					return fmt.Errorf("patch taxonomy concept: %w", err)
+				}
+
+				if _, ok := response.(*cm.TaxonomyConcept); !ok {
+					return fmt.Errorf("%w: %T", errUnexpectedTaxonomyResponse, response)
+				}
+
+				return nil
+			},
+			fields: []string{"note", "changeNote", "definition", "editorialNote", "example", "historyNote", "scopeNote"},
+		},
+		"scheme": {
+			resourceName: "contentful_taxonomy_concept_scheme.test", path: "/taxonomy/concept-schemes/products", config: taxonomyConceptSchemeEmptyDefinitionConfig("Products"),
+			seedDrift: func(server *cmt.Server) error {
+				response, err := server.Handler().PatchTaxonomyConceptScheme(t.Context(), cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/definition", Value: jx.Raw(`{"en-US":"remote"}`)}}, cm.PatchTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products", XContentfulVersion: 1})
+				if err != nil {
+					return fmt.Errorf("patch taxonomy concept scheme: %w", err)
+				}
+
+				if _, ok := response.(*cm.TaxonomyConceptScheme); !ok {
+					return fmt.Errorf("%w: %T", errUnexpectedTaxonomyResponse, response)
+				}
+
+				return nil
+			},
+			fields: []string{"definition"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			recorder := &taxonomyRequestBodyRecorder{next: server}
+
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop)}}},
+				{PreConfig: func() { require.NoError(t, test.seedDrift(server)) }, Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionUpdate)}, PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+			}})
+
+			put, ok := recorder.request(http.MethodPut, test.path)
+			require.True(t, ok)
+
+			for _, field := range test.fields {
+				require.Contains(t, put, field)
+				assert.JSONEq(t, `{}`, string(put[field]))
+			}
+
+			patches := recorder.matchingRequests(http.MethodPatch, test.path)
+			require.NotEmpty(t, patches)
+			assert.Equal(t, "2", patches[len(patches)-1].version)
+
+			if name == "concept" {
+				assertTaxonomyEmptyPatch(t, patches[len(patches)-1].body, []string{"/note"})
+			} else {
+				assertTaxonomyEmptyPatch(t, patches[len(patches)-1].body, []string{"/definition"})
+			}
+		})
+	}
+}
+
+//nolint:paralleltest
+func TestAccTaxonomyImportRemoteNullThenConfiguresEmptyLocalizedMap(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
+		resourceName string
+		importID     string
+		path         string
+		config       string
+		seed         func(*cmt.Server) error
+	}{
+		"concept": {
+			resourceName: "contentful_taxonomy_concept.test", importID: "organization-id/furniture", path: "/taxonomy/concepts/furniture", config: taxonomyConceptEmptyLocalizedStringsConfig("Furniture"),
+			seed: func(server *cmt.Server) error {
+				_, err := server.Handler().PutTaxonomyConcept(t.Context(), &cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Furniture"}}, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture"})
+				if err != nil {
+					return fmt.Errorf("put taxonomy concept: %w", err)
+				}
+
+				return nil
+			},
+		},
+		"scheme": {
+			resourceName: "contentful_taxonomy_concept_scheme.test", importID: "organization-id/products", path: "/taxonomy/concept-schemes/products", config: taxonomyConceptSchemeEmptyDefinitionConfig("Products"),
+			seed: func(server *cmt.Server) error {
+				_, err := server.Handler().PutTaxonomyConceptScheme(t.Context(), &cm.TaxonomyConceptSchemeRequest{PrefLabel: cm.LocalizedString{"en-US": "Products"}}, cm.PutTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products"})
+				if err != nil {
+					return fmt.Errorf("put taxonomy concept scheme: %w", err)
+				}
+
+				return nil
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+			require.NoError(t, test.seed(server))
+			recorder := &taxonomyRequestBodyRecorder{next: server}
+
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+				{Config: test.config, ResourceName: test.resourceName, ImportState: true, ImportStateId: test.importID, ImportStatePersist: true},
+				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionUpdate)}, PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop)}}},
+			}})
+
+			patches := recorder.matchingRequests(http.MethodPatch, test.path)
+			require.Len(t, patches, 1)
+			assert.Equal(t, "1", patches[0].version)
+
+			if name == "concept" {
+				assertTaxonomyEmptyPatch(t, patches[0].body, []string{"/changeNote", "/definition", "/editorialNote", "/example", "/historyNote", "/note", "/scopeNote"})
+			} else {
+				assertTaxonomyEmptyPatch(t, patches[0].body, []string{"/definition"})
+			}
+		})
+	}
+}
+
+func taxonomyConceptEmptyLocalizedStringsConfig(label string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept" "test" {
+  organization_id = "organization-id"
+  concept_id      = "furniture"
+  pref_label      = { "en-US" = %q }
+  note = {}
+  change_note = {}
+  definition = {}
+  editorial_note = {}
+  example = {}
+  history_note = {}
+  scope_note = {}
+}
+`, label)
+}
+
+func taxonomyConceptSchemeEmptyDefinitionConfig(label string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept_scheme" "test" {
+  organization_id   = "organization-id"
+  concept_scheme_id = "products"
+  pref_label        = { "en-US" = %q }
+  definition        = {}
+}
+`, label)
+}

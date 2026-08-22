@@ -116,6 +116,31 @@ missing and empty locales as equivalent: nonpreferred empty or nonempty values,
 list ordering, and remote omission of a previously present empty value remain
 meaningful. Read and import therefore expose meaningful remote labels and drift.
 
+Omission remains valid and delegates current CMA canonicalization. When the
+provider explicitly sends `altLabels` or `hiddenLabels`, it supplies an array
+for each `pref_label` locale because CMA rejects explicit maps missing a
+preferred-locale entry.
+
+For the Optional localized maps `note`, `change_note`, `definition`,
+`editorial_note`, `example`, `history_note`, and `scope_note` on a concept, and
+`definition` on a concept scheme, CMA currently canonicalizes an explicitly
+sent `{}` to `null`. This is a narrow exception to the usual distinction
+between null and known empty values: after a mutation, the provider publishes
+the planned `{}` only after verifying a returned `null`; on Read, it preserves
+prior `{}` only for the same returned-null case. Import or prior null with a
+returned null remains null; otherwise Read and import publish the remote map,
+including nonempty drift. This is an observed CMA behavior, not a documented
+CMA guarantee, so its focused mock and lifecycle tests are upgrade guards.
+
+The repository mock models only the directly observed effective `en-US`
+taxonomy locale behavior for `prefLabel`, `altLabels`, `hiddenLabels`, and all
+observed localized concept and scheme fields:
+unsupported locales are discarded when `en-US` is present, and requests without
+an effective `en-US` preferred label, or with an explicitly supplied label map
+without an effective `en-US` entry, are rejected. It does
+not model secondary taxonomy locale enablement or provider-side locale
+validation.
+
 ## Lifecycle ownership and plan consistency
 
 When a successful taxonomy mutation response disagrees with the requested
@@ -164,6 +189,12 @@ tainted recovery state even though it does not retain private data newly written
 by an errored Create response. This preserves saved-plan locking and lets
 Terraform safely recover without exposing the concurrency token in the resource
 schema or performing a hidden pre-mutation read.
+
+Deleting a concept can remove references from other concepts and schemes
+without advancing those referencing resources' versions, so their version
+headers cannot detect that cascade. Field-scoped patches avoid rewriting
+unrelated cascaded fields; CMA and post-mutation response consistency checks
+still govern fields the provider explicitly changes.
 
 Version handling accepts nonnegative integers. The repository mock and a direct
 CMA creation experiment both returned an initial value of `1`; that observation

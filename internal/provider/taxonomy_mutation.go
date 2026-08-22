@@ -70,17 +70,17 @@ func taxonomyCollectionOwnership[T attr.Value](config, plan T, valuePath path.Pa
 	}
 
 	diags.Append(rejectUnknownConfigurationOwnedRequestValue(plan, config, valuePath)...)
-	taxonomyRejectNullConfigurationOwnedCollection(true, plan, valuePath, diags)
+	taxonomyRejectNullConfigurationOwnedCollection(plan, valuePath, diags)
 
 	return true
 }
 
-func taxonomyRejectNullConfigurationOwnedCollection(owned bool, value interface {
+func taxonomyRejectNullConfigurationOwnedCollection(value interface {
 	IsNull() bool
 	IsUnknown() bool
 }, valuePath path.Path, diags *diag.Diagnostics,
 ) {
-	if !owned || !value.IsNull() {
+	if !value.IsNull() {
 		return
 	}
 
@@ -281,6 +281,14 @@ func (prepared preparedTaxonomyConceptMutation) ProjectResponse(ctx context.Cont
 			mismatch = true
 		}
 	}
+	compareNullableLocalizedString := func(name string, valuePath path.Path, planned, remote types.Map, project func()) {
+		if compareTaxonomyNullableLocalizedStringMutationValue("taxonomy concept", name, valuePath, planned, remote, &consistencyDiags) {
+			projects = append(projects, project)
+		} else {
+			mismatch = true
+		}
+	}
+
 	compare("uri", path.Root("uri"), prepared.plan.URI, data.URI, func() { data.URI = prepared.plan.URI })
 	compare("pref_label", path.Root("pref_label"), prepared.plan.PrefLabel, data.PrefLabel, func() { data.PrefLabel = prepared.plan.PrefLabel })
 
@@ -304,13 +312,13 @@ func (prepared preparedTaxonomyConceptMutation) ProjectResponse(ctx context.Cont
 		compare("notations", path.Root("notations"), prepared.plan.Notations, data.Notations, func() { data.Notations = prepared.plan.Notations })
 	}
 
-	compare("note", path.Root("note"), prepared.plan.Note, data.Note, func() { data.Note = prepared.plan.Note })
-	compare("change_note", path.Root("change_note"), prepared.plan.ChangeNote, data.ChangeNote, func() { data.ChangeNote = prepared.plan.ChangeNote })
-	compare("definition", path.Root("definition"), prepared.plan.Definition, data.Definition, func() { data.Definition = prepared.plan.Definition })
-	compare("editorial_note", path.Root("editorial_note"), prepared.plan.EditorialNote, data.EditorialNote, func() { data.EditorialNote = prepared.plan.EditorialNote })
-	compare("example", path.Root("example"), prepared.plan.Example, data.Example, func() { data.Example = prepared.plan.Example })
-	compare("history_note", path.Root("history_note"), prepared.plan.HistoryNote, data.HistoryNote, func() { data.HistoryNote = prepared.plan.HistoryNote })
-	compare("scope_note", path.Root("scope_note"), prepared.plan.ScopeNote, data.ScopeNote, func() { data.ScopeNote = prepared.plan.ScopeNote })
+	compareNullableLocalizedString("note", path.Root("note"), prepared.plan.Note, data.Note, func() { data.Note = prepared.plan.Note })
+	compareNullableLocalizedString("change_note", path.Root("change_note"), prepared.plan.ChangeNote, data.ChangeNote, func() { data.ChangeNote = prepared.plan.ChangeNote })
+	compareNullableLocalizedString("definition", path.Root("definition"), prepared.plan.Definition, data.Definition, func() { data.Definition = prepared.plan.Definition })
+	compareNullableLocalizedString("editorial_note", path.Root("editorial_note"), prepared.plan.EditorialNote, data.EditorialNote, func() { data.EditorialNote = prepared.plan.EditorialNote })
+	compareNullableLocalizedString("example", path.Root("example"), prepared.plan.Example, data.Example, func() { data.Example = prepared.plan.Example })
+	compareNullableLocalizedString("history_note", path.Root("history_note"), prepared.plan.HistoryNote, data.HistoryNote, func() { data.HistoryNote = prepared.plan.HistoryNote })
+	compareNullableLocalizedString("scope_note", path.Root("scope_note"), prepared.plan.ScopeNote, data.ScopeNote, func() { data.ScopeNote = prepared.plan.ScopeNote })
 
 	if taxonomyKnownPlanValue(prepared.plan.BroaderConceptIDs) {
 		compare("broader_concept_ids", path.Root("broader_concept_ids"), prepared.plan.BroaderConceptIDs, data.BroaderConceptIDs, func() { data.BroaderConceptIDs = prepared.plan.BroaderConceptIDs })
@@ -502,9 +510,17 @@ func (prepared preparedTaxonomyConceptSchemeMutation) ProjectResponse(ctx contex
 			mismatch = true
 		}
 	}
+	compareNullableLocalizedString := func(name string, valuePath path.Path, planned, remote types.Map, project func()) {
+		if compareTaxonomyNullableLocalizedStringMutationValue("taxonomy concept scheme", name, valuePath, planned, remote, &consistencyDiags) {
+			projects = append(projects, project)
+		} else {
+			mismatch = true
+		}
+	}
+
 	compare("uri", path.Root("uri"), prepared.plan.URI, data.URI, func() { data.URI = prepared.plan.URI })
 	compare("pref_label", path.Root("pref_label"), prepared.plan.PrefLabel, data.PrefLabel, func() { data.PrefLabel = prepared.plan.PrefLabel })
-	compare("definition", path.Root("definition"), prepared.plan.Definition, data.Definition, func() { data.Definition = prepared.plan.Definition })
+	compareNullableLocalizedString("definition", path.Root("definition"), prepared.plan.Definition, data.Definition, func() { data.Definition = prepared.plan.Definition })
 
 	if taxonomyKnownPlanValue(prepared.plan.TopConceptIDs) {
 		compare("top_concept_ids", path.Root("top_concept_ids"), prepared.plan.TopConceptIDs, data.TopConceptIDs, func() { data.TopConceptIDs = prepared.plan.TopConceptIDs })
@@ -577,6 +593,22 @@ func compareTaxonomyMutationValue(resourceName, attributeName string, valuePath 
 	}
 
 	if planned.Equal(remote) {
+		return true
+	}
+
+	diags.AddAttributeError(taxonomyMutationDifferencePath(valuePath, planned, remote), "Unexpected Contentful "+resourceName+" response", fmt.Sprintf("The %s response differed meaningfully from the Terraform plan.", attributeName))
+
+	return false
+}
+
+func compareTaxonomyNullableLocalizedStringMutationValue(resourceName, attributeName string, valuePath path.Path, planned, remote types.Map, diags *diag.Diagnostics) bool {
+	if planned.IsUnknown() {
+		diags.AddAttributeError(valuePath, "Unexpected unknown value", "A configuration-owned taxonomy value must be known before Contentful can be changed.")
+
+		return false
+	}
+
+	if taxonomyNullableLocalizedStringEquivalentAfterMutation(planned, remote) {
 		return true
 	}
 
@@ -671,6 +703,25 @@ func newTaxonomyConceptRefreshState(ctx context.Context, prior TaxonomyConceptMo
 
 	data.AltLabels = taxonomyLabelMapAfterRefresh(prior.AltLabels, data.AltLabels, data.PrefLabel)
 	data.HiddenLabels = taxonomyLabelMapAfterRefresh(prior.HiddenLabels, data.HiddenLabels, data.PrefLabel)
+	data.Note = taxonomyNullableLocalizedStringAfterRefresh(prior.Note, data.Note)
+	data.ChangeNote = taxonomyNullableLocalizedStringAfterRefresh(prior.ChangeNote, data.ChangeNote)
+	data.Definition = taxonomyNullableLocalizedStringAfterRefresh(prior.Definition, data.Definition)
+	data.EditorialNote = taxonomyNullableLocalizedStringAfterRefresh(prior.EditorialNote, data.EditorialNote)
+	data.Example = taxonomyNullableLocalizedStringAfterRefresh(prior.Example, data.Example)
+	data.HistoryNote = taxonomyNullableLocalizedStringAfterRefresh(prior.HistoryNote, data.HistoryNote)
+	data.ScopeNote = taxonomyNullableLocalizedStringAfterRefresh(prior.ScopeNote, data.ScopeNote)
+	data.Timeouts = prior.Timeouts
+
+	return data, diags
+}
+
+func newTaxonomyConceptSchemeRefreshState(ctx context.Context, prior TaxonomyConceptSchemeModel, response cm.TaxonomyConceptScheme) (TaxonomyConceptSchemeModel, diag.Diagnostics) {
+	data, diags := NewTaxonomyConceptSchemeModelFromResponse(ctx, response)
+	if diags.HasError() {
+		return data, diags
+	}
+
+	data.Definition = taxonomyNullableLocalizedStringAfterRefresh(prior.Definition, data.Definition)
 	data.Timeouts = prior.Timeouts
 
 	return data, diags
