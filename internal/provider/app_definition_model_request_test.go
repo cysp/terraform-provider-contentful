@@ -207,6 +207,21 @@ func TestAppDefinitionRequestOptionalComputedOwnership(t *testing.T) {
 	}
 }
 
+func TestAppDefinitionRequestUsesKnownResponseOwnedBundle(t *testing.T) {
+	t.Parallel()
+
+	model := validAppDefinitionRequestModel()
+	model.BundleID = types.StringValue("state-or-default-bundle")
+
+	actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{BundleID: types.StringNull()}, path.Empty())
+
+	require.False(t, diags.HasError(), diags.Errors())
+
+	bundle, ok := actual.Bundle.Get()
+	require.True(t, ok)
+	assert.Equal(t, "state-or-default-bundle", bundle.Sys.ID)
+}
+
 func TestAppDefinitionRequestPreservesOptionalScalarPresence(t *testing.T) {
 	t.Parallel()
 

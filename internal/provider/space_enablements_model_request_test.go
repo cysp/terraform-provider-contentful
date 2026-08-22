@@ -78,3 +78,87 @@ func TestSpaceEnablementsRequestRequiresKnownEqualCoupledValues(t *testing.T) {
 		})
 	}
 }
+
+func TestSpaceEnablementsRequestIndependentOptionalComputedOwnership(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		field      string
+		configured types.Bool
+		planned    types.Bool
+		wantPath   string
+	}{
+		"response-owned known studio experiences is sent": {
+			field:      "studio_experiences",
+			configured: types.BoolNull(),
+			planned:    types.BoolValue(true),
+		},
+		"configuration-owned unknown studio experiences fails": {
+			field:      "studio_experiences",
+			configured: types.BoolValue(true),
+			planned:    types.BoolUnknown(),
+			wantPath:   "studio_experiences",
+		},
+		"response-owned known suggest concepts is sent": {
+			field:      "suggest_concepts",
+			configured: types.BoolNull(),
+			planned:    types.BoolValue(true),
+		},
+		"configuration-owned unknown suggest concepts fails": {
+			field:      "suggest_concepts",
+			configured: types.BoolValue(true),
+			planned:    types.BoolUnknown(),
+			wantPath:   "suggest_concepts",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			model := SpaceEnablementsModel{
+				CrossSpaceLinks:   types.BoolValue(false),
+				SpaceTemplates:    types.BoolValue(false),
+				StudioExperiences: types.BoolNull(),
+				SuggestConcepts:   types.BoolNull(),
+			}
+			config := SpaceEnablementsModel{
+				CrossSpaceLinks:   types.BoolNull(),
+				SpaceTemplates:    types.BoolNull(),
+				StudioExperiences: types.BoolNull(),
+				SuggestConcepts:   types.BoolNull(),
+			}
+
+			switch test.field {
+			case "studio_experiences":
+				model.StudioExperiences = test.planned
+				config.StudioExperiences = test.configured
+			case "suggest_concepts":
+				model.SuggestConcepts = test.planned
+				config.SuggestConcepts = test.configured
+			}
+
+			actual, diags := model.ToSpaceEnablementData(t.Context(), config)
+
+			if test.wantPath != "" {
+				assert.Equal(t, cm.SpaceEnablementData{}, actual)
+				require.True(t, diags.HasError())
+				assert.Equal(t, []string{test.wantPath}, attributeDiagnosticPaths(t, diags))
+
+				return
+			}
+
+			require.False(t, diags.HasError(), diags.Errors())
+
+			var field cm.OptSpaceEnablementField
+			switch test.field {
+			case "studio_experiences":
+				field = actual.StudioExperiences
+			case "suggest_concepts":
+				field = actual.SuggestConcepts
+			}
+
+			value, ok := field.Get()
+			require.True(t, ok)
+			assert.True(t, value.Enabled)
+		})
+	}
+}
