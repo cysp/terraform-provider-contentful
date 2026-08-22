@@ -67,6 +67,150 @@ func TestDeactivateAndDeleteContentTypeUsesContentfulLifecycle(t *testing.T) {
 	requireContentfulError(t, editorResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "EditorInterface not found")
 }
 
+func TestPutContentTypeRejectsRemovingPublishedNonOmittedField(t *testing.T) {
+	t.Parallel()
+
+	handler := newContentTypeTestHandler()
+	request := contentTypeRequestWithRemovableField()
+	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	activated := activateContentType(t, handler, created.Sys.Version)
+
+	request.Fields = request.Fields[:1]
+	response, err := handler.PutContentType(context.Background(), &request, contentTypePutParams(activated.Sys.Version))
+	require.NoError(t, err)
+	requireContentfulError(
+		t,
+		response,
+		http.StatusBadRequest,
+		"BadRequest",
+		"You need to omit a field before deleting it",
+	)
+
+	stored := getContentType(t, handler)
+	assert.Equal(t, 2, stored.Sys.Version)
+	assert.Equal(t, 1, stored.Sys.PublishedVersion.Or(0))
+	require.Len(t, stored.Fields, 2)
+	assert.Equal(t, "obsolete", stored.Fields[1].ID)
+	assert.False(t, stored.Fields[1].Omitted.Or(false))
+}
+
+func TestPutContentTypeRejectsRemovingFieldOmittedOnlyInDraft(t *testing.T) {
+	t.Parallel()
+
+	handler := newContentTypeTestHandler()
+	request := contentTypeRequestWithRemovableField()
+	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	activated := activateContentType(t, handler, created.Sys.Version)
+
+	request.Fields[1].Omitted = cm.NewOptBool(true)
+	draft := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	request.Fields = request.Fields[:1]
+	response, err := handler.PutContentType(context.Background(), &request, contentTypePutParams(draft.Sys.Version))
+	require.NoError(t, err)
+	requireContentfulError(
+		t,
+		response,
+		http.StatusBadRequest,
+		"BadRequest",
+		"You need to omit a field before deleting it",
+	)
+
+	stored := getContentType(t, handler)
+	assert.Equal(t, 3, stored.Sys.Version)
+	assert.Equal(t, 1, stored.Sys.PublishedVersion.Or(0))
+	require.Len(t, stored.Fields, 2)
+	assert.Equal(t, "obsolete", stored.Fields[1].ID)
+	assert.True(t, stored.Fields[1].Omitted.Or(false))
+}
+
+func TestPutContentTypeAllowsRemovingFieldOmittedInPublishedVersion(t *testing.T) {
+	t.Parallel()
+
+	handler := newContentTypeTestHandler()
+	request := contentTypeRequestWithRemovableField()
+	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	activated := activateContentType(t, handler, created.Sys.Version)
+
+	request.Fields[1].Omitted = cm.NewOptBool(true)
+	draft := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	activated = activateContentType(t, handler, draft.Sys.Version)
+
+	request.Fields = request.Fields[:1]
+	updated := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	assert.Equal(t, 5, updated.Sys.Version)
+	assert.Equal(t, 3, updated.Sys.PublishedVersion.Or(0))
+	require.Len(t, updated.Fields, 1)
+	assert.Equal(t, "title", updated.Fields[0].ID)
+}
+
+func TestPutContentTypeAllowsRemovingNeverPublishedDraftField(t *testing.T) {
+	t.Parallel()
+
+	handler := newContentTypeTestHandler()
+	request := newContentTypeRequest()
+	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	activated := activateContentType(t, handler, created.Sys.Version)
+
+	request.Fields = append(request.Fields, cm.ContentTypeRequestDataFieldsItem{
+		ID: "draft-only", Name: "Draft only", Type: "Symbol",
+	})
+	draft := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	request.Fields = request.Fields[:1]
+	updated := putContentType(t, handler, &request, draft.Sys.Version, http.StatusOK)
+
+	assert.Equal(t, 4, updated.Sys.Version)
+	assert.Equal(t, 1, updated.Sys.PublishedVersion.Or(0))
+	require.Len(t, updated.Fields, 1)
+	assert.Equal(t, "title", updated.Fields[0].ID)
+}
+
+func TestPutContentTypeAllowsRemovingNonOmittedFieldAfterDeactivation(t *testing.T) {
+	t.Parallel()
+
+	handler := newContentTypeTestHandler()
+	request := contentTypeRequestWithRemovableField()
+	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	activateContentType(t, handler, created.Sys.Version)
+
+	response, err := handler.DeactivateContentType(context.Background(), contentTypeDeactivateParams())
+	require.NoError(t, err)
+
+	deactivated, ok := response.(*cm.ContentType)
+	require.True(t, ok)
+	assert.Equal(t, 3, deactivated.Sys.Version)
+	assert.False(t, deactivated.Sys.PublishedVersion.IsSet())
+
+	request.Fields = request.Fields[:1]
+	updated := putContentType(t, handler, &request, deactivated.Sys.Version, http.StatusOK)
+	assert.Equal(t, 4, updated.Sys.Version)
+	assert.False(t, updated.Sys.PublishedVersion.IsSet())
+	require.Len(t, updated.Fields, 1)
+	assert.Equal(t, "title", updated.Fields[0].ID)
+}
+
+func contentTypeRequestWithRemovableField() cm.ContentTypeRequestData {
+	request := newContentTypeRequest()
+	request.Fields = append(request.Fields, cm.ContentTypeRequestDataFieldsItem{
+		ID: "obsolete", Name: "Obsolete", Type: "Symbol",
+	})
+
+	return request
+}
+
+func getContentType(t *testing.T, handler *cmt.Handler) *cm.ContentType {
+	t.Helper()
+
+	response, err := handler.GetContentType(context.Background(), cm.GetContentTypeParams{
+		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type",
+	})
+	require.NoError(t, err)
+
+	contentType, ok := response.(*cm.ContentType)
+	require.True(t, ok)
+
+	return contentType
+}
+
 func contentTypeActivateParams(version int) cm.ActivateContentTypeParams {
 	return cm.ActivateContentTypeParams{
 		SpaceID:            "space",

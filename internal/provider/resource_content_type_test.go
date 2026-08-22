@@ -2,6 +2,9 @@ package provider_test
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -13,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
@@ -79,7 +83,7 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestData{
 		Name:         "Author",
@@ -105,13 +109,14 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 			},
 		}),
 	})
+	handler := &contentTypeActivationTestHandler{delegate: server}
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
 		"environment_id": config.StringVariable("test"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.StaticDirectory("testdata/TestAccContentTypeResourceImport"),
@@ -126,7 +131,41 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 				ImportState:        true,
 				ImportStateId:      "0p38pssr0fi3/test/author",
 				ImportStatePersist: true,
-				ConfigStateChecks:  contentTypeTaxonomyStateChecks("contentful_content_type.author"),
+				ConfigStateChecks: append(
+					contentTypeTaxonomyStateChecks("contentful_content_type.author"),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.author",
+						tfjsonpath.New("published_version"),
+						knownvalue.Null(),
+					),
+				),
+			},
+			{
+				PreConfig: func() {
+					handler.puts.Store(0)
+					handler.activations.Store(0)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceImport"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.author", plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(
+							"contentful_content_type.author",
+							tfjsonpath.New("published_version"),
+							knownvalue.Int64Exact(1),
+						),
+					},
+				},
+				ConfigStateChecks: append(
+					contentTypeTaxonomyStateChecks("contentful_content_type.author"),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.author",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(1),
+					),
+				),
+				Check: contentTypeActivationRequestCheck(handler, 0, 1),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceImport"),
@@ -136,7 +175,6 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 						plancheck.ExpectResourceAction("contentful_content_type.author", plancheck.ResourceActionNoop),
 					},
 				},
-				ConfigStateChecks: contentTypeTaxonomyStateChecks("contentful_content_type.author"),
 			},
 		},
 	})
@@ -187,7 +225,7 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile(`Failed to create content type`),
+				ExpectError:     regexp.MustCompile(`Failed to save content type draft`),
 			},
 		},
 	})
@@ -213,6 +251,13 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(1),
+					),
+				},
 			},
 		},
 	})
@@ -251,8 +296,16 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue("contentful_content_type.test", tfjsonpath.New("published_version")),
 						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionNoop),
 					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(3),
+					),
 				},
 			},
 			{
@@ -271,12 +324,188 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue("contentful_content_type.test", tfjsonpath.New("published_version")),
 						plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionNoop),
 					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(5),
+					),
 				},
 			},
 		},
 	})
+}
+
+func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
+
+	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
+	configVariables := config.Variables{
+		"space_id":             config.StringVariable("0p38pssr0fi3"),
+		"environment_id":       config.StringVariable("test"),
+		"test_content_type_id": config.StringVariable(contentTypeID),
+	}
+
+	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/1"),
+				ConfigVariables: configVariables,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(1),
+					),
+				},
+				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 2, 1),
+			},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/3"),
+				ConfigVariables: configVariables,
+				ExpectError: regexp.MustCompile(
+					`You need to omit a field before deleting it`,
+				),
+			},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/1"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("fields"),
+						knownvalue.ListSizeExact(2),
+					),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("fields").AtSliceIndex(1).AtMapKey("id"),
+						knownvalue.StringExact("obsolete"),
+					),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("fields").AtSliceIndex(1).AtMapKey("omitted"),
+						knownvalue.Bool(false),
+					),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(1),
+					),
+				},
+				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 2, 1),
+			},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/2"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue("contentful_content_type.test", tfjsonpath.New("published_version")),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("fields").AtSliceIndex(1).AtMapKey("omitted"),
+						knownvalue.Bool(true),
+					),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(3),
+					),
+				},
+				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 4, 3),
+			},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/3"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue("contentful_content_type.test", tfjsonpath.New("published_version")),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("fields"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(5),
+					),
+				},
+				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 6, 5),
+			},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/3"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+					},
+				},
+				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 6, 5),
+			},
+		},
+	})
+}
+
+var errUnexpectedContentTypeVersion = errors.New("unexpected content type version")
+
+func contentTypeMockRemoteVersionCheck(
+	server *cmt.Server,
+	contentTypeID string,
+	wantVersion int,
+	wantPublishedVersion int,
+) resource.TestCheckFunc {
+	return func(_ *terraform.State) error {
+		if os.Getenv("TF_ACC_MOCKED") == "" {
+			return nil
+		}
+
+		response, err := server.Handler().GetContentType(context.Background(), cm.GetContentTypeParams{
+			SpaceID: "0p38pssr0fi3", EnvironmentID: "test", ContentTypeID: contentTypeID,
+		})
+		if err != nil {
+			return fmt.Errorf("get mocked content type: %w", err)
+		}
+
+		contentType, ok := response.(*cm.ContentType)
+		if !ok {
+			return fmt.Errorf("%w: got response %T", errUnexpectedContentTypeVersion, response)
+		}
+
+		publishedVersion, published := contentType.Sys.PublishedVersion.Get()
+		if contentType.Sys.Version != wantVersion || !published || publishedVersion != wantPublishedVersion {
+			return fmt.Errorf(
+				"%w: got version=%d publishedVersion=%d published=%t, want version=%d publishedVersion=%d published=true",
+				errUnexpectedContentTypeVersion,
+				contentType.Sys.Version,
+				publishedVersion,
+				published,
+				wantVersion,
+				wantPublishedVersion,
+			)
+		}
+
+		return nil
+	}
 }
 
 //nolint:paralleltest
@@ -419,7 +648,12 @@ func TestAccContentTypeResourceTaxonomyDrift(t *testing.T) {
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(
+							"contentful_content_type.test",
+							tfjsonpath.New("published_version"),
+							knownvalue.Int64Exact(3),
+						),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -427,6 +661,11 @@ func TestAccContentTypeResourceTaxonomyDrift(t *testing.T) {
 						"contentful_content_type.test",
 						tfjsonpath.New("metadata").AtMapKey("taxonomy"),
 						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						"contentful_content_type.test",
+						tfjsonpath.New("published_version"),
+						knownvalue.Int64Exact(3),
 					),
 				},
 			},

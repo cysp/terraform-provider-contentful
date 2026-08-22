@@ -21,7 +21,7 @@ func contentTypeMetadataIsEmpty(metadata cm.ContentTypeMetadata) bool {
 		return false
 	}
 
-	return len(annotationAssignments) == 0 && metadata.Taxonomy == nil
+	return len(annotationAssignments) == 0
 }
 
 func NewContentTypeFromRequestFields(spaceID, environmentID, contentTypeID string, contentTypeFields cm.ContentTypeRequestData) cm.ContentType {
