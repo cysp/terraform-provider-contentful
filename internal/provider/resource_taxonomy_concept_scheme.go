@@ -18,6 +18,7 @@ var (
 	_ resource.ResourceWithConfigure   = (*taxonomyConceptSchemeResource)(nil)
 	_ resource.ResourceWithIdentity    = (*taxonomyConceptSchemeResource)(nil)
 	_ resource.ResourceWithImportState = (*taxonomyConceptSchemeResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*taxonomyConceptSchemeResource)(nil)
 )
 
 //nolint:ireturn
@@ -48,8 +49,13 @@ func (r *taxonomyConceptSchemeResource) ImportState(ctx context.Context, req res
 	ImportStatePassthroughMultipartID(ctx, []path.Path{path.Root("organization_id"), path.Root("concept_scheme_id")}, req, resp)
 }
 
+func (r *taxonomyConceptSchemeResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	setTaxonomyCreatePlanPrivateVersion(ctx, req, resp)
+}
+
 func (r *taxonomyConceptSchemeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan TaxonomyConceptSchemeModel
+	var config, plan TaxonomyConceptSchemeModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
@@ -66,12 +72,14 @@ func (r *taxonomyConceptSchemeResource) Create(ctx context.Context, req resource
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	request, requestDiags := plan.ToRequest(ctx)
-	resp.Diagnostics.Append(requestDiags...)
+	prepared, prepareDiags := prepareTaxonomyConceptSchemeMutation(ctx, config, plan)
+	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	request := prepared.CreateRequest()
 
 	params := cm.PutTaxonomyConceptSchemeParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptSchemeID: plan.ConceptSchemeID.ValueString()}
 	response, err := r.providerData.client.PutTaxonomyConceptScheme(ctx, &request, params)
@@ -84,34 +92,34 @@ func (r *taxonomyConceptSchemeResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	validationErr := validateTaxonomyConceptSchemeResponse(request, *scheme)
-	if validationErr != nil {
-		resp.Diagnostics.AddError("Contentful normalized taxonomy concept scheme configuration", validationErr.Error())
-
-		return
-	}
-
-	data, modelDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, *scheme)
-	resp.Diagnostics.Append(modelDiags...)
+	responseVersion, versionDiags := taxonomyResponseVersion(scheme.Sys.Version)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	data.Timeouts = plan.Timeouts
+	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *scheme)
+	resp.Diagnostics.Append(responseDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var identity TaxonomyConceptSchemeIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
 
-	if resp.Diagnostics.HasError() {
-		return
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(setTaxonomyPrivateVersion(ctx, resp.Private, responseVersion)...)
 	}
+
+	// A successful remote mutation can disagree with the plan. Publish its
+	// recovery state before returning the consistency diagnostics.
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 func (r *taxonomyConceptSchemeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -149,14 +157,19 @@ func (r *taxonomyConceptSchemeResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	data, modelDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, *scheme)
-	resp.Diagnostics.Append(modelDiags...)
+	responseVersion, versionDiags := taxonomyResponseVersion(scheme.Sys.Version)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	data.Timeouts = state.Timeouts
+	data, modelDiags := newTaxonomyConceptSchemeRefreshState(ctx, state, *scheme)
+	resp.Diagnostics.Append(modelDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var identity TaxonomyConceptSchemeIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
@@ -170,11 +183,15 @@ func (r *taxonomyConceptSchemeResource) Read(ctx context.Context, req resource.R
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resp.Diagnostics.Append(setTaxonomyPrivateVersion(ctx, resp.Private, responseVersion)...)
 }
 
 func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan TaxonomyConceptSchemeModel
+	var config, plan, state TaxonomyConceptSchemeModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -190,83 +207,79 @@ func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	request, requestDiags := plan.ToRequest(ctx)
-	resp.Diagnostics.Append(requestDiags...)
+	prepared, prepareDiags := prepareTaxonomyConceptSchemeMutation(ctx, config, plan)
+	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	getParams := cm.GetTaxonomyConceptSchemeParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptSchemeID: plan.ConceptSchemeID.ValueString()}
-	currentResponse, err := r.providerData.client.GetTaxonomyConceptScheme(ctx, getParams)
+	patch, patchDiags := prepared.PatchFromState(ctx, state)
+	resp.Diagnostics.Append(patchDiags...)
 
-	current, ok := currentResponse.(*cm.TaxonomyConceptScheme)
-	if !ok {
-		resp.Diagnostics.AddError("Failed to refresh taxonomy concept scheme before update", util.ErrorDetailFromContentfulManagementResponse(currentResponse, err))
-
-		return
-	}
-
-	patch, patchErr := taxonomyPatch(taxonomyConceptSchemeRequestFromResponse(*current), request)
-	if patchErr != nil {
-		resp.Diagnostics.AddError("Failed to build taxonomy concept scheme update", patchErr.Error())
-
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	if len(patch) == 0 {
-		data, modelDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, *current)
-		resp.Diagnostics.Append(modelDiags...)
+		data := prepared.NoopState(state)
 
-		if resp.Diagnostics.HasError() {
-			return
+		var identity TaxonomyConceptSchemeIdentityModel
+		resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
+
+		if !resp.Diagnostics.HasError() {
+			resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
 		}
-
-		data.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 		return
 	}
 
-	params := cm.PatchTaxonomyConceptSchemeParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptSchemeID: plan.ConceptSchemeID.ValueString(), XContentfulVersion: current.Sys.Version}
+	priorStateVersion, versionDiags := taxonomyPriorStateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	params := cm.PatchTaxonomyConceptSchemeParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptSchemeID: plan.ConceptSchemeID.ValueString(), XContentfulVersion: priorStateVersion}
 	response, err := r.providerData.client.PatchTaxonomyConceptScheme(ctx, patch, params)
 	tflog.Info(ctx, "taxonomy_concept_scheme.update", map[string]any{"params": params, "response": response, "err": err})
 
 	scheme, ok := response.(*cm.TaxonomyConceptScheme)
 	if !ok {
-		resp.Diagnostics.AddError("Failed to update taxonomy concept scheme", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to update taxonomy concept scheme", taxonomyMutationErrorDetail(response, err))
 
 		return
 	}
 
-	validationErr := validateTaxonomyConceptSchemeResponse(request, *scheme)
-	if validationErr != nil {
-		resp.Diagnostics.AddError("Contentful normalized taxonomy concept scheme configuration", validationErr.Error())
-
-		return
-	}
-
-	data, modelDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, *scheme)
-	resp.Diagnostics.Append(modelDiags...)
+	responseVersion, responseVersionDiags := taxonomyResponseVersion(scheme.Sys.Version)
+	resp.Diagnostics.Append(responseVersionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	data.Timeouts = plan.Timeouts
+	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *scheme)
+	resp.Diagnostics.Append(responseDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var identity TaxonomyConceptSchemeIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
 
-	if resp.Diagnostics.HasError() {
-		return
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(setTaxonomyPrivateVersion(ctx, resp.Private, responseVersion)...)
 	}
+
+	// A successful remote mutation can disagree with the plan. Publish its
+	// recovery state before returning the consistency diagnostics.
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 func (r *taxonomyConceptSchemeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -287,21 +300,14 @@ func (r *taxonomyConceptSchemeResource) Delete(ctx context.Context, req resource
 	ctx, cancel := context.WithTimeout(ctx, max(timeout, minimumStoredResourceOperationTimeout))
 	defer cancel()
 
-	getParams := cm.GetTaxonomyConceptSchemeParams{OrganizationID: state.OrganizationID.ValueString(), TaxonomyConceptSchemeID: state.ConceptSchemeID.ValueString()}
-	currentResponse, err := r.providerData.client.GetTaxonomyConceptScheme(ctx, getParams)
+	priorStateVersion, versionDiags := taxonomyPriorStateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
-	current, ok := currentResponse.(*cm.TaxonomyConceptScheme)
-	if !ok {
-		if status, ok := currentResponse.(cm.StatusCodeResponse); ok && status.GetStatusCode() == http.StatusNotFound {
-			return
-		}
-
-		resp.Diagnostics.AddError("Failed to refresh taxonomy concept scheme before deletion", util.ErrorDetailFromContentfulManagementResponse(currentResponse, err))
-
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	params := cm.DeleteTaxonomyConceptSchemeParams{OrganizationID: state.OrganizationID.ValueString(), TaxonomyConceptSchemeID: state.ConceptSchemeID.ValueString(), XContentfulVersion: current.Sys.Version}
+	params := cm.DeleteTaxonomyConceptSchemeParams{OrganizationID: state.OrganizationID.ValueString(), TaxonomyConceptSchemeID: state.ConceptSchemeID.ValueString(), XContentfulVersion: priorStateVersion}
 	response, err := r.providerData.client.DeleteTaxonomyConceptScheme(ctx, params)
 	tflog.Info(ctx, "taxonomy_concept_scheme.delete", map[string]any{"params": params, "response": response, "err": err})
 
@@ -313,5 +319,5 @@ func (r *taxonomyConceptSchemeResource) Delete(ctx context.Context, req resource
 		return
 	}
 
-	resp.Diagnostics.AddError("Failed to delete taxonomy concept scheme", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	resp.Diagnostics.AddError("Failed to delete taxonomy concept scheme", taxonomyMutationErrorDetail(response, err))
 }

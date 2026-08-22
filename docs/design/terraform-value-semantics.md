@@ -29,8 +29,7 @@ before remote mutation. It must:
 - preserve framework values until their state is known;
 - apply an explicit null policy: omit, clear, or send an intentional null;
 - accept known empty values when the schema permits them;
-- reject any unresolved value needed by the remote request, subject to the
-  current taxonomy Optional+Computed limitation below;
+- reject any unresolved value needed by the remote request;
 - reject invalid null children with path-specific errors; and
 - require exactly one known, non-null alternative for a closed request union.
 
@@ -58,22 +57,31 @@ mutation payload containing unresolved values. Harmless required-known identity
 or version parameter objects may already have been constructed; a partially
 converted payload is never sent.
 
-### Current taxonomy Optional+Computed limitation
+### Taxonomy Optional+Computed collection ownership
 
-Taxonomy request conversion has a scoped exception to the unresolved-value
-rule. For whole null or unknown plan collections `alt_labels`, `hidden_labels`,
-`notations`, `broader_concept_ids`, `related_concept_ids`, `top_concept_ids`,
-and `concept_ids`, it currently encodes an empty collection. The conversion
-receives only `req.Plan`, so at that boundary it cannot distinguish omitted
-configuration from an unknown planned value for a configuration-owned
-collection.
+For both taxonomy concepts and concept schemes, configuration determines
+durable ownership of the affected Optional+Computed collections. During an
+actual mutation, omitted collections remain unknown unless a known plan or
+default explicitly constrains them. Known plans are never discarded: they are
+sent and constrain the returned state. Clean no-change plans remain stable;
+response values fill unknown plans.
 
-`UseStateForUnknown` normally preserves prior state for an omitted Update. It
-does not replace an unknown planned value owned by configuration, which can
-therefore remain unknown until this conversion and be encoded as an empty
-collection, potentially clearing the remote value. This is a current,
-narrowly-scoped limitation; a follow-up requires configuration-aware taxonomy
-request conversion rather than a plan modifier that changes the planned value.
+The ownership rules are:
+
+- Omitted collections are response-owned, so state may reflect Contentful.
+- Any known configured value, including an explicit empty collection, is
+  configuration-owned and must be preserved after Create or Update.
+- Explicit empty collections are accepted input and remain distinct from
+  omission.
+
+For a concept scheme request, omitted `top_concept_ids` and `concept_ids` are
+left absent on the wire. Explicit empty collections are sent as `[]`. The
+response schema still requires both collections; current CMA observations show
+them as present empty arrays after an omitted request.
+
+The affected concept collections are `alt_labels`, `hidden_labels`,
+`notations`, `broader_concept_ids`, and `related_concept_ids`. The affected
+scheme collections are `top_concept_ids` and `concept_ids`.
 
 ## Response projection
 
@@ -98,15 +106,59 @@ before provider response conversion runs. Provider lenience applies only after
 the generated client has produced a typed value that the Terraform schema can
 represent, wholly or partially.
 
+For concept `alt_labels` and `hidden_labels`, Contentful may currently add
+known-empty entries for locales present in `pref_label`. After Create or Update,
+the provider preserves the configured representation only for that narrow
+response-added canonicalization. On refresh it preserves the prior state
+representation for the same canonicalization; a first Read with no prior value,
+including import, takes the complete response. It does not treat arbitrary
+missing and empty locales as equivalent: nonpreferred empty or nonempty values,
+list ordering, and remote omission of a previously present empty value remain
+meaningful. Read and import therefore expose meaningful remote labels and drift.
+
+Omission remains valid and delegates current CMA canonicalization. When the
+provider explicitly sends `altLabels` or `hiddenLabels`, it supplies an array
+for each `pref_label` locale because CMA rejects explicit maps missing a
+preferred-locale entry.
+
+For the Optional localized maps `note`, `change_note`, `definition`,
+`editorial_note`, `example`, `history_note`, and `scope_note` on a concept, and
+`definition` on a concept scheme, CMA currently canonicalizes an explicitly
+sent `{}` to `null`. This is a narrow exception to the usual distinction
+between null and known empty values: after a mutation, the provider publishes
+the planned `{}` only after verifying a returned `null`; on Read, it preserves
+prior `{}` only for the same returned-null case. Import or prior null with a
+returned null remains null; otherwise Read and import publish the remote map,
+including nonempty drift. This is an observed CMA behavior, not a documented
+CMA guarantee, so its focused mock and lifecycle tests are upgrade guards.
+
+The repository mock models only the directly observed effective `en-US`
+taxonomy locale behavior for `prefLabel`, `altLabels`, `hiddenLabels`, and all
+observed localized concept and scheme fields:
+unsupported locales are discarded when `en-US` is present, and requests without
+an effective `en-US` preferred label, or with an explicitly supplied label map
+without an effective `en-US` entry, are rejected. It does
+not model secondary taxonomy locale enablement or provider-side locale
+validation.
+
 ## Lifecycle ownership and plan consistency
 
-After Create or Update, state must remain consistent with every known
-configuration-owned value in the plan. Post-mutation state construction
+When a successful taxonomy mutation response disagrees with the requested
+endpoint identity, recovery preserves the complete returned response except
+that the requested endpoint identity and legacy ID intentionally remain the
+Terraform target.
+
+After a successful Create or Update, state must remain consistent with every
+known configuration-owned value in the plan. Post-mutation state construction
 therefore starts with the response projection and restores each known
-plan-owned value. Unknown and response-owned values come from the response;
-unknown plan values are never copied into state. Projection warnings are
-retained. A later Read skips this reconciliation and projects the remote
-representation so meaningful remote drift remains visible.
+plan-owned value only after verifying that the response is equivalent. Unknown
+and response-owned values come from the response; unknown plan values are never
+copied into state.
+
+If the response differs meaningfully, the operation returns attribute-scoped
+error diagnostics and recovery state reflects the complete response instead of
+claiming that Contentful stored the plan. A later Read always projects the
+remote representation so meaningful remote drift remains visible.
 
 Ownership follows the schema at the individual attribute, including attributes
 nested inside known objects:
@@ -122,6 +174,33 @@ nested inside known objects:
 
 Null, omission, and known empty values remain distinct throughout request and
 response conversion.
+
+### Taxonomy optimistic version locking
+
+Taxonomy resources record Contentful `sys.version` in provider-private state,
+matching the provider's other versioned resources. Update and Delete send the
+prior private-state value supplied at apply, so a remote change for which CMA
+advances that resource's `sys.version` after planning is rejected instead of
+being overwritten. Create, Read, and Update store the version returned by
+Contentful, including alongside recovery state when an Update response differs
+from the plan. Create plans seed Contentful's observed initial taxonomy version,
+`1`, into planned private data. Terraform retains that planned value with
+tainted recovery state even though it does not retain private data newly written
+by an errored Create response. This preserves saved-plan locking and lets
+Terraform safely recover without exposing the concurrency token in the resource
+schema or performing a hidden pre-mutation read.
+
+Deleting a concept can remove references from other concepts and schemes
+without advancing those referencing resources' versions, so their version
+headers cannot detect that cascade. Field-scoped patches avoid rewriting
+unrelated cascaded fields; CMA and post-mutation response consistency checks
+still govern fields the provider explicitly changes.
+
+Version handling accepts nonnegative integers. The repository mock and a direct
+CMA creation experiment both returned an initial value of `1`; that observation
+supports Create planning and errored Create recovery but is not a permanent
+schema promise. Use Contentful's established `version` and `sys.version`
+terminology.
 
 ### Delivery API key environments
 

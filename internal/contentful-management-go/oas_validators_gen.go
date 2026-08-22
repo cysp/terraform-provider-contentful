@@ -4929,9 +4929,6 @@ func (s *TaxonomyConceptSchemeRequest) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if s.TopConcepts == nil {
-			return errors.New("nil is invalid value")
-		}
 		var failures []validate.FieldError
 		for i, elem := range s.TopConcepts {
 			if err := func() error {
@@ -4957,9 +4954,6 @@ func (s *TaxonomyConceptSchemeRequest) Validate() error {
 		})
 	}
 	if err := func() error {
-		if s.Concepts == nil {
-			return errors.New("nil is invalid value")
-		}
 		var failures []validate.FieldError
 		for i, elem := range s.Concepts {
 			if err := func() error {

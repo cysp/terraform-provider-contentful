@@ -5,10 +5,10 @@ resource "contentful_taxonomy_concept" "test" {
     "en-US" = var.concept_label
   }
   alt_labels = {
-    "en-GB" = ["Furniture"]
+    "en-US" = ["Furniture"]
   }
   hidden_labels = {
-    "en-GB" = ["Furnishings"]
+    "en-US" = ["Furnishings"]
   }
   notations = ["FURNITURE"]
 }

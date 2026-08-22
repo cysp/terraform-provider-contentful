@@ -18,6 +18,7 @@ var (
 	_ resource.ResourceWithConfigure   = (*taxonomyConceptResource)(nil)
 	_ resource.ResourceWithIdentity    = (*taxonomyConceptResource)(nil)
 	_ resource.ResourceWithImportState = (*taxonomyConceptResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*taxonomyConceptResource)(nil)
 )
 
 //nolint:ireturn
@@ -48,8 +49,13 @@ func (r *taxonomyConceptResource) ImportState(ctx context.Context, req resource.
 	ImportStatePassthroughMultipartID(ctx, []path.Path{path.Root("organization_id"), path.Root("concept_id")}, req, resp)
 }
 
+func (r *taxonomyConceptResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	setTaxonomyCreatePlanPrivateVersion(ctx, req, resp)
+}
+
 func (r *taxonomyConceptResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan TaxonomyConceptModel
+	var config, plan TaxonomyConceptModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
@@ -66,12 +72,14 @@ func (r *taxonomyConceptResource) Create(ctx context.Context, req resource.Creat
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	request, requestDiags := plan.ToRequest(ctx)
-	resp.Diagnostics.Append(requestDiags...)
+	prepared, prepareDiags := prepareTaxonomyConceptMutation(ctx, config, plan)
+	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	request := prepared.CreateRequest()
 
 	params := cm.PutTaxonomyConceptParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptID: plan.ConceptID.ValueString()}
 	response, err := r.providerData.client.PutTaxonomyConcept(ctx, &request, params)
@@ -84,14 +92,34 @@ func (r *taxonomyConceptResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	validationErr := validateTaxonomyConceptResponse(request, *concept)
-	if validationErr != nil {
-		resp.Diagnostics.AddError("Contentful normalized taxonomy concept configuration", validationErr.Error())
+	responseVersion, versionDiags := taxonomyResponseVersion(concept.Sys.Version)
+	resp.Diagnostics.Append(versionDiags...)
 
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	r.setCreateState(ctx, plan, *concept, resp)
+	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *concept)
+	resp.Diagnostics.Append(responseDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var identity TaxonomyConceptIdentityModel
+	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
+
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
+	}
+
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(setTaxonomyPrivateVersion(ctx, resp.Private, responseVersion)...)
+	}
+
+	// A successful remote mutation can disagree with the plan. Publish its
+	// recovery state before returning the consistency diagnostics.
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -129,16 +157,19 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, *concept)
-	resp.Diagnostics.Append(modelDiags...)
+	responseVersion, versionDiags := taxonomyResponseVersion(concept.Sys.Version)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	preserveConfiguredLabelMapShape(&data, state)
+	data, modelDiags := newTaxonomyConceptRefreshState(ctx, state, *concept)
+	resp.Diagnostics.Append(modelDiags...)
 
-	data.Timeouts = state.Timeouts
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var identity TaxonomyConceptIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
@@ -152,11 +183,15 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resp.Diagnostics.Append(setTaxonomyPrivateVersion(ctx, resp.Private, responseVersion)...)
 }
 
 func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan TaxonomyConceptModel
+	var config, plan, state TaxonomyConceptModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -172,87 +207,79 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	request, requestDiags := plan.ToRequest(ctx)
-	resp.Diagnostics.Append(requestDiags...)
+	prepared, prepareDiags := prepareTaxonomyConceptMutation(ctx, config, plan)
+	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	getParams := cm.GetTaxonomyConceptParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptID: plan.ConceptID.ValueString()}
-	currentResponse, err := r.providerData.client.GetTaxonomyConcept(ctx, getParams)
+	patch, patchDiags := prepared.PatchFromState(ctx, state)
+	resp.Diagnostics.Append(patchDiags...)
 
-	current, ok := currentResponse.(*cm.TaxonomyConcept)
-	if !ok {
-		resp.Diagnostics.AddError("Failed to refresh taxonomy concept before update", util.ErrorDetailFromContentfulManagementResponse(currentResponse, err))
-
-		return
-	}
-
-	patch, patchErr := taxonomyPatch(taxonomyConceptRequestFromResponse(*current), request)
-	if patchErr != nil {
-		resp.Diagnostics.AddError("Failed to build taxonomy concept update", patchErr.Error())
-
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	if len(patch) == 0 {
-		data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, *current)
-		resp.Diagnostics.Append(modelDiags...)
+		data := prepared.NoopState(state)
 
-		if resp.Diagnostics.HasError() {
-			return
+		var identity TaxonomyConceptIdentityModel
+		resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
+
+		if !resp.Diagnostics.HasError() {
+			resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
 		}
-
-		preserveConfiguredLabelMapShape(&data, plan)
-
-		data.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 		return
 	}
 
-	params := cm.PatchTaxonomyConceptParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptID: plan.ConceptID.ValueString(), XContentfulVersion: current.Sys.Version}
+	priorStateVersion, versionDiags := taxonomyPriorStateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	params := cm.PatchTaxonomyConceptParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptID: plan.ConceptID.ValueString(), XContentfulVersion: priorStateVersion}
 	response, err := r.providerData.client.PatchTaxonomyConcept(ctx, patch, params)
 	tflog.Info(ctx, "taxonomy_concept.update", map[string]any{"params": params, "response": response, "err": err})
 
 	concept, ok := response.(*cm.TaxonomyConcept)
 	if !ok {
-		resp.Diagnostics.AddError("Failed to update taxonomy concept", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to update taxonomy concept", taxonomyMutationErrorDetail(response, err))
 
 		return
 	}
 
-	validationErr := validateTaxonomyConceptResponse(request, *concept)
-	if validationErr != nil {
-		resp.Diagnostics.AddError("Contentful normalized taxonomy concept configuration", validationErr.Error())
-
-		return
-	}
-
-	data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, *concept)
-	resp.Diagnostics.Append(modelDiags...)
+	responseVersion, responseVersionDiags := taxonomyResponseVersion(concept.Sys.Version)
+	resp.Diagnostics.Append(responseVersionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	preserveConfiguredLabelMapShape(&data, plan)
+	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *concept)
+	resp.Diagnostics.Append(responseDiags...)
 
-	data.Timeouts = plan.Timeouts
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var identity TaxonomyConceptIdentityModel
 	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
 
-	if resp.Diagnostics.HasError() {
-		return
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(setTaxonomyPrivateVersion(ctx, resp.Private, responseVersion)...)
 	}
+
+	// A successful remote mutation can disagree with the plan. Publish its
+	// recovery state before returning the consistency diagnostics.
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -273,21 +300,14 @@ func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.Delet
 	ctx, cancel := context.WithTimeout(ctx, max(timeout, minimumStoredResourceOperationTimeout))
 	defer cancel()
 
-	getParams := cm.GetTaxonomyConceptParams{OrganizationID: state.OrganizationID.ValueString(), TaxonomyConceptID: state.ConceptID.ValueString()}
-	currentResponse, err := r.providerData.client.GetTaxonomyConcept(ctx, getParams)
+	priorStateVersion, versionDiags := taxonomyPriorStateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
-	current, ok := currentResponse.(*cm.TaxonomyConcept)
-	if !ok {
-		if status, ok := currentResponse.(cm.StatusCodeResponse); ok && status.GetStatusCode() == http.StatusNotFound {
-			return
-		}
-
-		resp.Diagnostics.AddError("Failed to refresh taxonomy concept before deletion", util.ErrorDetailFromContentfulManagementResponse(currentResponse, err))
-
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	params := cm.DeleteTaxonomyConceptParams{OrganizationID: state.OrganizationID.ValueString(), TaxonomyConceptID: state.ConceptID.ValueString(), XContentfulVersion: current.Sys.Version}
+	params := cm.DeleteTaxonomyConceptParams{OrganizationID: state.OrganizationID.ValueString(), TaxonomyConceptID: state.ConceptID.ValueString(), XContentfulVersion: priorStateVersion}
 	response, err := r.providerData.client.DeleteTaxonomyConcept(ctx, params)
 	tflog.Info(ctx, "taxonomy_concept.delete", map[string]any{"params": params, "response": response, "err": err})
 
@@ -299,31 +319,5 @@ func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	resp.Diagnostics.AddError("Failed to delete taxonomy concept", util.ErrorDetailFromContentfulManagementResponse(response, err))
-}
-
-func (r *taxonomyConceptResource) setCreateState(ctx context.Context, prior TaxonomyConceptModel, concept cm.TaxonomyConcept, resp *resource.CreateResponse) {
-	data, modelDiags := NewTaxonomyConceptModelFromResponse(ctx, concept)
-	resp.Diagnostics.Append(modelDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	preserveConfiguredLabelMapShape(&data, prior)
-
-	data.Timeouts = prior.Timeouts
-
-	var identity TaxonomyConceptIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.AddError("Failed to delete taxonomy concept", taxonomyMutationErrorDetail(response, err))
 }

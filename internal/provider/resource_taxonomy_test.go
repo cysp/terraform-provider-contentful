@@ -1,32 +1,35 @@
 package provider_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"maps"
 	"net/http"
-	"net/http/httptest"
 	"regexp"
 	"strings"
-	"sync"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var errUnexpectedTaxonomyResponse = errors.New("unexpected taxonomy response")
+var (
+	errUnexpectedTaxonomyResponse    = errors.New("unexpected taxonomy response")
+	errUnexpectedTaxonomyImportState = errors.New("unexpected imported taxonomy concept state")
+)
 
 const taxonomyAcceptanceOrganizationID = "2zuSjSO4A0e6GKBrhJRe2m"
 
@@ -173,7 +176,9 @@ func taxonomyLifecycleStateChecks(ids taxonomyLifecycleIDs, stage taxonomyLifecy
 
 	var schemeLabel string
 
-	var notations, broader, related, schemeConcepts, topConcepts []string
+	var broader, related, schemeConcepts, topConcepts []string
+
+	var notations knownvalue.Check
 
 	switch stage {
 	case taxonomyLifecycleCreate:
@@ -183,7 +188,8 @@ func taxonomyLifecycleStateChecks(ids taxonomyLifecycleIDs, stage taxonomyLifecy
 		schemeDefinition = localizedKnownValue("Initial scheme definition")
 		conceptLabel, altLabel = "Initial concept", ""
 		schemeLabel = "Lifecycle scheme"
-		notations, broader, related = []string{}, []string{ids.parent1}, []string{ids.related}
+		notations = stringListKnownValue(nil)
+		broader, related = []string{ids.parent1}, []string{ids.related}
 		schemeConcepts, topConcepts = []string{ids.concept, ids.parent1, ids.related}, []string{ids.parent1}
 	case taxonomyLifecycleUpdate:
 		conceptURI = knownvalue.StringExact("https://example.com/concepts/updated")
@@ -192,7 +198,8 @@ func taxonomyLifecycleStateChecks(ids taxonomyLifecycleIDs, stage taxonomyLifecy
 		schemeDefinition = localizedKnownValue("Updated scheme definition")
 		conceptLabel, altLabel = "Updated concept", "Updated alternative"
 		schemeLabel = "Lifecycle scheme"
-		notations, broader, related = []string{"UPDATED"}, []string{ids.parent2}, []string{ids.parent1}
+		notations = stringListKnownValue([]string{"UPDATED"})
+		broader, related = []string{ids.parent2}, []string{ids.parent1}
 		schemeConcepts, topConcepts = []string{ids.concept, ids.parent2}, []string{ids.parent2}
 	case taxonomyLifecyclePreserveComputed:
 		conceptURI = knownvalue.Null()
@@ -201,14 +208,16 @@ func taxonomyLifecycleStateChecks(ids taxonomyLifecycleIDs, stage taxonomyLifecy
 		schemeDefinition = knownvalue.Null()
 		conceptLabel, altLabel = "Preserved concept", "Updated alternative"
 		schemeLabel = "Preserved scheme"
-		notations, broader, related = []string{"UPDATED"}, []string{ids.parent2}, []string{ids.parent1}
+		notations = stringListKnownValue([]string{"UPDATED"})
+		broader, related = []string{ids.parent2}, []string{ids.parent1}
 		schemeConcepts, topConcepts = []string{ids.concept, ids.parent2}, []string{ids.parent2}
 	case taxonomyLifecycleClear:
 		conceptURI, conceptDefinition = knownvalue.Null(), knownvalue.Null()
 		schemeURI, schemeDefinition = knownvalue.Null(), knownvalue.Null()
 		conceptLabel, altLabel = "Cleared concept", ""
 		schemeLabel = "Cleared scheme"
-		notations, broader, related = []string{}, []string{}, []string{}
+		notations = stringListKnownValue(nil)
+		broader, related = []string{}, []string{}
 		schemeConcepts, topConcepts = []string{}, []string{}
 	}
 
@@ -217,7 +226,7 @@ func taxonomyLifecycleStateChecks(ids taxonomyLifecycleIDs, stage taxonomyLifecy
 		statecheck.ExpectKnownValue(conceptAddress, tfjsonpath.New("uri"), conceptURI),
 		statecheck.ExpectKnownValue(conceptAddress, tfjsonpath.New("pref_label"), localizedKnownValue(conceptLabel)),
 		statecheck.ExpectKnownValue(conceptAddress, tfjsonpath.New("definition"), conceptDefinition),
-		statecheck.ExpectKnownValue(conceptAddress, tfjsonpath.New("notations"), stringListKnownValue(notations)),
+		statecheck.ExpectKnownValue(conceptAddress, tfjsonpath.New("notations"), notations),
 		statecheck.ExpectKnownValue(conceptAddress, tfjsonpath.New("broader_concept_ids"), stringListKnownValue(broader)),
 		statecheck.ExpectKnownValue(conceptAddress, tfjsonpath.New("related_concept_ids"), stringListKnownValue(related)),
 		statecheck.ExpectKnownValue(schemeAddress, tfjsonpath.New("uri"), schemeURI),
@@ -385,9 +394,9 @@ func TestAccTaxonomyResourcesRecoverFromDeletion(t *testing.T) {
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "id", "organization-id/furniture"),
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "pref_label.en-US", "Furniture"),
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-GB.0", "Furniture"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-US.0", "Furniture"),
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-GB.0", "Furnishings"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-US.0", "Furnishings"),
 				resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "total_concepts", "1"),
 			),
 		},
@@ -422,7 +431,7 @@ func TestAccTaxonomyResourcesRecoverFromDeletion(t *testing.T) {
 }
 
 //nolint:paralleltest
-func TestAccTaxonomyResourcesRejectNormalizedLabels(t *testing.T) {
+func TestAccTaxonomyResourcesRecoverFromUnexpectedResponses(t *testing.T) {
 	parallelWhenMocked(t)
 
 	tests := map[string]struct {
@@ -431,10 +440,10 @@ func TestAccTaxonomyResourcesRejectNormalizedLabels(t *testing.T) {
 		resourceName string
 		update       bool
 	}{
-		"concept create": {method: http.MethodPut, path: "/taxonomy/concepts/", resourceName: "taxonomy concept"},
-		"concept update": {method: http.MethodPatch, path: "/taxonomy/concepts/", resourceName: "taxonomy concept", update: true},
-		"scheme create":  {method: http.MethodPut, path: "/taxonomy/concept-schemes/", resourceName: "taxonomy concept scheme"},
-		"scheme update":  {method: http.MethodPatch, path: "/taxonomy/concept-schemes/", resourceName: "taxonomy concept scheme", update: true},
+		"concept create": {method: http.MethodPut, path: "/taxonomy/concepts/furniture", resourceName: "taxonomy concept"},
+		"concept update": {method: http.MethodPatch, path: "/taxonomy/concepts/furniture", resourceName: "taxonomy concept", update: true},
+		"scheme create":  {method: http.MethodPut, path: "/taxonomy/concept-schemes/products", resourceName: "taxonomy concept scheme"},
+		"scheme update":  {method: http.MethodPatch, path: "/taxonomy/concept-schemes/products", resourceName: "taxonomy concept scheme", update: true},
 	}
 
 	for name, test := range tests {
@@ -447,6 +456,7 @@ func TestAccTaxonomyResourcesRejectNormalizedLabels(t *testing.T) {
 			}
 
 			mutator := &taxonomyResponseMutator{next: server}
+			recorder := &taxonomyRequestBodyRecorder{next: mutator}
 			base := taxonomyConfigVariables("Furniture", "Products")
 			steps := []resource.TestStep{}
 
@@ -470,24 +480,289 @@ func TestAccTaxonomyResourcesRejectNormalizedLabels(t *testing.T) {
 				},
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccTaxonomyResourcesCreateUpdate"),
 				ConfigVariables: updated,
-				ExpectError:     regexp.MustCompile("Contentful normalized " + test.resourceName + " configuration"),
+				ExpectError:     regexp.MustCompile("Unexpected Contentful " + test.resourceName + " response"),
+			})
+			steps = append(steps, resource.TestStep{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccTaxonomyResourcesCreateUpdate"),
+				ConfigVariables: updated,
 			})
 
-			ContentfulProviderMockedResourceTest(t, mutator, resource.TestCase{Steps: steps})
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+				Steps:                steps,
+			})
+
+			requests := recorder.matchingRequests(http.MethodPatch, test.path)
+			if test.update {
+				require.Len(t, requests, 2)
+				assert.Equal(t, "2", requests[len(requests)-1].version)
+
+				var patch []struct {
+					Path string `json:"path"`
+				}
+				require.NoError(t, json.Unmarshal(requests[len(requests)-1].body, &patch))
+				require.Len(t, patch, 1)
+				assert.Equal(t, "/prefLabel", patch[0].Path)
+			} else {
+				require.Empty(t, requests)
+
+				deletes := recorder.matchingRequests(http.MethodDelete, test.path)
+				require.NotEmpty(t, deletes)
+				assert.Equal(t, "1", deletes[0].version, "tainted Create recovery must use the returned version")
+			}
 		})
 	}
 }
 
 //nolint:paralleltest
-func TestAccTaxonomyConceptPreservesConfiguredLabelMaps(t *testing.T) {
+func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 	parallelWhenMocked(t)
 
 	tests := map[string]struct {
-		method string
+		path          string
+		initialConfig string
+		changedConfig string
+		seed          func(*cmt.Server) error
+		attach        func(*cmt.Server) error
+		delete        func(*cmt.Server) error
+		refreshed     resource.TestCheckFunc
+		checks        resource.TestCheckFunc
+	}{
+		"concept": {
+			path: "/taxonomy/concepts/furniture", initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"),
+			seed: func(server *cmt.Server) error {
+				response, err := server.Handler().PutTaxonomyConcept(context.Background(), &cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Remote"}}, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "remote"})
+				if err != nil {
+					return fmt.Errorf("create remote taxonomy concept: %w", err)
+				}
+
+				if _, ok := response.(*cm.TaxonomyConcept); !ok {
+					return fmt.Errorf("%w: remote taxonomy concept: %T", errUnexpectedTaxonomyResponse, response)
+				}
+
+				return nil
+			},
+			attach: attachRemoteConceptToConcept, delete: func(server *cmt.Server) error {
+				return deleteTaxonomyConceptRemote(server, "organization-id", "remote")
+			},
+			refreshed: resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "broader_concept_ids.0", "remote"),
+			checks:    resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "pref_label.en-US", "Home furniture"), resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "broader_concept_ids.#", "0"), resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "related_concept_ids.#", "0")),
+		},
+		"scheme": {
+			path: "/taxonomy/concept-schemes/products", initialConfig: taxonomyConceptSchemeOmittedCollectionsConfig("Products"), changedConfig: taxonomyConceptSchemeOmittedCollectionsConfig("Home products"),
+			seed: func(server *cmt.Server) error {
+				response, err := server.Handler().PutTaxonomyConcept(context.Background(), &cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Remote"}}, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "remote"})
+				if err != nil {
+					return fmt.Errorf("create remote taxonomy concept: %w", err)
+				}
+
+				if _, ok := response.(*cm.TaxonomyConcept); !ok {
+					return fmt.Errorf("%w: remote taxonomy concept: %T", errUnexpectedTaxonomyResponse, response)
+				}
+
+				return nil
+			},
+			attach: attachRemoteConceptToScheme, delete: func(server *cmt.Server) error {
+				return deleteTaxonomyConceptRemote(server, "organization-id", "remote")
+			},
+			refreshed: resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "concept_ids.0", "remote"), resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "top_concept_ids.0", "remote")),
+			checks:    resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "pref_label.en-US", "Home products"), resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "concept_ids.#", "0"), resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "top_concept_ids.#", "0")),
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			hook := &taxonomyRequestHook{next: server}
+			recorder := &taxonomyRequestBodyRecorder{next: hook}
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+				{Config: test.initialConfig},
+				{PreConfig: func() { require.NoError(t, test.seed(server)); require.NoError(t, test.attach(server)) }, Config: test.initialConfig, Check: test.refreshed},
+				{PreConfig: func() {
+					recorder.reset()
+					hook.runOnce(http.MethodPatch, test.path, func() error { return test.delete(server) })
+				}, Config: test.changedConfig, Check: test.checks},
+			}})
+			require.True(t, hook.wasCalled())
+
+			patches := recorder.matchingRequests(http.MethodPatch, test.path)
+			require.NotEmpty(t, patches)
+
+			for _, request := range patches {
+				assert.Equal(t, "2", request.version)
+				assert.Equal(t, patches[0].body, request.body)
+			}
+
+			var patch []struct {
+				Path string `json:"path"`
+			}
+			require.NoError(t, json.Unmarshal(patches[0].body, &patch))
+
+			paths := make([]string, 0, len(patch))
+			for _, operation := range patch {
+				paths = append(paths, operation.Path)
+			}
+
+			require.Equal(t, []string{"/prefLabel"}, paths)
+			assert.GreaterOrEqual(t, len(recorder.matchingRequests(http.MethodGet, test.path)), 2)
+		})
+	}
+}
+
+//nolint:paralleltest
+func TestAccTaxonomyResourcesRejectResponseIdentityRetargeting(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
+		method        string
+		path          string
+		resourceName  string
+		initialConfig string
+		changedConfig string
+		update        bool
+	}{
+		"concept create": {
+			method: http.MethodPut, path: "/taxonomy/concepts/furniture", resourceName: "taxonomy concept",
+			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Furniture"),
+		},
+		"concept update": {
+			method: http.MethodPatch, path: "/taxonomy/concepts/furniture", resourceName: "taxonomy concept",
+			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"), update: true,
+		},
+		"scheme create": {
+			method: http.MethodPut, path: "/taxonomy/concept-schemes/products", resourceName: "taxonomy concept scheme",
+			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Products"),
+		},
+		"scheme update": {
+			method: http.MethodPatch, path: "/taxonomy/concept-schemes/products", resourceName: "taxonomy concept scheme",
+			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Home products"), update: true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			mutator := &taxonomyResponseMutator{next: server}
+			recorder := &taxonomyRequestBodyRecorder{next: mutator}
+			steps := []resource.TestStep{}
+
+			if test.update {
+				steps = append(steps, resource.TestStep{Config: test.initialConfig})
+			}
+
+			steps = append(steps, resource.TestStep{
+				PreConfig: func() {
+					mutator.replaceIdentityOnce(test.method, test.path, "other-organization", "other-resource")
+				},
+				Config:      test.changedConfig,
+				ExpectError: regexp.MustCompile("Unexpected Contentful " + test.resourceName + " response"),
+			})
+
+			if test.update {
+				steps = append(steps, resource.TestStep{
+					Config: test.changedConfig,
+					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					}},
+				})
+			} else {
+				steps = append(steps, resource.TestStep{Config: test.changedConfig})
+			}
+
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+				Steps:                steps,
+			})
+
+			if test.update {
+				requests := recorder.matchingRequests(http.MethodPatch, test.path)
+				require.NotEmpty(t, requests)
+
+				for _, request := range requests {
+					assert.Equal(t, "1", request.version)
+					assert.Equal(t, requests[0].body, request.body)
+				}
+			} else {
+				deletes := recorder.matchingRequests(http.MethodDelete, test.path)
+				require.NotEmpty(t, deletes)
+
+				assert.Equal(t, "1", deletes[0].version)
+			}
+		})
+	}
+}
+
+//nolint:paralleltest
+func TestAccTaxonomyResourcesRejectNegativeResponseVersionsWithoutState(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
+		method       string
+		path         string
+		config       string
+		resourceName string
+		deleteRemote func(*cmt.Server) error
+	}{
+		"concept": {
+			method: http.MethodPut, path: "/taxonomy/concepts/furniture", config: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test",
+			deleteRemote: func(server *cmt.Server) error {
+				return deleteTaxonomyConceptRemote(server, "organization-id", "furniture")
+			},
+		},
+		"scheme": {
+			method: http.MethodPut, path: "/taxonomy/concept-schemes/products", config: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test",
+			deleteRemote: func(server *cmt.Server) error {
+				return deleteTaxonomyConceptSchemeRemote(server, "organization-id", "products")
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			mutator := &taxonomyResponseMutator{next: server}
+			recorder := &taxonomyRequestBodyRecorder{next: mutator}
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+				{
+					PreConfig:   func() { mutator.negativeVersionOnce(test.method, test.path) },
+					Config:      test.config,
+					ExpectError: regexp.MustCompile(`Invalid taxonomy resource version`),
+				},
+				{
+					PreConfig: func() { require.NoError(t, test.deleteRemote(server)) },
+					Config:    test.config,
+					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionCreate),
+					}},
+				},
+			}})
+
+			requests := recorder.matchingRequests(http.MethodPut, test.path)
+			require.Len(t, requests, 2, "a rejected response version must not publish state")
+		})
+	}
+}
+
+//nolint:paralleltest
+func TestAccTaxonomyConceptPreservesExplicitEmptyLabelMapsAgainstCanonicalResponse(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
 		update bool
 	}{
-		"create": {method: http.MethodPut},
-		"update": {method: http.MethodPatch, update: true},
+		"create": {},
+		"update": {update: true},
 	}
 
 	for name, test := range tests {
@@ -499,42 +774,111 @@ func TestAccTaxonomyConceptPreservesConfiguredLabelMaps(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			mutator := &taxonomyResponseMutator{next: server}
-			base := taxonomyConfigVariables("Furniture", "Products")
+			recorder := &taxonomyRequestBodyRecorder{next: server}
+			base := taxonomyConceptEmptyLabelMapsConfig("Chair")
 			steps := []resource.TestStep{}
 
 			if test.update {
-				steps = append(steps, resource.TestStep{
-					ConfigDirectory: config.StaticDirectory("testdata/TestAccTaxonomyResourcesCreateUpdate"),
-					ConfigVariables: base,
-				})
+				steps = append(steps, resource.TestStep{Config: base})
 			}
 
-			updated := maps.Clone(base)
-			updated["concept_label"] = config.StringVariable("Home furniture")
+			updated := taxonomyConceptEmptyLabelMapsConfig("Chaise")
 			steps = append(
 				steps,
 				resource.TestStep{
-					PreConfig: func() {
-						mutator.addEmptyLabelLocaleOnce(test.method, "/taxonomy/concepts/", "en-US")
-					},
-					ConfigDirectory: config.StaticDirectory("testdata/TestAccTaxonomyResourcesCreateUpdate"),
-					ConfigVariables: updated,
+					Config: updated,
 					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "1"),
-						resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "1"),
-						resource.TestCheckNoResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-US"),
-						resource.TestCheckNoResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-US"),
+						resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "0"),
+						resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "0"),
 					),
 				},
 				resource.TestStep{
-					ConfigDirectory: config.StaticDirectory("testdata/TestAccTaxonomyResourcesCreateUpdate"),
-					ConfigVariables: updated,
-					PlanOnly:        true,
+					Config: updated,
+					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					}},
 				},
 			)
 
-			ContentfulProviderMockedResourceTest(t, mutator, resource.TestCase{Steps: steps})
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: steps})
+
+			if !test.update {
+				return
+			}
+
+			requests := recorder.matchingRequests(http.MethodPatch, "/taxonomy/concepts/furniture")
+			require.Len(t, requests, 1)
+
+			var patch []struct {
+				Path string `json:"path"`
+			}
+
+			require.NoError(t, json.Unmarshal(requests[0].body, &patch))
+			require.Len(t, patch, 1)
+			require.Equal(t, []string{"/prefLabel"}, []string{patch[0].Path})
+		})
+	}
+}
+
+//nolint:paralleltest
+func TestAccTaxonomyConceptProjectsOutOfBandLabelLocalesByOwnership(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
+		config         string
+		expectedAction plancheck.ResourceActionType
+		check          resource.TestCheckFunc
+	}{
+		"configured maps remove drift": {
+			config:         taxonomyConceptConfiguredLabelMapsConfig("Furniture"),
+			expectedAction: plancheck.ResourceActionUpdate,
+			check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "1"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-US.0", "Furniture"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "1"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-US.0", "Furnishings"),
+			),
+		},
+		"explicit empty maps remove drift": {
+			config:         taxonomyConceptEmptyLabelMapsConfig("Furniture"),
+			expectedAction: plancheck.ResourceActionUpdate,
+			check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "0"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "0"),
+			),
+		},
+		"omitted maps retain drift": {
+			config:         taxonomyConceptConfig("Furniture"),
+			expectedAction: plancheck.ResourceActionNoop,
+			check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.fr-FR.0", "Fauteuil"),
+				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.fr-FR.0", "Siege"),
+			),
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
+				{Config: test.config},
+				{
+					PreConfig: func() {
+						injectTaxonomyConceptLabelLocaleIntoStoredResponse(t, server, "organization-id", "furniture", "fr-FR", "Fauteuil", "Siege")
+					},
+					Config: test.config,
+					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_taxonomy_concept.test", test.expectedAction),
+					}},
+					Check: test.check,
+				},
+			}})
 		})
 	}
 }
@@ -553,22 +897,22 @@ func TestAccTaxonomyResourcesSurfaceVersionConflicts(t *testing.T) {
 	}{
 		"concept update": {
 			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"),
-			method: http.MethodPatch, path: "/taxonomy/concepts/furniture", expectedError: "Failed to update taxonomy concept",
+			method: http.MethodPatch, path: "/taxonomy/concepts/furniture", expectedError: `changed after\s+this Terraform plan was created`,
 			bumpVersion: bumpTaxonomyConceptVersion,
 		},
 		"concept delete": {
 			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: "# intentionally empty\n",
-			method: http.MethodDelete, path: "/taxonomy/concepts/furniture", expectedError: "Failed to delete taxonomy concept",
+			method: http.MethodDelete, path: "/taxonomy/concepts/furniture", expectedError: `changed after\s+this Terraform plan was created`,
 			bumpVersion: bumpTaxonomyConceptVersion,
 		},
 		"scheme update": {
 			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Home products"),
-			method: http.MethodPatch, path: "/taxonomy/concept-schemes/products", expectedError: "Failed to update taxonomy concept scheme",
+			method: http.MethodPatch, path: "/taxonomy/concept-schemes/products", expectedError: `changed after\s+this Terraform plan was created`,
 			bumpVersion: bumpTaxonomyConceptSchemeVersion,
 		},
 		"scheme delete": {
 			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: "# intentionally empty\n",
-			method: http.MethodDelete, path: "/taxonomy/concept-schemes/products", expectedError: "Failed to delete taxonomy concept scheme",
+			method: http.MethodDelete, path: "/taxonomy/concept-schemes/products", expectedError: `changed after\s+this Terraform plan was created`,
 			bumpVersion: bumpTaxonomyConceptSchemeVersion,
 		},
 	}
@@ -591,11 +935,117 @@ func TestAccTaxonomyResourcesSurfaceVersionConflicts(t *testing.T) {
 					},
 					Config: test.changedConfig, ExpectError: regexp.MustCompile(test.expectedError),
 				},
+				{
+					Config: test.initialConfig,
+					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					}},
+				},
 			}})
 
 			if !hook.wasCalled() {
 				t.Fatal("version-conflict hook was not called")
 			}
+		})
+	}
+}
+
+//nolint:paralleltest
+func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
+		path             string
+		initialConfig    string
+		mismatchedConfig string
+		recoveredConfig  string
+		prepareRemote    func(*cmt.Server) error
+		mutateRemote     func(*cmt.Server) error
+	}{
+		"concept owned label map": {
+			path:             "/taxonomy/concepts/furniture",
+			initialConfig:    taxonomyConceptRecoveryLabelMapsConfig("Furniture", "Furniture"),
+			mismatchedConfig: taxonomyConceptRecoveryLabelMapsConfig("Home furniture", "Furniture"),
+			recoveredConfig:  taxonomyConceptRecoveredLabelMapConfig("Final furniture"),
+			mutateRemote: func(server *cmt.Server) error {
+				return mutateTaxonomyConceptAltLabels(server, "en-US", []string{"Remote furniture"})
+			},
+		},
+		"scheme owned concepts": {
+			path:             "/taxonomy/concept-schemes/products",
+			initialConfig:    taxonomyConceptSchemeConfig("Products"),
+			mismatchedConfig: taxonomyConceptSchemeConfig("Home products"),
+			recoveredConfig:  taxonomyConceptSchemeRecoveredConceptsConfig("Final products"),
+			prepareRemote: func(server *cmt.Server) error {
+				request := cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Furniture"}}
+
+				_, err := server.Handler().PutTaxonomyConcept(context.Background(), &request, cm.PutTaxonomyConceptParams{
+					OrganizationID: "organization-id", TaxonomyConceptID: "furniture",
+				})
+				if err != nil {
+					return fmt.Errorf("create taxonomy concept: %w", err)
+				}
+
+				return nil
+			},
+			mutateRemote: func(server *cmt.Server) error {
+				response, err := server.Handler().GetTaxonomyConceptScheme(context.Background(), cm.GetTaxonomyConceptSchemeParams{
+					OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products",
+				})
+				if err != nil {
+					return fmt.Errorf("get taxonomy concept scheme: %w", err)
+				}
+
+				scheme, ok := response.(*cm.TaxonomyConceptScheme)
+				if !ok {
+					return fmt.Errorf("%w: taxonomy concept scheme: %T", errUnexpectedTaxonomyResponse, response)
+				}
+
+				scheme.Concepts = []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("furniture")}
+
+				return nil
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			if test.prepareRemote != nil {
+				require.NoError(t, test.prepareRemote(server))
+			}
+
+			recorder := &taxonomyRequestBodyRecorder{next: server}
+
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+				Steps: []resource.TestStep{
+					{Config: test.initialConfig},
+					{
+						PreConfig: func() {
+							require.NoError(t, test.mutateRemote(server))
+						},
+						Config:      test.mismatchedConfig,
+						ExpectError: regexp.MustCompile("Unexpected Contentful taxonomy"),
+					},
+					{Config: test.recoveredConfig},
+				},
+			})
+
+			requests := recorder.matchingRequests(http.MethodPatch, test.path)
+			require.Len(t, requests, 2)
+			assert.Equal(t, "2", requests[1].version, "recovered remote version must be used")
+
+			var patch []struct {
+				Path string `json:"path"`
+			}
+			require.NoError(t, json.Unmarshal(requests[1].body, &patch))
+			require.Len(t, patch, 1)
+			assert.Equal(t, "/prefLabel", patch[0].Path)
 		})
 	}
 }
@@ -703,23 +1153,21 @@ func TestAccTaxonomyResourcesSurfaceReadFailures(t *testing.T) {
 }
 
 //nolint:paralleltest
-func TestAccTaxonomyResourcesSurfacePreUpdateFailures(t *testing.T) {
+func TestAccTaxonomyResourcesDoNotGETInsideUpdate(t *testing.T) {
 	parallelWhenMocked(t)
 
 	tests := map[string]struct {
 		initialConfig string
 		changedConfig string
 		path          string
-		expectedError string
-		resource      string
 	}{
 		"concept": {
 			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"),
-			path: "/taxonomy/concepts/furniture", expectedError: "Failed to refresh taxonomy concept before update", resource: "contentful_taxonomy_concept.test",
+			path: "/taxonomy/concepts/furniture",
 		},
 		"scheme": {
 			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Home products"),
-			path: "/taxonomy/concept-schemes/products", expectedError: "Failed to refresh taxonomy concept scheme before update", resource: "contentful_taxonomy_concept_scheme.test",
+			path: "/taxonomy/concept-schemes/products",
 		},
 	}
 
@@ -732,27 +1180,174 @@ func TestAccTaxonomyResourcesSurfacePreUpdateFailures(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			failer := &taxonomyResponseFailure{next: server}
-			ContentfulProviderMockedResourceTest(t, failer, resource.TestCase{Steps: []resource.TestStep{
+			recorder := &taxonomyRequestRecorder{next: server}
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.initialConfig},
 				{
-					PreConfig:   func() { failer.failOnce(http.MethodGet, test.path, 2) },
-					Config:      test.changedConfig,
-					ExpectError: regexp.MustCompile(test.expectedError),
-				},
-				{
-					Config: test.initialConfig,
-					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(test.resource, plancheck.ResourceActionNoop),
-					}},
+					PreConfig: recorder.reset,
+					Config:    test.changedConfig,
 				},
 			}})
 
-			if !failer.wasCalled() {
-				t.Fatal("pre-update failure handler was not called")
+			if count := recorder.count(http.MethodGet, test.path); count != 2 {
+				t.Errorf("plan and post-apply refresh GET count = %d, want 2", count)
+			}
+
+			if count := recorder.count(http.MethodPatch, test.path); count != 1 {
+				t.Errorf("update PATCH count = %d, want 1", count)
 			}
 		})
 	}
+}
+
+//nolint:paralleltest
+func TestAccTaxonomyResourcesUseImportedVersion(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
+		resourceName       string
+		importID           string
+		path               string
+		initialConfig      string
+		changedConfig      string
+		importVerifyIgnore []string
+	}{
+		"concept": {
+			resourceName: "contentful_taxonomy_concept.test", importID: "organization-id/furniture", path: "/taxonomy/concepts/furniture",
+			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"),
+			importVerifyIgnore: []string{"alt_labels", "hidden_labels"},
+		},
+		"scheme": {
+			resourceName: "contentful_taxonomy_concept_scheme.test", importID: "organization-id/products", path: "/taxonomy/concept-schemes/products",
+			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Home products"),
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			recorder := &taxonomyRequestBodyRecorder{next: server}
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+				Steps: []resource.TestStep{
+					{Config: test.initialConfig},
+					{
+						Config:                  test.initialConfig,
+						ResourceName:            test.resourceName,
+						ImportState:             true,
+						ImportStateId:           test.importID,
+						ImportStateVerify:       true,
+						ImportStateVerifyIgnore: test.importVerifyIgnore,
+					},
+					{Config: test.changedConfig},
+				},
+			})
+
+			requests := recorder.matchingRequests(http.MethodPatch, test.path)
+			require.Len(t, requests, 1)
+			assert.Equal(t, "1", requests[0].version)
+
+			var patch []struct {
+				Path string `json:"path"`
+			}
+			require.NoError(t, json.Unmarshal(requests[0].body, &patch))
+			require.Len(t, patch, 1)
+			assert.Equal(t, "/prefLabel", patch[0].Path)
+		})
+	}
+}
+
+//nolint:paralleltest
+func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := []struct {
+		name           string
+		config         string
+		path           string
+		absent         []string
+		expectedFields map[string]string
+	}{
+		{
+			name:   "concept omitted collections are omitted",
+			config: taxonomyConceptConfig("Furniture"),
+			path:   "/taxonomy/concepts/furniture",
+			absent: []string{"altLabels", "hiddenLabels", "notations", "broader", "related"},
+		},
+		{
+			name:   "concept explicit empty collections are sent",
+			config: taxonomyConceptAllCollectionsConfig("Furniture"),
+			path:   "/taxonomy/concepts/furniture",
+			expectedFields: map[string]string{
+				"altLabels":    `{"en-US":[]}`,
+				"hiddenLabels": `{"en-US":[]}`,
+				"notations":    `[]`,
+				"broader":      `[]`,
+				"related":      `[]`,
+			},
+		},
+		{
+			name:   "scheme omitted response-owned arrays are omitted",
+			config: taxonomyConceptSchemeOmittedCollectionsConfig("Products"),
+			path:   "/taxonomy/concept-schemes/products",
+			absent: []string{"topConcepts", "concepts"},
+		},
+		{
+			name:           "scheme explicit empty arrays remain empty",
+			config:         taxonomyConceptSchemeConfig("Products"),
+			path:           "/taxonomy/concept-schemes/products",
+			expectedFields: map[string]string{"topConcepts": `[]`, "concepts": `[]`},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			recorder := &taxonomyRequestBodyRecorder{next: server}
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{{Config: test.config}}})
+
+			fields, ok := recorder.request(http.MethodPut, test.path)
+			require.True(t, ok, "missing PUT request for %s", test.path)
+
+			for _, field := range test.absent {
+				assert.NotContains(t, fields, field)
+			}
+
+			for field, want := range test.expectedFields {
+				value, ok := fields[field]
+				require.True(t, ok, "missing request field %s", field)
+				assert.JSONEq(t, want, string(value))
+			}
+		})
+	}
+}
+
+//nolint:paralleltest
+func TestAccTaxonomyConceptImportProjectsNonemptyLabelMaps(t *testing.T) {
+	parallelWhenMocked(t)
+
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+
+	request := cm.TaxonomyConceptRequest{
+		PrefLabel:    cm.LocalizedString{"en-US": "Furniture"},
+		AltLabels:    cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {"Furnishings"}}),
+		HiddenLabels: cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {"Household goods"}}),
+	}
+	_, err = server.Handler().PutTaxonomyConcept(t.Context(), &request, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture"})
+	require.NoError(t, err)
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{{
+		Config: taxonomyConceptConfig("Furniture"), ResourceName: "contentful_taxonomy_concept.test", ImportState: true, ImportStateId: "organization-id/furniture", ImportStateCheck: taxonomyConceptImportLabelMapsCheck(),
+	}}})
 }
 
 func taxonomyConceptConfig(label string) string {
@@ -761,6 +1356,88 @@ resource "contentful_taxonomy_concept" "test" {
   organization_id = "organization-id"
   concept_id      = "furniture"
   pref_label      = { "en-US" = %q }
+}
+`, label)
+}
+
+func taxonomyConceptAllCollectionsConfig(label string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept" "test" {
+  organization_id = "organization-id"
+  concept_id      = "furniture"
+  pref_label      = { "en-US" = %q }
+  alt_labels      = {}
+  hidden_labels   = {}
+  notations       = []
+  broader_concept_ids = []
+  related_concept_ids = []
+}
+`, label)
+}
+
+func taxonomyConceptConfiguredLabelMapsConfig(label string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept" "test" {
+  organization_id = "organization-id"
+  concept_id      = "furniture"
+  pref_label      = { "en-US" = %q }
+  alt_labels      = { "en-US" = ["Furniture"] }
+  hidden_labels   = { "en-US" = ["Furnishings"] }
+}
+`, label)
+}
+
+func taxonomyConceptImportLabelMapsCheck() resource.ImportStateCheckFunc {
+	return func(states []*terraform.InstanceState) error {
+		if len(states) != 1 {
+			return fmt.Errorf("%w: expected one resource, got %d", errUnexpectedTaxonomyImportState, len(states))
+		}
+
+		expected := map[string]string{
+			"alt_labels.%":          "1",
+			"alt_labels.en-US.#":    "1",
+			"alt_labels.en-US.0":    "Furnishings",
+			"hidden_labels.%":       "1",
+			"hidden_labels.en-US.#": "1",
+			"hidden_labels.en-US.0": "Household goods",
+		}
+		for name, want := range expected {
+			if got := states[0].Attributes[name]; got != want {
+				return fmt.Errorf("%w: attribute %q got %q, want %q", errUnexpectedTaxonomyImportState, name, got, want)
+			}
+		}
+
+		return nil
+	}
+}
+
+func taxonomyConceptRecoveredLabelMapConfig(label string) string {
+	return taxonomyConceptRecoveryLabelMapsConfig(label, "Remote furniture")
+}
+
+func taxonomyConceptRecoveryLabelMapsConfig(label, altLabel string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept" "test" {
+  organization_id = "organization-id"
+  concept_id      = "furniture"
+  pref_label      = { "en-US" = %q }
+  alt_labels      = { "en-US" = [%q] }
+  hidden_labels   = { "en-US" = ["Furnishings"] }
+  notations       = []
+  broader_concept_ids = []
+  related_concept_ids = []
+}
+`, label, altLabel)
+}
+
+func taxonomyConceptEmptyLabelMapsConfig(label string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept" "test" {
+  organization_id = "organization-id"
+  concept_id      = "furniture"
+  pref_label      = { "en-US" = %q }
+  alt_labels      = {}
+  hidden_labels   = {}
 }
 `, label)
 }
@@ -775,6 +1452,70 @@ resource "contentful_taxonomy_concept_scheme" "test" {
   concept_ids       = []
 }
 `, label)
+}
+
+func taxonomyConceptSchemeRecoveredConceptsConfig(label string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept_scheme" "test" {
+  organization_id   = "organization-id"
+  concept_scheme_id = "products"
+  pref_label        = { "en-US" = %q }
+  top_concept_ids   = []
+  concept_ids       = ["furniture"]
+}
+`, label)
+}
+
+func taxonomyConceptSchemeOmittedCollectionsConfig(label string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept_scheme" "test" {
+  organization_id   = "organization-id"
+  concept_scheme_id = "products"
+  pref_label        = { "en-US" = %q }
+}
+`, label)
+}
+
+func attachRemoteConceptToConcept(server *cmt.Server) error {
+	response, err := server.Handler().GetTaxonomyConcept(context.Background(), cm.GetTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture"})
+	if err != nil {
+		return fmt.Errorf("get taxonomy concept: %w", err)
+	}
+
+	concept, ok := response.(*cm.TaxonomyConcept)
+	if !ok {
+		return fmt.Errorf("%w: taxonomy concept: %T", errUnexpectedTaxonomyResponse, response)
+	}
+
+	patch := cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/broader", Value: jx.Raw(`[{"sys":{"id":"remote","linkType":"TaxonomyConcept","type":"Link"}}]`)}}
+
+	_, err = server.Handler().PatchTaxonomyConcept(context.Background(), patch, cm.PatchTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture", XContentfulVersion: concept.Sys.Version})
+	if err != nil {
+		return fmt.Errorf("patch taxonomy concept: %w", err)
+	}
+
+	return nil
+}
+
+func attachRemoteConceptToScheme(server *cmt.Server) error {
+	response, err := server.Handler().GetTaxonomyConceptScheme(context.Background(), cm.GetTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products"})
+	if err != nil {
+		return fmt.Errorf("get taxonomy concept scheme: %w", err)
+	}
+
+	scheme, ok := response.(*cm.TaxonomyConceptScheme)
+	if !ok {
+		return fmt.Errorf("%w: taxonomy concept scheme: %T", errUnexpectedTaxonomyResponse, response)
+	}
+
+	patch := cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/concepts", Value: jx.Raw(`[{"sys":{"id":"remote","linkType":"TaxonomyConcept","type":"Link"}}]`)}, {Op: cm.TaxonomyPatchItemOpAdd, Path: "/topConcepts", Value: jx.Raw(`[{"sys":{"id":"remote","linkType":"TaxonomyConcept","type":"Link"}}]`)}}
+
+	_, err = server.Handler().PatchTaxonomyConceptScheme(context.Background(), patch, cm.PatchTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products", XContentfulVersion: scheme.Sys.Version})
+	if err != nil {
+		return fmt.Errorf("patch taxonomy concept scheme: %w", err)
+	}
+
+	return nil
 }
 
 func bumpTaxonomyConceptVersion(server *cmt.Server) error {
@@ -802,6 +1543,24 @@ func bumpTaxonomyConceptVersion(server *cmt.Server) error {
 	if _, ok := patchResponse.(*cm.TaxonomyConcept); !ok {
 		return fmt.Errorf("%w: taxonomy concept patch: %T", errUnexpectedTaxonomyResponse, patchResponse)
 	}
+
+	return nil
+}
+
+func mutateTaxonomyConceptAltLabels(server *cmt.Server, locale string, labels []string) error {
+	response, err := server.Handler().GetTaxonomyConcept(context.Background(), cm.GetTaxonomyConceptParams{
+		OrganizationID: "organization-id", TaxonomyConceptID: "furniture",
+	})
+	if err != nil {
+		return fmt.Errorf("get taxonomy concept: %w", err)
+	}
+
+	concept, ok := response.(*cm.TaxonomyConcept)
+	if !ok {
+		return fmt.Errorf("%w: taxonomy concept: %T", errUnexpectedTaxonomyResponse, response)
+	}
+
+	concept.AltLabels = cm.NewOptLocalizedStringList(cm.LocalizedStringList{locale: labels})
 
 	return nil
 }
@@ -835,166 +1594,36 @@ func bumpTaxonomyConceptSchemeVersion(server *cmt.Server) error {
 	return nil
 }
 
-func deleteTaxonomyConceptRemote(server *cmt.Server, organizationID, conceptID string) error {
+// injectTaxonomyConceptLabelLocaleIntoStoredResponse creates an adversarial
+// response-only locale that CMA normalization would not currently return. It
+// deliberately bypasses request handling to exercise Read ownership policy.
+func injectTaxonomyConceptLabelLocaleIntoStoredResponse(t *testing.T, server *cmt.Server, organizationID, conceptID, locale, altLabel, hiddenLabel string) {
+	t.Helper()
+
 	ctx := context.Background()
 
 	response, err := server.Handler().GetTaxonomyConcept(ctx, cm.GetTaxonomyConceptParams{
 		OrganizationID: organizationID, TaxonomyConceptID: conceptID,
 	})
 	if err != nil {
-		return fmt.Errorf("get taxonomy concept: %w", err)
+		t.Fatal(err)
 	}
 
 	concept, ok := response.(*cm.TaxonomyConcept)
 	if !ok {
-		return fmt.Errorf("%w: taxonomy concept: %T", errUnexpectedTaxonomyResponse, response)
+		t.Fatalf("get taxonomy concept returned %T", response)
 	}
 
-	deleted, err := server.Handler().DeleteTaxonomyConcept(ctx, cm.DeleteTaxonomyConceptParams{
-		OrganizationID: organizationID, TaxonomyConceptID: conceptID, XContentfulVersion: concept.Sys.Version,
-	})
-	if err != nil {
-		return fmt.Errorf("delete taxonomy concept: %w", err)
-	}
+	altLabels, _ := concept.AltLabels.Get()
+	hiddenLabels, _ := concept.HiddenLabels.Get()
+	altLabels = maps.Clone(altLabels)
+	hiddenLabels = maps.Clone(hiddenLabels)
+	altLabels[locale] = []string{altLabel}
+	hiddenLabels[locale] = []string{hiddenLabel}
 
-	if _, ok := deleted.(*cm.NoContent); !ok {
-		return fmt.Errorf("%w: taxonomy concept deletion: %T", errUnexpectedTaxonomyResponse, deleted)
-	}
-
-	return nil
-}
-
-func deleteTaxonomyConceptSchemeRemote(server *cmt.Server, organizationID, schemeID string) error {
-	ctx := context.Background()
-
-	response, err := server.Handler().GetTaxonomyConceptScheme(ctx, cm.GetTaxonomyConceptSchemeParams{
-		OrganizationID: organizationID, TaxonomyConceptSchemeID: schemeID,
-	})
-	if err != nil {
-		return fmt.Errorf("get taxonomy concept scheme: %w", err)
-	}
-
-	scheme, ok := response.(*cm.TaxonomyConceptScheme)
-	if !ok {
-		return fmt.Errorf("%w: taxonomy concept scheme: %T", errUnexpectedTaxonomyResponse, response)
-	}
-
-	deleted, err := server.Handler().DeleteTaxonomyConceptScheme(ctx, cm.DeleteTaxonomyConceptSchemeParams{
-		OrganizationID: organizationID, TaxonomyConceptSchemeID: schemeID, XContentfulVersion: scheme.Sys.Version,
-	})
-	if err != nil {
-		return fmt.Errorf("delete taxonomy concept scheme: %w", err)
-	}
-
-	if _, ok := deleted.(*cm.NoContent); !ok {
-		return fmt.Errorf("%w: taxonomy concept scheme deletion: %T", errUnexpectedTaxonomyResponse, deleted)
-	}
-
-	return nil
-}
-
-type taxonomyRequestHook struct {
-	next http.Handler
-
-	mu     sync.Mutex
-	method string
-	path   string
-	hook   func() error
-	called bool
-}
-
-type taxonomyResponseFailure struct {
-	next http.Handler
-
-	mu               sync.Mutex
-	method           string
-	path             string
-	remainingMatches int
-	called           bool
-}
-
-func (f *taxonomyResponseFailure) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	if f.consume(request.Method, request.URL.Path) {
-		http.Error(responseWriter, "injected taxonomy failure", http.StatusBadRequest)
-
-		return
-	}
-
-	f.next.ServeHTTP(responseWriter, request)
-}
-
-func (f *taxonomyResponseFailure) failOnce(method, path string, occurrence int) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	f.method, f.path, f.remainingMatches, f.called = method, path, occurrence, false
-}
-
-func (f *taxonomyResponseFailure) consume(method, path string) bool {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	if method != f.method || !strings.HasSuffix(path, f.path) || f.called {
-		return false
-	}
-
-	f.remainingMatches--
-	if f.remainingMatches > 0 {
-		return false
-	}
-
-	f.called = true
-
-	return true
-}
-
-func (f *taxonomyResponseFailure) wasCalled() bool {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	return f.called
-}
-
-func (h *taxonomyRequestHook) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	hook := h.consume(request.Method, request.URL.Path)
-	if hook != nil {
-		err := hook()
-		if err != nil {
-			http.Error(responseWriter, err.Error(), http.StatusInternalServerError)
-
-			return
-		}
-	}
-
-	h.next.ServeHTTP(responseWriter, request)
-}
-
-func (h *taxonomyRequestHook) runOnce(method, path string, hook func() error) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	h.method, h.path, h.hook, h.called = method, path, hook, false
-}
-
-func (h *taxonomyRequestHook) consume(method, path string) func() error {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	if method != h.method || !strings.HasSuffix(path, h.path) {
-		return nil
-	}
-
-	hook := h.hook
-	h.method, h.path, h.hook, h.called = "", "", nil, true
-
-	return hook
-}
-
-func (h *taxonomyRequestHook) wasCalled() bool {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	return h.called
+	concept.AltLabels = cm.NewOptLocalizedStringList(altLabels)
+	concept.HiddenLabels = cm.NewOptLocalizedStringList(hiddenLabels)
+	concept.Sys.Version++
 }
 
 func taxonomyConfigVariables(conceptLabel, schemeLabel string) config.Variables {
@@ -1007,150 +1636,225 @@ func taxonomyConfigVariables(conceptLabel, schemeLabel string) config.Variables 
 	}
 }
 
-type taxonomyResponseMutator struct {
-	next http.Handler
+//nolint:paralleltest
+func TestAccTaxonomyReadIdentityFailuresRetainPriorState(t *testing.T) {
+	parallelWhenMocked(t)
 
-	mu     sync.Mutex
-	method string
-	path   string
-	locale string
-	add    bool
+	tests := map[string]struct {
+		path          string
+		initialConfig string
+		mutate        func(*taxonomyResponseMutator, string)
+		expectError   *regexp.Regexp
+		resourceName  string
+	}{
+		"concept changed": {
+			path: "/taxonomy/concepts/furniture", initialConfig: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test", expectError: regexp.MustCompile("Unexpected Identity Change"),
+			mutate: func(mutator *taxonomyResponseMutator, path string) {
+				mutator.replaceIdentityOnce(http.MethodGet, path, "other-organization", "other-resource")
+			},
+		},
+		"concept missing": {
+			path: "/taxonomy/concepts/furniture", initialConfig: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test", expectError: regexp.MustCompile("Failed to read taxonomy concept"),
+			mutate: func(mutator *taxonomyResponseMutator, path string) { mutator.removeIdentityOnce(http.MethodGet, path) },
+		},
+		"scheme changed": {
+			path: "/taxonomy/concept-schemes/products", initialConfig: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test", expectError: regexp.MustCompile("Unexpected Identity Change"),
+			mutate: func(mutator *taxonomyResponseMutator, path string) {
+				mutator.replaceIdentityOnce(http.MethodGet, path, "other-organization", "other-resource")
+			},
+		},
+		"scheme missing": {
+			path: "/taxonomy/concept-schemes/products", initialConfig: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test", expectError: regexp.MustCompile("Failed to read taxonomy concept scheme"),
+			mutate: func(mutator *taxonomyResponseMutator, path string) { mutator.removeIdentityOnce(http.MethodGet, path) },
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			mutator := &taxonomyResponseMutator{next: server}
+
+			ContentfulProviderMockedResourceTest(t, mutator, resource.TestCase{Steps: []resource.TestStep{
+				{Config: test.initialConfig},
+				{PreConfig: func() { test.mutate(mutator, test.path) }, Config: test.initialConfig, ExpectError: test.expectError},
+				{Config: test.initialConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop)}}},
+			}})
+		})
+	}
 }
 
-func (m *taxonomyResponseMutator) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	recorder := httptest.NewRecorder()
-	m.next.ServeHTTP(recorder, request)
+//nolint:paralleltest
+func TestAccTaxonomyExplicitEmptyLocalizedMapsRemainStable(t *testing.T) {
+	parallelWhenMocked(t)
 
-	body := recorder.Body.Bytes()
+	tests := map[string]struct {
+		resourceName string
+		path         string
+		config       string
+		seedDrift    func(*cmt.Server) error
+		fields       []string
+	}{
+		"concept": {
+			resourceName: "contentful_taxonomy_concept.test", path: "/taxonomy/concepts/furniture", config: taxonomyConceptEmptyLocalizedStringsConfig("Furniture"),
+			seedDrift: func(server *cmt.Server) error {
+				response, err := server.Handler().PatchTaxonomyConcept(t.Context(), cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/note", Value: jx.Raw(`{"en-US":"remote"}`)}}, cm.PatchTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture", XContentfulVersion: 1})
+				if err != nil {
+					return fmt.Errorf("patch taxonomy concept: %w", err)
+				}
 
-	if recorder.Code >= http.StatusOK && recorder.Code < http.StatusMultipleChoices {
-		locale, add, mutate := m.consumeMutation(request.Method, request.URL.Path)
-		if mutate {
-			if add {
-				body = addEmptyLabelLocale(body, locale)
-			} else {
-				body = removePreferredLabelLocale(body, locale)
+				if _, ok := response.(*cm.TaxonomyConcept); !ok {
+					return fmt.Errorf("%w: %T", errUnexpectedTaxonomyResponse, response)
+				}
+
+				return nil
+			},
+			fields: []string{"note", "changeNote", "definition", "editorialNote", "example", "historyNote", "scopeNote"},
+		},
+		"scheme": {
+			resourceName: "contentful_taxonomy_concept_scheme.test", path: "/taxonomy/concept-schemes/products", config: taxonomyConceptSchemeEmptyDefinitionConfig("Products"),
+			seedDrift: func(server *cmt.Server) error {
+				response, err := server.Handler().PatchTaxonomyConceptScheme(t.Context(), cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/definition", Value: jx.Raw(`{"en-US":"remote"}`)}}, cm.PatchTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products", XContentfulVersion: 1})
+				if err != nil {
+					return fmt.Errorf("patch taxonomy concept scheme: %w", err)
+				}
+
+				if _, ok := response.(*cm.TaxonomyConceptScheme); !ok {
+					return fmt.Errorf("%w: %T", errUnexpectedTaxonomyResponse, response)
+				}
+
+				return nil
+			},
+			fields: []string{"definition"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			recorder := &taxonomyRequestBodyRecorder{next: server}
+
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop)}}},
+				{PreConfig: func() { require.NoError(t, test.seedDrift(server)) }, Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionUpdate)}, PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+			}})
+
+			put, ok := recorder.request(http.MethodPut, test.path)
+			require.True(t, ok)
+
+			for _, field := range test.fields {
+				require.Contains(t, put, field)
+				assert.JSONEq(t, `{}`, string(put[field]))
 			}
-		}
-	}
 
-	for key, values := range recorder.Header() {
-		responseWriter.Header()[key] = append([]string(nil), values...)
-	}
+			patches := recorder.matchingRequests(http.MethodPatch, test.path)
+			require.NotEmpty(t, patches)
+			assert.Equal(t, "2", patches[len(patches)-1].version)
 
-	responseWriter.Header().Del("Content-Length")
-	responseWriter.WriteHeader(recorder.Code)
-
-	_, _ = io.Copy(responseWriter, bytes.NewReader(body))
-}
-
-func (m *taxonomyResponseMutator) dropPreferredLabelOnce(method, path, locale string) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	m.method, m.path, m.locale, m.add = method, path, locale, false
-}
-
-func (m *taxonomyResponseMutator) addEmptyLabelLocaleOnce(method, path, locale string) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	m.method, m.path, m.locale, m.add = method, path, locale, true
-}
-
-func (m *taxonomyResponseMutator) consumeMutation(method, path string) (string, bool, bool) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	if method != m.method || !strings.Contains(path, m.path) {
-		return "", false, false
-	}
-
-	locale := m.locale
-	add := m.add
-	m.method, m.path, m.locale, m.add = "", "", "", false
-
-	return locale, add, true
-}
-
-func addEmptyLabelLocale(body []byte, locale string) []byte {
-	document := map[string]json.RawMessage{}
-
-	err := json.Unmarshal(body, &document)
-	if err != nil {
-		return body
-	}
-
-	for _, field := range []string{"altLabels", "hiddenLabels"} {
-		labels := map[string][]string{}
-
-		err = json.Unmarshal(document[field], &labels)
-		if err != nil {
-			return body
-		}
-
-		labels[locale] = []string{}
-
-		document[field], err = json.Marshal(labels)
-		if err != nil {
-			return body
-		}
-	}
-
-	result, err := json.Marshal(document)
-	if err != nil {
-		return body
-	}
-
-	return result
-}
-
-func removePreferredLabelLocale(body []byte, locale string) []byte {
-	document := map[string]json.RawMessage{}
-
-	err := json.Unmarshal(body, &document)
-	if err != nil {
-		return body
-	}
-
-	labels := map[string]string{}
-
-	err = json.Unmarshal(document["prefLabel"], &labels)
-	if err != nil {
-		return body
-	}
-
-	delete(labels, locale)
-
-	encodedLabels, err := json.Marshal(labels)
-	if err != nil {
-		return body
-	}
-
-	document["prefLabel"] = encodedLabels
-
-	result, err := json.Marshal(document)
-	if err != nil {
-		return body
-	}
-
-	return result
-}
-
-func deleteTaxonomyConceptOutOfBand(t *testing.T, server *cmt.Server, organizationID, conceptID string) {
-	t.Helper()
-
-	err := deleteTaxonomyConceptRemote(server, organizationID, conceptID)
-	if err != nil {
-		t.Fatal(err)
+			if name == "concept" {
+				assertTaxonomyEmptyPatch(t, patches[len(patches)-1].body, []string{"/note"})
+			} else {
+				assertTaxonomyEmptyPatch(t, patches[len(patches)-1].body, []string{"/definition"})
+			}
+		})
 	}
 }
 
-func deleteTaxonomyConceptSchemeOutOfBand(t *testing.T, server *cmt.Server, organizationID, schemeID string) {
-	t.Helper()
+//nolint:paralleltest
+func TestAccTaxonomyImportRemoteNullThenConfiguresEmptyLocalizedMap(t *testing.T) {
+	parallelWhenMocked(t)
 
-	err := deleteTaxonomyConceptSchemeRemote(server, organizationID, schemeID)
-	if err != nil {
-		t.Fatal(err)
+	tests := map[string]struct {
+		resourceName string
+		importID     string
+		path         string
+		config       string
+		seed         func(*cmt.Server) error
+	}{
+		"concept": {
+			resourceName: "contentful_taxonomy_concept.test", importID: "organization-id/furniture", path: "/taxonomy/concepts/furniture", config: taxonomyConceptEmptyLocalizedStringsConfig("Furniture"),
+			seed: func(server *cmt.Server) error {
+				_, err := server.Handler().PutTaxonomyConcept(t.Context(), &cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Furniture"}}, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture"})
+				if err != nil {
+					return fmt.Errorf("put taxonomy concept: %w", err)
+				}
+
+				return nil
+			},
+		},
+		"scheme": {
+			resourceName: "contentful_taxonomy_concept_scheme.test", importID: "organization-id/products", path: "/taxonomy/concept-schemes/products", config: taxonomyConceptSchemeEmptyDefinitionConfig("Products"),
+			seed: func(server *cmt.Server) error {
+				_, err := server.Handler().PutTaxonomyConceptScheme(t.Context(), &cm.TaxonomyConceptSchemeRequest{PrefLabel: cm.LocalizedString{"en-US": "Products"}}, cm.PutTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products"})
+				if err != nil {
+					return fmt.Errorf("put taxonomy concept scheme: %w", err)
+				}
+
+				return nil
+			},
+		},
 	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+			require.NoError(t, test.seed(server))
+			recorder := &taxonomyRequestBodyRecorder{next: server}
+
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+				{Config: test.config, ResourceName: test.resourceName, ImportState: true, ImportStateId: test.importID, ImportStatePersist: true},
+				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionUpdate)}, PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop)}}},
+			}})
+
+			patches := recorder.matchingRequests(http.MethodPatch, test.path)
+			require.Len(t, patches, 1)
+			assert.Equal(t, "1", patches[0].version)
+
+			if name == "concept" {
+				assertTaxonomyEmptyPatch(t, patches[0].body, []string{"/changeNote", "/definition", "/editorialNote", "/example", "/historyNote", "/note", "/scopeNote"})
+			} else {
+				assertTaxonomyEmptyPatch(t, patches[0].body, []string{"/definition"})
+			}
+		})
+	}
+}
+
+func taxonomyConceptEmptyLocalizedStringsConfig(label string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept" "test" {
+  organization_id = "organization-id"
+  concept_id      = "furniture"
+  pref_label      = { "en-US" = %q }
+  note = {}
+  change_note = {}
+  definition = {}
+  editorial_note = {}
+  example = {}
+  history_note = {}
+  scope_note = {}
+}
+`, label)
+}
+
+func taxonomyConceptSchemeEmptyDefinitionConfig(label string) string {
+	return fmt.Sprintf(`
+resource "contentful_taxonomy_concept_scheme" "test" {
+  organization_id   = "organization-id"
+  concept_scheme_id = "products"
+  pref_label        = { "en-US" = %q }
+  definition        = {}
+}
+`, label)
 }

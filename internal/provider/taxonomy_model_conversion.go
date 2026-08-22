@@ -1,23 +1,13 @@
 package provider
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"reflect"
-	"sort"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/go-faster/jx"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
-
-var errTaxonomyLocaleNotPreserved = errors.New("contentful did not preserve configured taxonomy locale")
 
 func nullableLocalizedString(value types.Map, valuePath path.Path, diags *diag.Diagnostics) cm.OptNilNullableLocalizedString {
 	if value.IsNull() {
@@ -68,28 +58,28 @@ func conceptLinkIDs(links []cm.TaxonomyConceptLink) []string {
 	return result
 }
 
+// optionalComputedStringListValue converts null to an empty intermediate slice
+// and rejects unknown values. Prepared mutations replace response-owned
+// collections with their omitted wire representation.
+func optionalComputedStringListValue(value types.List, valuePath path.Path) ([]string, diag.Diagnostics) {
+	result := []string{}
+	if value.IsNull() {
+		return result, nil
+	}
+
+	if value.IsUnknown() {
+		return result, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Unexpected unknown value", "The taxonomy collection must be known before it can be sent to Contentful.")}
+	}
+
+	return RequireKnownStringList(value, valuePath)
+}
+
 func (model TaxonomyConceptModel) ToRequest(_ context.Context) (cm.TaxonomyConceptRequest, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	prefLabel, valueDiags := RequireKnownStringMap(model.PrefLabel, path.Root("pref_label"))
 	diags.Append(valueDiags...)
-	altLabels, valueDiags := optionalComputedStringMap(model.AltLabels, path.Root("alt_labels"))
-	diags.Append(valueDiags...)
-	hiddenLabels, valueDiags := optionalComputedStringMap(model.HiddenLabels, path.Root("hidden_labels"))
-	diags.Append(valueDiags...)
-
-	if diags.HasError() {
-		return cm.TaxonomyConceptRequest{}, diags
-	}
-
-	for locale := range prefLabel {
-		if _, ok := altLabels[locale]; !ok {
-			altLabels[locale] = []string{}
-		}
-
-		if _, ok := hiddenLabels[locale]; !ok {
-			hiddenLabels[locale] = []string{}
-		}
-	}
+	altLabels := taxonomyLabelMapRequest(prefLabel, model.AltLabels, path.Root("alt_labels"), &diags)
+	hiddenLabels := taxonomyLabelMapRequest(prefLabel, model.HiddenLabels, path.Root("hidden_labels"), &diags)
 
 	notations, valueDiags := optionalComputedStringListValue(model.Notations, path.Root("notations"))
 	diags.Append(valueDiags...)
@@ -104,8 +94,8 @@ func (model TaxonomyConceptModel) ToRequest(_ context.Context) (cm.TaxonomyConce
 	request := cm.TaxonomyConceptRequest{
 		URI:           cm.NewOptNilPointerString(uri),
 		PrefLabel:     cm.LocalizedString(prefLabel),
-		AltLabels:     cm.NewOptLocalizedStringList(cm.LocalizedStringList(altLabels)),
-		HiddenLabels:  cm.NewOptLocalizedStringList(cm.LocalizedStringList(hiddenLabels)),
+		AltLabels:     altLabels,
+		HiddenLabels:  hiddenLabels,
 		Notations:     notations,
 		Note:          nullableLocalizedString(model.Note, path.Root("note"), &diags),
 		ChangeNote:    nullableLocalizedString(model.ChangeNote, path.Root("change_note"), &diags),
@@ -125,20 +115,58 @@ func (model TaxonomyConceptModel) ToRequest(_ context.Context) (cm.TaxonomyConce
 	return request, diags
 }
 
+func taxonomyLabelMapRequest(prefLabel map[string]string, value types.Map, valuePath path.Path, diags *diag.Diagnostics) cm.OptLocalizedStringList {
+	if value.IsNull() {
+		return cm.OptLocalizedStringList{}
+	}
+
+	if value.IsUnknown() {
+		diags.AddAttributeError(valuePath, "Unexpected unknown value", "The taxonomy label map must be known before it can be sent to Contentful.")
+
+		return cm.OptLocalizedStringList{}
+	}
+
+	labels, valueDiags := RequireKnownStringListMap(value, valuePath)
+	*diags = append(*diags, valueDiags...)
+
+	if valueDiags.HasError() {
+		return cm.OptLocalizedStringList{}
+	}
+
+	for locale := range prefLabel {
+		if _, ok := labels[locale]; !ok {
+			labels[locale] = []string{}
+		}
+	}
+
+	return cm.NewOptLocalizedStringList(cm.LocalizedStringList(labels))
+}
+
 func NewTaxonomyConceptModelFromResponse(ctx context.Context, response cm.TaxonomyConcept) (TaxonomyConceptModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	organizationID := response.Sys.Organization.Sys.ID
 	conceptID := response.Sys.ID
+
 	prefLabel, valueDiags := types.MapValueFrom(ctx, types.StringType, map[string]string(response.PrefLabel))
 	diags.Append(valueDiags...)
 
-	altLabels, _ := response.AltLabels.Get()
-	altLabelsValue, valueDiags := types.MapValueFrom(ctx, types.ListType{ElemType: types.StringType}, map[string][]string(altLabels))
-	diags.Append(valueDiags...)
+	labelListType := types.ListType{ElemType: types.StringType}
+	altLabels, altLabelsSet := response.AltLabels.Get()
 
-	hiddenLabels, _ := response.HiddenLabels.Get()
-	hiddenLabelsValue, valueDiags := types.MapValueFrom(ctx, types.ListType{ElemType: types.StringType}, map[string][]string(hiddenLabels))
-	diags.Append(valueDiags...)
+	altLabelsValue := types.MapNull(labelListType)
+	if altLabelsSet {
+		altLabelsValue, valueDiags = types.MapValueFrom(ctx, labelListType, map[string][]string(altLabels))
+		diags.Append(valueDiags...)
+	}
+
+	hiddenLabels, hiddenLabelsSet := response.HiddenLabels.Get()
+
+	hiddenLabelsValue := types.MapNull(labelListType)
+	if hiddenLabelsSet {
+		hiddenLabelsValue, valueDiags = types.MapValueFrom(ctx, labelListType, map[string][]string(hiddenLabels))
+		diags.Append(valueDiags...)
+	}
+
 	notations, valueDiags := types.ListValueFrom(ctx, types.StringType, response.Notations)
 	diags.Append(valueDiags...)
 	broader, valueDiags := types.ListValueFrom(ctx, types.StringType, conceptLinkIDs(response.Broader))
@@ -163,28 +191,6 @@ func NewTaxonomyConceptModelFromResponse(ctx context.Context, response cm.Taxono
 		Example: localizedStringValue(ctx, response.Example, &diags), HistoryNote: localizedStringValue(ctx, response.HistoryNote, &diags), ScopeNote: localizedStringValue(ctx, response.ScopeNote, &diags),
 		BroaderConceptIDs: broader, RelatedConceptIDs: related, ConceptSchemeIDs: conceptSchemes,
 	}, diags
-}
-
-func preserveConfiguredLabelMapShape(model *TaxonomyConceptModel, configured TaxonomyConceptModel) {
-	model.AltLabels = labelMapWithConfiguredKeys(configured.AltLabels, model.AltLabels)
-	model.HiddenLabels = labelMapWithConfiguredKeys(configured.HiddenLabels, model.HiddenLabels)
-}
-
-func labelMapWithConfiguredKeys(configured, returned types.Map) types.Map {
-	if configured.IsNull() || configured.IsUnknown() || returned.IsNull() || returned.IsUnknown() {
-		return returned
-	}
-
-	returnedElements := returned.Elements()
-	values := make(map[string]attr.Value, len(configured.Elements()))
-
-	for locale := range configured.Elements() {
-		if value, ok := returnedElements[locale]; ok {
-			values[locale] = value
-		}
-	}
-
-	return types.MapValueMust(types.ListType{ElemType: types.StringType}, values)
 }
 
 func (model TaxonomyConceptSchemeModel) ToRequest(_ context.Context) (cm.TaxonomyConceptSchemeRequest, diag.Diagnostics) {
@@ -228,6 +234,7 @@ func optionalKnownStringPointer(value types.String, valuePath path.Path) (*strin
 func NewTaxonomyConceptSchemeModelFromResponse(ctx context.Context, response cm.TaxonomyConceptScheme) (TaxonomyConceptSchemeModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	organizationID, schemeID := response.Sys.Organization.Sys.ID, response.Sys.ID
+
 	prefLabel, valueDiags := types.MapValueFrom(ctx, types.StringType, map[string]string(response.PrefLabel))
 	diags.Append(valueDiags...)
 	topIDs, valueDiags := types.ListValueFrom(ctx, types.StringType, conceptLinkIDs(response.TopConcepts))
@@ -241,108 +248,4 @@ func NewTaxonomyConceptSchemeModelFromResponse(ctx context.Context, response cm.
 		URI:                                types.StringPointerValue(response.URI.ValueStringPointer()), PrefLabel: prefLabel, Definition: localizedStringValue(ctx, response.Definition, &diags),
 		TopConceptIDs: topIDs, ConceptIDs: ids, TotalConcepts: types.Int64Value(int64(response.TotalConcepts)),
 	}, diags
-}
-
-func taxonomyPatch(current, desired any) (cm.TaxonomyPatch, error) {
-	currentEncoded, err := json.Marshal(current)
-	if err != nil {
-		return nil, fmt.Errorf("encode current taxonomy request: %w", err)
-	}
-
-	currentFields := map[string]json.RawMessage{}
-
-	err = json.Unmarshal(currentEncoded, &currentFields)
-	if err != nil {
-		return nil, fmt.Errorf("decode current taxonomy request: %w", err)
-	}
-
-	desiredEncoded, err := json.Marshal(desired)
-	if err != nil {
-		return nil, fmt.Errorf("encode desired taxonomy request: %w", err)
-	}
-
-	desiredFields := map[string]json.RawMessage{}
-
-	err = json.Unmarshal(desiredEncoded, &desiredFields)
-	if err != nil {
-		return nil, fmt.Errorf("decode desired taxonomy request: %w", err)
-	}
-
-	keys := make([]string, 0, len(desiredFields))
-	for key := range desiredFields {
-		if bytes.Equal(currentFields[key], desiredFields[key]) {
-			continue
-		}
-
-		keys = append(keys, key)
-	}
-
-	sort.Strings(keys)
-
-	result := make(cm.TaxonomyPatch, 0, len(keys))
-	for _, key := range keys {
-		result = append(result, cm.TaxonomyPatchItem{Op: cm.TaxonomyPatchItemOpAdd, Path: "/" + key, Value: jx.Raw(desiredFields[key])})
-	}
-
-	return result, nil
-}
-
-func taxonomyConceptRequestFromResponse(concept cm.TaxonomyConcept) cm.TaxonomyConceptRequest {
-	return cm.TaxonomyConceptRequest{
-		URI: concept.URI, PrefLabel: concept.PrefLabel, AltLabels: concept.AltLabels, HiddenLabels: concept.HiddenLabels,
-		Notations: concept.Notations, Note: concept.Note, ChangeNote: concept.ChangeNote, Definition: concept.Definition,
-		EditorialNote: concept.EditorialNote, Example: concept.Example, HistoryNote: concept.HistoryNote,
-		ScopeNote: concept.ScopeNote, Broader: concept.Broader, Related: concept.Related,
-	}
-}
-
-func taxonomyConceptSchemeRequestFromResponse(scheme cm.TaxonomyConceptScheme) cm.TaxonomyConceptSchemeRequest {
-	return cm.TaxonomyConceptSchemeRequest{
-		URI: scheme.URI, PrefLabel: scheme.PrefLabel, Definition: scheme.Definition,
-		TopConcepts: scheme.TopConcepts, Concepts: scheme.Concepts,
-	}
-}
-
-func validateLocalizedStrings(field string, configured, returned map[string]string) error {
-	for locale, configuredValue := range configured {
-		if returnedValue, exists := returned[locale]; !exists || returnedValue != configuredValue {
-			return fmt.Errorf("%w: field %s, locale %q", errTaxonomyLocaleNotPreserved, field, locale)
-		}
-	}
-
-	return nil
-}
-
-func validateLocalizedStringLists(field string, configured, returned map[string][]string) error {
-	for locale, configuredValue := range configured {
-		if returnedValue, exists := returned[locale]; !exists || !reflect.DeepEqual(returnedValue, configuredValue) {
-			return fmt.Errorf("%w: field %s, locale %q", errTaxonomyLocaleNotPreserved, field, locale)
-		}
-	}
-
-	return nil
-}
-
-func validateTaxonomyConceptResponse(request cm.TaxonomyConceptRequest, response cm.TaxonomyConcept) error {
-	err := validateLocalizedStrings("pref_label", map[string]string(request.PrefLabel), map[string]string(response.PrefLabel))
-	if err != nil {
-		return err
-	}
-
-	configuredAlt, _ := request.AltLabels.Get()
-	returnedAlt, _ := response.AltLabels.Get()
-
-	err = validateLocalizedStringLists("alt_labels", map[string][]string(configuredAlt), map[string][]string(returnedAlt))
-	if err != nil {
-		return err
-	}
-
-	configuredHidden, _ := request.HiddenLabels.Get()
-	returnedHidden, _ := response.HiddenLabels.Get()
-
-	return validateLocalizedStringLists("hidden_labels", map[string][]string(configuredHidden), map[string][]string(returnedHidden))
-}
-
-func validateTaxonomyConceptSchemeResponse(request cm.TaxonomyConceptSchemeRequest, response cm.TaxonomyConceptScheme) error {
-	return validateLocalizedStrings("pref_label", map[string]string(request.PrefLabel), map[string]string(response.PrefLabel))
 }
