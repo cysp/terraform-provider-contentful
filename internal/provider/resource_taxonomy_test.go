@@ -614,6 +614,93 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 }
 
 //nolint:paralleltest
+func TestAccTaxonomyResourcesRejectResponseIdentityRetargeting(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
+		method        string
+		path          string
+		resourceName  string
+		initialConfig string
+		changedConfig string
+		update        bool
+	}{
+		"concept create": {
+			method: http.MethodPut, path: "/taxonomy/concepts/furniture", resourceName: "taxonomy concept",
+			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Furniture"),
+		},
+		"concept update": {
+			method: http.MethodPatch, path: "/taxonomy/concepts/furniture", resourceName: "taxonomy concept",
+			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"), update: true,
+		},
+		"scheme create": {
+			method: http.MethodPut, path: "/taxonomy/concept-schemes/products", resourceName: "taxonomy concept scheme",
+			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Products"),
+		},
+		"scheme update": {
+			method: http.MethodPatch, path: "/taxonomy/concept-schemes/products", resourceName: "taxonomy concept scheme",
+			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Home products"), update: true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			mutator := &taxonomyResponseMutator{next: server}
+			recorder := &taxonomyRequestBodyRecorder{next: mutator}
+			steps := []resource.TestStep{}
+
+			if test.update {
+				steps = append(steps, resource.TestStep{Config: test.initialConfig})
+			}
+
+			steps = append(steps, resource.TestStep{
+				PreConfig: func() {
+					mutator.replaceIdentityOnce(test.method, test.path, "other-organization", "other-resource")
+				},
+				Config:      test.changedConfig,
+				ExpectError: regexp.MustCompile("Unexpected Contentful " + test.resourceName + " response"),
+			})
+
+			if test.update {
+				steps = append(steps, resource.TestStep{
+					Config: test.changedConfig,
+					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					}},
+				})
+			} else {
+				steps = append(steps, resource.TestStep{Config: test.changedConfig})
+			}
+
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+				Steps:                steps,
+			})
+
+			if test.update {
+				requests := recorder.matchingRequests(http.MethodPatch, test.path)
+				require.NotEmpty(t, requests)
+
+				for _, request := range requests {
+					assert.Equal(t, "1", request.version)
+					assert.Equal(t, requests[0].body, request.body)
+				}
+			} else {
+				deletes := recorder.matchingRequests(http.MethodDelete, test.path)
+				require.NotEmpty(t, deletes)
+
+				assert.Equal(t, "1", deletes[0].version)
+			}
+		})
+	}
+}
+
+//nolint:paralleltest
 func TestAccTaxonomyInvalidCreateResponseVersionCheckpointsState(t *testing.T) {
 	parallelWhenMocked(t)
 
@@ -621,12 +708,13 @@ func TestAccTaxonomyInvalidCreateResponseVersionCheckpointsState(t *testing.T) {
 		path         string
 		config       string
 		resourceName string
+		responseName string
 	}{
 		"concept": {
-			path: "/taxonomy/concepts/furniture", config: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test",
+			path: "/taxonomy/concepts/furniture", config: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test", responseName: "taxonomy concept",
 		},
 		"scheme": {
-			path: "/taxonomy/concept-schemes/products", config: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test",
+			path: "/taxonomy/concept-schemes/products", config: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test", responseName: "taxonomy concept scheme",
 		},
 	}
 
@@ -638,15 +726,28 @@ func TestAccTaxonomyInvalidCreateResponseVersionCheckpointsState(t *testing.T) {
 				server, err := cmt.NewContentfulManagementServer()
 				require.NoError(t, err)
 
-				mutator := &taxonomyResponseMutator{next: server}
-				recorder := &taxonomyRequestBodyRecorder{next: mutator}
+				consistencyMutator := &taxonomyResponseMutator{next: server}
+				versionMutator := &taxonomyResponseMutator{next: consistencyMutator}
+				recorder := &taxonomyRequestBodyRecorder{next: versionMutator}
+
+				expectedError := `Invalid taxonomy resource version`
+				if responseVersion < 0 {
+					expectedError = `(?s)(Invalid taxonomy resource version.*Unexpected Contentful ` + test.responseName + ` response|Unexpected Contentful ` + test.responseName + ` response.*Invalid taxonomy resource version)`
+				}
+
 				ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
 					AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 					Steps: []resource.TestStep{
 						{
-							PreConfig:   func() { mutator.versionOnce(http.MethodPut, test.path, responseVersion) },
+							PreConfig: func() {
+								if responseVersion < 0 {
+									consistencyMutator.replaceIdentityOnce(http.MethodPut, test.path, "invalid-version-organization", "invalid-version-resource")
+								}
+
+								versionMutator.versionOnce(http.MethodPut, test.path, responseVersion)
+							},
 							Config:      test.config,
-							ExpectError: regexp.MustCompile(`Invalid taxonomy resource version`),
+							ExpectError: regexp.MustCompile(expectedError),
 						},
 						{
 							Config: test.config,
@@ -678,6 +779,7 @@ func TestAccTaxonomyInvalidUpdateResponseVersionCheckpointsState(t *testing.T) {
 	tests := map[string]struct {
 		path          string
 		resourceName  string
+		responseName  string
 		initialConfig string
 		changedConfig string
 		finalConfig   string
@@ -685,12 +787,12 @@ func TestAccTaxonomyInvalidUpdateResponseVersionCheckpointsState(t *testing.T) {
 		finalLabel    string
 	}{
 		"concept": {
-			path: "/taxonomy/concepts/furniture", resourceName: "contentful_taxonomy_concept.test",
+			path: "/taxonomy/concepts/furniture", resourceName: "contentful_taxonomy_concept.test", responseName: "taxonomy concept",
 			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"), finalConfig: taxonomyConceptConfig("Domestic furniture"),
 			changedLabel: "Home furniture", finalLabel: "Domestic furniture",
 		},
 		"scheme": {
-			path: "/taxonomy/concept-schemes/products", resourceName: "contentful_taxonomy_concept_scheme.test",
+			path: "/taxonomy/concept-schemes/products", resourceName: "contentful_taxonomy_concept_scheme.test", responseName: "taxonomy concept scheme",
 			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Home products"), finalConfig: taxonomyConceptSchemeConfig("Domestic products"),
 			changedLabel: "Home products", finalLabel: "Domestic products",
 		},
@@ -704,16 +806,29 @@ func TestAccTaxonomyInvalidUpdateResponseVersionCheckpointsState(t *testing.T) {
 				server, err := cmt.NewContentfulManagementServer()
 				require.NoError(t, err)
 
-				mutator := &taxonomyResponseMutator{next: server}
-				recorder := &taxonomyRequestBodyRecorder{next: mutator}
+				consistencyMutator := &taxonomyResponseMutator{next: server}
+				versionMutator := &taxonomyResponseMutator{next: consistencyMutator}
+				recorder := &taxonomyRequestBodyRecorder{next: versionMutator}
+
+				expectedError := `Invalid taxonomy resource version`
+				if responseVersion < 0 {
+					expectedError = `(?s)(Invalid taxonomy resource version.*Unexpected Contentful ` + test.responseName + ` response|Unexpected Contentful ` + test.responseName + ` response.*Invalid taxonomy resource version)`
+				}
+
 				ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
 					AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 					Steps: []resource.TestStep{
 						{Config: test.initialConfig},
 						{
-							PreConfig:   func() { mutator.versionOnce(http.MethodPatch, test.path, responseVersion) },
+							PreConfig: func() {
+								if responseVersion < 0 {
+									consistencyMutator.replaceIdentityOnce(http.MethodPatch, test.path, "invalid-version-organization", "invalid-version-resource")
+								}
+
+								versionMutator.versionOnce(http.MethodPatch, test.path, responseVersion)
+							},
 							Config:      test.changedConfig,
-							ExpectError: regexp.MustCompile(`Invalid taxonomy resource version`),
+							ExpectError: regexp.MustCompile(expectedError),
 						},
 						{
 							Config: test.changedConfig,
@@ -1842,3 +1957,55 @@ func taxonomyConfigVariables(conceptLabel, schemeLabel string) config.Variables 
 		"scheme_label":      config.StringVariable(schemeLabel),
 	}
 }
+
+func TestAccTaxonomyReadIdentityFailuresRetainPriorState(t *testing.T) {
+	parallelWhenMocked(t)
+
+	tests := map[string]struct {
+		path          string
+		initialConfig string
+		mutate        func(*taxonomyResponseMutator, string)
+		expectError   *regexp.Regexp
+		resourceName  string
+	}{
+		"concept changed": {
+			path: "/taxonomy/concepts/furniture", initialConfig: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test", expectError: regexp.MustCompile("Unexpected Identity Change"),
+			mutate: func(mutator *taxonomyResponseMutator, path string) {
+				mutator.replaceIdentityOnce(http.MethodGet, path, "other-organization", "other-resource")
+			},
+		},
+		"concept missing": {
+			path: "/taxonomy/concepts/furniture", initialConfig: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test", expectError: regexp.MustCompile("Failed to read taxonomy concept"),
+			mutate: func(mutator *taxonomyResponseMutator, path string) { mutator.removeIdentityOnce(http.MethodGet, path) },
+		},
+		"scheme changed": {
+			path: "/taxonomy/concept-schemes/products", initialConfig: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test", expectError: regexp.MustCompile("Unexpected Identity Change"),
+			mutate: func(mutator *taxonomyResponseMutator, path string) {
+				mutator.replaceIdentityOnce(http.MethodGet, path, "other-organization", "other-resource")
+			},
+		},
+		"scheme missing": {
+			path: "/taxonomy/concept-schemes/products", initialConfig: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test", expectError: regexp.MustCompile("Failed to read taxonomy concept scheme"),
+			mutate: func(mutator *taxonomyResponseMutator, path string) { mutator.removeIdentityOnce(http.MethodGet, path) },
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parallelWhenMocked(t)
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+
+			mutator := &taxonomyResponseMutator{next: server}
+
+			ContentfulProviderMockedResourceTest(t, mutator, resource.TestCase{Steps: []resource.TestStep{
+				{Config: test.initialConfig},
+				{PreConfig: func() { test.mutate(mutator, test.path) }, Config: test.initialConfig, ExpectError: test.expectError},
+				{Config: test.initialConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop)}}},
+			}})
+		})
+	}
+}
+
+//nolint:paralleltest
