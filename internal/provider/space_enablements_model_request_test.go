@@ -10,155 +10,137 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSpaceEnablementsRequestRequiresKnownEqualCoupledValues(t *testing.T) {
+func TestSpaceEnablementsRequestSendsKnownUnequalValues(t *testing.T) {
 	t.Parallel()
 
-	for name, test := range map[string]struct {
-		crossSpaceLinks types.Bool
-		spaceTemplates  types.Bool
-		wantPath        string
-	}{
-		"missing cross space links": {
-			crossSpaceLinks: types.BoolNull(),
-			spaceTemplates:  types.BoolValue(true),
-			wantPath:        "cross_space_links",
-		},
-		"response-owned unknown space templates": {
-			crossSpaceLinks: types.BoolValue(true),
-			spaceTemplates:  types.BoolUnknown(),
-			wantPath:        "space_templates",
-		},
-		"unequal values": {
-			crossSpaceLinks: types.BoolValue(true),
-			spaceTemplates:  types.BoolValue(false),
-			wantPath:        "space_templates",
-		},
-		"known false values": {
-			crossSpaceLinks: types.BoolValue(false),
-			spaceTemplates:  types.BoolValue(false),
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			model := SpaceEnablementsModel{
-				CrossSpaceLinks:   test.crossSpaceLinks,
-				SpaceTemplates:    test.spaceTemplates,
-				StudioExperiences: types.BoolUnknown(),
-				SuggestConcepts:   types.BoolUnknown(),
-			}
-			config := SpaceEnablementsModel{
-				CrossSpaceLinks:   types.BoolNull(),
-				SpaceTemplates:    types.BoolNull(),
-				StudioExperiences: types.BoolNull(),
-				SuggestConcepts:   types.BoolNull(),
-			}
-
-			actual, diags := model.ToSpaceEnablementData(t.Context(), config)
-
-			if test.wantPath != "" {
-				assert.Equal(t, cm.SpaceEnablementData{}, actual)
-				require.True(t, diags.HasError())
-				assert.Contains(t, attributeDiagnosticPaths(t, diags), test.wantPath)
-
-				return
-			}
-
-			require.False(t, diags.HasError(), diags.Errors())
-
-			crossSpaceLinks, ok := actual.CrossSpaceLinks.Get()
-			require.True(t, ok)
-			assert.False(t, crossSpaceLinks.Enabled)
-
-			spaceTemplates, ok := actual.SpaceTemplates.Get()
-			require.True(t, ok)
-			assert.False(t, spaceTemplates.Enabled)
-			assert.False(t, actual.StudioExperiences.IsSet())
-			assert.False(t, actual.SuggestConcepts.IsSet())
-		})
+	model := SpaceEnablementsModel{
+		CrossSpaceLinks:   types.BoolValue(true),
+		SpaceTemplates:    types.BoolValue(false),
+		StudioExperiences: types.BoolNull(),
+		SuggestConcepts:   types.BoolNull(),
 	}
+	config := SpaceEnablementsModel{
+		CrossSpaceLinks:   types.BoolValue(true),
+		SpaceTemplates:    types.BoolValue(false),
+		StudioExperiences: types.BoolNull(),
+		SuggestConcepts:   types.BoolNull(),
+	}
+
+	actual, diags := model.ToSpaceEnablementData(t.Context(), config)
+	require.False(t, diags.HasError(), diags.Errors())
+
+	crossSpaceLinks, ok := actual.CrossSpaceLinks.Get()
+	require.True(t, ok)
+	assert.True(t, crossSpaceLinks.Enabled)
+
+	spaceTemplates, ok := actual.SpaceTemplates.Get()
+	require.True(t, ok)
+	assert.False(t, spaceTemplates.Enabled)
 }
 
 func TestSpaceEnablementsRequestIndependentOptionalComputedOwnership(t *testing.T) {
 	t.Parallel()
 
-	for name, test := range map[string]struct {
-		field      string
-		configured types.Bool
-		planned    types.Bool
-		wantPath   string
+	fields := []string{"cross_space_links", "space_templates", "studio_experiences", "suggest_concepts"}
+	tests := map[string]struct {
+		configured  types.Bool
+		planned     types.Bool
+		wantSet     bool
+		wantEnabled bool
+		wantError   bool
 	}{
-		"response-owned known studio experiences is sent": {
-			field:      "studio_experiences",
+		"response-owned null is omitted": {
 			configured: types.BoolNull(),
-			planned:    types.BoolValue(true),
+			planned:    types.BoolNull(),
 		},
-		"configuration-owned unknown studio experiences fails": {
-			field:      "studio_experiences",
+		"response-owned unknown is omitted": {
+			configured: types.BoolNull(),
+			planned:    types.BoolUnknown(),
+		},
+		"response-owned known value is sent": {
+			configured:  types.BoolNull(),
+			planned:     types.BoolValue(true),
+			wantSet:     true,
+			wantEnabled: true,
+		},
+		"configuration-owned known false is sent": {
+			configured: types.BoolValue(false),
+			planned:    types.BoolValue(false),
+			wantSet:    true,
+		},
+		"configuration-owned unknown fails": {
 			configured: types.BoolValue(true),
 			planned:    types.BoolUnknown(),
-			wantPath:   "studio_experiences",
+			wantError:  true,
 		},
-		"response-owned known suggest concepts is sent": {
-			field:      "suggest_concepts",
-			configured: types.BoolNull(),
-			planned:    types.BoolValue(true),
-		},
-		"configuration-owned unknown suggest concepts fails": {
-			field:      "suggest_concepts",
-			configured: types.BoolValue(true),
-			planned:    types.BoolUnknown(),
-			wantPath:   "suggest_concepts",
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+	}
 
-			model := SpaceEnablementsModel{
-				CrossSpaceLinks:   types.BoolValue(false),
-				SpaceTemplates:    types.BoolValue(false),
-				StudioExperiences: types.BoolNull(),
-				SuggestConcepts:   types.BoolNull(),
-			}
-			config := SpaceEnablementsModel{
-				CrossSpaceLinks:   types.BoolNull(),
-				SpaceTemplates:    types.BoolNull(),
-				StudioExperiences: types.BoolNull(),
-				SuggestConcepts:   types.BoolNull(),
-			}
+	for _, fieldName := range fields {
+		for testName, test := range tests {
+			t.Run(fieldName+"/"+testName, func(t *testing.T) {
+				t.Parallel()
 
-			switch test.field {
-			case "studio_experiences":
-				model.StudioExperiences = test.planned
-				config.StudioExperiences = test.configured
-			case "suggest_concepts":
-				model.SuggestConcepts = test.planned
-				config.SuggestConcepts = test.configured
-			}
+				model := SpaceEnablementsModel{
+					CrossSpaceLinks:   types.BoolNull(),
+					SpaceTemplates:    types.BoolNull(),
+					StudioExperiences: types.BoolNull(),
+					SuggestConcepts:   types.BoolNull(),
+				}
+				config := SpaceEnablementsModel{
+					CrossSpaceLinks:   types.BoolNull(),
+					SpaceTemplates:    types.BoolNull(),
+					StudioExperiences: types.BoolNull(),
+					SuggestConcepts:   types.BoolNull(),
+				}
 
-			actual, diags := model.ToSpaceEnablementData(t.Context(), config)
+				switch fieldName {
+				case "cross_space_links":
+					model.CrossSpaceLinks = test.planned
+					config.CrossSpaceLinks = test.configured
+				case "space_templates":
+					model.SpaceTemplates = test.planned
+					config.SpaceTemplates = test.configured
+				case "studio_experiences":
+					model.StudioExperiences = test.planned
+					config.StudioExperiences = test.configured
+				case "suggest_concepts":
+					model.SuggestConcepts = test.planned
+					config.SuggestConcepts = test.configured
+				}
 
-			if test.wantPath != "" {
-				assert.Equal(t, cm.SpaceEnablementData{}, actual)
-				require.True(t, diags.HasError())
-				assert.Equal(t, []string{test.wantPath}, attributeDiagnosticPaths(t, diags))
+				actual, diags := model.ToSpaceEnablementData(t.Context(), config)
 
-				return
-			}
+				if test.wantError {
+					assert.Equal(t, cm.SpaceEnablementData{}, actual)
+					require.True(t, diags.HasError())
+					assert.Equal(t, []string{fieldName}, attributeDiagnosticPaths(t, diags))
 
-			require.False(t, diags.HasError(), diags.Errors())
+					return
+				}
 
-			var field cm.OptSpaceEnablementField
-			switch test.field {
-			case "studio_experiences":
-				field = actual.StudioExperiences
-			case "suggest_concepts":
-				field = actual.SuggestConcepts
-			}
+				require.False(t, diags.HasError(), diags.Errors())
 
-			value, ok := field.Get()
-			require.True(t, ok)
-			assert.True(t, value.Enabled)
-		})
+				var field cm.OptSpaceEnablementField
+
+				switch fieldName {
+				case "cross_space_links":
+					field = actual.CrossSpaceLinks
+				case "space_templates":
+					field = actual.SpaceTemplates
+				case "studio_experiences":
+					field = actual.StudioExperiences
+				case "suggest_concepts":
+					field = actual.SuggestConcepts
+				}
+
+				value, ok := field.Get()
+
+				assert.Equal(t, test.wantSet, ok)
+
+				if ok {
+					assert.Equal(t, test.wantEnabled, value.Enabled)
+				}
+			})
+		}
 	}
 }

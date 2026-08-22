@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"regexp"
 	"sync"
-	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -50,67 +49,27 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 	})
 }
 
-func TestAccSpaceEnablementsResourceRequiresCoupledValuesBeforeContentful(t *testing.T) {
+func TestAccSpaceEnablementsResourceAllowsOmittedAndOneSidedCreate(t *testing.T) {
 	t.Parallel()
 
 	for name, test := range map[string]struct {
-		values    string
-		wantError string
+		values   string
+		expected map[string]bool
 	}{
-		"neither configured on create": {
-			wantError: "Missing coupled space enablements",
+		"all enablements omitted": {
+			expected: map[string]bool{},
 		},
 		"only cross space links configured": {
-			values:    "cross_space_links = true",
-			wantError: "Missing coupled space enablement",
+			values: "cross_space_links = true",
+			expected: map[string]bool{
+				"crossSpaceLinks": true,
+			},
 		},
-		"unequal values configured": {
-			values:    "cross_space_links = true\n  space_templates = false",
-			wantError: "Unequal coupled space enablements",
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			server, err := cmt.NewContentfulManagementServer()
-			require.NoError(t, err)
-
-			var requestCount atomic.Int64
-
-			handler := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
-				if request.Method == http.MethodPut && request.URL.Path == "/spaces/space/enablements" {
-					requestCount.Add(1)
-				}
-
-				server.ServeHTTP(responseWriter, request)
-			})
-
-			ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
-				Steps: []resource.TestStep{{
-					Config:      spaceEnablementsTestConfig(test.values),
-					ExpectError: regexp.MustCompile(regexp.QuoteMeta(test.wantError)),
-				}},
-			})
-
-			require.Zero(t, requestCount.Load())
-		})
-	}
-}
-
-func TestAccSpaceEnablementsResourceRejectsInvalidUpdateBeforeContentful(t *testing.T) {
-	t.Parallel()
-
-	for name, test := range map[string]struct {
-		values    string
-		wantError string
-	}{
-		"configuration cannot combine with state": {
-			values:    "cross_space_links = true",
-			wantError: "Missing coupled space enablement",
-		},
-		"configured values must be equal": {
-			values:    "cross_space_links = true\n  space_templates = false",
-			wantError: "Unequal coupled space enablements",
+		"only space templates configured": {
+			values: "space_templates = false",
+			expected: map[string]bool{
+				"spaceTemplates": false,
+			},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -120,33 +79,60 @@ func TestAccSpaceEnablementsResourceRejectsInvalidUpdateBeforeContentful(t *test
 			require.NoError(t, err)
 			server.RegisterSpaceEnvironment("space", "master")
 
-			var requestCount atomic.Int64
-
-			handler := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
-				if request.Method == http.MethodPut && request.URL.Path == "/spaces/space/enablements" {
-					requestCount.Add(1)
-				}
-
-				server.ServeHTTP(responseWriter, request)
+			recorder := &spaceEnablementsPutRecorder{next: server}
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+				Steps: []resource.TestStep{{
+					Config: spaceEnablementsTestConfig(test.values),
+					Check:  recorder.checkRequestFields(test.expected),
+				}},
 			})
-
-			ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
-				Steps: []resource.TestStep{
-					{Config: spaceEnablementsTestConfig("cross_space_links = false\n  space_templates = false")},
-					{
-						PreConfig:   func() { requestCount.Store(0) },
-						Config:      spaceEnablementsTestConfig(test.values),
-						ExpectError: regexp.MustCompile(regexp.QuoteMeta(test.wantError)),
-					},
-				},
-			})
-
-			require.Zero(t, requestCount.Load())
 		})
 	}
 }
 
-func TestAccSpaceEnablementsResourceRetransmitsImportedCoupledValues(t *testing.T) {
+func TestAccSpaceEnablementsResourceSendsStatePreservedSiblingOnOneSidedUpdate(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+
+	recorder := &spaceEnablementsPutRecorder{next: server}
+	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+		Steps: []resource.TestStep{
+			{Config: spaceEnablementsTestConfig("cross_space_links = false\n  space_templates = false")},
+			{
+				PreConfig: func() { recorder.reset() },
+				Config:    spaceEnablementsTestConfig("cross_space_links = true"),
+				Check: recorder.checkRequestFields(map[string]bool{
+					"crossSpaceLinks": true,
+					"spaceTemplates":  false,
+				}),
+			},
+		},
+	})
+}
+
+func TestAccSpaceEnablementsResourceSendsUnequalValues(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+
+	recorder := &spaceEnablementsPutRecorder{next: server}
+	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+		Steps: []resource.TestStep{{
+			Config: spaceEnablementsTestConfig("cross_space_links = true\n  space_templates = false"),
+			Check: recorder.checkRequestFields(map[string]bool{
+				"crossSpaceLinks": true,
+				"spaceTemplates":  false,
+			}),
+		}},
+	})
+}
+
+func TestAccSpaceEnablementsResourceRetransmitsImportedKnownValues(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
@@ -169,7 +155,11 @@ func TestAccSpaceEnablementsResourceRetransmitsImportedCoupledValues(t *testing.
 			},
 			{
 				Config: spaceEnablementsTestConfig("suggest_concepts = true"),
-				Check:  recorder.checkImportedPairRequest(),
+				Check: recorder.checkRequestFields(map[string]bool{
+					"crossSpaceLinks": true,
+					"spaceTemplates":  true,
+					"suggestConcepts": true,
+				}),
 			},
 		},
 	})
@@ -208,7 +198,14 @@ func (r *spaceEnablementsPutRecorder) ServeHTTP(responseWriter http.ResponseWrit
 	r.next.ServeHTTP(responseWriter, request)
 }
 
-func (r *spaceEnablementsPutRecorder) checkImportedPairRequest() resource.TestCheckFunc {
+func (r *spaceEnablementsPutRecorder) reset() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.bodies = nil
+}
+
+func (r *spaceEnablementsPutRecorder) checkRequestFields(expected map[string]bool) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		r.mu.Lock()
 		defer r.mu.Unlock()
@@ -217,13 +214,16 @@ func (r *spaceEnablementsPutRecorder) checkImportedPairRequest() resource.TestCh
 			return fmt.Errorf("%w: recorded %d PUTs, want exactly 1", errSpaceEnablementsRequestMismatch, len(r.bodies))
 		}
 
-		for _, key := range []string{"crossSpaceLinks", "spaceTemplates"} {
+		if len(r.bodies[0]) != len(expected) {
+			return fmt.Errorf("%w: PUT sent %d fields, want %d", errSpaceEnablementsRequestMismatch, len(r.bodies[0]), len(expected))
+		}
+
+		for key, expectedEnabled := range expected {
 			var field struct {
 				Enabled bool `json:"enabled"`
 			}
 
 			body, ok := r.bodies[0][key]
-
 			if !ok {
 				return fmt.Errorf("%w: PUT omitted %s", errSpaceEnablementsRequestMismatch, key)
 			}
@@ -233,13 +233,9 @@ func (r *spaceEnablementsPutRecorder) checkImportedPairRequest() resource.TestCh
 				return fmt.Errorf("decode %s: %w", key, err)
 			}
 
-			if !field.Enabled {
-				return fmt.Errorf("%w: PUT sent %s.enabled=false, want true", errSpaceEnablementsRequestMismatch, key)
+			if field.Enabled != expectedEnabled {
+				return fmt.Errorf("%w: PUT sent %s.enabled=%t, want %t", errSpaceEnablementsRequestMismatch, key, field.Enabled, expectedEnabled)
 			}
-		}
-
-		if body, ok := r.bodies[0]["suggestConcepts"]; !ok || !bytes.Contains(body, []byte(`"enabled":true`)) {
-			return fmt.Errorf("%w: PUT did not send configured suggestConcepts=true", errSpaceEnablementsRequestMismatch)
 		}
 
 		return nil
