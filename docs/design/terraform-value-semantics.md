@@ -118,6 +118,11 @@ meaningful. Read and import therefore expose meaningful remote labels and drift.
 
 ## Lifecycle ownership and plan consistency
 
+When a successful taxonomy mutation response disagrees with the requested
+endpoint identity, recovery preserves the complete returned response except
+that the requested endpoint identity and legacy ID intentionally remain the
+Terraform target.
+
 After a successful Create or Update, state must remain consistent with every
 known configuration-owned value in the plan. Post-mutation state construction
 therefore starts with the response projection and restores each known

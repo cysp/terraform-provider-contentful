@@ -1130,6 +1130,66 @@ func TestPreparedTaxonomyConceptMismatchKeepsCompleteRemoteState(t *testing.T) {
 	assert.Equal(t, remoteModel, actual)
 }
 
+func TestPreparedTaxonomyConceptResponseIdentityMismatchKeepsRequestedIdentity(t *testing.T) {
+	t.Parallel()
+
+	remote := taxonomyConceptResponseWithLabelMaps(map[string][]string{"en-US": {}}, map[string][]string{"en-US": {}})
+	plan, diags := NewTaxonomyConceptModelFromResponse(t.Context(), remote)
+	require.False(t, diags.HasError())
+
+	listType := types.ListType{ElemType: types.StringType}
+	plan.AltLabels = types.MapValueMust(listType, map[string]attr.Value{})
+	plan.HiddenLabels = types.MapValueMust(listType, map[string]attr.Value{})
+	remote.Sys.Organization.Sys.ID, remote.Sys.ID, remote.Sys.Version = "other", "other", 9
+	prepared, diags := prepareTaxonomyConceptMutation(t.Context(), plan, plan)
+	require.False(t, diags.HasError())
+	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+	require.False(t, responseDiags.HasError())
+	require.True(t, consistencyDiags.HasError())
+	assertTaxonomyDiagnosticPath(t, consistencyDiags, path.Root("organization_id"))
+	assertTaxonomyDiagnosticPath(t, consistencyDiags, path.Root("concept_id"))
+	assert.Equal(t, plan.OrganizationID, state.OrganizationID)
+	assert.Equal(t, plan.ConceptID, state.ConceptID)
+	assert.Equal(t, NewIDIdentityModelFromMultipartID(plan.OrganizationID.ValueString(), plan.ConceptID.ValueString()), state.IDIdentityModel)
+	assert.False(t, state.ID.IsUnknown())
+	assert.Equal(t, types.MapValueMust(listType, map[string]attr.Value{
+		"en-US": types.ListValueMust(types.StringType, []attr.Value{}),
+	}), state.AltLabels)
+	assert.Equal(t, types.MapValueMust(listType, map[string]attr.Value{
+		"en-US": types.ListValueMust(types.StringType, []attr.Value{}),
+	}), state.HiddenLabels)
+	assert.False(t, state.AltLabels.IsUnknown() || state.HiddenLabels.IsUnknown() || state.Notations.IsUnknown() || state.BroaderConceptIDs.IsUnknown() || state.RelatedConceptIDs.IsUnknown())
+}
+
+func TestPreparedTaxonomyConceptSchemeResponseIdentityMismatchKeepsRequestedIdentity(t *testing.T) {
+	t.Parallel()
+
+	remote := cm.TaxonomyConceptScheme{Sys: cm.TaxonomyConceptSchemeSys{Organization: cm.NewOrganizationLink("organization"), ID: "scheme", Version: 1}, PrefLabel: cm.LocalizedString{"en-US": "Scheme"}, TopConcepts: []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("canonical-top")}, Concepts: []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("canonical-concept")}}
+	plan, diags := NewTaxonomyConceptSchemeModelFromResponse(t.Context(), remote)
+	require.False(t, diags.HasError())
+
+	config := plan
+	config.TopConceptIDs = types.ListNull(types.StringType)
+	config.ConceptIDs = types.ListNull(types.StringType)
+	plan.TopConceptIDs = types.ListUnknown(types.StringType)
+	plan.ConceptIDs = types.ListUnknown(types.StringType)
+	remote.Sys.Organization.Sys.ID, remote.Sys.ID, remote.Sys.Version = "other", "other", 9
+	prepared, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), config, plan)
+	require.False(t, diags.HasError())
+	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+	require.False(t, responseDiags.HasError())
+	require.True(t, consistencyDiags.HasError())
+	assertTaxonomyDiagnosticPath(t, consistencyDiags, path.Root("organization_id"))
+	assertTaxonomyDiagnosticPath(t, consistencyDiags, path.Root("concept_scheme_id"))
+	assert.Equal(t, plan.OrganizationID, state.OrganizationID)
+	assert.Equal(t, plan.ConceptSchemeID, state.ConceptSchemeID)
+	assert.Equal(t, NewIDIdentityModelFromMultipartID(plan.OrganizationID.ValueString(), plan.ConceptSchemeID.ValueString()), state.IDIdentityModel)
+	assert.False(t, state.ID.IsUnknown())
+	assert.Equal(t, types.ListValueMust(types.StringType, []attr.Value{types.StringValue("canonical-top")}), state.TopConceptIDs)
+	assert.Equal(t, types.ListValueMust(types.StringType, []attr.Value{types.StringValue("canonical-concept")}), state.ConceptIDs)
+	assert.False(t, state.TopConceptIDs.IsUnknown() || state.ConceptIDs.IsUnknown() || state.TotalConcepts.IsUnknown())
+}
+
 func TestTaxonomyRequestConversionsReportUnknownCollectionElements(t *testing.T) {
 	t.Parallel()
 

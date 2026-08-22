@@ -90,7 +90,8 @@ func taxonomyRejectNullConfigurationOwnedCollection(owned bool, value interface 
 func taxonomyKnownPlanValue(value interface {
 	IsNull() bool
 	IsUnknown() bool
-}) bool {
+},
+) bool {
 	return !value.IsNull() && !value.IsUnknown()
 }
 
@@ -266,9 +267,12 @@ func (prepared preparedTaxonomyConceptMutation) ProjectResponse(ctx context.Cont
 	}
 
 	consistencyDiags := diag.Diagnostics{}
+	mismatch := taxonomyMutationIdentityConsistency("taxonomy concept", path.Root("organization_id"), prepared.plan.OrganizationID, data.OrganizationID, &consistencyDiags)
+	mismatch = taxonomyMutationIdentityConsistency("taxonomy concept", path.Root("concept_id"), prepared.plan.ConceptID, data.ConceptID, &consistencyDiags) || mismatch
+	data.OrganizationID, data.ConceptID = prepared.plan.OrganizationID, prepared.plan.ConceptID
+	data.IDIdentityModel = NewIDIdentityModelFromMultipartID(prepared.plan.OrganizationID.ValueString(), prepared.plan.ConceptID.ValueString())
 
 	var projects []func()
-	mismatch := false
 
 	compare := func(name string, valuePath path.Path, planned, remote attr.Value, project func()) {
 		if compareTaxonomyMutationValue("taxonomy concept", name, valuePath, planned, remote, &consistencyDiags) {
@@ -358,18 +362,23 @@ func (prepared preparedTaxonomyConceptMutation) stateRequest(ctx context.Context
 	if !prepared.ownership.altLabels {
 		state.AltLabels = types.MapNull(types.ListType{ElemType: types.StringType})
 	}
+
 	if !prepared.ownership.hiddenLabels {
 		state.HiddenLabels = types.MapNull(types.ListType{ElemType: types.StringType})
 	}
+
 	if !prepared.ownership.notations {
 		state.Notations = types.ListNull(types.StringType)
 	}
+
 	if !prepared.ownership.broaderConceptIDs {
 		state.BroaderConceptIDs = types.ListNull(types.StringType)
 	}
+
 	if !prepared.ownership.relatedConceptIDs {
 		state.RelatedConceptIDs = types.ListNull(types.StringType)
 	}
+
 	return taxonomyConceptRequestFromModel(ctx, state)
 }
 
@@ -378,21 +387,27 @@ func taxonomyConceptRequestFromModel(ctx context.Context, model TaxonomyConceptM
 	if diags.HasError() {
 		return cm.TaxonomyConceptRequest{}, diags
 	}
+
 	if model.AltLabels.IsNull() {
 		request.AltLabels.Reset()
 	}
+
 	if model.HiddenLabels.IsNull() {
 		request.HiddenLabels.Reset()
 	}
+
 	if model.Notations.IsNull() {
 		request.Notations = nil
 	}
+
 	if model.BroaderConceptIDs.IsNull() {
 		request.Broader = nil
 	}
+
 	if model.RelatedConceptIDs.IsNull() {
 		request.Related = nil
 	}
+
 	return request, nil
 }
 
@@ -473,9 +488,13 @@ func (prepared preparedTaxonomyConceptSchemeMutation) ProjectResponse(ctx contex
 	}
 
 	consistencyDiags := diag.Diagnostics{}
+	mismatch := taxonomyMutationIdentityConsistency("taxonomy concept scheme", path.Root("organization_id"), prepared.plan.OrganizationID, data.OrganizationID, &consistencyDiags)
+	mismatch = taxonomyMutationIdentityConsistency("taxonomy concept scheme", path.Root("concept_scheme_id"), prepared.plan.ConceptSchemeID, data.ConceptSchemeID, &consistencyDiags) || mismatch
+	data.OrganizationID, data.ConceptSchemeID = prepared.plan.OrganizationID, prepared.plan.ConceptSchemeID
+	data.IDIdentityModel = NewIDIdentityModelFromMultipartID(prepared.plan.OrganizationID.ValueString(), prepared.plan.ConceptSchemeID.ValueString())
 
 	var projects []func()
-	mismatch := false
+
 	compare := func(name string, valuePath path.Path, planned, remote attr.Value, project func()) {
 		if compareTaxonomyMutationValue("taxonomy concept scheme", name, valuePath, planned, remote, &consistencyDiags) {
 			projects = append(projects, project)
@@ -525,9 +544,11 @@ func (prepared preparedTaxonomyConceptSchemeMutation) stateRequest(ctx context.C
 	if !prepared.ownership.topConceptIDs {
 		state.TopConceptIDs = types.ListNull(types.StringType)
 	}
+
 	if !prepared.ownership.conceptIDs {
 		state.ConceptIDs = types.ListNull(types.StringType)
 	}
+
 	return taxonomyConceptSchemeRequestFromModel(ctx, state)
 }
 
@@ -536,12 +557,15 @@ func taxonomyConceptSchemeRequestFromModel(ctx context.Context, model TaxonomyCo
 	if diags.HasError() {
 		return cm.TaxonomyConceptSchemeRequest{}, diags
 	}
+
 	if model.TopConceptIDs.IsNull() {
 		request.TopConcepts = nil
 	}
+
 	if model.ConceptIDs.IsNull() {
 		request.Concepts = nil
 	}
+
 	return request, nil
 }
 
@@ -557,6 +581,16 @@ func compareTaxonomyMutationValue(resourceName, attributeName string, valuePath 
 	}
 
 	diags.AddAttributeError(taxonomyMutationDifferencePath(valuePath, planned, remote), "Unexpected Contentful "+resourceName+" response", fmt.Sprintf("The %s response differed meaningfully from the Terraform plan.", attributeName))
+
+	return false
+}
+
+func taxonomyMutationIdentityConsistency(resourceName string, valuePath path.Path, planned, remote types.String, diags *diag.Diagnostics) bool {
+	if !planned.IsNull() && !planned.IsUnknown() && !planned.Equal(remote) {
+		diags.AddAttributeError(valuePath, "Unexpected Contentful "+resourceName+" response", "The response identity differed from the requested taxonomy endpoint.")
+
+		return true
+	}
 
 	return false
 }

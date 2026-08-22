@@ -94,6 +94,114 @@ type taxonomyResponseFailure struct {
 	called           bool
 }
 
+type taxonomyRequestRecorder struct {
+	next http.Handler
+
+	mu       sync.Mutex
+	requests []string
+}
+
+type taxonomyRequestBodyRecorder struct {
+	next http.Handler
+
+	mu       sync.Mutex
+	requests []taxonomyRequestBody
+}
+
+type taxonomyRequestBody struct {
+	method  string
+	path    string
+	version string
+	body    []byte
+}
+
+func (r *taxonomyRequestBodyRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	body, err := io.ReadAll(request.Body)
+	if err == nil {
+		r.mu.Lock()
+		r.requests = append(r.requests, taxonomyRequestBody{method: request.Method, path: request.URL.Path, version: request.Header.Get("X-Contentful-Version"), body: append([]byte(nil), body...)})
+		r.mu.Unlock()
+
+		request.Body = io.NopCloser(bytes.NewReader(body))
+	}
+
+	r.next.ServeHTTP(responseWriter, request)
+}
+
+func (r *taxonomyRequestBodyRecorder) matchingRequests(method, path string) []taxonomyRequestBody {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	var matches []taxonomyRequestBody
+
+	for _, recorded := range r.requests {
+		if recorded.method == method && strings.HasSuffix(recorded.path, path) {
+			matches = append(matches, recorded)
+		}
+	}
+
+	return matches
+}
+
+func (r *taxonomyRequestBodyRecorder) reset() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.requests = nil
+}
+
+func (r *taxonomyRequestBodyRecorder) request(method, path string) (map[string]json.RawMessage, bool) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, recorded := range r.requests {
+		if recorded.method != method || !strings.HasSuffix(recorded.path, path) {
+			continue
+		}
+
+		fields := map[string]json.RawMessage{}
+
+		err := json.Unmarshal(recorded.body, &fields)
+		if err != nil {
+			return nil, false
+		}
+
+		return fields, true
+	}
+
+	return nil, false
+}
+
+func (r *taxonomyRequestRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	r.mu.Lock()
+	r.requests = append(r.requests, request.Method+" "+request.URL.Path)
+	r.mu.Unlock()
+
+	r.next.ServeHTTP(responseWriter, request)
+}
+
+func (r *taxonomyRequestRecorder) reset() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.requests = nil
+}
+
+func (r *taxonomyRequestRecorder) count(method, path string) int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	count := 0
+
+	for _, request := range r.requests {
+		if request == method+" "+"/organizations/organization-id"+path {
+			count++
+		}
+	}
+
+	return count
+}
+
 func (f *taxonomyResponseFailure) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	if f.consume(request.Method, request.URL.Path) {
 		http.Error(responseWriter, "injected taxonomy failure", http.StatusBadRequest)
@@ -187,6 +295,9 @@ type taxonomyResponseMutator struct {
 	locale          string
 	add             bool
 	negativeVersion bool
+	organizationID  string
+	resourceID      string
+	removeIdentity  bool
 }
 
 func (m *taxonomyResponseMutator) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
@@ -210,7 +321,7 @@ func (m *taxonomyResponseMutator) ServeHTTP(responseWriter http.ResponseWriter, 
 }
 
 func (m *taxonomyResponseMutator) mutateResponse(method, path string, body []byte) []byte {
-	locale, add, negativeVersion, mutate := m.consumeMutation(method, path)
+	locale, add, negativeVersion, organizationID, resourceID, removeIdentity, mutate := m.consumeMutation(method, path)
 	if !mutate {
 		return body
 	}
@@ -218,11 +329,31 @@ func (m *taxonomyResponseMutator) mutateResponse(method, path string, body []byt
 	switch {
 	case negativeVersion:
 		return setTaxonomyResponseVersion(body, -1)
+	case organizationID != "":
+		return replaceTaxonomyResponseIdentity(body, organizationID, resourceID)
+	case removeIdentity:
+		return removeTaxonomyResponseIdentity(body)
 	case add:
 		return addEmptyLabelLocale(body, locale)
 	default:
 		return removePreferredLabelLocale(body, locale)
 	}
+}
+
+func (m *taxonomyResponseMutator) replaceIdentityOnce(method, path, organizationID, resourceID string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.method, m.path, m.locale, m.add, m.negativeVersion, m.removeIdentity = method, path, "", false, false, false
+	m.organizationID, m.resourceID = organizationID, resourceID
+}
+
+func (m *taxonomyResponseMutator) removeIdentityOnce(method, path string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.method, m.path, m.locale, m.add, m.negativeVersion, m.removeIdentity = method, path, "", false, false, true
+	m.organizationID, m.resourceID = "", ""
 }
 
 func (m *taxonomyResponseMutator) dropPreferredLabelOnce(method, path, locale string) {
@@ -232,13 +363,6 @@ func (m *taxonomyResponseMutator) dropPreferredLabelOnce(method, path, locale st
 	m.method, m.path, m.locale, m.add, m.negativeVersion = method, path, locale, false, false
 }
 
-func (m *taxonomyResponseMutator) addEmptyLabelLocaleOnce(method, path, locale string) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	m.method, m.path, m.locale, m.add, m.negativeVersion = method, path, locale, true, false
-}
-
 func (m *taxonomyResponseMutator) negativeVersionOnce(method, path string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -246,20 +370,129 @@ func (m *taxonomyResponseMutator) negativeVersionOnce(method, path string) {
 	m.method, m.path, m.locale, m.add, m.negativeVersion = method, path, "", false, true
 }
 
-func (m *taxonomyResponseMutator) consumeMutation(method, path string) (string, bool, bool, bool) {
+func (m *taxonomyResponseMutator) consumeMutation(method, path string) (string, bool, bool, string, string, bool, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if method != m.method || !strings.Contains(path, m.path) {
-		return "", false, false, false
+		return "", false, false, "", "", false, false
 	}
 
 	locale := m.locale
 	add := m.add
 	negativeVersion := m.negativeVersion
+	organizationID, resourceID := m.organizationID, m.resourceID
+	removeIdentity := m.removeIdentity
 	m.method, m.path, m.locale, m.add, m.negativeVersion = "", "", "", false, false
+	m.organizationID, m.resourceID = "", ""
 
-	return locale, add, negativeVersion, true
+	return locale, add, negativeVersion, organizationID, resourceID, removeIdentity, true
+}
+
+func removeTaxonomyResponseIdentity(body []byte) []byte {
+	var document map[string]json.RawMessage
+
+	if json.Unmarshal(body, &document) != nil {
+		return body
+	}
+
+	var sys map[string]json.RawMessage
+
+	if json.Unmarshal(document["sys"], &sys) != nil {
+		return body
+	}
+
+	delete(sys, "id")
+	delete(sys, "organization")
+
+	encoded, err := json.Marshal(sys)
+	if err != nil {
+		return body
+	}
+
+	document["sys"] = encoded
+
+	result, err := json.Marshal(document)
+	if err != nil {
+		return body
+	}
+
+	return result
+}
+
+func replaceTaxonomyResponseIdentity(body []byte, organizationID, resourceID string) []byte {
+	document := map[string]json.RawMessage{}
+
+	err := json.Unmarshal(body, &document)
+	if err != nil {
+		return body
+	}
+
+	sys := map[string]json.RawMessage{}
+
+	err = json.Unmarshal(document["sys"], &sys)
+	if err != nil {
+		return body
+	}
+
+	organization := map[string]json.RawMessage{}
+
+	err = json.Unmarshal(sys["organization"], &organization)
+	if err != nil {
+		return body
+	}
+
+	organizationSys := map[string]json.RawMessage{}
+
+	err = json.Unmarshal(organization["sys"], &organizationSys)
+	if err != nil {
+		return body
+	}
+
+	encodedOrganizationID, err := json.Marshal(organizationID)
+	if err != nil {
+		return body
+	}
+
+	encodedResourceID, err := json.Marshal(resourceID)
+	if err != nil {
+		return body
+	}
+
+	organizationSys["id"] = encodedOrganizationID
+
+	organization["sys"], err = json.Marshal(organizationSys)
+	if err != nil {
+		return body
+	}
+
+	sys["organization"] = mustMarshalTaxonomyResponseValue(organization)
+	if sys["organization"] == nil {
+		return body
+	}
+
+	sys["id"] = encodedResourceID
+
+	document["sys"] = mustMarshalTaxonomyResponseValue(sys)
+	if document["sys"] == nil {
+		return body
+	}
+
+	result, err := json.Marshal(document)
+	if err != nil {
+		return body
+	}
+
+	return result
+}
+
+func mustMarshalTaxonomyResponseValue(value any) json.RawMessage {
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		return nil
+	}
+
+	return encoded
 }
 
 func setTaxonomyResponseVersion(body []byte, version int) []byte {
@@ -377,112 +610,4 @@ func deleteTaxonomyConceptSchemeOutOfBand(t *testing.T, server *cmt.Server, orga
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-type taxonomyRequestRecorder struct {
-	next http.Handler
-
-	mu       sync.Mutex
-	requests []string
-}
-
-type taxonomyRequestBodyRecorder struct {
-	next http.Handler
-
-	mu       sync.Mutex
-	requests []taxonomyRequestBody
-}
-
-type taxonomyRequestBody struct {
-	method  string
-	path    string
-	version string
-	body    []byte
-}
-
-func (r *taxonomyRequestBodyRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	body, err := io.ReadAll(request.Body)
-	if err == nil {
-		r.mu.Lock()
-		r.requests = append(r.requests, taxonomyRequestBody{method: request.Method, path: request.URL.Path, version: request.Header.Get("X-Contentful-Version"), body: append([]byte(nil), body...)})
-		r.mu.Unlock()
-
-		request.Body = io.NopCloser(bytes.NewReader(body))
-	}
-
-	r.next.ServeHTTP(responseWriter, request)
-}
-
-func (r *taxonomyRequestBodyRecorder) matchingRequests(method, path string) []taxonomyRequestBody {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	var matches []taxonomyRequestBody
-
-	for _, recorded := range r.requests {
-		if recorded.method == method && strings.HasSuffix(recorded.path, path) {
-			matches = append(matches, recorded)
-		}
-	}
-
-	return matches
-}
-
-func (r *taxonomyRequestBodyRecorder) reset() {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	r.requests = nil
-}
-
-func (r *taxonomyRequestBodyRecorder) request(method, path string) (map[string]json.RawMessage, bool) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	for _, recorded := range r.requests {
-		if recorded.method != method || !strings.HasSuffix(recorded.path, path) {
-			continue
-		}
-
-		fields := map[string]json.RawMessage{}
-
-		err := json.Unmarshal(recorded.body, &fields)
-		if err != nil {
-			return nil, false
-		}
-
-		return fields, true
-	}
-
-	return nil, false
-}
-
-func (r *taxonomyRequestRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	r.mu.Lock()
-	r.requests = append(r.requests, request.Method+" "+request.URL.Path)
-	r.mu.Unlock()
-
-	r.next.ServeHTTP(responseWriter, request)
-}
-
-func (r *taxonomyRequestRecorder) reset() {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	r.requests = nil
-}
-
-func (r *taxonomyRequestRecorder) count(method, path string) int {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	count := 0
-
-	for _, request := range r.requests {
-		if request == method+" "+"/organizations/organization-id"+path {
-			count++
-		}
-	}
-
-	return count
 }
