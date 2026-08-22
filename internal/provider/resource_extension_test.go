@@ -1,12 +1,17 @@
 package provider_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -209,7 +214,7 @@ func TestAccExtensionResourceRejectsInvalidSourcesBeforeContentful(t *testing.T)
 		expectedError string
 	}{
 		"neither source": {
-			expectedError: "No attribute specified when one (and only one)",
+			expectedError: "Missing extension source",
 		},
 		"empty src": {
 			sources:       `src = ""`,
@@ -220,7 +225,7 @@ func TestAccExtensionResourceRejectsInvalidSourcesBeforeContentful(t *testing.T)
     src    = "https://example.com/extension.js"
     srcdoc = "<!doctype html>"
 `,
-			expectedError: "2 attributes specified when one (and only one)",
+			expectedError: "Invalid Attribute Combination",
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -259,6 +264,155 @@ resource "contentful_extension" "test" {
 
 			require.Zero(t, requestCount.Load())
 		})
+	}
+}
+
+func TestAccExtensionResourcePreservesImportedSourceOnUpdate(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		initialSrc     cm.OptString
+		initialSrcdoc  cm.OptString
+		driftSrc       cm.OptString
+		driftSrcdoc    cm.OptString
+		wantInitialKey string
+		wantDriftKey   string
+	}{
+		"remote src": {
+			initialSrc:     cm.NewOptString("https://initial.example/extension.js"),
+			driftSrcdoc:    cm.NewOptString("<p>out of band</p>"),
+			wantInitialKey: "src",
+			wantDriftKey:   "srcdoc",
+		},
+		"remote srcdoc": {
+			initialSrcdoc:  cm.NewOptString("<p>initial</p>"),
+			driftSrc:       cm.NewOptString("https://drift.example/extension.js"),
+			wantInitialKey: "srcdoc",
+			wantDriftKey:   "src",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
+			server.RegisterSpaceEnvironment("space", "environment")
+
+			extensionID := "imported-" + strings.ReplaceAll(name, " ", "-")
+			params := cm.PutExtensionParams{SpaceID: "space", EnvironmentID: "environment", ExtensionID: extensionID}
+			_, err = server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
+				Extension: cm.ExtensionDataExtension{
+					Name:       "Imported",
+					Src:        test.initialSrc,
+					Srcdoc:     test.initialSrcdoc,
+					FieldTypes: []cm.ExtensionDataExtensionFieldTypesItem{},
+				},
+			}, params)
+			require.NoError(t, err)
+
+			recorder := &extensionPutRecorder{next: server}
+			config := func(name string) string {
+				return fmt.Sprintf(`
+resource "contentful_extension" "test" {
+  space_id       = "space"
+  environment_id = "environment"
+  extension_id   = %q
+
+  extension = {
+    name        = %q
+    field_types = []
+  }
+}
+`, extensionID, name)
+			}
+
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+				Steps: []resource.TestStep{
+					{
+						Config:             config("Imported"),
+						ResourceName:       "contentful_extension.test",
+						ImportState:        true,
+						ImportStateId:      "space/environment/" + extensionID,
+						ImportStatePersist: true,
+					},
+					{
+						Config: config("Updated"),
+						Check: resource.ComposeTestCheckFunc(
+							testContentfulExtensionSources(server.Handler().GetExtension, "space", "environment", extensionID, test.initialSrc, test.initialSrcdoc),
+							recorder.checkLastSource(test.wantInitialKey),
+						),
+					},
+					{
+						PreConfig: func() {
+							_, putErr := server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
+								Extension: cm.ExtensionDataExtension{
+									Name:       "Updated",
+									Src:        test.driftSrc,
+									Srcdoc:     test.driftSrcdoc,
+									FieldTypes: []cm.ExtensionDataExtensionFieldTypesItem{},
+								},
+							}, params)
+							require.NoError(t, putErr)
+						},
+						Config: config("Updated after drift"),
+						Check: resource.ComposeTestCheckFunc(
+							testContentfulExtensionSources(server.Handler().GetExtension, "space", "environment", extensionID, test.driftSrc, test.driftSrcdoc),
+							recorder.checkLastSource(test.wantDriftKey),
+						),
+					},
+				},
+			})
+		})
+	}
+}
+
+type extensionPutRecorder struct {
+	next   http.Handler
+	mu     sync.Mutex
+	bodies []map[string]json.RawMessage
+}
+
+func (r *extensionPutRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodPut && strings.Contains(request.URL.Path, "/extensions/") {
+		body, err := io.ReadAll(request.Body)
+		if err == nil {
+			request.Body = io.NopCloser(bytes.NewReader(body))
+
+			var envelope struct {
+				Extension map[string]json.RawMessage `json:"extension"`
+			}
+			if json.Unmarshal(body, &envelope) == nil {
+				r.mu.Lock()
+				r.bodies = append(r.bodies, envelope.Extension)
+				r.mu.Unlock()
+			}
+		}
+	}
+
+	r.next.ServeHTTP(responseWriter, request)
+}
+
+func (r *extensionPutRecorder) checkLastSource(wantKey string) resource.TestCheckFunc {
+	return func(*terraform.State) error {
+		r.mu.Lock()
+		defer r.mu.Unlock()
+
+		if len(r.bodies) == 0 {
+			return errors.New("no extension PUT request was recorded")
+		}
+
+		last := r.bodies[len(r.bodies)-1]
+		_, srcSet := last["src"]
+		_, srcdocSet := last["srcdoc"]
+		if srcSet == srcdocSet {
+			return fmt.Errorf("extension PUT source keys were src=%t srcdoc=%t, want exactly one", srcSet, srcdocSet)
+		}
+
+		if _, ok := last[wantKey]; !ok {
+			return fmt.Errorf("extension PUT source was %v, want %q", last, wantKey)
+		}
+
+		return nil
 	}
 }
 

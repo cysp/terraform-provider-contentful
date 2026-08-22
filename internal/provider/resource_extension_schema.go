@@ -73,18 +73,18 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			Required:    true,
 		},
 		"src": schema.StringAttribute{
-			Description: "URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Exactly one of src or srcdoc must be configured.",
+			Description: "URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Cannot be configured with srcdoc; both may be omitted to preserve an imported source.",
 			Optional:    true,
 			Computed:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
-				stringvalidator.ExactlyOneOf(
+				stringvalidator.ConflictsWith(
 					path.MatchRelative().AtParent().AtName("srcdoc"),
 				),
 			},
 		},
 		"srcdoc": schema.StringAttribute{
-			Description: "String representation of the extension (e.g. inline HTML code). Exactly one of src or srcdoc must be configured. Contentful accepts an explicitly empty srcdoc.",
+			Description: "String representation of the extension (e.g. inline HTML code). Cannot be configured with src; both may be omitted to preserve an imported source. Contentful accepts an explicitly empty srcdoc.",
 			Optional:    true,
 			Computed:    true,
 		},

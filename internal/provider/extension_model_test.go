@@ -17,15 +17,15 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 		{
 			Sys: cm.NewExtensionSys("space-id", "environment-id", "extension-id"),
 			Extension: cm.ExtensionExtension{
-				Name: "Extension Name",
+				Name:   "Extension Name",
+				Srcdoc: cm.NewOptString(""),
 			},
 		},
 		{
 			Sys: cm.NewExtensionSys("space-id", "environment-id", "extension-id"),
 			Extension: cm.ExtensionExtension{
-				Name:   "Extension Name",
-				Src:    cm.NewOptString("https://example.com/extension.js"),
-				Srcdoc: cm.NewOptString("<!DOCTYPE html><html><head><title>Extension</title></head><body><h1>Extension</h1></body></html>"),
+				Name: "Extension Name",
+				Src:  cm.NewOptString("https://example.com/extension.js"),
 				FieldTypes: []cm.ExtensionExtensionFieldTypesItem{
 					{
 						Type: "Symbol",
@@ -87,12 +87,10 @@ func FuzzExtensionModelRoundtrip(f *testing.F) {
 		input.Sys.Environment.Sys.Type = cm.EnvironmentLinkSysTypeLink
 		input.Sys.Environment.Sys.LinkType = cm.EnvironmentLinkSysLinkTypeEnvironment
 
-		if input.Extension.Src.Value == "" {
-			input.Extension.Src.SetTo("")
-		}
-
-		if input.Extension.Srcdoc.Value == "" {
-			input.Extension.Srcdoc.SetTo("")
+		_, srcSet := input.Extension.Src.Get()
+		_, srcdocSet := input.Extension.Srcdoc.Get()
+		if srcSet == srcdocSet {
+			t.Skip("Skipping response that violates the Contentful extension source union")
 		}
 
 		model, modelDiags := NewExtensionModelFromResponse(t.Context(), input)

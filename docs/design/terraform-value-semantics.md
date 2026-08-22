@@ -145,11 +145,13 @@ limitation. The supporting observations and their date are recorded in the
 
 ### Extension sources
 
-Contentful requires exactly one of `extension.src` or `extension.srcdoc`.
-An empty `src` is invalid, while an explicitly empty `srcdoc` is accepted and
-round-trips. The provider validates that contract in configuration and does not
-silently rewrite either explicit value to omission. The first-party contract
-and live CMA observations are recorded in the
+Every Contentful Extension mutation request requires exactly one of
+`extension.src` or `extension.srcdoc`. HCL may omit both for an imported or
+otherwise response-owned source; planning preserves the sole prior-state source
+in that case. An empty `src` is invalid, while an explicitly empty `srcdoc` is
+accepted and round-trips. The provider does not silently rewrite either
+explicit value to omission. The first-party contract and live CMA observations
+are recorded in the
 [Extension source values note](../research/extension-source-values.md).
 
 ## Diagnostics and local publication

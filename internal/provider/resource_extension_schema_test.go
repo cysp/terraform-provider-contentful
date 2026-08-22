@@ -21,9 +21,8 @@ func TestExtensionSourceSchemaMatchesContentfulContract(t *testing.T) {
 		wantErrors bool
 	}{
 		"neither source is configured": {
-			src:        types.StringNull(),
-			srcdoc:     types.StringNull(),
-			wantErrors: true,
+			src:    types.StringNull(),
+			srcdoc: types.StringNull(),
 		},
 		"empty src is invalid": {
 			src:        types.StringValue(""),
