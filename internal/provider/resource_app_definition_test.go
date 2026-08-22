@@ -44,6 +44,7 @@ func TestAccAppDefinitionResourceRejectsEmptySourceBeforeContentful(t *testing.T
 	require.NoError(t, err)
 
 	var requestCount atomic.Int64
+
 	handler := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
 		requestCount.Add(1)
 		server.ServeHTTP(responseWriter, request)

@@ -89,7 +89,10 @@ func TestSpaceEnablementsModifyPlanValidatesCoupledConfiguration(t *testing.T) {
 			}
 			response := resource.ModifyPlanResponse{Plan: plan}
 
-			NewSpaceEnablementsResource().(resource.ResourceWithModifyPlan).ModifyPlan(ctx, request, &response)
+			resourceWithModifyPlan, ok := NewSpaceEnablementsResource().(resource.ResourceWithModifyPlan)
+			require.True(t, ok)
+
+			resourceWithModifyPlan.ModifyPlan(ctx, request, &response)
 
 			if test.wantPath == "" {
 				assert.False(t, response.Diagnostics.HasError(), response.Diagnostics)

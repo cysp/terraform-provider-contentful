@@ -1,3 +1,4 @@
+//nolint:testpackage // This test exercises internal secret preservation before response redaction.
 package cmtesting
 
 import (

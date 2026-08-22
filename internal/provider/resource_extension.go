@@ -122,6 +122,18 @@ func (r *extensionResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		return
 	}
 
+	preserveExtensionSourcePlan(ctx, stateSrc, stateSrcdoc, resp)
+}
+
+func preserveExtensionSourcePlan(
+	ctx context.Context,
+	stateSrc types.String,
+	stateSrcdoc types.String,
+	resp *resource.ModifyPlanResponse,
+) {
+	srcPath := path.Root("extension").AtName("src")
+	srcdocPath := path.Root("extension").AtName("srcdoc")
+
 	// Older provider versions projected an absent source as an empty string.
 	// An empty src is invalid in Contentful, so it can only be that legacy
 	// placeholder. A valid src paired with an empty srcdoc is likewise the old

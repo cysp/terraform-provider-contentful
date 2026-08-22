@@ -189,6 +189,7 @@ func TestConfigurationAwareConvertersPreserveKnownEmptyPlanValues(t *testing.T) 
 		crossSpaceLinks, ok := actual.CrossSpaceLinks.Get()
 		require.True(t, ok)
 		assert.False(t, crossSpaceLinks.Enabled)
+
 		spaceTemplates, ok := actual.SpaceTemplates.Get()
 		require.True(t, ok)
 		assert.False(t, spaceTemplates.Enabled)
