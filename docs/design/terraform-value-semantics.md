@@ -158,13 +158,18 @@ are recorded in the
 
 ### Space enablements
 
-Every Contentful Space Enablements mutation request requires both
-`cross_space_links` and `space_templates`, and their `enabled` values must be
-equal. Create therefore requires both attributes in configuration. On Update,
-omitting both from configuration is valid response ownership: the known values
-preserved in the plan are still sent. Configuring only one does not combine it
-with prior state. `studio_experiences` and `suggest_concepts` remain independent
-Optional+Computed attributes whose response-owned unknown plans may be omitted.
+All four Space Enablements attributes are independent Optional+Computed values.
+Request conversion sends each known Plan value, including explicit `false` and
+values preserved from prior state, and omits a response-owned null or unknown
+Plan value. A configuration-owned unknown Plan value is rejected before I/O.
+
+Contentful currently validates the presence and equality of
+`cross_space_links` and `space_templates`, but the CMA request schema represents
+all four members as optional. The provider does not make that current server
+policy a Terraform configuration invariant: it sends the planned members
+without inferring a sibling or requiring equality, and surfaces any CMA
+validation response. The first-party contract and live CMA observations are
+recorded in the [Space Enablements request values note](../research/space-enablement-values.md).
 
 ## Diagnostics and local publication
 

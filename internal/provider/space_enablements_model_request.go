@@ -20,28 +20,10 @@ func (m *SpaceEnablementsModel) ToSpaceEnablementData(_ context.Context, config 
 		return cm.SpaceEnablementData{}, diags
 	}
 
-	crossSpaceLinks, crossSpaceLinksDiags := requestRequiredBool(m.CrossSpaceLinks, path.Root("cross_space_links"))
-	diags.Append(crossSpaceLinksDiags...)
-
-	spaceTemplates, spaceTemplatesDiags := requestRequiredBool(m.SpaceTemplates, path.Root("space_templates"))
-	diags.Append(spaceTemplatesDiags...)
-
-	if !crossSpaceLinksDiags.HasError() && !spaceTemplatesDiags.HasError() && crossSpaceLinks != spaceTemplates {
-		diags.AddAttributeError(
-			path.Root("space_templates"),
-			"Unequal coupled space enablements",
-			"cross_space_links and space_templates must have the same value before they can be sent to Contentful.",
-		)
-	}
-
-	if diags.HasError() {
-		return cm.SpaceEnablementData{}, diags
-	}
-
 	fields := cm.SpaceEnablementData{}
 
-	fields.CrossSpaceLinks.SetTo(cm.SpaceEnablementField{Enabled: crossSpaceLinks})
-	fields.SpaceTemplates.SetTo(cm.SpaceEnablementField{Enabled: spaceTemplates})
+	setOptSpaceEnablementFieldFromBoolValue(&fields.CrossSpaceLinks, m.CrossSpaceLinks)
+	setOptSpaceEnablementFieldFromBoolValue(&fields.SpaceTemplates, m.SpaceTemplates)
 	setOptSpaceEnablementFieldFromBoolValue(&fields.StudioExperiences, m.StudioExperiences)
 	setOptSpaceEnablementFieldFromBoolValue(&fields.SuggestConcepts, m.SuggestConcepts)
 
