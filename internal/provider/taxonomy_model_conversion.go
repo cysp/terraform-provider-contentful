@@ -228,6 +228,7 @@ func optionalKnownStringPointer(value types.String, valuePath path.Path) (*strin
 func NewTaxonomyConceptSchemeModelFromResponse(ctx context.Context, response cm.TaxonomyConceptScheme) (TaxonomyConceptSchemeModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	organizationID, schemeID := response.Sys.Organization.Sys.ID, response.Sys.ID
+
 	prefLabel, valueDiags := types.MapValueFrom(ctx, types.StringType, map[string]string(response.PrefLabel))
 	diags.Append(valueDiags...)
 	topIDs, valueDiags := types.ListValueFrom(ctx, types.StringType, conceptLinkIDs(response.TopConcepts))

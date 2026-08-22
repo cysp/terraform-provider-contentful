@@ -123,6 +123,49 @@ nested inside known objects:
 Null, omission, and known empty values remain distinct throughout request and
 response conversion.
 
+### Taxonomy optimistic version locking
+
+Taxonomy resources record Contentful `sys.version` in provider-private state,
+matching the provider's other versioned resources. Update sends the prior
+private-state value supplied at apply. Delete also sends that value when it is
+present. A remote change for which CMA advances the resource's `sys.version` is
+therefore rejected instead of being overwritten. Create, Read, and Update store
+a positive version returned by Contentful, including alongside recovery state
+when an Update response differs from the plan. After a successful Create or
+Update with a nonpositive response version, the provider first checkpoints the
+projected response state and identity, then returns an error without storing the
+unusable version. An errored Create therefore has state but no private version;
+an errored Update retains its prior private version until Read obtains a valid
+current version.
+
+Terraform does not supply prior private data to Delete while replacing a
+tainted resource. This applies both to recovery state published alongside an
+errored Create and to a resource manually marked tainted after successful
+updates. Only when private version data is genuinely absent, Delete performs
+one GET for the requested resource, validates the returned identity and
+positive `sys.version`, and sends that version in the DELETE request. A 404
+from this GET means the resource is already absent. This narrow apply-time
+fallback lets tainted replacement delete resources above version `1`; a
+concurrent change between GET and DELETE still produces CMA `VersionMismatch`
+instead of a blind deletion. Valid private data takes the direct DELETE path
+without a preliminary GET. Malformed, zero, or negative private version data
+remains an error and does not trigger the fallback.
+
+Because no prior lock token exists in the fallback case, Delete cannot detect a
+remote change that occurred before its GET; it deliberately authorizes deletion
+of the version current at that point. Optimistic locking then covers the
+GET-to-DELETE interval.
+
+CMA documents the version header as required, and direct concept and concept-
+scheme DELETE experiments rejected both an omitted header and version `0`.
+
+Version handling accepts positive integers. The repository mock and direct CMA
+creation experiments returned an initial value of `1`; that observation is
+modeled for service fidelity but is not a permanent schema promise. The
+documented contract and raw DELETE observations are recorded in the
+[taxonomy DELETE version note](../research/taxonomy-delete-version.md). Use
+Contentful's established `version` and `sys.version` terminology.
+
 ### Delivery API key environments
 
 `delivery_api_key.environments` has a deliberate forward-compatibility policy:

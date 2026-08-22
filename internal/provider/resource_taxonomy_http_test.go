@@ -181,11 +181,12 @@ func (h *taxonomyRequestHook) wasCalled() bool {
 type taxonomyResponseMutator struct {
 	next http.Handler
 
-	mu     sync.Mutex
-	method string
-	path   string
-	locale string
-	add    bool
+	mu              sync.Mutex
+	method          string
+	path            string
+	locale          string
+	add             bool
+	responseVersion *int
 }
 
 func (m *taxonomyResponseMutator) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
@@ -195,14 +196,7 @@ func (m *taxonomyResponseMutator) ServeHTTP(responseWriter http.ResponseWriter, 
 	body := recorder.Body.Bytes()
 
 	if recorder.Code >= http.StatusOK && recorder.Code < http.StatusMultipleChoices {
-		locale, add, mutate := m.consumeMutation(request.Method, request.URL.Path)
-		if mutate {
-			if add {
-				body = addEmptyLabelLocale(body, locale)
-			} else {
-				body = removePreferredLabelLocale(body, locale)
-			}
-		}
+		body = m.mutateResponse(request.Method, request.URL.Path, body)
 	}
 
 	for key, values := range recorder.Header() {
@@ -215,33 +209,92 @@ func (m *taxonomyResponseMutator) ServeHTTP(responseWriter http.ResponseWriter, 
 	_, _ = io.Copy(responseWriter, bytes.NewReader(body))
 }
 
+func (m *taxonomyResponseMutator) mutateResponse(method, path string, body []byte) []byte {
+	locale, add, responseVersion, mutate := m.consumeMutation(method, path)
+	if !mutate {
+		return body
+	}
+
+	switch {
+	case responseVersion != nil:
+		return setTaxonomyResponseVersion(body, *responseVersion)
+	case add:
+		return addEmptyLabelLocale(body, locale)
+	default:
+		return removePreferredLabelLocale(body, locale)
+	}
+}
+
 func (m *taxonomyResponseMutator) dropPreferredLabelOnce(method, path, locale string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.method, m.path, m.locale, m.add = method, path, locale, false
+	m.method, m.path, m.locale, m.add, m.responseVersion = method, path, locale, false, nil
 }
 
 func (m *taxonomyResponseMutator) addEmptyLabelLocaleOnce(method, path, locale string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.method, m.path, m.locale, m.add = method, path, locale, true
+	m.method, m.path, m.locale, m.add, m.responseVersion = method, path, locale, true, nil
 }
 
-func (m *taxonomyResponseMutator) consumeMutation(method, path string) (string, bool, bool) {
+func (m *taxonomyResponseMutator) versionOnce(method, path string, version int) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.method, m.path, m.locale, m.add, m.responseVersion = method, path, "", false, &version
+}
+
+func (m *taxonomyResponseMutator) consumeMutation(method, path string) (string, bool, *int, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if method != m.method || !strings.Contains(path, m.path) {
-		return "", false, false
+		return "", false, nil, false
 	}
 
 	locale := m.locale
 	add := m.add
-	m.method, m.path, m.locale, m.add = "", "", "", false
+	responseVersion := m.responseVersion
+	m.method, m.path, m.locale, m.add, m.responseVersion = "", "", "", false, nil
 
-	return locale, add, true
+	return locale, add, responseVersion, true
+}
+
+func setTaxonomyResponseVersion(body []byte, version int) []byte {
+	document := map[string]json.RawMessage{}
+
+	err := json.Unmarshal(body, &document)
+	if err != nil {
+		return body
+	}
+
+	sys := map[string]json.RawMessage{}
+
+	err = json.Unmarshal(document["sys"], &sys)
+	if err != nil {
+		return body
+	}
+
+	encodedVersion, err := json.Marshal(version)
+	if err != nil {
+		return body
+	}
+
+	sys["version"] = encodedVersion
+
+	document["sys"], err = json.Marshal(sys)
+	if err != nil {
+		return body
+	}
+
+	result, err := json.Marshal(document)
+	if err != nil {
+		return body
+	}
+
+	return result
 }
 
 func addEmptyLabelLocale(body []byte, locale string) []byte {
@@ -324,4 +377,105 @@ func deleteTaxonomyConceptSchemeOutOfBand(t *testing.T, server *cmt.Server, orga
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+type taxonomyRequestRecorder struct {
+	next http.Handler
+
+	mu       sync.Mutex
+	requests []string
+}
+
+type taxonomyRequestBodyRecorder struct {
+	next http.Handler
+
+	mu       sync.Mutex
+	requests []taxonomyRequestBody
+}
+
+type taxonomyRequestBody struct {
+	method  string
+	path    string
+	version string
+	body    []byte
+}
+
+func (r *taxonomyRequestBodyRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	body, err := io.ReadAll(request.Body)
+	if err == nil {
+		r.mu.Lock()
+		r.requests = append(r.requests, taxonomyRequestBody{method: request.Method, path: request.URL.Path, version: request.Header.Get("X-Contentful-Version"), body: append([]byte(nil), body...)})
+		r.mu.Unlock()
+
+		request.Body = io.NopCloser(bytes.NewReader(body))
+	}
+
+	r.next.ServeHTTP(responseWriter, request)
+}
+
+func (r *taxonomyRequestBodyRecorder) matchingRequests(method, path string) []taxonomyRequestBody {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	var matches []taxonomyRequestBody
+
+	for _, recorded := range r.requests {
+		if recorded.method == method && strings.HasSuffix(recorded.path, path) {
+			matches = append(matches, recorded)
+		}
+	}
+
+	return matches
+}
+
+func (r *taxonomyRequestBodyRecorder) request(method, path string) (map[string]json.RawMessage, bool) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, recorded := range r.requests {
+		if recorded.method != method || !strings.HasSuffix(recorded.path, path) {
+			continue
+		}
+
+		fields := map[string]json.RawMessage{}
+
+		err := json.Unmarshal(recorded.body, &fields)
+		if err != nil {
+			return nil, false
+		}
+
+		return fields, true
+	}
+
+	return nil, false
+}
+
+func (r *taxonomyRequestRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	r.mu.Lock()
+	r.requests = append(r.requests, request.Method+" "+request.URL.Path)
+	r.mu.Unlock()
+
+	r.next.ServeHTTP(responseWriter, request)
+}
+
+func (r *taxonomyRequestRecorder) reset() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.requests = nil
+}
+
+func (r *taxonomyRequestRecorder) count(method, path string) int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	count := 0
+
+	for _, request := range r.requests {
+		if request == method+" "+"/organizations/organization-id"+path {
+			count++
+		}
+	}
+
+	return count
 }
