@@ -123,6 +123,27 @@ nested inside known objects:
 Null, omission, and known empty values remain distinct throughout request and
 response conversion.
 
+### Taxonomy optimistic version locking
+
+Taxonomy resources record Contentful `sys.version` in provider-private state,
+matching the provider's other versioned resources. Update and Delete send the
+prior private-state value supplied at apply, so a remote change for which CMA
+advances that resource's `sys.version` after planning is rejected instead of
+being overwritten. Create, Read, and Update store the version returned by
+Contentful, including alongside recovery state when an Update response differs
+from the plan. Create plans seed Contentful's observed initial taxonomy version,
+`1`, into planned private data. Terraform retains that planned value with
+tainted recovery state even though it does not retain private data newly written
+by an errored Create response. This preserves saved-plan locking and lets
+Terraform safely recover without exposing the concurrency token in the resource
+schema or performing a hidden pre-mutation read.
+
+Version handling accepts nonnegative integers. The repository mock and a direct
+CMA creation experiment both returned an initial value of `1`; that observation
+supports Create planning and errored Create recovery but is not a permanent
+schema promise. Use Contentful's established `version` and `sys.version`
+terminology.
+
 ### Delivery API key environments
 
 `delivery_api_key.environments` has a deliberate forward-compatibility policy:
