@@ -17,6 +17,8 @@ ambiguity. The requests used an empty `fieldTypes` list and `sidebar=false`:
 
 Provider impact: explicit empty `src` is rejected by configuration validation;
 explicit empty `srcdoc` remains a meaningful known value and is serialized;
-neither source and both sources are rejected. These are point-in-time service
-observations supporting the first-party contract, not a claim about unrelated
-Extension fields.
+and both configured sources are rejected. HCL may omit both attributes for an
+imported or otherwise response-owned source. Planning must preserve the sole
+prior-state source so that the resulting CMA request still contains exactly one
+source. These are point-in-time service observations supporting the first-party
+contract, not a claim about unrelated Extension fields.

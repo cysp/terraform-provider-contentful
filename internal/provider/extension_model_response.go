@@ -51,9 +51,17 @@ func NewExtensionModelExtensionFromResponse(ctx context.Context, response cm.Ext
 
 	model := ExtensionModelExtension{
 		Name:    types.StringValue(response.Name),
-		Src:     types.StringValue(response.Src.Or("")),
-		SrcDoc:  types.StringValue(response.Srcdoc.Or("")),
+		Src:     types.StringNull(),
+		SrcDoc:  types.StringNull(),
 		Sidebar: types.BoolPointerValue(response.Sidebar.ValueBoolPointer()),
+	}
+
+	if src, ok := response.Src.Get(); ok {
+		model.Src = types.StringValue(src)
+	}
+
+	if srcdoc, ok := response.Srcdoc.Get(); ok {
+		model.SrcDoc = types.StringValue(srcdoc)
 	}
 
 	if response.FieldTypes != nil {

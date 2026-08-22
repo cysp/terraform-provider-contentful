@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -17,6 +18,7 @@ var (
 	_ resource.ResourceWithConfigure   = (*extensionResource)(nil)
 	_ resource.ResourceWithIdentity    = (*extensionResource)(nil)
 	_ resource.ResourceWithImportState = (*extensionResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*extensionResource)(nil)
 )
 
 //nolint:ireturn
@@ -56,6 +58,97 @@ func (r *extensionResource) ImportState(ctx context.Context, req resource.Import
 		path.Root("environment_id"),
 		path.Root("extension_id"),
 	}, req, resp)
+}
+
+func (r *extensionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	srcPath := path.Root("extension").AtName("src")
+	srcdocPath := path.Root("extension").AtName("srcdoc")
+
+	var configSrc, configSrcdoc types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, srcPath, &configSrc)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, srcdocPath, &configSrcdoc)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if configSrc.IsUnknown() {
+		if configSrcdoc.IsNull() {
+			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcdocPath, types.StringNull())...)
+		}
+
+		return
+	}
+
+	if configSrcdoc.IsUnknown() {
+		if configSrc.IsNull() {
+			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcPath, types.StringNull())...)
+		}
+
+		return
+	}
+
+	if !configSrc.IsNull() {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcdocPath, types.StringNull())...)
+
+		return
+	}
+
+	if !configSrcdoc.IsNull() {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcPath, types.StringNull())...)
+
+		return
+	}
+
+	if req.State.Raw.IsNull() {
+		resp.Diagnostics.AddAttributeError(
+			srcPath,
+			"Missing extension source",
+			"Exactly one of extension.src or extension.srcdoc must be configured when creating an extension.",
+		)
+
+		return
+	}
+
+	var stateSrc, stateSrcdoc types.String
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, srcPath, &stateSrc)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, srcdocPath, &stateSrcdoc)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Older provider versions projected an absent source as an empty string.
+	// An empty src is invalid in Contentful, so it can only be that legacy
+	// placeholder. A valid src paired with an empty srcdoc is likewise the old
+	// absent-sibling encoding; two genuine source values remain invalid.
+	stateSrcKnown := !stateSrc.IsNull() && !stateSrc.IsUnknown()
+	stateSrcdocKnown := !stateSrcdoc.IsNull() && !stateSrcdoc.IsUnknown()
+
+	switch {
+	case stateSrcKnown && stateSrc.ValueString() != "" && (!stateSrcdocKnown || stateSrcdoc.ValueString() == ""):
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcPath, stateSrc)...)
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcdocPath, types.StringNull())...)
+	case (!stateSrcKnown || stateSrc.ValueString() == "") && stateSrcdocKnown:
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcPath, types.StringNull())...)
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcdocPath, stateSrcdoc)...)
+	case stateSrcKnown && stateSrcdocKnown:
+		resp.Diagnostics.AddAttributeError(
+			srcdocPath,
+			"Conflicting extension sources",
+			"The prior state contains both extension.src and extension.srcdoc, but a Contentful extension update requires exactly one source.",
+		)
+	default:
+		resp.Diagnostics.AddAttributeError(
+			srcPath,
+			"Missing extension source",
+			"The prior state does not contain the extension.src or extension.srcdoc value required for a Contentful update.",
+		)
+	}
 }
 
 func (r *extensionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

@@ -41,6 +41,29 @@ func (model *ExtensionModel) ToExtensionData(config ExtensionModel, path path.Pa
 		return cm.ExtensionData{}, diags
 	}
 
+	sourcePath := path.AtName("extension").AtName("src")
+	srcPresent := !model.Extension.Src.IsNull() && !model.Extension.Src.IsUnknown()
+	srcdocPresent := !model.Extension.SrcDoc.IsNull() && !model.Extension.SrcDoc.IsUnknown()
+
+	switch {
+	case srcPresent && srcdocPresent:
+		diags.AddAttributeError(
+			path.AtName("extension").AtName("srcdoc"),
+			"Conflicting extension sources",
+			"A Contentful extension request must contain exactly one of extension.src or extension.srcdoc.",
+		)
+	case !srcPresent && !srcdocPresent:
+		if model.Extension.SrcDoc.IsUnknown() {
+			sourcePath = path.AtName("extension").AtName("srcdoc")
+		}
+
+		diags.AddAttributeError(
+			sourcePath,
+			"Missing extension source",
+			"A Contentful extension request must contain exactly one known, non-null extension.src or extension.srcdoc value.",
+		)
+	}
+
 	fieldsExtension, fieldsExtensionDiags := model.Extension.ToExtensionExtensionData(path.AtName("extension"))
 	diags.Append(fieldsExtensionDiags...)
 

@@ -16,8 +16,8 @@ func validExtensionRequestModel() ExtensionModel {
 	return ExtensionModel{
 		Extension: &ExtensionModelExtension{
 			Name:   types.StringValue("Extension"),
-			Src:    types.StringUnknown(),
-			SrcDoc: types.StringUnknown(),
+			Src:    types.StringValue("https://example.com/extension.js"),
+			SrcDoc: types.StringNull(),
 			FieldTypes: []AppDefinitionLocationFieldTypesItem{
 				{
 					Type:     types.StringValue("Array"),
@@ -158,12 +158,12 @@ func TestExtensionRequestUsesKnownPlanSourcesWhenConfigurationIsNull(t *testing.
 	}{
 		"known src from plan": {
 			src:            types.StringValue("https://example.com/extension.js"),
-			srcdoc:         types.StringUnknown(),
+			srcdoc:         types.StringNull(),
 			expectedSrc:    "https://example.com/extension.js",
 			expectedSrcSet: true,
 		},
 		"known empty srcdoc from plan": {
-			src:               types.StringUnknown(),
+			src:               types.StringNull(),
 			srcdoc:            types.StringValue(""),
 			expectedSrcdocSet: true,
 		},
@@ -212,7 +212,7 @@ func TestExtensionRequestRejectsNullExtensionWithoutPanic(t *testing.T) {
 	assert.Equal(t, []string{"extension"}, attributeDiagnosticPaths(t, diags))
 }
 
-func TestExtensionRequestOmitsSchemaConsistentNulls(t *testing.T) {
+func TestExtensionRequestRejectsMissingSource(t *testing.T) {
 	t.Parallel()
 
 	model := validExtensionRequestModel()
@@ -222,17 +222,12 @@ func TestExtensionRequestOmitsSchemaConsistentNulls(t *testing.T) {
 
 	actual, diags := model.ToExtensionData(ExtensionModel{}, path.Empty())
 
-	require.False(t, diags.HasError(), diags.Errors())
-	assert.False(t, actual.Extension.Src.IsSet())
-	assert.False(t, actual.Extension.Srcdoc.IsSet())
-	assert.False(t, actual.Extension.Sidebar.IsSet())
-	assert.False(t, actual.Extension.FieldTypes[0].LinkType.IsSet())
-	items, ok := actual.Extension.FieldTypes[0].Items.Get()
-	require.True(t, ok)
-	assert.False(t, items.LinkType.IsSet())
+	assert.Equal(t, cm.ExtensionData{}, actual)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{"extension.src"}, attributeDiagnosticPaths(t, diags))
 }
 
-func TestExtensionRequestPreservesKnownSources(t *testing.T) {
+func TestExtensionRequestRejectsConflictingSources(t *testing.T) {
 	t.Parallel()
 
 	model := validExtensionRequestModel()
@@ -247,10 +242,9 @@ func TestExtensionRequestPreservesKnownSources(t *testing.T) {
 		},
 	}, path.Empty())
 
-	require.False(t, diags.HasError(), diags.Errors())
-	assert.Equal(t, "https://example.com", requireOptString(t, actual.Extension.Src))
-	assert.Equal(t, "<html></html>", requireOptString(t, actual.Extension.Srcdoc))
-	assert.JSONEq(t, `{"known":true}`, string(actual.Parameters))
+	assert.Equal(t, cm.ExtensionData{}, actual)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{"extension.srcdoc"}, attributeDiagnosticPaths(t, diags))
 }
 
 func TestExtensionParameterListsFailClosed(t *testing.T) {
@@ -258,7 +252,8 @@ func TestExtensionParameterListsFailClosed(t *testing.T) {
 
 	model := ExtensionModel{
 		Extension: &ExtensionModelExtension{
-			Name: types.StringValue("Extension"),
+			Name:   types.StringValue("Extension"),
+			SrcDoc: types.StringValue(""),
 			Parameters: &AppDefinitionParameters{
 				Installation: []AppDefinitionParameter{
 					{
@@ -291,7 +286,8 @@ func TestExtensionParameterListsPreserveNilAndEmpty(t *testing.T) {
 
 	model := ExtensionModel{
 		Extension: &ExtensionModelExtension{
-			Name: types.StringValue("Extension"),
+			Name:   types.StringValue("Extension"),
+			SrcDoc: types.StringValue(""),
 			Parameters: &AppDefinitionParameters{
 				Installation: []AppDefinitionParameter{},
 				Instance:     nil,
@@ -311,7 +307,7 @@ func TestExtensionParameterListsPreserveNilAndEmpty(t *testing.T) {
 	assert.Nil(t, parameters.Instance)
 }
 
-func TestExtensionOptionalComputedValuesCanRemainUnknown(t *testing.T) {
+func TestExtensionRequestRejectsUnknownResponseOwnedSources(t *testing.T) {
 	t.Parallel()
 
 	model := ExtensionModel{
@@ -325,8 +321,7 @@ func TestExtensionOptionalComputedValuesCanRemainUnknown(t *testing.T) {
 
 	actual, diags := model.ToExtensionData(ExtensionModel{}, path.Empty())
 
-	require.False(t, diags.HasError(), diags.Errors())
-	assert.False(t, actual.Extension.Src.IsSet())
-	assert.False(t, actual.Extension.Srcdoc.IsSet())
-	assert.Nil(t, actual.Parameters)
+	assert.Equal(t, cm.ExtensionData{}, actual)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{"extension.srcdoc"}, attributeDiagnosticPaths(t, diags))
 }
