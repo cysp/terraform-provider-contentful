@@ -1,13 +1,16 @@
 package provider_test
 
 import (
+	"net/http"
 	"regexp"
+	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/require"
 )
 
 //nolint:paralleltest
@@ -32,6 +35,37 @@ func TestAccAppDefinitionResource(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccAppDefinitionResourceRejectsEmptySourceBeforeContentful(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+
+	var requestCount atomic.Int64
+	handler := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
+		requestCount.Add(1)
+		server.ServeHTTP(responseWriter, request)
+	})
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "contentful_app_definition" "test" {
+  organization_id = "organization"
+  name            = "Empty source"
+  src             = ""
+  locations       = []
+}
+`,
+				ExpectError: regexp.MustCompile(`at least 1`),
+			},
+		},
+	})
+
+	require.Zero(t, requestCount.Load())
 }
 
 func TestAccAppDefinitionResourceImport(t *testing.T) {

@@ -47,7 +47,7 @@ resource "contentful_app_definition" "this" {
 
 - `bundle_id` (String) Link to an AppBundle if hosted on Contentful.
 - `parameters` (Attributes) Definitions of configuration parameters. (see [below for nested schema](#nestedatt--parameters))
-- `src` (String) Publicly available source URL of the app. Requires HTTPS with exception of localhost (for development).
+- `src` (String) Non-empty publicly available source URL of the app. Requires HTTPS with exception of localhost (for development).
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
