@@ -3,8 +3,11 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -18,14 +21,42 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEntryListResourceListIgnoresQueryPaginationParams(t *testing.T) {
+func TestEntryListResourceListSendsFiltersAndOwnsPagination(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	server, err := cmt.NewContentfulManagementServer()
-	require.NoError(t, err)
 
-	httpServer := httptest.NewServer(server)
+	var requestCount atomic.Int64
+
+	httpServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCount.Add(1)
+
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/spaces/space/environments/environment/entries", r.URL.Path)
+		assert.Equal(t, "Bearer "+cmt.ValidAccessToken, r.Header.Get("Authorization"))
+		assert.Equal(t, url.Values{
+			"content_type":    []string{"author"},
+			"fields.name[ne]": []string{"nonexistent"},
+			"limit":           []string{"100"},
+			"order":           []string{"sys.createdAt"},
+			"skip":            []string{"0"},
+		}, r.URL.Query())
+
+		entry := cmt.NewEntryFromRequest("space", "environment", "author", "entry-1", &cm.EntryRequest{
+			Fields: cm.NewOptEntryFields(cm.EntryFields{
+				"name": jx.Raw(`{"en-US":"Entry 1"}`),
+			}),
+		})
+
+		w.Header().Set("Content-Type", "application/json")
+		assert.NoError(t, json.NewEncoder(w).Encode(cm.EntryCollection{
+			Sys:   cm.EntryCollectionSys{Type: cm.EntryCollectionSysTypeArray},
+			Total: 1,
+			Skip:  0,
+			Limit: 100,
+			Items: []cm.Entry{entry},
+		}))
+	}))
 	t.Cleanup(httpServer.Close)
 
 	client, err := cm.NewClient(
@@ -34,12 +65,6 @@ func TestEntryListResourceListIgnoresQueryPaginationParams(t *testing.T) {
 		cm.WithClient(httpServer.Client()),
 	)
 	require.NoError(t, err)
-
-	server.SetEntry("space", "environment", "author", "entry-1", cm.EntryRequest{
-		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"name": jx.Raw(`{"en-US":"Entry 1"}`),
-		}),
-	})
 
 	listResource := &entryListResource{
 		providerData: ContentfulProviderData{client: client},
@@ -66,6 +91,7 @@ func TestEntryListResourceListIgnoresQueryPaginationParams(t *testing.T) {
 	require.Len(t, results, 1)
 	assert.False(t, results[0].Diagnostics.HasError(), results[0].Diagnostics)
 	assert.Equal(t, "entry-1", results[0].DisplayName)
+	assert.Equal(t, int64(1), requestCount.Load())
 }
 
 func TestSetEntryListQueryParamSkipsPaginatorParams(t *testing.T) {
@@ -98,10 +124,13 @@ func newEntryListResourceConfig(ctx context.Context) tfsdk.Config {
 			"space_id":       tftypes.NewValue(tftypes.String, "space"),
 			"environment_id": tftypes.NewValue(tftypes.String, "environment"),
 			"content_type":   tftypes.NewValue(tftypes.String, "author"),
-			"order":          tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
+			"order": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{
+				tftypes.NewValue(tftypes.String, "sys.createdAt"),
+			}),
 			"query": tftypes.NewValue(tftypes.Map{ElementType: tftypes.String}, map[string]tftypes.Value{
-				"limit": tftypes.NewValue(tftypes.String, "1"),
-				"skip":  tftypes.NewValue(tftypes.String, "100"),
+				"fields.name[ne]": tftypes.NewValue(tftypes.String, "nonexistent"),
+				"limit":           tftypes.NewValue(tftypes.String, "1"),
+				"skip":            tftypes.NewValue(tftypes.String, "100"),
 			}),
 		}),
 		Schema: schema,
