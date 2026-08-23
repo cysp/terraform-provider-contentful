@@ -64,7 +64,7 @@ func TestEntryListResourceListIgnoresQueryPaginationParams(t *testing.T) {
 	})
 
 	require.Len(t, results, 1)
-	assert.False(t, results[0].Diagnostics.HasError())
+	assert.False(t, results[0].Diagnostics.HasError(), results[0].Diagnostics)
 	assert.Equal(t, "entry-1", results[0].DisplayName)
 }
 

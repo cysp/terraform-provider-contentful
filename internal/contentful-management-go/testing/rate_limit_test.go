@@ -19,6 +19,14 @@ const (
 	rateLimitResetHeader           = "X-Contentful-Ratelimit-Reset"
 )
 
+type contentfulErrorResponse struct {
+	Sys struct {
+		Type string `json:"type"`
+		ID   string `json:"id"`
+	} `json:"sys"`
+	Message string `json:"message"`
+}
+
 func makeRateLimitTestRequest() *http.Request {
 	return httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/missing", nil)
 }
@@ -36,6 +44,14 @@ func TestContentfulManagementServerUsesDefaultRateLimitHeaders(t *testing.T) {
 	assert.Equal(t, "5", response.Header().Get(rateLimitSecondLimitHeader))
 	assert.Equal(t, "4", response.Header().Get(rateLimitSecondRemainingHeader))
 	assert.Equal(t, "0", response.Header().Get(rateLimitResetHeader))
+
+	var responseBody contentfulErrorResponse
+
+	err = json.Unmarshal(response.Body.Bytes(), &responseBody)
+	require.NoError(t, err)
+	assert.Equal(t, "Error", responseBody.Sys.Type)
+	assert.Equal(t, "NotFound", responseBody.Sys.ID)
+	assert.Equal(t, "The resource could not be found.", responseBody.Message)
 }
 
 func TestContentfulManagementServerRateLimitHeadersAnd429WhenEnabled(t *testing.T) {
@@ -73,15 +89,13 @@ func TestContentfulManagementServerRateLimitHeadersAnd429WhenEnabled(t *testing.
 	assert.Equal(t, "0", thirdResponse.Header().Get(rateLimitSecondRemainingHeader))
 	assert.Equal(t, "1", thirdResponse.Header().Get(rateLimitResetHeader))
 
-	var responseBody struct {
-		Sys struct {
-			ID string `json:"id"`
-		} `json:"sys"`
-	}
+	var responseBody contentfulErrorResponse
 
 	err = json.Unmarshal(thirdResponse.Body.Bytes(), &responseBody)
 	require.NoError(t, err)
+	assert.Equal(t, "Error", responseBody.Sys.Type)
 	assert.Equal(t, "RateLimitExceeded", responseBody.Sys.ID)
+	assert.Equal(t, "Rate limit exceeded", responseBody.Message)
 }
 
 func TestContentfulManagementServerRateLimitResetsAfterOneSecond(t *testing.T) {

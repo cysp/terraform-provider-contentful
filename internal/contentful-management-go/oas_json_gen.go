@@ -5101,10 +5101,16 @@ func (s *ContentTypeCollection) encodeFields(e *jx.Encoder) {
 		s.Sys.Encode(e)
 	}
 	{
-		if s.Total.Set {
-			e.FieldStart("total")
-			s.Total.Encode(e)
-		}
+		e.FieldStart("total")
+		e.Int(s.Total)
+	}
+	{
+		e.FieldStart("skip")
+		e.Int(s.Skip)
+	}
+	{
+		e.FieldStart("limit")
+		e.Int(s.Limit)
 	}
 	{
 		e.FieldStart("items")
@@ -5116,10 +5122,12 @@ func (s *ContentTypeCollection) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfContentTypeCollection = [3]string{
+var jsonFieldsNameOfContentTypeCollection = [5]string{
 	0: "sys",
 	1: "total",
-	2: "items",
+	2: "skip",
+	3: "limit",
+	4: "items",
 }
 
 // Decode decodes ContentTypeCollection from json.
@@ -5142,17 +5150,43 @@ func (s *ContentTypeCollection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"sys\"")
 			}
 		case "total":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				s.Total.Reset()
-				if err := s.Total.Decode(d); err != nil {
+				v, err := d.Int()
+				s.Total = int(v)
+				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"total\"")
 			}
-		case "items":
+		case "skip":
 			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.Skip = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"skip\"")
+			}
+		case "limit":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Int()
+				s.Limit = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"limit\"")
+			}
+		case "items":
+			requiredBitSet[0] |= 1 << 4
 			if err := func() error {
 				s.Items = make([]ContentType, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
@@ -5179,7 +5213,7 @@ func (s *ContentTypeCollection) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000101,
+		0b00011111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -9164,10 +9198,16 @@ func (s *EntryCollection) encodeFields(e *jx.Encoder) {
 		s.Sys.Encode(e)
 	}
 	{
-		if s.Total.Set {
-			e.FieldStart("total")
-			s.Total.Encode(e)
-		}
+		e.FieldStart("total")
+		e.Int(s.Total)
+	}
+	{
+		e.FieldStart("skip")
+		e.Int(s.Skip)
+	}
+	{
+		e.FieldStart("limit")
+		e.Int(s.Limit)
 	}
 	{
 		e.FieldStart("items")
@@ -9179,10 +9219,12 @@ func (s *EntryCollection) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfEntryCollection = [3]string{
+var jsonFieldsNameOfEntryCollection = [5]string{
 	0: "sys",
 	1: "total",
-	2: "items",
+	2: "skip",
+	3: "limit",
+	4: "items",
 }
 
 // Decode decodes EntryCollection from json.
@@ -9205,17 +9247,43 @@ func (s *EntryCollection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"sys\"")
 			}
 		case "total":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				s.Total.Reset()
-				if err := s.Total.Decode(d); err != nil {
+				v, err := d.Int()
+				s.Total = int(v)
+				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"total\"")
 			}
-		case "items":
+		case "skip":
 			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Int()
+				s.Skip = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"skip\"")
+			}
+		case "limit":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				v, err := d.Int()
+				s.Limit = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"limit\"")
+			}
+		case "items":
+			requiredBitSet[0] |= 1 << 4
 			if err := func() error {
 				s.Items = make([]Entry, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
@@ -9242,7 +9310,7 @@ func (s *EntryCollection) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000101,
+		0b00011111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

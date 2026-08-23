@@ -25,7 +25,7 @@ func NewContentfulManagementServer(opts ...ServerOption) (*Server, error) {
 	}
 
 	handler := NewHandler()
-	handler.omitEntryResponseFields = cfg.omitEntryResponseFields
+	handler.omitEntryMutationResponseFields = cfg.omitEntryMutationResponseFields
 
 	securityHandler := NewSecurityHandler()
 

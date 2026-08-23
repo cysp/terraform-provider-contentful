@@ -58,7 +58,7 @@ func TestPutEditorInterfaceUsesContentfulVersioning(t *testing.T) {
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
 	})
 	require.NoError(t, err)
-	requireContentfulError(t, staleResponse, http.StatusConflict, cm.ErrorSysIDVersionMismatch, "")
+	requireContentfulError(t, staleResponse, http.StatusConflict, cm.ErrorSysIDVersionMismatch, "Version mismatch")
 }
 
 func TestActivateContentTypeSynchronizesEditorInterface(t *testing.T) {

@@ -51,7 +51,9 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 		Sys: cm.ContentTypeCollectionSys{
 			Type: cm.ContentTypeCollectionSysTypeArray,
 		},
-		Total: cm.NewOptInt(len(contentTypes)),
+		Total: len(contentTypes),
+		Skip:  int(skip),
+		Limit: int(limit),
 		Items: items[start:end],
 	}, nil
 }

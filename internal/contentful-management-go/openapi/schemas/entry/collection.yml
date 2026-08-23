@@ -12,10 +12,17 @@ EntryCollection:
         - type
     total:
       type: integer
+    skip:
+      type: integer
+    limit:
+      type: integer
     items:
       type: array
       items:
         $ref: "./entry.yml#/Entry"
   required:
     - sys
+    - total
+    - skip
+    - limit
     - items

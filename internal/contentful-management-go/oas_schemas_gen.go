@@ -2114,7 +2114,9 @@ func (*ContentType) getContentTypeRes()        {}
 // Ref: #/ContentTypeCollection
 type ContentTypeCollection struct {
 	Sys   ContentTypeCollectionSys `json:"sys"`
-	Total OptInt                   `json:"total"`
+	Total int                      `json:"total"`
+	Skip  int                      `json:"skip"`
+	Limit int                      `json:"limit"`
 	Items []ContentType            `json:"items"`
 }
 
@@ -2124,8 +2126,18 @@ func (s *ContentTypeCollection) GetSys() ContentTypeCollectionSys {
 }
 
 // GetTotal returns the value of Total.
-func (s *ContentTypeCollection) GetTotal() OptInt {
+func (s *ContentTypeCollection) GetTotal() int {
 	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *ContentTypeCollection) GetSkip() int {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *ContentTypeCollection) GetLimit() int {
+	return s.Limit
 }
 
 // GetItems returns the value of Items.
@@ -2139,8 +2151,18 @@ func (s *ContentTypeCollection) SetSys(val ContentTypeCollectionSys) {
 }
 
 // SetTotal sets the value of Total.
-func (s *ContentTypeCollection) SetTotal(val OptInt) {
+func (s *ContentTypeCollection) SetTotal(val int) {
 	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *ContentTypeCollection) SetSkip(val int) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *ContentTypeCollection) SetLimit(val int) {
+	s.Limit = val
 }
 
 // SetItems sets the value of Items.
@@ -3730,7 +3752,9 @@ func (*Entry) unpublishEntryRes() {}
 // Ref: #/EntryCollection
 type EntryCollection struct {
 	Sys   EntryCollectionSys `json:"sys"`
-	Total OptInt             `json:"total"`
+	Total int                `json:"total"`
+	Skip  int                `json:"skip"`
+	Limit int                `json:"limit"`
 	Items []Entry            `json:"items"`
 }
 
@@ -3740,8 +3764,18 @@ func (s *EntryCollection) GetSys() EntryCollectionSys {
 }
 
 // GetTotal returns the value of Total.
-func (s *EntryCollection) GetTotal() OptInt {
+func (s *EntryCollection) GetTotal() int {
 	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *EntryCollection) GetSkip() int {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *EntryCollection) GetLimit() int {
+	return s.Limit
 }
 
 // GetItems returns the value of Items.
@@ -3755,8 +3789,18 @@ func (s *EntryCollection) SetSys(val EntryCollectionSys) {
 }
 
 // SetTotal sets the value of Total.
-func (s *EntryCollection) SetTotal(val OptInt) {
+func (s *EntryCollection) SetTotal(val int) {
 	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *EntryCollection) SetSkip(val int) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *EntryCollection) SetLimit(val int) {
+	s.Limit = val
 }
 
 // SetItems sets the value of Items.

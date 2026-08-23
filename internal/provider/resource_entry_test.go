@@ -216,7 +216,7 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 func TestAccEntryResourceUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithOmittedEntryResponseFields())
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithOmittedEntryMutationResponseFields())
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 

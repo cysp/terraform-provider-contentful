@@ -16,11 +16,11 @@ import (
 var errTestContentfulUnavailable = errors.New("contentful unavailable")
 
 type testListCollection struct {
-	total cm.OptInt
+	total int
 	items []int
 }
 
-func (c testListCollection) GetTotal() cm.OptInt {
+func (c testListCollection) GetTotal() int {
 	return c.total
 }
 
@@ -48,9 +48,9 @@ func TestPaginateContentfulCollectionItemsAsListResultsPaginatesUntilTotal(t *te
 
 			switch params.skip {
 			case 0:
-				return testListCollection{total: cm.NewOptInt(3), items: []int{1, 2}}, nil
+				return testListCollection{total: 3, items: []int{1, 2}}, nil
 			case 2:
-				return testListCollection{total: cm.NewOptInt(3), items: []int{3}}, nil
+				return testListCollection{total: 3, items: []int{3}}, nil
 			default:
 				t.Fatalf("unexpected skip %d", params.skip)
 
@@ -79,7 +79,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsHonorsTerraformLimit(t *t
 		func(_ context.Context, skip int64, limit int64) (testListCollection, error) {
 			requests = append(requests, testListParams{skip: skip, limit: limit})
 
-			return testListCollection{total: cm.NewOptInt(10), items: []int{1, 2}}, nil
+			return testListCollection{total: 10, items: []int{1, 2}}, nil
 		},
 		testListResult,
 	))

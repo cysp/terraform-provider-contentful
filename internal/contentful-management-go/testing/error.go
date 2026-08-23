@@ -30,11 +30,27 @@ func NewContentfulManagementErrorStatusCode(statusCode int, id string, message *
 }
 
 func NewContentfulManagementErrorStatusCodeNotFound(message *string, details []byte) *cm.ErrorStatusCode {
+	if message == nil {
+		message = new("The resource could not be found.")
+	}
+
 	return NewContentfulManagementErrorStatusCode(http.StatusNotFound, cm.ErrorSysIDNotFound, message, details)
 }
 
 func NewContentfulManagementErrorStatusCodeVersionMismatch(message *string, details []byte) *cm.ErrorStatusCode {
+	if message == nil {
+		message = new("Version mismatch")
+	}
+
 	return NewContentfulManagementErrorStatusCode(http.StatusConflict, cm.ErrorSysIDVersionMismatch, message, details)
+}
+
+func NewContentfulManagementErrorStatusCodeConflict(message *string, details []byte) *cm.ErrorStatusCode {
+	if message == nil {
+		message = new("Conflict")
+	}
+
+	return NewContentfulManagementErrorStatusCode(http.StatusConflict, cm.ErrorSysIDConflict, message, details)
 }
 
 func NewContentfulManagementError(id string, message *string, details []byte) cm.Error {
