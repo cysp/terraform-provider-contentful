@@ -21,8 +21,8 @@ type environmentStatusReadyTestHandler struct {
 	spaceID       string
 	environmentID string
 
-	readyOnRequest int
-	statuses       []string
+	statusesToServe []string
+	statusesServed  []string
 }
 
 func (h *environmentStatusReadyTestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -32,12 +32,12 @@ func (h *environmentStatusReadyTestHandler) ServeHTTP(w http.ResponseWriter, r *
 		h.mu.Lock()
 		defer h.mu.Unlock()
 
-		status := "queued"
-		if len(h.statuses)+1 >= h.readyOnRequest {
-			status = "ready"
+		status := h.statusesToServe[len(h.statusesToServe)-1]
+		if len(h.statusesServed) < len(h.statusesToServe) {
+			status = h.statusesToServe[len(h.statusesServed)]
 		}
 
-		h.statuses = append(h.statuses, status)
+		h.statusesServed = append(h.statusesServed, status)
 
 		environment := cm.Environment{
 			Sys:  cm.NewEnvironmentSys(h.spaceID, h.environmentID, status),
@@ -62,7 +62,7 @@ func (h *environmentStatusReadyTestHandler) StatusesServed() []string {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	return append([]string(nil), h.statuses...)
+	return append([]string(nil), h.statusesServed...)
 }
 
 func TestAccEnvironmentStatusReadyDataSource(t *testing.T) {
@@ -99,9 +99,9 @@ func TestAccEnvironmentStatusReadyDataSourcePolling(t *testing.T) {
 	t.Parallel()
 
 	server := &environmentStatusReadyTestHandler{
-		spaceID:        "space-id",
-		environmentID:  "environment-id",
-		readyOnRequest: 2,
+		spaceID:         "space-id",
+		environmentID:   "environment-id",
+		statusesToServe: []string{"queued", "ready"},
 	}
 
 	configVariables := config.Variables{
@@ -131,6 +131,66 @@ func TestAccEnvironmentStatusReadyDataSourcePolling(t *testing.T) {
 	for _, status := range statuses[2:] {
 		assert.Equal(t, "ready", status)
 	}
+}
+
+func TestAccEnvironmentStatusReadyDataSourceFailedStopsImmediately(t *testing.T) {
+	t.Parallel()
+
+	server := &environmentStatusReadyTestHandler{
+		spaceID:         "space-id",
+		environmentID:   "environment-id",
+		statusesToServe: []string{"failed"},
+	}
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "contentful_environment_status_ready" "test" {
+  space_id       = "space-id"
+  environment_id = "environment-id"
+
+  timeouts = {
+    read = "100ms"
+  }
+}
+`,
+				ExpectError: regexp.MustCompile(`Contentful environment failed to become ready`),
+			},
+		},
+	})
+
+	assert.Equal(t, []string{"failed"}, server.StatusesServed())
+}
+
+func TestAccEnvironmentStatusReadyDataSourceInProgressTimesOut(t *testing.T) {
+	t.Parallel()
+
+	server := &environmentStatusReadyTestHandler{
+		spaceID:         "space-id",
+		environmentID:   "environment-id",
+		statusesToServe: []string{"inProgress"},
+	}
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "contentful_environment_status_ready" "test" {
+  space_id       = "space-id"
+  environment_id = "environment-id"
+
+  timeouts = {
+    read = "100ms"
+  }
+}
+`,
+				ExpectError: regexp.MustCompile(`Timed out waiting for environment to become ready`),
+			},
+		},
+	})
+
+	assert.Equal(t, []string{"inProgress"}, server.StatusesServed())
 }
 
 func TestAccEnvironmentStatusReadyDataSourceNotFound(t *testing.T) {
