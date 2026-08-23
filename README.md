@@ -51,6 +51,8 @@ provider "contentful" {
 - [`contentful_role`](docs/resources/role.md)
 - [`contentful_space_enablements`](docs/resources/space_enablements.md)
 - [`contentful_tag`](docs/resources/tag.md)
+- [`contentful_taxonomy_concept`](docs/resources/taxonomy_concept.md)
+- [`contentful_taxonomy_concept_scheme`](docs/resources/taxonomy_concept_scheme.md)
 - [`contentful_team`](docs/resources/team.md)
 - [`contentful_team_space_membership`](docs/resources/team_space_membership.md)
 - [`contentful_webhook`](docs/resources/webhook.md)
@@ -66,6 +68,7 @@ provider "contentful" {
 - [`contentful_environment_status_ready`](docs/data-sources/environment_status_ready.md)
 - [`contentful_marketplace_app_definition`](docs/data-sources/marketplace_app_definition.md)
 - [`contentful_preview_api_key`](docs/data-sources/preview_api_key.md)
+- [`contentful_teams`](docs/data-sources/teams.md)
 
 ## License
 
