@@ -25,6 +25,10 @@ func (sm *OrganizationMap[Value]) Get(organizationID string, key string) Value {
 }
 
 func (sm *OrganizationMap[Value]) Set(organizationID string, key string, value Value) {
+	if sm.m == nil {
+		sm.m = make(map[string]map[string]Value)
+	}
+
 	if sm.m[organizationID] == nil {
 		sm.m[organizationID] = make(map[string]Value)
 	}

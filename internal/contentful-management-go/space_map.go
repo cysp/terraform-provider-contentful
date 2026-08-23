@@ -30,6 +30,10 @@ func (sm *SpaceMap[Value]) Get(spaceID string, key string) Value {
 }
 
 func (sm *SpaceMap[Value]) Set(spaceID string, key string, value Value) {
+	if sm.m == nil {
+		sm.m = make(map[string]map[string]Value)
+	}
+
 	if sm.m[spaceID] == nil {
 		sm.m[spaceID] = make(map[string]Value)
 	}
