@@ -197,31 +197,17 @@ func TestAccTeamsDataSourceAPIError(t *testing.T) {
 	})
 }
 
-func TestAccTeamsDataSourcePaginationWithoutTotal(t *testing.T) {
+func TestAccTeamsDataSourceRejectsMissingPaginationMetadata(t *testing.T) {
 	t.Parallel()
 
-	var requestCount atomic.Int64
-
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestCount.Add(1)
-
-		skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
-		if err != nil {
-			t.Errorf("invalid skip: %v", err)
-		}
-
-		items := []map[string]any{}
-		if skip == 0 {
-			items = append(items, teamListItem("organization-id", "team-id", "Team", "Description"))
-		} else if skip != 1 {
-			t.Errorf("unexpected skip: %d", skip)
-		}
-
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		err = json.NewEncoder(w).Encode(map[string]any{
+		err := json.NewEncoder(w).Encode(map[string]any{
 			"sys":   map[string]any{"type": "Array"},
-			"items": items,
+			"skip":  0,
+			"limit": 100,
+			"items": []map[string]any{},
 		})
 		if err != nil {
 			t.Errorf("encode response: %v", err)
@@ -235,17 +221,7 @@ func TestAccTeamsDataSourcePaginationWithoutTotal(t *testing.T) {
 				ConfigVariables: config.Variables{
 					"organization_id": config.StringVariable("organization-id"),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.#", "1"),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.0.team_id", "team-id"),
-					func(*terraform.State) error {
-						if actual := requestCount.Load(); actual != 2 {
-							return fmt.Errorf("%w: expected 2, got %d", errUnexpectedTeamListRequestCount, actual)
-						}
-
-						return nil
-					},
-				),
+				ExpectError: regexp.MustCompile(`(?s)Failed to read teams.*total \(field required\)`),
 			},
 		},
 	})

@@ -11732,9 +11732,9 @@ func (*Team) getTeamRes() {}
 // Ref: #/TeamCollection
 type TeamCollection struct {
 	Sys   TeamCollectionSys `json:"sys"`
-	Total OptInt            `json:"total"`
-	Skip  OptInt            `json:"skip"`
-	Limit OptInt            `json:"limit"`
+	Total int               `json:"total"`
+	Skip  int               `json:"skip"`
+	Limit int               `json:"limit"`
 	Items []TeamListItem    `json:"items"`
 }
 
@@ -11744,17 +11744,17 @@ func (s *TeamCollection) GetSys() TeamCollectionSys {
 }
 
 // GetTotal returns the value of Total.
-func (s *TeamCollection) GetTotal() OptInt {
+func (s *TeamCollection) GetTotal() int {
 	return s.Total
 }
 
 // GetSkip returns the value of Skip.
-func (s *TeamCollection) GetSkip() OptInt {
+func (s *TeamCollection) GetSkip() int {
 	return s.Skip
 }
 
 // GetLimit returns the value of Limit.
-func (s *TeamCollection) GetLimit() OptInt {
+func (s *TeamCollection) GetLimit() int {
 	return s.Limit
 }
 
@@ -11769,17 +11769,17 @@ func (s *TeamCollection) SetSys(val TeamCollectionSys) {
 }
 
 // SetTotal sets the value of Total.
-func (s *TeamCollection) SetTotal(val OptInt) {
+func (s *TeamCollection) SetTotal(val int) {
 	s.Total = val
 }
 
 // SetSkip sets the value of Skip.
-func (s *TeamCollection) SetSkip(val OptInt) {
+func (s *TeamCollection) SetSkip(val int) {
 	s.Skip = val
 }
 
 // SetLimit sets the value of Limit.
-func (s *TeamCollection) SetLimit(val OptInt) {
+func (s *TeamCollection) SetLimit(val int) {
 	s.Limit = val
 }
 

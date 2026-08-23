@@ -24395,22 +24395,16 @@ func (s *TeamCollection) encodeFields(e *jx.Encoder) {
 		s.Sys.Encode(e)
 	}
 	{
-		if s.Total.Set {
-			e.FieldStart("total")
-			s.Total.Encode(e)
-		}
+		e.FieldStart("total")
+		e.Int(s.Total)
 	}
 	{
-		if s.Skip.Set {
-			e.FieldStart("skip")
-			s.Skip.Encode(e)
-		}
+		e.FieldStart("skip")
+		e.Int(s.Skip)
 	}
 	{
-		if s.Limit.Set {
-			e.FieldStart("limit")
-			s.Limit.Encode(e)
-		}
+		e.FieldStart("limit")
+		e.Int(s.Limit)
 	}
 	{
 		e.FieldStart("items")
@@ -24450,9 +24444,11 @@ func (s *TeamCollection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"sys\"")
 			}
 		case "total":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				s.Total.Reset()
-				if err := s.Total.Decode(d); err != nil {
+				v, err := d.Int()
+				s.Total = int(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -24460,9 +24456,11 @@ func (s *TeamCollection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"total\"")
 			}
 		case "skip":
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
-				s.Skip.Reset()
-				if err := s.Skip.Decode(d); err != nil {
+				v, err := d.Int()
+				s.Skip = int(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -24470,9 +24468,11 @@ func (s *TeamCollection) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"skip\"")
 			}
 		case "limit":
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
-				s.Limit.Reset()
-				if err := s.Limit.Decode(d); err != nil {
+				v, err := d.Int()
+				s.Limit = int(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -24507,7 +24507,7 @@ func (s *TeamCollection) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00010001,
+		0b00011111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

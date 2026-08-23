@@ -22,7 +22,7 @@ func (ts *Handler) GetTeams(_ context.Context, params cm.GetTeamsParams) (cm.Get
 	skip := params.Skip.Or(0)
 	limit := params.Limit.Or(100) //nolint:mnd
 
-	if skip < 0 || limit < 1 || limit > 1000 {
+	if skip < 0 || limit < 1 || limit > 100 {
 		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
 	}
 
@@ -46,9 +46,9 @@ func (ts *Handler) GetTeams(_ context.Context, params cm.GetTeamsParams) (cm.Get
 		Sys: cm.TeamCollectionSys{
 			Type: cm.TeamCollectionSysTypeArray,
 		},
-		Total: cm.NewOptInt(len(teams)),
-		Skip:  cm.NewOptInt(int(start)),
-		Limit: cm.NewOptInt(int(limit)),
+		Total: len(teams),
+		Skip:  int(skip),
+		Limit: int(limit),
 		Items: items,
 	}, nil
 }

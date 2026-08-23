@@ -154,31 +154,37 @@ func TestGetTeamsAcceptsListItemsWithoutVersion(t *testing.T) {
 	require.Equal(t, "Test Team", teams.Items[0].Name)
 }
 
-func TestGetTeamsAcceptsCollectionWithoutPaginationMetadata(t *testing.T) {
+func TestGetTeamsRejectsCollectionWithoutPaginationMetadata(t *testing.T) {
 	t.Parallel()
 
-	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
-			"sys":   map[string]any{"type": "Array"},
-			"items": []any{},
-		}))
-	}))
-	defer testserver.Close()
+	for _, missingField := range []string{"total", "skip", "limit"} {
+		t.Run(missingField, func(t *testing.T) {
+			t.Parallel()
 
-	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+			collection := map[string]any{
+				"sys":   map[string]any{"type": "Array"},
+				"total": 0,
+				"skip":  0,
+				"limit": 100,
+				"items": []any{},
+			}
+			delete(collection, missingField)
 
-	response, err := client.GetTeams(t.Context(), cm.GetTeamsParams{
-		OrganizationID: "organization-id",
-	})
-	require.NoError(t, err)
+			testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				assert.NoError(t, json.NewEncoder(w).Encode(collection))
+			}))
+			defer testserver.Close()
 
-	teams, ok := response.(*cm.TeamCollection)
-	require.True(t, ok)
-	assert.Empty(t, teams.Items)
-	assert.False(t, teams.Total.IsSet())
-	assert.False(t, teams.Skip.IsSet())
-	assert.False(t, teams.Limit.IsSet())
+			client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+
+			response, err := client.GetTeams(t.Context(), cm.GetTeamsParams{
+				OrganizationID: "organization-id",
+			})
+			require.Error(t, err)
+			assert.Nil(t, response)
+		})
+	}
 }
 
 func TestPutTeamAcceptsJSONContentTypes(t *testing.T) {
