@@ -4720,32 +4720,12 @@ func (s *AppSigningSecretSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("appDefinition")
 		s.AppDefinition.Encode(e)
 	}
-	{
-		e.FieldStart("createdBy")
-		s.CreatedBy.Encode(e)
-	}
-	{
-		e.FieldStart("updatedBy")
-		s.UpdatedBy.Encode(e)
-	}
-	{
-		e.FieldStart("createdAt")
-		json.EncodeDateTime(e, s.CreatedAt)
-	}
-	{
-		e.FieldStart("updatedAt")
-		json.EncodeDateTime(e, s.UpdatedAt)
-	}
 }
 
-var jsonFieldsNameOfAppSigningSecretSys = [7]string{
+var jsonFieldsNameOfAppSigningSecretSys = [3]string{
 	0: "organization",
 	1: "type",
 	2: "appDefinition",
-	3: "createdBy",
-	4: "updatedBy",
-	5: "createdAt",
-	6: "updatedAt",
 }
 
 // Decode decodes AppSigningSecretSys from json.
@@ -4787,50 +4767,6 @@ func (s *AppSigningSecretSys) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"appDefinition\"")
 			}
-		case "createdBy":
-			requiredBitSet[0] |= 1 << 3
-			if err := func() error {
-				if err := s.CreatedBy.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdBy\"")
-			}
-		case "updatedBy":
-			requiredBitSet[0] |= 1 << 4
-			if err := func() error {
-				if err := s.UpdatedBy.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedBy\"")
-			}
-		case "createdAt":
-			requiredBitSet[0] |= 1 << 5
-			if err := func() error {
-				v, err := json.DecodeDateTime(d)
-				s.CreatedAt = v
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
-			}
-		case "updatedAt":
-			requiredBitSet[0] |= 1 << 6
-			if err := func() error {
-				v, err := json.DecodeDateTime(d)
-				s.UpdatedAt = v
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"updatedAt\"")
-			}
 		default:
 			return d.Skip()
 		}
@@ -4841,7 +4777,7 @@ func (s *AppSigningSecretSys) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b01111111,
+		0b00000111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
