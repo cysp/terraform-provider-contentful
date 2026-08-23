@@ -37,8 +37,8 @@ and preview tokens, and response bodies were neither printed nor retained.
 | Request | Status | Structural observation |
 | --- | ---: | --- |
 | `POST /spaces/{space}/api_keys` | 201 | `sys.type: ApiKey`, `sys.version: 0`; delivery and preview token members were present but not read or recorded |
-| `PUT /spaces/{space}/api_keys/{key}` with version 0 | 200 | `sys.type: ApiKey`, `sys.version: 1`; token members remained present but were not read or recorded |
-| Repeated PUT with stale version 0 | 409 | `sys.type: Error`, `sys.id: Conflict`, nonempty message, no details member |
+| `PUT /spaces/{space}/api_keys/{key}` with `X-Contentful-Version: 0` | 200 | `sys.type: ApiKey`, `sys.version: 1`; token members remained present but were not read or recorded |
+| Repeated PUT with stale `X-Contentful-Version: 0` | 409 | `sys.type: Error`, `sys.id: Conflict`, nonempty message, no details member |
 | `DELETE /spaces/{space}/api_keys/{key}` | 204 | Empty response; the disposable key was removed |
 
 A read-only `GET /spaces/{space}/environments/{environment}/entries?skip=999999&limit=2`

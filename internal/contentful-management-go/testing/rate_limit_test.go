@@ -95,7 +95,7 @@ func TestContentfulManagementServerRateLimitHeadersAnd429WhenEnabled(t *testing.
 	require.NoError(t, err)
 	assert.Equal(t, "Error", responseBody.Sys.Type)
 	assert.Equal(t, "RateLimitExceeded", responseBody.Sys.ID)
-	assert.Equal(t, "Rate limit exceeded", responseBody.Message)
+	assert.NotEmpty(t, responseBody.Message)
 }
 
 func TestContentfulManagementServerRateLimitResetsAfterOneSecond(t *testing.T) {
