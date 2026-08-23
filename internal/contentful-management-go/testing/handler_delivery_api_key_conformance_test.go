@@ -47,4 +47,15 @@ func TestDeliveryAPIKeyVersionAndConflictSemantics(t *testing.T) {
 	require.NoError(t, err)
 
 	requireContentfulConflictWithNonemptyMessage(t, staleResponse, cm.ErrorSysIDConflict)
+
+	storedResponse, err := handler.GetDeliveryAPIKey(context.Background(), cm.GetDeliveryAPIKeyParams{
+		SpaceID:  "space",
+		APIKeyID: createdStatus.Response.Sys.ID,
+	})
+	require.NoError(t, err)
+
+	stored, ok := storedResponse.(*cm.ApiKey)
+	require.True(t, ok)
+	assert.Equal(t, "updated", stored.Name)
+	assert.Equal(t, 1, stored.Sys.Version)
 }
