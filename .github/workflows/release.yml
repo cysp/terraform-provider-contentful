@@ -90,8 +90,12 @@ jobs:
       - name: Check GoReleaser configuration
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         with:
-          version: v2.17.1
+          distribution: goreleaser
+          version: v2.18.0
           args: check
+
+      - name: Test release-draft verifier
+        run: .github/scripts/verify-release-draft_test.sh
 
       - name: Check GitHub Actions workflows
         run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
@@ -205,6 +209,7 @@ jobs:
           passphrase: ${{ secrets.RELEASE_PASSPHRASE }}
 
       - name: Revalidate release-notes draft
+        id: release_draft
         env:
           GH_TOKEN: ${{ github.token }}
         run: .github/scripts/verify-release-draft.sh "${GITHUB_REPOSITORY}" "${GITHUB_REF_NAME}" "$(git rev-parse HEAD)"
@@ -237,25 +242,46 @@ jobs:
             dist/*_SHA256SUMS
             dist/*_SHA256SUMS.sig
 
-      - name: Publish release
+      - name: Revalidate release draft before publication
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_ID: ${{ steps.release.outputs.id }}
+        shell: bash
         run: |
-          release="$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID")"
-          test "$(jq -r .draft <<<"$release")" = true
+          expected_assets=(
+            dist/*.zip
+            dist/*_SHA256SUMS
+            dist/*_SHA256SUMS.sig
+            "terraform-provider-contentful_${GITHUB_REF_NAME#v}_manifest.json"
+          )
+          .github/scripts/verify-release-draft.sh \
+            "${GITHUB_REPOSITORY}" \
+            "${GITHUB_REF_NAME}" \
+            "$(git rev-parse HEAD)" \
+            present \
+            "${{ steps.release_draft.outputs.release_id }}" \
+            "${expected_assets[@]}"
 
-          subjects=(dist/*.zip dist/*_manifest.json \
-            dist/*_SHA256SUMS dist/*_SHA256SUMS.sig)
-          test "$(jq '.assets | length' <<<"$release")" = "${#subjects[@]}"
-          for subject in "${subjects[@]}"; do
-            name="${subject##*/}"
-            local_digest="sha256:$(sha256sum "$subject" | cut -d' ' -f1)"
-            remote_digest="$(jq -er --arg name "$name" \
-              '.assets[] | select(.name == $name) | .digest' <<<"$release")"
-            test "$local_digest" = "$remote_digest"
-          done
+      - name: Publish attested release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          candidate_sha="$(git rev-parse HEAD)"
+          remote_ref="refs/release-candidates/${GITHUB_RUN_ID}"
+          git fetch --force --no-tags origin \
+            "refs/tags/${GITHUB_REF_NAME}:${remote_ref}"
+          remote_tag_sha="$(git rev-parse "${remote_ref}^{commit}")"
+          if [[ "${remote_tag_sha}" != "${candidate_sha}" ]]; then
+            echo "::error::Remote tag ${GITHUB_REF_NAME} now targets ${remote_tag_sha}, not candidate ${candidate_sha}"
+            exit 1
+          fi
 
-          gh api --method PATCH \
-            "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
-            -F draft=false
+          gh release edit "${GITHUB_REF_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --tag "${GITHUB_REF_NAME}" \
+            --verify-tag \
+            --draft=false
+          test "$(gh release view "${GITHUB_REF_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --json isDraft \
+            --jq .isDraft)" = "false"

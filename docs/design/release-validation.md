@@ -2,7 +2,8 @@
 
 The repository uses two validation levels. Pull requests and `main` run without
 Contentful credentials. A release tag runs the same deterministic checks again,
-then enters the `release` environment to run live acceptance and publish the
+then enters the `release` environment to run live acceptance, upload the
+release artifacts to the existing draft, attest the archives, and publish the
 exact tested commit. The environment and repository rules described below are
 required non-code gates and must be configured before this workflow can be used
 to publish a release.
@@ -50,9 +51,25 @@ available to the ancestry check.
 Publication and live acceptance are steps in one `publish` job. The job starts
 only after deterministic validation and the mocked Terraform matrix succeed.
 After the configured environment admits the job, it checks that all three
-release-only credentials are non-empty, runs live acceptance, and only then
-invokes GoReleaser and build-provenance attestation. Any missing credential is
-therefore a release failure, never a skipped live suite.
+release-only credentials are non-empty and runs live acceptance. GoReleaser
+then builds, signs, and uploads the release artifacts while leaving the
+existing release as a draft. The workflow attests every provider archive,
+revalidates that the populated draft is still bound to the candidate, and only
+publishes it with GitHub CLI after the remote assets exactly match the local
+archives, checksum, checksum signature, and Terraform Registry manifest. The
+workflow also requires the populated draft to have the same GitHub release ID
+as the curated draft and freshly peels the remote tag to the candidate commit.
+The publication command separately asks GitHub CLI to verify that the same tag
+still exists remotely. A failed build, upload, attestation, or final draft check
+therefore leaves the release unpublished. Any missing credential is a release
+failure, never a skipped live suite.
+
+GoReleaser documents `release.draft: true` as preventing automatic publication
+and notes that GitHub releases remain drafts while artifacts are uploaded. The
+GitHub CLI documents `gh release edit <tag> --draft=false` as the operation to
+publish an existing draft. See GoReleaser's
+[release configuration](https://goreleaser.com/customization/publish/scm/) and
+GitHub CLI's [`release edit` reference](https://cli.github.com/manual/gh_release_edit).
 
 GitHub defines `GITHUB_REF` as the pushed tag for a tag-triggered workflow and
 defines `GITHUB_SHA` according to the triggering event. The explicit checkout
@@ -65,8 +82,9 @@ and [events reference](https://docs.github.com/en/actions/reference/workflows-an
 The maintainer-curated GitHub draft release is the release-note source.
 GoReleaser changelog generation remains disabled, so the workflow does not
 derive user-facing notes from commit messages. GoReleaser consumes the existing
-draft, preserves its body, uploads the validated artifacts, and publishes the
-release only after live acceptance succeeds. See GoReleaser's
+draft, preserves its body, and uploads the validated artifacts without
+publishing it. After provenance attestation and the final draft check succeed,
+the workflow publishes the draft. See GoReleaser's
 [changelog](https://goreleaser.com/customization/publish/changelog/) and
 [release](https://goreleaser.com/customization/publish/scm/) configuration
 references.
@@ -106,10 +124,25 @@ workflow verifies the draft before deterministic validation and again
 immediately before GoReleaser. It fails if exactly one matching draft is not
 present, its target is not the candidate SHA, its body is empty, or it already
 has assets. The second check prevents a draft changed or removed during
-validation from silently becoming an empty or unvalidated release. GoReleaser
-is configured explicitly with `use_existing_draft: true` and
-`mode: keep-existing`; the draft title must therefore remain exactly equal to
-the tag.
+validation from silently becoming an empty or unvalidated release. After
+GoReleaser and attestation, the workflow checks the same identity and release
+notes again and requires the remote asset names to exactly match the complete
+local release output before publication. GoReleaser is configured explicitly
+with `use_existing_draft: true`, `mode: keep-existing`, and `draft: true`; the
+draft title must therefore remain exactly equal to the tag, its maintained
+notes are preserved, and GoReleaser cannot publish before attestation.
+
+GoReleaser v2.18.0 finds an existing draft by release title. The verifier uses
+that same lookup key, requires it to be unique, checks its tag and candidate,
+and carries its GitHub release ID through the upload so a replacement draft
+cannot be published accidentally. See the pinned GoReleaser
+[`findDraftRelease` implementation](https://github.com/goreleaser/goreleaser/blob/83f4c19a5c5c0b9efef6bf2aedc6805bbcb9dfe2/internal/client/github.go#L869-L897).
+
+If a failure leaves assets on the unpublished draft, do not enable automatic
+replacement or rerun publication blindly. Inspect the failed stage and the
+draft, remove only the workflow-uploaded assets, and rerun the failed job. If
+artifact identity cannot be established, abandon that release candidate and
+prepare a new version and protected tag; never move the existing tag.
 
 Once a tag has been pushed, never move it to another commit. If validation
 fails because the candidate is not releasable, fix the issue on `main` and use
@@ -195,7 +228,7 @@ coverage, and CodeQL results mandatory on `main`.
 ## Toolchain pins
 
 Third-party actions are pinned by commit. GoReleaser is additionally pinned to
-`v2.17.1` for both configuration validation and publication. The GoReleaser
+`v2.18.0` for both configuration validation and publication. The GoReleaser
 action otherwise accepts a floating semantic-version range, so the explicit
 version keeps release behavior reproducible; see the action's [version input](https://github.com/goreleaser/goreleaser-action#customizing).
 GitHub Actions workflows are statically checked with actionlint `v1.7.12` in
