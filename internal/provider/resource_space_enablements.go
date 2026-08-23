@@ -251,6 +251,10 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := cm.PutSpaceEnablementsParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		XContentfulVersion: currentVersion,

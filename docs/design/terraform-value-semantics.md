@@ -173,13 +173,26 @@ activation error. A lost or otherwise ambiguous activation response is
 not interpreted as success: a normal refresh establishes publication truth
 before Terraform decides whether another activation is required.
 
+A nominally successful activation response is accepted only when its
+`sys.publishedVersion` equals the exact version sent in the activation request
+and its returned `sys.version` has the active one-version-newer relationship.
+Likewise, a successful draft PUT must return the exact expected revision
+(version 1 on Create, or the requested prior version plus one on Update) and an
+unpublished or pending-draft lifecycle tuple before that version can be used as
+the activation lock token.
+The provider checkpoints the complete returned response before reporting a
+contradiction, so recovery state remains truthful even when apply fails.
+
 `published_version` did not exist in state written by older provider versions.
 A normal post-upgrade refresh projects `sys.publishedVersion` and establishes
 authoritative publication state. With `-refresh=false`, Terraform decodes a
 missing legacy Computed value as null, which is indistinguishable from an
 observed unpublished Content Type. The provider therefore conservatively may
 plan exact-version activation in that case; it does not persist a migration or
-recovery marker to distinguish provenance.
+recovery marker to distinguish provenance. The mock acceptance test exercises
+an actual `apply -refresh=false`: Contentful accepts the conservative redundant
+activation of the stored version, the response becomes authoritative state,
+and the next normal refresh and plan are a no-op.
 
 After Create or Update, state must remain consistent with every known
 configuration-owned value in the plan. Post-mutation state construction starts
@@ -212,6 +225,16 @@ nested inside known objects:
 
 Null, omission, and known empty values remain distinct throughout request and
 response conversion.
+
+### Provider-private optimistic-lock barrier
+
+For resources whose Contentful mutations require a version stored only in
+provider-private state, inability to read or decode that version is a terminal
+apply diagnostic. The provider must return before issuing any Contentful
+mutation; a missing or malformed lock token must never degrade to version zero
+or an unlocked request. The one deliberate exception is the taxonomy Delete
+fallback below, where Terraform can omit private data for a tainted replacement
+and the provider obtains a positive current version with a GET before deleting.
 
 ### Taxonomy optimistic version locking
 

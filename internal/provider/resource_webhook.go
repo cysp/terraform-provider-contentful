@@ -253,6 +253,10 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := cm.UpdateWebhookDefinitionParams{
 		SpaceID:             plan.SpaceID.ValueString(),
 		WebhookDefinitionID: plan.WebhookID.ValueString(),

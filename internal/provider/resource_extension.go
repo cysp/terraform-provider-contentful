@@ -364,6 +364,10 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := cm.PutExtensionParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		EnvironmentID:      plan.EnvironmentID.ValueString(),

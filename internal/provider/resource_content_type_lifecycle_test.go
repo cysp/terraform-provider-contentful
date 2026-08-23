@@ -5,6 +5,7 @@ import (
 	"context"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -27,25 +28,6 @@ func (data *contentTypeCheckpointPrivateData) SetKey(_ context.Context, key stri
 	data.data[key] = value
 
 	return nil
-}
-
-func TestContentTypeActivationRecoveryAddsNoMarkerState(t *testing.T) {
-	t.Parallel()
-
-	resourceSchema := ContentTypeResourceSchema(t.Context())
-	assert.ElementsMatch(t, []string{
-		"id",
-		"space_id",
-		"environment_id",
-		"content_type_id",
-		"name",
-		"description",
-		"display_field",
-		"published_version",
-		"fields",
-		"metadata",
-		"timeouts",
-	}, mapKeys(resourceSchema.Attributes))
 }
 
 func TestContentTypeMutationCheckpointUsesOnlyVersionPrivateKey(t *testing.T) {
@@ -75,15 +57,6 @@ func TestContentTypeMutationCheckpointUsesOnlyVersionPrivateKey(t *testing.T) {
 
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.Equal(t, map[string][]byte{"version": []byte("42")}, private.data)
-}
-
-func mapKeys[V any](values map[string]V) []string {
-	keys := make([]string, 0, len(values))
-	for key := range values {
-		keys = append(keys, key)
-	}
-
-	return keys
 }
 
 func TestContentTypeDraftMutationRequired(t *testing.T) {
@@ -284,47 +257,167 @@ func TestContentTypeDraftMutationRequired(t *testing.T) {
 	}
 }
 
-func TestContentTypeActivationRequired(t *testing.T) {
+func TestContentTypePublicationState(t *testing.T) {
 	t.Parallel()
 
 	for name, test := range map[string]struct {
 		publishedVersion types.Int64
 		version          int
-		expected         bool
+		expected         contentTypePublicationState
+		expectError      bool
 	}{
-		"null publication": {
+		"unpublished": {
 			publishedVersion: types.Int64Null(),
 			version:          2,
-			expected:         true,
-		},
-		"legacy null publication without private version": {
-			publishedVersion: types.Int64Null(),
-			version:          0,
-			expected:         true,
-		},
-		"activated": {
-			publishedVersion: types.Int64Value(3),
-			version:          4,
-			expected:         false,
-		},
-		"stale publication": {
-			publishedVersion: types.Int64Value(2),
-			version:          4,
-			expected:         true,
+			expected:         contentTypePublicationUnpublished,
 		},
 		"unknown publication": {
 			publishedVersion: types.Int64Unknown(),
 			version:          4,
-			expected:         false,
+			expected:         contentTypePublicationUnknown,
+		},
+		"active": {
+			publishedVersion: types.Int64Value(3),
+			version:          4,
+			expected:         contentTypePublicationActive,
+		},
+		"active initial publication": {
+			publishedVersion: types.Int64Value(0),
+			version:          1,
+			expected:         contentTypePublicationActive,
+		},
+		"pending draft": {
+			publishedVersion: types.Int64Value(2),
+			version:          4,
+			expected:         contentTypePublicationPendingDraft,
+		},
+		"zero current version": {
+			publishedVersion: types.Int64Null(),
+			version:          0,
+			expected:         contentTypePublicationUnknown,
+			expectError:      true,
+		},
+		"negative current version": {
+			publishedVersion: types.Int64Null(),
+			version:          -1,
+			expected:         contentTypePublicationUnknown,
+			expectError:      true,
+		},
+		"negative publication version": {
+			publishedVersion: types.Int64Value(-1),
+			version:          4,
+			expected:         contentTypePublicationUnknown,
+			expectError:      true,
+		},
+		"publication equals current version": {
+			publishedVersion: types.Int64Value(4),
+			version:          4,
+			expected:         contentTypePublicationUnknown,
+			expectError:      true,
+		},
+		"publication exceeds current version": {
+			publishedVersion: types.Int64Value(5),
+			version:          4,
+			expected:         contentTypePublicationUnknown,
+			expectError:      true,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			state := contentTypeLifecycleTestModel()
-			state.PublishedVersion = test.publishedVersion
+			state, diags := classifyContentTypePublicationState(test.version, test.publishedVersion)
+			assert.Equal(t, test.expected, state)
+			assert.Equal(t, test.expectError, diags.HasError())
+		})
+	}
+}
 
-			assert.Equal(t, test.expected, contentTypeActivationRequired(state, test.version))
+func TestContentTypeUpdateAction(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		draftMutation    bool
+		publicationState contentTypePublicationState
+		expected         contentTypeUpdateAction
+	}{
+		"active and unchanged":                    {false, contentTypePublicationActive, contentTypeUpdateNoop},
+		"unknown publication and unchanged":       {false, contentTypePublicationUnknown, contentTypeUpdateNoop},
+		"unpublished and unchanged":               {false, contentTypePublicationUnpublished, contentTypeUpdateActivate},
+		"pending draft and unchanged":             {false, contentTypePublicationPendingDraft, contentTypeUpdateActivate},
+		"active with modeled change":              {true, contentTypePublicationActive, contentTypeUpdatePutAndActivate},
+		"unpublished with modeled change":         {true, contentTypePublicationUnpublished, contentTypeUpdatePutAndActivate},
+		"pending draft with modeled change":       {true, contentTypePublicationPendingDraft, contentTypeUpdatePutAndActivate},
+		"unknown publication with modeled change": {true, contentTypePublicationUnknown, contentTypeUpdatePutAndActivate},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, test.expected, classifyContentTypeUpdate(test.draftMutation, test.publicationState))
+		})
+	}
+}
+
+func TestContentTypeActivationResponsePostcondition(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		expectedVersion  int
+		currentVersion   int
+		publishedVersion *int
+		expectError      bool
+	}{
+		"exact active response":              {1, 2, new(1), false},
+		"missing publication":                {1, 2, nil, true},
+		"older pending publication":          {3, 5, new(2), true},
+		"active but wrong attempted version": {3, 3, new(2), true},
+		"nonpositive current version":        {1, 0, new(1), true},
+		"publication not before current":     {1, 1, new(1), true},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			response := cm.ContentType{Sys: cm.NewContentTypeSys("space", "environment", "content-type")}
+			response.Sys.Version = test.currentVersion
+
+			if test.publishedVersion != nil {
+				response.Sys.PublishedVersion.SetTo(*test.publishedVersion)
+			}
+
+			diags := validateContentTypeActivationResponse(test.expectedVersion, response)
+			assert.Equal(t, test.expectError, diags.HasError())
+		})
+	}
+}
+
+func TestContentTypeDraftResponsePostcondition(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		expectedVersion  int
+		currentVersion   int
+		publishedVersion *int
+		expectError      bool
+	}{
+		"new unpublished draft":        {1, 1, nil, false},
+		"updated unpublished draft":    {3, 3, nil, false},
+		"updated pending draft":        {4, 4, new(2), false},
+		"wrong positive version":       {3, 99, nil, true},
+		"active response":              {3, 3, new(2), true},
+		"nonpositive current version":  {1, 0, nil, true},
+		"invalid publication version":  {3, 3, new(3), true},
+		"negative publication version": {3, 3, new(-1), true},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			response := cm.ContentType{Sys: cm.NewContentTypeSys("space", "environment", "content-type")}
+			response.Sys.Version = test.currentVersion
+
+			if test.publishedVersion != nil {
+				response.Sys.PublishedVersion.SetTo(*test.publishedVersion)
+			}
+
+			diags := validateContentTypeDraftResponse(test.expectedVersion, response)
+			assert.Equal(t, test.expectError, diags.HasError())
 		})
 	}
 }

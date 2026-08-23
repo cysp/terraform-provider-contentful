@@ -241,22 +241,25 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
-
-	params := cm.CreateOrUpdateEnvironmentParams{
-		SpaceID:            plan.SpaceID.ValueString(),
-		EnvironmentID:      plan.EnvironmentID.ValueString(),
-		XContentfulVersion: cm.NewOptInt(currentVersion),
-	}
-
 	request, requestDiags := plan.ToEnvironmentData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	var currentVersion int
+
+	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	params := cm.CreateOrUpdateEnvironmentParams{
+		SpaceID:            plan.SpaceID.ValueString(),
+		EnvironmentID:      plan.EnvironmentID.ValueString(),
+		XContentfulVersion: cm.NewOptInt(currentVersion),
 	}
 
 	response, err := r.providerData.client.CreateOrUpdateEnvironment(ctx, &request, params)

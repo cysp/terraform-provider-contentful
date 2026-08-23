@@ -240,6 +240,10 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := cm.UpdateRoleParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		RoleID:             plan.RoleID.ValueString(),

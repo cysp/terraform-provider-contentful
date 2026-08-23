@@ -11,16 +11,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestContentTypeResponseProjectionIncludesExactPublishedVersion(t *testing.T) {
+func TestContentTypeResponseProjectionIncludesPublicationState(t *testing.T) {
 	t.Parallel()
 
-	contentType := cmt.NewContentTypeFromRequestFields("space", "environment", "content-type", cm.ContentTypeRequestData{
-		Name: "Content type",
-	})
-	contentType.Sys.Version = 8
-	contentType.Sys.PublishedVersion.SetTo(7)
+	for name, test := range map[string]struct {
+		publishedVersion *int
+		expected         types.Int64
+	}{
+		"published":   {publishedVersion: new(7), expected: types.Int64Value(7)},
+		"unpublished": {publishedVersion: nil, expected: types.Int64Null()},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	model, diagnostics := NewContentTypeResourceModelFromResponse(t.Context(), contentType)
-	require.False(t, diagnostics.HasError())
-	assert.Equal(t, types.Int64Value(7), model.PublishedVersion)
+			contentType := cmt.NewContentTypeFromRequestFields("space", "environment", "content-type", cm.ContentTypeRequestData{
+				Name: "Content type",
+			})
+			contentType.Sys.Version = 8
+
+			if test.publishedVersion != nil {
+				contentType.Sys.PublishedVersion.SetTo(*test.publishedVersion)
+			}
+
+			model, diagnostics := NewContentTypeResourceModelFromResponse(t.Context(), contentType)
+			require.False(t, diagnostics.HasError())
+			assert.Equal(t, test.expected, model.PublishedVersion)
+		})
+	}
 }

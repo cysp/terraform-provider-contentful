@@ -142,8 +142,7 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					handler.puts.Store(0)
-					handler.activations.Store(0)
+					handler.resetRequestHistory()
 				},
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceImport"),
 				ConfigVariables: configVariables,

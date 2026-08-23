@@ -255,6 +255,10 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := cm.UpdateDeliveryAPIKeyParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		APIKeyID:           plan.APIKeyID.ValueString(),

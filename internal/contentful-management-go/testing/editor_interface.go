@@ -59,7 +59,7 @@ func NewDefaultEditorInterface(spaceID, environmentID, contentTypeID string, fie
 	}
 }
 
-func SyncEditorInterfaceWithContentType(editorInterface *cm.EditorInterface, previousFieldIDs []string, fields []cm.ContentTypeFieldsItem) {
+func SyncEditorInterfaceWithContentType(editorInterface *cm.EditorInterface, previousFields *contentTypePublicationSnapshot, fields []cm.ContentTypeFieldsItem) {
 	editorInterface.Sys.Version++
 
 	existingControls, controlsSet := editorInterface.Controls.Get()
@@ -84,14 +84,11 @@ func SyncEditorInterfaceWithContentType(editorInterface *cm.EditorInterface, pre
 		controlledFieldIDs[control.FieldId] = struct{}{}
 	}
 
-	previousFieldIDSet := make(map[string]struct{}, len(previousFieldIDs))
-	for _, fieldID := range previousFieldIDs {
-		previousFieldIDSet[fieldID] = struct{}{}
-	}
-
 	for _, field := range fields {
-		if _, wasPublished := previousFieldIDSet[field.ID]; wasPublished {
-			continue
+		if previousFields != nil {
+			if _, wasPublished := (*previousFields)[field.ID]; wasPublished {
+				continue
+			}
 		}
 
 		if _, alreadyControlled := controlledFieldIDs[field.ID]; alreadyControlled {
@@ -102,13 +99,4 @@ func SyncEditorInterfaceWithContentType(editorInterface *cm.EditorInterface, pre
 	}
 
 	editorInterface.Controls.SetTo(controls)
-}
-
-func contentTypeFieldIDs(fields []cm.ContentTypeFieldsItem) []string {
-	fieldIDs := make([]string, len(fields))
-	for index, field := range fields {
-		fieldIDs[index] = field.ID
-	}
-
-	return fieldIDs
 }
