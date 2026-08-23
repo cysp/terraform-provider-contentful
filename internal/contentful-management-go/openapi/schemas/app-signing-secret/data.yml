@@ -4,7 +4,5 @@ AppSigningSecretData:
     redactedValue:
       type: string
       description: The final four characters of the signing secret.
-      minLength: 4
-      maxLength: 4
   required:
     - redactedValue
