@@ -46,9 +46,9 @@ func (ts *Handler) GetTeams(_ context.Context, params cm.GetTeamsParams) (cm.Get
 		Sys: cm.TeamCollectionSys{
 			Type: cm.TeamCollectionSysTypeArray,
 		},
-		Total: len(teams),
-		Skip:  int(skip),
-		Limit: int(limit),
+		Total: cm.NewOptInt(len(teams)),
+		Skip:  cm.NewOptInt(int(skip)),
+		Limit: cm.NewOptInt(int(limit)),
 		Items: items,
 	}, nil
 }

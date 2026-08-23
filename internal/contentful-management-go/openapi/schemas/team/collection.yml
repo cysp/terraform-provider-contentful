@@ -22,7 +22,4 @@ TeamCollection:
         $ref: "./list-item.yml#/TeamListItem"
   required:
     - sys
-    - total
-    - skip
-    - limit
     - items

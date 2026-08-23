@@ -49,9 +49,9 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 		Sys: cm.EntryCollectionSys{
 			Type: cm.EntryCollectionSysTypeArray,
 		},
-		Total: len(entries),
-		Skip:  int(skip),
-		Limit: int(limit),
+		Total: cm.NewOptInt(len(entries)),
+		Skip:  cm.NewOptInt(int(skip)),
+		Limit: cm.NewOptInt(int(limit)),
 		Items: entries[start:end],
 	}
 

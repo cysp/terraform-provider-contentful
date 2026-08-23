@@ -35,9 +35,9 @@ func TestGetContentTypesPaginates(t *testing.T) {
 
 	firstPageCollection, firstPageCollectionOk := firstPageResponse.(*cm.ContentTypeCollection)
 	require.True(t, firstPageCollectionOk)
-	assert.Equal(t, 3, firstPageCollection.Total)
-	assert.Equal(t, 0, firstPageCollection.Skip)
-	assert.Equal(t, 1, firstPageCollection.Limit)
+	assert.Equal(t, 3, firstPageCollection.Total.Or(-1))
+	assert.Equal(t, 0, firstPageCollection.Skip.Or(-1))
+	assert.Equal(t, 1, firstPageCollection.Limit.Or(-1))
 	require.Len(t, firstPageCollection.Items, 1)
 	assert.Equal(t, "content-type-0", firstPageCollection.Items[0].Sys.ID)
 	assert.Equal(t, "Content Type 0", firstPageCollection.Items[0].Name)
@@ -52,9 +52,9 @@ func TestGetContentTypesPaginates(t *testing.T) {
 
 	secondPageCollection, secondPageCollectionOk := secondPageResponse.(*cm.ContentTypeCollection)
 	require.True(t, secondPageCollectionOk)
-	assert.Equal(t, 3, secondPageCollection.Total)
-	assert.Equal(t, 1, secondPageCollection.Skip)
-	assert.Equal(t, 1, secondPageCollection.Limit)
+	assert.Equal(t, 3, secondPageCollection.Total.Or(-1))
+	assert.Equal(t, 1, secondPageCollection.Skip.Or(-1))
+	assert.Equal(t, 1, secondPageCollection.Limit.Or(-1))
 	require.Len(t, secondPageCollection.Items, 1)
 	assert.Equal(t, "content-type-1", secondPageCollection.Items[0].Sys.ID)
 	assert.Equal(t, "Content Type 1", secondPageCollection.Items[0].Name)
@@ -69,9 +69,9 @@ func TestGetContentTypesPaginates(t *testing.T) {
 
 	beyondEndCollection, beyondEndCollectionOK := beyondEndResponse.(*cm.ContentTypeCollection)
 	require.True(t, beyondEndCollectionOK)
-	assert.Equal(t, 3, beyondEndCollection.Total)
-	assert.Equal(t, 100, beyondEndCollection.Skip)
-	assert.Equal(t, 1, beyondEndCollection.Limit)
+	assert.Equal(t, 3, beyondEndCollection.Total.Or(-1))
+	assert.Equal(t, 100, beyondEndCollection.Skip.Or(-1))
+	assert.Equal(t, 1, beyondEndCollection.Limit.Or(-1))
 	assert.Empty(t, beyondEndCollection.Items)
 }
 

@@ -51,9 +51,9 @@ func TestEntryListResourceListSendsFiltersAndOwnsPagination(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		assert.NoError(t, json.NewEncoder(w).Encode(cm.EntryCollection{
 			Sys:   cm.EntryCollectionSys{Type: cm.EntryCollectionSysTypeArray},
-			Total: 1,
-			Skip:  0,
-			Limit: 100,
+			Total: cm.NewOptInt(1),
+			Skip:  cm.NewOptInt(0),
+			Limit: cm.NewOptInt(100),
 			Items: []cm.Entry{entry},
 		}))
 	}))

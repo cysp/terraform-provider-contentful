@@ -16,11 +16,11 @@ import (
 var errTestContentfulUnavailable = errors.New("contentful unavailable")
 
 type testListCollection struct {
-	total int
+	total cm.OptInt
 	items []int
 }
 
-func (c testListCollection) GetTotal() int {
+func (c testListCollection) GetTotal() cm.OptInt {
 	return c.total
 }
 
@@ -48,9 +48,9 @@ func TestPaginateContentfulCollectionItemsAsListResultsPaginatesUntilTotal(t *te
 
 			switch params.skip {
 			case 0:
-				return testListCollection{total: 3, items: []int{1, 2}}, nil
+				return testListCollection{total: cm.NewOptInt(3), items: []int{1, 2}}, nil
 			case 2:
-				return testListCollection{total: 3, items: []int{3}}, nil
+				return testListCollection{total: cm.NewOptInt(3), items: []int{3}}, nil
 			default:
 				t.Fatalf("unexpected skip %d", params.skip)
 
@@ -67,6 +67,40 @@ func TestPaginateContentfulCollectionItemsAsListResultsPaginatesUntilTotal(t *te
 	assert.Equal(t, []string{"1", "2", "3"}, results)
 }
 
+func TestPaginateContentfulCollectionItemsAsListResultsPaginatesUntilEmptyWithoutTotal(t *testing.T) {
+	t.Parallel()
+
+	var requests []testListParams
+
+	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
+		context.Background(),
+		list.ListRequest{},
+		"failed",
+		func(_ context.Context, skip int64, limit int64) (testListCollection, error) {
+			params := testListParams{skip: skip, limit: limit}
+			requests = append(requests, params)
+
+			switch skip {
+			case 0:
+				return testListCollection{items: []int{1}}, nil
+			case 1:
+				return testListCollection{}, nil
+			default:
+				t.Fatalf("unexpected skip %d", skip)
+
+				return testListCollection{}, nil
+			}
+		},
+		testListResult,
+	))
+
+	assert.Equal(t, []testListParams{
+		{skip: 0, limit: defaultPageLimit},
+		{skip: 1, limit: defaultPageLimit},
+	}, requests)
+	assert.Equal(t, []string{"1"}, results)
+}
+
 func TestPaginateContentfulCollectionItemsAsListResultsHonorsTerraformLimit(t *testing.T) {
 	t.Parallel()
 
@@ -79,7 +113,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsHonorsTerraformLimit(t *t
 		func(_ context.Context, skip int64, limit int64) (testListCollection, error) {
 			requests = append(requests, testListParams{skip: skip, limit: limit})
 
-			return testListCollection{total: 10, items: []int{1, 2}}, nil
+			return testListCollection{total: cm.NewOptInt(10), items: []int{1, 2}}, nil
 		},
 		testListResult,
 	))

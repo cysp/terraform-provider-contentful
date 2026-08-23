@@ -189,3 +189,16 @@ func requireContentfulError(t *testing.T, response any, expectedStatus int, expe
 	assert.Equal(t, expectedID, errorResponse.Sys.ID)
 	assert.Equal(t, expectedMessage, errorResponse.Message.Or(""))
 }
+
+func requireContentfulConflictWithNonemptyMessage(t *testing.T, response any, expectedID string) {
+	t.Helper()
+
+	statusCode, ok := response.(*cm.ErrorStatusCode)
+	require.True(t, ok)
+	assert.Equal(t, http.StatusConflict, statusCode.StatusCode)
+	errorResponse, ok := statusCode.Response.GetError()
+	require.True(t, ok)
+	assert.Equal(t, cm.ErrorSysTypeError, errorResponse.Sys.Type)
+	assert.Equal(t, expectedID, errorResponse.Sys.ID)
+	assert.NotEmpty(t, errorResponse.Message.Or(""))
+}
