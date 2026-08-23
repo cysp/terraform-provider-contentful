@@ -50,9 +50,9 @@ func TestGetEntriesReturnsStableFilteredPagination(t *testing.T) {
 
 	first, ok := firstResponse.(*cm.EntryCollection)
 	require.True(t, ok)
-	assert.Equal(t, 3, first.Total)
-	assert.Equal(t, 0, first.Skip)
-	assert.Equal(t, 2, first.Limit)
+	assert.Equal(t, 3, first.Total.Or(-1))
+	assert.Equal(t, 0, first.Skip.Or(-1))
+	assert.Equal(t, 2, first.Limit.Or(-1))
 	require.Len(t, first.Items, 2)
 	assert.Equal(t, []string{"alpha", "bravo"}, []string{first.Items[0].Sys.ID, first.Items[1].Sys.ID})
 
@@ -67,9 +67,9 @@ func TestGetEntriesReturnsStableFilteredPagination(t *testing.T) {
 
 	second, ok := secondResponse.(*cm.EntryCollection)
 	require.True(t, ok)
-	assert.Equal(t, 3, second.Total)
-	assert.Equal(t, 2, second.Skip)
-	assert.Equal(t, 2, second.Limit)
+	assert.Equal(t, 3, second.Total.Or(-1))
+	assert.Equal(t, 2, second.Skip.Or(-1))
+	assert.Equal(t, 2, second.Limit.Or(-1))
 	require.Len(t, second.Items, 1)
 	assert.Equal(t, "charlie", second.Items[0].Sys.ID)
 
@@ -84,9 +84,9 @@ func TestGetEntriesReturnsStableFilteredPagination(t *testing.T) {
 
 	beyondEnd, ok := beyondEndResponse.(*cm.EntryCollection)
 	require.True(t, ok)
-	assert.Equal(t, 3, beyondEnd.Total)
-	assert.Equal(t, 100, beyondEnd.Skip)
-	assert.Equal(t, 2, beyondEnd.Limit)
+	assert.Equal(t, 3, beyondEnd.Total.Or(-1))
+	assert.Equal(t, 100, beyondEnd.Skip.Or(-1))
+	assert.Equal(t, 2, beyondEnd.Limit.Or(-1))
 	assert.Empty(t, beyondEnd.Items)
 }
 

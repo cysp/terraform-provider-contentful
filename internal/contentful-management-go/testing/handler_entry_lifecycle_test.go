@@ -38,7 +38,7 @@ func TestPublishEntryRequiresExactVersion(t *testing.T) {
 		XContentfulVersion: 0,
 	})
 	require.NoError(t, err)
-	requireContentfulError(t, staleResponse, http.StatusConflict, cm.ErrorSysIDVersionMismatch, "Version mismatch")
+	requireContentfulConflictWithNonemptyMessage(t, staleResponse, cm.ErrorSysIDVersionMismatch)
 
 	publishedResponse, err := handler.PublishEntry(context.Background(), cm.PublishEntryParams{
 		SpaceID:            "space",

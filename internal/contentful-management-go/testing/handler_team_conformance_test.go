@@ -30,9 +30,9 @@ func TestGetTeamsReturnsDocumentedPagination(t *testing.T) {
 
 	page, ok := response.(*cm.TeamCollection)
 	require.True(t, ok)
-	assert.Equal(t, 3, page.Total)
-	assert.Equal(t, 1, page.Skip)
-	assert.Equal(t, 1, page.Limit)
+	assert.Equal(t, 3, page.Total.Or(-1))
+	assert.Equal(t, 1, page.Skip.Or(-1))
+	assert.Equal(t, 1, page.Limit.Or(-1))
 	require.Len(t, page.Items, 1)
 	assert.Equal(t, "bravo", page.Items[0].Sys.ID)
 
@@ -45,9 +45,9 @@ func TestGetTeamsReturnsDocumentedPagination(t *testing.T) {
 
 	beyondEnd, ok := beyondEndResponse.(*cm.TeamCollection)
 	require.True(t, ok)
-	assert.Equal(t, 3, beyondEnd.Total)
-	assert.Equal(t, 999999, beyondEnd.Skip)
-	assert.Equal(t, 1, beyondEnd.Limit)
+	assert.Equal(t, 3, beyondEnd.Total.Or(-1))
+	assert.Equal(t, 999999, beyondEnd.Skip.Or(-1))
+	assert.Equal(t, 1, beyondEnd.Limit.Or(-1))
 	assert.Empty(t, beyondEnd.Items)
 }
 

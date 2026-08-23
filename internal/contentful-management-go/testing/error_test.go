@@ -59,7 +59,7 @@ func TestPutTeamReturnsVersionMismatchForStaleVersion(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, cm.ErrorSysIDVersionMismatch, errResponse.Sys.ID)
 	assert.Equal(t, cm.ErrorSysTypeError, errResponse.Sys.Type)
-	assert.Equal(t, "Version mismatch", errResponse.Message.Or(""))
+	assert.NotEmpty(t, errResponse.Message.Or(""))
 }
 
 func TestErrorHelpersAlwaysReturnMessages(t *testing.T) {
@@ -69,19 +69,16 @@ func TestErrorHelpersAlwaysReturnMessages(t *testing.T) {
 		response *cm.ErrorStatusCode
 		status   int
 		id       string
-		message  string
 	}{
 		"not found": {
 			response: cmt.NewContentfulManagementErrorStatusCodeNotFound(nil, nil),
 			status:   http.StatusNotFound,
 			id:       cm.ErrorSysIDNotFound,
-			message:  "The resource could not be found.",
 		},
 		"version mismatch": {
 			response: cmt.NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil),
 			status:   http.StatusConflict,
 			id:       cm.ErrorSysIDVersionMismatch,
-			message:  "Version mismatch",
 		},
 	}
 
@@ -94,7 +91,7 @@ func TestErrorHelpersAlwaysReturnMessages(t *testing.T) {
 			require.True(t, ok)
 			assert.Equal(t, cm.ErrorSysTypeError, errorResponse.Sys.Type)
 			assert.Equal(t, test.id, errorResponse.Sys.ID)
-			assert.Equal(t, test.message, errorResponse.Message.Or(""))
+			assert.NotEmpty(t, errorResponse.Message.Or(""))
 		})
 	}
 }

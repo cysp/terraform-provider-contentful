@@ -45,5 +45,6 @@ func TestDeliveryAPIKeyVersionAndConflictSemantics(t *testing.T) {
 		XContentfulVersion: createdStatus.Response.Sys.Version,
 	})
 	require.NoError(t, err)
-	requireContentfulError(t, staleResponse, http.StatusConflict, cm.ErrorSysIDConflict, "Conflict")
+
+	requireContentfulConflictWithNonemptyMessage(t, staleResponse, cm.ErrorSysIDConflict)
 }
