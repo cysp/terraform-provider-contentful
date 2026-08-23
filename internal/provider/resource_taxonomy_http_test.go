@@ -115,17 +115,51 @@ type taxonomyRequestBody struct {
 	body    []byte
 }
 
+type taxonomyResponseStatusWriter struct {
+	http.ResponseWriter
+
+	statusCode int
+}
+
+func (w *taxonomyResponseStatusWriter) WriteHeader(statusCode int) {
+	if w.statusCode != 0 {
+		return
+	}
+
+	w.statusCode = statusCode
+	w.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (w *taxonomyResponseStatusWriter) Write(body []byte) (int, error) {
+	if w.statusCode == 0 {
+		w.WriteHeader(http.StatusOK)
+	}
+
+	written, err := w.ResponseWriter.Write(body)
+	if err != nil {
+		return written, fmt.Errorf("write taxonomy response: %w", err)
+	}
+
+	return written, nil
+}
+
 func (r *taxonomyRequestBodyRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	body, err := io.ReadAll(request.Body)
 	if err == nil {
-		r.mu.Lock()
-		r.requests = append(r.requests, taxonomyRequestBody{method: request.Method, path: request.URL.Path, version: request.Header.Get("X-Contentful-Version"), body: append([]byte(nil), body...)})
-		r.mu.Unlock()
-
 		request.Body = io.NopCloser(bytes.NewReader(body))
 	}
 
-	r.next.ServeHTTP(responseWriter, request)
+	statusWriter := &taxonomyResponseStatusWriter{ResponseWriter: responseWriter}
+	r.next.ServeHTTP(statusWriter, request)
+
+	// A rate-limited attempt never reaches the CMA handler and is retried by
+	// the client. Lifecycle assertions count handled requests, not transport
+	// attempts rejected by the outer test-server limiter.
+	if err == nil && statusWriter.statusCode != http.StatusTooManyRequests {
+		r.mu.Lock()
+		r.requests = append(r.requests, taxonomyRequestBody{method: request.Method, path: request.URL.Path, version: request.Header.Get("X-Contentful-Version"), body: append([]byte(nil), body...)})
+		r.mu.Unlock()
+	}
 }
 
 func (r *taxonomyRequestBodyRecorder) matchingRequests(method, path string) []taxonomyRequestBody {
