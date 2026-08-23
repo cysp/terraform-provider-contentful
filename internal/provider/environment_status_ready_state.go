@@ -38,5 +38,14 @@ func publishEnvironmentStatusReadyConversion(
 		return false, diags
 	}
 
+	if model.Status.ValueString() == environmentStatusFailedValue {
+		diags.AddError(
+			"Contentful environment failed to become ready",
+			"Contentful reported the environment status as failed.",
+		)
+
+		return false, diags
+	}
+
 	return model.Status.ValueString() != environmentStatusReadyValue, diags
 }

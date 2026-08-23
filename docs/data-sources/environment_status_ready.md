@@ -4,12 +4,15 @@ page_title: "contentful_environment_status_ready Data Source - terraform-provide
 subcategory: ""
 description: |-
   Waits until a Contentful environment reaches ready status.
+  The data source polls while Contentful reports queued or inProgress. It returns an error immediately if Contentful reports failed. Unrecognized status values remain pollable so that a newly introduced status does not fail prematurely.
   This may be referenced in depends_on chains when creating resources that require an environment to be fully ready.
 ---
 
 # contentful_environment_status_ready (Data Source)
 
 Waits until a Contentful environment reaches ready status.
+
+The data source polls while Contentful reports queued or inProgress. It returns an error immediately if Contentful reports failed. Unrecognized status values remain pollable so that a newly introduced status does not fail prematurely.
 
 This may be referenced in depends_on chains when creating resources that require an environment to be fully ready.
 
@@ -61,7 +64,7 @@ resource "contentful_environment_alias" "staging" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `status` (String) Status of the environment.
+- `status` (String) Latest status reported for the environment.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

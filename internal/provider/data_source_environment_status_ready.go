@@ -14,6 +14,7 @@ import (
 const (
 	environmentStatusReadyPollInterval = 15 * time.Second
 	environmentStatusReadyTimeout      = 10 * time.Minute
+	environmentStatusFailedValue       = "failed"
 	environmentStatusReadyValue        = "ready"
 )
 

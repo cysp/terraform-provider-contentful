@@ -11,6 +11,8 @@ func EnvironmentStatusReadyDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Waits until a Contentful environment reaches ready status.
 
+The data source polls while Contentful reports queued or inProgress. It returns an error immediately if Contentful reports failed. Unrecognized status values remain pollable so that a newly introduced status does not fail prematurely.
+
 This may be referenced in depends_on chains when creating resources that require an environment to be fully ready.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -25,7 +27,7 @@ This may be referenced in depends_on chains when creating resources that require
 				Required:    true,
 			},
 			"status": schema.StringAttribute{
-				Description: "Status of the environment.",
+				Description: "Latest status reported for the environment.",
 				Computed:    true,
 			},
 			"timeouts": timeouts.Attributes(ctx),

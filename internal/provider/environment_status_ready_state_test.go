@@ -91,12 +91,20 @@ func TestPublishEnvironmentStatusReadyResponsePreservesTimeoutsAndControlsPollin
 		configuredTimeouts datasourcetimeouts.Value
 		status             string
 		continuePolling    bool
+		expectedError      string
 	}{
 		"null timeout and queued": {
 			configuredTimeouts: datasourcetimeouts.Value{
 				Object: types.ObjectNull(environmentStatusReadyTimeoutAttributeTypes()),
 			},
 			status:          "queued",
+			continuePolling: true,
+		},
+		"null timeout and in progress": {
+			configuredTimeouts: datasourcetimeouts.Value{
+				Object: types.ObjectNull(environmentStatusReadyTimeoutAttributeTypes()),
+			},
+			status:          "inProgress",
 			continuePolling: true,
 		},
 		"unknown timeout and ready": {
@@ -110,6 +118,17 @@ func TestPublishEnvironmentStatusReadyResponsePreservesTimeoutsAndControlsPollin
 			configuredTimeouts: environmentStatusReadyTimeoutValue(types.StringValue("30m")),
 			status:             environmentStatusReadyValue,
 			continuePolling:    false,
+		},
+		"known timeout and failed": {
+			configuredTimeouts: environmentStatusReadyTimeoutValue(types.StringValue("30m")),
+			status:             "failed",
+			continuePolling:    false,
+			expectedError:      "Contentful environment failed to become ready",
+		},
+		"unknown future status remains pollable": {
+			configuredTimeouts: environmentStatusReadyTimeoutValue(types.StringValue("30m")),
+			status:             "futureStatus",
+			continuePolling:    true,
 		},
 	}
 
@@ -131,7 +150,18 @@ func TestPublishEnvironmentStatusReadyResponsePreservesTimeoutsAndControlsPollin
 				test.configuredTimeouts,
 			)
 
-			require.False(t, diags.HasError())
+			if test.expectedError == "" {
+				require.False(t, diags.HasError(), diags.Errors())
+			} else {
+				require.Len(t, diags.Errors(), 1)
+				assert.Equal(t, test.expectedError, diags.Errors()[0].Summary())
+				assert.Equal(
+					t,
+					"Contentful reported the environment status as failed.",
+					diags.Errors()[0].Detail(),
+				)
+			}
+
 			assert.Equal(t, test.continuePolling, continuePolling)
 
 			var published EnvironmentStatusReadyModel
