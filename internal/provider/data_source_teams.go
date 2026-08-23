@@ -114,9 +114,8 @@ func readTeams(ctx context.Context, client *cm.Client, organizationID string) ([
 		}
 
 		skip += int64(len(collection.Items))
-		total, totalSet := collection.Total.Get()
 
-		if len(collection.Items) == 0 || (totalSet && skip >= int64(total)) {
+		if len(collection.Items) == 0 || skip >= int64(collection.Total) {
 			break
 		}
 	}
