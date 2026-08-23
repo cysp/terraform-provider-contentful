@@ -3,12 +3,12 @@
 page_title: "contentful_app_signing_secret Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Signing Secret.
+  Manages a Contentful App Signing Secret. Contentful never returns the complete value, so refresh preserves the configured value and cannot detect out-of-band replacement. Import adopts the remote identity and existence, but the next apply overwrites the secret with the required configured value because the existing value cannot be recovered.
 ---
 
 # contentful_app_signing_secret (Resource)
 
-Manages a Contentful App Signing Secret.
+Manages a Contentful App Signing Secret. Contentful never returns the complete value, so refresh preserves the configured value and cannot detect out-of-band replacement. Import adopts the remote identity and existence, but the next apply overwrites the secret with the required configured value because the existing value cannot be recovered.
 
 ## Example Usage
 
@@ -34,7 +34,7 @@ resource "random_password" "contentful_app_signing_secret" {
 
 - `app_definition_id` (String) ID of the app definition for which the signing secret is created.
 - `organization_id` (String) ID of the organization that owns the app.
-- `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters long and contain only alphanumeric characters (a-z, A-Z, 0-9).
+- `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`.
 
 ### Optional
 

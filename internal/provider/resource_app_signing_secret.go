@@ -3,12 +3,14 @@ package provider
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -65,6 +67,8 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
+	ctx = maskAppSigningSecretValues(ctx, plan.Value)
+
 	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
@@ -93,7 +97,7 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		"params": params,
 		// "request": request, omitted to avoid logging sensitive values
 		// "response": response, omitted to avoid logging sensitive values
-		"err": err,
+		"err": appSigningSecretLogError(err, plan.Value),
 	})
 
 	var data AppSigningSecretModel
@@ -114,7 +118,7 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		data = mutationState
 
 	default:
-		resp.Diagnostics.AddError("Failed to create app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to create app signing secret", appSigningSecretErrorDetail(response, err, plan.Value))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -146,6 +150,8 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
+	ctx = maskAppSigningSecretValues(ctx, state.Value)
+
 	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
@@ -168,7 +174,7 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 	tflog.Info(ctx, "app_signing_secret.read", map[string]any{
 		"params": params,
 		// "response": response, omitted to avoid logging sensitive values
-		"err": err,
+		"err": appSigningSecretLogError(err, state.Value),
 	})
 
 	var data AppSigningSecretModel
@@ -191,14 +197,14 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
 			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
+				resp.Diagnostics.AddWarning("Failed to read app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
 				resp.State.RemoveResource(ctx)
 
 				return
 			}
 		}
 
-		resp.Diagnostics.AddError("Failed to read app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to read app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -231,6 +237,8 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
+	ctx = maskAppSigningSecretValues(ctx, state.Value, plan.Value)
+
 	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
@@ -259,7 +267,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		"params": params,
 		// "request": request, omitted to avoid logging sensitive values
 		// "response": response, omitted to avoid logging sensitive values
-		"err": err,
+		"err": appSigningSecretLogError(err, state.Value, plan.Value),
 	})
 
 	var data AppSigningSecretModel
@@ -284,7 +292,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		data = mutationState
 
 	default:
-		resp.Diagnostics.AddError("Failed to update app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to update app signing secret", appSigningSecretErrorDetail(response, err, state.Value, plan.Value))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -307,7 +315,42 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 	}
 }
 
-//nolint:dupl
+func maskAppSigningSecretValues(ctx context.Context, values ...types.String) context.Context {
+	knownValues := make([]string, 0, len(values))
+
+	for _, value := range values {
+		if !value.IsNull() && !value.IsUnknown() && value.ValueString() != "" {
+			knownValues = append(knownValues, value.ValueString())
+		}
+	}
+
+	return tflog.MaskLogStrings(ctx, knownValues...)
+}
+
+func appSigningSecretErrorDetail(response any, err error, values ...types.String) string {
+	return redactAppSigningSecretValues(util.ErrorDetailFromContentfulManagementResponse(response, err), values...)
+}
+
+func appSigningSecretLogError(err error, values ...types.String) any {
+	if err == nil {
+		return nil
+	}
+
+	return redactAppSigningSecretValues(err.Error(), values...)
+}
+
+func redactAppSigningSecretValues(text string, values ...types.String) string {
+	redacted := text
+
+	for _, value := range values {
+		if !value.IsNull() && !value.IsUnknown() && value.ValueString() != "" {
+			redacted = strings.ReplaceAll(redacted, value.ValueString(), "***")
+		}
+	}
+
+	return redacted
+}
+
 func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state AppSigningSecretModel
 
@@ -342,14 +385,14 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 
 		if response, ok := response.(cm.StatusCodeResponse); ok {
 			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("App signing secret already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+				resp.Diagnostics.AddWarning("App signing secret already deleted", appSigningSecretErrorDetail(response, err, state.Value))
 
 				handled = true
 			}
 		}
 
 		if !handled {
-			resp.Diagnostics.AddError("Failed to delete app signing secret", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.Diagnostics.AddError("Failed to delete app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
 		}
 	}
 }
