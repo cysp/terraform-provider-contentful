@@ -109,6 +109,15 @@ func appSigningSecretHTTPRequest(t *testing.T, server *httptest.Server, method, 
 func assertAppSigningSecretResponse(t *testing.T, body []byte, submittedValue string) {
 	t.Helper()
 
+	var rawResponse struct {
+		Sys map[string]json.RawMessage `json:"sys"`
+	}
+	require.NoError(t, json.Unmarshal(body, &rawResponse))
+	assert.NotContains(t, rawResponse.Sys, "createdAt")
+	assert.NotContains(t, rawResponse.Sys, "updatedAt")
+	assert.NotContains(t, rawResponse.Sys, "createdBy")
+	assert.NotContains(t, rawResponse.Sys, "updatedBy")
+
 	var response cm.AppSigningSecret
 	require.NoError(t, json.Unmarshal(body, &response))
 	require.NoError(t, response.Validate())

@@ -1026,28 +1026,6 @@ func (s *AppSigningSecretSys) Validate() error {
 			Error: err,
 		})
 	}
-	if err := func() error {
-		if err := s.CreatedBy.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "createdBy",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if err := s.UpdatedBy.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "updatedBy",
-			Error: err,
-		})
-	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
 	}

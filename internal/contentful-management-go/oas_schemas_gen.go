@@ -1843,10 +1843,6 @@ type AppSigningSecretSys struct {
 	// Merged property.
 	Type          AppSigningSecretSysType `json:"type"`
 	AppDefinition AppDefinitionLink       `json:"appDefinition"`
-	CreatedBy     UserLink                `json:"createdBy"`
-	UpdatedBy     UserLink                `json:"updatedBy"`
-	CreatedAt     time.Time               `json:"createdAt"`
-	UpdatedAt     time.Time               `json:"updatedAt"`
 }
 
 // GetOrganization returns the value of Organization.
@@ -1864,26 +1860,6 @@ func (s *AppSigningSecretSys) GetAppDefinition() AppDefinitionLink {
 	return s.AppDefinition
 }
 
-// GetCreatedBy returns the value of CreatedBy.
-func (s *AppSigningSecretSys) GetCreatedBy() UserLink {
-	return s.CreatedBy
-}
-
-// GetUpdatedBy returns the value of UpdatedBy.
-func (s *AppSigningSecretSys) GetUpdatedBy() UserLink {
-	return s.UpdatedBy
-}
-
-// GetCreatedAt returns the value of CreatedAt.
-func (s *AppSigningSecretSys) GetCreatedAt() time.Time {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *AppSigningSecretSys) GetUpdatedAt() time.Time {
-	return s.UpdatedAt
-}
-
 // SetOrganization sets the value of Organization.
 func (s *AppSigningSecretSys) SetOrganization(val OrganizationLink) {
 	s.Organization = val
@@ -1897,26 +1873,6 @@ func (s *AppSigningSecretSys) SetType(val AppSigningSecretSysType) {
 // SetAppDefinition sets the value of AppDefinition.
 func (s *AppSigningSecretSys) SetAppDefinition(val AppDefinitionLink) {
 	s.AppDefinition = val
-}
-
-// SetCreatedBy sets the value of CreatedBy.
-func (s *AppSigningSecretSys) SetCreatedBy(val UserLink) {
-	s.CreatedBy = val
-}
-
-// SetUpdatedBy sets the value of UpdatedBy.
-func (s *AppSigningSecretSys) SetUpdatedBy(val UserLink) {
-	s.UpdatedBy = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *AppSigningSecretSys) SetCreatedAt(val time.Time) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *AppSigningSecretSys) SetUpdatedAt(val time.Time) {
-	s.UpdatedAt = val
 }
 
 // Merged schema.
