@@ -5,3 +5,8 @@ variable "organization_id" {
 variable "app_definition_id" {
   type = string
 }
+
+variable "signing_secret_value" {
+  type      = string
+  sensitive = true
+}

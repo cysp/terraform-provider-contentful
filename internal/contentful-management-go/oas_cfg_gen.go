@@ -9,7 +9,12 @@ import (
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
+	"github.com/ogen-go/ogen/ogenregex"
 )
+
+var regexMap = map[string]ogenregex.Regexp{
+	"^[0-9a-zA-Z+/=_-]+$": ogenregex.MustCompile("^[0-9a-zA-Z+/=_-]+$"),
+}
 
 type (
 	optionFunc[C any] func(*C)

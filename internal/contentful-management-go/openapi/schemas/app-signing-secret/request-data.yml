@@ -3,5 +3,9 @@ AppSigningSecretRequestData:
   properties:
     value:
       type: string
+      description: A 64-character signing secret matching ^[0-9a-zA-Z+/=_-]+$.
+      minLength: 64
+      maxLength: 64
+      pattern: '^[0-9a-zA-Z+/=_-]+$'
   required:
     - value

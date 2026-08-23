@@ -4,8 +4,19 @@ AppSigningSecretSys:
     - $ref: "../sys/with-organization.yml"
     - $ref: "../sys/with-type.yml"
     - $ref: "../sys/with-app-definition.yml"
+    - $ref: "../sys/with-created-by.yml"
+    - $ref: "../sys/with-updated-by.yml"
     - type: object
       properties:
         type:
           enum:
             - AppSigningSecret
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - createdAt
+        - updatedAt
