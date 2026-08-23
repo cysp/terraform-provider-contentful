@@ -22,6 +22,7 @@ for the exact boundary.
 - Terraform Registry: [cysp/contentful](https://registry.terraform.io/providers/cysp/contentful)
 - Provider design: [Terraform value semantics](docs/design/terraform-value-semantics.md) and
   [Contentful HTTP retry policy](docs/design/contentful-http-retry-policy.md)
+- Release process: [Release validation](docs/design/release-validation.md)
 
 ## Getting Started
 

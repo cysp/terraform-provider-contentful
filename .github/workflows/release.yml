@@ -5,42 +5,192 @@ on:
     tags:
       - "v*"
 
-permissions: {}
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
 
 jobs:
-  release:
-    name: Publish release
+  validate:
+    name: Validate release candidate
     runs-on: ubuntu-latest
-    environment:
-      name: release
-      deployment: false
-    concurrency:
-      group: release
-    permissions:
-      contents: write
-      id-token: write
-      attestations: write
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+
+      - name: Bind candidate to tag and main
+        shell: bash
+        run: |
+          candidate_sha="$(git rev-parse HEAD)"
+          event_sha="$(git rev-parse "${GITHUB_SHA}^{commit}")"
+          test "${GITHUB_REF_TYPE}" = "tag"
+          test "${candidate_sha}" = "${event_sha}"
+          if [[ "${GITHUB_REF_PROTECTED}" != "true" ]]; then
+            echo "::error::Release tag must be protected by an active ruleset"
+            exit 1
+          fi
+          git merge-base --is-ancestor "${candidate_sha}" origin/main
+          {
+            echo "## Release candidate"
+            echo
+            echo "- Tag: \`${GITHUB_REF_NAME}\`"
+            echo "- Commit: \`${candidate_sha}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: "go.mod"
           cache: true
 
-      - name: Require existing draft
-        id: release
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: "1.14.*"
+          terraform_wrapper: false
+
+      - run: go mod download
+
+      - name: Verify module files are tidy
         run: |
-          release="$(gh release view "$GITHUB_REF_NAME" \
-            --repo "$GITHUB_REPOSITORY" \
-            --json databaseId,isDraft,name)"
-          test "$(jq -r .isDraft <<<"$release")" = true
-          test "$(jq -r .name <<<"$release")" = "$GITHUB_REF_NAME"
-          echo "id=$(jq -r .databaseId <<<"$release")" >> "$GITHUB_OUTPUT"
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+      - run: go generate ./...
+
+      - name: Verify generated files are current
+        run: git diff --exit-code
+
+      - run: go build ./...
+
+      - run: go test -count=1 ./...
+
+      - run: go test -count=1 -race ./...
+        timeout-minutes: 15
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: v2.12.2
+          skip-cache: true
+          install-only: true
+
+      - name: Clean golangci-lint cache
+        run: golangci-lint cache clean
+
+      - name: Run golangci-lint
+        run: golangci-lint run
+
+      - name: Check GoReleaser configuration
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        with:
+          version: v2.17.1
+          args: check
+
+      - name: Check GitHub Actions workflows
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+  testaccmocked:
+    name: Mocked acceptance (Terraform ${{ matrix.terraform }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform:
+          - "1.13.*"
+          - "1.14.*"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+
+      - run: go mod download
+
+      - run: go test -count=1 -v -run '^TestAcc' ./internal/provider/
+        env:
+          TF_ACC: "1"
+          TF_ACC_MOCKED: "1"
+        timeout-minutes: 10
+
+  publish:
+    name: Live acceptance and publish
+    needs:
+      - validate
+      - testaccmocked
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: release
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Record exact release candidate
+        shell: bash
+        run: |
+          candidate_sha="$(git rev-parse HEAD)"
+          event_sha="$(git rev-parse "${GITHUB_SHA}^{commit}")"
+          test "${candidate_sha}" = "${event_sha}"
+          {
+            echo "## Privileged validation"
+            echo
+            echo "Live acceptance and publication use commit \`${candidate_sha}\`."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: "1.14.*"
+          terraform_wrapper: false
+
+      - run: go mod download
+
+      - name: Require release credentials
+        shell: bash
+        env:
+          RELEASE_CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.RELEASE_CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
+          RELEASE_GPG_PRIVATE_KEY: ${{ secrets.RELEASE_GPG_PRIVATE_KEY }}
+          RELEASE_PASSPHRASE: ${{ secrets.RELEASE_PASSPHRASE }}
+        run: |
+          missing=()
+          for secret_name in \
+            RELEASE_CONTENTFUL_MANAGEMENT_ACCESS_TOKEN \
+            RELEASE_GPG_PRIVATE_KEY \
+            RELEASE_PASSPHRASE
+          do
+            if [[ -z "${!secret_name}" ]]; then
+              missing+=("${secret_name}")
+            fi
+          done
+          if (( ${#missing[@]} != 0 )); then
+            printf '::error::Missing release environment secret: %s\n' "${missing[@]}"
+            exit 1
+          fi
+
+      - name: Run live acceptance (Terraform 1.14)
+        run: go test -count=1 -v -run '^TestAcc' ./internal/provider/
+        env:
+          TF_ACC: "1"
+          CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.RELEASE_CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
+        timeout-minutes: 15
 
       - name: Import GPG key
         id: import_gpg

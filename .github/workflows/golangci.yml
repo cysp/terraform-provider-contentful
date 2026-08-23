@@ -26,3 +26,10 @@ jobs:
         with:
           version: v2.12.2
           skip-cache: true
+          install-only: true
+
+      - name: Clean golangci-lint cache
+        run: golangci-lint cache clean
+
+      - name: Run golangci-lint
+        run: golangci-lint run
