@@ -23,7 +23,7 @@ func TestActivateContentTypeUsesContentfulPublicationVersioning(t *testing.T) {
 
 	staleResponse, err := handler.ActivateContentType(context.Background(), contentTypeActivateParams(0))
 	require.NoError(t, err)
-	requireContentfulError(t, staleResponse, http.StatusConflict, cm.ErrorSysIDVersionMismatch, "")
+	requireContentfulError(t, staleResponse, http.StatusConflict, cm.ErrorSysIDVersionMismatch, "Version mismatch")
 
 	activated := activateContentType(t, handler, created.Sys.Version)
 	assert.Equal(t, 2, activated.Sys.Version)

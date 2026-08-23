@@ -15,9 +15,9 @@ var (
 type ServerOption func(*serverConfig) error
 
 type serverConfig struct {
-	omitEntryResponseFields bool
-	rateLimitNow            func() time.Time
-	rateLimitPerSecond      int
+	omitEntryMutationResponseFields bool
+	rateLimitNow                    func() time.Time
+	rateLimitPerSecond              int
 }
 
 func buildServerConfig(opts ...ServerOption) (serverConfig, error) {
@@ -40,9 +40,11 @@ func buildServerConfig(opts ...ServerOption) (serverConfig, error) {
 	return cfg, nil
 }
 
-func WithOmittedEntryResponseFields() ServerOption {
+// WithOmittedEntryMutationResponseFields enables an adversarial response mode
+// for provider tests. It is not part of the default CMA test-server contract.
+func WithOmittedEntryMutationResponseFields() ServerOption {
 	return func(cfg *serverConfig) error {
-		cfg.omitEntryResponseFields = true
+		cfg.omitEntryMutationResponseFields = true
 
 		return nil
 	}

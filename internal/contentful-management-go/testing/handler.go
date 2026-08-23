@@ -9,7 +9,7 @@ import (
 type Handler struct {
 	mu sync.Mutex
 
-	omitEntryResponseFields bool
+	omitEntryMutationResponseFields bool
 
 	me *cm.User
 

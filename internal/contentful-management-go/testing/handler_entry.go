@@ -1,8 +1,10 @@
 package cmtesting
 
 import (
+	"cmp"
 	"context"
 	"net/http"
+	"slices"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
@@ -17,17 +19,28 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 	}
 
 	skip := params.Skip.Or(0)
-	limit := params.Limit.Or(100) //nolint:mnd
+	if skip < 0 {
+		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "skip" is invalid. Please provide a value larger than or equal to 0`), nil), nil
+	}
 
-	entries := make([]cm.Entry, 0, limit)
+	limit := params.Limit.Or(100) //nolint:mnd
+	if limit < 0 || limit > 1000 {
+		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "limit" is invalid. Please provide a value between 0 and 1000`), nil), nil
+	}
+
+	entries := make([]cm.Entry, 0)
 
 	for _, entry := range ts.entries.List(params.SpaceID, params.EnvironmentID) {
 		if params.ContentType.IsSet() && entry.Sys.ContentType.Sys.ID != params.ContentType.Value {
 			continue
 		}
 
-		entries = append(entries, ts.entryResponse(*entry))
+		entries = append(entries, *entry)
 	}
+
+	slices.SortFunc(entries, func(a, b cm.Entry) int {
+		return cmp.Compare(a.Sys.ID, b.Sys.ID)
+	})
 
 	start := min(skip, int64(len(entries)))
 	end := min(start+limit, int64(len(entries)))
@@ -36,7 +49,9 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 		Sys: cm.EntryCollectionSys{
 			Type: cm.EntryCollectionSysTypeArray,
 		},
-		Total: cm.NewOptInt(len(entries)),
+		Total: len(entries),
+		Skip:  int(skip),
+		Limit: int(limit),
 		Items: entries[start:end],
 	}
 
@@ -59,7 +74,7 @@ func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params c
 
 	return &cm.EntryStatusCode{
 		StatusCode: http.StatusCreated,
-		Response:   ts.entryResponse(newEntry),
+		Response:   ts.entryMutationResponse(newEntry),
 	}, nil
 }
 
@@ -73,7 +88,7 @@ func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.Get
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
-	response := ts.entryResponse(*entry)
+	response := *entry
 
 	return &response, nil
 }
@@ -94,7 +109,7 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 
 		return &cm.EntryStatusCode{
 			StatusCode: http.StatusCreated,
-			Response:   ts.entryResponse(newEntry),
+			Response:   ts.entryMutationResponse(newEntry),
 		}, nil
 	}
 
@@ -106,7 +121,7 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 
 	return &cm.EntryStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   ts.entryResponse(*entry),
+		Response:   ts.entryMutationResponse(*entry),
 	}, nil
 }
 
@@ -135,16 +150,20 @@ func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams)
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
+	if params.XContentfulVersion != entry.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	publishEntry(entry)
 
 	return &cm.EntryStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   ts.entryResponse(*entry),
+		Response:   ts.entryMutationResponse(*entry),
 	}, nil
 }
 
-func (ts *Handler) entryResponse(entry cm.Entry) cm.Entry {
-	if ts.omitEntryResponseFields {
+func (ts *Handler) entryMutationResponse(entry cm.Entry) cm.Entry {
+	if ts.omitEntryMutationResponseFields {
 		entry.Fields = cm.OptEntryFields{}
 	}
 

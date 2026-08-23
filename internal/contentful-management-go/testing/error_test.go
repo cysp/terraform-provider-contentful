@@ -58,4 +58,43 @@ func TestPutTeamReturnsVersionMismatchForStaleVersion(t *testing.T) {
 	errResponse, ok := errorStatusCode.Response.GetError()
 	require.True(t, ok)
 	assert.Equal(t, cm.ErrorSysIDVersionMismatch, errResponse.Sys.ID)
+	assert.Equal(t, cm.ErrorSysTypeError, errResponse.Sys.Type)
+	assert.Equal(t, "Version mismatch", errResponse.Message.Or(""))
+}
+
+func TestErrorHelpersAlwaysReturnMessages(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		response *cm.ErrorStatusCode
+		status   int
+		id       string
+		message  string
+	}{
+		"not found": {
+			response: cmt.NewContentfulManagementErrorStatusCodeNotFound(nil, nil),
+			status:   http.StatusNotFound,
+			id:       cm.ErrorSysIDNotFound,
+			message:  "The resource could not be found.",
+		},
+		"version mismatch": {
+			response: cmt.NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil),
+			status:   http.StatusConflict,
+			id:       cm.ErrorSysIDVersionMismatch,
+			message:  "Version mismatch",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, test.status, test.response.StatusCode)
+			errorResponse, ok := test.response.Response.GetError()
+			require.True(t, ok)
+			assert.Equal(t, cm.ErrorSysTypeError, errorResponse.Sys.Type)
+			assert.Equal(t, test.id, errorResponse.Sys.ID)
+			assert.Equal(t, test.message, errorResponse.Message.Or(""))
+		})
+	}
 }

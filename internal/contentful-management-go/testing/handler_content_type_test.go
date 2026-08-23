@@ -35,7 +35,9 @@ func TestGetContentTypesPaginates(t *testing.T) {
 
 	firstPageCollection, firstPageCollectionOk := firstPageResponse.(*cm.ContentTypeCollection)
 	require.True(t, firstPageCollectionOk)
-	assert.Equal(t, 3, firstPageCollection.Total.Or(0))
+	assert.Equal(t, 3, firstPageCollection.Total)
+	assert.Equal(t, 0, firstPageCollection.Skip)
+	assert.Equal(t, 1, firstPageCollection.Limit)
 	require.Len(t, firstPageCollection.Items, 1)
 	assert.Equal(t, "content-type-0", firstPageCollection.Items[0].Sys.ID)
 	assert.Equal(t, "Content Type 0", firstPageCollection.Items[0].Name)
@@ -50,10 +52,27 @@ func TestGetContentTypesPaginates(t *testing.T) {
 
 	secondPageCollection, secondPageCollectionOk := secondPageResponse.(*cm.ContentTypeCollection)
 	require.True(t, secondPageCollectionOk)
-	assert.Equal(t, 3, secondPageCollection.Total.Or(0))
+	assert.Equal(t, 3, secondPageCollection.Total)
+	assert.Equal(t, 1, secondPageCollection.Skip)
+	assert.Equal(t, 1, secondPageCollection.Limit)
 	require.Len(t, secondPageCollection.Items, 1)
 	assert.Equal(t, "content-type-1", secondPageCollection.Items[0].Sys.ID)
 	assert.Equal(t, "Content Type 1", secondPageCollection.Items[0].Name)
+
+	beyondEndResponse, err := server.Handler().GetContentTypes(context.Background(), cm.GetContentTypesParams{
+		SpaceID:       "space",
+		EnvironmentID: "environment",
+		Skip:          cm.NewOptInt64(100),
+		Limit:         cm.NewOptInt64(1),
+	})
+	require.NoError(t, err)
+
+	beyondEndCollection, beyondEndCollectionOK := beyondEndResponse.(*cm.ContentTypeCollection)
+	require.True(t, beyondEndCollectionOK)
+	assert.Equal(t, 3, beyondEndCollection.Total)
+	assert.Equal(t, 100, beyondEndCollection.Skip)
+	assert.Equal(t, 1, beyondEndCollection.Limit)
+	assert.Empty(t, beyondEndCollection.Items)
 }
 
 func TestGetContentTypesRejectsInvalidPaginationParams(t *testing.T) {

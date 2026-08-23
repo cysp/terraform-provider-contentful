@@ -13,7 +13,7 @@ import (
 const defaultPageLimit int64 = 100
 
 type contentfulCollection[Item any] interface {
-	GetTotal() cm.OptInt
+	GetTotal() int
 	GetItems() []Item
 }
 
@@ -79,7 +79,7 @@ func paginateContentfulCollectionItemsAsListResults[Item, Response any](
 			}
 
 			skip += itemCount
-			if total, ok := collection.GetTotal().Get(); ok && skip >= int64(total) {
+			if skip >= int64(collection.GetTotal()) {
 				return
 			}
 		}

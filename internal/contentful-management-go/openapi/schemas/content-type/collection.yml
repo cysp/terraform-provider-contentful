@@ -12,10 +12,17 @@ ContentTypeCollection:
         - type
     total:
       type: integer
+    skip:
+      type: integer
+    limit:
+      type: integer
     items:
       type: array
       items:
         $ref: "./content-type.yml#/ContentType"
   required:
     - sys
+    - total
+    - skip
+    - limit
     - items
