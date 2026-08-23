@@ -228,12 +228,16 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
+	params, request, requestDiags := plan.ToPutTagRequest(path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var currentVersion int
 
 	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
-
-	params, request, requestDiags := plan.ToPutTagRequest(path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -310,6 +314,10 @@ func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	var currentVersion int
 
 	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	params := state.ToDeleteTagParams()
 	params.XContentfulVersion.SetTo(currentVersion)

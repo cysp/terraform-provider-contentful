@@ -10,10 +10,9 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
-type contentTypePublicationSnapshot struct {
-	fieldIDs        []string
-	omittedFieldIDs map[string]struct{}
-}
+// contentTypePublicationSnapshot records the published field set and whether
+// each field was omitted in that publication.
+type contentTypePublicationSnapshot map[string]bool
 
 //nolint:ireturn
 func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesParams) (cm.GetContentTypesRes, error) {
@@ -169,12 +168,7 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 			params.ContentTypeID,
 		)
 
-		var previousFieldIDs []string
-		if previousPublicationSnapshot != nil {
-			previousFieldIDs = previousPublicationSnapshot.fieldIDs
-		}
-
-		SyncEditorInterfaceWithContentType(editorInterface, previousFieldIDs, contentType.Fields)
+		SyncEditorInterfaceWithContentType(editorInterface, previousPublicationSnapshot, contentType.Fields)
 	}
 
 	ts.contentTypePublications.Set(
@@ -191,18 +185,13 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 }
 
 func newContentTypePublicationSnapshot(fields []cm.ContentTypeFieldsItem) *contentTypePublicationSnapshot {
-	omittedFieldIDs := make(map[string]struct{})
+	snapshot := make(contentTypePublicationSnapshot, len(fields))
 
 	for _, field := range fields {
-		if field.Omitted.Or(false) {
-			omittedFieldIDs[field.ID] = struct{}{}
-		}
+		snapshot[field.ID] = field.Omitted.Or(false)
 	}
 
-	return &contentTypePublicationSnapshot{
-		fieldIDs:        contentTypeFieldIDs(fields),
-		omittedFieldIDs: omittedFieldIDs,
-	}
+	return &snapshot
 }
 
 func removesNonOmittedPublishedField(
@@ -218,12 +207,12 @@ func removesNonOmittedPublishedField(
 		requestedFieldIDs[field.ID] = struct{}{}
 	}
 
-	for _, fieldID := range publicationSnapshot.fieldIDs {
+	for fieldID, wasOmitted := range *publicationSnapshot {
 		if _, retained := requestedFieldIDs[fieldID]; retained {
 			continue
 		}
 
-		if _, wasOmitted := publicationSnapshot.omittedFieldIDs[fieldID]; !wasOmitted {
+		if !wasOmitted {
 			return true
 		}
 	}

@@ -236,22 +236,25 @@ func (r *environmentAliasResource) Update(ctx context.Context, req resource.Upda
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
-
-	params := cm.CreateOrUpdateEnvironmentAliasParams{
-		SpaceID:            plan.SpaceID.ValueString(),
-		EnvironmentAliasID: plan.EnvironmentAliasID.ValueString(),
-		XContentfulVersion: currentVersion,
-	}
-
 	request, requestDiags := plan.ToEnvironmentAliasData(ctx)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	var currentVersion int
+
+	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	params := cm.CreateOrUpdateEnvironmentAliasParams{
+		SpaceID:            plan.SpaceID.ValueString(),
+		EnvironmentAliasID: plan.EnvironmentAliasID.ValueString(),
+		XContentfulVersion: currentVersion,
 	}
 
 	response, err := r.providerData.client.CreateOrUpdateEnvironmentAlias(ctx, &request, params)

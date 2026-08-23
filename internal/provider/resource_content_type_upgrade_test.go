@@ -40,8 +40,6 @@ func testAccContentTypeResourceLegacyStateUpgrade(t *testing.T, noRefresh bool) 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "environment")
-	testserver := httptest.NewServer(server)
-	t.Cleanup(testserver.Close)
 
 	contentTypeID := "legacy-refresh"
 	if noRefresh {
@@ -49,6 +47,9 @@ func testAccContentTypeResourceLegacyStateUpgrade(t *testing.T, noRefresh bool) 
 	}
 
 	contentType := seedActivatedLegacyContentType(t, server, contentTypeID)
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	testserver := httptest.NewServer(handler)
+	t.Cleanup(testserver.Close)
 	options := ContentfulProviderOptionsWithHTTPTestServer(testserver)
 	variables := config.Variables{
 		"space_id":             config.StringVariable("space"),
@@ -86,12 +87,17 @@ func testAccContentTypeResourceLegacyStateUpgrade(t *testing.T, noRefresh bool) 
 			ProtoV6ProviderFactories: makeTestAccProtoV6ProviderFactories(options...),
 			ConfigDirectory:          config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
 			ConfigVariables:          variables,
-			PlanOnly:                 true,
-			ExpectNonEmptyPlan:       true,
 			ConfigPlanChecks: testingresource.ConfigPlanChecks{
-				PostApplyPreRefresh:  nonRefreshPlanChecks,
-				PostApplyPostRefresh: nonRefreshPlanChecks,
+				PreApply: nonRefreshPlanChecks,
 			},
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue(
+					"contentful_content_type.test",
+					tfjsonpath.New("published_version"),
+					knownvalue.Int64Exact(int64(contentType.Sys.Version)),
+				),
+			},
+			Check: contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{int64(contentType.Sys.Version)}),
 		}
 	} else {
 		currentProviderStep = testingresource.TestStep{
@@ -111,16 +117,39 @@ func testAccContentTypeResourceLegacyStateUpgrade(t *testing.T, noRefresh bool) 
 		}
 	}
 
+	steps := []testingresource.TestStep{
+		{
+			ProtoV6ProviderFactories: legacyContentTypeProviderFactories(contentType, options...),
+			ConfigDirectory:          config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
+			ConfigVariables:          variables,
+		},
+		currentProviderStep,
+	}
+	if noRefresh {
+		steps = append(steps, testingresource.TestStep{
+			PreConfig: func() {
+				additionalCLIOptions.Plan.NoRefresh = false
+
+				handler.resetRequestHistory()
+			},
+			ProtoV6ProviderFactories: makeTestAccProtoV6ProviderFactories(options...),
+			ConfigDirectory:          config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
+			ConfigVariables:          variables,
+			ConfigPlanChecks: testingresource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectKnownValue(
+					"contentful_content_type.test",
+					tfjsonpath.New("published_version"),
+					knownvalue.Int64Exact(int64(contentType.Sys.Version)),
+				),
+				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+			}},
+			Check: contentTypeActivationRequestCheck(handler, 0, 0),
+		})
+	}
+
 	testingresource.Test(t, testingresource.TestCase{
 		AdditionalCLIOptions: additionalCLIOptions,
-		Steps: []testingresource.TestStep{
-			{
-				ProtoV6ProviderFactories: legacyContentTypeProviderFactories(contentType, options...),
-				ConfigDirectory:          config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
-				ConfigVariables:          variables,
-			},
-			currentProviderStep,
-		},
+		Steps:                steps,
 	})
 }
 

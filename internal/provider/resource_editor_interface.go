@@ -249,6 +249,10 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(plan.SpaceID.ValueString(), plan.EnvironmentID.ValueString(), plan.ContentTypeID.ValueString())
 
 	params := cm.PutEditorInterfaceParams{

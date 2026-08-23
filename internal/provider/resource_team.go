@@ -239,6 +239,10 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
 	resp.Diagnostics.Append(currentVersionDiags...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := cm.PutTeamParams{
 		OrganizationID:     plan.OrganizationID.ValueString(),
 		TeamID:             plan.TeamID.ValueString(),

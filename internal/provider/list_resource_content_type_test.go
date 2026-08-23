@@ -16,6 +16,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const contentTypeListResourceConfig = `
+	provider "contentful" {}
+
+	variable "space_id" {
+		type = string
+	}
+
+	variable "environment_id" {
+		type = string
+	}
+
+	list "contentful_content_type" "content_types" {
+		provider = contentful
+
+		config {
+			space_id       = var.space_id
+			environment_id = var.environment_id
+		}
+
+		include_resource = true
+	}
+`
+
 func TestAccContentTypeListResource(t *testing.T) {
 	t.Parallel()
 
@@ -66,28 +89,7 @@ func TestAccContentTypeListResource(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				provider "contentful" {}
-
-				variable "space_id" {
-					type = string
-				}
-
-				variable "environment_id" {
-					type = string
-				}
-
-				list "contentful_content_type" "content_types" {
-					provider = contentful
-
-					config {
-						space_id       = var.space_id
-						environment_id = var.environment_id
-					}
-
-					include_resource = true
-				}
-				`,
+				Config:          contentTypeListResourceConfig,
 				ConfigVariables: configVariables,
 				Query:           true,
 				QueryResultChecks: []querycheck.QueryResultCheck{
@@ -146,6 +148,49 @@ func TestAccContentTypeListResource(t *testing.T) {
 				},
 			},
 		},
+	})
+}
+
+func TestAccContentTypeListResourceIncludesUnpublished(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+	server.SetContentType("0p38pssr0fi3", "master", "unpublished", cm.ContentTypeRequestData{
+		Name:         "Unpublished",
+		DisplayField: "title",
+		Fields: []cm.ContentTypeRequestDataFieldsItem{{
+			ID: "title", Name: "Title", Type: "Symbol", Required: cm.NewOptBool(true),
+		}},
+	})
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.SkipBelow(tfversion.Version1_14_0),
+		},
+		Steps: []resource.TestStep{{
+			Config: contentTypeListResourceConfig,
+			ConfigVariables: config.Variables{
+				"space_id":       config.StringVariable("0p38pssr0fi3"),
+				"environment_id": config.StringVariable("master"),
+			},
+			Query: true,
+			QueryResultChecks: []querycheck.QueryResultCheck{
+				querycheck.ExpectLengthAtLeast("contentful_content_type.content_types", 1),
+				querycheck.ExpectIdentity("contentful_content_type.content_types", map[string]knownvalue.Check{
+					"space_id":        knownvalue.StringExact("0p38pssr0fi3"),
+					"environment_id":  knownvalue.StringExact("master"),
+					"content_type_id": knownvalue.StringExact("unpublished"),
+				}),
+				querycheck.ExpectResourceKnownValues("contentful_content_type.content_types", queryfilter.ByResourceIdentity(map[string]knownvalue.Check{
+					"space_id":        knownvalue.StringExact("0p38pssr0fi3"),
+					"environment_id":  knownvalue.StringExact("master"),
+					"content_type_id": knownvalue.StringExact("unpublished"),
+				}), []querycheck.KnownValueCheck{
+					{Path: tfjsonpath.New("name"), KnownValue: knownvalue.StringExact("Unpublished")},
+					{Path: tfjsonpath.New("published_version"), KnownValue: knownvalue.Null()},
+				}),
+			},
+		}},
 	})
 }
 
