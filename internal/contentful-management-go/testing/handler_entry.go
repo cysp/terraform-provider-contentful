@@ -35,7 +35,7 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 			continue
 		}
 
-		entries = append(entries, *entry)
+		entries = append(entries, projectEntryResponse(*entry))
 	}
 
 	slices.SortFunc(entries, func(a, b cm.Entry) int {
@@ -88,7 +88,7 @@ func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.Get
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
-	response := *entry
+	response := projectEntryResponse(*entry)
 
 	return &response, nil
 }
@@ -163,6 +163,8 @@ func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams)
 }
 
 func (ts *Handler) entryMutationResponse(entry cm.Entry) cm.Entry {
+	entry = projectEntryResponse(entry)
+
 	if ts.omitEntryMutationResponseFields {
 		entry.Fields = cm.OptEntryFields{}
 	}
@@ -180,7 +182,10 @@ func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryPar
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
+	entry.Sys.Version++
 	entry.Sys.PublishedVersion.Reset()
 
-	return &cm.NoContent{}, nil
+	response := ts.entryMutationResponse(*entry)
+
+	return &response, nil
 }

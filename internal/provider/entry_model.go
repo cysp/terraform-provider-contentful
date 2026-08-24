@@ -24,7 +24,8 @@ type EntryModel struct {
 	IDIdentityModel
 	EntryIdentityModel
 
-	ContentTypeID types.String `tfsdk:"content_type_id"`
+	ContentTypeID    types.String `tfsdk:"content_type_id"`
+	PublishedVersion types.Int64  `tfsdk:"published_version"`
 
 	Fields   TypedMap[jsontypes.Normalized]  `tfsdk:"fields"`
 	Metadata TypedObject[EntryMetadataValue] `tfsdk:"metadata"`

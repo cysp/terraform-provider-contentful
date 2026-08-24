@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
@@ -66,8 +67,15 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"published_version": schema.Int64Attribute{
+				Description: "Contentful `sys.publishedVersion` for the Entry. Null when Contentful reports the Entry as unpublished.",
+				Computed:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 			"fields": schema.MapAttribute{
-				Description: "Fields that are custom defined by a user through the definition of content types. Fields object always includes locale.",
+				Description: "Entry field values keyed by Contentful field ID. Each value is JSON and may contain locale keys for localized fields.",
 				ElementType: jsontypes.NormalizedType{},
 				CustomType:  NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
 				Required:    true,
@@ -75,7 +83,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 			"metadata": schema.SingleNestedAttribute{
 				Attributes:  EntryMetadataValue{}.SchemaAttributes(ctx),
 				CustomType:  NewTypedObjectNull[EntryMetadataValue]().CustomType(ctx),
-				Description: "Metadata for the entry. Once set, metadata properties may not be removed, but the list of tags may be reduced to the empty list",
+				Description: "Entry metadata, including assigned tags and taxonomy concepts.",
 				Optional:    true,
 				Computed:    true,
 				Default:     objectdefault.StaticValue(defaultMetadataObjectValue),
@@ -94,6 +102,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 
 	return map[string]schema.Attribute{
 		"concepts": schema.ListAttribute{
+			Description: "IDs of Contentful taxonomy concepts attached to the entry. Comparison ignores ordering but preserves duplicate occurrences. Reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Optional:    true,
@@ -107,6 +116,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 			},
 		},
 		"tags": schema.ListAttribute{
+			Description: "IDs of Contentful tags attached to the entry. Comparison ignores ordering but preserves duplicate occurrences. Reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Optional:    true,

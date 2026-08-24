@@ -8,7 +8,12 @@ import (
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/require"
 )
+
+type resourceTestHandlerResult interface {
+	handlerError() error
+}
 
 func parallelWhenMocked(t *testing.T) {
 	t.Helper()
@@ -32,6 +37,12 @@ func ContentfulProviderMockableResourceTest(t *testing.T, server http.Handler, t
 
 func contentfulProviderMockableResourceTest(t *testing.T, handler http.Handler, alwaysMock bool, testcase resource.TestCase) {
 	t.Helper()
+
+	if result, ok := handler.(resourceTestHandlerResult); ok {
+		defer func() {
+			require.NoError(t, result.handlerError())
+		}()
+	}
 
 	switch {
 	case alwaysMock || os.Getenv("TF_ACC_MOCKED") != "":

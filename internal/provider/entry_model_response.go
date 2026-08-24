@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"maps"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -24,6 +26,10 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 		IDIdentityModel:    NewIDIdentityModelFromMultipartID(spaceID, environmentID, entryID),
 		EntryIdentityModel: NewEntryIdentityModel(spaceID, environmentID, entryID),
 		ContentTypeID:      types.StringValue(contentTypeID),
+		PublishedVersion:   types.Int64Null(),
+	}
+	if publishedVersion, ok := entry.Sys.PublishedVersion.Get(); ok {
+		model.PublishedVersion = types.Int64Value(int64(publishedVersion))
 	}
 
 	fields, fieldsDiags := NewEntryFieldsFromResponse(ctx, path.Root("fields"), entry.Fields)
@@ -67,6 +73,253 @@ func mergeEntryFieldsWithFallback(responseFields, fallbackFields TypedMap[jsonty
 	}
 
 	return NewTypedMap(elements)
+}
+
+func entryDraftMutationRequired(ctx context.Context, plan, state EntryModel) (bool, diag.Diagnostics) {
+	fieldsEquivalent, fieldsDiags := entryFieldsEquivalent(ctx, plan.Fields, state.Fields)
+
+	return !fieldsEquivalent || !entryMetadataEquivalent(plan.Metadata, state.Metadata), fieldsDiags
+}
+
+func entryMetadataEquivalent(left, right TypedObject[EntryMetadataValue]) bool {
+	if left.IsNull() || left.IsUnknown() || right.IsNull() || right.IsUnknown() {
+		return (left.IsNull() && right.IsNull()) || (left.IsUnknown() && right.IsUnknown())
+	}
+
+	return entryStringListUnorderedEquivalent(left.Value().Concepts, right.Value().Concepts) &&
+		entryStringListUnorderedEquivalent(left.Value().Tags, right.Value().Tags)
+}
+
+// entryStringListUnorderedEquivalent ignores metadata-link ordering while
+// preserving duplicate multiplicity. CMA has been observed to return unchanged
+// links in an order different from the request.
+func entryStringListUnorderedEquivalent(left, right TypedList[types.String]) bool {
+	if left.IsNull() || left.IsUnknown() || right.IsNull() || right.IsUnknown() {
+		return left.Equal(right)
+	}
+
+	leftElements := left.Elements()
+
+	rightElements := right.Elements()
+	if len(leftElements) != len(rightElements) {
+		return false
+	}
+
+	matched := make([]bool, len(rightElements))
+
+	for _, leftElement := range leftElements {
+		found := false
+
+		for index, rightElement := range rightElements {
+			if !matched[index] && leftElement.Equal(rightElement) {
+				matched[index] = true
+				found = true
+
+				break
+			}
+		}
+
+		if !found {
+			return false
+		}
+	}
+
+	return true
+}
+
+func entryFieldsEquivalent(ctx context.Context, left, right TypedMap[jsontypes.Normalized]) (bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	left = entryFieldsRequestProjection(left)
+	right = entryFieldsRequestProjection(right)
+
+	if left.IsNull() || left.IsUnknown() || right.IsNull() || right.IsUnknown() {
+		return left.Equal(right), diags
+	}
+
+	leftElements := left.Elements()
+
+	rightElements := right.Elements()
+	if len(leftElements) != len(rightElements) {
+		return false, diags
+	}
+
+	for key, leftElement := range leftElements {
+		rightElement, ok := rightElements[key]
+		if !ok {
+			return false, diags
+		}
+
+		if leftElement.IsNull() || leftElement.IsUnknown() || rightElement.IsNull() || rightElement.IsUnknown() {
+			if !leftElement.Equal(rightElement) {
+				return false, diags
+			}
+
+			continue
+		}
+
+		equivalent, elementDiags := leftElement.StringSemanticEquals(ctx, rightElement)
+		diags.Append(elementDiags...)
+
+		if diags.HasError() || !equivalent {
+			return false, diags
+		}
+	}
+
+	return true, diags
+}
+
+func mergeEntryResponseFieldsWithOmissionFallback(response, fallback TypedMap[jsontypes.Normalized]) TypedMap[jsontypes.Normalized] {
+	if response.IsUnknown() || fallback.IsNull() || fallback.IsUnknown() {
+		return response
+	}
+
+	if response.IsNull() && len(fallback.Elements()) == 0 {
+		return fallback
+	}
+
+	responseElements := make(map[string]jsontypes.Normalized, len(response.Elements())+len(fallback.Elements()))
+	maps.Copy(responseElements, response.Elements())
+
+	changed := false
+
+	for fieldID, value := range fallback.Elements() {
+		if _, exists := responseElements[fieldID]; exists ||
+			(!value.IsNull() && !entryFieldIsRawJSONNull(value) && !entryFieldHasOnlyEmptyLocalizedArrays(value)) {
+			continue
+		}
+
+		responseElements[fieldID] = value
+		changed = true
+	}
+
+	if !changed {
+		return response
+	}
+
+	return NewTypedMap(responseElements)
+}
+
+func entryFieldIsRawJSONNull(value jsontypes.Normalized) bool {
+	if value.IsNull() || value.IsUnknown() {
+		return false
+	}
+
+	var decoded any
+
+	return json.Unmarshal([]byte(value.ValueString()), &decoded) == nil && decoded == nil
+}
+
+func entryFieldHasOnlyEmptyLocalizedArrays(value jsontypes.Normalized) bool {
+	if value.IsNull() || value.IsUnknown() {
+		return false
+	}
+
+	var localized map[string]json.RawMessage
+
+	err := json.Unmarshal([]byte(value.ValueString()), &localized)
+	if err != nil || len(localized) == 0 {
+		return false
+	}
+
+	for _, localeValue := range localized {
+		var decoded any
+
+		err = json.Unmarshal(localeValue, &decoded)
+		if err != nil {
+			return false
+		}
+
+		items, ok := decoded.([]any)
+		if !ok || len(items) != 0 {
+			return false
+		}
+	}
+
+	return true
+}
+
+type entryResponseFieldPolicy uint8
+
+const (
+	entryResponseFieldsExact entryResponseFieldPolicy = iota
+	entryResponseFieldsCreationDefaults
+)
+
+func projectEntryMutationResponse(
+	ctx context.Context,
+	plan, response EntryModel,
+	fieldPolicy entryResponseFieldPolicy,
+) (EntryModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	response.Timeouts = plan.Timeouts
+	response.Fields = mergeEntryResponseFieldsWithOmissionFallback(response.Fields, plan.Fields)
+
+	if !response.ContentTypeID.Equal(plan.ContentTypeID) {
+		diags.AddError("Unexpected entry content type", fmt.Sprintf("Contentful returned content type %q after Terraform sent %q.", response.ContentTypeID.ValueString(), plan.ContentTypeID.ValueString()))
+	}
+
+	response.ContentTypeID = plan.ContentTypeID
+
+	fieldsEquivalent, fieldsDiags := entryResponseFieldsConsistent(ctx, plan.Fields, response.Fields, fieldPolicy)
+	diags.Append(fieldsDiags...)
+
+	if !fieldsEquivalent {
+		diags.AddError("Unexpected entry fields", "Contentful returned entry fields that differ from the effective Terraform plan.")
+	}
+
+	if !entryMetadataEquivalent(response.Metadata, plan.Metadata) {
+		diags.AddError("Unexpected entry metadata", "Contentful returned entry metadata that differs from the effective Terraform plan.")
+	}
+
+	spaceID := plan.SpaceID
+	environmentID := plan.EnvironmentID
+	entryID := plan.EntryID
+
+	if entryID.IsNull() || entryID.IsUnknown() {
+		entryID = response.EntryID
+	}
+
+	if !response.SpaceID.Equal(spaceID) || !response.EnvironmentID.Equal(environmentID) || !response.EntryID.Equal(entryID) {
+		diags.AddError("Unexpected entry identity", "Contentful returned an entry identity that differs from the mutation endpoint.")
+	}
+
+	if !diags.HasError() {
+		response.Fields = plan.Fields
+		response.Metadata = plan.Metadata
+	}
+
+	response.EntryIdentityModel = EntryIdentityModel{SpaceID: spaceID, EnvironmentID: environmentID, EntryID: entryID}
+	response.IDIdentityModel = NewIDIdentityModelFromMultipartID(spaceID.ValueString(), environmentID.ValueString(), entryID.ValueString())
+
+	return response, diags
+}
+
+func entryResponseFieldsConsistent(
+	ctx context.Context,
+	plan, response TypedMap[jsontypes.Normalized],
+	policy entryResponseFieldPolicy,
+) (bool, diag.Diagnostics) {
+	if policy != entryResponseFieldsCreationDefaults {
+		return entryFieldsEquivalent(ctx, plan, response)
+	}
+
+	if plan.IsNull() || plan.IsUnknown() || response.IsNull() || response.IsUnknown() {
+		return plan.Equal(response), nil
+	}
+
+	plan = entryFieldsRequestProjection(plan)
+	responsePlanFields := make(map[string]jsontypes.Normalized, len(plan.Elements()))
+
+	responseElements := response.Elements()
+	for fieldID := range plan.Elements() {
+		if responseField, ok := responseElements[fieldID]; ok {
+			responsePlanFields[fieldID] = responseField
+		}
+	}
+
+	return entryFieldsEquivalent(ctx, plan, NewTypedMap(responsePlanFields))
 }
 
 func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.OptEntryMetadata) (TypedObject[EntryMetadataValue], diag.Diagnostics) {

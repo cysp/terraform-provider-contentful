@@ -16,7 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -36,11 +38,18 @@ func TestAccEntryResourceImport(t *testing.T) {
 		"entry_id":       config.StringVariable("entry"),
 	}
 
-	server.SetEntry("0p38pssr0fi3", "test", "contentType", "entry", cm.EntryRequest{
-		Fields: cm.NewOptEntryFields(cm.EntryFields{}),
+	server.SetEntry("0p38pssr0fi3", "test", "test", "entry", cm.EntryRequest{
+		Fields: cm.NewOptEntryFields(cm.EntryFields{"foo": []byte(`"bar"`)}),
+		Metadata: cm.NewOptEntryMetadata(cm.EntryMetadata{
+			Concepts: []cm.TaxonomyConceptLink{},
+			Tags:     []cm.TagLink{},
+		}),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	errorSink := new(entryFixtureErrorSink)
+	recorder := newEntryMutationRecorder(server, errorSink)
+
+	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -73,11 +82,28 @@ func TestAccEntryResourceImport(t *testing.T) {
 				ExpectError:     regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
 			},
 			{
+				ConfigDirectory:    config.TestNameDirectory(),
+				ConfigVariables:    configVariables,
+				ResourceName:       "contentful_entry.test",
+				ImportState:        true,
+				ImportStateId:      "0p38pssr0fi3/test/entry",
+				ImportStatePersist: true,
+			},
+			{
+				PreConfig:       recorder.reset,
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				ResourceName:    "contentful_entry.test",
-				ImportState:     true,
-				ImportStateId:   "0p38pssr0fi3/test/entry",
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
+				}},
+				Check: func(*terraform.State) error {
+					requireNoEntryMutations(t, recorder)
+					entry := getTestEntryForIDs(t, server, "0p38pssr0fi3", "test", "entry")
+					require.Positive(t, entry.Sys.Version)
+					require.False(t, entry.Sys.PublishedVersion.IsSet())
+
+					return nil
+				},
 			},
 		},
 	})
@@ -216,7 +242,7 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 func TestAccEntryResourceUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithOmittedEntryMutationResponseFields())
+	server, _ := cmt.NewContentfulManagementServer()
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -275,6 +301,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionUpdate),
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
+						plancheck.ExpectUnknownValue("contentful_entry.test", tfjsonpath.New("published_version")),
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
 						expectEntryFields(`{"en-AU":"name (updated)"}`),
@@ -286,6 +313,27 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccEntryResourceRejectsOmittedNonemptyMutationFields(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithOmittedEntryMutationResponseFields())
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{{
+		Config: `
+resource "contentful_entry" "test" {
+  space_id        = "0p38pssr0fi3"
+  environment_id  = "test"
+  content_type_id = "author"
+  fields = {
+    name = jsonencode({ "en-AU" = "name" })
+  }
+}
+`,
+		ExpectError: regexp.MustCompile(`Unexpected entry fields`),
+	}}})
 }
 
 func TestAccEntryResourceDeleted(t *testing.T) {
