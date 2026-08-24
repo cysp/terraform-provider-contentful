@@ -5,9 +5,27 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
+
+// entryFieldsRequestProjection omits Terraform-null map elements. A known
+// jsontypes.Normalized value containing JSON null remains a request value.
+func entryFieldsRequestProjection(fields TypedMap[jsontypes.Normalized]) TypedMap[jsontypes.Normalized] {
+	if fields.IsNull() || fields.IsUnknown() {
+		return fields
+	}
+
+	elements := make(map[string]jsontypes.Normalized, len(fields.Elements()))
+	for fieldID, value := range fields.Elements() {
+		if !value.IsNull() {
+			elements[fieldID] = value
+		}
+	}
+
+	return NewTypedMap(elements)
+}
 
 func (m EntryModel) ToEntryRequest(ctx context.Context) (cm.EntryRequest, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
@@ -55,14 +73,8 @@ func entryModelToOptEntryFields(_ context.Context, model EntryModel) (cm.OptEntr
 
 	fields := make(cm.EntryFields)
 
-	attrs := model.Fields.Elements()
+	attrs := entryFieldsRequestProjection(model.Fields).Elements()
 	for k, v := range attrs {
-		if v.IsNull() {
-			// Terraform null omits the field. A configured JSON null remains a
-			// known jsontypes.Normalized value and is sent as JSON null.
-			continue
-		}
-
 		if v.IsUnknown() {
 			diags.AddAttributeError(
 				path.Root("fields").AtMapKey(k),

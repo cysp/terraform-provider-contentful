@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -10,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -18,6 +21,7 @@ var (
 	_ resource.ResourceWithConfigure   = (*entryResource)(nil)
 	_ resource.ResourceWithIdentity    = (*entryResource)(nil)
 	_ resource.ResourceWithImportState = (*entryResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*entryResource)(nil)
 )
 
 //nolint:ireturn
@@ -59,6 +63,40 @@ func (r *entryResource) ImportState(ctx context.Context, req resource.ImportStat
 	}, req, resp)
 }
 
+func (r *entryResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
+
+	var state EntryModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	version, versionDiags := entryPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
+
+	pendingVersion, pending, pendingDiags := entryPendingPublishVersion(ctx, req.Private)
+	resp.Diagnostics.Append(pendingDiags...)
+	resp.Diagnostics.Append(validateEntryStateLifecycle(version, state.PublishedVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var plan EntryModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	draftMutation, draftMutationDiags := entryDraftMutationRequired(ctx, plan, state)
+	resp.Diagnostics.Append(draftMutationDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if draftMutation || entryPublicationRecoveryRequired(version, pendingVersion, pending, state.PublishedVersion) {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("published_version"), types.Int64Unknown())...)
+	}
+}
+
 func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan EntryModel
 
@@ -78,50 +116,32 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	currentVersion := 1
-
-	var responseModel EntryModel
+	var (
+		responseModel EntryModel
+		version       int
+	)
 
 	if plan.EntryID.IsNull() || plan.EntryID.IsUnknown() {
-		responseModel, currentVersion = r.createEntry(ctx, plan, &resp.Diagnostics)
+		responseModel, version = r.createEntry(ctx, plan, &resp.Diagnostics)
 	} else {
-		responseModel, currentVersion = r.updateEntry(ctx, plan, currentVersion, &resp.Diagnostics)
+		responseModel, version = r.updateEntry(ctx, plan, 1, &resp.Diagnostics)
 	}
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	responseModel.Timeouts = plan.Timeouts
+	responseModel, consistencyDiags := projectEntryMutationResponse(ctx, plan, responseModel, entryResponseFieldsCreationDefaults)
+	resp.Diagnostics.Append(setEntryIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, responseModel, version)...)
 
-	var identityModel EntryIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	responseModel.Fields = mergeEntryFieldsWithFallback(responseModel.Fields, plan.Fields)
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &responseModel)...)
+	resp.Diagnostics.Append(validateEntryDraftResponse(version, responseModel.PublishedVersion)...)
+	resp.Diagnostics.Append(consistencyDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	currentVersion = r.publishEntry(ctx, responseModel, currentVersion, &resp.Diagnostics)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	r.publishAndCheckpointEntry(ctx, responseModel, version, entryResponseFieldsCreationDefaults, resp.Identity, &resp.State, resp.Private, &resp.Diagnostics)
 }
 
 func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -159,17 +179,33 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		"err":      err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	var data EntryModel
 
 	switch response := getEntryResponse.(type) {
 	case *cm.Entry:
+		pendingVersion, pending, pendingDiags := entryPendingPublishVersion(ctx, req.Private)
+		resp.Diagnostics.Append(pendingDiags...)
+
+		publishedVersion, published := response.Sys.PublishedVersion.Get()
+		if entryPendingPublicationShouldBeCleared(
+			response.Sys.Version,
+			pendingVersion,
+			pending,
+			int64(publishedVersion),
+			published,
+		) {
+			resp.Diagnostics.Append(clearEntryPendingPublishVersion(ctx, resp.Private)...)
+		}
+
+		resp.Diagnostics.Append(validateObservedEntryLifecycle(response.Sys.Version, response.Sys.PublishedVersion)...)
+
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, *response)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
+		version = response.Sys.Version
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -188,6 +224,11 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
+	data.Fields = mergeEntryResponseFieldsWithOmissionFallback(data.Fields, state.Fields)
+	if entryMetadataEquivalent(data.Metadata, state.Metadata) {
+		data.Metadata = state.Metadata
+	}
+
 	data.Timeouts = state.Timeouts
 
 	var identityModel EntryIdentityModel
@@ -197,21 +238,20 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	data.Fields = mergeEntryFieldsWithFallback(data.Fields, state.Fields)
-
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan EntryModel
+	var plan, state EntryModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -227,50 +267,69 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
+	version, versionDiags := entryPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	responseModel, currentVersion := r.updateEntry(ctx, plan, currentVersion, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	responseModel.Timeouts = plan.Timeouts
-
-	var identityModel EntryIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &responseModel)...)
+	pendingVersion, pending, pendingDiags := entryPendingPublishVersion(ctx, req.Private)
+	resp.Diagnostics.Append(pendingDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	responseModel.Fields = mergeEntryFieldsWithFallback(responseModel.Fields, plan.Fields)
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &responseModel)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	draftMutation, draftMutationDiags := entryDraftMutationRequired(ctx, plan, state)
+	resp.Diagnostics.Append(draftMutationDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	currentVersion = r.publishEntry(ctx, responseModel, currentVersion, &resp.Diagnostics)
+	responseModel := plan
+	recoveryRequired := entryPublicationRecoveryRequired(version, pendingVersion, pending, state.PublishedVersion)
 
-	if resp.Diagnostics.HasError() {
+	switch {
+	case draftMutation:
+		expectedDraftVersion := version + 1
+
+		responseModel, version = r.updateEntry(ctx, plan, version, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		var consistencyDiags diag.Diagnostics
+
+		responseModel, consistencyDiags = projectEntryMutationResponse(ctx, plan, responseModel, entryResponseFieldsExact)
+		resp.Diagnostics.Append(setEntryIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, responseModel, version)...)
+
+		if version != expectedDraftVersion {
+			resp.Diagnostics.AddError("Unexpected entry draft version", fmt.Sprintf("Contentful returned version %d after writing version %d.", version, expectedDraftVersion))
+		}
+
+		resp.Diagnostics.Append(validateEntryDraftResponse(version, responseModel.PublishedVersion)...)
+		resp.Diagnostics.Append(consistencyDiags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		resp.Diagnostics.Append(setEntryPendingPublishVersion(ctx, resp.Private, version)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	case recoveryRequired:
+		// Publish exactly the provider-written draft version authorized by
+		// resource private state.
+	default:
+		// Representation-only changes use the effective plan, while publication
+		// remains response truth from the prior state.
+		resp.State = tfsdk.State(req.Plan)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("published_version"), state.PublishedVersion)...)
+
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	r.publishAndCheckpointEntry(ctx, responseModel, version, entryResponseFieldsExact, resp.Identity, &resp.State, resp.Private, &resp.Diagnostics)
 }
 
 func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -322,7 +381,7 @@ func (r *entryResource) createEntry(ctx context.Context, entry EntryModel, diags
 		"err":      err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	switch response := createEntryResponse.(type) {
 	case *cm.EntryStatusCode:
@@ -330,29 +389,29 @@ func (r *entryResource) createEntry(ctx context.Context, entry EntryModel, diags
 		diags.Append(responseModelDiags...)
 
 		entry = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		diags.AddError("Failed to create entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
-	return entry, currentVersion
+	return entry, version
 }
 
-func (r *entryResource) updateEntry(ctx context.Context, entry EntryModel, currentVersion int, diags *diag.Diagnostics) (EntryModel, int) {
+func (r *entryResource) updateEntry(ctx context.Context, entry EntryModel, version int, diags *diag.Diagnostics) (EntryModel, int) {
 	putEntryParams := cm.PutEntryParams{
 		SpaceID:                entry.SpaceID.ValueString(),
 		EnvironmentID:          entry.EnvironmentID.ValueString(),
 		EntryID:                entry.EntryID.ValueString(),
 		XContentfulContentType: cm.NewOptPointerString(entry.ContentTypeID.ValueStringPointer()),
-		XContentfulVersion:     currentVersion,
+		XContentfulVersion:     version,
 	}
 
 	putEntryRequest, putEntryRequestDiags := entry.ToEntryRequest(ctx)
 	diags.Append(putEntryRequestDiags...)
 
 	if diags.HasError() {
-		return entry, currentVersion
+		return entry, version
 	}
 
 	putEntryResponse, err := r.providerData.client.PutEntry(ctx, &putEntryRequest, putEntryParams)
@@ -370,13 +429,56 @@ func (r *entryResource) updateEntry(ctx context.Context, entry EntryModel, curre
 		diags.Append(responseModelDiags...)
 
 		entry = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		diags.AddError("Failed to update entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
-	return entry, currentVersion
+	return entry, version
+}
+
+func (r *entryResource) publishAndCheckpointEntry(
+	ctx context.Context,
+	entry EntryModel,
+	version int,
+	fieldPolicy entryResponseFieldPolicy,
+	identity *tfsdk.ResourceIdentity,
+	state *tfsdk.State,
+	private PrivateProviderData,
+	diags *diag.Diagnostics,
+) {
+	publishEntryParams := cm.PublishEntryParams{
+		SpaceID: entry.SpaceID.ValueString(), EnvironmentID: entry.EnvironmentID.ValueString(), EntryID: entry.EntryID.ValueString(), XContentfulVersion: version,
+	}
+	publishEntryResponse, err := r.providerData.client.PublishEntry(ctx, publishEntryParams)
+	tflog.Info(ctx, "entry.publish", map[string]any{"params": publishEntryParams, "response": publishEntryResponse, "err": err})
+
+	response, ok := publishEntryResponse.(*cm.EntryStatusCode)
+	if !ok {
+		diags.AddError("Failed to publish entry", util.ErrorDetailFromContentfulManagementResponse(publishEntryResponse, err))
+
+		return
+	}
+
+	diags.Append(clearEntryPendingPublishVersion(ctx, private)...)
+
+	responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
+	diags.Append(responseDiags...)
+
+	if diags.HasError() {
+		return
+	}
+
+	responseVersion := response.Response.Sys.Version
+
+	fieldPolicy = entryPublicationResponseFieldPolicy(fieldPolicy, version, responseVersion, response.Response.Sys.PublishedVersion)
+
+	responseModel, consistencyDiags := projectEntryMutationResponse(ctx, entry, responseModel, fieldPolicy)
+	diags.Append(setEntryIdentityStateAndVersion(ctx, identity, state, private, responseModel, responseVersion)...)
+	diags.Append(consistencyDiags...)
+
+	diags.Append(validateEntryPublicationResponse(version, response.Response.Sys.Version, response.Response.Sys.PublishedVersion)...)
 }
 
 func (r *entryResource) deleteEntry(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) {
@@ -412,33 +514,6 @@ func (r *entryResource) deleteEntry(ctx context.Context, entry EntryModel, diags
 			diags.AddError("Failed to delete entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
 	}
-}
-
-func (r *entryResource) publishEntry(ctx context.Context, entry EntryModel, currentVersion int, diags *diag.Diagnostics) int {
-	publishEntryParams := cm.PublishEntryParams{
-		SpaceID:            entry.SpaceID.ValueString(),
-		EnvironmentID:      entry.EnvironmentID.ValueString(),
-		EntryID:            entry.EntryID.ValueString(),
-		XContentfulVersion: currentVersion,
-	}
-
-	publishEntryResponse, err := r.providerData.client.PublishEntry(ctx, publishEntryParams)
-
-	tflog.Info(ctx, "entry.publish", map[string]any{
-		"params":   publishEntryParams,
-		"response": publishEntryResponse,
-		"err":      err,
-	})
-
-	switch response := publishEntryResponse.(type) {
-	case *cm.EntryStatusCode:
-		currentVersion = response.Response.Sys.Version
-
-	default:
-		diags.AddError("Failed to publish entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
-	}
-
-	return currentVersion
 }
 
 func (r *entryResource) unpublishEntry(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) {
