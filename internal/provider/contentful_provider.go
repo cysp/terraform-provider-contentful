@@ -2,13 +2,10 @@ package provider
 
 import (
 	"context"
-	"math"
 	"net/http"
 	"os"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -163,18 +160,10 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	retryableClient := retryablehttp.NewClient()
-	retryableClient.RetryMax = math.MaxInt
-	retryableClient.Backoff = util.ContentfulRateLimitLinearJitterBackoff
-
-	if p.httpClient != nil {
-		retryableClient.HTTPClient = p.httpClient
-	}
-
 	contentfulManagementClient, err := cm.NewClient(
 		contentfulURL,
 		cm.NewAccessTokenSecuritySource(accessToken),
-		cm.WithClient(cm.NewTransportClient(retryableClient.StandardClient(), "terraform-provider-contentful/"+p.version)),
+		cm.WithClient(cm.NewTransportClient(newContentfulHTTPClient(p.httpClient), "terraform-provider-contentful/"+p.version)),
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create Contentful client", err.Error())

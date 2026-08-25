@@ -14,7 +14,8 @@ A Terraform provider for managing Contentful spaces and related configuration in
 ## Documentation
 
 - Terraform Registry: [cysp/contentful](https://registry.terraform.io/providers/cysp/contentful)
-- Provider design: [Terraform value semantics](docs/design/terraform-value-semantics.md)
+- Provider design: [Terraform value semantics](docs/design/terraform-value-semantics.md) and
+  [Contentful HTTP retry policy](docs/design/contentful-http-retry-policy.md)
 
 ## Getting Started
 

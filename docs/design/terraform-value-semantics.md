@@ -226,6 +226,33 @@ nested inside known objects:
 Null, omission, and known empty values remain distinct throughout request and
 response conversion.
 
+### CMA transport retry safety
+
+The provider applies one transport retry policy to CMA calls across resources,
+data sources, and list operations. This is a provider-wide safety boundary, not
+resource-specific behavior.
+
+GET, HEAD, and OPTIONS do not carry provider mutations, so replay cannot
+duplicate a provider write. They retain retries after retryable transport
+failures and retryable server responses. POST, PUT, PATCH, and DELETE are not
+transparently replayed after transport failures or ordinary retryable 5xx
+responses. In those cases, the provider cannot establish the remote outcome:
+after the request was sent, Contentful may have committed the mutation even
+though the provider received a transport failure or 5xx instead of a usable
+success response. Automatic replay could therefore repeat a committed mutation
+or reuse a now-stale optimistic-lock version. An ordinary 5xx establishes
+neither commitment nor rejection.
+This policy addresses ambiguous observation, not whether every CMA mutation is
+inherently non-idempotent.
+
+A complete Contentful `429 Too Many Requests` response is different: the
+provider relies on that response as an explicit rate-limit rejection and may
+therefore retry it for every HTTP method. Contentful's reset-based backoff is
+retained, with post-reset contention jitter. Retries are bounded by each
+request's finite context deadline, and context cancellation terminates retry
+backoff. The detailed deadline and backoff contract is recorded in
+[Contentful HTTP retry policy](contentful-http-retry-policy.md).
+
 ### Provider-private optimistic-lock barrier
 
 For resources whose Contentful mutations require a version stored only in

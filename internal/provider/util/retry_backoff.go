@@ -14,11 +14,17 @@ import (
 const (
 	contentfulRateLimitResetHeader          = "X-Contentful-RateLimit-Reset"
 	contentfulRatelimitResetCanonicalHeader = "X-Contentful-Ratelimit-Reset"
-	rateLimitJitterMin                      = 100 * time.Millisecond
-	rateLimitJitterMax                      = 300 * time.Millisecond
-	maxRateLimitResetSecondsForDuration     = int64(math.MaxInt64) / int64(time.Second)
+	rateLimitPostResetFloor                 = 100 * time.Millisecond
+	rateLimitContentionWindowBase           = 500 * time.Millisecond
+	rateLimitContentionWindowMultiplier     = 2
+	rateLimitContentionWindowMax            = 4 * time.Second
+	maxRateLimitResetSecondsForDuration     = int64(math.MaxInt64-rateLimitPostResetFloor-rateLimitContentionWindowMax) / int64(time.Second)
 )
 
+// ContentfulRateLimitLinearJitterBackoff treats Contentful's valid reset value
+// as the earliest retry time, then adds a 100ms floor and bounded exponential
+// full jitter for contention. Missing or invalid reset values retain
+// retryablehttp's Retry-After and linear-jitter fallback behavior.
 func ContentfulRateLimitLinearJitterBackoff(minDelay, maxDelay time.Duration, attemptNum int, resp *http.Response) time.Duration {
 	if resp == nil || resp.StatusCode != http.StatusTooManyRequests {
 		return retryablehttp.RateLimitLinearJitterBackoff(minDelay, maxDelay, attemptNum, resp)
@@ -33,9 +39,10 @@ func ContentfulRateLimitLinearJitterBackoff(minDelay, maxDelay time.Duration, at
 		return retryablehttp.RateLimitLinearJitterBackoff(minDelay, maxDelay, attemptNum, resp)
 	}
 
-	delay := time.Duration(resetSeconds)*time.Second + contentfulRateLimitJitter()
+	contentionWindow := contentfulRateLimitContentionWindow(attemptNum)
+	jitter := contentfulRateLimitFullJitter(contentionWindow)
 
-	return applyMinBackoffFloor(delay, minDelay)
+	return contentfulRateLimitDelay(resetSeconds, jitter)
 }
 
 func parseContentfulRateLimitReset(headers http.Header) (int64, bool) {
@@ -70,21 +77,26 @@ func firstHeaderValue(headers http.Header, keys ...string) string {
 	return ""
 }
 
-func contentfulRateLimitJitter() time.Duration {
-	jitterRangeMilliseconds := int64((rateLimitJitterMax-rateLimitJitterMin)/time.Millisecond) + 1
+func contentfulRateLimitContentionWindow(attemptNum int) time.Duration {
+	window := rateLimitContentionWindowBase
 
-	randomJitterMilliseconds, err := rand.Int(rand.Reader, big.NewInt(jitterRangeMilliseconds))
-	if err != nil {
-		return rateLimitJitterMin
+	for attemptNum > 0 && window < rateLimitContentionWindowMax {
+		window = min(window*rateLimitContentionWindowMultiplier, rateLimitContentionWindowMax)
+		attemptNum--
 	}
 
-	return rateLimitJitterMin + time.Duration(randomJitterMilliseconds.Int64())*time.Millisecond
+	return window
 }
 
-func applyMinBackoffFloor(delay, minDelay time.Duration) time.Duration {
-	if delay < minDelay {
-		return minDelay
+func contentfulRateLimitDelay(resetSeconds int64, jitter time.Duration) time.Duration {
+	return time.Duration(resetSeconds)*time.Second + rateLimitPostResetFloor + jitter
+}
+
+func contentfulRateLimitFullJitter(window time.Duration) time.Duration {
+	randomJitter, err := rand.Int(rand.Reader, big.NewInt(int64(window)))
+	if err != nil {
+		return 0
 	}
 
-	return delay
+	return time.Duration(randomJitter.Int64())
 }
