@@ -1,31 +1,39 @@
-package util_test
+package util //nolint:testpackage // deterministic tests exercise unexported pure delay arithmetic.
 
 import (
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestContentfulRateLimitLinearJitterBackoffUsesContentfulResetHeader(t *testing.T) {
+func TestContentfulRateLimitContentionWindowWidensAndCaps(t *testing.T) {
 	t.Parallel()
 
-	resp := &http.Response{
-		StatusCode: http.StatusTooManyRequests,
-		Header: http.Header{
-			"X-Contentful-RateLimit-Reset": []string{"1"},
-		},
+	tests := []struct {
+		attemptNum int
+		window     time.Duration
+	}{
+		{attemptNum: 0, window: 500 * time.Millisecond},
+		{attemptNum: 1, window: time.Second},
+		{attemptNum: 2, window: 2 * time.Second},
+		{attemptNum: 3, window: 4 * time.Second},
+		{attemptNum: 20, window: 4 * time.Second},
 	}
 
-	delay := util.ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
-
-	assert.GreaterOrEqual(t, delay, 1100*time.Millisecond)
-	assert.LessOrEqual(t, delay, 1300*time.Millisecond)
+	for _, test := range tests {
+		assert.Equal(t, test.window, contentfulRateLimitContentionWindow(test.attemptNum))
+	}
 }
 
-func TestContentfulRateLimitLinearJitterBackoffUsesLargeContentfulResetHeader(t *testing.T) {
+func TestContentfulRateLimitDelayUsesResetAsLowerBoundWithoutMultiplication(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, 904*time.Second+99*time.Millisecond, contentfulRateLimitDelay(900, 3999*time.Millisecond))
+}
+
+func TestContentfulRateLimitLinearJitterBackoffDoesNotMultiplyLargeReset(t *testing.T) {
 	t.Parallel()
 
 	resp := &http.Response{
@@ -35,57 +43,47 @@ func TestContentfulRateLimitLinearJitterBackoffUsesLargeContentfulResetHeader(t 
 		},
 	}
 
-	delay := util.ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
+	delay := ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 20, resp)
 
 	assert.GreaterOrEqual(t, delay, 900*time.Second+100*time.Millisecond)
-	assert.LessOrEqual(t, delay, 900*time.Second+300*time.Millisecond)
+	assert.Less(t, delay, 904*time.Second+100*time.Millisecond)
 }
 
-func TestContentfulRateLimitLinearJitterBackoffAppliesMinDelayFloorForZeroResetHeader(t *testing.T) {
+func TestContentfulRateLimitDelayPreservesPositivePostResetFloor(t *testing.T) {
 	t.Parallel()
 
-	resp := &http.Response{
-		StatusCode: http.StatusTooManyRequests,
-		Header: http.Header{
-			"X-Contentful-RateLimit-Reset": []string{"0"},
-		},
-	}
-
-	delay := util.ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
-
-	assert.Equal(t, time.Second, delay)
+	assert.Equal(t, 100*time.Millisecond, contentfulRateLimitDelay(0, 0))
 }
 
-func TestContentfulRateLimitLinearJitterBackoffFallsBackToRetryAfterOnInvalidContentfulResetHeader(t *testing.T) {
+func TestContentfulRateLimitLinearJitterBackoffFallsBackForUnusableContentfulReset(t *testing.T) {
 	t.Parallel()
 
-	resp := &http.Response{
-		StatusCode: http.StatusTooManyRequests,
-		Header: http.Header{
-			"X-Contentful-RateLimit-Reset": []string{"invalid"},
-			"Retry-After":                  []string{"2"},
-		},
+	tests := map[string]string{
+		"missing":   "",
+		"invalid":   "invalid",
+		"negative":  "-1",
+		"oversized": "9223372036854775807",
 	}
 
-	delay := util.ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
+	for name, reset := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	assert.Equal(t, 2*time.Second, delay)
-}
+			header := http.Header{"Retry-After": []string{"2"}}
+			if reset != "" {
+				header.Set("X-Contentful-Ratelimit-Reset", reset)
+			}
 
-func TestContentfulRateLimitLinearJitterBackoffFallsBackToRetryAfterOnOversizedContentfulResetHeader(t *testing.T) {
-	t.Parallel()
+			resp := &http.Response{
+				StatusCode: http.StatusTooManyRequests,
+				Header:     header,
+			}
 
-	resp := &http.Response{
-		StatusCode: http.StatusTooManyRequests,
-		Header: http.Header{
-			"X-Contentful-RateLimit-Reset": []string{"9223372036854775807"},
-			"Retry-After":                  []string{"2"},
-		},
+			delay := ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
+
+			assert.Equal(t, 2*time.Second, delay)
+		})
 	}
-
-	delay := util.ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
-
-	assert.Equal(t, 2*time.Second, delay)
 }
 
 func TestContentfulRateLimitLinearJitterBackoffAcceptsRatelimitHeaderCasingVariant(t *testing.T) {
@@ -98,10 +96,10 @@ func TestContentfulRateLimitLinearJitterBackoffAcceptsRatelimitHeaderCasingVaria
 		},
 	}
 
-	delay := util.ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
+	delay := ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
 
 	assert.GreaterOrEqual(t, delay, 1100*time.Millisecond)
-	assert.LessOrEqual(t, delay, 1300*time.Millisecond)
+	assert.Less(t, delay, 1600*time.Millisecond)
 }
 
 func TestContentfulRateLimitLinearJitterBackoffDelegatesToFallbackForNon429Responses(t *testing.T) {
@@ -114,7 +112,7 @@ func TestContentfulRateLimitLinearJitterBackoffDelegatesToFallbackForNon429Respo
 		},
 	}
 
-	delay := util.ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
+	delay := ContentfulRateLimitLinearJitterBackoff(time.Second, 3*time.Second, 0, resp)
 
 	assert.Equal(t, 3*time.Second, delay)
 }

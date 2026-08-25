@@ -520,8 +520,8 @@ func TestAccContentTypeResourceRecoversAmbiguousUpdateActivation(t *testing.T) {
 			{
 				PreConfig: func() {
 					require.Equal(t, 1, handler.eventCount(contentTypeOperationPut))
-					require.Equal(t, 2, handler.eventCount(contentTypeOperationActivate))
-					require.Equal(t, []int64{3, 3}, handler.activationVersionHistory())
+					require.Equal(t, 1, handler.eventCount(contentTypeOperationActivate))
+					require.Equal(t, []int64{3}, handler.activationVersionHistory())
 
 					handler.resetRequestHistory()
 				},
