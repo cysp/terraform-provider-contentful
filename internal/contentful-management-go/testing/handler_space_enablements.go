@@ -38,16 +38,29 @@ func (ts *Handler) PutSpaceEnablements(_ context.Context, req *cm.SpaceEnablemen
 	enablements, ok := ts.enablements[params.SpaceID]
 	if !ok {
 		initial := NewSpaceEnablement(params.SpaceID)
+		initial.Sys.Version = 1
 		enablements = &initial
-		enablements.Sys.Version = 1
-		ts.enablements[params.SpaceID] = enablements
 	}
 
 	if params.XContentfulVersion != enablements.Sys.Version {
 		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
 	}
 
+	crossSpaceLinks, crossSpaceLinksPresent := req.CrossSpaceLinks.Get()
+
+	spaceTemplates, spaceTemplatesPresent := req.SpaceTemplates.Get()
+	if !crossSpaceLinksPresent || !spaceTemplatesPresent || crossSpaceLinks.Enabled != spaceTemplates.Enabled {
+		return NewContentfulManagementErrorStatusCodeValidationFailed(
+			new("Space templates and cross-space links must both be present and enabled or disabled together."),
+			nil,
+		), nil
+	}
+
 	UpdateSpaceEnablementFromRequestFields(enablements, *req)
+
+	if !ok {
+		ts.enablements[params.SpaceID] = enablements
+	}
 
 	return &cm.SpaceEnablementStatusCode{
 		StatusCode: http.StatusOK,
