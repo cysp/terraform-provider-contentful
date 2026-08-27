@@ -64,6 +64,25 @@ never returns enough information to reconstruct it. Create and Update therefore
 publish the planned value, and Read preserves the prior state value when GET
 returns only redacted information.
 
+Terraform's `sensitive` behavior masks routine CLI and HCP Terraform UI output;
+it does not omit the value from state or saved plan files. HashiCorp documents
+state and plan files as containing resource attributes and potentially sensitive
+values. A local Terraform run normally stores state in a plaintext file. Remote
+state storage can avoid persisting state to local disk and can provide protection
+such as encryption at rest, but the protection depends on the configured
+backend. Practitioners must protect access to both state and saved plan artifacts.
+
+Sources:
+
+- [Manage sensitive data in your configuration](https://developer.hashicorp.com/terraform/language/manage-sensitive-data)
+- [State storage and locking](https://developer.hashicorp.com/terraform/language/state/backends)
+
+The resource does not implement a write-only argument or use an ephemeral value.
+HashiCorp distinguishes `sensitive`, which controls display, from ephemeral
+values and write-only resource arguments, which Terraform omits from state and
+plan files. This provider change documents the existing persistence contract; it
+does not add write-only behavior or an external-rotation trigger.
+
 `redactedValue` is not represented in Terraform state. It is response metadata,
 not an independently manageable value, and four matching characters do not
 prove that two 64-character secrets are equal. Adding it would not make drift
@@ -76,6 +95,8 @@ suffix and would not recover the configuration-owned value.
 
 Import remains supported for identity and existence adoption. An import can
 read `sys` and `redactedValue`, but it cannot populate the required configured
-`value`. The practitioner must configure a valid value after import. The next
-apply overwrites the remote signing secret with that configured value; import
-does not claim to recover or preserve an unknown existing secret.
+`value`, so the imported resource initially has a null value in state. The
+practitioner must configure a valid value after import. The next apply overwrites
+the remote signing secret with that configured value and stores the complete
+configured replacement in resource state; import does not claim to recover or
+preserve an unknown existing secret.

@@ -3,12 +3,12 @@
 page_title: "contentful_app_signing_secret Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Signing Secret. Contentful never returns the complete value, so refresh preserves the configured value and cannot detect out-of-band replacement. Import adopts the remote identity and existence, but the next apply overwrites the secret with the required configured value because the existing value cannot be recovered.
+  Manages a Contentful App Signing Secret. Contentful returns only redactedValue for the secret, not the complete submitted value. Refresh preserves the value already in Terraform state and cannot detect an out-of-band replacement. An imported resource initially has a null value because the complete current value cannot be recovered; the next configured apply writes and stores the configured replacement. Protect state and saved plan artifacts; state protection depends on the configured Terraform backend.
 ---
 
 # contentful_app_signing_secret (Resource)
 
-Manages a Contentful App Signing Secret. Contentful never returns the complete value, so refresh preserves the configured value and cannot detect out-of-band replacement. Import adopts the remote identity and existence, but the next apply overwrites the secret with the required configured value because the existing value cannot be recovered.
+Manages a Contentful App Signing Secret. Contentful returns only `redactedValue` for the secret, not the complete submitted value. Refresh preserves the value already in Terraform state and cannot detect an out-of-band replacement. An imported resource initially has a null value because the complete current value cannot be recovered; the next configured apply writes and stores the configured replacement. Protect state and saved plan artifacts; state protection depends on the configured Terraform backend.
 
 ## Example Usage
 
@@ -34,7 +34,7 @@ resource "random_password" "contentful_app_signing_secret" {
 
 - `app_definition_id` (String) ID of the app definition for which the signing secret is created.
 - `organization_id` (String) ID of the organization that owns the app.
-- `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`.
+- `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. `Sensitive` masks routine Terraform CLI and HCP Terraform UI output. After Create or Update, Terraform stores the complete configured value in resource state, and saved plan files can also contain it. Protect access to both.
 
 ### Optional
 
