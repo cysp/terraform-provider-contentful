@@ -11,6 +11,12 @@ A Terraform provider for managing Contentful spaces and related configuration in
 - A broad set of Contentful resources, including content types, entries, environments, webhooks, and roles.
 - Standard Terraform workflows for reviewable, versioned changes.
 
+The provider does not transparently replay Contentful mutations after an
+ambiguous transport error or ordinary 5xx response. A later operation may still
+create a duplicate when Contentful generated an identity that Terraform never
+received; see the [Contentful HTTP retry policy](docs/design/contentful-http-retry-policy.md)
+for the exact boundary.
+
 ## Documentation
 
 - Terraform Registry: [cysp/contentful](https://registry.terraform.io/providers/cysp/contentful)
