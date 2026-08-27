@@ -12,7 +12,7 @@ import (
 
 func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages Contentful Space Enablements.",
+		Description: "Manages Contentful Space Enablements. Current Contentful CMA mutations require cross_space_links and space_templates to both be present with equal boolean values; configure both on initial Create. The provider forwards their effective planned values independently without inferring one from the other.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -28,7 +28,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"cross_space_links": schema.BoolAttribute{
-				Description: "Enable cross-space references to link content across multiple spaces. Current Contentful CMA mutations require cross_space_links and space_templates to both be present with equal boolean values; configure both on initial Create. This attribute remains independently Optional+Computed, and the provider forwards its effective planned value without inferring space_templates.",
+				Description: "Enable cross-space references to link content across multiple spaces.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
@@ -36,7 +36,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_templates": schema.BoolAttribute{
-				Description: "Enable the space templates feature. Current Contentful CMA mutations require space_templates and cross_space_links to both be present with equal boolean values; configure both on initial Create. This attribute remains independently Optional+Computed, and the provider forwards its effective planned value without inferring cross_space_links.",
+				Description: "Enable the space templates feature.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{

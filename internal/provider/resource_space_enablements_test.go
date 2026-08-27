@@ -94,7 +94,7 @@ func TestAccSpaceEnablementsResourceRejectsInvalidCreateRequests(t *testing.T) {
 			recorder := &spaceEnablementsPutRecorder{next: server}
 			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
 				Steps: []resource.TestStep{{
-					PreConfig:   func() { recorder.expectRequestFields(test.expected) },
+					PreConfig:   func() { recorder.expectNextRequestFields(test.expected) },
 					Config:      spaceEnablementsTestConfig(test.values),
 					ExpectError: regexp.MustCompile(`Failed to create space enablements(?s:.*)Error: ValidationFailed`),
 				}},
@@ -115,8 +115,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					recorder.reset()
-					recorder.expectRequestFields(map[string]bool{
+					recorder.expectNextRequestFields(map[string]bool{
 						"crossSpaceLinks": false,
 						"spaceTemplates":  false,
 					})
@@ -129,8 +128,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 			},
 			{
 				PreConfig: func() {
-					recorder.reset()
-					recorder.expectRequestFields(map[string]bool{
+					recorder.expectNextRequestFields(map[string]bool{
 						"crossSpaceLinks": true,
 						"spaceTemplates":  false,
 					})
@@ -144,8 +142,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 						"crossSpaceLinks": false,
 						"spaceTemplates":  false,
 					}))
-					recorder.reset()
-					recorder.expectRequestFields(map[string]bool{
+					recorder.expectNextRequestFields(map[string]bool{
 						"crossSpaceLinks": true,
 						"spaceTemplates":  true,
 					})
@@ -185,12 +182,14 @@ func TestAccSpaceEnablementsResourceRetransmitsImportedKnownValues(t *testing.T)
 				ImportStatePersist: true,
 			},
 			{
+				PreConfig: func() {
+					recorder.expectNextRequestFields(map[string]bool{
+						"crossSpaceLinks": true,
+						"spaceTemplates":  true,
+						"suggestConcepts": true,
+					})
+				},
 				Config: spaceEnablementsTestConfig("suggest_concepts = true"),
-				Check: recorder.checkRequestFields(map[string]bool{
-					"crossSpaceLinks": true,
-					"spaceTemplates":  true,
-					"suggestConcepts": true,
-				}),
 			},
 		},
 	})
@@ -209,11 +208,9 @@ type spaceEnablementsPutRecorder struct {
 	next http.Handler
 	mu   sync.Mutex
 
-	bodies                 []map[string]json.RawMessage
-	expectedBodies         []map[string]bool
-	validatedExpectedCount int
-	expectationsConfigured bool
-	validationError        error
+	expectedFields  map[string]bool
+	requestObserved bool
+	validationError error
 }
 
 func (r *spaceEnablementsPutRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
@@ -225,8 +222,7 @@ func (r *spaceEnablementsPutRecorder) ServeHTTP(responseWriter http.ResponseWrit
 			var decoded map[string]json.RawMessage
 			if json.Unmarshal(body, &decoded) == nil {
 				r.mu.Lock()
-				r.bodies = append(r.bodies, decoded)
-				r.validateRecordedRequestLocked(decoded)
+				r.validateRequestLocked(decoded)
 				r.mu.Unlock()
 			}
 		}
@@ -235,76 +231,50 @@ func (r *spaceEnablementsPutRecorder) ServeHTTP(responseWriter http.ResponseWrit
 	r.next.ServeHTTP(responseWriter, request)
 }
 
-func (r *spaceEnablementsPutRecorder) reset() {
+func (r *spaceEnablementsPutRecorder) expectNextRequestFields(expected map[string]bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.validateExpectedRequestCountLocked()
-	r.bodies = nil
-	r.expectedBodies = nil
-	r.validatedExpectedCount = 0
-	r.expectationsConfigured = false
-}
+	r.validateExpectedRequestLocked()
 
-func (r *spaceEnablementsPutRecorder) expectRequestFields(expected map[string]bool) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	if r.validationError != nil {
+		return
+	}
 
-	r.expectationsConfigured = true
-	r.expectedBodies = append(r.expectedBodies, expected)
+	r.expectedFields = expected
+	r.requestObserved = false
 }
 
 func (r *spaceEnablementsPutRecorder) handlerError() error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.validateExpectedRequestCountLocked()
+	r.validateExpectedRequestLocked()
 
 	return r.validationError
 }
 
-func (r *spaceEnablementsPutRecorder) validateRecordedRequestLocked(actual map[string]json.RawMessage) {
-	if !r.expectationsConfigured || r.validationError != nil {
+func (r *spaceEnablementsPutRecorder) validateRequestLocked(actual map[string]json.RawMessage) {
+	if r.validationError != nil {
 		return
 	}
 
-	if r.validatedExpectedCount >= len(r.expectedBodies) {
+	if r.expectedFields == nil || r.requestObserved {
 		r.validationError = fmt.Errorf("%w: recorded more PUTs than expected", errSpaceEnablementsRequestMismatch)
 
 		return
 	}
 
-	expected := r.expectedBodies[r.validatedExpectedCount]
-	r.validatedExpectedCount++
-	r.validationError = compareSpaceEnablementsRequestFields(actual, expected)
+	r.requestObserved = true
+	r.validationError = compareSpaceEnablementsRequestFields(actual, r.expectedFields)
 }
 
-func (r *spaceEnablementsPutRecorder) validateExpectedRequestCountLocked() {
-	if !r.expectationsConfigured || r.validationError != nil {
+func (r *spaceEnablementsPutRecorder) validateExpectedRequestLocked() {
+	if r.expectedFields == nil || r.requestObserved || r.validationError != nil {
 		return
 	}
 
-	if r.validatedExpectedCount != len(r.expectedBodies) {
-		r.validationError = fmt.Errorf(
-			"%w: recorded %d expected PUTs, want %d",
-			errSpaceEnablementsRequestMismatch,
-			r.validatedExpectedCount,
-			len(r.expectedBodies),
-		)
-	}
-}
-
-func (r *spaceEnablementsPutRecorder) checkRequestFields(expected map[string]bool) resource.TestCheckFunc {
-	return func(*terraform.State) error {
-		r.mu.Lock()
-		defer r.mu.Unlock()
-
-		if len(r.bodies) != 1 {
-			return fmt.Errorf("%w: recorded %d PUTs, want exactly 1", errSpaceEnablementsRequestMismatch, len(r.bodies))
-		}
-
-		return compareSpaceEnablementsRequestFields(r.bodies[0], expected)
-	}
+	r.validationError = fmt.Errorf("%w: expected PUT was not recorded", errSpaceEnablementsRequestMismatch)
 }
 
 func compareSpaceEnablementsRequestFields(actual map[string]json.RawMessage, expected map[string]bool) error {

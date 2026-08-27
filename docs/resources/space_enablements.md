@@ -3,12 +3,12 @@
 page_title: "contentful_space_enablements Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages Contentful Space Enablements.
+  Manages Contentful Space Enablements. Current Contentful CMA mutations require cross_space_links and space_templates to both be present with equal boolean values; configure both on initial Create. The provider forwards their effective planned values independently without inferring one from the other.
 ---
 
 # contentful_space_enablements (Resource)
 
-Manages Contentful Space Enablements.
+Manages Contentful Space Enablements. Current Contentful CMA mutations require cross_space_links and space_templates to both be present with equal boolean values; configure both on initial Create. The provider forwards their effective planned values independently without inferring one from the other.
 
 ## Example Usage
 
@@ -30,8 +30,8 @@ resource "contentful_space_enablements" "this" {
 
 ### Optional
 
-- `cross_space_links` (Boolean) Enable cross-space references to link content across multiple spaces. Current Contentful CMA mutations require cross_space_links and space_templates to both be present with equal boolean values; configure both on initial Create. This attribute remains independently Optional+Computed, and the provider forwards its effective planned value without inferring space_templates.
-- `space_templates` (Boolean) Enable the space templates feature. Current Contentful CMA mutations require space_templates and cross_space_links to both be present with equal boolean values; configure both on initial Create. This attribute remains independently Optional+Computed, and the provider forwards its effective planned value without inferring cross_space_links.
+- `cross_space_links` (Boolean) Enable cross-space references to link content across multiple spaces.
+- `space_templates` (Boolean) Enable the space templates feature.
 - `studio_experiences` (Boolean) Enable Studio Experiences feature.
 - `suggest_concepts` (Boolean) Enable concept suggestions feature.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
