@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	frameworklist "github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resourceschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -43,6 +44,51 @@ func TestProviderSurfaceDocumentation(t *testing.T) {
 		readmeHeading:   "List Resources",
 		registeredTypes: listResourceTypeNames(ctx, provider.ListResources(ctx)),
 	})
+}
+
+func TestAppSigningSecretDocumentationContract(t *testing.T) {
+	t.Parallel()
+
+	resourceSchema := AppSigningSecretResourceSchema(t.Context())
+	valueAttribute, ok := resourceSchema.Attributes["value"].(resourceschema.StringAttribute)
+	require.True(t, ok)
+	assert.True(t, valueAttribute.Required)
+	assert.True(t, valueAttribute.Sensitive)
+
+	for _, expected := range []string{
+		"`Sensitive` masks routine Terraform CLI and HCP Terraform UI output.",
+		"After Create or Update, Terraform stores the complete configured value in resource state",
+		"saved plan files can also contain it",
+		"Protect access to both.",
+	} {
+		assert.Contains(t, valueAttribute.Description, expected)
+	}
+
+	for _, expected := range []string{
+		"Contentful returns only `redactedValue` for the secret, not the complete submitted value.",
+		"Refresh preserves the value already in Terraform state and cannot detect an out-of-band replacement.",
+		"An imported resource initially has a null value",
+		"the next configured apply writes and stores the configured replacement",
+		"Protect state and saved plan artifacts; state protection depends on the configured Terraform backend.",
+	} {
+		assert.Contains(t, resourceSchema.Description, expected)
+	}
+
+	document, err := os.ReadFile(filepath.Join("..", "..", "docs", "resources", "app_signing_secret.md"))
+	require.NoError(t, err)
+
+	for _, expected := range []string{
+		"`Sensitive` masks routine Terraform CLI and HCP Terraform UI output.",
+		"After Create or Update, Terraform stores the complete configured value in resource state",
+		"saved plan files can also contain it",
+		"Protect access to both.",
+		"Contentful returns only `redactedValue` for the secret, not the complete submitted value.",
+		"An imported resource initially has a null value",
+		"the next configured apply writes and stores the configured replacement",
+		"Protect state and saved plan artifacts; state protection depends on the configured Terraform backend.",
+	} {
+		assert.Contains(t, string(document), expected)
+	}
 }
 
 type providerDocumentationTest struct {
