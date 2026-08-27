@@ -48,7 +48,7 @@ func TestPutSpaceEnablementsChecksSpaceBeforePairedMembers(t *testing.T) {
 	t.Parallel()
 
 	handler := NewHandler()
-	orphaned := NewSpaceEnablementFromRequestFields("missing", validSpaceEnablementData(false, false))
+	orphaned := NewSpaceEnablementFromRequestFields("missing", validSpaceEnablementData(false))
 	handler.enablements["missing"] = &orphaned
 	before := orphaned
 	request := cm.SpaceEnablementData{}
@@ -101,7 +101,7 @@ func TestPutSpaceEnablementsStoresValidPairedMembersAndAdvancesVersionOnce(t *te
 
 	handler, before := newSpaceEnablementsTestHandler(t)
 
-	falseRequest := validSpaceEnablementData(false, false)
+	falseRequest := validSpaceEnablementData(false)
 	falseRequest.StudioExperiences = enabledSpaceEnablementField(false)
 	falseRequest.SuggestConcepts = enabledSpaceEnablementField(true)
 	falseResponse, err := handler.PutSpaceEnablements(t.Context(), &falseRequest, cm.PutSpaceEnablementsParams{
@@ -117,7 +117,7 @@ func TestPutSpaceEnablementsStoresValidPairedMembersAndAdvancesVersionOnce(t *te
 	assert.Equal(t, falseRequest.SuggestConcepts, storedFalse.SuggestConcepts)
 	assert.Equal(t, storedFalse, *handler.enablements["space"])
 
-	trueRequest := validSpaceEnablementData(true, true)
+	trueRequest := validSpaceEnablementData(true)
 	trueRequest.StudioExperiences = enabledSpaceEnablementField(true)
 	trueRequest.SuggestConcepts = enabledSpaceEnablementField(false)
 	trueResponse, err := handler.PutSpaceEnablements(t.Context(), &trueRequest, cm.PutSpaceEnablementsParams{
@@ -151,10 +151,10 @@ func newSpaceEnablementsTestHandler(t *testing.T) (*Handler, cm.SpaceEnablement)
 	return handler, initial
 }
 
-func validSpaceEnablementData(crossSpaceLinks, spaceTemplates bool) cm.SpaceEnablementData {
+func validSpaceEnablementData(enabled bool) cm.SpaceEnablementData {
 	return cm.SpaceEnablementData{
-		CrossSpaceLinks: enabledSpaceEnablementField(crossSpaceLinks),
-		SpaceTemplates:  enabledSpaceEnablementField(spaceTemplates),
+		CrossSpaceLinks: enabledSpaceEnablementField(enabled),
+		SpaceTemplates:  enabledSpaceEnablementField(enabled),
 	}
 }
 
