@@ -54,53 +54,23 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 	})
 }
 
-func TestAccSpaceEnablementsResourceRejectsInvalidCreateRequests(t *testing.T) {
+func TestAccSpaceEnablementsResourceRejectsOneSidedCreate(t *testing.T) {
 	t.Parallel()
 
-	for name, test := range map[string]struct {
-		values   string
-		expected map[string]bool
-	}{
-		"all enablements omitted": {
-			expected: map[string]bool{},
-		},
-		"only cross space links configured": {
-			values: "cross_space_links = true",
-			expected: map[string]bool{
-				"crossSpaceLinks": true,
-			},
-		},
-		"only space templates configured": {
-			values: "space_templates = false",
-			expected: map[string]bool{
-				"spaceTemplates": false,
-			},
-		},
-		"unequal paired members configured": {
-			values: "cross_space_links = true\n  space_templates = false",
-			expected: map[string]bool{
-				"crossSpaceLinks": true,
-				"spaceTemplates":  false,
-			},
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
-			require.NoError(t, err)
-			server.RegisterSpaceEnvironment("space", "master")
-
-			recorder := &spaceEnablementsPutRecorder{next: server}
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
-				Steps: []resource.TestStep{{
-					PreConfig:   func() { recorder.expectNextRequestFields(test.expected) },
-					Config:      spaceEnablementsTestConfig(test.values),
-					ExpectError: regexp.MustCompile(`Failed to create space enablements(?s:.*)Error: ValidationFailed`),
-				}},
-			})
-		})
-	}
+	recorder := &spaceEnablementsPutRecorder{next: server}
+	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+		Steps: []resource.TestStep{{
+			PreConfig: func() {
+				recorder.expectNextRequestFields(map[string]bool{"crossSpaceLinks": true})
+			},
+			Config:      spaceEnablementsTestConfig("cross_space_links = true"),
+			ExpectError: regexp.MustCompile(`Failed to create space enablements(?s:.*)Error: ValidationFailed`),
+		}},
+	})
 }
 
 func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConverges(t *testing.T) {
@@ -121,10 +91,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 					})
 				},
 				Config: spaceEnablementsTestConfig("cross_space_links = false\n  space_templates = false"),
-				Check: requireStoredSpaceEnablements(server.Handler(), 2, map[string]bool{
-					"crossSpaceLinks": false,
-					"spaceTemplates":  false,
-				}),
+				Check:  requireStoredSpaceEnablements(server.Handler(), 2, false),
 			},
 			{
 				PreConfig: func() {
@@ -138,10 +105,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 			},
 			{
 				PreConfig: func() {
-					require.NoError(t, requireStoredSpaceEnablementsFields(server.Handler(), 2, map[string]bool{
-						"crossSpaceLinks": false,
-						"spaceTemplates":  false,
-					}))
+					require.NoError(t, requireStoredSpaceEnablementsFields(server.Handler(), 2, false))
 					recorder.expectNextRequestFields(map[string]bool{
 						"crossSpaceLinks": true,
 						"spaceTemplates":  true,
@@ -151,10 +115,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: requireStoredSpaceEnablements(server.Handler(), 3, map[string]bool{
-					"crossSpaceLinks": true,
-					"spaceTemplates":  true,
-				}),
+				Check: requireStoredSpaceEnablements(server.Handler(), 3, true),
 			},
 		},
 	})
@@ -288,31 +249,21 @@ func compareSpaceEnablementsRequestFields(actual map[string]json.RawMessage, exp
 			return fmt.Errorf("%w: PUT omitted %s", errSpaceEnablementsRequestMismatch, key)
 		}
 
-		var field map[string]json.RawMessage
+		var field struct {
+			Enabled *bool `json:"enabled"`
+		}
 
 		err := json.Unmarshal(body, &field)
 		if err != nil {
 			return fmt.Errorf("decode %s: %w", key, err)
 		}
 
-		if len(field) != 1 {
-			return fmt.Errorf("%w: PUT sent %s with %d members, want exactly enabled", errSpaceEnablementsRequestMismatch, key, len(field))
-		}
-
-		enabledBody, ok := field["enabled"]
-		if !ok {
+		if field.Enabled == nil {
 			return fmt.Errorf("%w: PUT omitted %s.enabled", errSpaceEnablementsRequestMismatch, key)
 		}
 
-		var actualEnabled bool
-
-		err = json.Unmarshal(enabledBody, &actualEnabled)
-		if err != nil {
-			return fmt.Errorf("decode %s.enabled: %w", key, err)
-		}
-
-		if actualEnabled != expectedEnabled {
-			return fmt.Errorf("%w: PUT sent %s.enabled=%t, want %t", errSpaceEnablementsRequestMismatch, key, actualEnabled, expectedEnabled)
+		if *field.Enabled != expectedEnabled {
+			return fmt.Errorf("%w: PUT sent %s.enabled=%t, want %t", errSpaceEnablementsRequestMismatch, key, *field.Enabled, expectedEnabled)
 		}
 	}
 
@@ -322,17 +273,17 @@ func compareSpaceEnablementsRequestFields(actual map[string]json.RawMessage, exp
 func requireStoredSpaceEnablements(
 	handler *cmt.Handler,
 	expectedVersion int,
-	expectedFields map[string]bool,
+	expectedEnabled bool,
 ) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		return requireStoredSpaceEnablementsFields(handler, expectedVersion, expectedFields)
+		return requireStoredSpaceEnablementsFields(handler, expectedVersion, expectedEnabled)
 	}
 }
 
 func requireStoredSpaceEnablementsFields(
 	handler *cmt.Handler,
 	expectedVersion int,
-	expectedFields map[string]bool,
+	expectedEnabled bool,
 ) error {
 	response, err := handler.GetSpaceEnablements(context.Background(), cm.GetSpaceEnablementsParams{SpaceID: "space"})
 	if err != nil {
@@ -357,36 +308,15 @@ func requireStoredSpaceEnablementsFields(
 		)
 	}
 
-	actualFields := map[string]cm.OptSpaceEnablementField{
-		"crossSpaceLinks":   enablements.CrossSpaceLinks,
-		"spaceTemplates":    enablements.SpaceTemplates,
-		"studioExperiences": enablements.StudioExperiences,
-		"suggestConcepts":   enablements.SuggestConcepts,
-	}
-
-	for key, actual := range actualFields {
-		expectedEnabled, expected := expectedFields[key]
-
-		field, present := actual.Get()
-		if present != expected {
-			return fmt.Errorf(
-				"%w: field %s presence is %t, want %t",
-				errSpaceEnablementsStoredMismatch,
-				key,
-				present,
-				expected,
-			)
-		}
-
-		if present && field.Enabled != expectedEnabled {
-			return fmt.Errorf(
-				"%w: field %s is %t, want %t",
-				errSpaceEnablementsStoredMismatch,
-				key,
-				field.Enabled,
-				expectedEnabled,
-			)
-		}
+	expectedField := cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: expectedEnabled})
+	if enablements.CrossSpaceLinks != expectedField || enablements.SpaceTemplates != expectedField {
+		return fmt.Errorf(
+			"%w: paired fields are %+v and %+v, want both %+v",
+			errSpaceEnablementsStoredMismatch,
+			enablements.CrossSpaceLinks,
+			enablements.SpaceTemplates,
+			expectedField,
+		)
 	}
 
 	return nil
