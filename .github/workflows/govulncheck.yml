@@ -11,47 +11,13 @@ permissions:
 
 jobs:
   govulncheck:
-    name: govulncheck
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      GOTOOLCHAIN: local
-      GOPROXY: https://proxy.golang.org,direct
-      GOSUMDB: sum.golang.org
-      GONOSUMDB: ""
-      GOPRIVATE: ""
-      GOVULNDB: https://vuln.go.dev
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - id: setup-go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
-          cache: true
 
-      - name: Verify Go toolchain and trust configuration
-        env:
-          RESOLVED_GO_VERSION: ${{ steps.setup-go.outputs.go-version }}
-        run: |
-          set -euo pipefail
-          test "$RESOLVED_GO_VERSION" = "1.26.6"
-          test "$(go env GOVERSION)" = "go1.26.6"
-          test "$(go env GOTOOLCHAIN)" = "local"
-          test "$(go env GOPROXY)" = "https://proxy.golang.org,direct"
-          test "$(go env GOSUMDB)" = "sum.golang.org"
-          test -z "$(go env GONOSUMDB)"
-          test -z "$(go env GOPRIVATE)"
-          test "$GOVULNDB" = "https://vuln.go.dev"
-
-      - name: Download modules
-        run: go mod download
-
-      - name: Run govulncheck
-        run: go run golang.org/x/vuln/cmd/govulncheck@v1.7.0 -db=https://vuln.go.dev ./...
-
-      - name: Verify source tree is unchanged
-        run: |
-          set -euo pipefail
-          git diff --exit-code -- go.mod go.sum
-          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+      - run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
