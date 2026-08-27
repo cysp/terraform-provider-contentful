@@ -29,8 +29,8 @@ remains authoritative.
 
 The provider retries:
 
-- explicit HTTP 429 responses for every method, because a complete 429
-  establishes that Contentful rejected the request; and
+- explicit HTTP 429 responses for every method, following Contentful's
+  documented rate-limit handling and first-party client practice; and
 - transport failures and retryable server responses for safe GET, HEAD, and
   OPTIONS requests.
 
@@ -38,6 +38,29 @@ The provider does not transparently replay POST, PUT, PATCH, or DELETE after a
 transport failure or an ordinary 5xx response. Those outcomes do not establish
 whether Contentful committed the mutation, so replay could repeat an already
 applied write.
+
+### 429 evidence boundary
+
+Contentful's current [CMA rate-limit documentation](https://www.contentful.com/developers/docs/references/content-management-api/overview/#api-rate-limits)
+classifies 429 as rate limiting, provides the reset interval, and tells clients
+to wait before making another request. Contentful's first-party management SDK,
+at commit [`cc096a337f0e1db6114e8da645d69bb6eb90f11c`](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/README.md#L387-L389),
+retries 429 and 500 responses by default. That client behavior is
+interoperability evidence, not a formal server guarantee about mutation
+commitment.
+
+| Claim | CMA docs | First-party SDK | Formal server guarantee |
+| --- | --- | --- | --- |
+| 429 identifies rate limiting | Supported | Consistent | Yes, classification |
+| wait and issue another request | Supported client behavior | Implemented | Retry practice |
+| first mutation definitely did not commit | Not stated | Not established | Not found |
+
+The provider retains all-method 429 retries as an accepted Contentful-specific
+policy. For mutation methods, the public evidence does not establish the first
+request's commitment outcome, so retrying carries residual ambiguity. The
+provider does not use a completed 429 as a commitment oracle. This differs from
+transport failures and ordinary 5xx responses only in provider policy: those
+outcomes remain non-retried for POST, PUT, PATCH, and DELETE.
 
 For a valid `X-Contentful-RateLimit-Reset` response, the reset is the earliest
 retry time. The provider waits for the reset plus 100ms and full jitter from a
@@ -53,8 +76,10 @@ backoff wait instead returns the context error and no prior 429 response.
 
 ## Safety boundary
 
-This policy prevents transparent replay by the provider HTTP layer after an
-ambiguous mutation failure. It does not provide at-most-once semantics across
-separate Terraform operations or applies. In particular, repeating a create
-whose first result was ambiguous can create another remote object when
-Contentful generates the identifier.
+For POST, PUT, PATCH, and DELETE, this policy prevents transparent replay by the
+provider HTTP layer after transport failures and ordinary 5xx responses. The
+accepted all-method 429 policy retains the mutation-commitment ambiguity
+described above. It does not provide at-most-once semantics across separate
+Terraform operations or applies. In particular, repeating a create whose first
+result was ambiguous can create another remote object when Contentful generates
+the identifier.
