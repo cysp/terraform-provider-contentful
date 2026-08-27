@@ -183,48 +183,60 @@ func TestContentfulHTTPClientWiresSafeReadRetries(t *testing.T) {
 func TestContentfulHTTPClientWiresMutationNoRetryPolicy(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]contentfulRetryTestFailure{
-		"transport error": {method: http.MethodPut, err: errContentfulRetryTestConnectionLost},
-		"server response": {method: http.MethodPut, status: http.StatusInternalServerError},
+	methods := []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete}
+	failures := []struct {
+		name   string
+		status int
+		err    error
+	}{
+		{name: "transport error", err: errContentfulRetryTestConnectionLost},
+		{name: "server response", status: http.StatusInternalServerError},
 	}
 
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+	for _, method := range methods {
+		for _, failure := range failures {
+			t.Run(method+" "+failure.name, func(t *testing.T) {
+				t.Parallel()
 
-			var requestCount atomic.Int64
+				var requestCount atomic.Int64
 
-			baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-				requestCount.Add(1)
+				baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
+					requestCount.Add(1)
+					assert.Equal(t, method, request.Method)
 
-				if test.err != nil {
-					return nil, test.err
+					if failure.err != nil {
+						return nil, failure.err
+					}
+
+					return contentfulRetryTestResponse(request, failure.status), nil
+				})}
+				client, retryClient := contentfulRetryTestClient(t, baseClient)
+				removeContentfulRetryTestDelay(retryClient)
+
+				request, err := http.NewRequestWithContext(t.Context(), method, "https://api.test.contentful.com/resource", strings.NewReader(`{"fields":{}}`))
+				require.NoError(t, err)
+
+				response, err := client.Do(request)
+				if response != nil {
+					t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
 				}
 
-				return contentfulRetryTestResponse(request, test.status), nil
-			})}
-			client, retryClient := contentfulRetryTestClient(t, baseClient)
-			removeContentfulRetryTestDelay(retryClient)
+				if failure.err != nil {
+					require.ErrorIs(t, err, errContentfulRetryTestConnectionLost)
+					assert.Nil(t, response)
+				} else {
+					require.NoError(t, err)
+					require.NotNil(t, response)
+					assert.Equal(t, http.StatusInternalServerError, response.StatusCode)
 
-			request, err := http.NewRequestWithContext(t.Context(), test.method, "https://api.test.contentful.com/resource", strings.NewReader(`{"fields":{}}`))
-			require.NoError(t, err)
+					body, readErr := io.ReadAll(response.Body)
+					require.NoError(t, readErr)
+					assert.Equal(t, []byte(`{}`), body)
+				}
 
-			response, err := client.Do(request)
-			if response != nil {
-				t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-			}
-
-			if test.err != nil {
-				require.ErrorIs(t, err, errContentfulRetryTestConnectionLost)
-				assert.Nil(t, response)
-			} else {
-				require.NoError(t, err)
-				require.NotNil(t, response)
-				assert.Equal(t, http.StatusInternalServerError, response.StatusCode)
-			}
-
-			assert.EqualValues(t, 1, requestCount.Load())
-		})
+				assert.EqualValues(t, 1, requestCount.Load())
+			})
+		}
 	}
 }
 
