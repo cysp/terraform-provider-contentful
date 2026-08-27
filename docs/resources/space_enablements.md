@@ -3,12 +3,12 @@
 page_title: "contentful_space_enablements Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages Contentful Space Enablements. Current Contentful CMA mutations require cross_space_links and space_templates to both be present with equal boolean values; configure both on initial Create. The provider forwards their effective planned values independently without inferring one from the other.
+  Manages Contentful Space Enablements.
 ---
 
 # contentful_space_enablements (Resource)
 
-Manages Contentful Space Enablements. Current Contentful CMA mutations require cross_space_links and space_templates to both be present with equal boolean values; configure both on initial Create. The provider forwards their effective planned values independently without inferring one from the other.
+Manages Contentful Space Enablements.
 
 ## Example Usage
 
@@ -17,7 +17,6 @@ resource "contentful_space_enablements" "this" {
   space_id = var.contentful_space_id
 
   cross_space_links = true
-  space_templates   = true
 }
 ```
 
@@ -30,8 +29,8 @@ resource "contentful_space_enablements" "this" {
 
 ### Optional
 
-- `cross_space_links` (Boolean) Enable cross-space references to link content across multiple spaces.
-- `space_templates` (Boolean) Enable the space templates feature.
+- `cross_space_links` (Boolean) Enable cross-space references to link content across multiple spaces. Contentful may reject unsupported combinations with other space enablements.
+- `space_templates` (Boolean) Enable the space templates feature. Contentful may reject unsupported combinations with other space enablements.
 - `studio_experiences` (Boolean) Enable Studio Experiences feature.
 - `suggest_concepts` (Boolean) Enable concept suggestions feature.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
