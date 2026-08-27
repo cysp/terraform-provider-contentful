@@ -24,7 +24,6 @@ func TestPublishEntryRequiresExactVersion(t *testing.T) {
 		EnvironmentID:          "environment",
 		EntryID:                "entry",
 		XContentfulContentType: cm.NewOptString("article"),
-		XContentfulVersion:     1,
 	})
 	require.NoError(t, err)
 
@@ -70,7 +69,6 @@ func TestUnpublishEntryAdvancesVersionAndReturnsEntry(t *testing.T) {
 		EnvironmentID:          "environment",
 		EntryID:                "entry",
 		XContentfulContentType: cm.NewOptString("article"),
-		XContentfulVersion:     1,
 	})
 	require.NoError(t, err)
 	created := requireEntryStatusCode(t, createdResponse)
@@ -88,7 +86,7 @@ func TestUnpublishEntryAdvancesVersionAndReturnsEntry(t *testing.T) {
 		SpaceID:            "space",
 		EnvironmentID:      "environment",
 		EntryID:            "entry",
-		XContentfulVersion: published.Response.Sys.Version,
+		XContentfulVersion: cm.NewOptInt(published.Response.Sys.Version),
 	})
 	require.NoError(t, err)
 	draft := requireEntryStatusCode(t, draftResponse)

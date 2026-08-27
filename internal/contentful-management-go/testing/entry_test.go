@@ -76,7 +76,7 @@ func TestEntryResponsesProjectOmittedFields(t *testing.T) {
 			"localized-null": jx.Raw(`{"en-US":null}`),
 		}),
 	}, cm.PutEntryParams{
-		SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: entry.Sys.Version,
+		SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
 	})
 	require.NoError(t, err)
 

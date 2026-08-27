@@ -51,7 +51,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"entry_id": schema.StringAttribute{
-				Description: "ID of the entry.",
+				Description: "ID of the entry. When `entry_id` is configured, Terraform creates a new Entry with the specified ID; an existing Entry with the same ID causes an error and is not adopted.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{

@@ -31,7 +31,6 @@ func TestGetEntriesReturnsStableFilteredPagination(t *testing.T) {
 			EnvironmentID:          "environment",
 			EntryID:                entry.id,
 			XContentfulContentType: cm.NewOptString(entry.contentTypeID),
-			XContentfulVersion:     1,
 		})
 		require.NoError(t, err)
 

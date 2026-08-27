@@ -64,7 +64,7 @@ After creating an Entry in Contentful, or after a provider-managed Contentful En
 
 ### Optional
 
-- `entry_id` (String) ID of the entry.
+- `entry_id` (String) ID of the entry. When `entry_id` is configured, Terraform creates a new Entry with the specified ID; an existing Entry with the same ID causes an error and is not adopted.
 - `metadata` (Attributes) Entry metadata, including assigned tags and taxonomy concepts. (see [below for nested schema](#nestedatt--metadata))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 

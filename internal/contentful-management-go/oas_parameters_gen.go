@@ -9771,7 +9771,7 @@ type PutEntryParams struct {
 	EnvironmentID          string
 	EntryID                string
 	XContentfulContentType OptString `json:",omitempty,omitzero"`
-	XContentfulVersion     int
+	XContentfulVersion     OptInt    `json:",omitempty,omitzero"`
 }
 
 func unpackPutEntryParams(packed middleware.Parameters) (params PutEntryParams) {
@@ -9810,7 +9810,9 @@ func unpackPutEntryParams(packed middleware.Parameters) (params PutEntryParams) 
 			Name: "X-Contentful-Version",
 			In:   "header",
 		}
-		params.XContentfulVersion = packed[key].(int)
+		if v, ok := packed[key]; ok {
+			params.XContentfulVersion = v.(OptInt)
+		}
 	}
 	return params
 }
@@ -9999,23 +10001,28 @@ func decodePutEntryParams(args [3]string, argsEscaped bool, r *http.Request) (pa
 		}
 		if err := h.HasParam(cfg); err == nil {
 			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
-				val, err := d.DecodeValue()
-				if err != nil {
+				var paramsDotXContentfulVersionVal int
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXContentfulVersionVal = c
+					return nil
+				}(); err != nil {
 					return err
 				}
-
-				c, err := conv.ToInt(val)
-				if err != nil {
-					return err
-				}
-
-				params.XContentfulVersion = c
+				params.XContentfulVersion.SetTo(paramsDotXContentfulVersionVal)
 				return nil
 			}); err != nil {
 				return err
 			}
-		} else {
-			return err
 		}
 		return nil
 	}(); err != nil {

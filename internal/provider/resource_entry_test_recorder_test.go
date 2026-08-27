@@ -18,9 +18,12 @@ const (
 )
 
 type entryMutationRequest struct {
-	path    string
-	version string
-	fields  map[string]json.RawMessage
+	method         string
+	path           string
+	version        string
+	versionPresent bool
+	contentType    string
+	fields         map[string]json.RawMessage
 }
 
 type entryMutationRecorder struct {
@@ -39,7 +42,12 @@ func (h *entryMutationRecorder) ServeHTTP(responseWriter http.ResponseWriter, re
 	h.recordUpdate(request)
 
 	if request.Method == http.MethodPut && strings.HasSuffix(request.URL.Path, "/entries/entry/published") {
-		h.record(entryMutationRequest{path: request.URL.Path, version: request.Header.Get("X-Contentful-Version")})
+		h.record(entryMutationRequest{
+			method:         request.Method,
+			path:           request.URL.Path,
+			version:        request.Header.Get("X-Contentful-Version"),
+			versionPresent: len(request.Header.Values("X-Contentful-Version")) > 0,
+		})
 	}
 
 	h.delegate.ServeHTTP(responseWriter, request)
@@ -71,7 +79,12 @@ func (h *entryMutationRecorder) recordUpdate(request *http.Request) {
 	}
 
 	h.record(entryMutationRequest{
-		path: request.URL.Path, version: request.Header.Get("X-Contentful-Version"), fields: payload.Fields,
+		method:         request.Method,
+		path:           request.URL.Path,
+		version:        request.Header.Get("X-Contentful-Version"),
+		versionPresent: len(request.Header.Values("X-Contentful-Version")) > 0,
+		contentType:    request.Header.Get("X-Contentful-Content-Type"),
+		fields:         payload.Fields,
 	})
 }
 
