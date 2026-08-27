@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-const appSigningValueDescription = "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. `Sensitive` masks routine Terraform CLI and HCP Terraform UI output. After Create or Update, Terraform stores the complete configured value in resource state, and saved plan files can also contain it. Protect access to both."
+const appSigningValueDescription = "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. The complete configured value is stored in Terraform state after a successful Create or Update."
 
 var appSigningSecretValuePattern = regexp.MustCompile(`^[0-9a-zA-Z+/=_-]+$`)
 
@@ -44,7 +44,7 @@ func (v appSigningSecretValueValidator) ValidateString(ctx context.Context, req 
 
 func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Signing Secret. Contentful returns only `redactedValue` for the secret, not the complete submitted value. Refresh preserves the value already in Terraform state and cannot detect an out-of-band replacement. An imported resource initially has a null value because the complete current value cannot be recovered; the next configured apply writes and stores the configured replacement. Protect state and saved plan artifacts; state protection depends on the configured Terraform backend.",
+		Description: "Manages a Contentful App Signing Secret. Contentful returns only `redactedValue`, so refresh preserves the configured `value` already in Terraform state and cannot detect an out-of-band replacement. The `terraform import` command leaves `value` null until a subsequent apply writes the configured replacement. A configuration-driven import can write the configured replacement during the import apply.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
