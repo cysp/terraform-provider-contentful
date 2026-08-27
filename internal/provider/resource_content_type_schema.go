@@ -44,7 +44,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"content_type_id": schema.StringAttribute{
-				Description: "The unique identifier for this content type.",
+				Description: "The unique identifier for this Content Type. Terraform creates a new Content Type with the specified ID; an existing Content Type with the same ID causes an error and is not adopted.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

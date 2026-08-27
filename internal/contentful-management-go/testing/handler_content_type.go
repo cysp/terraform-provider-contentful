@@ -96,7 +96,8 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 		}, nil
 	}
 
-	if params.XContentfulVersion != contentType.Sys.Version {
+	version, versionSet := params.XContentfulVersion.Get()
+	if !versionSet || version != contentType.Sys.Version {
 		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
 	}
 

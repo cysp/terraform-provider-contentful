@@ -224,7 +224,7 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile(`Failed to save content type draft`),
+				ExpectError:     regexp.MustCompile(`Failed to create content type`),
 			},
 		},
 	})

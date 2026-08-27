@@ -9208,7 +9208,7 @@ func (s *Server) handlePutAppSigningSecretRequest(args [2]string, argsEscaped bo
 
 // handlePutContentTypeRequest handles putContentType operation.
 //
-// Update a content type.
+// Create or update a content type.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
 func (s *Server) handlePutContentTypeRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
@@ -9300,7 +9300,7 @@ func (s *Server) handlePutContentTypeRequest(args [3]string, argsEscaped bool, w
 		mreq := middleware.Request{
 			Context:          ctx,
 			OperationName:    PutContentTypeOperation,
-			OperationSummary: "Update a content type",
+			OperationSummary: "Create or update a content type",
 			OperationID:      "putContentType",
 			Body:             request,
 			RawBody:          rawBody,

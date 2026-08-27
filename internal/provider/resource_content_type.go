@@ -261,7 +261,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	draft, draftDiagnostics := r.putContentTypeDraft(ctx, config, plan, request, 1, 1)
+	draft, draftDiagnostics := r.createContentTypeWithID(ctx, config, plan, request)
 	resp.Diagnostics.Append(draftDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
@@ -420,13 +420,13 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	//nolint:contextcheck // attr.Value.Equal and TypedObject.Equal expose no context-aware alternative.
 	action := classifyContentTypeUpdate(contentTypeDraftMutationRequired(config.Metadata, plan, state), publicationState)
 
-	var putContentTypeRequest cm.ContentTypeRequestData
+	var updateContentTypeRequest cm.ContentTypeRequestData
 
 	if action == contentTypeUpdatePutAndActivate {
-		var putContentTypeRequestDiags diag.Diagnostics
+		var updateContentTypeRequestDiags diag.Diagnostics
 
-		putContentTypeRequest, putContentTypeRequestDiags = plan.ToContentTypeRequestData(ctx, config)
-		resp.Diagnostics.Append(putContentTypeRequestDiags...)
+		updateContentTypeRequest, updateContentTypeRequestDiags = plan.ToContentTypeRequestData(ctx, config)
+		resp.Diagnostics.Append(updateContentTypeRequestDiags...)
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -453,7 +453,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 
 	activationVersion := version
 	if action == contentTypeUpdatePutAndActivate {
-		draft, draftDiagnostics := r.putContentTypeDraft(ctx, config, plan, putContentTypeRequest, version, version+1)
+		draft, draftDiagnostics := r.updateContentType(ctx, config, plan, updateContentTypeRequest, version)
 		resp.Diagnostics.Append(draftDiagnostics...)
 
 		if resp.Diagnostics.HasError() {
@@ -583,26 +583,21 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 }
 
-func (r *contentTypeResource) putContentTypeDraft(
+func (r *contentTypeResource) createContentTypeWithID(
 	ctx context.Context,
 	config ContentTypeModel,
 	appliedPlan ContentTypeModel,
 	request cm.ContentTypeRequestData,
-	requestVersion int,
-	expectedResponseVersion int,
 ) (contentTypeMutationResult, diag.Diagnostics) {
-	var diagnostics diag.Diagnostics
-
 	params := cm.PutContentTypeParams{
-		SpaceID:            appliedPlan.SpaceID.ValueString(),
-		EnvironmentID:      appliedPlan.EnvironmentID.ValueString(),
-		ContentTypeID:      appliedPlan.ContentTypeID.ValueString(),
-		XContentfulVersion: requestVersion,
+		SpaceID:       appliedPlan.SpaceID.ValueString(),
+		EnvironmentID: appliedPlan.EnvironmentID.ValueString(),
+		ContentTypeID: appliedPlan.ContentTypeID.ValueString(),
 	}
 
 	response, err := r.providerData.client.PutContentType(ctx, &request, params)
 
-	tflog.Info(ctx, "content_type.put", map[string]any{
+	tflog.Info(ctx, "content_type.create_with_id", map[string]any{
 		"params":   params,
 		"request":  request,
 		"response": response,
@@ -610,18 +605,61 @@ func (r *contentTypeResource) putContentTypeDraft(
 	})
 
 	if response, ok := response.(*cm.ContentTypeStatusCode); ok {
-		mutationState, mutationStateDiagnostics, consistencyDiags := ProjectContentTypeMutationResponse(ctx, response.Response, config, appliedPlan)
-		diagnostics.Append(mutationStateDiagnostics...)
-		consistencyDiags.Append(validateContentTypeDraftResponse(expectedResponseVersion, response.Response)...)
-
-		return contentTypeMutationResult{
-			state: mutationState, version: response.Response.Sys.Version, consistencyDiags: consistencyDiags,
-		}, diagnostics
+		return projectContentTypeDraftMutationResponse(ctx, config, appliedPlan, response.Response, 1)
 	}
 
-	diagnostics.AddError("Failed to save content type draft", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	var diagnostics diag.Diagnostics
+	diagnostics.AddError("Failed to create content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 	return contentTypeMutationResult{}, diagnostics
+}
+
+func (r *contentTypeResource) updateContentType(
+	ctx context.Context,
+	config ContentTypeModel,
+	appliedPlan ContentTypeModel,
+	request cm.ContentTypeRequestData,
+	currentVersion int,
+) (contentTypeMutationResult, diag.Diagnostics) {
+	params := cm.PutContentTypeParams{
+		SpaceID:            appliedPlan.SpaceID.ValueString(),
+		EnvironmentID:      appliedPlan.EnvironmentID.ValueString(),
+		ContentTypeID:      appliedPlan.ContentTypeID.ValueString(),
+		XContentfulVersion: cm.NewOptInt(currentVersion),
+	}
+
+	response, err := r.providerData.client.PutContentType(ctx, &request, params)
+
+	tflog.Info(ctx, "content_type.update", map[string]any{
+		"params":   params,
+		"request":  request,
+		"response": response,
+		"err":      err,
+	})
+
+	if response, ok := response.(*cm.ContentTypeStatusCode); ok {
+		return projectContentTypeDraftMutationResponse(ctx, config, appliedPlan, response.Response, currentVersion+1)
+	}
+
+	var diagnostics diag.Diagnostics
+	diagnostics.AddError("Failed to update content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
+	return contentTypeMutationResult{}, diagnostics
+}
+
+func projectContentTypeDraftMutationResponse(
+	ctx context.Context,
+	config ContentTypeModel,
+	appliedPlan ContentTypeModel,
+	response cm.ContentType,
+	expectedVersion int,
+) (contentTypeMutationResult, diag.Diagnostics) {
+	mutationState, diagnostics, consistencyDiags := ProjectContentTypeMutationResponse(ctx, response, config, appliedPlan)
+	consistencyDiags.Append(validateContentTypeDraftResponse(expectedVersion, response)...)
+
+	return contentTypeMutationResult{
+		state: mutationState, version: response.Sys.Version, consistencyDiags: consistencyDiags,
+	}, diagnostics
 }
 
 func validateContentTypeDraftResponse(expectedVersion int, response cm.ContentType) diag.Diagnostics {

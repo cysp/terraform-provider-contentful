@@ -412,7 +412,7 @@ type Handler interface {
 	PutAppSigningSecret(ctx context.Context, req *AppSigningSecretRequestData, params PutAppSigningSecretParams) (PutAppSigningSecretRes, error)
 	// PutContentType implements putContentType operation.
 	//
-	// Update a content type.
+	// Create or update a content type.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
 	PutContentType(ctx context.Context, req *ContentTypeRequestData, params PutContentTypeParams) (PutContentTypeRes, error)

@@ -53,7 +53,7 @@ resource "contentful_content_type" "author" {
 
 ### Required
 
-- `content_type_id` (String) The unique identifier for this content type.
+- `content_type_id` (String) The unique identifier for this Content Type. Terraform creates a new Content Type with the specified ID; an existing Content Type with the same ID causes an error and is not adopted.
 - `description` (String) Description of the content type.
 - `display_field` (String) Field ID to use as the display field for entries of this content type.
 - `environment_id` (String) The ID of the environment this content type belongs to.

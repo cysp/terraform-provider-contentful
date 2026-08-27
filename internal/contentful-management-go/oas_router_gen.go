@@ -3006,7 +3006,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 													return r, true
 												case "PUT":
 													r.name = PutContentTypeOperation
-													r.summary = "Update a content type"
+													r.summary = "Create or update a content type"
 													r.operationID = "putContentType"
 													r.operationGroup = ""
 													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"

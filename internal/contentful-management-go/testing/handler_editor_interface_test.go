@@ -16,7 +16,7 @@ func TestPutEditorInterfaceRequiresActivatedContentType(t *testing.T) {
 
 	handler := newContentTypeTestHandler()
 	contentTypeRequest := newContentTypeRequest()
-	putContentType(t, handler, &contentTypeRequest, 1, http.StatusCreated)
+	createContentType(t, handler, &contentTypeRequest)
 
 	response, err := handler.PutEditorInterface(context.Background(), &cm.EditorInterfaceData{}, cm.PutEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
@@ -36,7 +36,7 @@ func TestPutEditorInterfaceUsesContentfulVersioning(t *testing.T) {
 
 	handler := newContentTypeTestHandler()
 	contentTypeRequest := newContentTypeRequest()
-	created := putContentType(t, handler, &contentTypeRequest, 1, http.StatusCreated)
+	created := createContentType(t, handler, &contentTypeRequest)
 	activateContentType(t, handler, created.Sys.Version)
 
 	editorInterfaceRequest := cm.EditorInterfaceData{
@@ -66,7 +66,7 @@ func TestActivateContentTypeSynchronizesEditorInterface(t *testing.T) {
 
 	handler := newContentTypeTestHandler()
 	request := newContentTypeRequest()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 
 	editorResponse, err := handler.GetEditorInterface(context.Background(), contentTypeEditorInterfaceParams())
 	require.NoError(t, err)
@@ -78,7 +78,7 @@ func TestActivateContentTypeSynchronizesEditorInterface(t *testing.T) {
 	assert.Equal(t, []string{"title"}, editorInterfaceControlFieldIDs(t, editorInterface))
 
 	request.Fields = append(request.Fields, cm.ContentTypeRequestDataFieldsItem{ID: "subtitle", Name: "Subtitle", Type: "Symbol"})
-	draftUpdated := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	draftUpdated := putContentType(t, handler, &request, activated.Sys.Version)
 	editorInterface = getEditorInterface(t, handler)
 	assert.Equal(t, 1, editorInterface.Sys.Version, "draft updates must not change the editor interface")
 	assert.Equal(t, []string{"title"}, editorInterfaceControlFieldIDs(t, editorInterface))
@@ -94,7 +94,7 @@ func TestActivateContentTypePreservesClearedEditorInterfaceControls(t *testing.T
 
 	handler := newContentTypeTestHandler()
 	request := newContentTypeRequest()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	activated := activateContentType(t, handler, created.Sys.Version)
 
 	response, err := handler.PutEditorInterface(context.Background(), &cm.EditorInterfaceData{}, cm.PutEditorInterfaceParams{
@@ -107,7 +107,7 @@ func TestActivateContentTypePreservesClearedEditorInterfaceControls(t *testing.T
 	assert.False(t, statusCode.Response.Controls.IsSet())
 
 	request.Fields = append(request.Fields, cm.ContentTypeRequestDataFieldsItem{ID: "subtitle", Name: "Subtitle", Type: "Symbol"})
-	draftUpdated := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	draftUpdated := putContentType(t, handler, &request, activated.Sys.Version)
 	activateContentType(t, handler, draftUpdated.Sys.Version)
 
 	editorInterface := getEditorInterface(t, handler)
@@ -120,7 +120,7 @@ func TestActivateContentTypeAddsControlsOnlyForNewFields(t *testing.T) {
 
 	handler := newContentTypeTestHandler()
 	request := newContentTypeRequest()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	activated := activateContentType(t, handler, created.Sys.Version)
 
 	editorInterfaceRequest := cm.EditorInterfaceData{
@@ -136,7 +136,7 @@ func TestActivateContentTypeAddsControlsOnlyForNewFields(t *testing.T) {
 	assert.Empty(t, editorInterfaceControlFieldIDs(t, &statusCode.Response))
 
 	request.Fields = append(request.Fields, cm.ContentTypeRequestDataFieldsItem{ID: "subtitle", Name: "Subtitle", Type: "Symbol"})
-	draftUpdated := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	draftUpdated := putContentType(t, handler, &request, activated.Sys.Version)
 	activateContentType(t, handler, draftUpdated.Sys.Version)
 
 	editorInterface := getEditorInterface(t, handler)
