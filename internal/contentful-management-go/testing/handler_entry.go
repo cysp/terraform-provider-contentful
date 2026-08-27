@@ -113,7 +113,8 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 		}, nil
 	}
 
-	if params.XContentfulVersion != entry.Sys.Version {
+	version, versionSet := params.XContentfulVersion.Get()
+	if !versionSet || version != entry.Sys.Version {
 		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
 	}
 

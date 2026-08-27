@@ -369,7 +369,7 @@ func (h *entryHigherPostPublishCurrentVersionAdapter) ServeHTTP(responseWriter h
 			response, putErr := h.server.Handler().PutEntry(request.Context(), &cm.EntryRequest{
 				Fields: entry.Fields, Metadata: entry.Metadata,
 			}, cm.PutEntryParams{
-				SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: entry.Sys.Version,
+				SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
 			})
 			if putErr != nil {
 				err = putErr

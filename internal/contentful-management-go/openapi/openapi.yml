@@ -1391,7 +1391,7 @@ paths:
         - $ref: "#/components/parameters/environment_id"
         - $ref: "#/components/parameters/entry_id"
         - $ref: "#/components/parameters/x-contentful-content-type-optional"
-        - $ref: "#/components/parameters/x-contentful-version-required"
+        - $ref: "#/components/parameters/x-contentful-version-optional"
       requestBody:
         required: true
         content:

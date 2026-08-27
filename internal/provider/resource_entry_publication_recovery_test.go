@@ -184,7 +184,9 @@ func TestAccEntryResourceCreatePublishFailureRequiresReplacement(t *testing.T) {
 			{
 				PreConfig: func() {
 					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-					require.Equal(t, "1", update.version)
+					require.False(t, update.versionPresent)
+					require.Empty(t, update.version)
+					require.True(t, publish.versionPresent)
 					require.Equal(t, "1", publish.version)
 					recorder.reset()
 				},
@@ -194,7 +196,9 @@ func TestAccEntryResourceCreatePublishFailureRequiresReplacement(t *testing.T) {
 				}},
 				Check: func(state *terraform.State) error {
 					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-					require.Equal(t, "1", update.version)
+					require.False(t, update.versionPresent)
+					require.Empty(t, update.version)
+					require.True(t, publish.versionPresent)
 					require.Equal(t, "1", publish.version)
 					require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "1")(state))
 
@@ -371,7 +375,7 @@ func TestAccEntryResourceExternalAdvanceClearsFailedPublishRecovery(t *testing.T
 			PreConfig: func() {
 				entry := getTestEntry(t, server)
 				response, putErr := server.Handler().PutEntry(t.Context(), &cm.EntryRequest{Fields: entry.Fields, Metadata: entry.Metadata}, cm.PutEntryParams{
-					SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: entry.Sys.Version,
+					SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
 				})
 				require.NoError(t, putErr)
 				require.IsType(t, &cm.EntryStatusCode{}, response)
@@ -464,7 +468,7 @@ func TestAccEntryResourcePublishRecoveryRejectsInterveningDraftWithoutRefresh(t 
 				PreConfig: func() {
 					entry := getTestEntry(t, server)
 					response, putErr := server.Handler().PutEntry(t.Context(), &cm.EntryRequest{Fields: entry.Fields, Metadata: entry.Metadata}, cm.PutEntryParams{
-						SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: entry.Sys.Version,
+						SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
 					})
 					require.NoError(t, putErr)
 					require.IsType(t, &cm.EntryStatusCode{}, response)

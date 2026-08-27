@@ -124,7 +124,7 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if plan.EntryID.IsNull() || plan.EntryID.IsUnknown() {
 		responseModel, version = r.createEntry(ctx, plan, &resp.Diagnostics)
 	} else {
-		responseModel, version = r.updateEntry(ctx, plan, 1, &resp.Diagnostics)
+		responseModel, version = r.createEntryWithID(ctx, plan, &resp.Diagnostics)
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -398,13 +398,54 @@ func (r *entryResource) createEntry(ctx context.Context, entry EntryModel, diags
 	return entry, version
 }
 
+func (r *entryResource) createEntryWithID(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) (EntryModel, int) {
+	putEntryParams := cm.PutEntryParams{
+		SpaceID:                entry.SpaceID.ValueString(),
+		EnvironmentID:          entry.EnvironmentID.ValueString(),
+		EntryID:                entry.EntryID.ValueString(),
+		XContentfulContentType: cm.NewOptPointerString(entry.ContentTypeID.ValueStringPointer()),
+	}
+
+	putEntryRequest, putEntryRequestDiags := entry.ToEntryRequest(ctx)
+	diags.Append(putEntryRequestDiags...)
+
+	if diags.HasError() {
+		return entry, 0
+	}
+
+	putEntryResponse, err := r.providerData.client.PutEntry(ctx, &putEntryRequest, putEntryParams)
+
+	tflog.Info(ctx, "entry.create", map[string]any{
+		"params":   putEntryParams,
+		"request":  putEntryRequest,
+		"response": putEntryResponse,
+		"err":      err,
+	})
+
+	version := 0
+
+	switch response := putEntryResponse.(type) {
+	case *cm.EntryStatusCode:
+		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
+		diags.Append(responseModelDiags...)
+
+		entry = responseModel
+		version = response.Response.Sys.Version
+
+	default:
+		diags.AddError("Failed to create entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
+	}
+
+	return entry, version
+}
+
 func (r *entryResource) updateEntry(ctx context.Context, entry EntryModel, version int, diags *diag.Diagnostics) (EntryModel, int) {
 	putEntryParams := cm.PutEntryParams{
 		SpaceID:                entry.SpaceID.ValueString(),
 		EnvironmentID:          entry.EnvironmentID.ValueString(),
 		EntryID:                entry.EntryID.ValueString(),
 		XContentfulContentType: cm.NewOptPointerString(entry.ContentTypeID.ValueStringPointer()),
-		XContentfulVersion:     version,
+		XContentfulVersion:     cm.NewOptInt(version),
 	}
 
 	putEntryRequest, putEntryRequestDiags := entry.ToEntryRequest(ctx)

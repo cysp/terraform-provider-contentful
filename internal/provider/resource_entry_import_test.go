@@ -36,7 +36,7 @@ func TestAccEntryResourceImportedPendingDraftIsNotPublished(t *testing.T) {
 	putResponse, putErr := server.Handler().PutEntry(t.Context(), &cm.EntryRequest{
 		Fields: entry.Fields, Metadata: entry.Metadata,
 	}, cm.PutEntryParams{
-		SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: entry.Sys.Version,
+		SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
 	})
 	require.NoError(t, putErr)
 	require.IsType(t, &cm.EntryStatusCode{}, putResponse)

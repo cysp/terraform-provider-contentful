@@ -59,7 +59,7 @@ resource "contentful_entry" "test" {
 					}),
 					Metadata: entry.Metadata,
 				}, cm.PutEntryParams{
-					SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: entry.Sys.Version,
+					SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
 				})
 				require.NoError(t, putErr)
 				require.IsType(t, &cm.EntryStatusCode{}, response)
@@ -98,7 +98,7 @@ resource "contentful_entry" "test" {
 					}),
 					Metadata: entry.Metadata,
 				}, cm.PutEntryParams{
-					SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: entry.Sys.Version,
+					SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
 				})
 				require.NoError(t, putErr)
 				require.IsType(t, &cm.EntryStatusCode{}, response)
