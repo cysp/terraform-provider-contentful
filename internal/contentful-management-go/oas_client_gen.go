@@ -485,7 +485,7 @@ type Invoker interface {
 	PutAppSigningSecret(ctx context.Context, request *AppSigningSecretRequestData, params PutAppSigningSecretParams, options ...RequestOption) (PutAppSigningSecretRes, error)
 	// PutContentType invokes putContentType operation.
 	//
-	// Update a content type.
+	// Create or update a content type.
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
 	PutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams, options ...RequestOption) (PutContentTypeRes, error)
@@ -9963,7 +9963,7 @@ func (c *Client) sendPutAppSigningSecret(ctx context.Context, request *AppSignin
 
 // PutContentType invokes putContentType operation.
 //
-// Update a content type.
+// Create or update a content type.
 //
 // PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}
 func (c *Client) PutContentType(ctx context.Context, request *ContentTypeRequestData, params PutContentTypeParams, options ...RequestOption) (PutContentTypeRes, error) {
@@ -10059,7 +10059,10 @@ func (c *Client) sendPutContentType(ctx context.Context, request *ContentTypeReq
 			Explode: false,
 		}
 		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
-			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+			if val, ok := params.XContentfulVersion.Get(); ok {
+				return e.EncodeValue(conv.IntToString(val))
+			}
+			return nil
 		}); err != nil {
 			return res, errors.Wrap(err, "encode header")
 		}

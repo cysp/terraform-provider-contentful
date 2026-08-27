@@ -1193,12 +1193,12 @@ paths:
           $ref: "#/components/responses/error"
     put:
       operationId: putContentType
-      summary: Update a content type
+      summary: Create or update a content type
       parameters:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/environment_id"
         - $ref: "#/components/parameters/content_type_id"
-        - $ref: "#/components/parameters/x-contentful-version-required"
+        - $ref: "#/components/parameters/x-contentful-version-optional"
       requestBody:
         required: true
         content:

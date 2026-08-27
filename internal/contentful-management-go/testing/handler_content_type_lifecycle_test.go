@@ -16,7 +16,7 @@ func TestActivateContentTypeUsesContentfulPublicationVersioning(t *testing.T) {
 
 	handler := newContentTypeTestHandler()
 	request := newContentTypeRequest()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	assert.Equal(t, 1, created.Sys.Version)
 	assert.False(t, created.Sys.PublishedVersion.IsSet())
 	assert.False(t, created.Sys.PublishedAt.IsSet())
@@ -36,7 +36,7 @@ func TestDeactivateAndDeleteContentTypeUsesContentfulLifecycle(t *testing.T) {
 
 	handler := newContentTypeTestHandler()
 	request := newContentTypeRequest()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	activated := activateContentType(t, handler, created.Sys.Version)
 
 	deletePublishedResponse, err := handler.DeleteContentType(context.Background(), contentTypeDeleteParams())
@@ -72,7 +72,7 @@ func TestPutContentTypeRejectsRemovingPublishedNonOmittedField(t *testing.T) {
 
 	handler := newContentTypeTestHandler()
 	request := contentTypeRequestWithRemovableField()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	activated := activateContentType(t, handler, created.Sys.Version)
 
 	request.Fields = request.Fields[:1]
@@ -99,11 +99,11 @@ func TestPutContentTypeRejectsRemovingFieldOmittedOnlyInDraft(t *testing.T) {
 
 	handler := newContentTypeTestHandler()
 	request := contentTypeRequestWithRemovableField()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	activated := activateContentType(t, handler, created.Sys.Version)
 
 	request.Fields[1].Omitted = cm.NewOptBool(true)
-	draft := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	draft := putContentType(t, handler, &request, activated.Sys.Version)
 	request.Fields = request.Fields[:1]
 	response, err := handler.PutContentType(context.Background(), &request, contentTypePutParams(draft.Sys.Version))
 	require.NoError(t, err)
@@ -128,15 +128,15 @@ func TestPutContentTypeAllowsRemovingFieldOmittedInPublishedVersion(t *testing.T
 
 	handler := newContentTypeTestHandler()
 	request := contentTypeRequestWithRemovableField()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	activated := activateContentType(t, handler, created.Sys.Version)
 
 	request.Fields[1].Omitted = cm.NewOptBool(true)
-	draft := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	draft := putContentType(t, handler, &request, activated.Sys.Version)
 	activated = activateContentType(t, handler, draft.Sys.Version)
 
 	request.Fields = request.Fields[:1]
-	updated := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	updated := putContentType(t, handler, &request, activated.Sys.Version)
 	assert.Equal(t, 5, updated.Sys.Version)
 	assert.Equal(t, 3, updated.Sys.PublishedVersion.Or(0))
 	require.Len(t, updated.Fields, 1)
@@ -148,15 +148,15 @@ func TestPutContentTypeAllowsRemovingNeverPublishedDraftField(t *testing.T) {
 
 	handler := newContentTypeTestHandler()
 	request := newContentTypeRequest()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	activated := activateContentType(t, handler, created.Sys.Version)
 
 	request.Fields = append(request.Fields, cm.ContentTypeRequestDataFieldsItem{
 		ID: "draft-only", Name: "Draft only", Type: "Symbol",
 	})
-	draft := putContentType(t, handler, &request, activated.Sys.Version, http.StatusOK)
+	draft := putContentType(t, handler, &request, activated.Sys.Version)
 	request.Fields = request.Fields[:1]
-	updated := putContentType(t, handler, &request, draft.Sys.Version, http.StatusOK)
+	updated := putContentType(t, handler, &request, draft.Sys.Version)
 
 	assert.Equal(t, 4, updated.Sys.Version)
 	assert.Equal(t, 1, updated.Sys.PublishedVersion.Or(0))
@@ -169,7 +169,7 @@ func TestPutContentTypeAllowsRemovingNonOmittedFieldAfterDeactivation(t *testing
 
 	handler := newContentTypeTestHandler()
 	request := contentTypeRequestWithRemovableField()
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	activateContentType(t, handler, created.Sys.Version)
 
 	response, err := handler.DeactivateContentType(context.Background(), contentTypeDeactivateParams())
@@ -181,7 +181,7 @@ func TestPutContentTypeAllowsRemovingNonOmittedFieldAfterDeactivation(t *testing
 	assert.False(t, deactivated.Sys.PublishedVersion.IsSet())
 
 	request.Fields = request.Fields[:1]
-	updated := putContentType(t, handler, &request, deactivated.Sys.Version, http.StatusOK)
+	updated := putContentType(t, handler, &request, deactivated.Sys.Version)
 	assert.Equal(t, 4, updated.Sys.Version)
 	assert.False(t, updated.Sys.PublishedVersion.IsSet())
 	require.Len(t, updated.Fields, 1)

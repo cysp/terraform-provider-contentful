@@ -27,10 +27,10 @@ func TestPutContentTypeClearsAnnotationsAndPreservesTaxonomyWhenMetadataOmitted(
 			},
 		}},
 	})
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 
 	request.Metadata.Reset()
-	updated := putContentType(t, handler, &request, created.Sys.Version, http.StatusOK)
+	updated := putContentType(t, handler, &request, created.Sys.Version)
 	metadata, metadataOK := updated.Metadata.Get()
 	require.True(t, metadataOK)
 	assert.Nil(t, metadata.Annotations)
@@ -52,10 +52,10 @@ func TestPutContentTypePreservesTaxonomyWhenMetadataOmitsTaxonomy(t *testing.T) 
 			},
 		}},
 	})
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 
 	request.Metadata.SetTo(cm.ContentTypeMetadata{Annotations: jx.Raw(`{"ContentType":[]}`)})
-	updated := putContentType(t, handler, &request, created.Sys.Version, http.StatusOK)
+	updated := putContentType(t, handler, &request, created.Sys.Version)
 	metadata, metadataOK := updated.Metadata.Get()
 	require.True(t, metadataOK)
 	assert.JSONEq(t, `{"ContentType":[]}`, string(metadata.Annotations))
@@ -78,10 +78,10 @@ func TestPutContentTypeReplacesMetadataWhenPresent(t *testing.T) {
 			},
 		}},
 	})
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 
 	request.Metadata.SetTo(cm.ContentTypeMetadata{Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{}})
-	updated := putContentType(t, handler, &request, created.Sys.Version, http.StatusOK)
+	updated := putContentType(t, handler, &request, created.Sys.Version)
 	metadata, metadataOK := updated.Metadata.Get()
 	require.True(t, metadataOK)
 	assert.Nil(t, metadata.Annotations)
@@ -96,7 +96,7 @@ func TestPutContentTypeAcceptsTaxonomyOnlyEmptyList(t *testing.T) {
 	request := newContentTypeRequest()
 	request.Metadata.SetTo(cm.ContentTypeMetadata{Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{}})
 
-	created := putContentType(t, handler, &request, 1, http.StatusCreated)
+	created := createContentType(t, handler, &request)
 	metadata, metadataOK := created.Metadata.Get()
 	require.True(t, metadataOK)
 	assert.Nil(t, metadata.Annotations)
@@ -122,7 +122,7 @@ func TestPutContentTypeRejectsEmptyMetadataObject(t *testing.T) {
 			request := newContentTypeRequest()
 			request.Metadata.SetTo(metadata)
 
-			response, err := handler.PutContentType(context.Background(), &request, contentTypePutParams(1))
+			response, err := handler.PutContentType(context.Background(), &request, contentTypeCreateParams())
 			require.NoError(t, err)
 			requireContentfulError(t, response, http.StatusUnprocessableEntity, "ValidationFailed", "Validation error")
 
@@ -155,17 +155,34 @@ func contentTypePutParams(version int) cm.PutContentTypeParams {
 		SpaceID:            "space",
 		EnvironmentID:      "environment",
 		ContentTypeID:      "content-type",
-		XContentfulVersion: version,
+		XContentfulVersion: cm.NewOptInt(version),
 	}
 }
 
-func putContentType(t *testing.T, handler *cmt.Handler, request *cm.ContentTypeRequestData, version, expectedStatus int) cm.ContentType {
+func contentTypeCreateParams() cm.PutContentTypeParams {
+	return cm.PutContentTypeParams{
+		SpaceID:       "space",
+		EnvironmentID: "environment",
+		ContentTypeID: "content-type",
+	}
+}
+
+func createContentType(t *testing.T, handler *cmt.Handler, request *cm.ContentTypeRequestData) cm.ContentType {
+	t.Helper()
+
+	response, err := handler.PutContentType(context.Background(), request, contentTypeCreateParams())
+	require.NoError(t, err)
+
+	return requireContentTypeStatusCode(t, response, http.StatusCreated)
+}
+
+func putContentType(t *testing.T, handler *cmt.Handler, request *cm.ContentTypeRequestData, version int) cm.ContentType {
 	t.Helper()
 
 	response, err := handler.PutContentType(context.Background(), request, contentTypePutParams(version))
 	require.NoError(t, err)
 
-	return requireContentTypeStatusCode(t, response, expectedStatus)
+	return requireContentTypeStatusCode(t, response, http.StatusOK)
 }
 
 func requireContentTypeStatusCode(t *testing.T, response any, expectedStatus int) cm.ContentType {

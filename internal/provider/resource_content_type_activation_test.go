@@ -42,8 +42,9 @@ const (
 )
 
 type contentTypeEvent struct {
-	Operation contentTypeOperation
-	Version   int64
+	Operation      contentTypeOperation
+	Version        int64
+	VersionPresent bool
 }
 
 func TestAccContentTypeResourceFailedCreateActivationRemainsReplaceable(t *testing.T) {
@@ -184,8 +185,8 @@ func TestAccContentTypeResourceRejectsContradictoryCreateActivationPublication(t
 		{
 			PreConfig: func() {
 				require.Equal(t, []contentTypeEvent{
-					{Operation: contentTypeOperationPut, Version: 1},
-					{Operation: contentTypeOperationActivate, Version: 1},
+					{Operation: contentTypeOperationPut, Version: -1, VersionPresent: false},
+					{Operation: contentTypeOperationActivate, Version: 1, VersionPresent: true},
 				}, handler.eventHistory())
 				handler.resetRequestHistory()
 			},
@@ -220,8 +221,8 @@ func TestAccContentTypeResourceRejectsContradictoryPutUpdateActivationPublicatio
 		{
 			PreConfig: func() {
 				require.Equal(t, []contentTypeEvent{
-					{Operation: contentTypeOperationPut, Version: 2},
-					{Operation: contentTypeOperationActivate, Version: 3},
+					{Operation: contentTypeOperationPut, Version: 2, VersionPresent: true},
+					{Operation: contentTypeOperationActivate, Version: 3, VersionPresent: true},
 				}, handler.eventHistory())
 				handler.resetRequestHistory()
 			},
@@ -843,7 +844,7 @@ func TestAccContentTypeResourceReconcilesExternalDraftBeforeActivation(t *testin
 						SpaceID:            "space",
 						EnvironmentID:      "environment",
 						ContentTypeID:      "external-draft",
-						XContentfulVersion: 2,
+						XContentfulVersion: cm.NewOptInt(2),
 					})
 					require.NoError(t, putErr)
 					require.IsType(t, &cm.ContentTypeStatusCode{}, response)
@@ -923,7 +924,7 @@ func TestAccContentTypeResourceActivatesExternalPendingDraftWithoutModeledDrift(
 					SpaceID:            "space",
 					EnvironmentID:      "environment",
 					ContentTypeID:      "external-pending-no-drift",
-					XContentfulVersion: 2,
+					XContentfulVersion: cm.NewOptInt(2),
 				})
 				require.NoError(t, putErr)
 				require.IsType(t, &cm.ContentTypeStatusCode{}, response)
@@ -1015,7 +1016,7 @@ func TestAccContentTypeResourceDraftPutRaceDoesNotRetryAgainstNewerVersion(t *te
 					racingDraft.Description = cm.NewOptNilString("Must not be overwritten or activated")
 
 					response, putErr := server.Handler().PutContentType(request.Context(), &racingDraft, cm.PutContentTypeParams{
-						SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "draft-put-race", XContentfulVersion: current.Sys.Version,
+						SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "draft-put-race", XContentfulVersion: cm.NewOptInt(current.Sys.Version),
 					})
 					if putErr != nil {
 						tracedRace <- fmt.Errorf("create racing draft before Terraform PUT: %w", putErr)
@@ -1033,7 +1034,7 @@ func TestAccContentTypeResourceDraftPutRaceDoesNotRetryAgainstNewerVersion(t *te
 				}
 			},
 			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
-			ExpectError: regexp.MustCompile(`Failed to save content type draft`),
+			ExpectError: regexp.MustCompile(`Failed to update content type`),
 		},
 		{
 			PreConfig: func() {
@@ -1106,7 +1107,7 @@ func TestAccContentTypeResourceActivationRaceDoesNotPublishInterveningDraft(t *t
 							SpaceID:            "space",
 							EnvironmentID:      "environment",
 							ContentTypeID:      "activation-race",
-							XContentfulVersion: 3,
+							XContentfulVersion: cm.NewOptInt(3),
 						})
 						if putErr != nil {
 							raceSetupResult <- fmt.Errorf("create racing external draft: %w", putErr)
@@ -1369,20 +1370,23 @@ func (h *contentTypeActivationTestHandler) serveActivation(responseWriter http.R
 
 func (h *contentTypeActivationTestHandler) recordEvent(operation contentTypeOperation, request *http.Request) {
 	version := int64(0)
+	versionPresent := len(request.Header.Values("X-Contentful-Version")) > 0
 
 	if operation != contentTypeOperationGet {
-		var err error
+		version = -1
 
-		version, err = strconv.ParseInt(request.Header.Get("X-Contentful-Version"), 10, 64)
-		if err != nil {
-			version = -1
+		if versionPresent {
+			parsedVersion, err := strconv.ParseInt(request.Header.Get("X-Contentful-Version"), 10, 64)
+			if err == nil {
+				version = parsedVersion
+			}
 		}
 	}
 
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	h.events = append(h.events, contentTypeEvent{Operation: operation, Version: version})
+	h.events = append(h.events, contentTypeEvent{Operation: operation, Version: version, VersionPresent: versionPresent})
 }
 
 func (h *contentTypeActivationTestHandler) activationVersionHistory() []int64 {

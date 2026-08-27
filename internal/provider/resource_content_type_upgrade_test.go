@@ -175,7 +175,7 @@ func seedActivatedLegacyContentType(t *testing.T, server *cmt.Server, contentTyp
 		},
 	}
 	putResponse, err := server.Handler().PutContentType(t.Context(), &request, cm.PutContentTypeParams{
-		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: contentTypeID, XContentfulVersion: 1,
+		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: contentTypeID,
 	})
 	require.NoError(t, err)
 
