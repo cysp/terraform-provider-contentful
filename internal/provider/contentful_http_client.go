@@ -183,8 +183,9 @@ func contentfulRetryPolicy(ctx context.Context, response *http.Response, err err
 	}
 
 	if err == nil && response != nil && response.StatusCode == http.StatusTooManyRequests {
-		// A complete 429 response establishes that Contentful rejected the
-		// request before applying it, so retrying a mutation is unambiguous.
+		// CMA documents 429 as rate limiting, and Contentful's first-party
+		// management SDK retries it. Follow that Contentful-specific policy for
+		// every method without treating 429 as proof that a mutation did not commit.
 		return true, nil
 	}
 
