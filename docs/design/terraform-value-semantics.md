@@ -248,13 +248,10 @@ inherently non-idempotent.
 Contentful documents `429 Too Many Requests` as rate limiting and tells clients
 to wait before making another request; its first-party management SDK also
 retries 429 responses. The provider follows that Contentful-specific policy for
-every HTTP method. Neither source establishes the first mutation's commitment
-outcome, so mutation retries carry accepted residual ambiguity rather than
-treating a completed 429 as a commitment oracle. Contentful's reset-based
-backoff is retained, with post-reset contention jitter. Retries are bounded by
-each request's finite context deadline, and context cancellation terminates
-retry backoff. The evidence boundary and detailed deadline and backoff contract
-are recorded in [Contentful HTTP retry policy](contentful-http-retry-policy.md).
+every HTTP method. Neither source establishes whether a mutation committed, so
+mutation retries retain accepted residual ambiguity. The evidence, deadline,
+and backoff contracts are recorded in
+[Contentful HTTP retry policy](contentful-http-retry-policy.md).
 
 ### Entry publication recovery and partial field ownership
 

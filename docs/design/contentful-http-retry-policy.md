@@ -41,26 +41,14 @@ applied write.
 
 ### 429 evidence boundary
 
-Contentful's current [CMA rate-limit documentation](https://www.contentful.com/developers/docs/references/content-management-api/overview/#api-rate-limits)
-classifies 429 as rate limiting, provides the reset interval, and tells clients
-to wait before making another request. Contentful's first-party management SDK,
-at commit [`cc096a337f0e1db6114e8da645d69bb6eb90f11c`](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/README.md#L387-L389),
-retries 429 and 500 responses by default. That client behavior is
-interoperability evidence, not a formal server guarantee about mutation
-commitment.
+| Evidence | Establishes | Does not establish |
+| --- | --- | --- |
+| Contentful's [CMA rate-limit documentation](https://www.contentful.com/developers/docs/references/content-management-api/overview/#api-rate-limits) | 429 represents rate limiting and the reset interval tells clients when to retry | Whether a mutation returning 429 committed |
+| Contentful's [first-party management SDK](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/README.md#L387-L389) | The SDK retries 429 and 500 responses by default | A server commitment guarantee |
 
-| Claim | CMA docs | First-party SDK | Formal server guarantee |
-| --- | --- | --- | --- |
-| 429 identifies rate limiting | Supported | Consistent | Yes, classification |
-| wait and issue another request | Supported client behavior | Implemented | Retry practice |
-| first mutation definitely did not commit | Not stated | Not established | Not found |
-
-The provider retains all-method 429 retries as an accepted Contentful-specific
-policy. For mutation methods, the public evidence does not establish the first
-request's commitment outcome, so retrying carries residual ambiguity. The
-provider does not use a completed 429 as a commitment oracle. This differs from
-transport failures and ordinary 5xx responses only in provider policy: those
-outcomes remain non-retried for POST, PUT, PATCH, and DELETE.
+The provider retains all-method 429 retries for Contentful interoperability,
+accepting residual ambiguity for mutation commitment. Transport failures and
+ordinary 5xx responses remain non-retried for POST, PUT, PATCH, and DELETE.
 
 For a valid `X-Contentful-RateLimit-Reset` response, the reset is the earliest
 retry time. The provider waits for the reset plus 100ms and full jitter from a
