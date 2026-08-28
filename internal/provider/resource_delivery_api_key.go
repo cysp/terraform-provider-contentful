@@ -250,10 +250,8 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -262,7 +260,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 	params := cm.UpdateDeliveryAPIKeyParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		APIKeyID:           plan.APIKeyID.ValueString(),
-		XContentfulVersion: currentVersion,
+		XContentfulVersion: version,
 	}
 
 	response, err := r.providerData.client.UpdateDeliveryAPIKey(ctx, &request, params)
@@ -282,7 +280,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -307,7 +305,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl

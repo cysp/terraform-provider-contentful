@@ -46,15 +46,28 @@ func GetPrivateProviderData[T any](ctx context.Context, providerData PrivateProv
 }
 
 func requiredPrivateVersion(ctx context.Context, providerData PrivateProviderData) (int, diag.Diagnostics) {
-	var version int
-
-	diags := GetPrivateProviderData(ctx, providerData, "version", &version)
-	if !diags.HasError() && version <= 0 {
-		diags.AddError(
-			"Invalid Contentful resource version",
-			"Contentful sys.version stored in Terraform private state must be a positive integer. Refresh Terraform state and create a new plan before applying this change.",
-		)
+	version, found, diags := optionalPrivateVersion(ctx, providerData)
+	if !found && !diags.HasError() {
+		diags.AddError("Private version is unavailable", "Terraform private state does not contain a Contentful version.")
 	}
 
 	return version, diags
+}
+
+func optionalPrivateVersion(ctx context.Context, providerData PrivateProviderData) (int, bool, diag.Diagnostics) {
+	value, diags := providerData.GetKey(ctx, "version")
+	if diags.HasError() || len(value) == 0 {
+		return 0, false, diags
+	}
+
+	var version int
+
+	err := json.Unmarshal(value, &version)
+	if err != nil {
+		diags.AddError("Failed to unmarshal value", err.Error())
+
+		return 0, true, diags
+	}
+
+	return version, true, diags
 }

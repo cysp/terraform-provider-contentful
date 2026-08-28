@@ -235,15 +235,14 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	var currentVersion int
-
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	params.XContentfulVersion.SetTo(currentVersion)
+	params.XContentfulVersion.SetTo(version)
 
 	response, err := r.providerData.client.PutTag(ctx, &request, params)
 
@@ -262,7 +261,7 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -287,7 +286,7 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -311,16 +310,15 @@ func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := state.ToDeleteTagParams()
-	params.XContentfulVersion.SetTo(currentVersion)
+	params.XContentfulVersion.SetTo(version)
 
 	response, err := r.providerData.client.DeleteTag(ctx, params)
 

@@ -323,15 +323,14 @@ func (h *taxonomyRequestHook) wasCalled() bool {
 type taxonomyResponseMutator struct {
 	next http.Handler
 
-	mu              sync.Mutex
-	method          string
-	path            string
-	locale          string
-	add             bool
-	responseVersion *int
-	organizationID  string
-	resourceID      string
-	removeIdentity  bool
+	mu             sync.Mutex
+	method         string
+	path           string
+	locale         string
+	add            bool
+	organizationID string
+	resourceID     string
+	removeIdentity bool
 }
 
 func (m *taxonomyResponseMutator) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
@@ -355,14 +354,12 @@ func (m *taxonomyResponseMutator) ServeHTTP(responseWriter http.ResponseWriter, 
 }
 
 func (m *taxonomyResponseMutator) mutateResponse(method, path string, body []byte) []byte {
-	locale, add, responseVersion, organizationID, resourceID, removeIdentity, mutate := m.consumeMutation(method, path)
+	locale, add, organizationID, resourceID, removeIdentity, mutate := m.consumeMutation(method, path)
 	if !mutate {
 		return body
 	}
 
 	switch {
-	case responseVersion != nil:
-		return setTaxonomyResponseVersion(body, *responseVersion)
 	case organizationID != "":
 		return replaceTaxonomyResponseIdentity(body, organizationID, resourceID)
 	case removeIdentity:
@@ -378,7 +375,7 @@ func (m *taxonomyResponseMutator) replaceIdentityOnce(method, path, organization
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.method, m.path, m.locale, m.add, m.responseVersion, m.removeIdentity = method, path, "", false, nil, false
+	m.method, m.path, m.locale, m.add, m.removeIdentity = method, path, "", false, false
 	m.organizationID, m.resourceID = organizationID, resourceID
 }
 
@@ -386,7 +383,7 @@ func (m *taxonomyResponseMutator) removeIdentityOnce(method, path string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.method, m.path, m.locale, m.add, m.responseVersion, m.removeIdentity = method, path, "", false, nil, true
+	m.method, m.path, m.locale, m.add, m.removeIdentity = method, path, "", false, true
 	m.organizationID, m.resourceID = "", ""
 }
 
@@ -394,33 +391,25 @@ func (m *taxonomyResponseMutator) dropPreferredLabelOnce(method, path, locale st
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.method, m.path, m.locale, m.add, m.responseVersion = method, path, locale, false, nil
+	m.method, m.path, m.locale, m.add = method, path, locale, false
 }
 
-func (m *taxonomyResponseMutator) versionOnce(method, path string, version int) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	m.method, m.path, m.locale, m.add, m.responseVersion = method, path, "", false, &version
-}
-
-func (m *taxonomyResponseMutator) consumeMutation(method, path string) (string, bool, *int, string, string, bool, bool) {
+func (m *taxonomyResponseMutator) consumeMutation(method, path string) (string, bool, string, string, bool, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if method != m.method || !strings.Contains(path, m.path) {
-		return "", false, nil, "", "", false, false
+		return "", false, "", "", false, false
 	}
 
 	locale := m.locale
 	add := m.add
-	responseVersion := m.responseVersion
 	organizationID, resourceID := m.organizationID, m.resourceID
 	removeIdentity := m.removeIdentity
-	m.method, m.path, m.locale, m.add, m.responseVersion = "", "", "", false, nil
+	m.method, m.path, m.locale, m.add = "", "", "", false
 	m.organizationID, m.resourceID = "", ""
 
-	return locale, add, responseVersion, organizationID, resourceID, removeIdentity, true
+	return locale, add, organizationID, resourceID, removeIdentity, true
 }
 
 func removeTaxonomyResponseIdentity(body []byte) []byte {
@@ -527,41 +516,6 @@ func mustMarshalTaxonomyResponseValue(value any) json.RawMessage {
 	}
 
 	return encoded
-}
-
-func setTaxonomyResponseVersion(body []byte, version int) []byte {
-	document := map[string]json.RawMessage{}
-
-	err := json.Unmarshal(body, &document)
-	if err != nil {
-		return body
-	}
-
-	sys := map[string]json.RawMessage{}
-
-	err = json.Unmarshal(document["sys"], &sys)
-	if err != nil {
-		return body
-	}
-
-	encodedVersion, err := json.Marshal(version)
-	if err != nil {
-		return body
-	}
-
-	sys["version"] = encodedVersion
-
-	document["sys"], err = json.Marshal(sys)
-	if err != nil {
-		return body
-	}
-
-	result, err := json.Marshal(document)
-	if err != nil {
-		return body
-	}
-
-	return result
 }
 
 func addEmptyLabelLocale(body []byte, locale string) []byte {

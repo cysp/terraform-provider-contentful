@@ -235,10 +235,8 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -247,7 +245,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	params := cm.UpdateRoleParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		RoleID:             plan.RoleID.ValueString(),
-		XContentfulVersion: currentVersion,
+		XContentfulVersion: version,
 	}
 
 	request, requestDiags := plan.ToRoleData()
@@ -274,7 +272,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update role", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -299,7 +297,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl

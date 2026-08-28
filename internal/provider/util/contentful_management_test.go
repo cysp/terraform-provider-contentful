@@ -51,6 +51,15 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			},
 			expected: "Error: UnknownError: Error message",
 		},
+		"VersionMismatch": {
+			response: &cm.ErrorStatusCode{
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
+					Sys:     cm.NewErrorSys(cm.ErrorSysIDVersionMismatch),
+					Message: cm.NewOptString("Version mismatch"),
+				}),
+			},
+			expected: "Error: VersionMismatch: Version mismatch\n\nContentful rejected the request because its version precondition was not satisfied.",
+		},
 		"ErrorStatusCodeWithMessageAndUnsupportedDetails": {
 			response: &cm.ErrorStatusCode{
 				Response: cm.NewErrorApplicationJSONError(cm.Error{

@@ -113,7 +113,7 @@ func TestAccEntryResourceSpecifiedIDCollisionDoesNotMutateOrAdopt(t *testing.T) 
 		Steps: []resource.TestStep{
 			{
 				Config:      managedEntryConfig("must not replace sentinel"),
-				ExpectError: regexp.MustCompile(`Failed to create entry`),
+				ExpectError: regexp.MustCompile(`(?s)Failed to create entry.*VersionMismatch.*version precondition was not\s+satisfied`),
 			},
 			{
 				PreConfig: func() {
@@ -134,7 +134,7 @@ func TestAccEntryResourceSpecifiedIDCollisionDoesNotMutateOrAdopt(t *testing.T) 
 					require.Empty(t, requests[0].version)
 				},
 				Config:      managedEntryConfig("must not replace sentinel"),
-				ExpectError: regexp.MustCompile(`Failed to create entry`),
+				ExpectError: regexp.MustCompile(`(?s)Failed to create entry.*VersionMismatch.*version precondition was not\s+satisfied`),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionCreate),
 				}},

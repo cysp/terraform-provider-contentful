@@ -102,11 +102,8 @@ func (r *taxonomyConceptResource) Create(ctx context.Context, req resource.Creat
 		}
 	}
 
-	responseVersion, versionDiags := taxonomyResponseVersion(concept.Sys.Version)
-	resp.Diagnostics.Append(versionDiags...)
-
-	if statePublished && !versionDiags.HasError() {
-		resp.Diagnostics.Append(setTaxonomyPrivateVersion(ctx, resp.Private, responseVersion)...)
+	if statePublished {
+		resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", concept.Sys.Version)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its
@@ -149,13 +146,6 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	responseVersion, versionDiags := taxonomyResponseVersion(concept.Sys.Version)
-	resp.Diagnostics.Append(versionDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	data, modelDiags := newTaxonomyConceptRefreshState(ctx, state, *concept)
 	resp.Diagnostics.Append(modelDiags...)
 
@@ -176,7 +166,7 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	resp.Diagnostics.Append(setTaxonomyPrivateVersion(ctx, resp.Private, responseVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", concept.Sys.Version)...)
 }
 
 func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -226,7 +216,7 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	priorStateVersion, versionDiags := taxonomyPriorStateVersion(ctx, req.Private)
+	priorStateVersion, versionDiags := requiredPrivateVersion(ctx, req.Private)
 	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -239,7 +229,7 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 
 	concept, ok := response.(*cm.TaxonomyConcept)
 	if !ok {
-		resp.Diagnostics.AddError("Failed to update taxonomy concept", taxonomyMutationErrorDetail(response, err))
+		resp.Diagnostics.AddError("Failed to update taxonomy concept", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 		return
 	}
@@ -259,11 +249,8 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 		}
 	}
 
-	responseVersion, responseVersionDiags := taxonomyResponseVersion(concept.Sys.Version)
-	resp.Diagnostics.Append(responseVersionDiags...)
-
-	if statePublished && !responseVersionDiags.HasError() {
-		resp.Diagnostics.Append(setTaxonomyPrivateVersion(ctx, resp.Private, responseVersion)...)
+	if statePublished {
+		resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", concept.Sys.Version)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its
@@ -290,7 +277,7 @@ func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.Delet
 	defer cancel()
 
 	organizationID, conceptID := state.OrganizationID.ValueString(), state.ConceptID.ValueString()
-	priorStateVersion, versionFound, versionDiags := taxonomyPrivateVersion(ctx, req.Private)
+	priorStateVersion, versionFound, versionDiags := optionalPrivateVersion(ctx, req.Private)
 	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -313,12 +300,7 @@ func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.Delet
 			return
 		}
 
-		priorStateVersion, versionDiags = taxonomyDeleteResponseVersion("taxonomy concept", organizationID, conceptID, concept.Sys.Organization.Sys.ID, concept.Sys.ID, concept.Sys.Version)
-		resp.Diagnostics.Append(versionDiags...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
+		priorStateVersion = concept.Sys.Version
 	}
 
 	params := cm.DeleteTaxonomyConceptParams{OrganizationID: organizationID, TaxonomyConceptID: conceptID, XContentfulVersion: priorStateVersion}
@@ -333,5 +315,5 @@ func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	resp.Diagnostics.AddError("Failed to delete taxonomy concept", taxonomyMutationErrorDetail(response, err))
+	resp.Diagnostics.AddError("Failed to delete taxonomy concept", util.ErrorDetailFromContentfulManagementResponse(response, err))
 }
