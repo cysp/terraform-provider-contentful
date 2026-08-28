@@ -234,10 +234,8 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -246,7 +244,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	params := cm.PutTeamParams{
 		OrganizationID:     plan.OrganizationID.ValueString(),
 		TeamID:             plan.TeamID.ValueString(),
-		XContentfulVersion: currentVersion,
+		XContentfulVersion: version,
 	}
 
 	request, requestDiags := plan.ToTeamData(path.Empty())
@@ -273,7 +271,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update team", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -298,7 +296,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl

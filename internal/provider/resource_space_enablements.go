@@ -246,10 +246,8 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -257,7 +255,7 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 
 	params := cm.PutSpaceEnablementsParams{
 		SpaceID:            plan.SpaceID.ValueString(),
-		XContentfulVersion: currentVersion,
+		XContentfulVersion: version,
 	}
 
 	response, err := r.providerData.client.PutSpaceEnablements(ctx, &request, params)
@@ -277,7 +275,7 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update space enablements", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -302,7 +300,7 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *spaceEnablementsResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {

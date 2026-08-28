@@ -248,9 +248,8 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	var currentVersion int
-
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -259,7 +258,7 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 	params := cm.CreateOrUpdateEnvironmentParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		EnvironmentID:      plan.EnvironmentID.ValueString(),
-		XContentfulVersion: cm.NewOptInt(currentVersion),
+		XContentfulVersion: cm.NewOptInt(version),
 	}
 
 	response, err := r.providerData.client.CreateOrUpdateEnvironment(ctx, &request, params)
@@ -279,7 +278,7 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update environment", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -305,7 +304,7 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl

@@ -701,193 +701,6 @@ func TestAccTaxonomyResourcesRejectResponseIdentityRetargeting(t *testing.T) {
 }
 
 //nolint:paralleltest
-func TestAccTaxonomyInvalidCreateResponseVersionCheckpointsState(t *testing.T) {
-	parallelWhenMocked(t)
-
-	tests := map[string]struct {
-		path         string
-		config       string
-		resourceName string
-		responseName string
-	}{
-		"concept": {
-			path: "/taxonomy/concepts/furniture", config: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test", responseName: "taxonomy concept",
-		},
-		"scheme": {
-			path: "/taxonomy/concept-schemes/products", config: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test", responseName: "taxonomy concept scheme",
-		},
-	}
-
-	for name, test := range tests {
-		for _, responseVersion := range []int{0, -1} {
-			t.Run(fmt.Sprintf("%s/version_%d", name, responseVersion), func(t *testing.T) {
-				parallelWhenMocked(t)
-
-				server, err := cmt.NewContentfulManagementServer()
-				require.NoError(t, err)
-
-				consistencyMutator := &taxonomyResponseMutator{next: server}
-				versionMutator := &taxonomyResponseMutator{next: consistencyMutator}
-				recorder := &taxonomyRequestBodyRecorder{next: versionMutator}
-
-				expectedError := `Invalid taxonomy resource version`
-				if responseVersion < 0 {
-					expectedError = `(?s)(Invalid taxonomy resource version.*Unexpected Contentful ` + test.responseName + ` response|Unexpected Contentful ` + test.responseName + ` response.*Invalid taxonomy resource version)`
-				}
-
-				ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
-					AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
-					Steps: []resource.TestStep{
-						{
-							PreConfig: func() {
-								if responseVersion < 0 {
-									consistencyMutator.replaceIdentityOnce(http.MethodPut, test.path, "invalid-version-organization", "invalid-version-resource")
-								}
-
-								versionMutator.versionOnce(http.MethodPut, test.path, responseVersion)
-							},
-							Config:      test.config,
-							ExpectError: regexp.MustCompile(expectedError),
-						},
-						{
-							Config: test.config,
-							ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-								plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionReplace),
-							}},
-						},
-					},
-				})
-
-				require.Len(t, recorder.matchingRequests(http.MethodPut, test.path), 2)
-				require.Len(t, recorder.matchingRequests(http.MethodGet, test.path), 1, "tainted replacement must fetch the version missing from private state")
-
-				deletes := recorder.matchingRequests(http.MethodDelete, test.path)
-				require.GreaterOrEqual(t, len(deletes), 2, "tainted replacement and test cleanup should each delete")
-
-				for _, request := range deletes {
-					assert.Equal(t, "1", request.version)
-				}
-			})
-		}
-	}
-}
-
-//nolint:paralleltest
-func TestAccTaxonomyInvalidUpdateResponseVersionCheckpointsState(t *testing.T) {
-	parallelWhenMocked(t)
-
-	tests := map[string]struct {
-		path          string
-		resourceName  string
-		responseName  string
-		initialConfig string
-		changedConfig string
-		finalConfig   string
-		changedLabel  string
-		finalLabel    string
-	}{
-		"concept": {
-			path: "/taxonomy/concepts/furniture", resourceName: "contentful_taxonomy_concept.test", responseName: "taxonomy concept",
-			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"), finalConfig: taxonomyConceptConfig("Domestic furniture"),
-			changedLabel: "Home furniture", finalLabel: "Domestic furniture",
-		},
-		"scheme": {
-			path: "/taxonomy/concept-schemes/products", resourceName: "contentful_taxonomy_concept_scheme.test", responseName: "taxonomy concept scheme",
-			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Home products"), finalConfig: taxonomyConceptSchemeConfig("Domestic products"),
-			changedLabel: "Home products", finalLabel: "Domestic products",
-		},
-	}
-
-	for name, test := range tests {
-		for _, responseVersion := range []int{0, -1} {
-			t.Run(fmt.Sprintf("%s/version_%d", name, responseVersion), func(t *testing.T) {
-				parallelWhenMocked(t)
-
-				server, err := cmt.NewContentfulManagementServer()
-				require.NoError(t, err)
-
-				consistencyMutator := &taxonomyResponseMutator{next: server}
-				versionMutator := &taxonomyResponseMutator{next: consistencyMutator}
-				recorder := &taxonomyRequestBodyRecorder{next: versionMutator}
-
-				expectedError := `Invalid taxonomy resource version`
-				if responseVersion < 0 {
-					expectedError = `(?s)(Invalid taxonomy resource version.*Unexpected Contentful ` + test.responseName + ` response|Unexpected Contentful ` + test.responseName + ` response.*Invalid taxonomy resource version)`
-				}
-
-				ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
-					AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
-					Steps: []resource.TestStep{
-						{Config: test.initialConfig},
-						{
-							PreConfig: func() {
-								if responseVersion < 0 {
-									consistencyMutator.replaceIdentityOnce(http.MethodPatch, test.path, "invalid-version-organization", "invalid-version-resource")
-								}
-
-								versionMutator.versionOnce(http.MethodPatch, test.path, responseVersion)
-							},
-							Config:      test.changedConfig,
-							ExpectError: regexp.MustCompile(expectedError),
-						},
-						{
-							Config: test.changedConfig,
-							ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-								plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop),
-							}},
-							Check: resource.TestCheckResourceAttr(test.resourceName, "pref_label.en-US", test.changedLabel),
-						},
-						{
-							Config:      test.finalConfig,
-							ExpectError: regexp.MustCompile(`changed after\s+this Terraform plan was created`),
-						},
-						{
-							RefreshState:       true,
-							ExpectNonEmptyPlan: true,
-							Check:              resource.TestCheckResourceAttr(test.resourceName, "pref_label.en-US", test.changedLabel),
-						},
-						{
-							Config: test.finalConfig,
-							Check:  resource.TestCheckResourceAttr(test.resourceName, "pref_label.en-US", test.finalLabel),
-						},
-					},
-				})
-
-				patches := recorder.matchingRequests(http.MethodPatch, test.path)
-				require.Len(t, patches, 3)
-				assert.Equal(t, "1", patches[0].version, "the initial Update must use the prior private version")
-				assert.Equal(t, "1", patches[1].version, "an update before refresh must retain the stale optimistic-lock token")
-				assert.Equal(t, "2", patches[2].version, "refresh must acquire the remote response version")
-				assert.Equal(t, patches[1].body, patches[2].body, "the stale rejected mutation must be retried unchanged after refresh")
-
-				assertTaxonomyPreferredLabelPatch(t, patches[0].body, test.changedLabel)
-				assertTaxonomyPreferredLabelPatch(t, patches[1].body, test.finalLabel)
-
-				deletes := recorder.matchingRequests(http.MethodDelete, test.path)
-				require.NotEmpty(t, deletes)
-
-				for _, request := range deletes {
-					assert.Equal(t, "3", request.version, "successful Update must store its positive response version")
-				}
-			})
-		}
-	}
-}
-
-func assertTaxonomyPreferredLabelPatch(t *testing.T, body []byte, label string) {
-	t.Helper()
-
-	var patch []struct {
-		Path  string          `json:"path"`
-		Value json.RawMessage `json:"value"`
-	}
-	require.NoError(t, json.Unmarshal(body, &patch))
-	require.Len(t, patch, 1)
-	assert.Equal(t, "/prefLabel", patch[0].Path)
-	assert.JSONEq(t, fmt.Sprintf(`{"en-US":%q}`, label), string(patch[0].Value))
-}
-
-//nolint:paralleltest
 func TestAccTaxonomyConceptPreservesExplicitEmptyLabelMapsAgainstCanonicalResponse(t *testing.T) {
 	parallelWhenMocked(t)
 
@@ -1030,22 +843,22 @@ func TestAccTaxonomyResourcesSurfaceVersionConflicts(t *testing.T) {
 	}{
 		"concept update": {
 			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"),
-			method: http.MethodPatch, path: "/taxonomy/concepts/furniture", expectedError: `changed after\s+this Terraform plan was created`,
+			method: http.MethodPatch, path: "/taxonomy/concepts/furniture", expectedError: `version precondition was not\s+satisfied`,
 			bumpVersion: bumpTaxonomyConceptVersion,
 		},
 		"concept delete": {
 			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: "# intentionally empty\n",
-			method: http.MethodDelete, path: "/taxonomy/concepts/furniture", expectedError: `changed after\s+this Terraform plan was created`,
+			method: http.MethodDelete, path: "/taxonomy/concepts/furniture", expectedError: `version precondition was not\s+satisfied`,
 			bumpVersion: bumpTaxonomyConceptVersion,
 		},
 		"scheme update": {
 			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Home products"),
-			method: http.MethodPatch, path: "/taxonomy/concept-schemes/products", expectedError: `changed after\s+this Terraform plan was created`,
+			method: http.MethodPatch, path: "/taxonomy/concept-schemes/products", expectedError: `version precondition was not\s+satisfied`,
 			bumpVersion: bumpTaxonomyConceptSchemeVersion,
 		},
 		"scheme delete": {
 			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: "# intentionally empty\n",
-			method: http.MethodDelete, path: "/taxonomy/concept-schemes/products", expectedError: `changed after\s+this Terraform plan was created`,
+			method: http.MethodDelete, path: "/taxonomy/concept-schemes/products", expectedError: `version precondition was not\s+satisfied`,
 			bumpVersion: bumpTaxonomyConceptSchemeVersion,
 		},
 	}
@@ -1425,7 +1238,7 @@ func TestAccTaxonomyTaintedReplacementPreservesDeleteVersionLock(t *testing.T) {
 							hook.runOnce(http.MethodDelete, test.path, func() error { return test.bumpVersion(server) })
 						},
 						Config: test.config, Taint: []string{test.resourceName},
-						ExpectError: regexp.MustCompile(`changed after\s+this Terraform plan was created`),
+						ExpectError: regexp.MustCompile(`version precondition was not\s+satisfied`),
 					},
 					{Config: test.config},
 				},

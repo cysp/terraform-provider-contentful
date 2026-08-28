@@ -227,7 +227,7 @@ func TestAccContentTypeResourceSpecifiedIDCollisionDoesNotMutateActivateOrAdopt(
 	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config:      managedContentTypeConfig("Must not replace sentinel"),
-			ExpectError: regexp.MustCompile(`Failed to create content type`),
+			ExpectError: regexp.MustCompile(`(?s)Failed to create content type.*VersionMismatch.*version precondition was not\s+satisfied`),
 		},
 		{
 			PreConfig: func() {
@@ -250,7 +250,7 @@ func TestAccContentTypeResourceSpecifiedIDCollisionDoesNotMutateActivateOrAdopt(
 				require.Empty(t, requests[0].version, "collision request must be create-only")
 			},
 			Config:      managedContentTypeConfig("Must not replace sentinel"),
-			ExpectError: regexp.MustCompile(`Failed to create content type`),
+			ExpectError: regexp.MustCompile(`(?s)Failed to create content type.*VersionMismatch.*version precondition was not\s+satisfied`),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionCreate),
 			}},

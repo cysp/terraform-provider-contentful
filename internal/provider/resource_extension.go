@@ -359,10 +359,8 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -372,7 +370,7 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 		SpaceID:            plan.SpaceID.ValueString(),
 		EnvironmentID:      plan.EnvironmentID.ValueString(),
 		ExtensionID:        plan.ExtensionID.ValueString(),
-		XContentfulVersion: currentVersion,
+		XContentfulVersion: version,
 	}
 
 	response, err := r.providerData.client.PutExtension(ctx, &request, params)
@@ -392,7 +390,7 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update extension", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -417,7 +415,7 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl

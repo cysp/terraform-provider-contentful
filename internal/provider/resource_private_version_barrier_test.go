@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"sync/atomic"
 	"testing"
 
@@ -24,6 +25,117 @@ type privateVersionState struct {
 	name            string
 	value           []byte
 	expectedSummary string
+}
+
+type privateVersionRequest struct {
+	method, path, version string
+	versionPresent        bool
+}
+
+type privateVersionForwardingCase struct {
+	requiredPrivateVersionResourceCase
+
+	method string
+	path   string
+}
+
+func TestPrivateVersionValuesAreForwardedToRepresentativeMutations(t *testing.T) {
+	t.Parallel()
+
+	selected := map[string]struct {
+		method string
+		path   string
+	}{
+		"delivery API key update": {method: http.MethodPut, path: "/spaces/space/api_keys/key"},
+		"tag update":              {method: http.MethodPut, path: "/spaces/space/environments/environment/tags/tag"},
+	}
+
+	var cases []privateVersionForwardingCase
+
+	for _, test := range requiredPrivateVersionResourceCases(t) {
+		expected, ok := selected[test.name]
+		if ok {
+			cases = append(cases, privateVersionForwardingCase{
+				requiredPrivateVersionResourceCase: test, method: expected.method, path: expected.path,
+			})
+		}
+	}
+
+	cases = append(cases,
+		privateVersionForwardingCase{
+			requiredPrivateVersionResourceCase: requiredPrivateVersionResourceCase{
+				name: "taxonomy concept delete", typeName: "contentful_taxonomy_concept",
+				resourceSchema: TaxonomyConceptResourceSchema(t.Context()), model: taxonomyConceptDeleteState(), delete: true,
+			},
+			method: http.MethodDelete, path: "/organizations/organization-id/taxonomy/concepts/concept",
+		},
+		privateVersionForwardingCase{
+			requiredPrivateVersionResourceCase: requiredPrivateVersionResourceCase{
+				name: "taxonomy concept scheme delete", typeName: "contentful_taxonomy_concept_scheme",
+				resourceSchema: TaxonomyConceptSchemeResourceSchema(t.Context()), model: taxonomyConceptSchemeDeleteState(), delete: true,
+			},
+			method: http.MethodDelete, path: "/organizations/organization-id/taxonomy/concept-schemes/scheme",
+		},
+	)
+
+	for _, test := range cases {
+		for _, version := range []int{0, -1} {
+			t.Run(test.name+"/version "+strconv.Itoa(version), func(t *testing.T) {
+				t.Parallel()
+
+				var requests []privateVersionRequest
+
+				testServer := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+					_, versionPresent := request.Header["X-Contentful-Version"]
+					requests = append(requests, privateVersionRequest{
+						method: request.Method, path: request.URL.Path,
+						version: request.Header.Get("X-Contentful-Version"), versionPresent: versionPresent,
+					})
+
+					response.WriteHeader(http.StatusNoContent)
+				}))
+				t.Cleanup(testServer.Close)
+
+				providerServer, err := makeTestAccProtoV6ProviderFactories(
+					WithContentfulURL(testServer.URL),
+					WithAccessToken("test-token"),
+				)["contentful"]()
+				require.NoError(t, err)
+
+				providerConfig, err := providerConfigDynamicValue(map[string]any{
+					"url":          tftypes.UnknownValue,
+					"access_token": tftypes.UnknownValue,
+				})
+				require.NoError(t, err)
+
+				configureResponse, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{
+					Config: &providerConfig,
+				})
+				require.NoError(t, err)
+				require.Empty(t, configureResponse.Diagnostics)
+
+				state := resourceModelDynamicValue(t, test.resourceSchema, test.model)
+
+				plannedState := state
+				if test.plannedModel != nil {
+					plannedState = resourceModelDynamicValue(t, test.resourceSchema, test.plannedModel)
+				}
+
+				if test.delete {
+					plannedState = nullResourceDynamicValue(t, test.resourceSchema)
+				}
+
+				_, err = providerServer.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{
+					TypeName: test.typeName, PriorState: &state, PlannedState: &plannedState,
+					Config: &plannedState, PlannedPrivate: privateVersionBytes(t, version),
+				})
+				require.NoError(t, err)
+				require.Equal(t, []privateVersionRequest{{
+					method: test.method, path: test.path, version: strconv.Itoa(version), versionPresent: true,
+				}}, requests)
+			})
+		}
+	}
 }
 
 //nolint:tparallel // Resource subtests intentionally share a serial HTTP request journal.
@@ -75,19 +187,8 @@ func TestRequiredPrivateVersionErrorsStopBeforeMutation(t *testing.T) {
 			}
 
 			privateStates := []privateVersionState{
-				{name: "missing", value: []byte(`{}`), expectedSummary: "Failed to unmarshal value"},
+				{name: "missing", value: []byte(`{}`), expectedSummary: "Private version is unavailable"},
 				{name: "malformed", value: malformedPrivate, expectedSummary: "Failed to unmarshal value"},
-			}
-
-			if test.name == "content type update" || test.name == "entry update" {
-				for _, version := range []string{"0", "-1"} {
-					private, err := json.Marshal(map[string][]byte{"version": []byte(version)})
-					require.NoError(t, err)
-
-					privateStates = append(privateStates, privateVersionState{
-						name: "nonpositive " + version, value: private, expectedSummary: "Invalid Contentful resource version",
-					})
-				}
 			}
 
 			for _, privateState := range privateStates {
@@ -308,6 +409,58 @@ func nullResourceDynamicValue(t *testing.T, resourceSchema schema.Schema) tfprot
 	require.NoError(t, err)
 
 	return value
+}
+
+func privateVersionBytes(t *testing.T, version int) []byte {
+	t.Helper()
+
+	encodedVersion, err := json.Marshal(version)
+	require.NoError(t, err)
+	private, err := json.Marshal(map[string][]byte{"version": encodedVersion})
+	require.NoError(t, err)
+
+	return private
+}
+
+func taxonomyConceptDeleteState() TaxonomyConceptModel {
+	listType := types.ListType{ElemType: types.StringType}
+
+	return TaxonomyConceptModel{
+		IDIdentityModel:              NewIDIdentityModelFromMultipartID("organization-id", "concept"),
+		TaxonomyConceptIdentityModel: TaxonomyConceptIdentityModel{OrganizationID: types.StringValue("organization-id"), ConceptID: types.StringValue("concept")},
+		URI:                          types.StringNull(),
+		PrefLabel:                    types.MapNull(types.StringType),
+		AltLabels:                    types.MapNull(listType),
+		HiddenLabels:                 types.MapNull(listType),
+		Notations:                    types.ListNull(types.StringType),
+		Note:                         types.MapNull(types.StringType),
+		ChangeNote:                   types.MapNull(types.StringType),
+		Definition:                   types.MapNull(types.StringType),
+		EditorialNote:                types.MapNull(types.StringType),
+		Example:                      types.MapNull(types.StringType),
+		HistoryNote:                  types.MapNull(types.StringType),
+		ScopeNote:                    types.MapNull(types.StringType),
+		BroaderConceptIDs:            types.ListNull(types.StringType),
+		RelatedConceptIDs:            types.ListNull(types.StringType),
+		ConceptSchemeIDs:             types.SetNull(types.StringType),
+		Timeouts:                     TimeoutsNull(),
+	}
+}
+
+func taxonomyConceptSchemeDeleteState() TaxonomyConceptSchemeModel {
+	return TaxonomyConceptSchemeModel{
+		IDIdentityModel: NewIDIdentityModelFromMultipartID("organization-id", "scheme"),
+		TaxonomyConceptSchemeIdentityModel: TaxonomyConceptSchemeIdentityModel{
+			OrganizationID: types.StringValue("organization-id"), ConceptSchemeID: types.StringValue("scheme"),
+		},
+		URI:           types.StringNull(),
+		PrefLabel:     types.MapNull(types.StringType),
+		Definition:    types.MapNull(types.StringType),
+		TopConceptIDs: types.ListNull(types.StringType),
+		ConceptIDs:    types.ListNull(types.StringType),
+		TotalConcepts: types.Int64Null(),
+		Timeouts:      TimeoutsNull(),
+	}
 }
 
 func updateOnlyTimeoutsNull() timeouts.Value {

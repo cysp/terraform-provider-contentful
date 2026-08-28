@@ -248,10 +248,8 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -260,7 +258,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	params := cm.UpdateWebhookDefinitionParams{
 		SpaceID:             plan.SpaceID.ValueString(),
 		WebhookDefinitionID: plan.WebhookID.ValueString(),
-		XContentfulVersion:  currentVersion,
+		XContentfulVersion:  version,
 	}
 
 	response, err := r.providerData.client.UpdateWebhookDefinition(ctx, &request, params)
@@ -280,7 +278,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -305,7 +303,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl

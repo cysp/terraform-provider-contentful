@@ -80,6 +80,10 @@ func ErrorDetailFromContentfulManagementError(response cm.Error) string {
 		detailStringBuilder.WriteString(": " + reasons)
 	}
 
+	if response.Sys.ID == cm.ErrorSysIDVersionMismatch {
+		detailStringBuilder.WriteString("\n\nContentful rejected the request because its version precondition was not satisfied.")
+	}
+
 	if response.Sys.ID == "ValidationFailed" {
 		if details, ok := ContentfulManagementValidationFailedErrorDetails(response.Details); ok {
 			for _, s := range details {

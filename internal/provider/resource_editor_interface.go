@@ -244,22 +244,20 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-
-	currentVersionDiags := GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)
-	resp.Diagnostics.Append(currentVersionDiags...)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(plan.SpaceID.ValueString(), plan.EnvironmentID.ValueString(), plan.ContentTypeID.ValueString())
+	version += r.providerData.editorInterfaceVersionOffset.Get(plan.SpaceID.ValueString(), plan.EnvironmentID.ValueString(), plan.ContentTypeID.ValueString())
 
 	params := cm.PutEditorInterfaceParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		EnvironmentID:      plan.EnvironmentID.ValueString(),
 		ContentTypeID:      plan.ContentTypeID.ValueString(),
-		XContentfulVersion: currentVersion,
+		XContentfulVersion: version,
 	}
 
 	request, requestDiags := plan.ToEditorInterfaceData(ctx)
@@ -286,7 +284,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -311,7 +309,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
 }
