@@ -1,159 +1,208 @@
 package provider_test
 
 import (
-	"context"
+	"errors"
+	"fmt"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"regexp"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
-	. "github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	frameworklist "github.com/hashicorp/terraform-plugin-framework/list"
-	frameworkprovider "github.com/hashicorp/terraform-plugin-framework/provider"
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	frameworkresource "github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	testingresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccContentTypeResourceLegacyStateWithoutRefreshConservativelyPlansActivation(t *testing.T) {
-	t.Parallel()
-	testAccContentTypeResourceLegacyStateUpgrade(t, true)
-}
+var errUnexpectedRegistryV0062UpgradeEvidence = errors.New("unexpected Registry v0.0.62 upgrade evidence")
 
-func TestAccContentTypeResourceLegacyStateNormalRefreshObservesPublicationState(t *testing.T) {
-	t.Parallel()
-	testAccContentTypeResourceLegacyStateUpgrade(t, false)
-}
-
-func testAccContentTypeResourceLegacyStateUpgrade(t *testing.T, noRefresh bool) {
-	t.Helper()
-
+func TestAccContentTypeResourceRegistryV0062ImportRemainsObservational(t *testing.T) {
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "environment")
 
-	contentTypeID := "legacy-refresh"
-	if noRefresh {
-		contentTypeID = "legacy-no-refresh"
-	}
+	contentTypeID := "registry-v0062-import"
+	draft := seedContentTypeDraft(t, server, contentTypeID)
+	require.Equal(t, 1, draft.Sys.Version)
+	require.False(t, draft.Sys.PublishedVersion.IsSet())
 
-	contentType := seedActivatedLegacyContentType(t, server, contentTypeID)
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	testserver := httptest.NewServer(handler)
 	t.Cleanup(testserver.Close)
-	options := ContentfulProviderOptionsWithHTTPTestServer(testserver)
+	t.Setenv("CONTENTFUL_URL", testserver.URL)
+	t.Setenv("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN", "CFPAT-12345")
+	t.Setenv(testingresource.EnvTfAccProviderNamespace, "cysp")
+
 	variables := config.Variables{
 		"space_id":             config.StringVariable("space"),
 		"environment_id":       config.StringVariable("environment"),
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
-
-	var additionalCLIOptions *testingresource.AdditionalCLIOptions
-	if noRefresh {
-		additionalCLIOptions = &testingresource.AdditionalCLIOptions{
-			Plan: testingresource.PlanOptions{NoRefresh: true},
-		}
-	}
-
-	refreshedPlanChecks := []plancheck.PlanCheck{
-		plancheck.ExpectKnownValue(
-			"contentful_content_type.test",
-			tfjsonpath.New("published_version"),
-			knownvalue.Int64Exact(int64(contentType.Sys.PublishedVersion.Value)),
-		),
-		plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
-	}
-	nonRefreshPlanChecks := []plancheck.PlanCheck{
-		plancheck.ExpectKnownValue(
-			"contentful_content_type.test",
-			tfjsonpath.New("published_version"),
-			knownvalue.Int64Exact(int64(contentType.Sys.Version)),
-		),
-		plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
-	}
-
-	var currentProviderStep testingresource.TestStep
-	if noRefresh {
-		currentProviderStep = testingresource.TestStep{
-			ProtoV6ProviderFactories: makeTestAccProtoV6ProviderFactories(options...),
-			ConfigDirectory:          config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
-			ConfigVariables:          variables,
-			ConfigPlanChecks: testingresource.ConfigPlanChecks{
-				PreApply: nonRefreshPlanChecks,
-			},
-			ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(
-					"contentful_content_type.test",
-					tfjsonpath.New("published_version"),
-					knownvalue.Int64Exact(int64(contentType.Sys.Version)),
-				),
-			},
-			Check: contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{int64(contentType.Sys.Version)}),
-		}
-	} else {
-		currentProviderStep = testingresource.TestStep{
-			ProtoV6ProviderFactories: makeTestAccProtoV6ProviderFactories(options...),
-			ConfigDirectory:          config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
-			ConfigVariables:          variables,
-			ConfigPlanChecks: testingresource.ConfigPlanChecks{
-				PreApply: refreshedPlanChecks,
-			},
-			ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(
-					"contentful_content_type.test",
-					tfjsonpath.New("published_version"),
-					knownvalue.Int64Exact(int64(contentType.Sys.PublishedVersion.Value)),
-				),
-			},
-		}
-	}
-
-	steps := []testingresource.TestStep{
-		{
-			ProtoV6ProviderFactories: legacyContentTypeProviderFactories(contentType, options...),
-			ConfigDirectory:          config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
-			ConfigVariables:          variables,
-		},
-		currentProviderStep,
-	}
-	if noRefresh {
-		steps = append(steps, testingresource.TestStep{
-			PreConfig: func() {
-				additionalCLIOptions.Plan.NoRefresh = false
-
-				handler.resetRequestHistory()
-			},
-			ProtoV6ProviderFactories: makeTestAccProtoV6ProviderFactories(options...),
-			ConfigDirectory:          config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
-			ConfigVariables:          variables,
-			ConfigPlanChecks: testingresource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-				plancheck.ExpectKnownValue(
-					"contentful_content_type.test",
-					tfjsonpath.New("published_version"),
-					knownvalue.Int64Exact(int64(contentType.Sys.Version)),
-				),
-				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
-			}},
-			Check: contentTypeActivationRequestCheck(handler, 0, 0),
-		})
-	}
+	additionalCLIOptions := &testingresource.AdditionalCLIOptions{}
+	workingDirectoryParent := t.TempDir()
+	options := ContentfulProviderOptionsWithHTTPTestServer(testserver)
 
 	testingresource.Test(t, testingresource.TestCase{
+		IsUnitTest:           true,
+		WorkingDir:           workingDirectoryParent,
 		AdditionalCLIOptions: additionalCLIOptions,
-		Steps:                steps,
+		Steps: []testingresource.TestStep{
+			{
+				ExternalProviders: map[string]testingresource.ExternalProvider{
+					"contentful": {
+						Source:            "registry.terraform.io/cysp/contentful",
+						VersionConstraint: "= 0.0.62",
+					},
+				},
+				Config:             registryV0062ImportContentTypeConfig,
+				ConfigVariables:    variables,
+				ResourceName:       "contentful_content_type.test",
+				ImportState:        true,
+				ImportStateId:      "space/environment/" + contentTypeID,
+				ImportStatePersist: true,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if len(states) != 1 {
+						return fmt.Errorf("%w: expected one imported resource state, got %d", errUnexpectedRegistryV0062UpgradeEvidence, len(states))
+					}
+
+					if states[0].Attributes["name"] != "Test" {
+						return fmt.Errorf("%w: imported name %q", errUnexpectedRegistryV0062UpgradeEvidence, states[0].Attributes["name"])
+					}
+
+					if _, exists := states[0].Attributes["published_version"]; exists {
+						return fmt.Errorf("%w: v0.0.62 import wrote candidate-only published_version", errUnexpectedRegistryV0062UpgradeEvidence)
+					}
+
+					lockFiles, globErr := filepath.Glob(filepath.Join(workingDirectoryParent, "work*", ".terraform.lock.hcl"))
+					if globErr != nil {
+						return fmt.Errorf("locate Terraform dependency lock file: %w", globErr)
+					}
+
+					if len(lockFiles) != 1 {
+						return fmt.Errorf("%w: expected one Terraform dependency lock file, got %d", errUnexpectedRegistryV0062UpgradeEvidence, len(lockFiles))
+					}
+
+					lockContents, readErr := os.ReadFile(lockFiles[0])
+					if readErr != nil {
+						return fmt.Errorf("read Terraform dependency lock file: %w", readErr)
+					}
+
+					if !regexp.MustCompile(`provider "registry\.terraform\.io/cysp/contentful"[\s\S]*version\s*=\s*"0\.0\.62"`).Match(lockContents) {
+						return fmt.Errorf("%w: Terraform dependency lock file does not select v0.0.62", errUnexpectedRegistryV0062UpgradeEvidence)
+					}
+
+					additionalCLIOptions.Plan.NoRefresh = true
+
+					handler.resetRequestHistory()
+
+					return nil
+				},
+			},
+			{
+				ProtoV6ProviderFactories: makeTestAccProtoV6ProviderFactories(options...),
+				Config:                   registryV0062ContentTypeConfig,
+				ConfigVariables:          variables,
+				ConfigPlanChecks: testingresource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Null()),
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Null()),
+				},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+			{
+				PreConfig: func() {
+					additionalCLIOptions.Plan.NoRefresh = false
+
+					handler.resetRequestHistory()
+				},
+				ProtoV6ProviderFactories: makeTestAccProtoV6ProviderFactories(options...),
+				Config:                   registryV0062ContentTypeConfig,
+				ConfigVariables:          variables,
+				ConfigPlanChecks: testingresource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Null()),
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+		},
 	})
 }
 
-func seedActivatedLegacyContentType(t *testing.T, server *cmt.Server, contentTypeID string) cm.ContentType {
+const registryV0062ImportContentTypeConfig = `
+terraform {
+  required_providers {
+    contentful = {
+      source  = "cysp/contentful"
+      version = "= 0.0.62"
+    }
+  }
+}
+` + registryCandidateContentTypeConfig
+
+const registryV0062ContentTypeConfig = `
+terraform {
+  required_providers {
+    contentful = {
+      source = "cysp/contentful"
+    }
+  }
+}
+` + registryCandidateContentTypeConfig
+
+const registryCandidateContentTypeConfig = `
+variable "space_id" {
+  type = string
+}
+
+variable "environment_id" {
+  type = string
+}
+
+variable "test_content_type_id" {
+  type = string
+}
+
+resource "contentful_content_type" "test" {
+  space_id        = var.space_id
+  environment_id  = var.environment_id
+  content_type_id = var.test_content_type_id
+
+  name          = "Test"
+  description   = "Test content type (${var.test_content_type_id})"
+  display_field = "name"
+
+  fields = [
+    {
+      id        = "name"
+      name      = "Name"
+      type      = "Symbol"
+      required  = true
+      localized = false
+    },
+    {
+      id   = "flags"
+      name = "Flags"
+      type = "Array"
+      items = {
+        type = "Symbol"
+      }
+      required  = false
+      localized = false
+    },
+  ]
+}
+`
+
+func seedContentTypeDraft(t *testing.T, server *cmt.Server, contentTypeID string) cm.ContentType {
 	t.Helper()
 
 	request := cm.ContentTypeRequestData{
@@ -182,103 +231,5 @@ func seedActivatedLegacyContentType(t *testing.T, server *cmt.Server, contentTyp
 	put, ok := putResponse.(*cm.ContentTypeStatusCode)
 	require.True(t, ok)
 
-	activationResponse, err := server.Handler().ActivateContentType(t.Context(), cm.ActivateContentTypeParams{
-		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: contentTypeID, XContentfulVersion: put.Response.Sys.Version,
-	})
-	require.NoError(t, err)
-
-	activation, ok := activationResponse.(*cm.ContentTypeStatusCode)
-	require.True(t, ok)
-
-	return activation.Response
-}
-
-type legacyContentTypeProvider struct {
-	*ContentfulProvider
-
-	contentType cm.ContentType
-}
-
-func (p *legacyContentTypeProvider) ListResources(context.Context) []func() frameworklist.ListResource {
-	return nil
-}
-
-func (p *legacyContentTypeProvider) Resources(context.Context) []func() frameworkresource.Resource {
-	return []func() frameworkresource.Resource{
-		func() frameworkresource.Resource { return &legacyContentTypeResource{contentType: p.contentType} },
-	}
-}
-
-func legacyContentTypeProviderFactories(contentType cm.ContentType, options ...Option) map[string]func() (tfprotov6.ProviderServer, error) {
-	return map[string]func() (tfprotov6.ProviderServer, error){
-		"contentful": providerserver.NewProtocol6WithError(func() frameworkprovider.Provider {
-			return &legacyContentTypeProvider{ContentfulProvider: New("test", options...), contentType: contentType}
-		}()),
-	}
-}
-
-type legacyContentTypeResource struct {
-	contentType cm.ContentType
-}
-
-func (r *legacyContentTypeResource) Metadata(_ context.Context, req frameworkresource.MetadataRequest, resp *frameworkresource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_content_type"
-}
-
-func (r *legacyContentTypeResource) Schema(ctx context.Context, _ frameworkresource.SchemaRequest, resp *frameworkresource.SchemaResponse) {
-	resp.Schema = ContentTypeResourceSchema(ctx)
-	resp.Schema.Version = 0
-	delete(resp.Schema.Attributes, "published_version")
-}
-
-func (r *legacyContentTypeResource) Create(ctx context.Context, req frameworkresource.CreateRequest, resp *frameworkresource.CreateResponse) {
-	var plan legacyContentTypeModel
-
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	current, projectionDiags := NewContentTypeResourceModelFromResponse(ctx, r.contentType)
-	resp.Diagnostics.Append(projectionDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	state := legacyContentTypeModel{
-		IDIdentityModel:          current.IDIdentityModel,
-		ContentTypeIdentityModel: current.ContentTypeIdentityModel,
-		Name:                     current.Name,
-		Description:              current.Description,
-		DisplayField:             current.DisplayField,
-		Fields:                   current.Fields,
-		Metadata:                 current.Metadata,
-		Timeouts:                 plan.Timeouts,
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", r.contentType.Sys.Version)...)
-}
-
-func (r *legacyContentTypeResource) Read(context.Context, frameworkresource.ReadRequest, *frameworkresource.ReadResponse) {
-}
-
-func (r *legacyContentTypeResource) Update(context.Context, frameworkresource.UpdateRequest, *frameworkresource.UpdateResponse) {
-}
-
-func (r *legacyContentTypeResource) Delete(context.Context, frameworkresource.DeleteRequest, *frameworkresource.DeleteResponse) {
-}
-
-type legacyContentTypeModel struct {
-	IDIdentityModel
-	ContentTypeIdentityModel
-
-	Name         types.String                                  `tfsdk:"name"`
-	Description  types.String                                  `tfsdk:"description"`
-	DisplayField types.String                                  `tfsdk:"display_field"`
-	Fields       TypedList[TypedObject[ContentTypeFieldValue]] `tfsdk:"fields"`
-	Metadata     TypedObject[ContentTypeMetadataValue]         `tfsdk:"metadata"`
-	Timeouts     timeouts.Value                                `tfsdk:"timeouts"`
+	return put.Response
 }

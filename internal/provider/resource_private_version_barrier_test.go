@@ -20,6 +20,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type privateVersionState struct {
+	name            string
+	value           []byte
+	expectedSummary string
+}
+
 //nolint:tparallel // Resource subtests intentionally share a serial HTTP request journal.
 func TestRequiredPrivateVersionErrorsStopBeforeMutation(t *testing.T) {
 	t.Parallel()
@@ -58,19 +64,33 @@ func TestRequiredPrivateVersionErrorsStopBeforeMutation(t *testing.T) {
 	for _, test := range requiredPrivateVersionResourceCases(t) {
 		t.Run(test.name, func(t *testing.T) {
 			state := resourceModelDynamicValue(t, test.resourceSchema, test.model)
+
 			plannedState := state
+			if test.plannedModel != nil {
+				plannedState = resourceModelDynamicValue(t, test.resourceSchema, test.plannedModel)
+			}
 
 			if test.delete {
 				plannedState = nullResourceDynamicValue(t, test.resourceSchema)
 			}
 
-			for _, privateState := range []struct {
-				name  string
-				value []byte
-			}{
-				{name: "missing", value: []byte(`{}`)},
-				{name: "malformed", value: malformedPrivate},
-			} {
+			privateStates := []privateVersionState{
+				{name: "missing", value: []byte(`{}`), expectedSummary: "Failed to unmarshal value"},
+				{name: "malformed", value: malformedPrivate, expectedSummary: "Failed to unmarshal value"},
+			}
+
+			if test.name == "content type update" || test.name == "entry update" {
+				for _, version := range []string{"0", "-1"} {
+					private, err := json.Marshal(map[string][]byte{"version": []byte(version)})
+					require.NoError(t, err)
+
+					privateStates = append(privateStates, privateVersionState{
+						name: "nonpositive " + version, value: private, expectedSummary: "Invalid Contentful resource version",
+					})
+				}
+			}
+
+			for _, privateState := range privateStates {
 				t.Run(privateState.name, func(t *testing.T) {
 					requestCount.Store(0)
 
@@ -78,7 +98,7 @@ func TestRequiredPrivateVersionErrorsStopBeforeMutation(t *testing.T) {
 						TypeName:       test.typeName,
 						PriorState:     &state,
 						PlannedState:   &plannedState,
-						Config:         &state,
+						Config:         &plannedState,
 						PlannedPrivate: privateState.value,
 					})
 					require.NoError(t, err)
@@ -90,7 +110,7 @@ func TestRequiredPrivateVersionErrorsStopBeforeMutation(t *testing.T) {
 						diagnosticSummaries = append(diagnosticSummaries, diagnostic.Summary)
 					}
 
-					assert.Contains(t, diagnosticSummaries, "Failed to unmarshal value")
+					assert.Contains(t, diagnosticSummaries, privateState.expectedSummary)
 					assert.Zero(t, requestCount.Load())
 				})
 			}
@@ -103,6 +123,7 @@ type requiredPrivateVersionResourceCase struct {
 	typeName       string
 	resourceSchema schema.Schema
 	model          any
+	plannedModel   any
 	delete         bool
 }
 
@@ -156,9 +177,17 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 	contentType.ContentTypeID = types.StringValue("content-type")
 	contentType.PublishedVersion = types.Int64Value(1)
 	contentType.Timeouts = TimeoutsNull()
+	plannedContentType := contentType
+	plannedContentType.Name = types.StringValue("Changed content type")
 
 	return []requiredPrivateVersionResourceCase{
-		{name: "content type update", typeName: "contentful_content_type", resourceSchema: ContentTypeResourceSchema(t.Context()), model: contentType},
+		{
+			name:           "content type update",
+			typeName:       "contentful_content_type",
+			resourceSchema: ContentTypeResourceSchema(t.Context()),
+			model:          contentType,
+			plannedModel:   plannedContentType,
+		},
 		{
 			name:           "entry update",
 			typeName:       "contentful_entry",

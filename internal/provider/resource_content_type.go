@@ -48,14 +48,6 @@ const (
 	contentTypePublicationPendingDraft
 )
 
-type contentTypeUpdateAction uint8
-
-const (
-	contentTypeUpdateNoop contentTypeUpdateAction = iota
-	contentTypeUpdateActivate
-	contentTypeUpdatePutAndActivate
-)
-
 // contentTypeDraftMutationRequired reports whether the Terraform-managed draft
 // configuration differs from the prior state. Identity, publication, and
 // timeout values do not belong to the Contentful draft request and are
@@ -133,18 +125,6 @@ func classifyContentTypePublicationState(version int, publishedVersion types.Int
 	return contentTypePublicationPendingDraft, diagnostics
 }
 
-func classifyContentTypeUpdate(draftMutationRequired bool, publicationState contentTypePublicationState) contentTypeUpdateAction {
-	if draftMutationRequired {
-		return contentTypeUpdatePutAndActivate
-	}
-
-	if publicationState == contentTypePublicationUnpublished || publicationState == contentTypePublicationPendingDraft {
-		return contentTypeUpdateActivate
-	}
-
-	return contentTypeUpdateNoop
-}
-
 func (r *contentTypeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_content_type"
 }
@@ -201,31 +181,21 @@ func (r *contentTypeResource) ModifyPlan(ctx context.Context, req resource.Modif
 	resp.Diagnostics.Append(resp.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
-	var version int
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &version)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	publicationState, publicationDiags := classifyContentTypePublicationState(version, state.PublishedVersion)
-	resp.Diagnostics.Append(publicationDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	//nolint:contextcheck // attr.Value.Equal and TypedObject.Equal expose no context-aware alternative.
-	action := classifyContentTypeUpdate(contentTypeDraftMutationRequired(configMetadata, plan, state), publicationState)
 
 	plannedPublishedVersion := state.PublishedVersion
+	//nolint:contextcheck // attr.Value.Equal and TypedObject.Equal expose no context-aware alternative.
+	if contentTypeDraftMutationRequired(configMetadata, plan, state) {
+		_, versionDiags := requiredPrivateVersion(ctx, req.Private)
+		resp.Diagnostics.Append(versionDiags...)
 
-	switch action {
-	case contentTypeUpdatePutAndActivate:
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		plannedPublishedVersion = types.Int64Unknown()
-	case contentTypeUpdateActivate:
-		plannedPublishedVersion = types.Int64Value(int64(version))
-	case contentTypeUpdateNoop:
 	}
 
 	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("published_version"), plannedPublishedVersion)...)
@@ -270,7 +240,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 
 	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
 	// Checkpoint a successful draft response before reporting a response
-	// consistency error. A retry can then use its exact returned version.
+	// consistency or activation error so the recorded state remains truthful.
 	resp.Diagnostics.Append(draft.consistencyDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -402,32 +372,26 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	var version int
-
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &version)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	publicationState, publicationDiags := classifyContentTypePublicationState(version, state.PublishedVersion)
-	resp.Diagnostics.Append(publicationDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	//nolint:contextcheck // attr.Value.Equal and TypedObject.Equal expose no context-aware alternative.
-	action := classifyContentTypeUpdate(contentTypeDraftMutationRequired(config.Metadata, plan, state), publicationState)
+	draftMutationRequired := contentTypeDraftMutationRequired(config.Metadata, plan, state)
 
-	var updateContentTypeRequest cm.ContentTypeRequestData
+	if !draftMutationRequired {
+		resp.State = req.State
+		state.Timeouts = plan.Timeouts
+		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
-	if action == contentTypeUpdatePutAndActivate {
-		var updateContentTypeRequestDiags diag.Diagnostics
-
-		updateContentTypeRequest, updateContentTypeRequestDiags = plan.ToContentTypeRequestData(ctx, config)
-		resp.Diagnostics.Append(updateContentTypeRequestDiags...)
+		return
 	}
+
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updateContentTypeRequest, updateContentTypeRequestDiags := plan.ToContentTypeRequestData(ctx, config)
+	resp.Diagnostics.Append(updateContentTypeRequestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -443,37 +407,32 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	if action == contentTypeUpdateNoop {
-		resp.State = req.State
-		state.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	draft, draftDiagnostics := r.updateContentType(ctx, config, plan, updateContentTypeRequest, version)
+	resp.Diagnostics.Append(draftDiagnostics...)
 
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	activationVersion := version
-	if action == contentTypeUpdatePutAndActivate {
-		draft, draftDiagnostics := r.updateContentType(ctx, config, plan, updateContentTypeRequest, version)
-		resp.Diagnostics.Append(draftDiagnostics...)
+	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
+	resp.Diagnostics.Append(draft.consistencyDiags...)
 
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
-		resp.Diagnostics.Append(draft.consistencyDiags...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		activationVersion = draft.version
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	activated, activationDiagnostics := r.activateContentType(ctx, config, plan, activationVersion)
+	activated, activationDiagnostics := r.activateContentType(ctx, config, plan, draft.version)
 	resp.Diagnostics.Append(activationDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddWarning(
+			"Content type activation was not confirmed",
+			fmt.Sprintf(
+				"Contentful accepted Content Type draft version %d, but Terraform could not confirm whether activation succeeded. Terraform preserved the draft response and will not retry activation merely because a later operation observes it. Inspect the Content Type in Contentful, then activate it manually if needed or make another Terraform-managed draft change.",
+				draft.version,
+			),
+		)
+
 		return
 	}
 

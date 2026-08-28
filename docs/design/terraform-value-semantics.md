@@ -143,35 +143,27 @@ validation.
 
 ## Lifecycle ownership and plan consistency
 
-`contentful_content_type` owns activation state: the resource represents an
-activated Content Type, not an arbitrary draft definition. The lifecycle has
-these deliberate reconciliation paths:
+Content Type publication metadata is observation, not activation authority.
+`contentful_content_type` activates only the exact draft returned by a
+successful Create or modeled Update, during that same resource operation.
+Read, import, refresh, legacy state, external deactivation, and external drafts
+never cause activation by themselves.
 
-- During Update, after Terraform saves a modeled draft and activation fails,
-  the provider checkpoints the returned draft and exact version. An unchanged
-  retry activates that version without repeating the draft update.
-- During Create, the provider likewise checkpoints the returned draft before
-  returning an activation error. Terraform Core taints any resource whose
-  Create returns an error, however, so the next normal plan replaces the
-  resource and repeats the draft PUT. The checkpoint preserves truthful state
-  for recovery and cleanup; it cannot turn a failed Create into an in-place
-  Update without suppressing the activation error.
-- External deactivation plans an activation-only update of the exact observed
-  draft version.
-- A newer external draft with no modeled drift is intentionally activated in
-  place. Because no complete draft update is sent, values outside the provider
-  schema survive unchanged.
-- A newer external draft with modeled drift is first replaced by the complete
-  provider-modeled request using the exact observed prior version. The provider
-  checkpoints and activates the exact returned version; unmodeled values are
-  not guaranteed to survive that complete update.
+A modeled Update uses the exact current Contentful version and the effective
+Terraform plan. This includes refreshed values protected by `ignore_changes`.
+After Contentful accepts the draft, the provider checkpoints its returned state
+and version before activating that exact version. If activation fails, the
+truthful draft state remains, but a later unchanged operation does not activate
+it. The practitioner must activate it manually or make another
+Terraform-managed Content Type change after resolving the error.
 
-No activation path fetches and retries a newer draft. Concurrent draft changes
+During Create, the provider likewise checkpoints the returned draft before
+returning an activation error. Terraform Core taints a resource whose Create
+returns an error, so the next normal plan replaces it.
+
+No activation path fetches or retries a newer draft. Concurrent draft changes
 therefore fail Contentful's optimistic-concurrency check instead of publishing
-another actor's version. The provider does not issue a confirming GET after an
-activation error. A lost or otherwise ambiguous activation response is
-not interpreted as success: a normal refresh establishes publication truth
-before Terraform decides whether another activation is required.
+another actor's version.
 
 A nominally successful activation response is accepted only when its
 `sys.publishedVersion` equals the exact version sent in the activation request
@@ -184,15 +176,9 @@ The provider checkpoints the complete returned response before reporting a
 contradiction, so recovery state remains truthful even when apply fails.
 
 `published_version` did not exist in state written by older provider versions.
-A normal post-upgrade refresh projects `sys.publishedVersion` and establishes
-authoritative publication state. With `-refresh=false`, Terraform decodes a
-missing legacy Computed value as null, which is indistinguishable from an
-observed unpublished Content Type. The provider therefore conservatively may
-plan exact-version activation in that case; it does not persist a migration or
-recovery marker to distinguish provenance. The mock acceptance test exercises
-an actual `apply -refresh=false`: Contentful accepts the conservative redundant
-activation of the stored version, the response becomes authoritative state,
-and the next normal refresh and plan are a no-op.
+A normal post-upgrade refresh projects `sys.publishedVersion`. With
+`-refresh=false`, Terraform decodes the missing legacy Computed value as null,
+but publication remains observational and the unchanged transition is a no-op.
 
 After Create or Update, state must remain consistent with every known
 configuration-owned value in the plan. Post-mutation state construction starts

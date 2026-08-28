@@ -25,35 +25,6 @@ func (s *entryPrivateDataStub) SetKey(_ context.Context, _ string, value []byte)
 	return nil
 }
 
-func TestEntryPrivateVersionRequiresPositiveValue(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		value    []byte
-		want     int
-		hasError bool
-	}{
-		"positive": {value: []byte("3"), want: 3},
-		"zero":     {value: []byte("0"), hasError: true},
-		"negative": {value: []byte("-1"), want: -1, hasError: true},
-		"missing":  {hasError: true},
-		"malformed": {
-			value:    []byte(`"invalid"`),
-			hasError: true,
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			version, diags := entryPrivateVersion(t.Context(), &entryPrivateDataStub{value: test.value})
-			assert.Equal(t, test.want, version)
-			assert.Equal(t, test.hasError, diags.HasError())
-		})
-	}
-}
-
 func TestEntryPendingPublishVersion(t *testing.T) {
 	t.Parallel()
 

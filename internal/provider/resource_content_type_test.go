@@ -148,11 +148,11 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type.author", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("contentful_content_type.author", plancheck.ResourceActionNoop),
 						plancheck.ExpectKnownValue(
 							"contentful_content_type.author",
 							tfjsonpath.New("published_version"),
-							knownvalue.Int64Exact(1),
+							knownvalue.Null(),
 						),
 					},
 				},
@@ -161,10 +161,10 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						"contentful_content_type.author",
 						tfjsonpath.New("published_version"),
-						knownvalue.Int64Exact(1),
+						knownvalue.Null(),
 					),
 				),
-				Check: contentTypeActivationRequestCheck(handler, 0, 1),
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceImport"),
@@ -647,11 +647,11 @@ func TestAccContentTypeResourceTaxonomyDrift(t *testing.T) {
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
 						plancheck.ExpectKnownValue(
 							"contentful_content_type.test",
 							tfjsonpath.New("published_version"),
-							knownvalue.Int64Exact(3),
+							knownvalue.Int64Exact(1),
 						),
 					},
 				},
@@ -664,7 +664,7 @@ func TestAccContentTypeResourceTaxonomyDrift(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						"contentful_content_type.test",
 						tfjsonpath.New("published_version"),
-						knownvalue.Int64Exact(3),
+						knownvalue.Int64Exact(1),
 					),
 				},
 			},

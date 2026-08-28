@@ -3,12 +3,12 @@
 page_title: "contentful_content_type Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Content Type in the activated state. Terraform activates an inactive Content Type or its current draft, including an external draft when no provider-modeled update is required. Each draft update and activation uses the exact Contentful version Terraform observed, so a concurrent change fails instead of being published.
+  Manages a Contentful Content Type. Create and Terraform-managed updates activate the exact draft returned by that operation. Imported Content Types, external drafts, and external deactivation remain observational until a Terraform-managed draft change authors a new draft.
 ---
 
 # contentful_content_type (Resource)
 
-Manages a Contentful Content Type in the activated state. Terraform activates an inactive Content Type or its current draft, including an external draft when no provider-modeled update is required. Each draft update and activation uses the exact Contentful version Terraform observed, so a concurrent change fails instead of being published.
+Manages a Contentful Content Type. Create and Terraform-managed updates activate the exact draft returned by that operation. Imported Content Types, external drafts, and external deactivation remain observational until a Terraform-managed draft change authors a new draft.
 
 ## Example Usage
 

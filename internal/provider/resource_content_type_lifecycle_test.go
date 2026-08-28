@@ -332,30 +332,6 @@ func TestContentTypePublicationState(t *testing.T) {
 	}
 }
 
-func TestContentTypeUpdateAction(t *testing.T) {
-	t.Parallel()
-
-	for name, test := range map[string]struct {
-		draftMutation    bool
-		publicationState contentTypePublicationState
-		expected         contentTypeUpdateAction
-	}{
-		"active and unchanged":                    {false, contentTypePublicationActive, contentTypeUpdateNoop},
-		"unknown publication and unchanged":       {false, contentTypePublicationUnknown, contentTypeUpdateNoop},
-		"unpublished and unchanged":               {false, contentTypePublicationUnpublished, contentTypeUpdateActivate},
-		"pending draft and unchanged":             {false, contentTypePublicationPendingDraft, contentTypeUpdateActivate},
-		"active with modeled change":              {true, contentTypePublicationActive, contentTypeUpdatePutAndActivate},
-		"unpublished with modeled change":         {true, contentTypePublicationUnpublished, contentTypeUpdatePutAndActivate},
-		"pending draft with modeled change":       {true, contentTypePublicationPendingDraft, contentTypeUpdatePutAndActivate},
-		"unknown publication with modeled change": {true, contentTypePublicationUnknown, contentTypeUpdatePutAndActivate},
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			assert.Equal(t, test.expected, classifyContentTypeUpdate(test.draftMutation, test.publicationState))
-		})
-	}
-}
-
 func TestContentTypeActivationResponsePostcondition(t *testing.T) {
 	t.Parallel()
 
