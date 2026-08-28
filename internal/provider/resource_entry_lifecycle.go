@@ -39,17 +39,6 @@ func setEntryIdentityStateAndVersion(
 	return diags
 }
 
-func entryPrivateVersion(ctx context.Context, private PrivateProviderData) (int, diag.Diagnostics) {
-	var version int
-
-	diags := GetPrivateProviderData(ctx, private, "version", &version)
-	if !diags.HasError() && version <= 0 {
-		diags.AddError("Failed to read entry version", "The stored entry version must be positive.")
-	}
-
-	return version, diags
-}
-
 func entryPendingPublishVersion(ctx context.Context, private PrivateProviderData) (int, bool, diag.Diagnostics) {
 	value, diags := private.GetKey(ctx, entryPendingPublishVersionPrivateKey)
 	if diags.HasError() || len(value) == 0 {

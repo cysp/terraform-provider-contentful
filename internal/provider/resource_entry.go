@@ -71,7 +71,7 @@ func (r *entryResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanR
 	var state EntryModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
-	version, versionDiags := entryPrivateVersion(ctx, req.Private)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
 	resp.Diagnostics.Append(versionDiags...)
 
 	pendingVersion, pending, pendingDiags := entryPendingPublishVersion(ctx, req.Private)
@@ -267,7 +267,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	version, versionDiags := entryPrivateVersion(ctx, req.Private)
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
 	resp.Diagnostics.Append(versionDiags...)
 
 	pendingVersion, pending, pendingDiags := entryPendingPublishVersion(ctx, req.Private)

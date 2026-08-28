@@ -44,3 +44,17 @@ func GetPrivateProviderData[T any](ctx context.Context, providerData PrivateProv
 
 	return diags
 }
+
+func requiredPrivateVersion(ctx context.Context, providerData PrivateProviderData) (int, diag.Diagnostics) {
+	var version int
+
+	diags := GetPrivateProviderData(ctx, providerData, "version", &version)
+	if !diags.HasError() && version <= 0 {
+		diags.AddError(
+			"Invalid Contentful resource version",
+			"Contentful sys.version stored in Terraform private state must be a positive integer. Refresh Terraform state and create a new plan before applying this change.",
+		)
+	}
+
+	return version, diags
+}
