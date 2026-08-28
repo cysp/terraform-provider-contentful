@@ -239,48 +239,27 @@ mutation retries retain accepted residual ambiguity. The evidence, deadline,
 and backoff contracts are recorded in
 [Contentful HTTP retry policy](contentful-http-retry-policy.md).
 
-### Entry publication recovery and partial field ownership
+### Entry publication ownership and partial field ownership
 
-`contentful_entry` owns publication only for a draft written by that resource
-operation. After an exact, plan-consistent Update draft response has been
-projected into the Update response, the provider stores that draft version as an
-optional pending publication marker in resource private state immediately before
-publishing it. If Terraform persists the returned resource state and resource
-private state after Update publication fails, an unchanged later apply publishes
-exactly that version without repeating the draft PUT. This is not a durable
-mid-RPC checkpoint: process or IPC loss before Terraform persists the response
-can lose the marker. A typed Publish response clears the marker, including when
-its lifecycle tuple is contradictory and the provider returns an error.
+`contentful_entry` publishes only the exact draft returned by the same Create or
+Terraform-managed Update. It checkpoints a successful, plan-consistent draft
+response and its `sys.version` before sending that version to Publish. Import,
+Read, refresh, an external draft, external unpublish, and prior Terraform state
+are observations only and never grant publication authority.
 
-Create checkpoints the same truthful draft state and version in resource private
-state before publishing, but does not store the Update pending publication
-marker. If Create publication fails, Terraform taints the resource and the next
-normal plan replaces it; the checkpoint remains available for cleanup and does
-not authorize in-place publication recovery.
+If Update publication is not confirmed, Terraform preserves the truthful draft
+response but an unchanged later apply does not retry Publish. Practitioners must
+inspect Contentful, then publish manually if needed or make another managed
+change. That later change writes a new draft using the current optimistic-lock
+version and publishes only the draft returned by that Update. If Create
+publication fails, Terraform taints the resource and the next normal plan
+replaces it.
 
-The pending publication marker is deliberately not inferred from remote
-lifecycle metadata. An external pending draft, an imported unpublished entry,
-and legacy state without the marker are not published merely because
-`sys.publishedVersion` is absent or older than `sys.version`. Recovery remains
-authorized only while the observed current version equals the pending
-publication version and `publishedVersion` is absent or strictly older than that
-version. Read clears the marker when the current version differs or when
-`publishedVersion` is equal to or newer than the pending publication version.
-Observational tolerance of unusual positive lifecycle tuples never broadens
-mutation authority. No publication path fetches and retries another actor's
-newer version.
-
-A sanitized live whole-Entry unpublish returned a newer `version` with no
-`publishedVersion`, and a subsequent GET preserved that tuple. Read therefore
-revokes any older pending publication authority through the same exact-version
-boundary; it does not treat absence of publication alone as renewed authority.
-
-An ambiguous draft-mutation failure does not authorize publication. The client
-does not replay the mutation automatically, and the provider does not infer draft
-ownership from a later GET whose fields happen to match the plan. If the request
-committed but its response was lost, refresh may therefore expose a matching
-unpublished draft without a pending publication marker. This fail-closed
-limitation avoids publishing an indistinguishable concurrent editor version.
+An ambiguous draft-mutation failure likewise grants no publication authority.
+The client does not replay the mutation automatically, and the provider does not
+infer draft ownership from a later GET whose fields happen to match the plan.
+This fail-closed rule avoids publishing an indistinguishable concurrent editor
+version.
 
 Within an Entry `fields` map, Terraform null means request omission. A known
 JSON null produced by `jsonencode(null)` remains a value and is sent as JSON
@@ -332,7 +311,7 @@ Update response must have exactly the sent field keys and values after those
 same fallbacks. A Create publication response may include creation defaults only
 when it returns the complete normal tuple:
 `publishedVersion` equal to the version sent and `version` exactly one greater.
-Update and recovery publication responses must have the exact effective-plan
+Update publication responses must have the exact effective-plan
 field keys. Every response with a missing or different `publishedVersion`, or with
 a lower or higher `version`, must also have exact field keys so that unrelated
 response additions are not silently adopted.
@@ -345,7 +324,7 @@ which `ignore_changes` can preserve through a subsequent managed update. When
 Contentful contradicts a planned field, metadata, content type, or endpoint
 identity, the provider reports an error and checkpoints the representable
 response `fields` and `metadata`, while retaining the requested immutable content
-type and endpoint identity as the recovery target. An anomalously high current
+type and endpoint identity. An anomalously high current
 version after Publish with an otherwise coherent publication tuple remains a
 warning, but its lifecycle state and exact-key response checkpoint are preserved
 rather than described as a complete returned Entry.
@@ -355,8 +334,7 @@ provider grants publication authority. Create has no prior version from which
 to prove an increment and accepts any positive, plan-consistent returned draft
 version. Either draft response may omit `publishedVersion` or contain a positive
 older publication (`publishedVersion < version`); equal, future, nonpositive, or
-unknown publication values are contradictory. Only an Update draft version
-becomes a pending publication marker.
+unknown publication values are contradictory.
 
 Publish must report the submitted version as `publishedVersion`. The repeatedly
 observed normal response has `version` equal to the submitted version plus one.
@@ -364,7 +342,7 @@ Any other positive current version is representable, checkpointed, and warned
 about rather than rejected solely for its arithmetic. That observational
 tolerance does not broaden field ownership: Create publication may accept
 response-only creation defaults only for the complete normal tuple, while an
-anomalous Create publication and every Update or recovery publication require
+anomalous Create publication and every Update publication require
 exact effective-plan fields. Missing or different `publishedVersion` and
 nonpositive current versions remain errors. Read likewise preserves positive,
 representable lifecycle tuples and warns about unusual ordering instead of

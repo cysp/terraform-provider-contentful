@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -10,8 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
-
-const entryPendingPublishVersionPrivateKey = "pending-publish-version"
 
 func setEntryIdentityStateAndVersion(
 	ctx context.Context,
@@ -37,66 +34,6 @@ func setEntryIdentityStateAndVersion(
 	diags.Append(SetPrivateProviderData(ctx, private, "version", version)...)
 
 	return diags
-}
-
-func entryPendingPublishVersion(ctx context.Context, private PrivateProviderData) (int, bool, diag.Diagnostics) {
-	value, diags := private.GetKey(ctx, entryPendingPublishVersionPrivateKey)
-	if diags.HasError() || len(value) == 0 {
-		return 0, false, diags
-	}
-
-	var (
-		version int
-		err     = json.Unmarshal(value, &version)
-	)
-	if err != nil {
-		diags.AddError("Failed to read pending entry publication", err.Error())
-	} else if version <= 0 {
-		diags.AddError("Failed to read pending entry publication", "The stored pending publication version must be positive.")
-	}
-
-	return version, !diags.HasError(), diags
-}
-
-func setEntryPendingPublishVersion(ctx context.Context, private PrivateProviderData, version int) diag.Diagnostics {
-	return SetPrivateProviderData(ctx, private, entryPendingPublishVersionPrivateKey, version)
-}
-
-func clearEntryPendingPublishVersion(ctx context.Context, private PrivateProviderData) diag.Diagnostics {
-	return private.SetKey(ctx, entryPendingPublishVersionPrivateKey, nil)
-}
-
-func entryPublicationRecoveryAuthorized(
-	version, pendingVersion int,
-	pending bool,
-	publishedVersion int64,
-	published bool,
-) bool {
-	return pending && pendingVersion == version &&
-		(!published || (publishedVersion > 0 && publishedVersion < int64(pendingVersion)))
-}
-
-func entryPendingPublicationShouldBeCleared(
-	version, pendingVersion int,
-	pending bool,
-	publishedVersion int64,
-	published bool,
-) bool {
-	return pending && !entryPublicationRecoveryAuthorized(version, pendingVersion, pending, publishedVersion, published)
-}
-
-func entryPublicationRecoveryRequired(version, pendingVersion int, pending bool, publishedVersion types.Int64) bool {
-	if publishedVersion.IsUnknown() {
-		return false
-	}
-
-	return entryPublicationRecoveryAuthorized(
-		version,
-		pendingVersion,
-		pending,
-		publishedVersion.ValueInt64(),
-		!publishedVersion.IsNull(),
-	)
 }
 
 func entryPublicationResponseFieldPolicy(

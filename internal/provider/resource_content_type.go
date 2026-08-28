@@ -425,14 +425,6 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(activationDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
-		resp.Diagnostics.AddWarning(
-			"Content type activation was not confirmed",
-			fmt.Sprintf(
-				"Contentful accepted Content Type draft version %d, but Terraform could not confirm whether activation succeeded. Terraform preserved the draft response and will not retry activation merely because a later operation observes it. Inspect the Content Type in Contentful, then activate it manually if needed or make another Terraform-managed draft change.",
-				draft.version,
-			),
-		)
-
 		return
 	}
 
@@ -675,7 +667,14 @@ func (r *contentTypeResource) activateContentType(
 
 	responseContentType, ok := response.(*cm.ContentTypeStatusCode)
 	if !ok {
-		diagnostics.AddError("Failed to activate content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		diagnostics.AddError(
+			"Failed to activate content type",
+			fmt.Sprintf(
+				"%s\n\nContentful accepted Content Type draft version %d, but activation was not confirmed. Terraform preserved the draft response and an unchanged later apply will not retry activation. Inspect the Content Type in Contentful, then activate it manually if needed or make another Terraform-managed draft change.",
+				util.ErrorDetailFromContentfulManagementResponse(response, err),
+				expectedVersion,
+			),
+		)
 
 		return contentTypeMutationResult{}, diagnostics
 	}

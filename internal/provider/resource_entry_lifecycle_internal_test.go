@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"context"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -10,120 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-type entryPrivateDataStub struct {
-	value []byte
-}
-
-func (s *entryPrivateDataStub) GetKey(context.Context, string) ([]byte, diag.Diagnostics) {
-	return s.value, nil
-}
-
-func (s *entryPrivateDataStub) SetKey(_ context.Context, _ string, value []byte) diag.Diagnostics {
-	s.value = value
-
-	return nil
-}
-
-func TestEntryPendingPublishVersion(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		value    []byte
-		want     int
-		pending  bool
-		hasError bool
-	}{
-		"absent":           {},
-		"positive integer": {value: []byte("3"), want: 3, pending: true},
-		"zero":             {value: []byte("0"), hasError: true},
-		"negative":         {value: []byte("-1"), want: -1, hasError: true},
-		"malformed JSON":   {value: []byte(`{"version":3}`), hasError: true},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			version, pending, diags := entryPendingPublishVersion(t.Context(), &entryPrivateDataStub{value: test.value})
-			assert.Equal(t, test.want, version)
-			assert.Equal(t, test.pending, pending)
-			assert.Equal(t, test.hasError, diags.HasError())
-		})
-	}
-}
-
-func TestEntryPendingPublishVersionSetReadClear(t *testing.T) {
-	t.Parallel()
-
-	private := &entryPrivateDataStub{}
-
-	require.False(t, setEntryPendingPublishVersion(t.Context(), private, 3).HasError())
-	version, pending, diags := entryPendingPublishVersion(t.Context(), private)
-	require.False(t, diags.HasError())
-	assert.Equal(t, 3, version)
-	assert.True(t, pending)
-
-	require.False(t, clearEntryPendingPublishVersion(t.Context(), private).HasError())
-	version, pending, diags = entryPendingPublishVersion(t.Context(), private)
-	require.False(t, diags.HasError())
-	assert.Zero(t, version)
-	assert.False(t, pending)
-}
-
-func TestEntryPublicationRecoveryAuthorityAndRevocation(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		version          int
-		pendingVersion   int
-		publishedVersion int64
-		published        bool
-		authorized       bool
-	}{
-		"unpublished exact version":    {version: 3, pendingVersion: 3, authorized: true},
-		"older publication by two":     {version: 3, pendingVersion: 3, publishedVersion: 1, published: true, authorized: true},
-		"older publication by one":     {version: 3, pendingVersion: 3, publishedVersion: 2, published: true, authorized: true},
-		"pending version published":    {version: 3, pendingVersion: 3, publishedVersion: 3, published: true},
-		"newer publication observed":   {version: 3, pendingVersion: 3, publishedVersion: 4, published: true},
-		"pending version superseded":   {version: 4, pendingVersion: 3, publishedVersion: 1, published: true},
-		"invalid publication observed": {version: 3, pendingVersion: 3, publishedVersion: 0, published: true},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			statePublishedVersion := types.Int64Null()
-			remotePublishedVersion := cm.OptInt{}
-
-			if test.published {
-				statePublishedVersion = types.Int64Value(test.publishedVersion)
-				remotePublishedVersion = cm.NewOptInt(int(test.publishedVersion))
-			}
-
-			assert.Equal(t, test.authorized, entryPublicationRecoveryRequired(
-				test.version,
-				test.pendingVersion,
-				true,
-				statePublishedVersion,
-			))
-
-			publishedVersion, published := remotePublishedVersion.Get()
-			assert.Equal(t, !test.authorized, entryPendingPublicationShouldBeCleared(
-				test.version,
-				test.pendingVersion,
-				true,
-				int64(publishedVersion),
-				published,
-			))
-		})
-	}
-
-	assert.False(t, entryPublicationRecoveryRequired(3, 3, false, types.Int64Null()))
-	assert.False(t, entryPendingPublicationShouldBeCleared(3, 3, false, 0, false))
-	assert.False(t, entryPublicationRecoveryRequired(3, 3, true, types.Int64Unknown()))
-}
 
 func TestEntryPublicationResponseTuple(t *testing.T) {
 	t.Parallel()
