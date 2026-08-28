@@ -68,22 +68,13 @@ func (r *entryResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanR
 		return
 	}
 
-	var state EntryModel
+	var plan, state EntryModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
-	resp.Diagnostics.Append(versionDiags...)
-
-	pendingVersion, pending, pendingDiags := entryPendingPublishVersion(ctx, req.Private)
-	resp.Diagnostics.Append(pendingDiags...)
-	resp.Diagnostics.Append(validateEntryStateLifecycle(version, state.PublishedVersion)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	var plan EntryModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	draftMutation, draftMutationDiags := entryDraftMutationRequired(ctx, plan, state)
 	resp.Diagnostics.Append(draftMutationDiags...)
@@ -92,9 +83,19 @@ func (r *entryResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanR
 		return
 	}
 
-	if draftMutation || entryPublicationRecoveryRequired(version, pendingVersion, pending, state.PublishedVersion) {
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("published_version"), types.Int64Unknown())...)
+	if !draftMutation {
+		return
 	}
+
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
+	resp.Diagnostics.Append(validateEntryStateLifecycle(version, state.PublishedVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("published_version"), types.Int64Unknown())...)
 }
 
 func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -185,20 +186,6 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	switch response := getEntryResponse.(type) {
 	case *cm.Entry:
-		pendingVersion, pending, pendingDiags := entryPendingPublishVersion(ctx, req.Private)
-		resp.Diagnostics.Append(pendingDiags...)
-
-		publishedVersion, published := response.Sys.PublishedVersion.Get()
-		if entryPendingPublicationShouldBeCleared(
-			response.Sys.Version,
-			pendingVersion,
-			pending,
-			int64(publishedVersion),
-			published,
-		) {
-			resp.Diagnostics.Append(clearEntryPendingPublishVersion(ctx, resp.Private)...)
-		}
-
 		resp.Diagnostics.Append(validateObservedEntryLifecycle(response.Sys.Version, response.Sys.PublishedVersion)...)
 
 		responseModel, responseModelDiags := NewEntryResourceModelFromResponse(ctx, *response)
@@ -257,6 +244,30 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	draftMutation, draftMutationDiags := entryDraftMutationRequired(ctx, plan, state)
+	resp.Diagnostics.Append(draftMutationDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !draftMutation {
+		// Representation-only changes use the effective plan, while publication
+		// remains response truth from the prior state.
+		resp.State = tfsdk.State(req.Plan)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("published_version"), state.PublishedVersion)...)
+
+		return
+	}
+
+	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
+	resp.Diagnostics.Append(validateEntryStateLifecycle(version, state.PublishedVersion)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
@@ -267,69 +278,30 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
-	resp.Diagnostics.Append(versionDiags...)
-
-	pendingVersion, pending, pendingDiags := entryPendingPublishVersion(ctx, req.Private)
-	resp.Diagnostics.Append(pendingDiags...)
+	expectedDraftVersion := version + 1
+	responseModel, version := r.updateEntry(ctx, plan, version, &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	draftMutation, draftMutationDiags := entryDraftMutationRequired(ctx, plan, state)
-	resp.Diagnostics.Append(draftMutationDiags...)
+	responseModel, consistencyDiags := projectEntryMutationResponse(ctx, plan, responseModel, entryResponseFieldsExact)
+	resp.Diagnostics.Append(setEntryIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, responseModel, version)...)
+
+	if version != expectedDraftVersion {
+		resp.Diagnostics.AddError("Unexpected entry draft version", fmt.Sprintf("Contentful returned version %d after writing version %d.", version, expectedDraftVersion))
+	}
+
+	resp.Diagnostics.Append(validateEntryDraftResponse(version, responseModel.PublishedVersion)...)
+	resp.Diagnostics.Append(consistencyDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	responseModel := plan
-	recoveryRequired := entryPublicationRecoveryRequired(version, pendingVersion, pending, state.PublishedVersion)
-
-	switch {
-	case draftMutation:
-		expectedDraftVersion := version + 1
-
-		responseModel, version = r.updateEntry(ctx, plan, version, &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		var consistencyDiags diag.Diagnostics
-
-		responseModel, consistencyDiags = projectEntryMutationResponse(ctx, plan, responseModel, entryResponseFieldsExact)
-		resp.Diagnostics.Append(setEntryIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, responseModel, version)...)
-
-		if version != expectedDraftVersion {
-			resp.Diagnostics.AddError("Unexpected entry draft version", fmt.Sprintf("Contentful returned version %d after writing version %d.", version, expectedDraftVersion))
-		}
-
-		resp.Diagnostics.Append(validateEntryDraftResponse(version, responseModel.PublishedVersion)...)
-		resp.Diagnostics.Append(consistencyDiags...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		resp.Diagnostics.Append(setEntryPendingPublishVersion(ctx, resp.Private, version)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	case recoveryRequired:
-		// Publish exactly the provider-written draft version authorized by
-		// resource private state.
-	default:
-		// Representation-only changes use the effective plan, while publication
-		// remains response truth from the prior state.
-		resp.State = tfsdk.State(req.Plan)
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("published_version"), state.PublishedVersion)...)
-
-		return
-	}
-
-	r.publishAndCheckpointEntry(ctx, responseModel, version, entryResponseFieldsExact, resp.Identity, &resp.State, resp.Private, &resp.Diagnostics)
+	r.publishAndCheckpointEntry(
+		ctx, responseModel, version, entryResponseFieldsExact, resp.Identity, &resp.State, resp.Private, &resp.Diagnostics,
+	)
 }
 
 func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -497,12 +469,17 @@ func (r *entryResource) publishAndCheckpointEntry(
 
 	response, ok := publishEntryResponse.(*cm.EntryStatusCode)
 	if !ok {
-		diags.AddError("Failed to publish entry", util.ErrorDetailFromContentfulManagementResponse(publishEntryResponse, err))
+		diags.AddError(
+			"Failed to publish entry",
+			fmt.Sprintf(
+				"%s\n\nContentful accepted Entry draft version %d, but publication was not confirmed. Terraform preserved the draft response and an unchanged later apply will not retry publication. Inspect the Entry in Contentful, then publish it manually if needed or make another Terraform-managed draft change.",
+				util.ErrorDetailFromContentfulManagementResponse(publishEntryResponse, err),
+				version,
+			),
+		)
 
 		return
 	}
-
-	diags.Append(clearEntryPendingPublishVersion(ctx, private)...)
 
 	responseModel, responseDiags := NewEntryResourceModelFromResponse(ctx, response.Response)
 	diags.Append(responseDiags...)

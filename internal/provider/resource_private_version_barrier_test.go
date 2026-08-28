@@ -179,6 +179,21 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 	contentType.Timeouts = TimeoutsNull()
 	plannedContentType := contentType
 	plannedContentType.Name = types.StringValue("Changed content type")
+	entry := EntryModel{
+		IDIdentityModel:    IDIdentityModel{ID: types.StringValue("space/environment/entry")},
+		EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
+		ContentTypeID:      types.StringValue("content-type"),
+		Fields:             NewTypedMap(map[string]jsontypes.Normalized{}),
+		Metadata: NewTypedObject(EntryMetadataValue{
+			Concepts: NewTypedList([]types.String{}),
+			Tags:     NewTypedList([]types.String{}),
+		}),
+		Timeouts: TimeoutsNull(),
+	}
+	plannedEntry := entry
+	plannedEntry.Fields = NewTypedMap(map[string]jsontypes.Normalized{
+		"managed": jsontypes.NewNormalizedValue(`{"en-US":"changed"}`),
+	})
 
 	return []requiredPrivateVersionResourceCase{
 		{
@@ -192,17 +207,8 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 			name:           "entry update",
 			typeName:       "contentful_entry",
 			resourceSchema: EntryResourceSchema(t.Context()),
-			model: EntryModel{
-				IDIdentityModel:    IDIdentityModel{ID: types.StringValue("space/environment/entry")},
-				EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
-				ContentTypeID:      types.StringValue("content-type"),
-				Fields:             NewTypedMap(map[string]jsontypes.Normalized{}),
-				Metadata: NewTypedObject(EntryMetadataValue{
-					Concepts: NewTypedList([]types.String{}),
-					Tags:     NewTypedList([]types.String{}),
-				}),
-				Timeouts: TimeoutsNull(),
-			},
+			model:          entry,
+			plannedModel:   plannedEntry,
 		},
 		{
 			name:           "delivery API key update",

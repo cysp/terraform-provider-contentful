@@ -65,7 +65,7 @@ func TestAccContentTypeResourceFailedCreateActivationRemainsReplaceable(t *testi
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
 				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile(`Failed to activate content type`),
+				ExpectError:     regexp.MustCompile(`(?s)Failed to activate content type.*activation was\s+not\s+confirmed`),
 			},
 			{
 				PreConfig: func() {

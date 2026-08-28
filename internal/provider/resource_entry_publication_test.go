@@ -9,11 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccEntryResourceFailedPublishRecoversWithoutRefresh(t *testing.T) {
+func TestAccEntryResourceFailedPublishDoesNotRetryWithoutRefresh(t *testing.T) {
 	t.Parallel()
 
 	fixture := newEntryAcceptanceFixture(t)
@@ -34,7 +33,7 @@ func TestAccEntryResourceFailedPublishRecoversWithoutRefresh(t *testing.T) {
 					fault.shot.arm()
 				},
 				Config:      config("two"),
-				ExpectError: regexp.MustCompile(`Failed to publish entry`),
+				ExpectError: regexp.MustCompile(`(?s)Failed to publish entry.*publication was\s+not\s+confirmed`),
 			},
 			{
 				PreConfig: func() {
@@ -46,18 +45,14 @@ func TestAccEntryResourceFailedPublishRecoversWithoutRefresh(t *testing.T) {
 				},
 				Config: config("two"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionUpdate),
-					plancheck.ExpectUnknownValue("contentful_entry.test", tfjsonpath.New("published_version")),
+					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
 				}},
 				Check: func(state *terraform.State) error {
-					requests := recorder.snapshot()
-					require.Len(t, requests, 1)
-					requireEntryPublish(t, requests[0])
-					require.Equal(t, "3", requests[0].version)
+					requireNoEntryMutations(t, recorder, "an unchanged apply must not retry publication")
 					entry := getTestEntry(t, server)
-					require.Equal(t, 4, entry.Sys.Version)
-					require.Equal(t, 3, entry.Sys.PublishedVersion.Or(0))
-					require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "3")(state))
+					require.Equal(t, 3, entry.Sys.Version)
+					require.Equal(t, 1, entry.Sys.PublishedVersion.Or(0))
+					require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "1")(state))
 
 					return nil
 				},
@@ -66,7 +61,7 @@ func TestAccEntryResourceFailedPublishRecoversWithoutRefresh(t *testing.T) {
 	})
 }
 
-func TestAccEntryResourceChangedConfigReplacesPendingPublishWithoutRefresh(t *testing.T) {
+func TestAccEntryResourceChangedConfigAuthorsAndPublishesNewDraftWithoutRefresh(t *testing.T) {
 	t.Parallel()
 
 	fixture := newEntryAcceptanceFixture(t)
@@ -94,7 +89,7 @@ func TestAccEntryResourceChangedConfigReplacesPendingPublishWithoutRefresh(t *te
 				Config:    config("three"),
 				Check: func(state *terraform.State) error {
 					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-					require.Equal(t, "3", update.version, "the new draft must be fenced by the exact pending publication version")
+					require.Equal(t, "3", update.version, "the new draft must be fenced by the exact current draft version")
 					require.JSONEq(t, `{"en-US":"three"}`, string(update.fields["managed"]))
 					require.Equal(t, "4", publish.version, "only the replacement draft may be published")
 
@@ -209,7 +204,7 @@ func TestAccEntryResourceCreatePublishFailureRequiresReplacement(t *testing.T) {
 	})
 }
 
-func TestAccEntryResourceFailedPublishRecoversAfterRefresh(t *testing.T) {
+func TestAccEntryResourceFailedPublishDoesNotRetryAfterRefresh(t *testing.T) {
 	t.Parallel()
 
 	fixture := newEntryAcceptanceFixture(t)
@@ -232,13 +227,11 @@ func TestAccEntryResourceFailedPublishRecoversAfterRefresh(t *testing.T) {
 			PreConfig: recorder.reset,
 			Config:    config("two"),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-				plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionUpdate),
+				plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
 			}},
-			Check: func(*terraform.State) error {
-				requests := recorder.snapshot()
-				require.Len(t, requests, 1)
-				requireEntryPublish(t, requests[0])
-				require.Equal(t, "3", requests[0].version)
+			Check: func(state *terraform.State) error {
+				requireNoEntryMutations(t, recorder, "refreshing the provider-authored draft must not retry publication")
+				require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "1")(state))
 
 				return nil
 			},
@@ -302,7 +295,7 @@ func TestAccEntryResourceHigherPostPublishCurrentVersionIsAdoptedWithWarning(t *
 	})
 }
 
-func TestAccEntryResourceTypedPublishContradictionClearsRecovery(t *testing.T) {
+func TestAccEntryResourceTypedPublishContradictionDoesNotAuthorizeRetry(t *testing.T) {
 	t.Parallel()
 
 	fixture := newEntryAcceptanceFixture(t)
@@ -312,22 +305,13 @@ func TestAccEntryResourceTypedPublishContradictionClearsRecovery(t *testing.T) {
 	tupleFault := &entryPublishTupleAdapter{
 		delegate: server, version: &responseVersion, publishedVersion: &publishedVersion, errorSink: fixture.errorSink,
 	}
-	rejectedFault := &entryRejectedPublishAdapter{delegate: tupleFault}
-	recorder.delegate = rejectedFault
+	recorder.delegate = tupleFault
 	config := managedEntryConfig
 
 	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
-			{
-				PreConfig: func() {
-					recorder.reset()
-					rejectedFault.shot.arm()
-				},
-				Config:      config("two"),
-				ExpectError: regexp.MustCompile(`Failed to publish entry`),
-			},
 			{
 				PreConfig: func() {
 					recorder.reset()
@@ -352,7 +336,7 @@ func TestAccEntryResourceTypedPublishContradictionClearsRecovery(t *testing.T) {
 	})
 }
 
-func TestAccEntryResourceExternalAdvanceClearsFailedPublishRecovery(t *testing.T) {
+func TestAccEntryResourceExternalAdvanceDoesNotAuthorizePublication(t *testing.T) {
 	t.Parallel()
 
 	fixture := newEntryAcceptanceFixture(t)
@@ -394,7 +378,7 @@ func TestAccEntryResourceExternalAdvanceClearsFailedPublishRecovery(t *testing.T
 	}})
 }
 
-func TestAccEntryResourceExternalUnpublishClearsFailedPublishRecovery(t *testing.T) {
+func TestAccEntryResourceExternalUnpublishDoesNotAuthorizePublication(t *testing.T) {
 	t.Parallel()
 
 	fixture := newEntryAcceptanceFixture(t)
@@ -443,7 +427,7 @@ func TestAccEntryResourceExternalUnpublishClearsFailedPublishRecovery(t *testing
 	}})
 }
 
-func TestAccEntryResourcePublishRecoveryRejectsInterveningDraftWithoutRefresh(t *testing.T) {
+func TestAccEntryResourceInterveningDraftDoesNotAuthorizePublicationWithoutRefresh(t *testing.T) {
 	t.Parallel()
 
 	fixture := newEntryAcceptanceFixture(t)
@@ -474,22 +458,21 @@ func TestAccEntryResourcePublishRecoveryRejectsInterveningDraftWithoutRefresh(t 
 					require.IsType(t, &cm.EntryStatusCode{}, response)
 					recorder.reset()
 				},
-				Config:      config("two"),
-				ExpectError: regexp.MustCompile(`Failed to publish entry`),
+				Config: config("two"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
+				}},
+				Check: func(*terraform.State) error {
+					requireNoEntryMutations(t, recorder, "an unrefreshed external draft must not authorize publication")
+
+					return nil
+				},
 			},
 			{
-				PreConfig: func() {
-					requests := recorder.snapshot()
-					require.Len(t, requests, 1)
-					requireEntryPublish(t, requests[0])
-					require.Equal(t, "3", requests[0].version)
-					entry := getTestEntry(t, server)
-					require.Equal(t, 4, entry.Sys.Version)
-					require.Equal(t, 1, entry.Sys.PublishedVersion.Or(0))
-				},
+				PreConfig:          recorder.reset,
 				Config:             config("two"),
 				PlanOnly:           true,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
