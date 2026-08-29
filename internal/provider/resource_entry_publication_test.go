@@ -239,12 +239,12 @@ func TestAccEntryResourceFailedPublishDoesNotRetryAfterRefresh(t *testing.T) {
 	}})
 }
 
-func TestAccEntryResourceHigherPostPublishCurrentVersionIsAdoptedWithWarning(t *testing.T) {
+func TestAccEntryResourceHigherPostPublishVersionIsAdoptedWithWarning(t *testing.T) {
 	t.Parallel()
 
 	fixture := newEntryAcceptanceFixture(t)
 	server, recorder := fixture.server, fixture.recorder
-	fault := &entryHigherPostPublishCurrentVersionAdapter{delegate: server, server: server, errorSink: fixture.errorSink}
+	fault := &entryHigherPostPublishVersionAdapter{delegate: server, server: server, errorSink: fixture.errorSink}
 	recorder.delegate = fault
 	config := managedEntryConfig
 

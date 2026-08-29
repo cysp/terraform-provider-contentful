@@ -298,10 +298,10 @@ func (h *entryPublishTupleAdapter) ServeHTTP(responseWriter http.ResponseWriter,
 	writeEntryAdapterJSONResponse(responseWriter, recorder, payload, h.errorSink)
 }
 
-// entryHigherPostPublishCurrentVersionAdapter models a successful publication
-// response followed by two external draft writes before the response reaches
-// Terraform.
-type entryHigherPostPublishCurrentVersionAdapter struct {
+// entryHigherPostPublishVersionAdapter models a successful publication response
+// whose Contentful sys.version is followed by two external draft writes before
+// the response reaches Terraform.
+type entryHigherPostPublishVersionAdapter struct {
 	delegate  http.Handler
 	server    *cmt.Server
 	shot      entryOneShot
@@ -353,7 +353,7 @@ func (h *entryReorderedMetadataReadAdapter) ServeHTTP(responseWriter http.Respon
 	writeEntryAdapterJSONResponse(responseWriter, recorder, payload, h.errorSink)
 }
 
-func (h *entryHigherPostPublishCurrentVersionAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+func (h *entryHigherPostPublishVersionAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPut || !strings.HasSuffix(request.URL.Path, "/entries/entry/published") || !h.shot.take() {
 		h.delegate.ServeHTTP(responseWriter, request)
 
