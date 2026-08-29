@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var errTaxonomyRequestFieldMissing = errors.New("desired taxonomy request field is missing")
+var errTaxonomyRequestFieldMissing = errors.New("taxonomy request field is missing")
 
 type taxonomyConceptMutationOwnership struct {
 	altLabels         bool
@@ -27,14 +27,13 @@ type taxonomyConceptMutationOwnership struct {
 type preparedTaxonomyConceptMutation struct {
 	plan      TaxonomyConceptModel
 	ownership taxonomyConceptMutationOwnership
-	desired   cm.TaxonomyConceptRequest
 }
 
 // prepareTaxonomyConceptMutation captures configuration ownership before any
 // request is built. A null Optional+Computed collection is response-owned;
 // every non-null value is configuration-owned, and an unknown configuration
 // value is rejected at its attribute path before network I/O.
-func prepareTaxonomyConceptMutation(ctx context.Context, config, plan TaxonomyConceptModel) (preparedTaxonomyConceptMutation, diag.Diagnostics) {
+func prepareTaxonomyConceptMutation(config, plan TaxonomyConceptModel) (preparedTaxonomyConceptMutation, diag.Diagnostics) {
 	prepared := preparedTaxonomyConceptMutation{plan: plan}
 	diags := diag.Diagnostics{}
 	prepared.ownership.altLabels = taxonomyCollectionOwnership(config.AltLabels, plan.AltLabels, path.Root("alt_labels"), &diags)
@@ -42,18 +41,6 @@ func prepareTaxonomyConceptMutation(ctx context.Context, config, plan TaxonomyCo
 	prepared.ownership.notations = taxonomyCollectionOwnership(config.Notations, plan.Notations, path.Root("notations"), &diags)
 	prepared.ownership.broaderConceptIDs = taxonomyCollectionOwnership(config.BroaderConceptIDs, plan.BroaderConceptIDs, path.Root("broader_concept_ids"), &diags)
 	prepared.ownership.relatedConceptIDs = taxonomyCollectionOwnership(config.RelatedConceptIDs, plan.RelatedConceptIDs, path.Root("related_concept_ids"), &diags)
-
-	if diags.HasError() {
-		return prepared, diags
-	}
-
-	request, requestDiags := prepared.planRequest(ctx)
-	diags.Append(requestDiags...)
-
-	prepared.desired = request
-	if diags.HasError() {
-		return prepared, diags
-	}
 
 	return prepared, diags
 }
@@ -96,9 +83,15 @@ func taxonomyKnownPlanValue(value interface {
 }
 
 func (prepared preparedTaxonomyConceptMutation) PatchFromState(ctx context.Context, state TaxonomyConceptModel) (cm.TaxonomyPatch, diag.Diagnostics) {
-	current, currentDiags := prepared.stateRequest(ctx, state)
-	desired := prepared.desired
+	desired, desiredDiags := prepared.planRequest(ctx)
 	diags := diag.Diagnostics{}
+	diags.Append(desiredDiags...)
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	current, currentDiags := prepared.stateRequest(ctx, state)
 	diags.Append(currentDiags...)
 
 	if diags.HasError() {
@@ -185,7 +178,7 @@ func reconcileOwnedTaxonomyLabelPatch(patch cm.TaxonomyPatch, current, desired *
 }
 
 func taxonomyRequestField(request *cm.TaxonomyConceptRequest, key string) (jx.Raw, error) {
-	fields, err := taxonomyRequestFields(request, "desired")
+	fields, err := taxonomyRequestFields(request, "provided")
 	if err != nil {
 		return nil, err
 	}
@@ -337,10 +330,6 @@ func (prepared preparedTaxonomyConceptMutation) ProjectResponse(ctx context.Cont
 	return data, responseDiags, consistencyDiags
 }
 
-func (prepared preparedTaxonomyConceptMutation) CreateRequest() cm.TaxonomyConceptRequest {
-	return prepared.desired
-}
-
 func (prepared preparedTaxonomyConceptMutation) planRequest(ctx context.Context) (cm.TaxonomyConceptRequest, diag.Diagnostics) {
 	model := prepared.plan
 	if !prepared.ownership.altLabels && !taxonomyKnownPlanValue(model.AltLabels) {
@@ -427,31 +416,27 @@ type taxonomyConceptSchemeMutationOwnership struct {
 type preparedTaxonomyConceptSchemeMutation struct {
 	plan      TaxonomyConceptSchemeModel
 	ownership taxonomyConceptSchemeMutationOwnership
-	desired   cm.TaxonomyConceptSchemeRequest
 }
 
-func prepareTaxonomyConceptSchemeMutation(ctx context.Context, config, plan TaxonomyConceptSchemeModel) (preparedTaxonomyConceptSchemeMutation, diag.Diagnostics) {
+func prepareTaxonomyConceptSchemeMutation(config, plan TaxonomyConceptSchemeModel) (preparedTaxonomyConceptSchemeMutation, diag.Diagnostics) {
 	prepared := preparedTaxonomyConceptSchemeMutation{plan: plan}
 	diags := diag.Diagnostics{}
 	prepared.ownership.topConceptIDs = taxonomyCollectionOwnership(config.TopConceptIDs, plan.TopConceptIDs, path.Root("top_concept_ids"), &diags)
 	prepared.ownership.conceptIDs = taxonomyCollectionOwnership(config.ConceptIDs, plan.ConceptIDs, path.Root("concept_ids"), &diags)
 
-	if diags.HasError() {
-		return prepared, diags
-	}
-
-	request, requestDiags := prepared.planRequest(ctx)
-	diags.Append(requestDiags...)
-
-	prepared.desired = request
-
 	return prepared, diags
 }
 
 func (prepared preparedTaxonomyConceptSchemeMutation) PatchFromState(ctx context.Context, state TaxonomyConceptSchemeModel) (cm.TaxonomyPatch, diag.Diagnostics) {
-	current, currentDiags := prepared.stateRequest(ctx, state)
-	desired := prepared.desired
+	desired, desiredDiags := prepared.planRequest(ctx)
 	diags := diag.Diagnostics{}
+	diags.Append(desiredDiags...)
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	current, currentDiags := prepared.stateRequest(ctx, state)
 	diags.Append(currentDiags...)
 
 	if diags.HasError() {
@@ -537,10 +522,6 @@ func (prepared preparedTaxonomyConceptSchemeMutation) ProjectResponse(ctx contex
 	}
 
 	return data, responseDiags, consistencyDiags
-}
-
-func (prepared preparedTaxonomyConceptSchemeMutation) CreateRequest() cm.TaxonomyConceptSchemeRequest {
-	return prepared.desired
 }
 
 func (prepared preparedTaxonomyConceptSchemeMutation) planRequest(ctx context.Context) (cm.TaxonomyConceptSchemeRequest, diag.Diagnostics) {

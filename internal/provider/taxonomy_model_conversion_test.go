@@ -359,7 +359,7 @@ func assertTaxonomyLabelMapRequestState(
 	model := taxonomyConceptUpdatePlan()
 	set(&model, value)
 
-	prepared, diags := prepareTaxonomyConceptMutation(t.Context(), model, model)
+	prepared, diags := prepareTaxonomyConceptMutation(model, model)
 	if stateIndex == 1 {
 		require.True(t, diags.HasError())
 		assertTaxonomyDiagnosticPath(t, diags, path.Root(attributeName))
@@ -369,7 +369,10 @@ func assertTaxonomyLabelMapRequestState(
 
 	require.False(t, diags.HasError())
 
-	labels := get(prepared.CreateRequest())
+	request, requestDiags := prepared.planRequest(t.Context())
+	require.False(t, requestDiags.HasError(), requestDiags)
+
+	labels := get(request)
 	if stateIndex == 0 {
 		assert.False(t, labels.IsSet())
 
@@ -410,7 +413,7 @@ func TestTaxonomyConceptListRequestStates(t *testing.T) {
 						model.RelatedConceptIDs = value
 					}
 
-					prepared, diags := prepareTaxonomyConceptMutation(t.Context(), model, model)
+					prepared, diags := prepareTaxonomyConceptMutation(model, model)
 					if stateIndex == 1 {
 						require.True(t, diags.HasError())
 						assertTaxonomyDiagnosticPath(t, diags, path.Root(attributeName))
@@ -420,7 +423,9 @@ func TestTaxonomyConceptListRequestStates(t *testing.T) {
 
 					require.False(t, diags.HasError())
 
-					request := prepared.CreateRequest()
+					request, requestDiags := prepared.planRequest(t.Context())
+					require.False(t, requestDiags.HasError(), requestDiags)
+
 					actual := request.Notations
 
 					switch attributeName {
@@ -471,7 +476,7 @@ func TestTaxonomyConceptSchemeListRequestStates(t *testing.T) {
 						model.ConceptIDs = value
 					}
 
-					prepared, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), model, model)
+					prepared, diags := prepareTaxonomyConceptSchemeMutation(model, model)
 					if stateIndex == 1 {
 						require.True(t, diags.HasError())
 						assertTaxonomyDiagnosticPath(t, diags, path.Root(attributeName))
@@ -481,7 +486,8 @@ func TestTaxonomyConceptSchemeListRequestStates(t *testing.T) {
 
 					require.False(t, diags.HasError())
 
-					request := prepared.CreateRequest()
+					request, requestDiags := prepared.planRequest(t.Context())
+					require.False(t, requestDiags.HasError(), requestDiags)
 
 					actual := conceptLinkIDs(request.TopConcepts)
 					if attributeName == "concept_ids" {
@@ -538,10 +544,11 @@ func TestPreparedTaxonomyConceptMutationSendsKnownPlanValuesWhenConfigOmitsColle
 	plan.BroaderConceptIDs = types.ListValueMust(types.StringType, []attr.Value{types.StringValue("parent")})
 	plan.RelatedConceptIDs = types.ListValueMust(types.StringType, []attr.Value{types.StringValue("related")})
 
-	prepared, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+	prepared, diags := prepareTaxonomyConceptMutation(config, plan)
 	require.False(t, diags.HasError())
 
-	request := prepared.CreateRequest()
+	request, requestDiags := prepared.planRequest(t.Context())
+	require.False(t, requestDiags.HasError(), requestDiags)
 
 	assert.True(t, request.AltLabels.IsSet())
 	assert.True(t, request.HiddenLabels.IsSet())
@@ -558,10 +565,11 @@ func TestPreparedTaxonomyConceptSchemeMutationSendsKnownPlanValuesWhenConfigOmit
 	plan.TopConceptIDs = types.ListValueMust(types.StringType, []attr.Value{types.StringValue("top")})
 	plan.ConceptIDs = types.ListValueMust(types.StringType, []attr.Value{types.StringValue("concept")})
 
-	prepared, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), config, plan)
+	prepared, diags := prepareTaxonomyConceptSchemeMutation(config, plan)
 	require.False(t, diags.HasError())
 
-	request := prepared.CreateRequest()
+	request, requestDiags := prepared.planRequest(t.Context())
+	require.False(t, requestDiags.HasError(), requestDiags)
 	assert.Equal(t, []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("top")}, request.TopConcepts)
 	assert.Equal(t, []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("concept")}, request.Concepts)
 }
@@ -620,7 +628,7 @@ func TestPreparedTaxonomyConceptMutationRejectsUnknownCollectionConfiguration(t 
 				config, plan := taxonomyConceptUpdatePlan(), taxonomyConceptUpdatePlan()
 				test.set(&config, true)
 				test.set(&plan, planUnknown)
-				_, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+				_, diags := prepareTaxonomyConceptMutation(config, plan)
 				require.True(t, diags.HasError())
 				require.Len(t, diags.Errors(), 1)
 				assertTaxonomyDiagnosticPath(t, diags, test.path)
@@ -661,7 +669,7 @@ func TestPreparedTaxonomyConceptSchemeMutationRejectsUnknownCollectionConfigurat
 				config, plan := taxonomyConceptSchemeUpdatePlan(), taxonomyConceptSchemeUpdatePlan()
 				test.set(&config, true)
 				test.set(&plan, planUnknown)
-				_, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), config, plan)
+				_, diags := prepareTaxonomyConceptSchemeMutation(config, plan)
 				require.True(t, diags.HasError())
 				require.Len(t, diags.Errors(), 1)
 				assertTaxonomyDiagnosticPath(t, diags, test.path)
@@ -682,10 +690,11 @@ func TestPreparedTaxonomyConceptMutationAllowsUnknownComputedPlanWhenConfigOmitt
 	plan.BroaderConceptIDs = types.ListUnknown(types.StringType)
 	plan.RelatedConceptIDs = types.ListUnknown(types.StringType)
 
-	prepared, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+	prepared, diags := prepareTaxonomyConceptMutation(config, plan)
 	require.False(t, diags.HasError())
 
-	request := prepared.CreateRequest()
+	request, requestDiags := prepared.planRequest(t.Context())
+	require.False(t, requestDiags.HasError(), requestDiags)
 
 	assert.False(t, request.AltLabels.IsSet())
 	assert.False(t, request.HiddenLabels.IsSet())
@@ -728,7 +737,7 @@ func TestPreparedTaxonomyConceptPatchFollowsCollectionOwnership(t *testing.T) {
 		plan.BroaderConceptIDs = types.ListUnknown(types.StringType)
 		plan.RelatedConceptIDs = types.ListUnknown(types.StringType)
 
-		prepared, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+		prepared, diags := prepareTaxonomyConceptMutation(config, plan)
 		require.False(t, diags.HasError())
 		patch, patchDiags := prepared.PatchFromState(t.Context(), patchState)
 		require.False(t, patchDiags.HasError(), patchDiags)
@@ -749,7 +758,7 @@ func TestPreparedTaxonomyConceptPatchFollowsCollectionOwnership(t *testing.T) {
 		plan.AltLabels = state.AltLabels
 		plan.HiddenLabels = state.HiddenLabels
 
-		prepared, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+		prepared, diags := prepareTaxonomyConceptMutation(config, plan)
 		require.False(t, diags.HasError())
 		patch, patchDiags := prepared.PatchFromState(t.Context(), patchState)
 		require.False(t, patchDiags.HasError())
@@ -774,7 +783,7 @@ func TestPreparedTaxonomyConceptPatchFollowsCollectionOwnership(t *testing.T) {
 		plan.BroaderConceptIDs = config.BroaderConceptIDs
 		plan.RelatedConceptIDs = config.RelatedConceptIDs
 
-		prepared, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+		prepared, diags := prepareTaxonomyConceptMutation(config, plan)
 		require.False(t, diags.HasError())
 		patch, patchDiags := prepared.PatchFromState(t.Context(), patchState)
 		require.False(t, patchDiags.HasError())
@@ -793,7 +802,7 @@ func TestPreparedTaxonomyConceptPatchFollowsCollectionOwnership(t *testing.T) {
 		plan.AltLabels = config.AltLabels
 		patchState.AltLabels = types.MapValueMust(listType, map[string]attr.Value{})
 
-		prepared, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+		prepared, diags := prepareTaxonomyConceptMutation(config, plan)
 		require.False(t, diags.HasError())
 		patch, patchDiags := prepared.PatchFromState(t.Context(), patchState)
 		require.False(t, patchDiags.HasError())
@@ -812,7 +821,7 @@ func TestPreparedTaxonomyConceptPatchFollowsCollectionOwnership(t *testing.T) {
 			"en-US": types.ListValueMust(types.StringType, []attr.Value{}),
 		})
 
-		prepared, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+		prepared, diags := prepareTaxonomyConceptMutation(config, plan)
 		require.False(t, diags.HasError())
 		patch, patchDiags := prepared.PatchFromState(t.Context(), patchState)
 		require.False(t, patchDiags.HasError())
@@ -833,7 +842,7 @@ func TestPreparedTaxonomyConceptPatchFollowsCollectionOwnership(t *testing.T) {
 		plan.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{"fr-FR": types.StringValue("Chaise")})
 		config.PrefLabel = plan.PrefLabel
 
-		prepared, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+		prepared, diags := prepareTaxonomyConceptMutation(config, plan)
 		require.False(t, diags.HasError())
 		patch, patchDiags := prepared.PatchFromState(t.Context(), patchState)
 		require.False(t, patchDiags.HasError(), patchDiags)
@@ -860,7 +869,7 @@ func TestPreparedTaxonomyConceptSchemePatchFollowsCollectionOwnership(t *testing
 		plan.TopConceptIDs = types.ListUnknown(types.StringType)
 		plan.ConceptIDs = types.ListUnknown(types.StringType)
 
-		prepared, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), config, plan)
+		prepared, diags := prepareTaxonomyConceptSchemeMutation(config, plan)
 		require.False(t, diags.HasError())
 		patch, patchDiags := prepared.PatchFromState(t.Context(), state)
 		require.False(t, patchDiags.HasError())
@@ -878,7 +887,7 @@ func TestPreparedTaxonomyConceptSchemePatchFollowsCollectionOwnership(t *testing
 		plan.TopConceptIDs = config.TopConceptIDs
 		plan.ConceptIDs = config.ConceptIDs
 
-		prepared, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), config, plan)
+		prepared, diags := prepareTaxonomyConceptSchemeMutation(config, plan)
 		require.False(t, diags.HasError())
 		patch, patchDiags := prepared.PatchFromState(t.Context(), state)
 		require.False(t, patchDiags.HasError())
@@ -913,7 +922,7 @@ func TestPreparedTaxonomyConceptNoopStatePreservesResponseOwnedValues(t *testing
 	config.BroaderConceptIDs = types.ListNull(types.StringType)
 	config.RelatedConceptIDs = types.ListNull(types.StringType)
 
-	prepared, diags := prepareTaxonomyConceptMutation(t.Context(), config, plan)
+	prepared, diags := prepareTaxonomyConceptMutation(config, plan)
 	require.False(t, diags.HasError())
 
 	actual := prepared.NoopState(state)
@@ -946,7 +955,7 @@ func TestPreparedTaxonomyConceptSchemeNoopStatePreservesComputedValues(t *testin
 	config.TopConceptIDs = types.ListNull(types.StringType)
 	config.ConceptIDs = types.ListNull(types.StringType)
 
-	prepared, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), config, plan)
+	prepared, diags := prepareTaxonomyConceptSchemeMutation(config, plan)
 	require.False(t, diags.HasError())
 
 	actual := prepared.NoopState(state)
@@ -976,10 +985,11 @@ func TestPreparedTaxonomyConceptSchemeMutationOmitsUnknownResponseOwnedArrays(t 
 	plan.TopConceptIDs = types.ListUnknown(types.StringType)
 	plan.ConceptIDs = types.ListUnknown(types.StringType)
 
-	prepared, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), config, plan)
+	prepared, diags := prepareTaxonomyConceptSchemeMutation(config, plan)
 	require.False(t, diags.HasError())
 
-	request := prepared.CreateRequest()
+	request, requestDiags := prepared.planRequest(t.Context())
+	require.False(t, requestDiags.HasError(), requestDiags)
 
 	assert.Nil(t, request.TopConcepts)
 	assert.Nil(t, request.Concepts)
@@ -1043,7 +1053,7 @@ func TestPreparedTaxonomyConceptMutationLabelEquivalenceIsDirectional(t *testing
 			listType := types.ListType{ElemType: types.StringType}
 			plan.AltLabels = types.MapValueMust(listType, test.plannedAlt)
 
-			prepared, prepareDiags := prepareTaxonomyConceptMutation(t.Context(), plan, plan)
+			prepared, prepareDiags := prepareTaxonomyConceptMutation(plan, plan)
 			require.False(t, prepareDiags.HasError())
 
 			state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
@@ -1083,7 +1093,7 @@ func TestPreparedTaxonomyConceptMutationReportsIndependentLabelMismatches(t *tes
 		"en-US": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("planned-hidden")}),
 	})
 
-	prepared, prepareDiags := prepareTaxonomyConceptMutation(t.Context(), plan, plan)
+	prepared, prepareDiags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, prepareDiags.HasError())
 	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
@@ -1120,7 +1130,7 @@ func TestPreparedTaxonomyConceptMismatchKeepsCompleteRemoteState(t *testing.T) {
 		"en-US": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("planned-hidden")}),
 	})
 
-	prepared, prepareDiags := prepareTaxonomyConceptMutation(t.Context(), plan, plan)
+	prepared, prepareDiags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, prepareDiags.HasError())
 	actual, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
@@ -1141,7 +1151,7 @@ func TestPreparedTaxonomyConceptResponseIdentityMismatchKeepsRequestedIdentity(t
 	plan.AltLabels = types.MapValueMust(listType, map[string]attr.Value{})
 	plan.HiddenLabels = types.MapValueMust(listType, map[string]attr.Value{})
 	remote.Sys.Organization.Sys.ID, remote.Sys.ID, remote.Sys.Version = "other", "other", 9
-	prepared, diags := prepareTaxonomyConceptMutation(t.Context(), plan, plan)
+	prepared, diags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, diags.HasError())
 	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
@@ -1174,7 +1184,7 @@ func TestPreparedTaxonomyConceptSchemeResponseIdentityMismatchKeepsRequestedIden
 	plan.TopConceptIDs = types.ListUnknown(types.StringType)
 	plan.ConceptIDs = types.ListUnknown(types.StringType)
 	remote.Sys.Organization.Sys.ID, remote.Sys.ID, remote.Sys.Version = "other", "other", 9
-	prepared, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), config, plan)
+	prepared, diags := prepareTaxonomyConceptSchemeMutation(config, plan)
 	require.False(t, diags.HasError())
 	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())

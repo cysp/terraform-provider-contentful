@@ -88,7 +88,7 @@ func TestPreparedTaxonomyConceptMutationPreservesAllCanonicalEmptyLocalizedStrin
 		set(taxonomyEmptyLocalizedString())
 	}
 
-	prepared, diags := prepareTaxonomyConceptMutation(t.Context(), plan, plan)
+	prepared, diags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, diags.HasError())
 	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
@@ -113,7 +113,7 @@ func TestPreparedTaxonomyNullableLocalizedStringMismatchKeepsCompleteRemoteState
 	plan.Note = taxonomyEmptyLocalizedString()
 
 	plan.Definition = taxonomyEmptyLocalizedString()
-	prepared, diags := prepareTaxonomyConceptMutation(t.Context(), plan, plan)
+	prepared, diags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, diags.HasError())
 
 	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
@@ -132,7 +132,7 @@ func TestPreparedTaxonomyConceptSchemeMutationPreservesCanonicalEmptyDefinition(
 	require.False(t, diags.HasError())
 
 	plan.Definition = taxonomyEmptyLocalizedString()
-	prepared, diags := prepareTaxonomyConceptSchemeMutation(t.Context(), plan, plan)
+	prepared, diags := prepareTaxonomyConceptSchemeMutation(plan, plan)
 	require.False(t, diags.HasError())
 
 	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
