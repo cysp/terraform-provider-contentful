@@ -364,6 +364,20 @@ zero. Taxonomy Delete is the one absence-handling exception: when Terraform
 omits private data for a tainted replacement, the provider obtains the current
 version with a GET before deleting.
 
+### Entry destroy lifecycle
+
+Entry destroy consumes no private `version`, performs no recovery GET, and
+sends neither `X-Contentful-Version` nor `If-Match`. It always requests
+whole-Entry unpublish before delete. A 404 response is benign, as is an exact
+HTTP 400 response with `sys.id` `BadRequest` and message `Not published`;
+destroy continues to delete after either result. Any other unpublish error
+stops destroy before delete. Because Contentful does not enforce preconditions
+on these operations, an Entry changed outside Terraform can still be deleted.
+This policy is limited to Entry destroy; Entry update, Entry publish, and other
+endpoints are out of scope.
+
+See [Entry destroy lifecycle evidence](../research/entry-destroy-lifecycle.md).
+
 ### Taxonomy optimistic version locking
 
 Taxonomy resources record Contentful `sys.version` in provider-private state,

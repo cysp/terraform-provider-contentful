@@ -133,7 +133,11 @@ func (ts *Handler) DeleteEntry(_ context.Context, params cm.DeleteEntryParams) (
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), nil), nil
+	}
+
+	if entry.Sys.PublishedVersion.IsSet() {
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("Cannot delete published"), nil), nil
 	}
 
 	ts.entries.Delete(params.SpaceID, params.EnvironmentID, params.EntryID)
@@ -180,7 +184,11 @@ func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryPar
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), nil), nil
+	}
+
+	if !entry.Sys.PublishedVersion.IsSet() {
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("Not published"), nil), nil
 	}
 
 	entry.Sys.Version++
