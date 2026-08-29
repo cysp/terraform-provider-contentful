@@ -418,7 +418,7 @@ func TestAccEntryResourceExternalUnpublishDoesNotAuthorizePublication(t *testing
 			Check: resource.ComposeTestCheckFunc(
 				resource.TestCheckNoResourceAttr("contentful_entry.test", "published_version"),
 				func(*terraform.State) error {
-					requireNoEntryMutations(t, recorder, "external unpublish must revoke stale publication authority")
+					requireNoEntryMutations(t, recorder, "external unpublish must not grant publication authority")
 
 					return nil
 				},

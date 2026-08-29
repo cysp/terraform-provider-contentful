@@ -41,9 +41,12 @@ than the pending draft.
 
 ## Provider and fake-CMA consequence
 
-For the observed transition, exact pending publication authority is revoked
-naturally: after unpublish, remote `version` no longer equals the pending draft
-version. Terraform must not republish the stale pending draft version.
+After unpublish, remote `version` no longer equals the earlier draft version.
+Terraform must not publish that stale draft or treat the newly observed version
+as authority to publish. The provider grants publication authority only to the
+Create or Update operation that received its validated draft response, so the
+observed external transition neither revokes a stored marker nor grants authority
+to a later operation.
 
 The in-process fake models this observed contract: Entry unpublish returns a
 200 Entry response with an advanced positive `version` and no
