@@ -327,6 +327,10 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 
 	r.unpublishEntry(ctx, state, &resp.Diagnostics)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	r.deleteEntry(ctx, state, &resp.Diagnostics)
 }
 
@@ -558,7 +562,8 @@ func (r *entryResource) unpublishEntry(ctx context.Context, entry EntryModel, di
 
 		if response, ok := response.(cm.ErrorStatusCodeResponse); ok {
 			responseError, _ := response.GetError()
-			if response.GetStatusCode() == http.StatusNotFound || (responseError.Sys.ID == "BadRequest" && responseError.Message.Value == "Not published") {
+			if response.GetStatusCode() == http.StatusNotFound ||
+				(response.GetStatusCode() == http.StatusBadRequest && responseError.Sys.ID == "BadRequest" && responseError.Message.Value == "Not published") {
 				diags.AddWarning("Entry already unpublished", "")
 
 				handled = true
