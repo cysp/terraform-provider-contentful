@@ -26,24 +26,26 @@ The reviewed Contentful JavaScript client is v12.15.0 (commit
 - Terraform Framework ordering supports a standard plan design for
   `published_version`: `UseStateForUnknown` can first preserve the prior value,
   and resource-level `ModifyPlan`, which runs later, can make it unknown only for
-  a real publish or publication recovery.
-- Resource private state is suitable for recording pending publication
-  authority: Terraform persists response state even when the provider returns an
-  error, and private data can be saved by Update. There is no mid-RPC persistence
-  primitive, so a process loss before Terraform persists the Update response
-  cannot durably grant recovery authority.
+  an operation that writes and publishes a new draft.
+- Resource private state could technically record a pending exact version across
+  operations: Terraform persists response state even when the provider returns
+  an error, and private data can be saved by Update. The provider deliberately
+  rejects that recovery design. Only the Create or Update operation that receives
+  a validated draft response may publish that version; an unchanged later apply
+  does not retry publication.
 - Primary sources do not declare Entry metadata tags or concepts ordered, and a
   sanitized live multi-tag probe demonstrated that CMA can return tag order
   different from the order in the latest Update request. That justifies
   order-insensitive tag comparison, but not a public List-to-Set schema change.
 - A sanitized live unpublish probe returned an Entry whose `version` advanced
   beyond the pending draft and whose `publishedVersion` was absent; a subsequent
-  GET returned the same tuple. Exact pending-version recovery is therefore
-  revoked naturally after the observed external-unpublish transition.
+  GET returned the same tuple. This establishes the fake's normal unpublish
+  transition, but the provider does not use it to grant or revoke cross-operation
+  publication authority.
 - Create-with-ID has a distinct create contract: content-type header, create
   payload, and no prior-version lock. The first-party client implements it
   separately from update. Correcting an inherited update-shaped Create path is
-  justified, but it is not necessary to publication recovery and is best kept in
+  justified, but it is not necessary to publication and is best kept in
   a separate PR.
 
 ## Evidence classes
@@ -108,9 +110,13 @@ is writable during plan/Read/Update as well as Create and import. Framework
 [diagnostic semantics](https://developer.hashicorp.com/terraform/plugin/framework/diagnostics#how-errors-affect-state)
 say Terraform persists returned state even with an error specifically so a
 provider can checkpoint successful earlier calls in a multi-call mutation. Taken
-together, those contracts support persisting a pending exact version when draft
-write succeeded but publish failed. The provider gets one Update response; these
-sources define no durable checkpoint part-way through the RPC.
+together, those contracts make a cross-operation pending-version recovery design
+technically feasible when a draft write succeeds but Publish fails. They do not
+show that publication remains pending after an ambiguous Publish response, and
+they define no durable checkpoint part-way through an RPC. The provider therefore
+does not persist publication authority: the operation that receives the validated
+draft response may publish that exact version, and no later operation inherits
+that authority.
 
 ## Contentful Entry contract
 
@@ -170,7 +176,7 @@ actual Contentful evidence beneath it.
 | Normal Publish returns current `version == submitted + 1` | **D** | The first-party [`isUpdated` helper](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/plain/checks.ts#L3-L11) explicitly says publishing increments version by one. This is a client assumption and matches the sanitized live observations, but is not in the CMA contract. |
 | A higher coherent current version receives special treatment | **F** | The first-party helper treats `version > publishedVersion + 1` as later unpublished changes, but no source says a Publish response may or may not already contain such a later version. Warning/adoption is defensive interpretation, not documented mutation-response behavior. |
 | On Read, observe positive `publishedVersion >= version` | **F**, informed by **D** | This differs from the first-party status arithmetic for normal published/updated entries, but CMA does not make that arithmetic a representability rule. The provider preserves the positive tuple and warns; it does not turn tolerant observation into publication authority. |
-| Whole-Entry unpublish advances `version` and removes `publishedVersion` | **E** | The first-party client establishes the unversioned DELETE and Entry response shape but no arithmetic. The sanitized [unpublish probe](entry-unpublish-version.md) observed `version` advance by one from a pending draft and `publishedVersion` disappear in both the response and subsequent GET. The fake models that observed normal transition; the provider relies only on the resulting version mismatch to revoke stale recovery authority. |
+| Whole-Entry unpublish advances `version` and removes `publishedVersion` | **E** | The first-party client establishes the unversioned DELETE and Entry response shape but no arithmetic. The sanitized [unpublish probe](entry-unpublish-version.md) observed `version` advance by one from a pending draft and `publishedVersion` disappear in both the response and subsequent GET. The fake models that observed normal transition. The provider does not infer publication authority from the resulting state. |
 
 The repository's existing sanitized direct experiments in
 [Entry null and omission behavior](entry-null-and-omission.md) observed Create
@@ -185,27 +191,27 @@ fake's normal mode, but they do not convert exact `+1` arithmetic into a guarant
 The primary evidence supports **strict ownership boundary, tolerant
 observation**:
 
-- Before Publish, require exact publication authority for the provider-written
-  draft and send that exact version. Never grant ownership from content equality
-  or from a GET that may include another actor's version.
-- Keep recovery authority stricter than response observation: the pending
-  publication marker must equal the current version, and publication must be
-  absent or strictly older. An equal or newer observed `publishedVersion`
-  revokes the marker even though a positive unusual tuple remains representable
-  state.
+- Before Publish, require the exact version returned by the validated draft write
+  in that same Create or Update operation. Never grant authority from content
+  equality, prior state, or a GET that may include another actor's version.
+- Do not persist or recover publication authority across operations. If Publish
+  fails or its response is ambiguous, preserve the draft response and require a
+  later Terraform-managed draft change or manual publication rather than retrying
+  the unchanged draft.
 - After a successful exact-version Publish request, treat representable CMA state
   as authoritative where doing so cannot authorize a later mutation. Unexpected
   arithmetic can be warned about, but it requires exact response fields and
   cannot classify response-only fields as creation defaults. Malformed identity,
   immutable Content Type, or unrepresentable lifecycle data remains an error.
-- A bounded GET is useful only to learn remote status after an ambiguous response;
+- A later GET may reconcile observed remote status after an ambiguous response;
   it must not turn matching fields or a newly observed version into authority to
   publish.
 
 Confidence is **high** that exact arithmetic is undocumented. The implemented
-policy keeps exactness at the pre-publication ownership boundary and treats
-representable post-publication arithmetic as authoritative observation, with a
-warning when it differs from the repeatedly observed normal shape.
+policy keeps exactness at the same-operation pre-publication ownership boundary,
+does not retry an unchanged draft in a later operation, and treats representable
+post-publication arithmetic as authoritative observation, with a warning when it
+differs from the repeatedly observed normal shape.
 
 ## Metadata ordering
 
@@ -311,18 +317,19 @@ That observation is the evidence for the fake's normal unpublish transition.
 
 ## Implementation boundaries supported by the evidence
 
-- Keep exact `X-Contentful-Version` publication fencing and pending publication
-  authority recorded in resource private state.
-- Authorize recovery only while the pending version is still current and has not
-  been published or superseded; use the same boundary to revoke stale markers on
-  Read.
+- Keep exact `X-Contentful-Version` publication fencing, using only the validated
+  draft version returned to the same Create or Update operation.
+- Do not record pending publication authority in resource private state and do
+  not retry publication from an unchanged later apply. Cross-operation recovery
+  is technically feasible but rejected because an ambiguous Publish response
+  does not prove that publication remains pending.
 - Model the live-observed whole-Entry unpublish response as an advanced Entry
-  version without `publishedVersion`; that transition revokes any older pending
-  publication authority by exact-version mismatch.
+  version without `publishedVersion`; observing that state does not grant a later
+  operation authority to publish it.
 - Do not infer ownership from refreshed fields, import, or matching configuration.
 - Use `UseStateForUnknown` plus later resource-level invalidation to keep
   `published_version` known for representation-only updates and unknown for real
-  publication/recovery.
+  draft-write-and-publication operations.
 - Model `+1` version transitions as documented direct-observation behavior in the
   fake's normal mode, but name contradictory tuples as adversarial behavior.
 - Permit response-only creation defaults after Create publication only for the
