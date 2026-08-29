@@ -77,24 +77,8 @@ func ToRoleDataPoliciesItem(path path.Path, policy TypedObject[RolePolicyValue])
 		return cm.RoleDataPoliciesItem{}, diags
 	}
 
-	var effect string
-
-	switch {
-	case policyValue.Effect.IsUnknown():
-		diags.AddAttributeError(
-			path.AtName("effect"),
-			"Unexpected unknown policy effect",
-			"The policy effect must be known before it can be sent to Contentful.",
-		)
-	case policyValue.Effect.IsNull():
-		diags.AddAttributeError(
-			path.AtName("effect"),
-			"Unexpected null policy effect",
-			"The policy effect cannot be null.",
-		)
-	default:
-		effect = policyValue.Effect.ValueString()
-	}
+	effect, effectDiags := requestRequiredString(policyValue.Effect, path.AtName("effect"))
+	diags.Append(effectDiags...)
 
 	actions, actionsDiags := ToRoleDataPoliciesItemActions(path.AtName("actions"), policyValue.Actions)
 	diags.Append(actionsDiags...)

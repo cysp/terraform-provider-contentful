@@ -17,11 +17,13 @@ func TestRequestRequiredString(t *testing.T) {
 	for name, test := range map[string]struct {
 		value         types.String
 		expected      string
+		expectedError bool
 		expectedPaths []string
 	}{
-		"known":   {value: types.StringValue("value"), expected: "value", expectedPaths: []string{}},
-		"null":    {value: types.StringNull(), expectedPaths: []string{"value"}},
-		"unknown": {value: types.StringUnknown(), expectedPaths: []string{"value"}},
+		"known":       {value: types.StringValue("value"), expected: "value", expectedPaths: []string{}},
+		"known empty": {value: types.StringValue(""), expected: "", expectedPaths: []string{}},
+		"null":        {value: types.StringNull(), expectedError: true, expectedPaths: []string{"value"}},
+		"unknown":     {value: types.StringUnknown(), expectedError: true, expectedPaths: []string{"value"}},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -29,6 +31,7 @@ func TestRequestRequiredString(t *testing.T) {
 			actual, diags := requestRequiredString(test.value, path.Root("value"))
 
 			assert.Equal(t, test.expected, actual)
+			assert.Equal(t, test.expectedError, diags.HasError())
 			assert.Equal(t, test.expectedPaths, requestDiagnosticPaths(t, diags))
 		})
 	}

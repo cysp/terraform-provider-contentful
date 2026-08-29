@@ -16,8 +16,8 @@ type contentTypeListResourceConfig struct {
 }
 
 func (c contentTypeListResourceConfig) requestParams() (cm.GetContentTypesParams, diag.Diagnostics) {
-	spaceID, spaceIDDiags := knownListResourceString(path.Root("space_id"), c.SpaceID)
-	environmentID, environmentIDDiags := knownListResourceString(path.Root("environment_id"), c.EnvironmentID)
+	spaceID, spaceIDDiags := requestRequiredString(c.SpaceID, path.Root("space_id"))
+	environmentID, environmentIDDiags := requestRequiredString(c.EnvironmentID, path.Root("environment_id"))
 
 	diags := diag.Diagnostics{}
 	diags.Append(spaceIDDiags...)

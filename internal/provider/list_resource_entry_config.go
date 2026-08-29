@@ -24,8 +24,8 @@ type entryListResourceRequest struct {
 }
 
 func (c entryListResourceConfig) request() (entryListResourceRequest, diag.Diagnostics) {
-	spaceID, spaceIDDiags := knownListResourceString(path.Root("space_id"), c.SpaceID)
-	environmentID, environmentIDDiags := knownListResourceString(path.Root("environment_id"), c.EnvironmentID)
+	spaceID, spaceIDDiags := requestRequiredString(c.SpaceID, path.Root("space_id"))
+	environmentID, environmentIDDiags := requestRequiredString(c.EnvironmentID, path.Root("environment_id"))
 	contentType, contentTypePresent, contentTypeDiags := knownOptionalListResourceString(path.Root("content_type"), c.ContentType)
 	order, orderDiags := knownOptionalListResourceStringList(path.Root("order"), c.Order)
 	query, queryDiags := knownOptionalListResourceStringMap(path.Root("query"), c.Query)

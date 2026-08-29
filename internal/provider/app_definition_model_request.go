@@ -11,7 +11,7 @@ func (model *AppDefinitionBaseModel) ToAppDefinitionData(config AppDefinitionBas
 	diags.Append(rejectUnknownConfigurationOwnedRequestValue(model.Src, config.Src, path.AtName("src"))...)
 	diags.Append(rejectUnknownConfigurationOwnedRequestValue(model.BundleID, config.BundleID, path.AtName("bundle_id"))...)
 
-	name, nameDiags := appRequestRequiredString(model.Name, path.AtName("name"))
+	name, nameDiags := requestRequiredString(model.Name, path.AtName("name"))
 	diags.Append(nameDiags...)
 
 	fields := cm.AppDefinitionData{
@@ -64,7 +64,7 @@ func (model *AppDefinitionBaseModel) ToAppDefinitionData(config AppDefinitionBas
 func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(path path.Path) (cm.AppDefinitionDataLocationsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	location, locationDiags := appRequestRequiredString(model.Location, path.AtName("location"))
+	location, locationDiags := requestRequiredString(model.Location, path.AtName("location"))
 	diags.Append(locationDiags...)
 
 	item := cm.AppDefinitionDataLocationsItem{
@@ -104,8 +104,8 @@ func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(path pa
 	}
 
 	if model.NavigationItem != nil {
-		name, nameDiags := appRequestRequiredString(model.NavigationItem.Name, path.AtName("navigation_item").AtName("name"))
-		pathValue, pathDiags := appRequestRequiredString(model.NavigationItem.Path, path.AtName("navigation_item").AtName("path"))
+		name, nameDiags := requestRequiredString(model.NavigationItem.Name, path.AtName("navigation_item").AtName("name"))
+		pathValue, pathDiags := requestRequiredString(model.NavigationItem.Path, path.AtName("navigation_item").AtName("path"))
 
 		diags.Append(nameDiags...)
 		diags.Append(pathDiags...)
@@ -135,7 +135,7 @@ func appDefinitionLocationFieldTypeToRequest(
 ) (appDefinitionLocationFieldTypeRequest, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	typeValue, typeDiags := appRequestRequiredString(model.Type, path.AtName("type"))
+	typeValue, typeDiags := requestRequiredString(model.Type, path.AtName("type"))
 	linkType, linkTypeDiags := appRequestOptionalString(model.LinkType, path.AtName("link_type"))
 
 	diags.Append(typeDiags...)
@@ -147,7 +147,7 @@ func appDefinitionLocationFieldTypeToRequest(
 	}
 
 	if model.Items != nil {
-		itemsType, itemsTypeDiags := appRequestRequiredString(model.Items.Type, path.AtName("items").AtName("type"))
+		itemsType, itemsTypeDiags := requestRequiredString(model.Items.Type, path.AtName("items").AtName("type"))
 		itemsLinkType, itemsLinkTypeDiags := appRequestOptionalString(model.Items.LinkType, path.AtName("items").AtName("link_type"))
 
 		diags.Append(itemsTypeDiags...)

@@ -29,22 +29,6 @@ func RequireKnownObject[T any](value TypedObject[T], valuePath path.Path) (T, di
 	return zero, diags
 }
 
-func RequireKnownString(value types.String, valuePath path.Path) (string, diag.Diagnostics) {
-	if !value.IsNull() && !value.IsUnknown() {
-		return value.ValueString(), nil
-	}
-
-	diags := diag.Diagnostics{}
-
-	if value.IsUnknown() {
-		diags.AddAttributeError(valuePath, "Unexpected unknown string", "The string value must be known before it can be sent to Contentful.")
-	} else {
-		diags.AddAttributeError(valuePath, "Unexpected null string", "Null string values are not valid collection elements.")
-	}
-
-	return "", diags
-}
-
 func RequireKnownStringList(value types.List, valuePath path.Path) ([]string, diag.Diagnostics) {
 	if value.IsUnknown() {
 		return nil, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Unexpected unknown list", "The list must be known before it can be sent to Contentful.")}
@@ -90,7 +74,7 @@ func RequireKnownStringMap(value types.Map, valuePath path.Path) (map[string]str
 			)}
 		}
 
-		return RequireKnownString(stringElement, elementPath)
+		return requestRequiredString(stringElement, elementPath)
 	})
 }
 

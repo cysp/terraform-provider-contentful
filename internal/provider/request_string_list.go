@@ -12,22 +12,11 @@ func knownStringListElements(valuePath path.Path, elements []types.String) ([]st
 
 	for index, element := range elements {
 		elementPath := valuePath.AtListIndex(index)
+		value, valueDiags := requestRequiredString(element, elementPath)
+		diags.Append(valueDiags...)
 
-		switch {
-		case element.IsUnknown():
-			diags.AddAttributeError(
-				elementPath,
-				"Unexpected unknown string list element",
-				"The string value must be known before it can be sent to Contentful.",
-			)
-		case element.IsNull():
-			diags.AddAttributeError(
-				elementPath,
-				"Unexpected null string list element",
-				"The string value cannot be null when it is sent to Contentful.",
-			)
-		default:
-			values = append(values, element.ValueString())
+		if !valueDiags.HasError() {
+			values = append(values, value)
 		}
 	}
 
@@ -70,21 +59,11 @@ func knownOptionalStringSetElements(valuePath path.Path, value types.Set) ([]str
 			continue
 		}
 
-		switch {
-		case element.IsUnknown():
-			diags.AddAttributeError(
-				elementPath,
-				"Unexpected unknown string set element",
-				"The string value must be known before it can be sent to Contentful.",
-			)
-		case element.IsNull():
-			diags.AddAttributeError(
-				elementPath,
-				"Unexpected null string set element",
-				"The string value cannot be null when it is sent to Contentful.",
-			)
-		default:
-			values = append(values, element.ValueString())
+		converted, valueDiags := requestRequiredString(element, elementPath)
+		diags.Append(valueDiags...)
+
+		if !valueDiags.HasError() {
+			values = append(values, converted)
 		}
 	}
 
