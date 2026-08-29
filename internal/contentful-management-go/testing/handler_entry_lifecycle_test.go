@@ -91,6 +91,19 @@ func TestUnpublishEntryAdvancesVersionAndReturnsEntry(t *testing.T) {
 	require.NoError(t, err)
 	draft := requireEntryStatusCode(t, draftResponse)
 
+	staleResponse, err := handler.UnpublishEntry(t.Context(), cm.UnpublishEntryParams{
+		SpaceID:            "space",
+		EnvironmentID:      "environment",
+		EntryID:            "entry",
+		XContentfulVersion: cm.NewOptInt(draft.Response.Sys.Version - 1),
+	})
+	require.NoError(t, err)
+	requireContentfulConflictWithNonemptyMessage(t, staleResponse, cm.ErrorSysIDVersionMismatch)
+
+	stillPublished := requireEntry(t, handler, "entry")
+	assert.Equal(t, draft.Response.Sys.Version, stillPublished.Sys.Version)
+	assert.True(t, stillPublished.Sys.PublishedVersion.IsSet())
+
 	testServer := httptest.NewServer(server)
 	t.Cleanup(testServer.Close)
 
@@ -122,6 +135,63 @@ func TestUnpublishEntryAdvancesVersionAndReturnsEntry(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, unpublished.Sys.Version, got.Sys.Version)
 	assert.False(t, got.Sys.PublishedVersion.IsSet())
+}
+
+func TestDeleteEntryChecksProvidedVersionAndAllowsOmission(t *testing.T) {
+	t.Parallel()
+
+	handler := cmt.NewHandler()
+	handler.RegisterSpaceEnvironment("space", "environment", "ready")
+
+	for _, entryID := range []string{"versioned", "omitted"} {
+		response, err := handler.PutEntry(t.Context(), &cm.EntryRequest{}, cm.PutEntryParams{
+			SpaceID:                "space",
+			EnvironmentID:          "environment",
+			EntryID:                entryID,
+			XContentfulContentType: cm.NewOptString("article"),
+		})
+		require.NoError(t, err)
+		requireEntryStatusCode(t, response)
+	}
+
+	staleResponse, err := handler.DeleteEntry(t.Context(), cm.DeleteEntryParams{
+		SpaceID:            "space",
+		EnvironmentID:      "environment",
+		EntryID:            "versioned",
+		XContentfulVersion: cm.NewOptInt(0),
+	})
+	require.NoError(t, err)
+	requireContentfulConflictWithNonemptyMessage(t, staleResponse, cm.ErrorSysIDVersionMismatch)
+	assert.Equal(t, 1, requireEntry(t, handler, "versioned").Sys.Version)
+
+	deleted, err := handler.DeleteEntry(t.Context(), cm.DeleteEntryParams{
+		SpaceID:            "space",
+		EnvironmentID:      "environment",
+		EntryID:            "versioned",
+		XContentfulVersion: cm.NewOptInt(1),
+	})
+	require.NoError(t, err)
+	require.IsType(t, &cm.NoContent{}, deleted)
+
+	deleted, err = handler.DeleteEntry(t.Context(), cm.DeleteEntryParams{
+		SpaceID: "space", EnvironmentID: "environment", EntryID: "omitted",
+	})
+	require.NoError(t, err)
+	require.IsType(t, &cm.NoContent{}, deleted)
+}
+
+func requireEntry(t *testing.T, handler *cmt.Handler, entryID string) *cm.Entry {
+	t.Helper()
+
+	response, err := handler.GetEntry(t.Context(), cm.GetEntryParams{
+		SpaceID: "space", EnvironmentID: "environment", EntryID: entryID,
+	})
+	require.NoError(t, err)
+
+	entry, ok := response.(*cm.Entry)
+	require.True(t, ok)
+
+	return entry
 }
 
 func requireEntryStatusCode(t *testing.T, response any) *cm.EntryStatusCode {

@@ -156,3 +156,54 @@ func TestValidateEntryStateLifecycle(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateEntryUnpublishResponse(t *testing.T) {
+	t.Parallel()
+
+	state := EntryModel{EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry")}
+	valid := cm.Entry{Sys: cm.EntrySys{
+		ID:      "entry",
+		Version: 3,
+		Space: cm.SpaceLink{Sys: cm.SpaceLinkSys{
+			ID: "space",
+		}},
+		Environment: cm.EnvironmentLink{Sys: cm.EnvironmentLinkSys{
+			ID: "environment",
+		}},
+	}}
+
+	tests := map[string]struct {
+		mutate   func(*cm.Entry)
+		hasError bool
+	}{
+		"valid": {},
+		"nonpositive version": {
+			mutate: func(response *cm.Entry) { response.Sys.Version = 0 }, hasError: true,
+		},
+		"still published": {
+			mutate: func(response *cm.Entry) { response.Sys.PublishedVersion.SetTo(2) }, hasError: true,
+		},
+		"wrong entry": {
+			mutate: func(response *cm.Entry) { response.Sys.ID = "other" }, hasError: true,
+		},
+		"wrong space": {
+			mutate: func(response *cm.Entry) { response.Sys.Space.Sys.ID = "other" }, hasError: true,
+		},
+		"wrong environment": {
+			mutate: func(response *cm.Entry) { response.Sys.Environment.Sys.ID = "other" }, hasError: true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			response := valid
+			if test.mutate != nil {
+				test.mutate(&response)
+			}
+
+			assert.Equal(t, test.hasError, validateEntryUnpublishResponse(state, response).HasError())
+		})
+	}
+}

@@ -114,12 +114,12 @@ var (
 		"POST": "Authorization,Content-Type,X-Contentful-Content-Type",
 	}
 	rn37AllowedHeaders = map[string]string{
-		"DELETE": "Authorization",
+		"DELETE": "Authorization,X-Contentful-Version",
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Content-Type,X-Contentful-Version",
 	}
 	rn71AllowedHeaders = map[string]string{
-		"DELETE": "Authorization",
+		"DELETE": "Authorization,X-Contentful-Version",
 		"PUT":    "Authorization,X-Contentful-Version",
 	}
 	rn40AllowedHeaders = map[string]string{

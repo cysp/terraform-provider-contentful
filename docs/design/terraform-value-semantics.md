@@ -360,9 +360,38 @@ mutation; a missing or malformed lock token must never degrade to version zero
 or an unlocked request. Successfully decoded integer values are forwarded
 without provider-side range validation, leaving Contentful to determine their
 validity. This preserves Go's established integer decoding of JSON `null` as
-zero. Taxonomy Delete is the one absence-handling exception: when Terraform
-omits private data for a tainted replacement, the provider obtains the current
-version with a GET before deleting.
+zero. Entry and taxonomy Delete are the narrow absence-handling exceptions:
+when Terraform omits private data for a tainted replacement, the provider
+obtains the current version with a GET before deleting.
+
+### Entry destroy optimistic version locking
+
+Entry Delete uses the last-observed `sys.version` from provider-private state.
+An unpublished Entry is deleted with that exact value in
+`X-Contentful-Version`. A published Entry is first unpublished with the same
+value; the successful unpublish response must identify the requested Entry,
+contain a positive resulting `sys.version`, and omit `sys.publishedVersion`.
+Delete then sends the returned version rather than reusing or predicting from
+the pre-unpublish version. A conflict at either mutation boundary stops the
+destroy, so an external change before unpublish or between unpublish and delete
+cannot be silently destroyed.
+
+Terraform omits provider-private data when deleting a tainted Entry during
+replacement. Only for that genuine absence, Delete performs one GET and uses
+the returned positive version for the next mutation. A 404 from this GET means
+the Entry is already absent. A concurrent change between GET and unpublish or
+delete is still rejected by the version header. Valid private data never takes
+this fallback, and malformed private data remains a terminal diagnostic before
+any Contentful request.
+
+The CMA endpoint references mark the Entry unpublish and delete version headers
+optional, while Contentful's shared version-locking and error contracts define
+stale Entry versions as HTTP 409 `VersionMismatch`. The provider deliberately
+sends the header to preserve Terraform's last-observed concurrency boundary.
+The mock permits omission as the current reference and JavaScript client do,
+but validates every supplied header. Sources and the remaining endpoint-specific
+evidence gaps are recorded in the
+[Entry destroy version-locking note](../research/entry-destroy-version-locking.md).
 
 ### Taxonomy optimistic version locking
 

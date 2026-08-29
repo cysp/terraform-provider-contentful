@@ -132,9 +132,11 @@ adds these relevant guarantees:
   responses.
 - Publish is a separate `/published` operation; locale-based publication is a
   separate optional feature.
-- Whole-Entry unpublish is an unversioned `DELETE` of `/published`. The
-  first-party client decodes its response as an Entry but does not validate the
-  resulting version tuple.
+- Whole-Entry unpublish is a `DELETE` of `/published` whose CMA reference
+  supports an optional `X-Contentful-Version`. The JavaScript client omits that
+  header, while the provider sends it as an optimistic-lock fence. The client
+  decodes the response as an Entry but does not validate the resulting version
+  tuple. See the focused [destroy evidence](entry-destroy-version-locking.md).
 
 The common-system-property table defines `sys.version` as the current version and
 `sys.publishedVersion` as the published version, but specifies no arithmetic
@@ -170,7 +172,7 @@ actual Contentful evidence beneath it.
 | Normal Publish returns current `version == submitted + 1` | **D** | The first-party [`isUpdated` helper](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/plain/checks.ts#L3-L11) explicitly says publishing increments version by one. This is a client assumption and matches the sanitized live observations, but is not in the CMA contract. |
 | A higher coherent current version receives special treatment | **F** | The first-party helper treats `version > publishedVersion + 1` as later unpublished changes, but no source says a Publish response may or may not already contain such a later version. Warning/adoption is defensive interpretation, not documented mutation-response behavior. |
 | On Read, observe positive `publishedVersion >= version` | **F**, informed by **D** | This differs from the first-party status arithmetic for normal published/updated entries, but CMA does not make that arithmetic a representability rule. The provider preserves the positive tuple and warns; it does not turn tolerant observation into publication authority. |
-| Whole-Entry unpublish advances `version` and removes `publishedVersion` | **E** | The first-party client establishes the unversioned DELETE and Entry response shape but no arithmetic. The sanitized [unpublish probe](entry-unpublish-version.md) observed `version` advance by one from a pending draft and `publishedVersion` disappear in both the response and subsequent GET. The fake models that observed normal transition; the provider relies only on the resulting version mismatch to revoke stale recovery authority. |
+| Whole-Entry unpublish advances `version` and removes `publishedVersion` | **E** | The first-party client establishes the DELETE and Entry response shape but no arithmetic. The CMA reference supports an optional version header; the provider sends it as a concurrency fence. The sanitized [unpublish probe](entry-unpublish-version.md) observed `version` advance by one from a pending draft and `publishedVersion` disappear in both the response and subsequent GET. The fake models that observed normal transition; destroy uses the returned version rather than assuming the increment. |
 
 The repository's existing sanitized direct experiments in
 [Entry null and omission behavior](entry-null-and-omission.md) observed Create

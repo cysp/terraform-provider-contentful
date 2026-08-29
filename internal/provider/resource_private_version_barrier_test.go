@@ -47,6 +47,8 @@ func TestPrivateVersionValuesAreForwardedToRepresentativeMutations(t *testing.T)
 		path   string
 	}{
 		"delivery API key update": {method: http.MethodPut, path: "/spaces/space/api_keys/key"},
+		"entry delete":            {method: http.MethodDelete, path: "/spaces/space/environments/environment/entries/entry"},
+		"entry published delete":  {method: http.MethodDelete, path: "/spaces/space/environments/environment/entries/entry/published"},
 		"tag update":              {method: http.MethodPut, path: "/spaces/space/environments/environment/tags/tag"},
 	}
 
@@ -187,8 +189,12 @@ func TestRequiredPrivateVersionErrorsStopBeforeMutation(t *testing.T) {
 			}
 
 			privateStates := []privateVersionState{
-				{name: "missing", value: []byte(`{}`), expectedSummary: "Private version is unavailable"},
 				{name: "malformed", value: malformedPrivate, expectedSummary: "Failed to unmarshal value"},
+			}
+			if !test.missingPrivateFallback {
+				privateStates = append(privateStates, privateVersionState{
+					name: "missing", value: []byte(`{}`), expectedSummary: "Private version is unavailable",
+				})
 			}
 
 			for _, privateState := range privateStates {
@@ -220,12 +226,13 @@ func TestRequiredPrivateVersionErrorsStopBeforeMutation(t *testing.T) {
 }
 
 type requiredPrivateVersionResourceCase struct {
-	name           string
-	typeName       string
-	resourceSchema schema.Schema
-	model          any
-	plannedModel   any
-	delete         bool
+	name                   string
+	typeName               string
+	resourceSchema         schema.Schema
+	model                  any
+	plannedModel           any
+	delete                 bool
+	missingPrivateFallback bool
 }
 
 func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionResourceCase {
@@ -289,12 +296,15 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 			Concepts: NewTypedList([]types.String{}),
 			Tags:     NewTypedList([]types.String{}),
 		}),
-		Timeouts: TimeoutsNull(),
+		PublishedVersion: types.Int64Null(),
+		Timeouts:         TimeoutsNull(),
 	}
 	plannedEntry := entry
 	plannedEntry.Fields = NewTypedMap(map[string]jsontypes.Normalized{
 		"managed": jsontypes.NewNormalizedValue(`{"en-US":"changed"}`),
 	})
+	publishedEntry := entry
+	publishedEntry.PublishedVersion = types.Int64Value(1)
 
 	return []requiredPrivateVersionResourceCase{
 		{
@@ -310,6 +320,22 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 			resourceSchema: EntryResourceSchema(t.Context()),
 			model:          entry,
 			plannedModel:   plannedEntry,
+		},
+		{
+			name:                   "entry delete",
+			typeName:               "contentful_entry",
+			resourceSchema:         EntryResourceSchema(t.Context()),
+			model:                  entry,
+			delete:                 true,
+			missingPrivateFallback: true,
+		},
+		{
+			name:                   "entry published delete",
+			typeName:               "contentful_entry",
+			resourceSchema:         EntryResourceSchema(t.Context()),
+			model:                  publishedEntry,
+			delete:                 true,
+			missingPrivateFallback: true,
 		},
 		{
 			name:           "delivery API key update",

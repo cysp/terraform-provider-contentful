@@ -2358,12 +2358,22 @@ func decodeDeleteDeliveryAPIKeyParams(args [2]string, argsEscaped bool, r *http.
 
 // DeleteEntryParams is parameters of deleteEntry operation.
 type DeleteEntryParams struct {
-	SpaceID       string
-	EnvironmentID string
-	EntryID       string
+	XContentfulVersion OptInt `json:",omitempty,omitzero"`
+	SpaceID            string
+	EnvironmentID      string
+	EntryID            string
 }
 
 func unpackDeleteEntryParams(packed middleware.Parameters) (params DeleteEntryParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Version",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XContentfulVersion = v.(OptInt)
+		}
+	}
 	{
 		key := middleware.ParameterKey{
 			Name: "space_id",
@@ -2389,6 +2399,46 @@ func unpackDeleteEntryParams(packed middleware.Parameters) (params DeleteEntryPa
 }
 
 func decodeDeleteEntryParams(args [3]string, argsEscaped bool, r *http.Request) (params DeleteEntryParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Contentful-Version.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXContentfulVersionVal int
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXContentfulVersionVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XContentfulVersion.SetTo(paramsDotXContentfulVersionVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Version",
+			In:   "header",
+			Err:  err,
+		}
+	}
 	// Decode path: space_id.
 	if err := func() error {
 		param := args[0]
@@ -11505,12 +11555,22 @@ func decodeRevokePersonalAccessTokenParams(args [1]string, argsEscaped bool, r *
 
 // UnpublishEntryParams is parameters of unpublishEntry operation.
 type UnpublishEntryParams struct {
-	SpaceID       string
-	EnvironmentID string
-	EntryID       string
+	XContentfulVersion OptInt `json:",omitempty,omitzero"`
+	SpaceID            string
+	EnvironmentID      string
+	EntryID            string
 }
 
 func unpackUnpublishEntryParams(packed middleware.Parameters) (params UnpublishEntryParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Version",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XContentfulVersion = v.(OptInt)
+		}
+	}
 	{
 		key := middleware.ParameterKey{
 			Name: "space_id",
@@ -11536,6 +11596,46 @@ func unpackUnpublishEntryParams(packed middleware.Parameters) (params UnpublishE
 }
 
 func decodeUnpublishEntryParams(args [3]string, argsEscaped bool, r *http.Request) (params UnpublishEntryParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Contentful-Version.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXContentfulVersionVal int
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXContentfulVersionVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XContentfulVersion.SetTo(paramsDotXContentfulVersionVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Version",
+			In:   "header",
+			Err:  err,
+		}
+	}
 	// Decode path: space_id.
 	if err := func() error {
 		param := args[0]

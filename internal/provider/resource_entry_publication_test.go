@@ -307,9 +307,10 @@ func TestAccEntryResourceTypedPublishContradictionDoesNotAuthorizeRetry(t *testi
 	}
 	recorder.delegate = tupleFault
 	config := managedEntryConfig
+	options := &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}}
 
 	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		AdditionalCLIOptions: options,
 		Steps: []resource.TestStep{
 			{Config: config("one")},
 			{
@@ -323,6 +324,22 @@ func TestAccEntryResourceTypedPublishContradictionDoesNotAuthorizeRetry(t *testi
 			{
 				PreConfig: recorder.reset,
 				Config:    config("two"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
+				}},
+				Check: func(*terraform.State) error {
+					requireNoEntryMutations(t, recorder)
+
+					return nil
+				},
+			},
+			{
+				PreConfig: func() {
+					options.Plan.NoRefresh = false
+
+					recorder.reset()
+				},
+				Config: config("two"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
 				}},
@@ -435,9 +452,10 @@ func TestAccEntryResourceInterveningDraftDoesNotAuthorizePublicationWithoutRefre
 	fault := &entryRejectedPublishAdapter{delegate: server}
 	recorder.delegate = fault
 	config := managedEntryConfig
+	options := &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}}
 
 	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		AdditionalCLIOptions: options,
 		Steps: []resource.TestStep{
 			{Config: config("one")},
 			{
@@ -473,6 +491,22 @@ func TestAccEntryResourceInterveningDraftDoesNotAuthorizePublicationWithoutRefre
 				Config:             config("two"),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
+			},
+			{
+				PreConfig: func() {
+					options.Plan.NoRefresh = false
+
+					recorder.reset()
+				},
+				Config: config("two"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
+				}},
+				Check: func(*terraform.State) error {
+					requireNoEntryMutations(t, recorder)
+
+					return nil
+				},
 			},
 		},
 	})

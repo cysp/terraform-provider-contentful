@@ -124,3 +124,23 @@ func validateEntryPublicationResponse(sentVersion, responseVersion int, response
 
 	return diags
 }
+
+func validateEntryUnpublishResponse(entry EntryModel, response cm.Entry) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	switch {
+	case response.Sys.ID != entry.EntryID.ValueString():
+		diags.AddError("Unexpected entry unpublish response", fmt.Sprintf("Contentful returned Entry %q after unpublishing Entry %q.", response.Sys.ID, entry.EntryID.ValueString()))
+	case response.Sys.Space.Sys.ID != entry.SpaceID.ValueString():
+		diags.AddError("Unexpected entry unpublish response", fmt.Sprintf("Contentful returned space %q after unpublishing an Entry in space %q.", response.Sys.Space.Sys.ID, entry.SpaceID.ValueString()))
+	case response.Sys.Environment.Sys.ID != entry.EnvironmentID.ValueString():
+		diags.AddError("Unexpected entry unpublish response", fmt.Sprintf("Contentful returned environment %q after unpublishing an Entry in environment %q.", response.Sys.Environment.Sys.ID, entry.EnvironmentID.ValueString()))
+	case response.Sys.Version <= 0:
+		diags.AddError("Unexpected entry unpublish response", fmt.Sprintf("Contentful returned nonpositive version %d.", response.Sys.Version))
+	case response.Sys.PublishedVersion.IsSet():
+		publishedVersion, _ := response.Sys.PublishedVersion.Get()
+		diags.AddError("Unexpected entry unpublish response", fmt.Sprintf("Contentful returned version %d with publishedVersion %d after unpublishing the Entry.", response.Sys.Version, publishedVersion))
+	}
+
+	return diags
+}

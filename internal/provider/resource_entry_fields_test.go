@@ -426,6 +426,14 @@ func TestAccEntryResourceAnomalousCreatePublishRejectsResponseOnlyField(t *testi
 			Config:      managedEntryConfig("one"),
 			ExpectError: regexp.MustCompile(`Unexpected entry fields`),
 		},
+		{
+			PreConfig: func() {
+				_, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
+				require.Equal(t, "1", publish.version)
+				recorder.reset()
+			},
+			Config: managedEntryConfig("one"),
+		},
 	}})
 
 	_, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())

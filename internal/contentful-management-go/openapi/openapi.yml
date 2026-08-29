@@ -1412,6 +1412,8 @@ paths:
     delete:
       operationId: deleteEntry
       summary: Delete an entry
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version-optional"
       responses:
         204:
           $ref: "#/components/responses/no-content"
@@ -1446,6 +1448,8 @@ paths:
     delete:
       operationId: unpublishEntry
       summary: Unpublish an entry
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version-optional"
       responses:
         200:
           description: An entry

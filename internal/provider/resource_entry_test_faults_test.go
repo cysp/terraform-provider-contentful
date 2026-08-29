@@ -190,6 +190,69 @@ type entryCommittedPublishFailureAdapter struct {
 	shot     entryOneShot
 }
 
+// entryPostResponseUpdateAdapter advances the stored Entry after one selected
+// successful response. By default it replays the original response, preserving
+// the provider's stale lock; returnUpdatedEntry exposes the resulting version.
+type entryPostResponseUpdateAdapter struct {
+	delegate           http.Handler
+	server             *cmt.Server
+	method             string
+	path               string
+	updates            int
+	returnUpdatedEntry bool
+	shot               entryOneShot
+	errorSink          *entryFixtureErrorSink
+}
+
+func (h *entryPostResponseUpdateAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != h.method || request.URL.Path != h.path || !h.shot.take() {
+		h.delegate.ServeHTTP(responseWriter, request)
+
+		return
+	}
+
+	recorder := httptest.NewRecorder()
+	h.delegate.ServeHTTP(recorder, request)
+
+	var updated *cm.Entry
+
+	if recorder.Code >= http.StatusOK && recorder.Code < http.StatusMultipleChoices {
+		var err error
+
+		for range h.updates {
+			updated, err = advanceTestEntry(request.Context(), h.server)
+			if err != nil {
+				h.errorSink.record(err)
+
+				break
+			}
+		}
+	}
+
+	if h.returnUpdatedEntry && updated != nil {
+		writeEntryAdapterResponse(responseWriter, recorder, updated, h.errorSink)
+
+		return
+	}
+
+	replayEntryAdapterResponse(responseWriter, recorder, h.errorSink)
+}
+
+type entryNoContentUnpublishAdapter struct {
+	delegate http.Handler
+	shot     entryOneShot
+}
+
+func (h *entryNoContentUnpublishAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodDelete && request.URL.Path == entryTestPublishPath && h.shot.take() {
+		responseWriter.WriteHeader(http.StatusNoContent)
+
+		return
+	}
+
+	h.delegate.ServeHTTP(responseWriter, request)
+}
+
 func (h *entryCommittedPublishFailureAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPut && strings.HasSuffix(request.URL.Path, "/entries/entry/published") && h.shot.take() {
 		h.delegate.ServeHTTP(httptest.NewRecorder(), request)

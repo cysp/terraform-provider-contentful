@@ -102,3 +102,53 @@ func getTestEntryForIDs(t *testing.T, server *cmt.Server, spaceID, environmentID
 
 	return entry
 }
+
+func advanceTestEntry(ctx context.Context, server *cmt.Server) (*cm.Entry, error) {
+	entry, err := getEntryFromTestServer(ctx, server)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := server.Handler().PutEntry(ctx, &cm.EntryRequest{
+		Fields: entry.Fields, Metadata: entry.Metadata,
+	}, cm.PutEntryParams{
+		SpaceID:            "space",
+		EnvironmentID:      "environment",
+		EntryID:            "entry",
+		XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("advance test entry: %w", err)
+	}
+
+	status, ok := response.(*cm.EntryStatusCode)
+	if !ok {
+		return nil, fmt.Errorf("%w: %T", errUnexpectedEntryResponseType, response)
+	}
+
+	return &status.Response, nil
+}
+
+func unpublishTestEntry(ctx context.Context, server *cmt.Server) (*cm.Entry, error) {
+	entry, err := getEntryFromTestServer(ctx, server)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := server.Handler().UnpublishEntry(ctx, cm.UnpublishEntryParams{
+		SpaceID:            "space",
+		EnvironmentID:      "environment",
+		EntryID:            "entry",
+		XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("unpublish test entry: %w", err)
+	}
+
+	unpublished, ok := response.(*cm.Entry)
+	if !ok {
+		return nil, fmt.Errorf("%w: %T", errUnexpectedEntryResponseType, response)
+	}
+
+	return unpublished, nil
+}

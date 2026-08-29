@@ -2787,6 +2787,10 @@ func (s *Server) handleDeleteEntryRequest(args [3]string, argsEscaped bool, w ht
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
+					Name: "X-Contentful-Version",
+					In:   "header",
+				}: params.XContentfulVersion,
+				{
 					Name: "space_id",
 					In:   "path",
 				}: params.SpaceID,
@@ -11238,6 +11242,10 @@ func (s *Server) handleUnpublishEntryRequest(args [3]string, argsEscaped bool, w
 			Body:             nil,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
+				{
+					Name: "X-Contentful-Version",
+					In:   "header",
+				}: params.XContentfulVersion,
 				{
 					Name: "space_id",
 					In:   "path",

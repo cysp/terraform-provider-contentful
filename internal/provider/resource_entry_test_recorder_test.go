@@ -30,8 +30,10 @@ type entryMutationRecorder struct {
 	delegate  http.Handler
 	errorSink *entryFixtureErrorSink
 
-	mu       sync.Mutex
-	requests []entryMutationRequest
+	mu                  sync.Mutex
+	requests            []entryMutationRequest
+	destructiveRequests []entryMutationRequest
+	readRequests        []entryMutationRequest
 }
 
 func newEntryMutationRecorder(delegate http.Handler, errorSink *entryFixtureErrorSink) *entryMutationRecorder {
@@ -41,13 +43,26 @@ func newEntryMutationRecorder(delegate http.Handler, errorSink *entryFixtureErro
 func (h *entryMutationRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	h.recordUpdate(request)
 
-	if request.Method == http.MethodPut && strings.HasSuffix(request.URL.Path, "/entries/entry/published") {
+	if request.Method == http.MethodPut && request.URL.Path == entryTestPublishPath {
 		h.record(entryMutationRequest{
 			method:         request.Method,
 			path:           request.URL.Path,
 			version:        request.Header.Get("X-Contentful-Version"),
 			versionPresent: len(request.Header.Values("X-Contentful-Version")) > 0,
 		})
+	}
+
+	if request.Method == http.MethodDelete && (request.URL.Path == entryTestUpdatePath || request.URL.Path == entryTestPublishPath) {
+		h.recordDestructive(entryMutationRequest{
+			method:         request.Method,
+			path:           request.URL.Path,
+			version:        request.Header.Get("X-Contentful-Version"),
+			versionPresent: len(request.Header.Values("X-Contentful-Version")) > 0,
+		})
+	}
+
+	if request.Method == http.MethodGet && request.URL.Path == entryTestUpdatePath {
+		h.recordRead(entryMutationRequest{method: request.Method, path: request.URL.Path})
 	}
 
 	h.delegate.ServeHTTP(responseWriter, request)
@@ -95,11 +110,41 @@ func (h *entryMutationRecorder) record(request entryMutationRequest) {
 	h.requests = append(h.requests, request)
 }
 
+func (h *entryMutationRecorder) recordDestructive(request entryMutationRequest) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	h.destructiveRequests = append(h.destructiveRequests, request)
+}
+
+func (h *entryMutationRecorder) recordRead(request entryMutationRequest) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	h.readRequests = append(h.readRequests, request)
+}
+
 func (h *entryMutationRecorder) reset() {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
 	h.requests = nil
+	h.destructiveRequests = nil
+	h.readRequests = nil
+}
+
+func (h *entryMutationRecorder) destructiveSnapshot() []entryMutationRequest {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	return append([]entryMutationRequest(nil), h.destructiveRequests...)
+}
+
+func (h *entryMutationRecorder) readSnapshot() []entryMutationRequest {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	return append([]entryMutationRequest(nil), h.readRequests...)
 }
 
 func (h *entryMutationRecorder) snapshot() []entryMutationRequest {
@@ -142,4 +187,13 @@ func requireNoEntryMutations(t *testing.T, recorder *entryMutationRecorder, msgA
 	t.Helper()
 
 	require.Empty(t, recorder.snapshot(), msgAndArgs...)
+}
+
+func requireEntryDestructiveRequest(t *testing.T, request entryMutationRequest, path, version string) {
+	t.Helper()
+
+	require.Equal(t, http.MethodDelete, request.method)
+	require.Equal(t, path, request.path)
+	require.True(t, request.versionPresent, "destructive Entry request omitted X-Contentful-Version")
+	require.Equal(t, version, request.version)
 }

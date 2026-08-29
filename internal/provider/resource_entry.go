@@ -325,9 +325,38 @@ func (r *entryResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	r.unpublishEntry(ctx, state, &resp.Diagnostics)
+	version, versionFound, versionDiags := optionalPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiags...)
 
-	r.deleteEntry(ctx, state, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	published := !state.PublishedVersion.IsNull()
+
+	if versionFound {
+		resp.Diagnostics.Append(validateEntryStateLifecycle(version, state.PublishedVersion)...)
+	} else {
+		var found bool
+
+		version, published, found = r.readEntryForDelete(ctx, state, &resp.Diagnostics)
+		if !found || resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if published {
+		version = r.unpublishEntry(ctx, state, version, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	r.deleteEntry(ctx, state, version, &resp.Diagnostics)
 }
 
 func (r *entryResource) createEntry(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) (EntryModel, int) {
@@ -499,11 +528,47 @@ func (r *entryResource) publishAndCheckpointEntry(
 	diags.Append(validateEntryPublicationResponse(version, response.Response.Sys.Version, response.Response.Sys.PublishedVersion)...)
 }
 
-func (r *entryResource) deleteEntry(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) {
-	deleteEntryParams := cm.DeleteEntryParams{
+func (r *entryResource) readEntryForDelete(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) (int, bool, bool) {
+	params := cm.GetEntryParams{
 		SpaceID:       entry.SpaceID.ValueString(),
 		EnvironmentID: entry.EnvironmentID.ValueString(),
 		EntryID:       entry.EntryID.ValueString(),
+	}
+
+	response, err := r.providerData.client.GetEntry(ctx, params)
+
+	tflog.Info(ctx, "entry.delete.read", map[string]any{
+		"params":   params,
+		"response": response,
+		"err":      err,
+	})
+
+	remote, ok := response.(*cm.Entry)
+	if !ok {
+		if status, ok := response.(cm.StatusCodeResponse); ok && status.GetStatusCode() == http.StatusNotFound {
+			return 0, false, false
+		}
+
+		diags.AddError("Failed to read entry before deletion", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
+		return 0, false, false
+	}
+
+	diags.Append(validateObservedEntryLifecycle(remote.Sys.Version, remote.Sys.PublishedVersion)...)
+
+	if diags.HasError() {
+		return 0, false, false
+	}
+
+	return remote.Sys.Version, remote.Sys.PublishedVersion.IsSet(), true
+}
+
+func (r *entryResource) deleteEntry(ctx context.Context, entry EntryModel, version int, diags *diag.Diagnostics) {
+	deleteEntryParams := cm.DeleteEntryParams{
+		SpaceID:            entry.SpaceID.ValueString(),
+		EnvironmentID:      entry.EnvironmentID.ValueString(),
+		EntryID:            entry.EntryID.ValueString(),
+		XContentfulVersion: cm.NewOptInt(version),
 	}
 
 	deleteEntryResponse, err := r.providerData.client.DeleteEntry(ctx, deleteEntryParams)
@@ -534,11 +599,12 @@ func (r *entryResource) deleteEntry(ctx context.Context, entry EntryModel, diags
 	}
 }
 
-func (r *entryResource) unpublishEntry(ctx context.Context, entry EntryModel, diags *diag.Diagnostics) {
+func (r *entryResource) unpublishEntry(ctx context.Context, entry EntryModel, version int, diags *diag.Diagnostics) int {
 	unpublishEntryParams := cm.UnpublishEntryParams{
-		SpaceID:       entry.SpaceID.ValueString(),
-		EnvironmentID: entry.EnvironmentID.ValueString(),
-		EntryID:       entry.EntryID.ValueString(),
+		SpaceID:            entry.SpaceID.ValueString(),
+		EnvironmentID:      entry.EnvironmentID.ValueString(),
+		EntryID:            entry.EntryID.ValueString(),
+		XContentfulVersion: cm.NewOptInt(version),
 	}
 
 	unpublishEntryResponse, err := r.providerData.client.UnpublishEntry(ctx, unpublishEntryParams)
@@ -550,8 +616,12 @@ func (r *entryResource) unpublishEntry(ctx context.Context, entry EntryModel, di
 	})
 
 	switch response := unpublishEntryResponse.(type) {
-	case *cm.NoContent:
 	case *cm.Entry:
+		diags.Append(validateEntryUnpublishResponse(entry, *response)...)
+
+		if !diags.HasError() {
+			version = response.Sys.Version
+		}
 
 	default:
 		handled := false
@@ -569,4 +639,6 @@ func (r *entryResource) unpublishEntry(ctx context.Context, entry EntryModel, di
 			diags.AddError("Failed to unpublish entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
 	}
+
+	return version
 }

@@ -136,6 +136,10 @@ func (ts *Handler) DeleteEntry(_ context.Context, params cm.DeleteEntryParams) (
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
+	if version, set := params.XContentfulVersion.Get(); set && version != entry.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	ts.entries.Delete(params.SpaceID, params.EnvironmentID, params.EntryID)
 
 	return &cm.NoContent{}, nil
@@ -181,6 +185,14 @@ func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryPar
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
+	}
+
+	if version, set := params.XContentfulVersion.Get(); set && version != entry.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
+	if !entry.Sys.PublishedVersion.IsSet() {
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("Not published"), nil), nil
 	}
 
 	entry.Sys.Version++
