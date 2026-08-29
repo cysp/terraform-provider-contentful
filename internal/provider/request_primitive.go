@@ -7,6 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// requestRequiredString converts a Terraform string whose request contract is:
+// null and unknown are invalid, while every known non-null value, including the
+// empty string, is returned unchanged. Required describes the request value
+// contract, not whether the Terraform schema attribute is Required.
 func requestRequiredString(value types.String, valuePath path.Path) (string, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 

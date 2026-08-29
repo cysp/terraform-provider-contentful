@@ -41,29 +41,6 @@ func TestRequireKnownObject(t *testing.T) {
 	}
 }
 
-func TestRequireKnownString(t *testing.T) {
-	t.Parallel()
-
-	actual, diags := RequireKnownString(types.StringValue("known"), path.Root("value"))
-	require.False(t, diags.HasError())
-	assert.Equal(t, "known", actual)
-
-	for name, value := range map[string]types.String{
-		"null":    types.StringNull(),
-		"unknown": types.StringUnknown(),
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			_, diags := RequireKnownString(value, path.Root("value"))
-			require.True(t, diags.HasError())
-			diagnostic, ok := diags.Errors()[0].(diag.DiagnosticWithPath)
-			require.True(t, ok)
-			assert.Equal(t, path.Root("value"), diagnostic.Path())
-		})
-	}
-}
-
 func TestRequireKnownStringListPreservesElementPathsAndFailsClosed(t *testing.T) {
 	t.Parallel()
 

@@ -22,62 +22,47 @@ func (m *AppKeyModel) ToAppKeyRequestData(ctx context.Context) (cm.AppKeyRequest
 
 func (m AppKeyJWKModel) ToAppKeyJWK(_ context.Context, attrPath path.Path) (cm.AppKeyJWK, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-	jwk := cm.AppKeyJWK{}
 
-	if m.Alg.IsNull() || m.Alg.IsUnknown() {
-		diags.AddAttributeError(attrPath.AtName("alg"), "Missing app key JWK alg", "The alg value must be known.")
-	} else {
-		jwk.Alg = cm.AppKeyJWKAlg(m.Alg.ValueString())
-	}
+	alg, algDiags := requestRequiredString(m.Alg, attrPath.AtName("alg"))
+	diags.Append(algDiags...)
 
-	if m.Kty.IsNull() || m.Kty.IsUnknown() {
-		diags.AddAttributeError(attrPath.AtName("kty"), "Missing app key JWK kty", "The kty value must be known.")
-	} else {
-		jwk.Kty = cm.AppKeyJWKKty(m.Kty.ValueString())
-	}
+	kty, ktyDiags := requestRequiredString(m.Kty, attrPath.AtName("kty"))
+	diags.Append(ktyDiags...)
 
-	if m.Use.IsNull() || m.Use.IsUnknown() {
-		diags.AddAttributeError(attrPath.AtName("use"), "Missing app key JWK use", "The use value must be known.")
-	} else {
-		jwk.Use = cm.AppKeyJWKUse(m.Use.ValueString())
-	}
+	use, useDiags := requestRequiredString(m.Use, attrPath.AtName("use"))
+	diags.Append(useDiags...)
 
-	if m.Kid.IsNull() || m.Kid.IsUnknown() {
-		diags.AddAttributeError(attrPath.AtName("kid"), "Missing app key JWK kid", "Set kid to the key identifier for the public key.")
-	} else {
-		jwk.Kid = m.Kid.ValueString()
-	}
+	kid, kidDiags := requestRequiredString(m.Kid, attrPath.AtName("kid"))
+	diags.Append(kidDiags...)
 
-	if m.X5t.IsNull() || m.X5t.IsUnknown() {
-		diags.AddAttributeError(attrPath.AtName("x5t"), "Missing app key JWK x5t", "Set x5t to the public-key fingerprint.")
-	} else {
-		jwk.X5t = m.X5t.ValueString()
-	}
+	x5t, x5tDiags := requestRequiredString(m.X5t, attrPath.AtName("x5t"))
+	diags.Append(x5tDiags...)
+
+	var x5c []string
 
 	if m.X5c.IsNull() || m.X5c.IsUnknown() {
 		diags.AddAttributeError(attrPath.AtName("x5c"), "Missing app key JWK x5c", "Set x5c to the public key material.")
 	} else {
-		x5c := make([]string, 0, len(m.X5c.Elements()))
-		for idx, value := range m.X5c.Elements() {
-			if value.IsNull() || value.IsUnknown() {
-				diags.AddAttributeError(
-					attrPath.AtName("x5c").AtListIndex(idx),
-					"Invalid app key JWK x5c public key",
-					fmt.Sprintf("The x5c public key at index %d must be known and non-null.", idx),
-				)
+		var x5cDiags diag.Diagnostics
 
-				continue
-			}
-
-			x5c = append(x5c, value.ValueString())
-		}
-
-		jwk.X5c = x5c
+		x5c, x5cDiags = knownStringListElements(attrPath.AtName("x5c"), m.X5c.Elements())
+		diags.Append(x5cDiags...)
 	}
 
-	if !diags.HasError() {
-		diags.Append(validateAppKeyJWKMaterial(jwk, attrPath)...)
+	if diags.HasError() {
+		return cm.AppKeyJWK{}, diags
 	}
+
+	jwk := cm.AppKeyJWK{
+		Alg: cm.AppKeyJWKAlg(alg),
+		Kty: cm.AppKeyJWKKty(kty),
+		Use: cm.AppKeyJWKUse(use),
+		X5c: x5c,
+		Kid: kid,
+		X5t: x5t,
+	}
+
+	diags.Append(validateAppKeyJWKMaterial(jwk, attrPath)...)
 
 	if diags.HasError() {
 		return cm.AppKeyJWK{}, diags

@@ -9,24 +9,8 @@ import (
 func (model *RoleModel) ToRoleData() (cm.RoleData, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	var name string
-
-	switch {
-	case model.Name.IsUnknown():
-		diags.AddAttributeError(
-			path.Root("name"),
-			"Unexpected unknown role name",
-			"The role name must be known before it can be sent to Contentful.",
-		)
-	case model.Name.IsNull():
-		diags.AddAttributeError(
-			path.Root("name"),
-			"Unexpected null role name",
-			"The role name is required.",
-		)
-	default:
-		name = model.Name.ValueString()
-	}
+	name, nameDiags := requestRequiredString(model.Name, path.Root("name"))
+	diags.Append(nameDiags...)
 
 	description, descriptionDiags := requestNullableString(model.Description, path.Root("description"))
 	diags.Append(descriptionDiags...)

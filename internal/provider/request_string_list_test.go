@@ -68,7 +68,13 @@ func TestKnownOptionalStringSetElements(t *testing.T) {
 			}),
 			expected: []string{"first", "second"},
 		},
-		"known empty": {
+		"known empty string": {
+			value: types.SetValueMust(types.StringType, []attr.Value{
+				types.StringValue(""),
+			}),
+			expected: []string{""},
+		},
+		"known empty container": {
 			value:    types.SetValueMust(types.StringType, []attr.Value{}),
 			expected: []string{},
 		},

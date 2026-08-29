@@ -90,7 +90,7 @@ func (model *ExtensionModelExtension) ToExtensionExtensionData(
 ) (cm.ExtensionDataExtension, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	name, nameDiags := appRequestRequiredString(model.Name, path.AtName("name"))
+	name, nameDiags := requestRequiredString(model.Name, path.AtName("name"))
 	diags.Append(nameDiags...)
 
 	var sidebar *bool

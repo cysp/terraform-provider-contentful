@@ -9,11 +9,40 @@ import (
 	"encoding/base64"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	p "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestAppKeyRequestAggregatesRequiredStringDiagnostics(t *testing.T) {
+	t.Parallel()
+
+	model := p.AppKeyModel{
+		JWK: p.NewTypedObject(p.AppKeyJWKModel{
+			Alg: types.StringNull(),
+			Kty: types.StringUnknown(),
+			Use: types.StringNull(),
+			Kid: types.StringUnknown(),
+			X5t: types.StringNull(),
+			X5c: p.NewTypedList([]types.String{types.StringUnknown()}),
+		}),
+	}
+
+	request, diags := model.ToAppKeyRequestData(context.Background())
+
+	assert.Equal(t, cm.AppKeyRequestData{}, request)
+	require.True(t, diags.HasError())
+	assert.Equal(t, []string{
+		"jwk.alg",
+		"jwk.kty",
+		"jwk.use",
+		"jwk.kid",
+		"jwk.x5t",
+		"jwk.x5c[0]",
+	}, attributeDiagnosticPaths(t, diags))
+}
 
 func TestValidateAppKeyJWKMaterialAcceptsFingerprintableMaterial(t *testing.T) {
 	t.Parallel()
