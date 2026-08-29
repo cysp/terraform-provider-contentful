@@ -42,6 +42,10 @@ not change the version-header behavior.
   `X-Contentful-Version`. A collision must fail without mutating, activating, or
   adopting the existing Content Type.
 - Updating either managed resource sends its exact observed `sys.version`.
+- Entry specified-ID Create and Update and Content Type Create and Update do not
+  transparently replay 429, transport, or 5xx outcomes. Only a complete,
+  identity-valid, plan-consistent draft response can authorize its exact
+  returned positive version for Publish or Activate; a later GET cannot do so.
 
 A preflight read cannot guarantee create-only behavior because another writer
 could create the ID between the read and the `PUT`.

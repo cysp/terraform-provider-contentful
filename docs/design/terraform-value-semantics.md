@@ -145,21 +145,36 @@ validation.
 
 Content Type publication metadata is observation, not activation authority.
 `contentful_content_type` activates only the exact draft returned by a
-successful Create or modeled Update, during that same resource operation.
-Read, import, refresh, legacy state, external deactivation, and external drafts
-never cause activation by themselves.
+successful Create or modeled Update. After the complete truthful draft state
+and optimistic-lock version are checkpointed and the response identity,
+positive version, draft tuple, and plan consistency are validated, private
+state records that exact version as pending activation authority. Read, import,
+legacy state, external deactivation, external drafts, matching configuration,
+and field equality never create that authority.
 
 A modeled Update uses the exact current Contentful version and the effective
 Terraform plan. This includes refreshed values protected by `ignore_changes`.
 After Contentful accepts the draft, the provider checkpoints its returned state
-and version before activating that exact version. If activation fails, the
-truthful draft state remains, but a later unchanged operation does not activate
-it. The practitioner must activate it manually or make another
-Terraform-managed Content Type change after resolving the error.
+and version before recording the pending marker and activating that exact
+version. Confirmed activation checkpoints the returned state/version and clears
+the marker. An explicit or ambiguous activation failure retains the truthful
+draft and marker; an unchanged later operation is deliberately planned as an
+Update and activates only the marked version without another draft PUT.
 
-During Create, the provider likewise checkpoints the returned draft before
-returning an activation error. Terraform Core taints a resource whose Create
-returns an error, so the next normal plan replaces it.
+Read preserves the marker only while the current `sys.version` exactly equals
+the marker and the observed publication tuple exactly equals the checkpointed
+draft tuple. Observing the marked
+version already activated clears the marker without another activation.
+Observing any other current version or publication state revokes authority and
+does not mutate. With refresh disabled, recovery still submits only the marked
+version; `VersionMismatch` revokes the marker and never causes a GET-and-retry
+against a newer version.
+
+During Create, once the provider has checkpointed and marked the exact returned
+draft, an unconfirmed activation is reported as a warning. This lets Terraform
+retain the truthful untainted draft and schedule exact-version recovery without
+repeating the Create PUT. Failures before the draft is validated and marked
+remain errors and grant no activation authority.
 
 No activation path fetches or retries a newer draft. Concurrent draft changes
 therefore fail Contentful's optimistic-concurrency check instead of publishing
@@ -167,18 +182,21 @@ another actor's version.
 
 A nominally successful activation response is accepted only when its
 `sys.publishedVersion` equals the exact version sent in the activation request
-and its returned `sys.version` has the active one-version-newer relationship.
-Likewise, a successful draft PUT must return the exact expected revision
-(version 1 on Create, or the requested prior version plus one on Update) and an
-unpublished or pending-draft lifecycle tuple before that version can be used as
-the activation lock token.
-The provider checkpoints the complete returned response before reporting a
-contradiction, so recovery state remains truthful even when apply fails.
+and its returned `sys.version` is positive and greater. The normally observed
+one-version-newer response receives no special treatment; any greater current
+version confirms activation and never becomes new authority. Likewise, a
+successful draft PUT may return any positive exact version on Create or Update.
+Its `publishedVersion` must be known or null and, when present, non-negative and
+less than the returned version before that version can be used as the activation
+lock token. The provider checkpoints the complete returned response before
+reporting a contradiction and revokes authority, so state remains truthful even
+when apply fails.
 
 `published_version` did not exist in state written by older provider versions.
 A normal post-upgrade refresh projects `sys.publishedVersion`. With
 `-refresh=false`, Terraform decodes the missing legacy Computed value as null,
-but publication remains observational and the unchanged transition is a no-op.
+but no pending activation marker exists, so publication remains observational
+and the unchanged transition is a no-op.
 
 After Create or Update, state must remain consistent with every known
 configuration-owned value in the plan. Post-mutation state construction starts
@@ -234,9 +252,11 @@ inherently non-idempotent.
 Contentful documents `429 Too Many Requests` as rate limiting and tells clients
 to wait before making another request; its first-party management SDK also
 retries 429 responses. The provider follows that Contentful-specific policy for
-every HTTP method. Neither source establishes whether a mutation committed, so
-mutation retries retain accepted residual ambiguity. The evidence, deadline,
-and backoff contracts are recorded in
+every HTTP method by default. Entry Create, specified-ID Create, Update, and
+Publish and Content Type Create, Update, and Activate are the narrow exception:
+they return the first 429 without transparent replay because the response cannot
+establish mutation commitment or exact-version authority. The evidence,
+deadline, and backoff contracts are recorded in
 [Contentful HTTP retry policy](contentful-http-retry-policy.md).
 
 ### Entry publication ownership and partial field ownership
@@ -247,13 +267,25 @@ response and its `sys.version` before sending that version to Publish. Import,
 Read, refresh, an external draft, external unpublish, and prior Terraform state
 are observations only and never grant publication authority.
 
-If Update publication is not confirmed, Terraform preserves the truthful draft
-response but an unchanged later apply does not retry Publish. Practitioners must
-inspect Contentful, then publish manually if needed or make another managed
-change. That later change writes a new draft using the current optimistic-lock
-version and publishes only the draft returned by that Update. If Create
-publication fails, Terraform taints the resource and the next normal plan
-replaces it.
+After the complete truthful draft state and optimistic-lock version are
+checkpointed and the response identity, positive version, draft tuple, and
+plan consistency are validated, private state records only that exact version
+as pending publication authority. The provider attempts Publish with that
+version in the same operation. Confirmed publication checkpoints the returned
+state/version and clears the marker. An explicit or ambiguous publication
+failure retains the truthful draft and marker; an unchanged later operation is
+deliberately planned as an Update and publishes only the marker version without
+another draft PUT. During Create, an unconfirmed Publish after this checkpoint
+is reported as a warning so Terraform retains the untainted draft and marker;
+failures before that boundary remain errors and grant no publication authority.
+
+Read preserves the marker only while current `sys.version` exactly equals the
+marker and the observed publication tuple exactly equals the checkpointed draft
+tuple. Observing the marker as
+published clears it without replay. A different current version or publication
+state revokes authority without mutation. With refresh disabled, recovery sends
+only the marker version; `VersionMismatch` revokes it and never causes a fetch
+and publication of a newer version.
 
 An ambiguous draft-mutation failure likewise grants no publication authority.
 The client does not replay the mutation automatically, and the provider does not
@@ -308,13 +340,10 @@ sent field must still be present and semantically equal after the recognized
 empty-array and raw-JSON-null omission fallbacks above. Update uses full-body
 replacement and Contentful does not apply defaults to Entry updates, so an
 Update response must have exactly the sent field keys and values after those
-same fallbacks. A Create publication response may include creation defaults only
-when it returns the complete normal tuple:
-`publishedVersion` equal to the version sent and `version` exactly one greater.
-Update publication responses must have the exact effective-plan
-field keys. Every response with a missing or different `publishedVersion`, or with
-a lower or higher `version`, must also have exact field keys so that unrelated
-response additions are not silently adopted.
+same fallbacks. Create publication responses retain the same creation-default
+projection used for the Create draft response; Update and recovery publication
+responses require the exact effective-plan field keys. Field ownership does not
+depend on publication-version arithmetic.
 
 After those checks succeed, mutation state restores the exact effective-plan
 `fields`, `metadata`, and `timeouts`; identity and lifecycle values remain
@@ -324,29 +353,23 @@ which `ignore_changes` can preserve through a subsequent managed update. When
 Contentful contradicts a planned field, metadata, content type, or endpoint
 identity, the provider reports an error and checkpoints the representable
 response `fields` and `metadata`, while retaining the requested immutable content
-type and endpoint identity. An anomalously high current
-version after Publish with an otherwise coherent publication tuple remains a
-warning, but its lifecycle state and exact-key response checkpoint are preserved
-rather than described as a complete returned Entry.
+type and endpoint identity. The complete returned response remains the truthful
+checkpoint, while response-only field additions cannot become
+configuration-owned values or new publication authority.
 
-An Update draft response must return the exact expected next version before the
-provider grants publication authority. Create has no prior version from which
-to prove an increment and accepts any positive, plan-consistent returned draft
-version. Either draft response may omit `publishedVersion` or contain a positive
-older publication (`publishedVersion < version`); equal, future, nonpositive, or
-unknown publication values are contradictory.
+A Create or Update draft response grants authority to any positive exact
+returned version in a plan-consistent response. Either response may omit
+`publishedVersion` or contain a non-negative older publication
+(`publishedVersion < version`); equal, future, negative, or unknown publication
+values are contradictory.
 
 Publish must report the submitted version as `publishedVersion`. The repeatedly
-observed normal response has `version` equal to the submitted version plus one.
-Any other positive current version is representable, checkpointed, and warned
-about rather than rejected solely for its arithmetic. That observational
-tolerance does not broaden field ownership: Create publication may accept
-response-only creation defaults only for the complete normal tuple, while an
-anomalous Create publication and every Update publication require
-exact effective-plan fields. Missing or different `publishedVersion` and
-nonpositive current versions remain errors. Read likewise preserves positive,
-representable lifecycle tuples and warns about unusual ordering instead of
-treating undocumented arithmetic as permanently invalid. The computed
+observed normal response has `version` equal to the submitted version plus one,
+but the provider applies no policy to that arithmetic: any greater current
+version confirms publication. A current version equal to or below the published
+version is contradictory. Missing or different `publishedVersion` and
+nonpositive current versions remain errors. Read cannot use a malformed or
+changed tuple to preserve publication authority. The computed
 `published_version` attribute exposes the authoritative CMA value; `version` in
 resource private state always records the same response version as the published
 Terraform state.
@@ -363,6 +386,24 @@ validity. This preserves Go's established integer decoding of JSON `null` as
 zero. Taxonomy Delete is the one absence-handling exception: when Terraform
 omits private data for a tainted replacement, the provider obtains the current
 version with a GET before deleting.
+
+Pending Entry publication and Content Type activation markers are a narrower
+mutation-authority boundary, not ordinary optimistic-lock forwarding. A marker
+must decode to a positive exact draft version; zero, negative, malformed, or
+missing marker data cannot authorize Publish or Activate.
+
+Publish or Activate confirmation requires `publishedVersion` equal to the
+submitted exact version and a positive current `version` greater than it. The
+normally observed `V+1` tuple receives no special treatment. Any greater current
+version is checkpointed truthfully and accepted, but it never replaces the
+marker or becomes new mutation authority. A missing or wrong
+`publishedVersion`, or current `version <= V`, is contradictory and revokes
+authority after the complete response is checkpointed.
+
+All Entry Create, specified-ID Create, Update, and Publish requests and Content
+Type Create, Update, and Activate requests disable transparent HTTP replay,
+including for 429, transport failures, and 5xx. Read and unrelated CMA calls
+retain their existing retry behavior.
 
 ### Entry destroy lifecycle
 

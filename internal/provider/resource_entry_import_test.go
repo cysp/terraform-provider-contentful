@@ -43,6 +43,7 @@ func TestAccEntryResourceImportedPendingDraftIsNotPublished(t *testing.T) {
 
 	errorSink := new(entryFixtureErrorSink)
 	recorder := newEntryMutationRecorder(server, errorSink)
+	additionalCLIOptions := &resource.AdditionalCLIOptions{}
 	config := `
 resource "contentful_entry" "test" {
   space_id        = "space"
@@ -53,7 +54,7 @@ resource "contentful_entry" "test" {
 }
 `
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{AdditionalCLIOptions: additionalCLIOptions, Steps: []resource.TestStep{
 		{
 			Config:             config,
 			ResourceName:       "contentful_entry.test",
@@ -72,6 +73,22 @@ resource "contentful_entry" "test" {
 				entry := getTestEntry(t, server)
 				require.True(t, entry.Sys.PublishedVersion.IsSet())
 				require.Less(t, entry.Sys.PublishedVersion.Or(0), entry.Sys.Version)
+
+				return nil
+			},
+		},
+		{
+			PreConfig: func() {
+				additionalCLIOptions.Plan.NoRefresh = true
+
+				recorder.reset()
+			},
+			Config: config,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
+			}},
+			Check: func(*terraform.State) error {
+				requireNoEntryMutations(t, recorder, "import and Read must not serialize publication authority")
 
 				return nil
 			},

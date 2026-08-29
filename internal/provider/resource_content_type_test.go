@@ -24,7 +24,7 @@ import (
 func TestAccContentTypeResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -182,7 +182,7 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -212,7 +212,7 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -233,7 +233,7 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 func TestAccContentTypeResourceCreate(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -265,7 +265,7 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 func TestAccContentTypeResourceUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -342,7 +342,7 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -511,7 +511,7 @@ func contentTypeMockRemoteVersionCheck(
 func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -621,7 +621,7 @@ func contentTypeMetadataWithoutAnnotationsStateChecks() []statecheck.StateCheck 
 func TestAccContentTypeResourceTaxonomyDrift(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -731,7 +731,7 @@ func contentTypeTaxonomyConceptScheme(id string) cm.ContentTypeMetadataTaxonomyI
 func TestAccContentTypeResourceRemoveAnnotationsMetadata(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -779,7 +779,7 @@ func TestAccContentTypeResourceRemoveAnnotationsMetadata(t *testing.T) {
 func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -820,7 +820,7 @@ func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
 func TestAccContentTypeResourceDeleted(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 

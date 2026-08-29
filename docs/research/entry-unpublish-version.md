@@ -43,10 +43,10 @@ than the pending draft.
 
 After unpublish, remote `version` no longer equals the earlier draft version.
 Terraform must not publish that stale draft or treat the newly observed version
-as authority to publish. The provider grants publication authority only to the
-Create or Update operation that received its validated draft response, so the
-observed external transition neither revokes a stored marker nor grants authority
-to a later operation.
+as authority to publish. A validated Create or Update response may checkpoint
+authority for only its exact returned draft version. The observed external
+transition revokes that stale marker because `sys.version` changed, and it never
+grants authority to the newly observed version.
 
 The in-process fake models this observed contract: Entry unpublish returns a
 200 Entry response with an advanced positive `version` and no
