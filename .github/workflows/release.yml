@@ -1,21 +1,45 @@
 name: release
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/release.yml"
+      - ".goreleaser.yml"
   push:
     tags:
       - "v*"
 
-permissions:
-  attestations: write
-  contents: write
-  id-token: write
+permissions: {}
 
 jobs:
-  goreleaser:
+  validate:
+    name: Validate GoReleaser configuration
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        with:
+          distribution: goreleaser
+          version: v2.18.0
+          args: check
+
+  release:
+    name: Publish release
+    if: github.event_name == 'push'
+    needs: validate
     runs-on: ubuntu-latest
     environment:
       name: release
       deployment: false
+    concurrency:
+      group: release
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -26,9 +50,21 @@ jobs:
           go-version-file: "go.mod"
           cache: true
 
+      - name: Require existing draft
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release="$(gh release view "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json databaseId,isDraft,name)"
+          test "$(jq -r .isDraft <<<"$release")" = true
+          test "$(jq -r .name <<<"$release")" = "$GITHUB_REF_NAME"
+          echo "id=$(jq -r .databaseId <<<"$release")" >> "$GITHUB_OUTPUT"
+
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
           gpg_private_key: ${{ secrets.RELEASE_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.RELEASE_PASSPHRASE }}
@@ -36,12 +72,50 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         with:
+          distribution: goreleaser
+          version: v2.18.0
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
-      - name: Attest build provenance
+      - name: Verify signed checksums
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          project=terraform-provider-contentful
+          checksum="${project}_${version}_SHA256SUMS"
+          cp terraform-registry-manifest.json "dist/${project}_${version}_manifest.json"
+          (cd dist && sha256sum --check "$checksum")
+          gpg --batch --verify "dist/${checksum}.sig" "dist/$checksum"
+
+      - name: Attest release artifacts
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-path: dist/*.zip
+          subject-path: |
+            dist/*.zip
+            dist/*_manifest.json
+            dist/*_SHA256SUMS
+            dist/*_SHA256SUMS.sig
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ steps.release.outputs.id }}
+        run: |
+          release="$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID")"
+          test "$(jq -r .draft <<<"$release")" = true
+
+          subjects=(dist/*.zip dist/*_manifest.json \
+            dist/*_SHA256SUMS dist/*_SHA256SUMS.sig)
+          test "$(jq '.assets | length' <<<"$release")" = "${#subjects[@]}"
+          for subject in "${subjects[@]}"; do
+            name="${subject##*/}"
+            local_digest="sha256:$(sha256sum "$subject" | cut -d' ' -f1)"
+            remote_digest="$(jq -er --arg name "$name" \
+              '.assets[] | select(.name == $name) | .digest' <<<"$release")"
+            test "$local_digest" = "$remote_digest"
+          done
+
+          gh api --method PATCH \
+            "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
+            -F draft=false
