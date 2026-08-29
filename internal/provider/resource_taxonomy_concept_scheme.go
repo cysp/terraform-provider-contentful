@@ -67,14 +67,19 @@ func (r *taxonomyConceptSchemeResource) Create(ctx context.Context, req resource
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	prepared, prepareDiags := prepareTaxonomyConceptSchemeMutation(ctx, config, plan)
+	prepared, prepareDiags := prepareTaxonomyConceptSchemeMutation(config, plan)
 	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	request := prepared.CreateRequest()
+	request, requestDiags := prepared.planRequest(ctx)
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	params := cm.PutTaxonomyConceptSchemeParams{OrganizationID: plan.OrganizationID.ValueString(), TaxonomyConceptSchemeID: plan.ConceptSchemeID.ValueString()}
 	response, err := r.providerData.client.PutTaxonomyConceptScheme(ctx, &request, params)
@@ -189,7 +194,7 @@ func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	prepared, prepareDiags := prepareTaxonomyConceptSchemeMutation(ctx, config, plan)
+	prepared, prepareDiags := prepareTaxonomyConceptSchemeMutation(config, plan)
 	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
