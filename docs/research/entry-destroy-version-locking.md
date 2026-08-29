@@ -98,7 +98,10 @@ The same limitation applies to any missing-private-state fallback that performs
 GET followed by a versioned delete: because delete ignores the version, the GET
 to mutation interval is not fenced. A present private value of zero is also not
 safe merely because it is sent: the live endpoint accepted zero and performed
-the destructive mutation.
+the destructive mutation. This also applies to JSON `null`, which the current
+`optionalPrivateVersion` decoder accepts as a present Go integer zero; that
+value can reach Entry destroy rather than being diagnosed as malformed private
+version state.
 
 The mock must model this observed normal CMA behavior. Rejecting omitted, stale,
 or zero versions would be stricter than Contentful and may only be isolated as
