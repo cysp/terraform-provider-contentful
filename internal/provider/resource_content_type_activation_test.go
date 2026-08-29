@@ -44,11 +44,21 @@ const (
 
 type contentTypeEvent struct {
 	Operation      contentTypeOperation
+	Method         string
+	Path           string
 	Version        int64
 	VersionPresent bool
 }
 
-func TestAccContentTypeResourceFailedCreateActivationRemainsReplaceable(t *testing.T) {
+type contentTypeRawRequest struct {
+	contentTypeEvent
+
+	VersionValues []string
+	Body          []byte
+	ContentLength int64
+}
+
+func TestAccContentTypeResourceFailedCreateActivationRecoversExactDraft(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -60,16 +70,43 @@ func TestAccContentTypeResourceFailedCreateActivationRemainsReplaceable(t *testi
 
 	configVariables := contentTypeActivationConfigVariables("create-activation-failure")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	var providerFactoryCalls atomic.Int64
+
+	ContentfulProviderMockedResourceTestWithFactoryCounter(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
-				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile(`(?s)Failed to activate content type.*activation was\s+not\s+confirmed`),
+				ConfigDirectory:    config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
+				ConfigVariables:    configVariables,
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				PreConfig: func() {
 					requireNoConfirmingGetAfterActivationFailure(t, handler)
+					require.Equal(t, []contentTypeEvent{
+						{
+							Operation: contentTypeOperationPut,
+							Method:    http.MethodPut,
+							Path:      "/spaces/space/environments/environment/content_types/create-activation-failure",
+							Version:   -1,
+						},
+						{
+							Operation:      contentTypeOperationActivate,
+							Method:         http.MethodPut,
+							Path:           "/spaces/space/environments/environment/content_types/create-activation-failure/published",
+							Version:        1,
+							VersionPresent: true,
+						},
+					}, handler.eventHistory())
+					require.JSONEq(t, `{
+					"name":"Test",
+					"description":"Test content type (create-activation-failure)",
+					"displayField":"name",
+					"fields":[
+						{"id":"name","name":"Name","type":"Symbol","localized":false,"required":true,"disabled":false,"omitted":false,"validations":[]},
+						{"id":"flags","name":"Flags","type":"Array","localized":false,"required":false,"disabled":false,"omitted":false,"validations":[],"items":{"type":"Symbol","validations":[]}}
+					]
+				}`, string(handler.lastPutBody()))
 					handler.failActivation.Store(false)
 					handler.resetRequestHistory()
 				},
@@ -77,7 +114,7 @@ func TestAccContentTypeResourceFailedCreateActivationRemainsReplaceable(t *testi
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionReplace),
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -87,7 +124,14 @@ func TestAccContentTypeResourceFailedCreateActivationRemainsReplaceable(t *testi
 						knownvalue.Int64Exact(1),
 					),
 				},
-				Check: contentTypeActivationRequestCheck(handler, 1, 1),
+				Check: resource.ComposeTestCheckFunc(
+					contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{1}),
+					func(*terraform.State) error {
+						require.GreaterOrEqual(t, providerFactoryCalls.Load(), int64(2), "recovery must survive provider restart and private-state serialization")
+
+						return nil
+					},
+				),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
@@ -97,6 +141,253 @@ func TestAccContentTypeResourceFailedCreateActivationRemainsReplaceable(t *testi
 						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
 					},
 				},
+			},
+		},
+	}, &providerFactoryCalls)
+}
+
+func TestAccContentTypeResourceCreateUsesExactPositiveReturnedVersion(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	offset := &contentTypeVersionOffsetAdapter{delegate: server, offset: 3}
+	handler := &contentTypeActivationTestHandler{delegate: offset}
+	variables := contentTypeActivationConfigVariables("create-positive-version")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+		{
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"), ConfigVariables: variables,
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Int64Exact(4)),
+			},
+			Check: func(*terraform.State) error {
+				require.Equal(t, []contentTypeEvent{
+					{Operation: contentTypeOperationPut, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/create-positive-version", Version: -1},
+					{Operation: contentTypeOperationActivate, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/create-positive-version/published", Version: 4, VersionPresent: true},
+				}, handler.eventHistory())
+				raw := handler.rawRequestHistory()
+				require.Len(t, raw, 2)
+				require.JSONEq(t, `{
+					"name":"Test",
+					"description":"Test content type (create-positive-version)",
+					"displayField":"name",
+					"fields":[
+						{"id":"name","name":"Name","type":"Symbol","localized":false,"required":true,"disabled":false,"omitted":false,"validations":[]},
+						{"id":"flags","name":"Flags","type":"Array","localized":false,"required":false,"disabled":false,"omitted":false,"validations":[],"items":{"type":"Symbol","validations":[]}}
+					]
+				}`, string(raw[0].Body))
+				require.Empty(t, raw[1].Body)
+				require.Zero(t, raw[1].ContentLength)
+				require.Equal(t, []string{"4"}, raw[1].VersionValues)
+
+				return nil
+			},
+		},
+		{
+			PreConfig:       handler.resetRequestHistory,
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"), ConfigVariables: variables,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+			}},
+			Check: contentTypeActivationRequestCheck(handler, 0, 0),
+		},
+	}})
+}
+
+func TestAccContentTypeResourceUpdateUsesExactArbitraryPositiveReturnedVersion(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	offset := &contentTypeVersionOffsetAdapter{delegate: server, jumpOnDraftUpdate: 40}
+	handler := &contentTypeActivationTestHandler{delegate: offset}
+	variables := contentTypeActivationConfigVariables("update-arbitrary-positive-version")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+		{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+		{
+			PreConfig:       handler.resetRequestHistory,
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Int64Exact(43)),
+			},
+			Check: func(*terraform.State) error {
+				require.Equal(t, []contentTypeEvent{
+					{Operation: contentTypeOperationPut, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/update-arbitrary-positive-version", Version: 2, VersionPresent: true},
+					{Operation: contentTypeOperationActivate, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/update-arbitrary-positive-version/published", Version: 43, VersionPresent: true},
+				}, handler.eventHistory())
+
+				return nil
+			},
+		},
+		{
+			PreConfig:       handler.resetRequestHistory,
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+			}},
+			Check: contentTypeActivationRequestCheck(handler, 0, 0),
+		},
+	}})
+}
+
+func TestAccContentTypeResourceDraftRateLimitDoesNotCreateActivationAuthority(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("draft-rate-limit")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.rateLimitPut.Store(true)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`Failed to update content type`),
+			},
+			{
+				PreConfig: func() {
+					require.Equal(t, 1, handler.eventCount(contentTypeOperationPut), "the draft 429 must not be retried")
+					require.Zero(t, handler.eventCount(contentTypeOperationActivate), "a rejected draft must not authorize activation")
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				Check: contentTypeActivationRequestAndVersionsCheck(handler, 1, 1, []int64{3}),
+			},
+		},
+	})
+}
+
+func TestAccContentTypeResourceActivationRateLimitRetainsExactAuthority(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("activation-rate-limit")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.rateLimitActivation.Store(true)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`Failed to activate content type`),
+			},
+			{
+				PreConfig: func() {
+					require.Equal(t, 1, handler.eventCount(contentTypeOperationPut))
+					require.Equal(t, []int64{3}, handler.activationVersionHistory(), "the activation 429 must not be retried")
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+				}},
+				Check: contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{3}),
+			},
+		},
+	})
+}
+
+func TestAccContentTypeResourceHigherPostActivationVersionIsAccepted(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	higher := &contentTypeHigherPostActivationVersionAdapter{delegate: server, server: server}
+	handler := &contentTypeActivationTestHandler{delegate: higher}
+	variables := contentTypeActivationConfigVariables("higher-post-activation-version")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					higher.shot.arm()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Int64Exact(3)),
+				},
+				Check: contentTypeActivationRequestAndVersionsCheck(handler, 1, 1, []int64{3}),
+			},
+			{
+				PreConfig:       handler.resetRequestHistory,
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/4"), ConfigVariables: variables,
+				Check: func(*terraform.State) error {
+					require.Equal(t, []contentTypeEvent{
+						{Operation: contentTypeOperationPut, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/higher-post-activation-version", Version: 6, VersionPresent: true},
+						{Operation: contentTypeOperationActivate, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/higher-post-activation-version/published", Version: 7, VersionPresent: true},
+					}, handler.eventHistory())
+
+					return nil
+				},
+			},
+			{
+				PreConfig:       handler.resetRequestHistory,
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/4"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+		},
+	})
+}
+
+func TestAccContentTypeResourceInitialActivationVersionMismatchRevokesAuthority(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("initial-activation-version-mismatch")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.activationVersionMismatch.Store(true)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`(?s)VersionMismatch.*revoked activation authority`),
+			},
+			{
+				PreConfig: func() {
+					require.Equal(t, []contentTypeEvent{
+						{Operation: contentTypeOperationPut, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/initial-activation-version-mismatch", Version: 2, VersionPresent: true},
+						{Operation: contentTypeOperationActivate, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/initial-activation-version-mismatch/published", Version: 3, VersionPresent: true},
+					}, handler.eventHistory())
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
 			},
 		},
 	})
@@ -128,11 +419,6 @@ func TestAccContentTypeResourceDoesNotActivateContradictoryDraftPutResponse(t *t
 				}}
 			},
 			`Unexpected Contentful content type response`,
-		},
-		"wrong current version": {
-			"testdata/TestAccContentTypeResourceUpdate/1", "testdata/TestAccContentTypeResourceUpdate/2",
-			func(response map[string]any) { mustContentTypeResponseObject(response["sys"])["version"] = 99 },
-			`Unexpected Contentful content type draft response`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -168,7 +454,7 @@ func TestAccContentTypeResourceDoesNotActivateContradictoryDraftPutResponse(t *t
 	}
 }
 
-func TestAccContentTypeResourceRejectsContradictoryCreateActivationPublication(t *testing.T) {
+func TestAccContentTypeResourceContradictoryCreateActivationRevokesRecoveryAuthority(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -178,26 +464,39 @@ func TestAccContentTypeResourceRejectsContradictoryCreateActivationPublication(t
 	handler.mutateActivationResponse = contentTypeResponseMutator(t, removeContentTypePublishedVersion)
 	variables := contentTypeActivationConfigVariables("contradictory-create-activation-publication")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
-		{
-			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"), ConfigVariables: variables,
-			ExpectError: regexp.MustCompile(`Unexpected Contentful content type activation response`),
-		},
-		{
-			PreConfig: func() {
-				require.Equal(t, []contentTypeEvent{
-					{Operation: contentTypeOperationPut, Version: -1, VersionPresent: false},
-					{Operation: contentTypeOperationActivate, Version: 1, VersionPresent: true},
-				}, handler.eventHistory())
-				handler.resetRequestHistory()
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"), ConfigVariables: variables,
 			},
-			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"), ConfigVariables: variables,
-			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionReplace),
-			}},
-			Check: contentTypeActivationRequestAndVersionsCheck(handler, 1, 1, []int64{1}),
+			{
+				PreConfig: func() {
+					require.Equal(t, []contentTypeEvent{
+						{Operation: contentTypeOperationPut, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/contradictory-create-activation-publication", Version: -1},
+						{Operation: contentTypeOperationActivate, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/contradictory-create-activation-publication/published", Version: 1, VersionPresent: true},
+					}, handler.eventHistory())
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+			{
+				PreConfig: func() {
+					require.Empty(t, handler.eventHistory(), "a response version beyond the marked draft must revoke recovery authority")
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
 		},
-	}})
+	})
 }
 
 func TestAccContentTypeResourceRejectsContradictoryPutUpdateActivationPublication(t *testing.T) {
@@ -222,8 +521,8 @@ func TestAccContentTypeResourceRejectsContradictoryPutUpdateActivationPublicatio
 		{
 			PreConfig: func() {
 				require.Equal(t, []contentTypeEvent{
-					{Operation: contentTypeOperationPut, Version: 2, VersionPresent: true},
-					{Operation: contentTypeOperationActivate, Version: 3, VersionPresent: true},
+					{Operation: contentTypeOperationPut, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/contradictory-put-update-activation-publication", Version: 2, VersionPresent: true},
+					{Operation: contentTypeOperationActivate, Method: http.MethodPut, Path: "/spaces/space/environments/environment/content_types/contradictory-put-update-activation-publication/published", Version: 3, VersionPresent: true},
 				}, handler.eventHistory())
 				handler.resetRequestHistory()
 			},
@@ -236,11 +535,48 @@ func TestAccContentTypeResourceRejectsContradictoryPutUpdateActivationPublicatio
 	}})
 }
 
+func TestAccContentTypeResourceNonAdvancingActivationResponseRevokesAuthority(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("nonadvancing-activation-response")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.mutateActivationResponse = contentTypeResponseMutator(t, func(response map[string]any) {
+						sys := mustContentTypeResponseObject(response["sys"])
+						sys["version"] = 3
+						sys["publishedVersion"] = 3
+					})
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`current version must be greater than the published version`),
+			},
+			{
+				PreConfig:       handler.resetRequestHistory,
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+		},
+	})
+}
+
 func removeContentTypePublishedVersion(response map[string]any) {
 	delete(mustContentTypeResponseObject(response["sys"]), "publishedVersion")
 }
 
-func TestAccContentTypeResourceAmbiguousCreateActivationRemainsReplaceable(t *testing.T) {
+func TestAccContentTypeResourceAmbiguousCreateActivationReconcilesByRead(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -253,11 +589,12 @@ func TestAccContentTypeResourceAmbiguousCreateActivationRemainsReplaceable(t *te
 	configVariables := contentTypeActivationConfigVariables("ambiguous-create-activation")
 
 	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
-				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile(`Failed to activate content type`),
+				ConfigDirectory:    config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
+				ConfigVariables:    configVariables,
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				PreConfig: func() {
@@ -267,21 +604,11 @@ func TestAccContentTypeResourceAmbiguousCreateActivationRemainsReplaceable(t *te
 
 					handler.resetRequestHistory()
 				},
-				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
-				ConfigVariables: configVariables,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionReplace),
-					},
-				},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(
-						"contentful_content_type.test",
-						tfjsonpath.New("published_version"),
-						knownvalue.Int64Exact(1),
-					),
-				},
-				Check: contentTypeActivationRequestAndVersionsCheck(handler, 1, 1, []int64{1}),
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("contentful_content_type.test", "published_version", "1"),
+					contentTypeActivationRequestAndVersionsCheck(handler, 0, 0, nil),
+				),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
@@ -296,7 +623,7 @@ func TestAccContentTypeResourceAmbiguousCreateActivationRemainsReplaceable(t *te
 	})
 }
 
-func TestAccContentTypeResourceFailedUpdateActivationRemainsObservational(t *testing.T) {
+func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftWithoutRefresh(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -306,7 +633,9 @@ func TestAccContentTypeResourceFailedUpdateActivationRemainsObservational(t *tes
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	configVariables := contentTypeActivationConfigVariables("update-activation-failure")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	var providerFactoryCalls atomic.Int64
+
+	ContentfulProviderMockedResourceTestWithFactoryCounter(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -324,6 +653,7 @@ func TestAccContentTypeResourceFailedUpdateActivationRemainsObservational(t *tes
 			},
 			{
 				PreConfig: func() {
+					handler.resetRequestHistory()
 					handler.failActivation.Store(true)
 				},
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"),
@@ -332,6 +662,31 @@ func TestAccContentTypeResourceFailedUpdateActivationRemainsObservational(t *tes
 			},
 			{
 				PreConfig: func() {
+					require.Equal(t, []contentTypeEvent{
+						{
+							Operation:      contentTypeOperationPut,
+							Method:         http.MethodPut,
+							Path:           "/spaces/space/environments/environment/content_types/update-activation-failure",
+							Version:        2,
+							VersionPresent: true,
+						},
+						{
+							Operation:      contentTypeOperationActivate,
+							Method:         http.MethodPut,
+							Path:           "/spaces/space/environments/environment/content_types/update-activation-failure/published",
+							Version:        3,
+							VersionPresent: true,
+						},
+					}, handler.eventHistory())
+					require.JSONEq(t, `{
+						"name":"Test",
+						"description":"Test content type (update-activation-failure)",
+						"displayField":"name",
+						"fields":[
+							{"id":"name","name":"Name","type":"Symbol","localized":false,"required":true,"disabled":false,"omitted":false,"validations":[]},
+							{"id":"slug","name":"Slug","type":"Symbol","localized":false,"required":true,"disabled":false,"omitted":false,"validations":[]}
+						]
+					}`, string(handler.lastPutBody()))
 					handler.failActivation.Store(false)
 					handler.resetRequestHistory()
 				},
@@ -339,21 +694,275 @@ func TestAccContentTypeResourceFailedUpdateActivationRemainsObservational(t *tes
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
-						plancheck.ExpectKnownValue(
-							"contentful_content_type.test",
-							tfjsonpath.New("published_version"),
-							knownvalue.Int64Exact(1),
-						),
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue("contentful_content_type.test", tfjsonpath.New("published_version")),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"contentful_content_type.test",
 						tfjsonpath.New("published_version"),
-						knownvalue.Int64Exact(1),
+						knownvalue.Int64Exact(3),
 					),
 				},
+				Check: resource.ComposeTestCheckFunc(
+					contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{3}),
+					func(*terraform.State) error {
+						require.Equal(t, []contentTypeEvent{{
+							Operation:      contentTypeOperationActivate,
+							Method:         http.MethodPut,
+							Path:           "/spaces/space/environments/environment/content_types/update-activation-failure/published",
+							Version:        3,
+							VersionPresent: true,
+						}}, handler.eventHistory())
+						require.GreaterOrEqual(t, providerFactoryCalls.Load(), int64(3), "recovery must survive provider restart and private-state serialization")
+
+						return nil
+					},
+				),
+			},
+		},
+	}, &providerFactoryCalls)
+}
+
+func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftAfterRefresh(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("update-activation-refresh-recovery")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+		{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+		{
+			PreConfig: func() {
+				handler.resetRequestHistory()
+				handler.failActivation.Store(true)
+			},
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+			ExpectError: regexp.MustCompile(`Failed to activate content type`),
+		},
+		{
+			PreConfig: func() {
+				require.Equal(t, 1, handler.eventCount(contentTypeOperationPut))
+				require.Equal(t, []int64{3}, handler.activationVersionHistory())
+				handler.failActivation.Store(false)
+				handler.resetRequestHistory()
+			},
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+				plancheck.ExpectUnknownValue("contentful_content_type.test", tfjsonpath.New("published_version")),
+			}},
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Int64Exact(3)),
+			},
+			Check: contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{3}),
+		},
+		{
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+			}},
+		},
+	}})
+}
+
+func TestAccContentTypeResourceExternalAdvanceRevokesPendingActivationAfterRefresh(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("activation-external-advance-refresh")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+		{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+		{
+			PreConfig: func() {
+				handler.resetRequestHistory()
+				handler.failActivation.Store(true)
+			},
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+			ExpectError: regexp.MustCompile(`Failed to activate content type`),
+		},
+		{
+			PreConfig: func() {
+				handler.failActivation.Store(false)
+				putIdenticalExternalContentTypeDraft(t, server, "activation-external-advance-refresh", 3)
+				handler.resetRequestHistory()
+			},
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+			}},
+			Check: contentTypeActivationRequestCheck(handler, 0, 0),
+		},
+	}})
+}
+
+func TestAccContentTypeResourcePublicationTupleChangeAtMarkedVersionRevokesAuthority(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("activation-tuple-change")
+	cliOptions := &resource.AdditionalCLIOptions{}
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: cliOptions,
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.failActivation.Store(true)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`Failed to activate content type`),
+			},
+			{
+				PreConfig: func() {
+					handler.failActivation.Store(false)
+					handler.mutateReadResponse = contentTypeResponseMutator(t, removeContentTypePublishedVersion)
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Null()),
+				},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+			{
+				PreConfig: func() {
+					cliOptions.Plan.NoRefresh = true
+
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+		},
+	})
+}
+
+func TestAccContentTypeResourceExternalAdvanceRevokesPendingActivationWithoutRefresh(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("activation-external-advance-no-refresh")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.failActivation.Store(true)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`Failed to activate content type`),
+			},
+			{
+				PreConfig: func() {
+					handler.failActivation.Store(false)
+					putIdenticalExternalContentTypeDraft(t, server, "activation-external-advance-no-refresh", 3)
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+				}},
+				ExpectError: regexp.MustCompile(`VersionMismatch`),
+			},
+			{
+				PreConfig: func() {
+					require.Equal(t, 0, handler.eventCount(contentTypeOperationPut))
+					require.Equal(t, []int64{3}, handler.activationVersionHistory())
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+		},
+	})
+}
+
+func TestAccContentTypeResourceExternalActivationOfMarkedDraftClearsRecovery(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("external-marked-activation")
+	additionalCLIOptions := &resource.AdditionalCLIOptions{}
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: additionalCLIOptions,
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.failActivation.Store(true)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`Failed to activate content type`),
+			},
+			{
+				PreConfig: func() {
+					handler.failActivation.Store(false)
+
+					response, activateErr := server.Handler().ActivateContentType(t.Context(), cm.ActivateContentTypeParams{
+						SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "external-marked-activation", XContentfulVersion: 3,
+					})
+					require.NoError(t, activateErr)
+					require.IsType(t, &cm.ContentTypeStatusCode{}, response)
+
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Int64Exact(3)),
+				},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+			{
+				PreConfig: func() {
+					additionalCLIOptions.Plan.NoRefresh = true
+
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
 				Check: contentTypeActivationRequestCheck(handler, 0, 0),
 			},
 		},
@@ -431,6 +1040,61 @@ func TestAccContentTypeResourceAmbiguousUpdateActivationReconcilesByRead(t *test
 					},
 				},
 				Check: contentTypeActivationRequestAndVersionsCheck(handler, 0, 0, nil),
+			},
+		},
+	})
+}
+
+func TestAccContentTypeResourceRefreshDisabledRecoveryAfterCommittedActivationDoesNotActivateNewerVersion(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("ambiguous-activation-no-refresh")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.activationFailureAfterSuccessStatus.Store(http.StatusBadGateway)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`Failed to activate content type`),
+			},
+			{
+				PreConfig: func() {
+					require.Equal(t, 1, handler.eventCount(contentTypeOperationPut))
+					require.Equal(t, []int64{3}, handler.activationVersionHistory())
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
+				}},
+				ExpectError: regexp.MustCompile(`VersionMismatch`),
+			},
+			{
+				PreConfig: func() {
+					require.Equal(t, []contentTypeEvent{{
+						Operation:      contentTypeOperationActivate,
+						Method:         http.MethodPut,
+						Path:           "/spaces/space/environments/environment/content_types/ambiguous-activation-no-refresh/published",
+						Version:        3,
+						VersionPresent: true,
+					}}, handler.eventHistory(), "recovery must use the marked version exactly once and never repeat the draft PUT")
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
 			},
 		},
 	})
@@ -828,8 +1492,9 @@ func TestAccContentTypeResourceImportUnpublishedDoesNotActivate(t *testing.T) {
 
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables(contentTypeID)
+	additionalCLIOptions := &resource.AdditionalCLIOptions{}
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{AdditionalCLIOptions: additionalCLIOptions, Steps: []resource.TestStep{
 		{
 			ConfigDirectory:    config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
 			ConfigVariables:    variables,
@@ -852,6 +1517,19 @@ func TestAccContentTypeResourceImportUnpublishedDoesNotActivate(t *testing.T) {
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue("contentful_content_type.test", tfjsonpath.New("published_version"), knownvalue.Null()),
 			},
+			Check: contentTypeActivationRequestCheck(handler, 0, 0),
+		},
+		{
+			PreConfig: func() {
+				additionalCLIOptions.Plan.NoRefresh = true
+
+				handler.resetRequestHistory()
+			},
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
+			ConfigVariables: variables,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+			}},
 			Check: contentTypeActivationRequestCheck(handler, 0, 0),
 		},
 	}})
@@ -912,6 +1590,66 @@ func TestAccContentTypeResourceDraftPutRaceDoesNotRetryAgainstNewerVersion(t *te
 			Check: contentTypeActivationRequestAndVersionsCheck(handler, 1, 1, []int64{4}),
 		},
 	}})
+}
+
+func TestAccContentTypeResourceChangedDraftVersionMismatchRevokesPendingAuthority(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("changed-draft-version-mismatch")
+	tracedRace := make(chan error, 1)
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.failActivation.Store(true)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`Failed to activate content type`),
+			},
+			{
+				PreConfig: func() {
+					handler.failActivation.Store(false)
+					handler.resetRequestHistory()
+					handler.beforePut = func(request *http.Request) {
+						tracedRace <- putExternalContentTypeDraft(
+							request, server, "changed-draft-version-mismatch", "External racing draft", "Must revoke the old marker",
+						)
+					}
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables,
+				ExpectError: regexp.MustCompile(`VersionMismatch`),
+			},
+			{
+				PreConfig: func() {
+					select {
+					case raceErr := <-tracedRace:
+						require.NoError(t, raceErr)
+					default:
+						require.Fail(t, "draft PUT race callback did not report a result")
+					}
+
+					require.Equal(t, 1, handler.eventCount(contentTypeOperationPut))
+					require.Zero(t, handler.eventCount(contentTypeOperationActivate))
+					handler.beforePut = nil
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+		},
+	})
 }
 
 func TestAccContentTypeResourceActivationRaceDoesNotPublishInterveningDraft(t *testing.T) {
@@ -1052,6 +1790,31 @@ func putExternalContentTypeDraft(request *http.Request, server *cmt.Server, cont
 	return nil
 }
 
+func putIdenticalExternalContentTypeDraft(t *testing.T, server *cmt.Server, contentTypeID string, version int) {
+	t.Helper()
+
+	currentResponse, err := server.Handler().GetContentType(t.Context(), cm.GetContentTypeParams{
+		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: contentTypeID,
+	})
+	require.NoError(t, err)
+
+	current, ok := currentResponse.(*cm.ContentType)
+	require.True(t, ok)
+	require.Equal(t, version, current.Sys.Version)
+
+	wireCurrent, err := json.Marshal(current)
+	require.NoError(t, err)
+
+	var identicalDraft cm.ContentTypeRequestData
+	require.NoError(t, json.Unmarshal(wireCurrent, &identicalDraft))
+
+	response, err := server.Handler().PutContentType(t.Context(), &identicalDraft, cm.PutContentTypeParams{
+		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: contentTypeID, XContentfulVersion: cm.NewOptInt(version),
+	})
+	require.NoError(t, err)
+	require.IsType(t, &cm.ContentTypeStatusCode{}, response)
+}
+
 func mustContentTypeResponseObject(value any) map[string]any {
 	converted, ok := value.(map[string]any)
 	if !ok {
@@ -1090,11 +1853,15 @@ func contentTypeResponseMutator(t *testing.T, mutate func(map[string]any)) func(
 type contentTypeActivationTestHandler struct {
 	delegate                            http.Handler
 	failActivation                      atomic.Bool
+	activationVersionMismatch           atomic.Bool
+	rateLimitPut                        atomic.Bool
+	rateLimitActivation                 atomic.Bool
 	activationFailureAfterSuccessStatus atomic.Int64
 	activationFailureReturned           atomic.Bool
 
 	mu               sync.Mutex
 	events           []contentTypeEvent
+	rawRequests      []contentTypeRawRequest
 	putBodies        [][]byte
 	beforeActivation func(*http.Request)
 	beforePut        func(*http.Request)
@@ -1102,11 +1869,196 @@ type contentTypeActivationTestHandler struct {
 	// models a CMA success response that contradicts the accepted request.
 	mutatePutResponse        func(string) string
 	mutateActivationResponse func(string) string
+	mutateReadResponse       func(string) string
+}
+
+type contentTypeVersionOffsetAdapter struct {
+	delegate          http.Handler
+	offset            int
+	jumpOnDraftUpdate int
+
+	mu     sync.Mutex
+	jumped bool
+}
+
+type contentTypeHigherPostActivationVersionAdapter struct {
+	delegate http.Handler
+	server   *cmt.Server
+	shot     entryOneShot
+}
+
+func (h *contentTypeVersionOffsetAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	isContentType := strings.Contains(request.URL.Path, "/content_types/") &&
+		!strings.HasSuffix(request.URL.Path, "/editor_interface")
+	if !isContentType || (request.Method != http.MethodGet && request.Method != http.MethodPut) {
+		h.delegate.ServeHTTP(responseWriter, request)
+
+		return
+	}
+
+	h.mu.Lock()
+	offset := h.offset
+	h.mu.Unlock()
+
+	versionValues := request.Header.Values("X-Contentful-Version")
+	isDraftUpdate := request.Method == http.MethodPut && !strings.HasSuffix(request.URL.Path, "/published") && len(versionValues) == 1
+
+	if len(versionValues) == 1 {
+		version, err := strconv.Atoi(versionValues[0])
+		if err != nil {
+			panic(fmt.Sprintf("parse offset Content Type version: %v", err))
+		}
+
+		request.Header.Set("X-Contentful-Version", strconv.Itoa(version-offset))
+	}
+
+	recorder := httptest.NewRecorder()
+	h.delegate.ServeHTTP(recorder, request)
+
+	if recorder.Code < http.StatusOK || recorder.Code >= http.StatusMultipleChoices {
+		for name, values := range recorder.Header() {
+			responseWriter.Header()[name] = append([]string(nil), values...)
+		}
+
+		responseWriter.WriteHeader(recorder.Code)
+		_, _ = responseWriter.Write(recorder.Body.Bytes())
+
+		return
+	}
+
+	h.mu.Lock()
+	if isDraftUpdate && h.jumpOnDraftUpdate > 0 && !h.jumped {
+		h.offset += h.jumpOnDraftUpdate
+		h.jumped = true
+	}
+
+	offset = h.offset
+	h.mu.Unlock()
+
+	var payload map[string]any
+
+	err := json.Unmarshal(recorder.Body.Bytes(), &payload)
+	if err != nil {
+		panic(fmt.Sprintf("decode offset Content Type response: %v", err))
+	}
+
+	sys := mustContentTypeResponseObject(payload["sys"])
+	for _, name := range []string{"version", "publishedVersion"} {
+		if value, present := sys[name].(float64); present {
+			sys[name] = int(value) + offset
+		}
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		panic(fmt.Sprintf("encode offset Content Type response: %v", err))
+	}
+
+	for name, values := range recorder.Header() {
+		responseWriter.Header()[name] = append([]string(nil), values...)
+	}
+
+	responseWriter.WriteHeader(recorder.Code)
+	_, _ = responseWriter.Write(body)
+}
+
+func (h *contentTypeHigherPostActivationVersionAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPut || !strings.HasSuffix(request.URL.Path, "/published") || !h.shot.take() {
+		h.delegate.ServeHTTP(responseWriter, request)
+
+		return
+	}
+
+	recorder := httptest.NewRecorder()
+	h.delegate.ServeHTTP(recorder, request)
+
+	if recorder.Code < http.StatusOK || recorder.Code >= http.StatusMultipleChoices {
+		for name, values := range recorder.Header() {
+			responseWriter.Header()[name] = append([]string(nil), values...)
+		}
+
+		responseWriter.WriteHeader(recorder.Code)
+		_, _ = responseWriter.Write(recorder.Body.Bytes())
+
+		return
+	}
+
+	contentTypeID := strings.TrimSuffix(strings.TrimPrefix(request.URL.Path, "/spaces/space/environments/environment/content_types/"), "/published")
+
+	currentResponse, err := h.server.Handler().GetContentType(request.Context(), cm.GetContentTypeParams{
+		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: contentTypeID,
+	})
+	if err != nil {
+		panic(fmt.Sprintf("read Content Type after activation: %v", err))
+	}
+
+	current, ok := currentResponse.(*cm.ContentType)
+	if !ok {
+		panic(fmt.Sprintf("unexpected Content Type response after activation: %T", currentResponse))
+	}
+
+	for range 2 {
+		wireCurrent, marshalErr := json.Marshal(current)
+		if marshalErr != nil {
+			panic(fmt.Sprintf("encode Content Type draft: %v", marshalErr))
+		}
+
+		var draft cm.ContentTypeRequestData
+
+		unmarshalErr := json.Unmarshal(wireCurrent, &draft)
+		if unmarshalErr != nil {
+			panic(fmt.Sprintf("decode Content Type draft: %v", unmarshalErr))
+		}
+
+		putResponse, putErr := h.server.Handler().PutContentType(request.Context(), &draft, cm.PutContentTypeParams{
+			SpaceID: "space", EnvironmentID: "environment", ContentTypeID: contentTypeID,
+			XContentfulVersion: cm.NewOptInt(current.Sys.Version),
+		})
+		if putErr != nil {
+			panic(fmt.Sprintf("write Content Type draft: %v", putErr))
+		}
+
+		status, statusOK := putResponse.(*cm.ContentTypeStatusCode)
+		if !statusOK {
+			panic(fmt.Sprintf("unexpected Content Type draft response: %T", putResponse))
+		}
+
+		current = &status.Response
+	}
+
+	body, err := json.Marshal(current)
+	if err != nil {
+		panic(fmt.Sprintf("encode high Content Type response: %v", err))
+	}
+
+	for name, values := range recorder.Header() {
+		responseWriter.Header()[name] = append([]string(nil), values...)
+	}
+
+	responseWriter.WriteHeader(recorder.Code)
+	_, _ = responseWriter.Write(body)
 }
 
 func (h *contentTypeActivationTestHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodGet && strings.Contains(request.URL.Path, "/content_types/") && h.activationFailureReturned.Load() {
 		h.recordEvent(contentTypeOperationGet, request)
+	}
+
+	if request.Method == http.MethodGet && strings.Contains(request.URL.Path, "/content_types/") &&
+		!strings.HasSuffix(request.URL.Path, "/editor_interface") {
+		if mutateReadResponse := h.takeReadResponseMutator(); mutateReadResponse != nil {
+			recorder := httptest.NewRecorder()
+			h.delegate.ServeHTTP(recorder, request)
+
+			for name, values := range recorder.Header() {
+				responseWriter.Header()[name] = append([]string(nil), values...)
+			}
+
+			responseWriter.WriteHeader(recorder.Code)
+			_, _ = responseWriter.Write([]byte(mutateReadResponse(recorder.Body.String())))
+
+			return
+		}
 	}
 
 	if request.Method == http.MethodPut && strings.HasSuffix(request.URL.Path, "/published") {
@@ -1126,6 +2078,13 @@ func (h *contentTypeActivationTestHandler) ServeHTTP(responseWriter http.Respons
 		request.Body = io.NopCloser(bytes.NewReader(body))
 		h.recordPutBody(body)
 		h.recordEvent(contentTypeOperationPut, request)
+
+		if h.rateLimitPut.Swap(false) {
+			message := "Injected content type draft rate limit"
+			_ = cmt.WriteContentfulManagementErrorResponse(responseWriter, http.StatusTooManyRequests, "RateLimitExceeded", &message, nil)
+
+			return
+		}
 
 		if beforePut := h.takeBeforePut(); beforePut != nil {
 			beforePut(request)
@@ -1152,8 +2111,24 @@ func (h *contentTypeActivationTestHandler) ServeHTTP(responseWriter http.Respons
 func (h *contentTypeActivationTestHandler) serveActivation(responseWriter http.ResponseWriter, request *http.Request) {
 	h.recordEvent(contentTypeOperationActivate, request)
 
+	if h.rateLimitActivation.Swap(false) {
+		h.activationFailureReturned.Store(true)
+
+		message := "Injected content type activation rate limit"
+		_ = cmt.WriteContentfulManagementErrorResponse(responseWriter, http.StatusTooManyRequests, "RateLimitExceeded", &message, nil)
+
+		return
+	}
+
 	if beforeActivation := h.takeBeforeActivation(); beforeActivation != nil {
 		beforeActivation(request)
+	}
+
+	if h.activationVersionMismatch.Swap(false) {
+		message := "Injected initial content type activation VersionMismatch"
+		_ = cmt.WriteContentfulManagementErrorResponse(responseWriter, http.StatusConflict, "VersionMismatch", &message, nil)
+
+		return
 	}
 
 	if h.failActivation.Load() {
@@ -1219,8 +2194,17 @@ func (h *contentTypeActivationTestHandler) serveActivation(responseWriter http.R
 }
 
 func (h *contentTypeActivationTestHandler) recordEvent(operation contentTypeOperation, request *http.Request) {
+	body, err := io.ReadAll(request.Body)
+	if err != nil {
+		panic(fmt.Sprintf("read content type event body: %v", err))
+	}
+
+	request.Body = io.NopCloser(bytes.NewReader(body))
+
 	version := int64(0)
-	versionPresent := len(request.Header.Values("X-Contentful-Version")) > 0
+
+	versionValues := append([]string(nil), request.Header.Values("X-Contentful-Version")...)
+	versionPresent := len(versionValues) > 0
 
 	if operation != contentTypeOperationGet {
 		version = -1
@@ -1236,7 +2220,16 @@ func (h *contentTypeActivationTestHandler) recordEvent(operation contentTypeOper
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	h.events = append(h.events, contentTypeEvent{Operation: operation, Version: version, VersionPresent: versionPresent})
+	event := contentTypeEvent{
+		Operation: operation, Method: request.Method, Path: request.URL.Path, Version: version, VersionPresent: versionPresent,
+	}
+	h.events = append(h.events, event)
+	h.rawRequests = append(h.rawRequests, contentTypeRawRequest{
+		contentTypeEvent: event,
+		VersionValues:    versionValues,
+		Body:             append([]byte(nil), body...),
+		ContentLength:    request.ContentLength,
+	})
 }
 
 func (h *contentTypeActivationTestHandler) activationVersionHistory() []int64 {
@@ -1255,6 +2248,7 @@ func (h *contentTypeActivationTestHandler) activationVersionHistory() []int64 {
 func (h *contentTypeActivationTestHandler) resetRequestHistory() {
 	h.mu.Lock()
 	h.events = nil
+	h.rawRequests = nil
 	h.putBodies = nil
 	h.mu.Unlock()
 	h.activationFailureReturned.Store(false)
@@ -1289,6 +2283,13 @@ func (h *contentTypeActivationTestHandler) eventHistory() []contentTypeEvent {
 	defer h.mu.Unlock()
 
 	return append([]contentTypeEvent(nil), h.events...)
+}
+
+func (h *contentTypeActivationTestHandler) rawRequestHistory() []contentTypeRawRequest {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	return append([]contentTypeRawRequest(nil), h.rawRequests...)
 }
 
 func (h *contentTypeActivationTestHandler) eventCount(operation contentTypeOperation) int {
@@ -1355,6 +2356,16 @@ func (h *contentTypeActivationTestHandler) takeActivationResponseMutator() func(
 	return mutator
 }
 
+func (h *contentTypeActivationTestHandler) takeReadResponseMutator() func(string) string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	mutator := h.mutateReadResponse
+	h.mutateReadResponse = nil
+
+	return mutator
+}
+
 func contentTypeActivationConfigVariables(contentTypeID string) config.Variables {
 	return config.Variables{
 		"space_id":             config.StringVariable("space"),
@@ -1371,6 +2382,28 @@ func contentTypeActivationRequestCheck(handler *contentTypeActivationTestHandler
 
 		if got := int64(handler.eventCount(contentTypeOperationActivate)); got != wantActivations {
 			return fmt.Errorf("%w: got %d activations, want %d", errUnexpectedContentTypeRequestCount, got, wantActivations)
+		}
+
+		for _, request := range handler.rawRequestHistory() {
+			switch request.Operation {
+			case contentTypeOperationGet:
+			case contentTypeOperationPut:
+				if request.Method != http.MethodPut || len(request.Body) == 0 || request.ContentLength <= 0 {
+					return fmt.Errorf("%w: malformed content-type draft request: method=%s body=%d content-length=%d", errUnexpectedContentTypeRequestCount, request.Method, len(request.Body), request.ContentLength)
+				}
+
+				if len(request.VersionValues) > 1 {
+					return fmt.Errorf("%w: content-type draft request has %d version headers", errUnexpectedContentTypeRequestCount, len(request.VersionValues))
+				}
+			case contentTypeOperationActivate:
+				if request.Method != http.MethodPut || len(request.Body) != 0 || request.ContentLength != 0 {
+					return fmt.Errorf("%w: malformed content-type activation request: method=%s body=%d content-length=%d", errUnexpectedContentTypeRequestCount, request.Method, len(request.Body), request.ContentLength)
+				}
+
+				if len(request.VersionValues) != 1 || request.VersionValues[0] != strconv.FormatInt(request.Version, 10) {
+					return fmt.Errorf("%w: content-type activation version headers=%v parsed-version=%d", errUnexpectedContentTypePublicationVersions, request.VersionValues, request.Version)
+				}
+			}
 		}
 
 		return nil

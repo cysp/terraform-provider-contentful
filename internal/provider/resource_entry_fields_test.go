@@ -408,30 +408,6 @@ func TestAccEntryResourceUpdatePublishRejectsResponseOnlyField(t *testing.T) {
 	}})
 }
 
-func TestAccEntryResourceAnomalousCreatePublishRejectsResponseOnlyField(t *testing.T) {
-	t.Parallel()
-
-	fixture := newEntryAcceptanceFixture(t)
-	server, recorder := fixture.server, fixture.recorder
-	anomalousVersion := 3
-	tupleFault := &entryPublishTupleAdapter{delegate: server, version: &anomalousVersion, errorSink: fixture.errorSink}
-	fieldFault := &entryAdditionalPublishFieldAdapter{delegate: tupleFault, errorSink: fixture.errorSink}
-	recorder.delegate = fieldFault
-
-	fieldFault.shot.arm()
-	tupleFault.shot.arm()
-
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
-		{
-			Config:      managedEntryConfig("one"),
-			ExpectError: regexp.MustCompile(`Unexpected entry fields`),
-		},
-	}})
-
-	_, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-	require.Equal(t, "1", publish.version)
-}
-
 func TestAccEntryResourceMetadataReadReorderingDoesNotDrift(t *testing.T) {
 	t.Parallel()
 

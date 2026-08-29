@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -98,6 +99,70 @@ func TestContentfulRetryPolicy(t *testing.T) {
 	}
 
 	assertContentfulRetryPolicy(t, "non-retryable read response", http.MethodGet, http.StatusBadRequest, nil, false)
+}
+
+func TestGeneratedLifecycleMutationRequestsPreserveNoRetrySignal(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]func(context.Context, cm.Invoker){
+		"Entry Create": func(ctx context.Context, client cm.Invoker) {
+			_, _ = client.CreateEntry(ctx, &cm.EntryRequest{}, cm.CreateEntryParams{
+				SpaceID: "space", EnvironmentID: "environment", XContentfulContentType: "content-type",
+			})
+		},
+		"Entry specified-ID Create or Update": func(ctx context.Context, client cm.Invoker) {
+			_, _ = client.PutEntry(ctx, &cm.EntryRequest{}, cm.PutEntryParams{
+				SpaceID: "space", EnvironmentID: "environment", EntryID: "entry",
+			})
+		},
+		"Entry Publish": func(ctx context.Context, client cm.Invoker) {
+			_, _ = client.PublishEntry(ctx, cm.PublishEntryParams{
+				SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: 3,
+			})
+		},
+		"Content Type Create or Update": func(ctx context.Context, client cm.Invoker) {
+			_, _ = client.PutContentType(ctx, &cm.ContentTypeRequestData{}, cm.PutContentTypeParams{
+				SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type",
+			})
+		},
+		"Content Type Activate": func(ctx context.Context, client cm.Invoker) {
+			_, _ = client.ActivateContentType(ctx, cm.ActivateContentTypeParams{
+				SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 3,
+			})
+		},
+	}
+
+	for name, invoke := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			var requestCount atomic.Int64
+
+			baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
+				requestCount.Add(1)
+				assert.Equal(t, true, request.Context().Value(contentfulRequestNoRetryContextKey{}))
+
+				response := contentfulRetryTestResponse(request, http.StatusTooManyRequests)
+				response.Header.Set("Content-Type", "application/json")
+				response.Body = io.NopCloser(strings.NewReader(`{"sys":{"type":"Error","id":"RateLimitExceeded"},"message":"rate limit"}`))
+
+				return response, nil
+			})}
+			httpClient, retryClient := contentfulRetryTestClient(t, baseClient)
+			removeContentfulRetryTestDelay(retryClient)
+
+			client, err := cm.NewClient(
+				"https://api.test.contentful.com",
+				cm.NewAccessTokenSecuritySource("token"),
+				cm.WithClient(cm.NewTransportClient(httpClient, "test")),
+			)
+			require.NoError(t, err)
+
+			invoke(withContentfulRequestNoRetry(t.Context()), client)
+
+			assert.EqualValues(t, 1, requestCount.Load())
+		})
+	}
 }
 
 func assertContentfulRetryPolicy(t *testing.T, name, method string, status int, requestErr error, expected bool) {

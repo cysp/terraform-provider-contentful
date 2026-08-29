@@ -17,7 +17,7 @@ import (
 func TestAccEditorInterfaceResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -79,7 +79,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -111,7 +111,7 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -134,7 +134,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -157,7 +157,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -226,7 +226,7 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -284,7 +284,7 @@ func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 func TestAccEditorInterfaceResourceUpdateWithContentTypeMultipleSpaceEnvironments(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("space-a", "environment-a-a")
 	server.RegisterSpaceEnvironment("space-a", "environment-a-b")

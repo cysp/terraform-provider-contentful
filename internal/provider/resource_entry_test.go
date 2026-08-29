@@ -30,7 +30,7 @@ var (
 func TestAccEntryResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -112,7 +112,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 func TestAccEntryResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -143,7 +143,7 @@ func TestAccEntryResourceImportNotFound(t *testing.T) {
 func TestAccEntryResourceImportWhitespaceDiff(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -178,7 +178,7 @@ func TestAccEntryResourceImportWhitespaceDiff(t *testing.T) {
 func TestAccEntryResourceImportPropertyOrderDiff(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -213,7 +213,7 @@ func TestAccEntryResourceImportPropertyOrderDiff(t *testing.T) {
 func TestAccEntryResourceCreateWithID(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -242,7 +242,7 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 func TestAccEntryResourceUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -318,7 +318,9 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 func TestAccEntryResourceRejectsOmittedNonemptyMutationFields(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithOmittedEntryMutationResponseFields())
+	server, _ := cmt.NewContentfulManagementServer(
+		cmt.WithOmittedEntryMutationResponseFields(), cmt.WithRateLimitPerSecond(1000),
+	)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{{
@@ -339,7 +341,7 @@ resource "contentful_entry" "test" {
 func TestAccEntryResourceDeleted(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -439,7 +441,7 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 func TestAccEntryResourceMissingFields(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -507,7 +509,7 @@ func checkJSONEqual(expected string, actual string) error {
 func TestAccEntryResourceMetadataConcepts(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -556,7 +558,7 @@ func TestAccEntryResourceMetadataConcepts(t *testing.T) {
 func TestAccEntryResourceMetadataTags(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 

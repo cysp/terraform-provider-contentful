@@ -13,6 +13,8 @@ import (
 
 type contentfulRequestMethodContextKey struct{}
 
+type contentfulRequestNoRetryContextKey struct{}
+
 type contentfulRequestRetryStateContextKey struct{}
 
 type contentfulRequestRetryState struct {
@@ -182,6 +184,14 @@ func contentfulRetryPolicy(ctx context.Context, response *http.Response, err err
 		return false, ctx.Err() //nolint:wrapcheck // retryablehttp recognizes context cancellation by identity.
 	}
 
+	if noRetry, _ := ctx.Value(contentfulRequestNoRetryContextKey{}).(bool); noRetry {
+		// Selected mutation lifecycles use the request context to prohibit every
+		// transparent replay, including explicit 429 responses. The signal is
+		// intentionally narrower than the HTTP method because unrelated CMA
+		// mutations retain the provider's default retry policy.
+		return false, nil
+	}
+
 	if err == nil && response != nil && response.StatusCode == http.StatusTooManyRequests {
 		// Follow Contentful's documented and first-party 429 retry practice for
 		// every method; this does not prove that a mutation was uncommitted.
@@ -199,4 +209,8 @@ func contentfulRetryPolicy(ctx context.Context, response *http.Response, err err
 		// repeat a committed write under the same optimistic-lock version.
 		return false, nil
 	}
+}
+
+func withContentfulRequestNoRetry(ctx context.Context) context.Context {
+	return context.WithValue(ctx, contentfulRequestNoRetryContextKey{}, true)
 }

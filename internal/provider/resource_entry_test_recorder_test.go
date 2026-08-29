@@ -22,6 +22,9 @@ type entryMutationRequest struct {
 	path           string
 	version        string
 	versionPresent bool
+	versionValues  []string
+	body           []byte
+	contentLength  int64
 	contentType    string
 	fields         map[string]json.RawMessage
 }
@@ -42,11 +45,23 @@ func (h *entryMutationRecorder) ServeHTTP(responseWriter http.ResponseWriter, re
 	h.recordUpdate(request)
 
 	if request.Method == http.MethodPut && strings.HasSuffix(request.URL.Path, "/entries/entry/published") {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			h.errorSink.record(err)
+
+			return
+		}
+
+		request.Body = io.NopCloser(bytes.NewReader(body))
+
 		h.record(entryMutationRequest{
 			method:         request.Method,
 			path:           request.URL.Path,
 			version:        request.Header.Get("X-Contentful-Version"),
 			versionPresent: len(request.Header.Values("X-Contentful-Version")) > 0,
+			versionValues:  append([]string(nil), request.Header.Values("X-Contentful-Version")...),
+			body:           append([]byte(nil), body...),
+			contentLength:  request.ContentLength,
 		})
 	}
 
@@ -83,6 +98,9 @@ func (h *entryMutationRecorder) recordUpdate(request *http.Request) {
 		path:           request.URL.Path,
 		version:        request.Header.Get("X-Contentful-Version"),
 		versionPresent: len(request.Header.Values("X-Contentful-Version")) > 0,
+		versionValues:  append([]string(nil), request.Header.Values("X-Contentful-Version")...),
+		body:           append([]byte(nil), body...),
+		contentLength:  request.ContentLength,
 		contentType:    request.Header.Get("X-Contentful-Content-Type"),
 		fields:         payload.Fields,
 	})
@@ -117,12 +135,19 @@ func requireEntryUpdate(t *testing.T, request entryMutationRequest) {
 	t.Helper()
 
 	require.Equal(t, entryTestUpdatePath, request.path, "expected an Entry draft update")
+	require.Equal(t, http.MethodPut, request.method)
+	require.NotEmpty(t, request.body, "an Entry draft update must include its JSON request body")
+	require.Positive(t, request.contentLength)
 }
 
 func requireEntryPublish(t *testing.T, request entryMutationRequest) {
 	t.Helper()
 
 	require.Equal(t, entryTestPublishPath, request.path, "expected an Entry publication")
+	require.Equal(t, http.MethodPut, request.method)
+	require.Equal(t, []string{request.version}, request.versionValues)
+	require.Empty(t, request.body, "Entry Publish must have a zero-byte request body")
+	require.Zero(t, request.contentLength)
 }
 
 func requireEntryUpdateThenPublish(

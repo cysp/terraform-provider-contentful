@@ -257,81 +257,6 @@ func TestContentTypeDraftMutationRequired(t *testing.T) {
 	}
 }
 
-func TestContentTypePublicationState(t *testing.T) {
-	t.Parallel()
-
-	for name, test := range map[string]struct {
-		publishedVersion types.Int64
-		version          int
-		expected         contentTypePublicationState
-		expectError      bool
-	}{
-		"unpublished": {
-			publishedVersion: types.Int64Null(),
-			version:          2,
-			expected:         contentTypePublicationUnpublished,
-		},
-		"unknown publication": {
-			publishedVersion: types.Int64Unknown(),
-			version:          4,
-			expected:         contentTypePublicationUnknown,
-		},
-		"active": {
-			publishedVersion: types.Int64Value(3),
-			version:          4,
-			expected:         contentTypePublicationActive,
-		},
-		"active initial publication": {
-			publishedVersion: types.Int64Value(0),
-			version:          1,
-			expected:         contentTypePublicationActive,
-		},
-		"pending draft": {
-			publishedVersion: types.Int64Value(2),
-			version:          4,
-			expected:         contentTypePublicationPendingDraft,
-		},
-		"zero current version": {
-			publishedVersion: types.Int64Null(),
-			version:          0,
-			expected:         contentTypePublicationUnknown,
-			expectError:      true,
-		},
-		"negative current version": {
-			publishedVersion: types.Int64Null(),
-			version:          -1,
-			expected:         contentTypePublicationUnknown,
-			expectError:      true,
-		},
-		"negative publication version": {
-			publishedVersion: types.Int64Value(-1),
-			version:          4,
-			expected:         contentTypePublicationUnknown,
-			expectError:      true,
-		},
-		"publication equals current version": {
-			publishedVersion: types.Int64Value(4),
-			version:          4,
-			expected:         contentTypePublicationUnknown,
-			expectError:      true,
-		},
-		"publication exceeds current version": {
-			publishedVersion: types.Int64Value(5),
-			version:          4,
-			expected:         contentTypePublicationUnknown,
-			expectError:      true,
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			state, diags := classifyContentTypePublicationState(test.version, test.publishedVersion)
-			assert.Equal(t, test.expected, state)
-			assert.Equal(t, test.expectError, diags.HasError())
-		})
-	}
-}
-
 func TestContentTypeActivationResponsePostcondition(t *testing.T) {
 	t.Parallel()
 
@@ -340,13 +265,15 @@ func TestContentTypeActivationResponsePostcondition(t *testing.T) {
 		currentVersion   int
 		publishedVersion *int
 		expectError      bool
+		expectWarning    bool
 	}{
-		"exact active response":              {1, 2, new(1), false},
-		"missing publication":                {1, 2, nil, true},
-		"older pending publication":          {3, 5, new(2), true},
-		"active but wrong attempted version": {3, 3, new(2), true},
-		"nonpositive current version":        {1, 0, new(1), true},
-		"publication not before current":     {1, 1, new(1), true},
+		"exact active response":              {1, 2, new(1), false, false},
+		"higher coherent current version":    {3, 7, new(3), false, false},
+		"missing publication":                {1, 2, nil, true, false},
+		"older pending publication":          {3, 5, new(2), true, false},
+		"active but wrong attempted version": {3, 3, new(2), true, false},
+		"nonpositive current version":        {1, 0, new(1), true, false},
+		"publication not before current":     {1, 1, new(1), true, false},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -360,6 +287,7 @@ func TestContentTypeActivationResponsePostcondition(t *testing.T) {
 
 			diags := validateContentTypeActivationResponse(test.expectedVersion, response)
 			assert.Equal(t, test.expectError, diags.HasError())
+			assert.Equal(t, test.expectWarning, diags.WarningsCount() > 0)
 		})
 	}
 }
@@ -368,19 +296,18 @@ func TestContentTypeDraftResponsePostcondition(t *testing.T) {
 	t.Parallel()
 
 	for name, test := range map[string]struct {
-		expectedVersion  int
 		currentVersion   int
 		publishedVersion *int
 		expectError      bool
 	}{
-		"new unpublished draft":        {1, 1, nil, false},
-		"updated unpublished draft":    {3, 3, nil, false},
-		"updated pending draft":        {4, 4, new(2), false},
-		"wrong positive version":       {3, 99, nil, true},
-		"active response":              {3, 3, new(2), true},
-		"nonpositive current version":  {1, 0, nil, true},
-		"invalid publication version":  {3, 3, new(3), true},
-		"negative publication version": {3, 3, new(-1), true},
+		"positive returned version":    {4, nil, false},
+		"arbitrary positive version":   {99, nil, false},
+		"recent publication":           {3, new(2), false},
+		"zero publication":             {3, new(0), false},
+		"nonpositive current version":  {0, nil, true},
+		"publication equals version":   {3, new(3), true},
+		"future publication version":   {3, new(4), true},
+		"negative publication version": {3, new(-1), true},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -392,7 +319,7 @@ func TestContentTypeDraftResponsePostcondition(t *testing.T) {
 				response.Sys.PublishedVersion.SetTo(*test.publishedVersion)
 			}
 
-			diags := validateContentTypeDraftResponse(test.expectedVersion, response)
+			diags := validateContentTypeDraftResponse(response)
 			assert.Equal(t, test.expectError, diags.HasError())
 		})
 	}
