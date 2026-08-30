@@ -209,6 +209,7 @@ func entryLocalizedFieldEquivalent(ctx context.Context, left, right TypedMap[jso
 	}
 
 	leftElements := left.Elements()
+
 	rightElements := right.Elements()
 	if len(leftElements) != len(rightElements) {
 		return false, diags
@@ -230,6 +231,7 @@ func entryLocalizedFieldEquivalent(ctx context.Context, left, right TypedMap[jso
 
 		equivalent, valueDiags := leftValue.StringSemanticEquals(ctx, rightValue)
 		diags.Append(valueDiags...)
+
 		if diags.HasError() || !equivalent {
 			return false, diags
 		}
@@ -382,6 +384,7 @@ func entryResponseFieldsConsistent(
 
 	return entryFieldsEquivalent(ctx, plan, NewTypedMap(responsePlanFields))
 }
+
 func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.OptEntryMetadata) (TypedObject[EntryMetadataValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 

@@ -50,7 +50,7 @@ resource "contentful_entry" "test" {
   environment_id  = "environment"
   entry_id        = "entry"
   content_type_id = "article"
-  fields = { managed = jsonencode({ "en-US" = "one" }) }
+  fields = { managed = { "en-US" = jsonencode("one") } }
 }
 `
 

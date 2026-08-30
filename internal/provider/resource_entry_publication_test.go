@@ -482,7 +482,7 @@ func TestAccEntryResourceHigherPostPublishVersionIsAccepted(t *testing.T) {
 				Config: config("two"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "3"),
-					resource.TestCheckResourceAttr("contentful_entry.test", "fields.managed", `{"en-US":"two"}`),
+					resource.TestCheckResourceAttr("contentful_entry.test", "fields.managed.en-US", `"two"`),
 				),
 			},
 			{

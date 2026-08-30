@@ -39,7 +39,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 	}
 
 	server.SetEntry("0p38pssr0fi3", "test", "test", "entry", cm.EntryRequest{
-		Fields: cm.NewOptEntryFields(cm.EntryFields{"foo": []byte(`"bar"`)}),
+		Fields: cm.NewOptEntryFields(cm.EntryFields{"foo": []byte(`{"en-US":"bar"}`)}),
 		Metadata: cm.NewOptEntryMetadata(cm.EntryMetadata{
 			Concepts: []cm.TaxonomyConceptLink{},
 			Tags:     []cm.TagLink{},
@@ -347,7 +347,7 @@ resource "contentful_entry" "test" {
   environment_id  = "test"
   content_type_id = "author"
   fields = {
-    name = jsonencode({ "en-AU" = "name" })
+    name = { "en-AU" = jsonencode("name") }
   }
 }
 `,

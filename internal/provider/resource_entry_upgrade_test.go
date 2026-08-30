@@ -57,7 +57,7 @@ func TestAccEntryResourceLegacyStateDoesNotAuthorizePublication(t *testing.T) {
 	additionalCLIOptions := &testingresource.AdditionalCLIOptions{
 		Plan: testingresource.PlanOptions{NoRefresh: true},
 	}
-	config := `
+	legacyConfig := `
 resource "contentful_entry" "test" {
   space_id        = "space"
   environment_id  = "environment"
@@ -66,13 +66,22 @@ resource "contentful_entry" "test" {
   fields = { managed = jsonencode({ "en-US" = "one" }) }
 }
 `
+	config := `
+resource "contentful_entry" "test" {
+  space_id        = "space"
+  environment_id  = "environment"
+  entry_id        = "entry"
+  content_type_id = "article"
+  fields = { managed = { "en-US" = jsonencode("one") } }
+}
+`
 
 	testingresource.Test(t, testingresource.TestCase{
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []testingresource.TestStep{
 			{
 				ProtoV6ProviderFactories: legacyEntryProviderFactories(published.Response, options...),
-				Config:                   config,
+				Config:                   legacyConfig,
 			},
 			{
 				PreConfig:                recorder.reset,
@@ -169,11 +178,13 @@ func (r *legacyEntryResource) Create(ctx context.Context, req frameworkresource.
 	}
 
 	legacyFields := NewTypedMapNull[jsontypes.Normalized]()
+
 	if r.entry.Fields.IsSet() {
 		fields := make(map[string]jsontypes.Normalized, len(r.entry.Fields.Value))
 		for fieldID, raw := range r.entry.Fields.Value {
 			fields[fieldID] = NewNormalizedJSONTypesNormalizedValue(raw)
 		}
+
 		legacyFields = NewTypedMap(fields)
 	}
 

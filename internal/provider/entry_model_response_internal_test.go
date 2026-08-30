@@ -26,7 +26,9 @@ func testLocalizedEntryFields(values map[string]jsontypes.Normalized) TypedMap[T
 			fields[fieldID] = NewTypedMapNull[jsontypes.Normalized]()
 		default:
 			var localized map[string]json.RawMessage
-			if err := json.Unmarshal([]byte(value.ValueString()), &localized); err != nil {
+
+			err := json.Unmarshal([]byte(value.ValueString()), &localized)
+			if err != nil {
 				panic(err)
 			}
 
@@ -34,6 +36,7 @@ func testLocalizedEntryFields(values map[string]jsontypes.Normalized) TypedMap[T
 			for locale, raw := range localized {
 				localizedValues[locale] = NewNormalizedJSONTypesNormalizedValue(raw)
 			}
+
 			fields[fieldID] = NewTypedMap(localizedValues)
 		}
 	}
