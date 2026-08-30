@@ -17,8 +17,8 @@ type localeListResourceConfig struct {
 }
 
 func (c localeListResourceConfig) requestParams() (cm.GetLocalesParams, diag.Diagnostics) {
-	spaceID, spaceIDDiags := knownListResourceString(path.Root("space_id"), c.SpaceID)
-	environmentID, environmentIDDiags := knownListResourceString(path.Root("environment_id"), c.EnvironmentID)
+	spaceID, spaceIDDiags := requestRequiredString(c.SpaceID, path.Root("space_id"))
+	environmentID, environmentIDDiags := requestRequiredString(c.EnvironmentID, path.Root("environment_id"))
 	order, orderDiags := knownOptionalListResourceStringList(path.Root("order"), c.Order)
 
 	if order == nil {
