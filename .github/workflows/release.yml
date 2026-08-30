@@ -251,7 +251,7 @@ jobs:
             dist/*.zip
             dist/*_SHA256SUMS
             dist/*_SHA256SUMS.sig
-            "terraform-provider-contentful_${GITHUB_REF_NAME#v}_manifest.json"
+            dist/*_manifest.json
           )
           .github/scripts/verify-release-draft.sh \
             "${GITHUB_REPOSITORY}" \
@@ -260,6 +260,16 @@ jobs:
             present \
             "${{ steps.release_draft.outputs.release_id }}" \
             "${expected_assets[@]}"
+
+          release="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/releases/${{ steps.release_draft.outputs.release_id }}")"
+          for subject in "${expected_assets[@]}"; do
+            name="${subject##*/}"
+            local_digest="sha256:$(sha256sum "${subject}" | cut -d' ' -f1)"
+            remote_digest="$(jq -er --arg name "${name}" \
+              '.assets[] | select(.name == $name) | .digest' <<<"${release}")"
+            test "${local_digest}" = "${remote_digest}"
+          done
 
       - name: Publish attested release
         env:
@@ -276,12 +286,10 @@ jobs:
             exit 1
           fi
 
-          gh release edit "${GITHUB_REF_NAME}" \
-            --repo "${GITHUB_REPOSITORY}" \
-            --tag "${GITHUB_REF_NAME}" \
-            --verify-tag \
-            --draft=false
-          test "$(gh release view "${GITHUB_REF_NAME}" \
-            --repo "${GITHUB_REPOSITORY}" \
-            --json isDraft \
-            --jq .isDraft)" = "false"
+          release_id="${{ steps.release_draft.outputs.release_id }}"
+          gh api --method PATCH \
+            "repos/${GITHUB_REPOSITORY}/releases/${release_id}" \
+            -F draft=false
+          test "$(gh api \
+            "repos/${GITHUB_REPOSITORY}/releases/${release_id}" \
+            --jq .draft)" = "false"
