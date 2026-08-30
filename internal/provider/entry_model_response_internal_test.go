@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"encoding/json"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -11,6 +12,37 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func testLocalizedEntryFields(values map[string]jsontypes.Normalized) TypedMap[TypedMap[jsontypes.Normalized]] {
+	fields := make(map[string]TypedMap[jsontypes.Normalized], len(values))
+
+	for fieldID, value := range values {
+		switch {
+		case value.IsNull():
+			fields[fieldID] = NewTypedMapNull[jsontypes.Normalized]()
+		case value.IsUnknown():
+			fields[fieldID] = NewTypedMapUnknown[jsontypes.Normalized]()
+		case isRawJSONNull([]byte(value.ValueString())):
+			fields[fieldID] = NewTypedMapNull[jsontypes.Normalized]()
+		default:
+			var localized map[string]json.RawMessage
+
+			err := json.Unmarshal([]byte(value.ValueString()), &localized)
+			if err != nil {
+				panic(err)
+			}
+
+			localizedValues := make(map[string]jsontypes.Normalized, len(localized))
+			for locale, raw := range localized {
+				localizedValues[locale] = NewNormalizedJSONTypesNormalizedValue(raw)
+			}
+
+			fields[fieldID] = NewTypedMap(localizedValues)
+		}
+	}
+
+	return NewTypedMap(fields)
+}
 
 func TestNewEntryFieldsFromResponsePreservesOmissionAsNull(t *testing.T) {
 	t.Parallel()
@@ -33,8 +65,7 @@ func TestNewEntryFieldsFromResponsePreservesKnownJSONNull(t *testing.T) {
 	require.False(t, diags.HasError(), diags.Errors())
 	require.False(t, fields.IsNull())
 	require.Contains(t, fields.Elements(), "optional")
-	assert.False(t, fields.Elements()["optional"].IsNull())
-	assert.Equal(t, `null`, fields.Elements()["optional"].ValueString())
+	assert.True(t, fields.Elements()["optional"].IsNull())
 }
 
 func TestMergeEntryFieldsWithFallback(t *testing.T) {
@@ -43,23 +74,23 @@ func TestMergeEntryFieldsWithFallback(t *testing.T) {
 	returnedValue := jsontypes.NewNormalizedValue(`{"en-US":"returned"}`)
 	configuredValue := jsontypes.NewNormalizedValue(`{"en-US":"configured"}`)
 	missingValue := jsontypes.NewNormalizedValue(`{"en-US":"missing"}`)
-	returned := NewTypedMap(map[string]jsontypes.Normalized{"returned": returnedValue})
-	configured := NewTypedMap(map[string]jsontypes.Normalized{
+	returned := testLocalizedEntryFields(map[string]jsontypes.Normalized{"returned": returnedValue})
+	configured := testLocalizedEntryFields(map[string]jsontypes.Normalized{
 		"returned": configuredValue,
 		"missing":  missingValue,
 	})
 
 	actual := mergeEntryFieldsWithFallback(returned, configured)
 
-	assert.Equal(t, map[string]jsontypes.Normalized{
+	assert.Equal(t, testLocalizedEntryFields(map[string]jsontypes.Normalized{
 		"returned": returnedValue,
 		"missing":  missingValue,
-	}, actual.Elements())
-	assert.Equal(t, map[string]jsontypes.Normalized{"returned": returnedValue}, returned.Elements())
-	assert.Equal(t, map[string]jsontypes.Normalized{
+	}).Elements(), actual.Elements())
+	assert.Equal(t, testLocalizedEntryFields(map[string]jsontypes.Normalized{"returned": returnedValue}).Elements(), returned.Elements())
+	assert.Equal(t, testLocalizedEntryFields(map[string]jsontypes.Normalized{
 		"returned": configuredValue,
 		"missing":  missingValue,
-	}, configured.Elements())
+	}).Elements(), configured.Elements())
 }
 
 func TestMergeEntryFieldsWithFallbackInitializesNullResponse(t *testing.T) {
@@ -67,12 +98,12 @@ func TestMergeEntryFieldsWithFallbackInitializesNullResponse(t *testing.T) {
 
 	value := jsontypes.NewNormalizedValue(`{"en-US":"configured"}`)
 	actual := mergeEntryFieldsWithFallback(
-		NewTypedMapNull[jsontypes.Normalized](),
-		NewTypedMap(map[string]jsontypes.Normalized{"field": value}),
+		NewTypedMapNull[TypedMap[jsontypes.Normalized]](),
+		testLocalizedEntryFields(map[string]jsontypes.Normalized{"field": value}),
 	)
 
 	assert.False(t, actual.IsNull())
-	assert.Equal(t, map[string]jsontypes.Normalized{"field": value}, actual.Elements())
+	assert.Equal(t, testLocalizedEntryFields(map[string]jsontypes.Normalized{"field": value}).Elements(), actual.Elements())
 }
 
 //nolint:maintidx // One dense table keeps response projection policies comparable.
@@ -97,7 +128,7 @@ func TestProjectEntryMutationResponse(t *testing.T) {
 		EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
 		ContentTypeID:      types.StringValue("article"),
 		PublishedVersion:   types.Int64Null(),
-		Fields:             NewTypedMap(map[string]jsontypes.Normalized{"managed": managed}),
+		Fields:             testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed}),
 		Metadata: NewTypedObject[EntryMetadataValue](EntryMetadataValue{
 			Concepts: NewTypedListFromStringSlice([]string{}),
 			Tags:     NewTypedListFromStringSlice([]string{"managed"}),
@@ -110,39 +141,39 @@ func TestProjectEntryMutationResponse(t *testing.T) {
 		response              EntryModel
 		policy                entryResponseFieldPolicy
 		hasError              bool
-		expectedFields        TypedMap[jsontypes.Normalized]
+		expectedFields        TypedMap[TypedMap[jsontypes.Normalized]]
 		keepsResponseMetadata bool
 	}{
 		"semantically equal JSON": {
 			plan: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": semanticPlanValue})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": semanticPlanValue})
 
 				return value
 			}(),
 			response: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": semanticResponseValue})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": semanticResponseValue})
 
 				return value
 			}(),
 			policy:         entryResponseFieldsExact,
-			expectedFields: NewTypedMap(map[string]jsontypes.Normalized{"managed": semanticPlanValue}),
+			expectedFields: testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": semanticPlanValue}),
 		},
 		"whole fields member omitted": {
 			plan: plan, response: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMapNull[jsontypes.Normalized]()
+				value.Fields = NewTypedMapNull[TypedMap[jsontypes.Normalized]]()
 
 				return value
 			}(),
 			policy: entryResponseFieldsExact, hasError: true,
-			expectedFields: NewTypedMapNull[jsontypes.Normalized](),
+			expectedFields: NewTypedMapNull[TypedMap[jsontypes.Normalized]](),
 		},
 		"present partial response missing nonempty field": {
 			plan: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "external": external})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "external": external})
 
 				return value
 			}(),
@@ -151,17 +182,17 @@ func TestProjectEntryMutationResponse(t *testing.T) {
 		"present partial response restores all-empty localized array": {
 			plan: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "empty": emptyArray})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "empty": emptyArray})
 
 				return value
 			}(),
 			response: plan, policy: entryResponseFieldsExact,
-			expectedFields: NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "empty": emptyArray}),
+			expectedFields: testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "empty": emptyArray}),
 		},
 		"additional response field accepted": {
 			plan: plan, response: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted})
 
 				return value
 			}(),
@@ -170,106 +201,106 @@ func TestProjectEntryMutationResponse(t *testing.T) {
 		"response default for omitted Terraform null accepted on create": {
 			plan: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "default": terraformNull})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "default": terraformNull})
 
 				return value
 			}(),
 			response: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted})
 
 				return value
 			}(),
 			policy: entryResponseFieldsCreationDefaults,
-			expectedFields: NewTypedMap(map[string]jsontypes.Normalized{
+			expectedFields: testLocalizedEntryFields(map[string]jsontypes.Normalized{
 				"managed": managed, "default": terraformNull,
 			}),
 		},
 		"omitted Terraform null accepted by exact response": {
 			plan: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "optional": terraformNull})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "optional": terraformNull})
 
 				return value
 			}(),
 			response: plan, policy: entryResponseFieldsExact,
-			expectedFields: NewTypedMap(map[string]jsontypes.Normalized{
+			expectedFields: testLocalizedEntryFields(map[string]jsontypes.Normalized{
 				"managed": managed, "optional": terraformNull,
 			}),
 		},
 		"response value for omitted Terraform null rejected by exact response": {
 			plan: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "optional": terraformNull})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "optional": terraformNull})
 
 				return value
 			}(),
 			response: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "optional": defaulted})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "optional": defaulted})
 
 				return value
 			}(),
 			policy: entryResponseFieldsExact, hasError: true,
-			expectedFields: NewTypedMap(map[string]jsontypes.Normalized{
+			expectedFields: testLocalizedEntryFields(map[string]jsontypes.Normalized{
 				"managed": managed, "optional": defaulted,
 			}),
 		},
 		"missing sent JSON null restored with create default": {
 			plan: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "optional": jsonNull})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "optional": jsonNull})
 
 				return value
 			}(),
 			response: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted})
 
 				return value
 			}(),
 			policy: entryResponseFieldsCreationDefaults,
-			expectedFields: NewTypedMap(map[string]jsontypes.Normalized{
+			expectedFields: testLocalizedEntryFields(map[string]jsontypes.Normalized{
 				"managed": managed, "optional": jsonNull,
 			}),
 		},
 		"response value for sent JSON null rejected": {
 			plan: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "optional": jsonNull})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "optional": jsonNull})
 
 				return value
 			}(),
 			response: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "optional": defaulted})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "optional": defaulted})
 
 				return value
 			}(),
 			policy: entryResponseFieldsExact, hasError: true,
-			expectedFields: NewTypedMap(map[string]jsontypes.Normalized{
+			expectedFields: testLocalizedEntryFields(map[string]jsontypes.Normalized{
 				"managed": managed, "optional": defaulted,
 			}),
 		},
 		"additional response field rejected by exact policy": {
 			plan: plan, response: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted})
 
 				return value
 			}(),
 			policy: entryResponseFieldsExact, hasError: true,
-			expectedFields: NewTypedMap(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted}),
+			expectedFields: testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": managed, "default": defaulted}),
 		},
 		"changed managed field": {
 			plan: plan, response: func() EntryModel {
 				value := plan
-				value.Fields = NewTypedMap(map[string]jsontypes.Normalized{"managed": changed})
+				value.Fields = testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": changed})
 
 				return value
 			}(),
 			policy: entryResponseFieldsExact, hasError: true,
-			expectedFields: NewTypedMap(map[string]jsontypes.Normalized{"managed": changed}),
+			expectedFields: testLocalizedEntryFields(map[string]jsontypes.Normalized{"managed": changed}),
 		},
 		"metadata contradiction": {
 			plan: plan, response: func() EntryModel {
@@ -391,64 +422,64 @@ func TestMergeEntryResponseFieldsWithOmissionFallback(t *testing.T) {
 	scalar := jsontypes.NewNormalizedValue(`{"en-US":"value"}`)
 
 	tests := map[string]struct {
-		response TypedMap[jsontypes.Normalized]
-		fallback TypedMap[jsontypes.Normalized]
-		expected TypedMap[jsontypes.Normalized]
+		response TypedMap[TypedMap[jsontypes.Normalized]]
+		fallback TypedMap[TypedMap[jsontypes.Normalized]]
+		expected TypedMap[TypedMap[jsontypes.Normalized]]
 	}{
 		"known empty top-level map": {
-			response: NewTypedMapNull[jsontypes.Normalized](),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{}),
+			response: NewTypedMapNull[TypedMap[jsontypes.Normalized]](),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
 		},
 		"missing empty localized array": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"empty": emptyArray}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{"empty": emptyArray}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"empty": emptyArray}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{"empty": emptyArray}),
 		},
 		"missing nonempty localized array": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"nonempty": nonemptyArray}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"nonempty": nonemptyArray}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
 		},
 		"missing empty localized object": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"empty-locales": emptyLocales}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"empty-locales": emptyLocales}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
 		},
 		"missing localized null": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"null": nullValue}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"null": nullValue}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
 		},
 		"missing JSON null": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"optional": jsonNull}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{"optional": jsonNull}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": jsonNull}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": jsonNull}),
 		},
 		"missing Terraform null": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"optional": terraformNull}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{"optional": terraformNull}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": terraformNull}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": terraformNull}),
 		},
 		"response value takes precedence over Terraform null": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{"optional": scalar}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"optional": terraformNull}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{"optional": scalar}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": scalar}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": terraformNull}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": scalar}),
 		},
 		"response value takes precedence over JSON null": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{"optional": scalar}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"optional": jsonNull}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{"optional": scalar}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": scalar}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": jsonNull}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{"optional": scalar}),
 		},
 		"missing mixed empty array and null": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"mixed": mixedNull}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"mixed": mixedNull}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
 		},
 		"missing scalar": {
-			response: NewTypedMap(map[string]jsontypes.Normalized{}),
-			fallback: NewTypedMap(map[string]jsontypes.Normalized{"scalar": scalar}),
-			expected: NewTypedMap(map[string]jsontypes.Normalized{}),
+			response: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
+			fallback: testLocalizedEntryFields(map[string]jsontypes.Normalized{"scalar": scalar}),
+			expected: testLocalizedEntryFields(map[string]jsontypes.Normalized{}),
 		},
 	}
 

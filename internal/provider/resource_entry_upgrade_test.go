@@ -57,7 +57,7 @@ func TestAccEntryResourceLegacyStateDoesNotAuthorizePublication(t *testing.T) {
 	additionalCLIOptions := &testingresource.AdditionalCLIOptions{
 		Plan: testingresource.PlanOptions{NoRefresh: true},
 	}
-	config := `
+	legacyConfig := `
 resource "contentful_entry" "test" {
   space_id        = "space"
   environment_id  = "environment"
@@ -66,13 +66,22 @@ resource "contentful_entry" "test" {
   fields = { managed = jsonencode({ "en-US" = "one" }) }
 }
 `
+	config := `
+resource "contentful_entry" "test" {
+  space_id        = "space"
+  environment_id  = "environment"
+  entry_id        = "entry"
+  content_type_id = "article"
+  fields = { managed = { "en-US" = jsonencode("one") } }
+}
+`
 
 	testingresource.Test(t, testingresource.TestCase{
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []testingresource.TestStep{
 			{
 				ProtoV6ProviderFactories: legacyEntryProviderFactories(published.Response, options...),
-				Config:                   config,
+				Config:                   legacyConfig,
 			},
 			{
 				PreConfig:                recorder.reset,
@@ -149,8 +158,7 @@ func (r *legacyEntryResource) Metadata(_ context.Context, req frameworkresource.
 }
 
 func (r *legacyEntryResource) Schema(ctx context.Context, _ frameworkresource.SchemaRequest, resp *frameworkresource.SchemaResponse) {
-	resp.Schema = EntryResourceSchema(ctx)
-	resp.Schema.Version = 0
+	resp.Schema = EntryResourceSchemaV0(ctx)
 	delete(resp.Schema.Attributes, "published_version")
 }
 
@@ -169,11 +177,22 @@ func (r *legacyEntryResource) Create(ctx context.Context, req frameworkresource.
 		return
 	}
 
+	legacyFields := NewTypedMapNull[jsontypes.Normalized]()
+
+	if r.entry.Fields.IsSet() {
+		fields := make(map[string]jsontypes.Normalized, len(r.entry.Fields.Value))
+		for fieldID, raw := range r.entry.Fields.Value {
+			fields[fieldID] = NewNormalizedJSONTypesNormalizedValue(raw)
+		}
+
+		legacyFields = NewTypedMap(fields)
+	}
+
 	state := legacyEntryModel{
 		IDIdentityModel:    current.IDIdentityModel,
 		EntryIdentityModel: current.EntryIdentityModel,
 		ContentTypeID:      current.ContentTypeID,
-		Fields:             current.Fields,
+		Fields:             legacyFields,
 		Metadata:           plan.Metadata,
 		Timeouts:           plan.Timeouts,
 	}

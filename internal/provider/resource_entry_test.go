@@ -39,7 +39,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 	}
 
 	server.SetEntry("0p38pssr0fi3", "test", "test", "entry", cm.EntryRequest{
-		Fields: cm.NewOptEntryFields(cm.EntryFields{"foo": []byte(`"bar"`)}),
+		Fields: cm.NewOptEntryFields(cm.EntryFields{"foo": []byte(`{"en-US":"bar"}`)}),
 		Metadata: cm.NewOptEntryMetadata(cm.EntryMetadata{
 			Concepts: []cm.TaxonomyConceptLink{},
 			Tags:     []cm.TagLink{},
@@ -224,8 +224,13 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"entry_id":        config.StringVariable(entryID),
 		"content_type_id": config.StringVariable("author"),
-		"fields": config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(`{"en-AU":"name"}`),
+		"fields": localizedEntryFields(map[string]map[string]string{
+			"name": {
+				"en-AU": `"name"`,
+			},
+			"blurb": {
+				"en-AU": `{"nodeType":"document","data":{},"content":[]}`,
+			},
 		}),
 	}
 
@@ -250,9 +255,13 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
-		"fields": config.MapVariable(map[string]config.Variable{
-			"name":  config.StringVariable(`{"en-AU":"name"}`),
-			"blurb": config.StringVariable(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`),
+		"fields": localizedEntryFields(map[string]map[string]string{
+			"name": {
+				"en-AU": `"name"`,
+			},
+			"blurb": {
+				"en-AU": `{"nodeType":"document","data":{},"content":[]}`,
+			},
 		}),
 	}
 
@@ -260,17 +269,25 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
-		"fields": config.MapVariable(map[string]config.Variable{
-			"name":  config.StringVariable(`{"en-AU":"name (updated)"}`),
-			"blurb": config.StringVariable(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`),
+		"fields": localizedEntryFields(map[string]map[string]string{
+			"name": {
+				"en-AU": `"name (updated)"`,
+			},
+			"blurb": {
+				"en-AU": `{"nodeType":"document","data":{},"content":[]}`,
+			},
 		}),
 	}
 
 	expectEntryFields := func(name string) plancheck.PlanCheck {
 		return plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields"), knownvalue.MapExact(map[string]knownvalue.Check{
-			"name": knownvalue.StringExact(name),
-			"blurb": knownvalue.StringFunc(func(actual string) error {
-				return checkJSONEqual(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`, actual)
+			"name": knownvalue.MapExact(map[string]knownvalue.Check{
+				"en-AU": knownvalue.StringExact(name),
+			}),
+			"blurb": knownvalue.MapExact(map[string]knownvalue.Check{
+				"en-AU": knownvalue.StringFunc(func(actual string) error {
+					return checkJSONEqual(`{"nodeType":"document","data":{},"content":[]}`, actual)
+				}),
 			}),
 		}))
 	}
@@ -286,11 +303,11 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
-						expectEntryFields(`{"en-AU":"name"}`),
+						expectEntryFields(`"name"`),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
-						expectEntryFields(`{"en-AU":"name"}`),
+						expectEntryFields(`"name"`),
 					},
 				},
 			},
@@ -304,10 +321,10 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 						plancheck.ExpectUnknownValue("contentful_entry.test", tfjsonpath.New("published_version")),
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
-						expectEntryFields(`{"en-AU":"name (updated)"}`),
+						expectEntryFields(`"name (updated)"`),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
-						expectEntryFields(`{"en-AU":"name (updated)"}`),
+						expectEntryFields(`"name (updated)"`),
 					},
 				},
 			},
@@ -330,7 +347,7 @@ resource "contentful_entry" "test" {
   environment_id  = "test"
   content_type_id = "author"
   fields = {
-    name = jsonencode({ "en-AU" = "name" })
+    name = { "en-AU" = jsonencode("name") }
   }
 }
 `,
@@ -349,8 +366,10 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
-		"entry_fields": config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(`{"en-AU":"name"}`),
+		"entry_fields": localizedEntryFields(map[string]map[string]string{
+			"name": {
+				"en-AU": `"name"`,
+			},
 		}),
 	}
 
@@ -456,13 +475,17 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 	configVariables1 := maps.Clone(configVariables)
 
 	configVariables2 := maps.Clone(configVariables)
-	configVariables2["entry_fields"] = config.MapVariable(map[string]config.Variable{
-		"b": config.StringVariable(`{"en-AU":"b"}`),
+	configVariables2["entry_fields"] = localizedEntryFields(map[string]map[string]string{
+		"b": {
+			"en-AU": `"b"`,
+		},
 	})
 
 	configVariables3 := maps.Clone(configVariables)
-	configVariables3["entry_fields"] = config.MapVariable(map[string]config.Variable{
-		"c": config.StringVariable(`{"en-AU":[]}`),
+	configVariables3["entry_fields"] = localizedEntryFields(map[string]map[string]string{
+		"c": {
+			"en-AU": `[]`,
+		},
 	})
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
@@ -470,6 +493,11 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables1,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields"), knownvalue.MapExact(map[string]knownvalue.Check{})),
+					},
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -503,6 +531,22 @@ func checkJSONEqual(expected string, actual string) error {
 	}
 
 	return nil
+}
+
+//nolint:ireturn
+func localizedEntryFields(fields map[string]map[string]string) config.Variable {
+	fieldVariables := make(map[string]config.Variable, len(fields))
+
+	for fieldID, locales := range fields {
+		localeVariables := make(map[string]config.Variable, len(locales))
+		for locale, value := range locales {
+			localeVariables[locale] = config.StringVariable(value)
+		}
+
+		fieldVariables[fieldID] = config.MapVariable(localeVariables)
+	}
+
+	return config.MapVariable(fieldVariables)
 }
 
 //nolint:dupl

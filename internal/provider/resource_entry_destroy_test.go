@@ -237,7 +237,7 @@ func TestEntryResourceDestroyDoesNotConsumePrivateVersion(t *testing.T) {
 				IDIdentityModel:    IDIdentityModel{ID: types.StringValue("space/environment/entry")},
 				EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
 				ContentTypeID:      types.StringValue("article"),
-				Fields:             NewTypedMap(map[string]jsontypes.Normalized{}),
+				Fields:             NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{}),
 				Metadata: NewTypedObject(EntryMetadataValue{
 					Concepts: NewTypedList([]types.String{}),
 					Tags:     NewTypedList([]types.String{}),
