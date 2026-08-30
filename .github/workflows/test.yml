@@ -64,8 +64,6 @@ jobs:
       - run: go mod download
 
       - run: go test -v -coverprofile=coverage.txt -covermode=atomic ./internal/contentful-management-go/...
-        env:
-          CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
         timeout-minutes: 10
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
@@ -142,7 +140,6 @@ jobs:
         env:
           TF_ACC: "1"
           TF_ACC_MOCKED: "1"
-          CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
         timeout-minutes: 10
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
