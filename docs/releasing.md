@@ -25,10 +25,10 @@ published only after its artifacts have been signed and attested.
    build-provenance attestations, and checks the uploaded asset digests. Its
    final step publishes that same draft.
 
-The read-only validation job has no release secrets. Signing and publication
-run only in the protected `release` environment, using its release-specific
-secrets. Releases are serialized so two tags or reruns cannot publish
-concurrently.
+The separate GoReleaser configuration workflow is read-only and has no release
+secrets. Signing and publication run only in the protected `release`
+environment, using its release-specific secrets. Releases are serialized so
+two tags or reruns cannot publish concurrently.
 
 If the workflow fails, the release remains a non-public draft. Fix the cause and
 rerun the failed workflow. GoReleaser replaces assets from the previous attempt;
