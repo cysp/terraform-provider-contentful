@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	//nolint:gosec // This is schema documentation, not a credential.
 	appSigningSecretConstraintDescription = "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`."
 	appSigningValueDescription            = appSigningSecretConstraintDescription + " The complete configured value is stored in Terraform state after a successful Create or Update."
 )

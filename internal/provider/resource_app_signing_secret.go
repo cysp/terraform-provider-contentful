@@ -164,7 +164,10 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
+
+	if len(writeOnlySecrets) != 0 || resp.Private != nil {
+		resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
+	}
 }
 
 func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -345,7 +348,10 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
+
+	if len(writeOnlySecrets) != 0 || resp.Private != nil {
+		resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
+	}
 }
 
 func maskAppSigningSecretValues(ctx context.Context, values ...types.String) context.Context {

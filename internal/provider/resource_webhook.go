@@ -156,6 +156,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+
 	resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
 }
 
@@ -322,6 +323,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+
 	resp.Diagnostics.Append(writeWriteOnlySecretHashes(ctx, resp.Private, writeOnlySecrets)...)
 }
 
