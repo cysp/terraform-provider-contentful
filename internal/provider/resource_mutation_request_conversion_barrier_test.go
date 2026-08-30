@@ -41,6 +41,15 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 				Value:    types.StringUnknown(),
 				Timeouts: TimeoutsNull(),
 			},
+			config: AppSigningSecretModel{
+				AppSigningSecretIdentityModel: AppSigningSecretIdentityModel{
+					OrganizationID:  types.StringValue("organization"),
+					AppDefinitionID: types.StringValue("app"),
+				},
+				Value:    types.StringUnknown(),
+				ValueWO:  types.StringNull(),
+				Timeouts: TimeoutsNull(),
+			},
 			resourceSchema: AppSigningSecretResourceSchema(ctx),
 			create: func(client *cm.Client, request resource.CreateRequest, response *resource.CreateResponse) {
 				implementation := appSigningSecretResource{providerData: ContentfulProviderData{client: client}}
@@ -290,6 +299,15 @@ func TestUpdateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 					AppDefinitionID: types.StringValue("app"),
 				},
 				Value:    types.StringUnknown(),
+				Timeouts: TimeoutsNull(),
+			},
+			config: AppSigningSecretModel{
+				AppSigningSecretIdentityModel: AppSigningSecretIdentityModel{
+					OrganizationID:  types.StringValue("organization"),
+					AppDefinitionID: types.StringValue("app"),
+				},
+				Value:    types.StringUnknown(),
+				ValueWO:  types.StringNull(),
 				Timeouts: TimeoutsNull(),
 			},
 			resourceSchema: AppSigningSecretResourceSchema(ctx),

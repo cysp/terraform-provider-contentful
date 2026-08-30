@@ -11,7 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-const appSigningValueDescription = "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. The complete configured value is stored in Terraform state after a successful Create or Update."
+const (
+	//nolint:gosec // This is schema documentation, not a credential.
+	appSigningSecretConstraintDescription = "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`."
+	appSigningValueDescription            = appSigningSecretConstraintDescription + " The complete configured value is stored in Terraform state after a successful Create or Update."
+)
 
 var appSigningSecretValuePattern = regexp.MustCompile(`^[0-9a-zA-Z+/=_-]+$`)
 
@@ -68,8 +72,17 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"value": schema.StringAttribute{
 				Description: appSigningValueDescription,
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
+				Validators: []validator.String{
+					appSigningSecretValueValidator{},
+				},
+			},
+			"value_wo": schema.StringAttribute{
+				Description: "Write-only alternative to value. " + appSigningSecretConstraintDescription,
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
 				Validators: []validator.String{
 					appSigningSecretValueValidator{},
 				},

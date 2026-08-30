@@ -58,7 +58,10 @@ func TestAppSigningSecretLifecycleRuntimeOutputExcludesValues(t *testing.T) {
 		State:    tfsdk.State{Schema: resourceSchema},
 		Identity: appSigningSecretTestIdentity(ctx),
 	}
-	implementation.Create(ctx, resource.CreateRequest{Plan: createPlan}, &createResponse)
+	implementation.Create(ctx, resource.CreateRequest{
+		Config: tfsdk.Config(createPlan),
+		Plan:   createPlan,
+	}, &createResponse)
 	require.False(t, createResponse.Diagnostics.HasError(), createResponse.Diagnostics.Errors())
 
 	readResponse := resource.ReadResponse{
@@ -80,6 +83,7 @@ func TestAppSigningSecretLifecycleRuntimeOutputExcludesValues(t *testing.T) {
 		Identity: readResponse.Identity,
 	}
 	implementation.Update(ctx, resource.UpdateRequest{
+		Config:   tfsdk.Config(updatePlan),
 		Plan:     updatePlan,
 		State:    readResponse.State,
 		Identity: readResponse.Identity,
@@ -132,7 +136,10 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 				t.Helper()
 
 				response := resource.CreateResponse{State: tfsdk.State{Schema: plan.Schema}, Identity: identity}
-				implementation.Create(tflogtest.RootLogger(t.Context(), logs), resource.CreateRequest{Plan: plan}, &response)
+				implementation.Create(tflogtest.RootLogger(t.Context(), logs), resource.CreateRequest{
+					Config: tfsdk.Config(plan),
+					Plan:   plan,
+				}, &response)
 
 				return response.Diagnostics
 			},
@@ -154,7 +161,12 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 				t.Helper()
 
 				response := resource.UpdateResponse{State: tfsdk.State(plan), Identity: identity}
-				implementation.Update(tflogtest.RootLogger(t.Context(), logs), resource.UpdateRequest{Plan: plan, State: state, Identity: identity}, &response)
+				implementation.Update(tflogtest.RootLogger(t.Context(), logs), resource.UpdateRequest{
+					Config:   tfsdk.Config(plan),
+					Plan:     plan,
+					State:    state,
+					Identity: identity,
+				}, &response)
 
 				return response.Diagnostics
 			},
@@ -245,7 +257,10 @@ func TestAppSigningSecretCMAErrorDiagnosticRedactsValue(t *testing.T) {
 		Identity: appSigningSecretTestIdentity(ctx),
 	}
 	implementation := appSigningSecretResource{providerData: ContentfulProviderData{client: client}}
-	implementation.Create(ctx, resource.CreateRequest{Plan: plan}, &response)
+	implementation.Create(ctx, resource.CreateRequest{
+		Config: tfsdk.Config(plan),
+		Plan:   plan,
+	}, &response)
 
 	require.True(t, response.Diagnostics.HasError())
 	assertAppSigningSecretOperationLogs(t, logOutput.Bytes(), "app_signing_secret.create")

@@ -58,8 +58,11 @@ resource "contentful_webhook" "this" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `active` (Boolean) Whether the webhook is active.
 - `filters` (Attributes List) (see [below for nested schema](#nestedatt--filters))
+- `header_values_wo` (Map of String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only header values keyed by the same header names configured in headers.
 - `headers` (Attributes Map) (see [below for nested schema](#nestedatt--headers))
 - `http_basic_password` (String) HTTP Basic authentication password.
 - `http_basic_username` (String) HTTP Basic authentication username.
@@ -150,13 +153,10 @@ Required:
 <a id="nestedatt--headers"></a>
 ### Nested Schema for `headers`
 
-Required:
-
-- `value` (String)
-
 Optional:
 
 - `secret` (Boolean)
+- `value` (String)
 
 
 <a id="nestedatt--timeouts"></a>

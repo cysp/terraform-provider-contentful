@@ -376,7 +376,7 @@ func TestWebhookMutationStateReconcilesKnownPlannedFilters(t *testing.T) {
 	assert.Len(t, mutationStateDiags.Warnings(), 1)
 	assert.True(t, mutationState.Filters.Equal(plannedFilters))
 
-	readState, readDiags := NewWebhookResourceModelFromResponse(t.Context(), response, plan.Headers.Elements())
+	readState, readDiags := NewWebhookResourceModelFromResponse(t.Context(), response, plan.Headers)
 	assert.False(t, readDiags.HasError())
 	assert.Len(t, readDiags.Warnings(), 1)
 	assert.True(t, readState.Filters.Elements()[0].Value().Equals.Value().Value.IsNull())

@@ -132,7 +132,7 @@ func exactlyOneWebhookFilterOperator(names ...string) []validator.Object {
 func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"value": schema.StringAttribute{
-			Required: true,
+			Optional: true,
 		},
 		"secret": schema.BoolAttribute{
 			Optional: true,

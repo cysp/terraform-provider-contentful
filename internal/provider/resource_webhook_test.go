@@ -303,6 +303,52 @@ func TestAccWebhookResourceCreate(t *testing.T) {
 	})
 }
 
+func TestAccWebhookResourceWriteOnlyHeaderValue(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
+
+	const webhookConfig = `
+resource "contentful_webhook" "test" {
+  space_id = "0p38pssr0fi3"
+  name     = "write-only-header"
+  url      = "https://example.org/webhook"
+  topics   = []
+
+  headers = {
+    "X-Secret" = {
+      secret = true
+    }
+  }
+
+  header_values_wo = {
+    "X-Secret" = "write-only-secret"
+  }
+}
+`
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: webhookConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("contentful_webhook.test", "headers.X-Secret.value"),
+					resource.TestCheckNoResourceAttr("contentful_webhook.test", "header_values_wo"),
+				),
+			},
+			{
+				Config: webhookConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAccWebhookResourceUpdate(t *testing.T) {
 	t.Parallel()
 
