@@ -107,6 +107,69 @@ resource "contentful_editor_interface" "test" {
 	})
 }
 
+func TestAccEditorInterfaceCreateMutationResponseContradictionRequiresImport(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.SetContentType("space", "master", "article", cm.ContentTypeRequestData{Name: "Article"})
+	server.SetEditorInterface("space", "master", "article", cm.EditorInterfaceData{})
+
+	adapter := &mutationJSONResponseAdapter{delegate: server}
+	handler := &editorInterfaceRequestCountingHandler{next: adapter}
+	config := `
+resource "contentful_editor_interface" "test" {
+  space_id        = "space"
+  environment_id  = "master"
+  content_type_id = "article"
+  editor_layout = [{
+    group = {
+      group_id = "planned"
+      name     = "Group"
+      items    = []
+    }
+  }]
+}
+`
+	groupIDPath := tfjsonpath.New("editor_layout").AtSliceIndex(0).AtMapKey("group").AtMapKey("group_id")
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					adapter.arm(http.MethodPut, func(response map[string]any) {
+						response["editorLayout"] = []any{map[string]any{
+							"groupId": "response",
+							"name":    "Group",
+							"items":   []any{},
+						}}
+					})
+				},
+				Config:      config,
+				ExpectError: regexp.MustCompile(`editor_layout response differed meaningfully from the Terraform plan`),
+			},
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(`Editor interface must be imported`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionReplace),
+					expectMutationPlanTransition{
+						address:   "contentful_editor_interface.test",
+						valuePath: groupIDPath,
+						before:    "response",
+						after:     "planned",
+					},
+				}},
+			},
+		},
+	})
+
+	require.Equal(t, int64(0), handler.gets.Load())
+	require.Equal(t, int64(2), handler.puts.Load())
+	require.Equal(t, []string{"1", "1"}, handler.PutVersions())
+}
+
 func TestAccRoleCreateMutationResponseContradictionRetainsTaintedState(t *testing.T) {
 	t.Parallel()
 

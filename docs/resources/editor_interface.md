@@ -3,12 +3,12 @@
 page_title: "contentful_editor_interface Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Editor Interface configuration.
+  Manages a Contentful Editor Interface configuration. Contentful creates an Editor Interface automatically with a Content Type. Import an Editor Interface that was modified before Terraform began managing it.
 ---
 
 # contentful_editor_interface (Resource)
 
-Manages a Contentful Editor Interface configuration.
+Manages a Contentful Editor Interface configuration. Contentful creates an Editor Interface automatically with a Content Type. Import an Editor Interface that was modified before Terraform began managing it.
 
 ## Example Usage
 
