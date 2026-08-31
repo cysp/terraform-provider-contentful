@@ -512,15 +512,150 @@ func TestWebhookMutationStateReconcilesKnownPlannedFilters(t *testing.T) {
 		}),
 	}
 
-	mutationState, mutationStateDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	mutationState, mutationStateDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
 	assert.False(t, mutationStateDiags.HasError())
 	assert.Len(t, mutationStateDiags.Warnings(), 1)
-	assert.True(t, mutationState.Filters.Equal(plannedFilters))
+	assert.True(t, consistencyDiags.HasError())
+	assert.False(t, mutationState.Filters.Equal(plannedFilters))
+	assert.True(t, mutationState.Filters.Elements()[0].Value().Equals.Value().Value.IsNull())
 
 	readState, readDiags := NewWebhookResourceModelFromResponse(t.Context(), response, plan.Headers.Elements())
 	assert.False(t, readDiags.HasError())
 	assert.Len(t, readDiags.Warnings(), 1)
 	assert.True(t, readState.Filters.Elements()[0].Value().Equals.Value().Value.IsNull())
+}
+
+func TestWebhookMutationStateDoesNotManufactureEqualityFromLossyFallback(t *testing.T) {
+	t.Parallel()
+
+	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			webhookEqualsValue(types.StringValue("sys.type"), types.StringNull()),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+	})
+	plan := WebhookModel{
+		Filters: plannedFilters,
+		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+	}
+	response := cm.WebhookDefinition{
+		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
+		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`123`)}},
+		}),
+	}
+
+	mutationState, responseDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+
+	assert.Len(t, responseDiags.Warnings(), 1)
+	require.True(t, consistencyDiags.HasError())
+	assert.True(t, mutationState.Filters.Equal(plannedFilters))
+	assert.Equal(t, []string{"filters[0].equals.value"}, webhookWarningPaths(t, responseDiags))
+	assert.Equal(t, []string{"filters"}, attributeDiagnosticPaths(t, consistencyDiags))
+}
+
+func TestWebhookMutationStateRejectsRepresentableFilterContradiction(t *testing.T) {
+	t.Parallel()
+
+	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue("Entry")),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+	})
+	plan := WebhookModel{
+		Filters: plannedFilters,
+		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+	}
+	response := cm.WebhookDefinition{
+		Sys:  cm.NewWebhookDefinitionSys("space", "webhook"),
+		Name: "Response webhook",
+		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Asset"`)}},
+		}),
+	}
+
+	mutationState, mutationStateDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+
+	require.False(t, mutationStateDiags.HasError())
+	require.True(t, consistencyDiags.HasError())
+	assert.Equal(t, []string{"filters"}, attributeDiagnosticPaths(t, consistencyDiags))
+	assert.Equal(t, "Asset", mutationState.Filters.Elements()[0].Value().Equals.Value().Value.ValueString())
+	assert.Equal(t, "Response webhook", mutationState.Name.ValueString())
+}
+
+func TestWebhookMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *testing.T) {
+	t.Parallel()
+
+	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			NewTypedObjectNull[WebhookFilterEqualsValue](),
+			webhookInValue(types.StringValue("sys.id"), NewTypedList([]types.String{
+				types.StringValue("a"), types.StringValue("b"), types.StringValue("a"),
+			})),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue("Entry")),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+	})
+	response := cm.WebhookDefinition{
+		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
+		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)}},
+			{In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.id"}`), []byte(`["a","a","b"]`)}},
+		}),
+	}
+	plan := WebhookModel{
+		Filters: plannedFilters,
+		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+	}
+
+	mutationState, responseDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+
+	assert.Empty(t, responseDiags)
+	assert.Empty(t, consistencyDiags)
+	assert.True(t, mutationState.Filters.Equal(plannedFilters))
+	assert.Equal(t, []types.String{types.StringValue("a"), types.StringValue("b"), types.StringValue("a")}, mutationState.Filters.Elements()[0].Value().In.Value().Values.Elements())
+}
+
+func TestWebhookMutationStatePreservesFilterDuplicateMultiplicity(t *testing.T) {
+	t.Parallel()
+
+	filter := func(value string) TypedObject[WebhookFilterValue] {
+		return NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue(value)),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		))
+	}
+	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{filter("Entry"), filter("Entry")})
+	response := cm.WebhookDefinition{
+		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
+		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)}},
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Asset"`)}},
+		}),
+	}
+	plan := WebhookModel{
+		Filters: plannedFilters,
+		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+	}
+
+	mutationState, responseDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+
+	assert.Empty(t, responseDiags)
+	require.True(t, consistencyDiags.HasError())
+	assert.Equal(t, "Asset", mutationState.Filters.Elements()[1].Value().Equals.Value().Value.ValueString())
 }
 
 func TestWebhookMutationStateUsesResponseForUnknownFilters(t *testing.T) {
@@ -537,15 +672,18 @@ func TestWebhookMutationStateUsesResponseForUnknownFilters(t *testing.T) {
 		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
 	}
 
-	mutationState, mutationStateDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	mutationState, mutationStateDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
 
 	assert.False(t, mutationStateDiags.HasError())
+	assert.Empty(t, consistencyDiags)
 	assert.False(t, mutationState.Filters.IsUnknown())
 	assert.False(t, mutationState.Filters.IsNull())
 	assert.Equal(t, "Entry", mutationState.Filters.Elements()[0].Value().Equals.Value().Value.ValueString())
 
 	plan.Filters = NewTypedListNull[TypedObject[WebhookFilterValue]]()
-	nullPlanState, nullPlanDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	nullPlanState, nullPlanDiags, nullConsistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
 	assert.False(t, nullPlanDiags.HasError())
-	assert.True(t, nullPlanState.Filters.IsNull())
+	assert.True(t, nullConsistencyDiags.HasError())
+	assert.False(t, nullPlanState.Filters.IsNull())
+	assert.Equal(t, "Entry", nullPlanState.Filters.Elements()[0].Value().Equals.Value().Value.ValueString())
 }

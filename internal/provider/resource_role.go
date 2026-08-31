@@ -7,6 +7,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
@@ -98,15 +99,20 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		"err":      err,
 	})
 
-	var data RoleModel
+	var (
+		data             RoleModel
+		consistencyDiags diag.Diagnostics
+	)
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
-		mutationState, mutationStateDiags := NewRoleResourceModelForMutationState(ctx, response.Response, plan)
+		mutationState, mutationStateDiags, mutationConsistencyDiags := NewRoleResourceModelForMutationState(ctx, response.Response, plan)
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
 		version = response.Response.Sys.Version
+
+		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create role", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -132,6 +138,12 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 //nolint:dupl
@@ -264,15 +276,20 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		"err":      err,
 	})
 
-	var data RoleModel
+	var (
+		data             RoleModel
+		consistencyDiags diag.Diagnostics
+	)
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
-		mutationState, mutationStateDiags := NewRoleResourceModelForMutationState(ctx, response.Response, plan)
+		mutationState, mutationStateDiags, mutationConsistencyDiags := NewRoleResourceModelForMutationState(ctx, response.Response, plan)
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
 		version = response.Response.Sys.Version
+
+		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update role", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -298,6 +315,12 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 //nolint:dupl

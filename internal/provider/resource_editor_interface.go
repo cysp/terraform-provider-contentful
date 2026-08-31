@@ -6,6 +6,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
@@ -103,15 +104,20 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		"err":      err,
 	})
 
-	var data EditorInterfaceModel
+	var (
+		data             EditorInterfaceModel
+		consistencyDiags diag.Diagnostics
+	)
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
-		mutationState, mutationStateDiags := NewEditorInterfaceResourceModelForMutationState(ctx, response.Response, plan)
+		mutationState, mutationStateDiags, mutationConsistencyDiags := NewEditorInterfaceResourceModelForMutationState(ctx, response.Response, plan)
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
 		version = response.Response.Sys.Version
+
+		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -138,7 +144,12 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -276,15 +287,20 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		"err":      err,
 	})
 
-	var data EditorInterfaceModel
+	var (
+		data             EditorInterfaceModel
+		consistencyDiags diag.Diagnostics
+	)
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
-		mutationState, mutationStateDiags := NewEditorInterfaceResourceModelForMutationState(ctx, response.Response, plan)
+		mutationState, mutationStateDiags, mutationConsistencyDiags := NewEditorInterfaceResourceModelForMutationState(ctx, response.Response, plan)
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
 		version = response.Response.Sys.Version
+
+		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -311,7 +327,12 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 func (r *editorInterfaceResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
