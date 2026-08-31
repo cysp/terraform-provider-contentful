@@ -6,6 +6,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
@@ -101,15 +102,20 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		"err": err,
 	})
 
-	var data WebhookModel
+	var (
+		data             WebhookModel
+		consistencyDiags diag.Diagnostics
+	)
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		mutationState, mutationStateDiags := NewWebhookResourceModelForMutationState(ctx, response.Response, plan)
+		mutationState, mutationStateDiags, mutationConsistencyDiags := NewWebhookResourceModelForMutationState(ctx, response.Response, plan)
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
 		version = response.Response.Sys.Version
+
+		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -135,6 +141,12 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -270,15 +282,20 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		"err": err,
 	})
 
-	var data WebhookModel
+	var (
+		data             WebhookModel
+		consistencyDiags diag.Diagnostics
+	)
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		mutationState, mutationStateDiags := NewWebhookResourceModelForMutationState(ctx, response.Response, plan)
+		mutationState, mutationStateDiags, mutationConsistencyDiags := NewWebhookResourceModelForMutationState(ctx, response.Response, plan)
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
 		version = response.Response.Sys.Version
+
+		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -304,6 +321,12 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(consistencyDiags...)
 }
 
 //nolint:dupl

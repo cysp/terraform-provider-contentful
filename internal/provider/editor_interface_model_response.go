@@ -10,7 +10,14 @@ import (
 )
 
 func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInterface cm.EditorInterface) (EditorInterfaceModel, diag.Diagnostics) {
+	model, diags, _ := newEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
+
+	return model, diags
+}
+
+func newEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInterface cm.EditorInterface) (EditorInterfaceModel, diag.Diagnostics, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
+	editorLayoutDiags := diag.Diagnostics{}
 
 	spaceID := editorInterface.Sys.Space.Sys.ID
 	environmentID := editorInterface.Sys.Environment.Sys.ID
@@ -26,8 +33,9 @@ func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 	}
 
 	if editorInterfaceEditorLayout, ok := editorInterface.EditorLayout.Get(); ok {
-		editorLayout, editorLayoutDiags := NewEditorInterfaceEditorLayoutListValueFromResponse(ctx, path.Root("editor_layout"), editorInterfaceEditorLayout)
-		diags.Append(editorLayoutDiags...)
+		editorLayout, projectedEditorLayoutDiags := NewEditorInterfaceEditorLayoutListValueFromResponse(ctx, path.Root("editor_layout"), editorInterfaceEditorLayout)
+		diags.Append(projectedEditorLayoutDiags...)
+		editorLayoutDiags.Append(projectedEditorLayoutDiags...)
 
 		model.EditorLayout = editorLayout
 	} else {
@@ -61,19 +69,30 @@ func NewEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 		model.Sidebar = NewTypedListNull[TypedObject[EditorInterfaceSidebarValue]]()
 	}
 
-	return model, diags
+	return model, diags, editorLayoutDiags
 }
 
-// NewEditorInterfaceResourceModelForMutationState starts with the response
-// projection and restores known plan-owned editor_layout values, including
-// null. The response resolves unknown plan values, which are never copied into
-// state. Read skips this reconciliation.
-func NewEditorInterfaceResourceModelForMutationState(ctx context.Context, editorInterface cm.EditorInterface, appliedPlan EditorInterfaceModel) (EditorInterfaceModel, diag.Diagnostics) {
-	mutationState, diags := NewEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
-
-	if !appliedPlan.EditorLayout.IsUnknown() {
-		mutationState.EditorLayout = appliedPlan.EditorLayout
+// NewEditorInterfaceResourceModelForMutationState starts with the complete
+// response projection. It restores the exact known Plan representation only
+// after ordered editor_layout equality is proven; lossy or contradictory
+// responses remain available as recovery state with a consistency diagnostic.
+// Unknown Plan values resolve from the response. Read skips reconciliation.
+func NewEditorInterfaceResourceModelForMutationState(ctx context.Context, editorInterface cm.EditorInterface, appliedPlan EditorInterfaceModel) (EditorInterfaceModel, diag.Diagnostics, diag.Diagnostics) {
+	mutationState, responseDiags, editorLayoutDiags := newEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
+	if appliedPlan.EditorLayout.IsUnknown() {
+		return mutationState, responseDiags, nil
 	}
 
-	return mutationState, diags
+	consistencyDiags := diag.Diagnostics{}
+
+	switch {
+	case len(editorLayoutDiags) != 0:
+		consistencyDiags.AddAttributeError(path.Root("editor_layout"), "Unexpected Contentful editor interface response", "The editor_layout response could not be projected without loss, so equivalence with the Terraform plan could not be established.")
+	case appliedPlan.EditorLayout.Equal(mutationState.EditorLayout):
+		mutationState.EditorLayout = appliedPlan.EditorLayout
+	default:
+		consistencyDiags.AddAttributeError(path.Root("editor_layout"), "Unexpected Contentful editor interface response", "The editor_layout response differed meaningfully from the Terraform plan.")
+	}
+
+	return mutationState, responseDiags, consistencyDiags
 }

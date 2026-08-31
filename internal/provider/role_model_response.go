@@ -10,6 +10,12 @@ import (
 )
 
 func NewRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleModel, diag.Diagnostics) {
+	model, diags, _, _ := newRoleResourceModelFromResponse(ctx, role)
+
+	return model, diags
+}
+
+func newRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleModel, diag.Diagnostics, diag.Diagnostics, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := role.Sys.Space.Sys.ID
@@ -36,23 +42,60 @@ func NewRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleMo
 
 	model.Policies = policiesListValue
 
-	return model, diags
+	return model, diags, permissionsMapValueDiags, policiesListValueDiags
 }
 
-// NewRoleResourceModelForMutationState starts with the response projection and
-// restores known plan-owned permissions and policies. The response resolves
-// null or unknown plan values, which are never copied into state. Read skips
-// this reconciliation.
-func NewRoleResourceModelForMutationState(ctx context.Context, role cm.Role, appliedPlan RoleModel) (RoleModel, diag.Diagnostics) {
-	mutationState, diags := NewRoleResourceModelFromResponse(ctx, role)
+// NewRoleResourceModelForMutationState starts with the complete response
+// projection. It restores exact known Plan representations only when both
+// permissions and policies have been proven semantically equivalent; any lossy
+// or contradictory owned value leaves the complete response as recovery state
+// with attribute-scoped diagnostics. Unknown Plan values resolve from the
+// response. Read projects remote state without reconciliation.
+func NewRoleResourceModelForMutationState(ctx context.Context, role cm.Role, appliedPlan RoleModel) (RoleModel, diag.Diagnostics, diag.Diagnostics) {
+	mutationState, responseDiags, permissionsDiags, policiesDiags := newRoleResourceModelFromResponse(ctx, role)
+	consistencyDiags := diag.Diagnostics{}
 
-	if !appliedPlan.Permissions.IsNull() && !appliedPlan.Permissions.IsUnknown() {
-		mutationState.Permissions = appliedPlan.Permissions
+	candidateState := mutationState
+	mismatch := false
+
+	if !appliedPlan.Permissions.IsUnknown() {
+		switch {
+		case len(permissionsDiags) != 0:
+			consistencyDiags.AddAttributeError(path.Root("permissions"), "Unexpected Contentful role response", "The permissions response could not be projected without loss, so equivalence with the Terraform plan could not be established.")
+
+			mismatch = true
+		case rolePermissionsEquivalent(appliedPlan.Permissions, mutationState.Permissions):
+			candidateState.Permissions = appliedPlan.Permissions
+		default:
+			consistencyDiags.AddAttributeError(path.Root("permissions"), "Unexpected Contentful role response", "The permissions response differed meaningfully from the Terraform plan.")
+
+			mismatch = true
+		}
 	}
 
-	if !appliedPlan.Policies.IsNull() && !appliedPlan.Policies.IsUnknown() {
-		mutationState.Policies = appliedPlan.Policies
+	if !appliedPlan.Policies.IsUnknown() {
+		policiesEquivalent, comparisonDiags := rolePoliciesEquivalent(ctx, appliedPlan.Policies, mutationState.Policies)
+		switch {
+		case len(policiesDiags) != 0:
+			consistencyDiags.AddAttributeError(path.Root("policies"), "Unexpected Contentful role response", "The policies response could not be projected without loss, so equivalence with the Terraform plan could not be established.")
+
+			mismatch = true
+		case comparisonDiags.HasError():
+			consistencyDiags.AddAttributeError(path.Root("policies"), "Unexpected Contentful role response", "The policies response could not be compared semantically with the Terraform plan.")
+
+			mismatch = true
+		case policiesEquivalent:
+			candidateState.Policies = appliedPlan.Policies
+		default:
+			consistencyDiags.AddAttributeError(path.Root("policies"), "Unexpected Contentful role response", "The policies response differed meaningfully from the Terraform plan.")
+
+			mismatch = true
+		}
 	}
 
-	return mutationState, diags
+	if !mismatch {
+		mutationState = candidateState
+	}
+
+	return mutationState, responseDiags, consistencyDiags
 }
