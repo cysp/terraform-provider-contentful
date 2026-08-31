@@ -17,10 +17,10 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 	for permission, item := range permissions {
 		path := path.AtMapKey(permission)
 
-		permissionActionsListValue, permissionActionsListValueDiags := NewPermissionActionsListValueFromResponse(ctx, path, item)
-		diags.Append(permissionActionsListValueDiags...)
+		permissionValuesListValue, permissionValuesListValueDiags := NewPermissionValuesListValueFromResponse(ctx, path, item)
+		diags.Append(permissionValuesListValueDiags...)
 
-		permissionsValuesMap[permission] = permissionActionsListValue
+		permissionsValuesMap[permission] = permissionValuesListValue
 	}
 
 	permissionsMapValue := NewTypedMap(permissionsValuesMap)
@@ -28,22 +28,22 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 	return permissionsMapValue, diags
 }
 
-func NewPermissionActionsListValueFromResponse(_ context.Context, path path.Path, item cm.RolePermissionsItem) (TypedList[types.String], diag.Diagnostics) {
+func NewPermissionValuesListValueFromResponse(_ context.Context, path path.Path, item cm.RolePermissionsItem) (TypedList[types.String], diag.Diagnostics) {
 	switch item.Type {
 	case cm.StringRolePermissionsItem:
-		actionsValues := make([]types.String, 1)
-		actionsValues[0] = types.StringValue(item.String)
+		permissionValues := make([]types.String, 1)
+		permissionValues[0] = types.StringValue(item.String)
 
-		actionsListValue := NewTypedList(actionsValues)
+		permissionValuesListValue := NewTypedList(permissionValues)
 
-		return actionsListValue, nil
+		return permissionValuesListValue, nil
 
 	case cm.StringArrayRolePermissionsItem:
 		return NewTypedListFromStringSlice(item.StringArray), nil
 	}
 
 	diags := diag.Diagnostics{}
-	diags.AddAttributeWarning(path, "Unsupported permission actions", "Contentful returned an unsupported permission action shape. Terraform state retains a known null list; a later request conversion will reject it until configured with a supported shape.")
+	diags.AddAttributeWarning(path, "Unsupported permission value", "Contentful returned an unsupported permission value representation. Terraform state retains a known null list; a later request conversion will reject it until configured with a supported representation.")
 
 	return NewTypedListNull[types.String](), diags
 }

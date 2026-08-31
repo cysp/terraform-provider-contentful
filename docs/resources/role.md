@@ -57,7 +57,7 @@ resource "contentful_role" "editor" {
 ### Required
 
 - `name` (String) Name of the role.
-- `permissions` (Map of List of String) Basic rules which define whether a user can read or create content types, settings and entries.
+- `permissions` (Map of List of String) Map of Contentful permission names to their values. Use an empty list to disable a permission, `["read"]` for read-only access where supported, and `["manage"]` or `["all"]` for read and write access. Terraform `["all"]` is sent to Contentful as the scalar `"all"`; `"all"` must be the only value in its list.
 - `policies` (Attributes List) Policies allow or deny access to resources in fine-grained detail. For example, limit read access to only entries of a specific content type or write access to only certain parts of an entry (e.g. a specific locale). (see [below for nested schema](#nestedatt--policies))
 - `space_id` (String) ID of the space where the role exists.
 
@@ -76,7 +76,7 @@ resource "contentful_role" "editor" {
 
 Required:
 
-- `actions` (List of String) Actions that the policy allows or denies (e.g., read, create, update, delete, publish).
+- `actions` (List of String) Actions that the policy allows or denies. Terraform `["all"]` sends Contentful’s scalar `"all"`, which aliases the content actions `read`, `create`, `update`, `delete`, `archive`, `unarchive`, `publish`, and `unpublish`; use `["access"]` for environment access. `"all"` must be the only action in the list.
 - `effect` (String) Whether the policy allows or denies the specified actions.
 
 Optional:

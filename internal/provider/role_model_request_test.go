@@ -1,11 +1,13 @@
 package provider_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,8 +23,8 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 		Name:        "Reader",
 		Description: cm.NewOptNilString("Read access to content"),
 		Permissions: map[string]cm.RolePermissionsItem{
-			"ContentDelivery":   cm.NewStringRolePermissionsItem("all"),
-			"ContentManagement": cm.NewStringArrayRolePermissionsItem([]string{"read"}),
+			"ContentDelivery": cm.NewStringRolePermissionsItem("all"),
+			"ContentModel":    cm.NewStringArrayRolePermissionsItem([]string{"read"}),
 		},
 		Policies: []cm.RolePoliciesItem{
 			{
@@ -34,10 +36,6 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 				Effect:     "deny",
 				Actions:    cm.NewStringArrayRolePoliciesItemActions([]string{"delete"}),
 				Constraint: []byte("{\"sys.type\":\"Entry\"}"),
-			},
-			{
-				Effect:  "allow",
-				Actions: cm.NewStringArrayRolePoliciesItemActions([]string{"all"}),
 			},
 		},
 	}))
@@ -54,9 +52,9 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 
 	assert.Len(t, req.Permissions, 2)
 	assert.Equal(t, cm.NewStringRoleDataPermissionsItem("all"), req.Permissions["ContentDelivery"])
-	assert.Equal(t, cm.NewStringArrayRoleDataPermissionsItem([]string{"read"}), req.Permissions["ContentManagement"])
+	assert.Equal(t, cm.NewStringArrayRoleDataPermissionsItem([]string{"read"}), req.Permissions["ContentModel"])
 
-	assert.Len(t, req.Policies, 3)
+	assert.Len(t, req.Policies, 2)
 	assert.Equal(t, cm.RoleDataPoliciesItem{
 		Effect:     "allow",
 		Actions:    cm.NewStringRoleDataPoliciesItemActions("all"),
@@ -67,11 +65,6 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 		Actions:    cm.NewStringArrayRoleDataPoliciesItemActions([]string{"delete"}),
 		Constraint: []byte("{\"sys.type\":\"Entry\"}"),
 	}, req.Policies[1])
-	assert.Equal(t, cm.RoleDataPoliciesItem{
-		Effect:  "allow",
-		Actions: cm.NewStringRoleDataPoliciesItemActions("all"),
-	}, req.Policies[2])
-
 	assert.Empty(t, diags)
 }
 
@@ -112,37 +105,37 @@ func TestRoleRequestRejectsUnresolvedValues(t *testing.T) {
 			},
 			expectedPaths: []string{"permissions"},
 		},
-		"null permission actions": {
+		"null permission values": {
 			mutate: func(model *RoleModel) {
 				model.Permissions = NewTypedMap(map[string]TypedList[types.String]{
-					"Entry": NewTypedListNull[types.String](),
+					"ContentModel": NewTypedListNull[types.String](),
 				})
 			},
-			expectedPaths: []string{`permissions["Entry"]`},
+			expectedPaths: []string{`permissions["ContentModel"]`},
 		},
-		"unknown permission actions": {
+		"unknown permission values": {
 			mutate: func(model *RoleModel) {
 				model.Permissions = NewTypedMap(map[string]TypedList[types.String]{
-					"Entry": NewTypedListUnknown[types.String](),
+					"ContentModel": NewTypedListUnknown[types.String](),
 				})
 			},
-			expectedPaths: []string{`permissions["Entry"]`},
+			expectedPaths: []string{`permissions["ContentModel"]`},
 		},
-		"null permission action": {
+		"null permission value": {
 			mutate: func(model *RoleModel) {
 				model.Permissions = NewTypedMap(map[string]TypedList[types.String]{
-					"Entry": NewTypedList([]types.String{types.StringValue("read"), types.StringNull()}),
+					"ContentModel": NewTypedList([]types.String{types.StringValue("read"), types.StringNull()}),
 				})
 			},
-			expectedPaths: []string{`permissions["Entry"][1]`},
+			expectedPaths: []string{`permissions["ContentModel"][1]`},
 		},
-		"unknown permission action": {
+		"unknown permission value": {
 			mutate: func(model *RoleModel) {
 				model.Permissions = NewTypedMap(map[string]TypedList[types.String]{
-					"Entry": NewTypedList([]types.String{types.StringValue("read"), types.StringUnknown()}),
+					"ContentModel": NewTypedList([]types.String{types.StringValue("read"), types.StringUnknown()}),
 				})
 			},
-			expectedPaths: []string{`permissions["Entry"][1]`},
+			expectedPaths: []string{`permissions["ContentModel"][1]`},
 		},
 		"null policies": {
 			mutate: func(model *RoleModel) {
@@ -272,6 +265,105 @@ func TestRoleRequestAggregatesParentDiagnostics(t *testing.T) {
 	assert.Equal(t, []string{"name", "description", "permissions", "policies"}, attributeDiagnosticPaths(t, diags))
 }
 
+func TestRoleRequestRejectsAllCombinedWithOtherValues(t *testing.T) {
+	t.Parallel()
+
+	for name, values := range map[string][]string{
+		"all and another string": {"all", "read"},
+		"duplicate all":          {"all", "all"},
+	} {
+		t.Run(name+"/permission values", func(t *testing.T) {
+			t.Parallel()
+
+			_, diags := ToRoleDataPermissionsItem(
+				path.Root("permissions").AtMapKey("ContentModel"),
+				NewTypedListFromStringSlice(values),
+			)
+
+			require.True(t, diags.HasError())
+			assert.Equal(t, []string{`permissions["ContentModel"]`}, attributeDiagnosticPaths(t, diags))
+			assert.Equal(t, "Invalid permission values", diags.Errors()[0].Summary())
+			assert.Equal(t, `"all" must be specified by itself. Remove "all" or the other permission values from this list.`, diags.Errors()[0].Detail())
+		})
+
+		t.Run(name+"/policy actions", func(t *testing.T) {
+			t.Parallel()
+
+			_, diags := ToRoleDataPoliciesItemActions(
+				path.Root("policies").AtListIndex(0).AtName("actions"),
+				NewTypedListFromStringSlice(values),
+			)
+
+			require.True(t, diags.HasError())
+			assert.Equal(t, []string{"policies[0].actions"}, attributeDiagnosticPaths(t, diags))
+			assert.Equal(t, "Invalid policy actions", diags.Errors()[0].Summary())
+			assert.Equal(t, `"all" must be specified by itself. Remove "all" or the other policy actions from this list.`, diags.Errors()[0].Detail())
+		})
+	}
+}
+
+func TestRoleRequestEncodesPermissionValuesAndPolicyActions(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		permissionValues []string
+		policyActions    []string
+		expectedValues   string
+		expectedActions  string
+	}{
+		"empty lists": {
+			permissionValues: []string{},
+			policyActions:    []string{},
+			expectedValues:   `[]`,
+			expectedActions:  `[]`,
+		},
+		"documented values": {
+			permissionValues: []string{"read"},
+			policyActions:    []string{"read", "create"},
+			expectedValues:   `["read"]`,
+			expectedActions:  `["read","create"]`,
+		},
+		"unrecognized and duplicate strings": {
+			permissionValues: []string{"future-permission-value", "read", "read"},
+			policyActions:    []string{"future-policy-action", "read", "read"},
+			expectedValues:   `["future-permission-value","read","read"]`,
+			expectedActions:  `["future-policy-action","read","read"]`,
+		},
+		"singleton all": {
+			permissionValues: []string{"all"},
+			policyActions:    []string{"all"},
+			expectedValues:   `"all"`,
+			expectedActions:  `"all"`,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			permissionValues, permissionDiags := ToRoleDataPermissionsItem(
+				path.Root("permissions").AtMapKey("ContentModel"),
+				NewTypedListFromStringSlice(test.permissionValues),
+			)
+			policyActions, policyDiags := ToRoleDataPoliciesItemActions(
+				path.Root("policies").AtListIndex(0).AtName("actions"),
+				NewTypedListFromStringSlice(test.policyActions),
+			)
+
+			require.Empty(t, permissionDiags)
+			require.Empty(t, policyDiags)
+
+			encodedValues, err := json.Marshal(permissionValues)
+			require.NoError(t, err)
+			assert.JSONEq(t, test.expectedValues, string(encodedValues))
+
+			encodedActions, err := json.Marshal(policyActions)
+			require.NoError(t, err)
+			assert.JSONEq(t, test.expectedActions, string(encodedActions))
+		})
+	}
+}
+
 func TestRoleRequestDescriptionStates(t *testing.T) {
 	t.Parallel()
 
@@ -323,7 +415,7 @@ func validRoleRequestModel() RoleModel {
 	return RoleModel{
 		Name: types.StringValue("role"),
 		Permissions: NewTypedMap(map[string]TypedList[types.String]{
-			"Entry": NewTypedList([]types.String{types.StringValue("read")}),
+			"ContentModel": NewTypedList([]types.String{types.StringValue("read")}),
 		}),
 		Policies: rolePoliciesWith(RolePolicyValue{
 			Actions:    NewTypedList([]types.String{types.StringValue("read")}),

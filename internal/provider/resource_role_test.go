@@ -1,14 +1,24 @@
 package provider_test
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"regexp"
+	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 //nolint:paralleltest
@@ -99,6 +109,75 @@ func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestRoleUpdateRequestConversionErrorStopsBeforeMutation(t *testing.T) {
+	t.Parallel()
+
+	var requestCount atomic.Int64
+
+	testServer := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
+		requestCount.Add(1)
+		http.Error(response, "unexpected Contentful request", http.StatusInternalServerError)
+	}))
+	t.Cleanup(testServer.Close)
+
+	providerServer, err := makeTestAccProtoV6ProviderFactories(
+		WithContentfulURL(testServer.URL),
+		WithAccessToken("test-token"),
+	)["contentful"]()
+	require.NoError(t, err)
+
+	providerConfig, err := providerConfigDynamicValue(map[string]any{
+		"url":          tftypes.UnknownValue,
+		"access_token": tftypes.UnknownValue,
+	})
+	require.NoError(t, err)
+
+	configureResponse, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{
+		Config: &providerConfig,
+	})
+	require.NoError(t, err)
+	require.Empty(t, configureResponse.Diagnostics)
+
+	priorModel := validRoleRequestModel()
+	priorModel.ID = types.StringValue("space/role")
+	priorModel.SpaceID = types.StringValue("space")
+	priorModel.RoleID = types.StringValue("role")
+	priorModel.Description = types.StringNull()
+	priorModel.Timeouts = TimeoutsNull()
+
+	plannedModel := priorModel
+	plannedModel.Policies = rolePoliciesWith(RolePolicyValue{
+		Actions:    NewTypedList([]types.String{types.StringValue("all"), types.StringValue("read")}),
+		Constraint: jsontypes.NewNormalizedNull(),
+		Effect:     types.StringValue("allow"),
+	})
+
+	configModel := priorModel
+	configModel.ID = types.StringNull()
+	configModel.RoleID = types.StringNull()
+
+	priorState := resourceModelDynamicValue(t, RoleResourceSchema(t.Context()), priorModel)
+	plannedState := resourceModelDynamicValue(t, RoleResourceSchema(t.Context()), plannedModel)
+	configValue := resourceModelDynamicValue(t, RoleResourceSchema(t.Context()), configModel)
+
+	response, err := providerServer.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{
+		TypeName:       "contentful_role",
+		PriorState:     &priorState,
+		PlannedState:   &plannedState,
+		Config:         &configValue,
+		PlannedPrivate: privateVersionBytes(t, 1),
+	})
+	require.NoError(t, err)
+	require.Len(t, response.Diagnostics, 1)
+	assert.Equal(t, "Invalid policy actions", response.Diagnostics[0].Summary)
+	assert.Equal(t, `"all" must be specified by itself. Remove "all" or the other policy actions from this list.`, response.Diagnostics[0].Detail)
+	assert.Equal(t,
+		tftypes.NewAttributePath().WithAttributeName("policies").WithElementKeyInt(0).WithAttributeName("actions"),
+		response.Diagnostics[0].Attribute,
+	)
+	assert.Zero(t, requestCount.Load())
 }
 
 func TestAccRoleResourceDeleted(t *testing.T) {

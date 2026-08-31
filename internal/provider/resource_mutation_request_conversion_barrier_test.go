@@ -202,6 +202,28 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 			},
 			expectedPath: "name",
 		},
+		"role": {
+			model: RoleModel{
+				IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
+				RoleIdentityModel: RoleIdentityModel{
+					SpaceID: types.StringValue("space"),
+					RoleID:  types.StringUnknown(),
+				},
+				Name:        types.StringValue("Role"),
+				Description: types.StringNull(),
+				Permissions: NewTypedMap(map[string]TypedList[types.String]{
+					"ContentModel": NewTypedList([]types.String{types.StringValue("all"), types.StringValue("read")}),
+				}),
+				Policies: NewTypedList([]TypedObject[RolePolicyValue]{}),
+				Timeouts: TimeoutsNull(),
+			},
+			resourceSchema: RoleResourceSchema(ctx),
+			create: func(client *cm.Client, request resource.CreateRequest, response *resource.CreateResponse) {
+				implementation := roleResource{providerData: ContentfulProviderData{client: client}}
+				implementation.Create(ctx, request, response)
+			},
+			expectedPath: `permissions["ContentModel"]`,
+		},
 		"tag": {
 			model: TagModel{
 				IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},

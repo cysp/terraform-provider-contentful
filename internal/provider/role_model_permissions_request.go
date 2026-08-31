@@ -60,6 +60,7 @@ func ToRoleDataPermissions(path path.Path, permissions TypedMap[TypedList[types.
 	return rolePermissionsItems, diags
 }
 
+//nolint:dupl // Permission values and policy actions require distinct domain terminology and diagnostics.
 func ToRoleDataPermissionsItem(path path.Path, value TypedList[types.String]) (cm.RoleDataPermissionsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -67,29 +68,35 @@ func ToRoleDataPermissionsItem(path path.Path, value TypedList[types.String]) (c
 	case value.IsUnknown():
 		diags.AddAttributeError(
 			path,
-			"Unexpected unknown permission actions",
-			"Permission actions must be known before they can be sent to Contentful.",
+			"Unexpected unknown permission values",
+			"Permission values must be known before they can be sent to Contentful.",
 		)
 
 		return cm.RoleDataPermissionsItem{}, diags
 	case value.IsNull():
 		diags.AddAttributeError(
 			path,
-			"Unexpected null permission actions",
-			"Permission actions cannot be null.",
+			"Unexpected null permission values",
+			"Permission values cannot be null.",
 		)
 
 		return cm.RoleDataPermissionsItem{}, diags
 	}
 
-	actionStrings, actionDiags := knownStringListElements(path, value.Elements())
-	diags.Append(actionDiags...)
+	permissionValues, valueDiags := knownStringListElements(path, value.Elements())
+	diags.Append(valueDiags...)
+
+	if valueDiags.HasError() {
+		return cm.RoleDataPermissionsItem{}, diags
+	}
+
+	diags.Append(validateRolePermissionValues(path, len(permissionValues), permissionValues)...)
 
 	if diags.HasError() {
 		return cm.RoleDataPermissionsItem{}, diags
 	}
 
-	if slices.Contains(actionStrings, "all") {
+	if len(permissionValues) == 1 && permissionValues[0] == "all" {
 		return cm.RoleDataPermissionsItem{
 			Type:   cm.StringRoleDataPermissionsItem,
 			String: "all",
@@ -98,6 +105,20 @@ func ToRoleDataPermissionsItem(path path.Path, value TypedList[types.String]) (c
 
 	return cm.RoleDataPermissionsItem{
 		Type:        cm.StringArrayRoleDataPermissionsItem,
-		StringArray: actionStrings,
+		StringArray: permissionValues,
 	}, diags
+}
+
+func validateRolePermissionValues(path path.Path, valueCount int, values []string) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	if valueCount != 1 && slices.Contains(values, "all") {
+		diags.AddAttributeError(
+			path,
+			"Invalid permission values",
+			`"all" must be specified by itself. Remove "all" or the other permission values from this list.`,
+		)
+	}
+
+	return diags
 }
