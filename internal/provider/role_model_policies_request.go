@@ -97,6 +97,7 @@ func ToRoleDataPoliciesItem(path path.Path, policy TypedObject[RolePolicyValue])
 	}, diags
 }
 
+//nolint:dupl // Policy actions and permission values require distinct domain terminology and diagnostics.
 func ToRoleDataPoliciesItemActions(path path.Path, actions TypedList[types.String]) (cm.RoleDataPoliciesItemActions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -122,11 +123,17 @@ func ToRoleDataPoliciesItemActions(path path.Path, actions TypedList[types.Strin
 	actionsStrings, actionDiags := knownStringListElements(path, actions.Elements())
 	diags.Append(actionDiags...)
 
+	if actionDiags.HasError() {
+		return cm.RoleDataPoliciesItemActions{}, diags
+	}
+
+	diags.Append(validateRolePolicyActions(path, len(actionsStrings), actionsStrings)...)
+
 	if diags.HasError() {
 		return cm.RoleDataPoliciesItemActions{}, diags
 	}
 
-	if slices.Contains(actionsStrings, "all") {
+	if len(actionsStrings) == 1 && actionsStrings[0] == "all" {
 		return cm.RoleDataPoliciesItemActions{
 			Type:   cm.StringRoleDataPoliciesItemActions,
 			String: "all",
@@ -137,6 +144,20 @@ func ToRoleDataPoliciesItemActions(path path.Path, actions TypedList[types.Strin
 		Type:        cm.StringArrayRoleDataPoliciesItemActions,
 		StringArray: actionsStrings,
 	}, diags
+}
+
+func validateRolePolicyActions(path path.Path, actionCount int, actions []string) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	if actionCount != 1 && slices.Contains(actions, "all") {
+		diags.AddAttributeError(
+			path,
+			"Invalid policy actions",
+			`"all" must be specified by itself. Remove "all" or the other policy actions from this list.`,
+		)
+	}
+
+	return diags
 }
 
 func ToOptRoleDataPoliciesItemConstraint(path path.Path, constraint jsontypes.Normalized) (jx.Raw, diag.Diagnostics) {

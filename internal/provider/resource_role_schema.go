@@ -14,6 +14,68 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type rolePermissionValuesValidator struct{}
+
+func (rolePermissionValuesValidator) Description(context.Context) string {
+	return `"all" must be the only value in a permission value list`
+}
+
+func (v rolePermissionValuesValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (rolePermissionValuesValidator) ValidateList(_ context.Context, req validator.ListRequest, resp *validator.ListResponse) {
+	values, valueCount, ok := knownStringListValuesForValidation(req.ConfigValue)
+	if !ok {
+		return
+	}
+
+	resp.Diagnostics.Append(validateRolePermissionValues(req.Path, valueCount, values)...)
+}
+
+type rolePolicyActionsValidator struct{}
+
+func (rolePolicyActionsValidator) Description(context.Context) string {
+	return `"all" must be the only action in a policy action list`
+}
+
+func (v rolePolicyActionsValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (rolePolicyActionsValidator) ValidateList(_ context.Context, req validator.ListRequest, resp *validator.ListResponse) {
+	actions, actionCount, ok := knownStringListValuesForValidation(req.ConfigValue)
+	if !ok {
+		return
+	}
+
+	resp.Diagnostics.Append(validateRolePolicyActions(req.Path, actionCount, actions)...)
+}
+
+func knownStringListValuesForValidation(value types.List) ([]string, int, bool) {
+	if value.IsNull() || value.IsUnknown() {
+		return nil, 0, false
+	}
+
+	elements := value.Elements()
+	values := make([]string, 0, len(elements))
+
+	for _, element := range elements {
+		stringValue, ok := element.(types.String)
+		if !ok || stringValue.IsNull() {
+			return nil, 0, false
+		}
+
+		if stringValue.IsUnknown() {
+			continue
+		}
+
+		values = append(values, stringValue.ValueString())
+	}
+
+	return values, len(elements), true
+}
+
 func RoleResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: "Manages a Contentful Role.",
@@ -47,13 +109,16 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"permissions": schema.MapAttribute{
-				Description: "Basic rules which define whether a user can read or create content types, settings and entries.",
+				Description: "Map of Contentful permission names to their values. Use an empty list to disable a permission, `[\"read\"]` for read-only access where supported, and `[\"manage\"]` or `[\"all\"]` for read and write access. Terraform `[\"all\"]` is sent to Contentful as the scalar `\"all\"`; `\"all\"` must be the only value in its list.",
 				ElementType: NewTypedListNull[types.String]().Type(ctx),
 				CustomType:  NewTypedMapNull[TypedList[types.String]]().CustomType(ctx),
 				Required:    true,
 				Validators: []validator.Map{
 					mapvalidator.NoNullValues(),
-					mapvalidator.ValueListsAre(listvalidator.NoNullValues()),
+					mapvalidator.ValueListsAre(
+						listvalidator.NoNullValues(),
+						rolePermissionValuesValidator{},
+					),
 				},
 			},
 			"policies": schema.ListNestedAttribute{
@@ -76,12 +141,13 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 func (v RolePolicyValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"actions": schema.ListAttribute{
-			Description: "Actions that the policy allows or denies (e.g., read, create, update, delete, publish).",
+			Description: "Actions that the policy allows or denies. Terraform `[\"all\"]` sends Contentful’s scalar `\"all\"`, which aliases the content actions `read`, `create`, `update`, `delete`, `archive`, `unarchive`, `publish`, and `unpublish`; use `[\"access\"]` for environment access. `\"all\"` must be the only action in the list.",
 			ElementType: types.StringType,
 			CustomType:  TypedList[types.String]{}.CustomType(ctx),
 			Required:    true,
 			Validators: []validator.List{
 				listvalidator.NoNullValues(),
+				rolePolicyActionsValidator{},
 			},
 		},
 		"constraint": schema.StringAttribute{
