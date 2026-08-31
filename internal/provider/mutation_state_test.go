@@ -679,3 +679,116 @@ func TestRoleMutationStatePreservesDuplicateMultiplicity(t *testing.T) {
 	require.True(t, consistencyDiags.HasError())
 	assert.Equal(t, []types.String{types.StringValue("read"), types.StringValue("create")}, mutationState.Permissions.Elements()["Entry"].Elements())
 }
+
+func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T) {
+	t.Parallel()
+
+	plannedPermissions := NewTypedMap(map[string]TypedList[types.String]{
+		"Entry": NewTypedList([]types.String{types.StringValue("read")}),
+	})
+	policy := func(effect string, actions []string, constraint string) TypedObject[RolePolicyValue] {
+		typedActions := make([]types.String, len(actions))
+		for index, action := range actions {
+			typedActions[index] = types.StringValue(action)
+		}
+
+		return NewTypedObject(RolePolicyValue{
+			Actions:    NewTypedList(typedActions),
+			Constraint: jsontypes.NewNormalizedValue(constraint),
+			Effect:     types.StringValue(effect),
+		})
+	}
+	responsePolicy := func(effect string, actions []string, constraint string) cm.RolePoliciesItem {
+		return cm.RolePoliciesItem{
+			Actions:    cm.NewStringArrayRolePoliciesItemActions(actions),
+			Constraint: []byte(constraint),
+			Effect:     cm.RolePoliciesItemEffect(effect),
+		}
+	}
+
+	for name, test := range map[string]struct {
+		planned             []TypedObject[RolePolicyValue]
+		response            []cm.RolePoliciesItem
+		expectedEffects     []string
+		expectedActions     [][]types.String
+		expectedConstraints []string
+	}{
+		"effect": {
+			planned: []TypedObject[RolePolicyValue]{
+				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+			},
+			response: []cm.RolePoliciesItem{
+				responsePolicy("deny", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+			},
+			expectedEffects:     []string{"deny"},
+			expectedActions:     [][]types.String{{types.StringValue("read")}},
+			expectedConstraints: []string{`{"sys":{"type":"Entry"}}`},
+		},
+		"actions": {
+			planned: []TypedObject[RolePolicyValue]{
+				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+			},
+			response: []cm.RolePoliciesItem{
+				responsePolicy("allow", []string{"create"}, `{"sys":{"type":"Entry"}}`),
+			},
+			expectedEffects:     []string{"allow"},
+			expectedActions:     [][]types.String{{types.StringValue("create")}},
+			expectedConstraints: []string{`{"sys":{"type":"Entry"}}`},
+		},
+		"constraint": {
+			planned: []TypedObject[RolePolicyValue]{
+				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+			},
+			response: []cm.RolePoliciesItem{
+				responsePolicy("allow", []string{"read"}, `{"sys":{"type":"Asset"}}`),
+			},
+			expectedEffects:     []string{"allow"},
+			expectedActions:     [][]types.String{{types.StringValue("read")}},
+			expectedConstraints: []string{`{"sys":{"type":"Asset"}}`},
+		},
+		"duplicate multiplicity": {
+			planned: []TypedObject[RolePolicyValue]{
+				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+			},
+			response: []cm.RolePoliciesItem{
+				responsePolicy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+				responsePolicy("allow", []string{"read"}, `{"sys":{"type":"Asset"}}`),
+			},
+			expectedEffects:     []string{"allow", "allow"},
+			expectedActions:     [][]types.String{{types.StringValue("read")}, {types.StringValue("read")}},
+			expectedConstraints: []string{`{"sys":{"type":"Entry"}}`, `{"sys":{"type":"Asset"}}`},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			plannedPolicies := NewTypedList(test.planned)
+			response := cm.Role{
+				Sys:         cm.NewRoleSys("space", "role"),
+				Name:        "Response role",
+				Permissions: cm.RolePermissions{"Entry": cm.NewStringArrayRolePermissionsItem([]string{"read"})},
+				Policies:    test.response,
+			}
+
+			mutationState, responseDiags, consistencyDiags := NewRoleResourceModelForMutationState(
+				t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies},
+			)
+
+			assert.Empty(t, responseDiags)
+			require.True(t, consistencyDiags.HasError())
+			assert.Equal(t, []string{"policies"}, attributeDiagnosticPaths(t, consistencyDiags))
+			assert.False(t, mutationState.Policies.Equal(plannedPolicies))
+			assert.Equal(t, "Response role", mutationState.Name.ValueString())
+			assert.True(t, mutationState.Permissions.Equal(plannedPermissions))
+			require.Len(t, mutationState.Policies.Elements(), len(test.expectedEffects))
+
+			for index, expectedEffect := range test.expectedEffects {
+				actualPolicy := mutationState.Policies.Elements()[index].Value()
+				assert.Equal(t, expectedEffect, actualPolicy.Effect.ValueString())
+				assert.Equal(t, test.expectedActions[index], actualPolicy.Actions.Elements())
+				assert.Equal(t, test.expectedConstraints[index], actualPolicy.Constraint.ValueString())
+			}
+		})
+	}
+}
