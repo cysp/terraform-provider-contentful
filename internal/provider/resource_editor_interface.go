@@ -120,7 +120,11 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
-		resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if contentfulResponseIsVersionMismatch(response) {
+			resp.Diagnostics.AddError("Editor interface must be imported", "Contentful rejected logical creation because the editor interface has already been modified. Import it into this resource before managing it with Terraform.")
+		} else {
+			resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		}
 	}
 
 	if resp.Diagnostics.HasError() {
