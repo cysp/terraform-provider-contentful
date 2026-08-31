@@ -1,17 +1,9 @@
 package provider_test
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"net/http/httptest"
 	"regexp"
-	"strconv"
-	"sync"
 	"testing"
 
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
@@ -23,11 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	errUnexpectedWebhookFilterTransition = errors.New("unexpected webhook filter transition")
-	errWebhookAbsentFromPlan             = errors.New("contentful_webhook.test was absent from the Terraform plan")
-)
-
 func TestAccWebhookMutationResponseContradictionRetainsTruthfulState(t *testing.T) {
 	t.Parallel()
 
@@ -35,7 +22,7 @@ func TestAccWebhookMutationResponseContradictionRetainsTruthfulState(t *testing.
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 
-	adapter := &webhookMutationResponseAdapter{delegate: server}
+	adapter := &mutationJSONResponseAdapter{delegate: server}
 	config := func(name, filterType string) string {
 		return fmt.Sprintf(`
 resource "contentful_webhook" "test" {
@@ -61,7 +48,7 @@ resource "contentful_webhook" "test" {
 			},
 			{
 				PreConfig: func() {
-					adapter.armFilter(http.MethodPut, "Asset")
+					adapter.arm(http.MethodPut, replaceWebhookResponseFilter("Asset"))
 				},
 				Config:      config("Updated webhook", "Entry"),
 				ExpectError: regexp.MustCompile(`filters response differed meaningfully from the Terraform plan`),
@@ -70,7 +57,12 @@ resource "contentful_webhook" "test" {
 				Config: config("Updated webhook", "Entry"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
-					expectWebhookFilterPlanTransition{before: "Asset", after: "Entry"},
+					expectMutationPlanTransition{
+						address:   "contentful_webhook.test",
+						valuePath: tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value"),
+						before:    "Asset",
+						after:     "Entry",
+					},
 				}},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
@@ -91,7 +83,7 @@ func TestAccWebhookCreateMutationResponseContradictionRetainsTaintedState(t *tes
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 
-	adapter := &webhookMutationResponseAdapter{delegate: server}
+	adapter := &mutationJSONResponseAdapter{delegate: server}
 	config := `
 resource "contentful_webhook" "test" {
   space_id = "space"
@@ -112,7 +104,7 @@ resource "contentful_webhook" "test" {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					adapter.armFilter(http.MethodPost, "Asset")
+					adapter.arm(http.MethodPost, replaceWebhookResponseFilter("Asset"))
 				},
 				Config:      config,
 				ExpectError: regexp.MustCompile(`filters response differed meaningfully from the Terraform plan`),
@@ -121,7 +113,12 @@ resource "contentful_webhook" "test" {
 				Config: config,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionReplace),
-					expectWebhookFilterPlanTransition{before: "Asset", after: "Entry"},
+					expectMutationPlanTransition{
+						address:   "contentful_webhook.test",
+						valuePath: tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value"),
+						before:    "Asset",
+						after:     "Entry",
+					},
 				}},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
@@ -191,105 +188,10 @@ resource "contentful_webhook" "test" {
 	}})
 }
 
-type webhookMutationResponseAdapter struct {
-	delegate http.Handler
-	mu       sync.Mutex
-	armed    bool
-	method   string
-	value    string
-}
-
-func (a *webhookMutationResponseAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	recorder := httptest.NewRecorder()
-	a.delegate.ServeHTTP(recorder, request)
-
-	body := recorder.Body.Bytes()
-	if replacement, ok := a.responseFilterReplacement(request, recorder.Code); ok {
-		var response map[string]any
-
-		err := json.Unmarshal(body, &response)
-		if err == nil {
-			response["filters"] = []any{map[string]any{
-				"equals": []any{map[string]any{"doc": "sys.type"}, replacement},
-			}}
-
-			encoded, marshalErr := json.Marshal(response)
-			if marshalErr == nil {
-				body = encoded
-			}
-		}
+func replaceWebhookResponseFilter(value string) func(map[string]any) {
+	return func(response map[string]any) {
+		response["filters"] = []any{map[string]any{
+			"equals": []any{map[string]any{"doc": "sys.type"}, value},
+		}}
 	}
-
-	for key, values := range recorder.Header() {
-		for _, value := range values {
-			responseWriter.Header().Add(key, value)
-		}
-	}
-
-	responseWriter.Header().Set("Content-Length", strconv.Itoa(len(body)))
-	responseWriter.WriteHeader(recorder.Code)
-	_, _ = io.Copy(responseWriter, bytes.NewReader(body))
-}
-
-func (a *webhookMutationResponseAdapter) armFilter(method, value string) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-
-	a.armed = true
-	a.method = method
-	a.value = value
-}
-
-func (a *webhookMutationResponseAdapter) responseFilterReplacement(request *http.Request, statusCode int) (string, bool) {
-	if statusCode < http.StatusOK || statusCode >= http.StatusMultipleChoices {
-		return "", false
-	}
-
-	a.mu.Lock()
-	defer a.mu.Unlock()
-
-	if !a.armed || request.Method != a.method {
-		return "", false
-	}
-
-	a.armed = false
-
-	return a.value, true
-}
-
-type expectWebhookFilterPlanTransition struct {
-	before string
-	after  string
-}
-
-func (check expectWebhookFilterPlanTransition) CheckPlan(_ context.Context, request plancheck.CheckPlanRequest, response *plancheck.CheckPlanResponse) {
-	valuePath := tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value")
-
-	for _, change := range request.Plan.ResourceChanges {
-		if change.Address != "contentful_webhook.test" {
-			continue
-		}
-
-		before, err := tfjsonpath.Traverse(change.Change.Before, valuePath)
-		if err != nil {
-			response.Error = fmt.Errorf("read prior webhook filter from plan: %w", err)
-
-			return
-		}
-
-		after, err := tfjsonpath.Traverse(change.Change.After, valuePath)
-		if err != nil {
-			response.Error = fmt.Errorf("read planned webhook filter: %w", err)
-
-			return
-		}
-
-		if before != check.before || after != check.after {
-			response.Error = fmt.Errorf("%w: before=%#v after=%#v, want before=%q after=%q", errUnexpectedWebhookFilterTransition, before, after, check.before, check.after)
-		}
-
-		return
-	}
-
-	response.Error = errWebhookAbsentFromPlan
 }
