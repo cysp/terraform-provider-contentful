@@ -41,22 +41,7 @@ func (p *privateProviderData) SetKey(_ context.Context, key string, value []byte
 
 var _ PrivateProviderData = &privateProviderData{}
 
-func TestPrivateDataGetIntNotSet(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-
-	privateData := newProviderPrivateData()
-
-	var value int
-
-	diags := GetPrivateProviderData(ctx, privateData, "key", &value)
-
-	assert.Equal(t, 0, value)
-	assert.NotEmpty(t, diags)
-}
-
-func TestPrivateDataGetSetInt(t *testing.T) {
+func TestPrivateDataSetInt(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -67,29 +52,6 @@ func TestPrivateDataGetSetInt(t *testing.T) {
 
 	assert.Equal(t, []byte{'4', '2'}, privateData.data["key"])
 	assert.Empty(t, diags)
-
-	var value int
-
-	diags = GetPrivateProviderData(ctx, privateData, "key", &value)
-
-	assert.Equal(t, 42, value)
-	assert.Empty(t, diags)
-}
-
-func TestPrivateDataGetIntInvalid(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-
-	privateData := newProviderPrivateData()
-	privateData.data["key"] = []byte("invalid")
-
-	var value int
-
-	diags := GetPrivateProviderData(ctx, privateData, "key", &value)
-
-	assert.Equal(t, 0, value)
-	assert.NotEmpty(t, diags)
 }
 
 func TestPrivateDataSetInf(t *testing.T) {

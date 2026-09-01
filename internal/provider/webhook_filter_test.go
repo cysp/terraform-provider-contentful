@@ -102,43 +102,6 @@ func webhookFiltersListForTesting(t *testing.T) TypedList[TypedObject[WebhookFil
 	return filters
 }
 
-// func TestWebhookFilterTypeValueFromObject(t *testing.T) {
-// 	t.Parallel()
-
-// 	ctx := context.Background()
-
-// 	typs := []AttrTypeWithValueFromObject{
-// 		WebhookFilterValue{}.CustomType(ctx),
-// 		WebhookFilterNotType{},
-// 		WebhookFilterEqualsType{},
-// 		WebhookFilterInType{},
-// 		WebhookFilterRegexpType{},
-// 	}
-
-// 	tfvalniltype := tftypes.NewValue(nil, nil)
-
-// 	for _, typ := range typs {
-
-// 		// types.ObjectNull(typ.ValType(ctx).)
-// 		// tftyp := typ.TerraformType(ctx)
-
-// 		// tfvalnull := tftypes.NewValue(tftyp, nil)
-// 		// tfvalunknown := tftypes.NewValue(tftyp, tftypes.UnknownValue)
-
-// 		// valueNil, err := typ.ValueFromObject(ctx, tfvalniltype)
-// 		// assert.NoError(t, err)
-// 		// assert.True(t, valueNil.IsNull())
-
-// 		// valueNull, err := typ.ValueFromObject(ctx, tfvalnull)
-// 		// assert.NoError(t, err)
-// 		// assert.True(t, valueNull.IsNull())
-
-// 		// valueUnknown, err := typ.ValueFromObject(ctx, typs)
-// 		// assert.NoError(t, err)
-// 		// assert.True(t, valueUnknown.IsUnknown())
-// 	}
-// }
-
 func TestWebhookFilterValueEqual(t *testing.T) {
 	t.Parallel()
 

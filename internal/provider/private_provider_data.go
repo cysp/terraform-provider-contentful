@@ -27,24 +27,6 @@ func SetPrivateProviderData[T any](ctx context.Context, providerData PrivateProv
 	return providerData.SetKey(ctx, key, valueBytes)
 }
 
-func GetPrivateProviderData[T any](ctx context.Context, providerData PrivateProviderData, key string, value *T) diag.Diagnostics {
-	diags := diag.Diagnostics{}
-
-	valueBytes, getDiags := providerData.GetKey(ctx, key)
-	diags.Append(getDiags...)
-
-	if diags.HasError() {
-		return diags
-	}
-
-	err := json.Unmarshal(valueBytes, value)
-	if err != nil {
-		diags.AddError("Failed to unmarshal value", err.Error())
-	}
-
-	return diags
-}
-
 func requiredPrivateVersion(ctx context.Context, providerData PrivateProviderData) (int, diag.Diagnostics) {
 	version, found, diags := optionalPrivateVersion(ctx, providerData)
 	if !found && !diags.HasError() {

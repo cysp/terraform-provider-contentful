@@ -30,14 +30,3 @@ type ExtensionConfiguration struct {
 	Parameters *AppDefinitionParameters              `tfsdk:"parameters"`
 	Sidebar    types.Bool                            `tfsdk:"sidebar"`
 }
-
-type ExtensionConfigurationFieldType struct {
-	Type     types.String                          `tfsdk:"type"`
-	LinkType types.String                          `tfsdk:"link_type"`
-	Items    *ExtensionConfigurationFieldTypeItems `tfsdk:"items"`
-}
-
-type ExtensionConfigurationFieldTypeItems struct {
-	Type     types.String `tfsdk:"type"`
-	LinkType types.String `tfsdk:"link_type"`
-}
