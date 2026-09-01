@@ -21,7 +21,7 @@ func NewContentTypeMetadataFromResponse(ctx context.Context, path path.Path, opt
 
 	annotations := jsontypes.NewNormalizedNull()
 	if metadata.Annotations != nil {
-		annotations = NewNormalizedJSONTypesNormalizedValue(metadata.Annotations)
+		annotations = NewNormalizedJSONValue(metadata.Annotations)
 	}
 
 	taxonomy, taxonomyDiags := NewContentTypeMetadataTaxonomyItemsFromResponse(ctx, path.AtName("taxonomy"), metadata.Taxonomy)

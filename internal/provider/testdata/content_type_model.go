@@ -55,10 +55,10 @@ func ContentTypeFieldValue(fieldId string) *rapid.Generator[provider.ContentType
 			Disabled:         rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "disabled"),
 			Omitted:          rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "omitted"),
 			Required:         rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "required"),
-			DefaultValue:     RandomZeroable(JSONTypesNormalizedStringValue()).Draw(t, "defaultValue"),
+			DefaultValue:     RandomZeroable(NormalizedJSONStringValue()).Draw(t, "defaultValue"),
 			Items:            RandomZeroable(rapid.Map(ContentTypeFieldItemsValue(), provider.NewTypedObject)).Draw(t, "items"),
 			Localized:        rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "localized"),
-			Validations:      rapid.Map(rapid.SliceOfN(JSONTypesNormalizedStringValue(), 0, 2), provider.NewTypedList).Draw(t, "validations"),
+			Validations:      rapid.Map(rapid.SliceOfN(NormalizedJSONStringValue(), 0, 2), provider.NewTypedList).Draw(t, "validations"),
 			AllowedResources: RandomZeroable(rapid.Map(rapid.SliceOfN(rapid.Map(ContentTypeFieldAllowedResourceItemValue(), provider.NewTypedObject), 0, 2), provider.NewTypedList)).Draw(t, "allowedResources"),
 		}
 	})
@@ -69,7 +69,7 @@ func ContentTypeFieldItemsValue() *rapid.Generator[provider.ContentTypeFieldItem
 		return provider.ContentTypeFieldItemsValue{
 			ItemsType:   types.StringValue("Link"),
 			LinkType:    types.StringValue("Entry"),
-			Validations: rapid.Map(rapid.SliceOfN(JSONTypesNormalizedStringValue(), 0, 2), provider.NewTypedList).Draw(t, "validations"),
+			Validations: rapid.Map(rapid.SliceOfN(NormalizedJSONStringValue(), 0, 2), provider.NewTypedList).Draw(t, "validations"),
 		}
 	})
 }
@@ -117,7 +117,7 @@ func ContentTypeFieldAllowedResourceItemExternalValue() *rapid.Generator[provide
 func ContentTypeMetadataValue() *rapid.Generator[provider.ContentTypeMetadataValue] {
 	return rapid.Custom(func(t *rapid.T) provider.ContentTypeMetadataValue {
 		return provider.ContentTypeMetadataValue{
-			Annotations: RandomZeroable(JSONTypesNormalizedStringValue()).Draw(t, "annotations"),
+			Annotations: RandomZeroable(NormalizedJSONStringValue()).Draw(t, "annotations"),
 			Taxonomy:    RandomZeroable(ContentTypeMetadataTaxonomyList()).Draw(t, "taxonomy"),
 		}
 	})

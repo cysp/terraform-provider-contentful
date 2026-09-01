@@ -17,8 +17,8 @@ func TestEntryRequestDistinguishesTerraformNullFromJSONNull(t *testing.T) {
 	model := EntryModel{
 		Fields: NewTypedMap(map[string]jsontypes.Normalized{
 			"terraform_null": jsontypes.NewNormalizedNull(),
-			"json_null":      NewNormalizedJSONTypesNormalizedValue([]byte("null")),
-			"value":          NewNormalizedJSONTypesNormalizedValue([]byte(`{"en-US":"value"}`)),
+			"json_null":      NewNormalizedJSONValue([]byte("null")),
+			"value":          NewNormalizedJSONValue([]byte(`{"en-US":"value"}`)),
 		}),
 		Metadata: NewTypedObjectNull[EntryMetadataValue](),
 	}
@@ -38,7 +38,7 @@ func TestEntryRequestUnknownFieldFailsWithoutPartialOutput(t *testing.T) {
 
 	model := EntryModel{
 		Fields: NewTypedMap(map[string]jsontypes.Normalized{
-			"known":   NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
+			"known":   NewNormalizedJSONValue([]byte(`"value"`)),
 			"unknown": jsontypes.NewNormalizedUnknown(),
 		}),
 		Metadata: knownEntryMetadata(),
@@ -158,7 +158,7 @@ func TestEntryRequestInvalidMetadataChildrenFailWithoutPartialOutput(t *testing.
 
 			model := EntryModel{
 				Fields: NewTypedMap(map[string]jsontypes.Normalized{
-					"known": NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
+					"known": NewNormalizedJSONValue([]byte(`"value"`)),
 				}),
 				Metadata: metadata,
 			}
@@ -182,7 +182,7 @@ func TestEntryRequestKnownMetadata(t *testing.T) {
 
 	model := EntryModel{
 		Fields: NewTypedMap(map[string]jsontypes.Normalized{
-			"known": NewNormalizedJSONTypesNormalizedValue([]byte(`"value"`)),
+			"known": NewNormalizedJSONValue([]byte(`"value"`)),
 		}),
 		Metadata: knownEntryMetadata(),
 	}

@@ -31,7 +31,7 @@ func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallat
 			diags.AddAttributeError(path.Root("parameters"), "Failed to read parameters", err.Error())
 		}
 
-		model.Parameters = NewNormalizedJSONTypesNormalizedValue(constraint)
+		model.Parameters = NewNormalizedJSONValue(constraint)
 	} else {
 		model.Parameters = jsontypes.NewNormalizedNull()
 	}

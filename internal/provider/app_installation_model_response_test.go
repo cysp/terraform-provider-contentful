@@ -41,7 +41,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 					AppDefinitionID: types.StringValue(""),
 				},
 				Marketplace: types.SetNull(types.StringType),
-				Parameters:  NewNormalizedJSONTypesNormalizedValue([]byte("{}")),
+				Parameters:  NewNormalizedJSONValue([]byte("{}")),
 			},
 		},
 		"foo=bar": {
@@ -56,7 +56,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 					AppDefinitionID: types.StringValue(""),
 				},
 				Marketplace: types.SetNull(types.StringType),
-				Parameters:  NewNormalizedJSONTypesNormalizedValue([]byte("{\"foo\":\"bar\"}")),
+				Parameters:  NewNormalizedJSONValue([]byte("{\"foo\":\"bar\"}")),
 			},
 		},
 		"large integer": {
