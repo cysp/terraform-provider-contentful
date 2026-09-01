@@ -193,7 +193,7 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	currentVersion := 1
+	version := 1
 
 	params := cm.PutExtensionParams{
 		SpaceID:       plan.SpaceID.ValueString(),
@@ -218,7 +218,7 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to create extension", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -243,7 +243,7 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -281,7 +281,7 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 		"err":      err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	var data ExtensionModel
 
@@ -291,7 +291,7 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
+		version = response.Sys.Version
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -325,7 +325,7 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *extensionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

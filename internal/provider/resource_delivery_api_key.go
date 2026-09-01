@@ -87,7 +87,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	currentVersion := 1
+	version := 1
 
 	params := cm.CreateDeliveryAPIKeyParams{
 		SpaceID: plan.SpaceID.ValueString(),
@@ -110,7 +110,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to create delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -135,7 +135,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl
@@ -173,7 +173,7 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		"err": err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	var data DeliveryAPIKeyModel
 
@@ -183,7 +183,7 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
+		version = response.Sys.Version
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -217,7 +217,7 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

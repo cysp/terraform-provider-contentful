@@ -84,11 +84,11 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	currentVersion := 1
+	version := 1
 
 	params := cm.PutSpaceEnablementsParams{
 		SpaceID:            plan.SpaceID.ValueString(),
-		XContentfulVersion: currentVersion,
+		XContentfulVersion: version,
 	}
 
 	response, err := r.providerData.client.PutSpaceEnablements(ctx, &request, params)
@@ -108,7 +108,7 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to create space enablements", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -133,7 +133,7 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -169,7 +169,7 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 		"err":      err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	var data SpaceEnablementsModel
 
@@ -179,7 +179,7 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
+		version = response.Sys.Version
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -213,7 +213,7 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

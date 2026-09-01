@@ -75,12 +75,12 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	currentVersion := 1
+	version := 1
 
 	params := cm.CreateOrUpdateEnvironmentAliasParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		EnvironmentAliasID: plan.EnvironmentAliasID.ValueString(),
-		XContentfulVersion: currentVersion,
+		XContentfulVersion: version,
 	}
 
 	request, requestDiags := plan.ToEnvironmentAliasData(ctx)
@@ -107,7 +107,7 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to create environment alias", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -132,7 +132,7 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl
@@ -170,7 +170,7 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 		"err":      err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	var data EnvironmentAliasModel
 
@@ -180,7 +180,7 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
+		version = response.Sys.Version
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -214,7 +214,7 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *environmentAliasResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

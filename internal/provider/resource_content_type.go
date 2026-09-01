@@ -311,7 +311,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		"err":      err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	var (
 		data                     ContentTypeModel
@@ -324,7 +324,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
+		version = response.Sys.Version
 		observedPublishedVersion = response.Sys.PublishedVersion
 
 	default:
@@ -361,7 +361,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	if pending && !pendingLifecycleDraftMatchesCheckpoint(
-		pendingVersion, currentVersion, observedPublishedVersion, state.PublishedVersion,
+		pendingVersion, version, observedPublishedVersion, state.PublishedVersion,
 	) {
 		resp.Diagnostics.Append(resp.Private.SetKey(ctx, contentTypePendingActivationVersionPrivateKey, nil)...)
 	}
@@ -381,7 +381,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -699,13 +699,13 @@ func (r *contentTypeResource) updateContentType(
 	config ContentTypeModel,
 	appliedPlan ContentTypeModel,
 	request cm.ContentTypeRequestData,
-	currentVersion int,
+	version int,
 ) (contentTypeMutationResult, diag.Diagnostics, bool) {
 	params := cm.PutContentTypeParams{
 		SpaceID:            appliedPlan.SpaceID.ValueString(),
 		EnvironmentID:      appliedPlan.EnvironmentID.ValueString(),
 		ContentTypeID:      appliedPlan.ContentTypeID.ValueString(),
-		XContentfulVersion: cm.NewOptInt(currentVersion),
+		XContentfulVersion: cm.NewOptInt(version),
 	}
 
 	response, err := r.providerData.client.PutContentType(

@@ -77,14 +77,14 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	currentVersion := 1
-	currentVersion += r.providerData.editorInterfaceVersionOffset.Get(plan.SpaceID.ValueString(), plan.EnvironmentID.ValueString(), plan.ContentTypeID.ValueString())
+	version := 1
+	version += r.providerData.editorInterfaceVersionOffset.Get(plan.SpaceID.ValueString(), plan.EnvironmentID.ValueString(), plan.ContentTypeID.ValueString())
 
 	params := cm.PutEditorInterfaceParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		EnvironmentID:      plan.EnvironmentID.ValueString(),
 		ContentTypeID:      plan.ContentTypeID.ValueString(),
-		XContentfulVersion: currentVersion,
+		XContentfulVersion: version,
 	}
 
 	request, requestDiags := plan.ToEditorInterfaceData(ctx)
@@ -111,7 +111,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -136,7 +136,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
 }
@@ -176,7 +176,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		"err":      err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	var data EditorInterfaceModel
 
@@ -186,7 +186,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
+		version = response.Sys.Version
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -220,7 +220,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 
 	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
 }
