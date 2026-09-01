@@ -102,31 +102,20 @@ func (v TypedObject[T]) Equal(o attr.Value) bool {
 	vValue := v.Value()
 	otherValue := other.Value()
 
-	attributeTypes := tpfr.AttributeTypesOf(context.Background(), vValue)
-	keys := make(map[string]struct{}, len(attributeTypes))
-
 	attributeValues := tpfr.AttributeValuesOf(vValue)
-	for k := range attributeValues {
-		keys[k] = struct{}{}
-	}
-
 	otherAttributeValues := tpfr.AttributeValuesOf(otherValue)
-	for k := range otherAttributeValues {
-		keys[k] = struct{}{}
+
+	if len(attributeValues) != len(otherAttributeValues) {
+		return false
 	}
 
-	for k := range keys {
-		aElementK, aElementKFound := attributeValues[k]
-		if !aElementKFound {
+	for key, attributeValue := range attributeValues {
+		otherAttributeValue, ok := otherAttributeValues[key]
+		if !ok {
 			return false
 		}
 
-		bElementK, bElementKFound := otherAttributeValues[k]
-		if !bElementKFound {
-			return false
-		}
-
-		if !aElementK.Equal(bElementK) {
+		if !attributeValue.Equal(otherAttributeValue) {
 			return false
 		}
 	}

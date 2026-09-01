@@ -105,8 +105,17 @@ func (t TypedObjectType[T]) Equal(o attr.Type) bool {
 	attributeTypes := t.AttributeTypes()
 	otherAttributeTypes := other.AttributeTypes()
 
-	for k := range attributeTypes {
-		if !otherAttributeTypes[k].Equal(attributeTypes[k]) {
+	if len(attributeTypes) != len(otherAttributeTypes) {
+		return false
+	}
+
+	for key, attributeType := range attributeTypes {
+		otherAttributeType, ok := otherAttributeTypes[key]
+		if !ok {
+			return false
+		}
+
+		if !attributeType.Equal(otherAttributeType) {
 			return false
 		}
 	}

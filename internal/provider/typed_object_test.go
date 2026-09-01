@@ -85,3 +85,74 @@ func TestNewTypedObjectFromAttributes(t *testing.T) {
 		assert.Equal(t, "nested test", object.Value().NestedObject.Value().String.ValueString())
 	})
 }
+
+func TestTypedObjectEqual(t *testing.T) {
+	t.Parallel()
+
+	type typedObjectEqualModel struct {
+		Name    types.String `tfsdk:"name"`
+		Enabled types.Bool   `tfsdk:"enabled"`
+	}
+
+	object := NewTypedObject(typedObjectEqualModel{
+		Name:    types.StringValue("example"),
+		Enabled: types.BoolValue(true),
+	})
+
+	testcases := map[string]struct {
+		left     TypedObject[typedObjectEqualModel]
+		right    attr.Value
+		expected bool
+	}{
+		"equal known objects": {
+			left: object,
+			right: NewTypedObject(typedObjectEqualModel{
+				Name:    types.StringValue("example"),
+				Enabled: types.BoolValue(true),
+			}),
+			expected: true,
+		},
+		"different known objects": {
+			left: object,
+			right: NewTypedObject(typedObjectEqualModel{
+				Name:    types.StringValue("different"),
+				Enabled: types.BoolValue(true),
+			}),
+		},
+		"null equals null": {
+			left:     NewTypedObjectNull[typedObjectEqualModel](),
+			right:    NewTypedObjectNull[typedObjectEqualModel](),
+			expected: true,
+		},
+		"unknown equals unknown": {
+			left:     NewTypedObjectUnknown[typedObjectEqualModel](),
+			right:    NewTypedObjectUnknown[typedObjectEqualModel](),
+			expected: true,
+		},
+		"null differs from known": {
+			left:  NewTypedObjectNull[typedObjectEqualModel](),
+			right: object,
+		},
+		"unknown differs from known": {
+			left:  NewTypedObjectUnknown[typedObjectEqualModel](),
+			right: object,
+		},
+		"different value type": {
+			left:  object,
+			right: types.StringValue("example"),
+		},
+	}
+
+	for name, testcase := range testcases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, testcase.expected, testcase.left.Equal(testcase.right))
+
+			otherObject, ok := testcase.right.(TypedObject[typedObjectEqualModel])
+			if ok {
+				assert.Equal(t, testcase.expected, otherObject.Equal(testcase.left))
+			}
+		})
+	}
+}
