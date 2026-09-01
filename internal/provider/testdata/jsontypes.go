@@ -7,7 +7,7 @@ import (
 	"pgregory.net/rapid"
 )
 
-func JSONTypesNormalizedStringValue() *rapid.Generator[jsontypes.Normalized] {
+func NormalizedJSONStringValue() *rapid.Generator[jsontypes.Normalized] {
 	return rapid.Map(
 		rapid.Map(
 			rapid.String(),

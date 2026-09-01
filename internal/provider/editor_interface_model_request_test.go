@@ -335,7 +335,7 @@ func TestToEditorInterfaceData(t *testing.T) {
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
 	}))
 
 	controls := NewTypedList([]TypedObject[EditorInterfaceControlValue]{
@@ -345,7 +345,7 @@ func TestToEditorInterfaceData(t *testing.T) {
 	sidebarValue1 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
 		"disabled":         types.BoolNull(),
 	}))
 
@@ -403,14 +403,14 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`invalid json`)),
+		"settings":         NewNormalizedJSONValue([]byte(`invalid json`)),
 	}))
 
 	controlValue3 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceControlValue](ctx, map[string]attr.Value{
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
 	}))
 
 	controls := NewTypedList([]TypedObject[EditorInterfaceControlValue]{
@@ -429,14 +429,14 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 	sidebarValue2 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`invalid json`)),
+		"settings":         NewNormalizedJSONValue([]byte(`invalid json`)),
 		"disabled":         types.BoolNull(),
 	}))
 
 	sidebarValue3 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
 		"disabled":         types.BoolNull(),
 	}))
 
@@ -874,7 +874,7 @@ func validEditorInterfaceControlValue() EditorInterfaceControlValue {
 		FieldID:         types.StringValue("field"),
 		WidgetNamespace: types.StringValue("builtin"),
 		WidgetID:        types.StringValue("widget"),
-		Settings:        NewNormalizedJSONTypesNormalizedValue([]byte(`{"key":"value"}`)),
+		Settings:        NewNormalizedJSONValue([]byte(`{"key":"value"}`)),
 	}
 }
 
@@ -883,7 +883,7 @@ func validEditorInterfaceGroupControlValue() EditorInterfaceGroupControlValue {
 		GroupID:         types.StringValue("group"),
 		WidgetNamespace: types.StringValue("builtin"),
 		WidgetID:        types.StringValue("widget"),
-		Settings:        NewNormalizedJSONTypesNormalizedValue([]byte(`{"key":"value"}`)),
+		Settings:        NewNormalizedJSONValue([]byte(`{"key":"value"}`)),
 	}
 }
 
@@ -891,7 +891,7 @@ func validEditorInterfaceSidebarValue() EditorInterfaceSidebarValue {
 	return EditorInterfaceSidebarValue{
 		WidgetNamespace: types.StringValue("builtin"),
 		WidgetID:        types.StringValue("widget"),
-		Settings:        NewNormalizedJSONTypesNormalizedValue([]byte(`{"key":"value"}`)),
+		Settings:        NewNormalizedJSONValue([]byte(`{"key":"value"}`)),
 		Disabled:        types.BoolValue(false),
 	}
 }

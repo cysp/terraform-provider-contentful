@@ -33,6 +33,6 @@ func NormalizeJSON(rawJSON []byte) string {
 	return string(normalized)
 }
 
-func NewNormalizedJSONTypesNormalizedValue(bytes []byte) jsontypes.Normalized {
-	return jsontypes.NewNormalizedValue(NormalizeJSON(bytes))
+func NewNormalizedJSONValue(rawJSON []byte) jsontypes.Normalized {
+	return jsontypes.NewNormalizedValue(NormalizeJSON(rawJSON))
 }

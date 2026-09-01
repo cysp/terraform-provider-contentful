@@ -37,7 +37,7 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 
 	defaultValueValue := jsontypes.NewNormalizedNull()
 	if item.DefaultValue != nil {
-		defaultValueValue = NewNormalizedJSONTypesNormalizedValue(item.DefaultValue)
+		defaultValueValue = NewNormalizedJSONValue(item.DefaultValue)
 	}
 
 	value := ContentTypeFieldValue{
@@ -104,7 +104,7 @@ func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations 
 	for i, validation := range validations {
 		encoder := jx.Encoder{}
 		encoder.Raw(validation)
-		validationElements[i] = NewNormalizedJSONTypesNormalizedValue(encoder.Bytes())
+		validationElements[i] = NewNormalizedJSONValue(encoder.Bytes())
 	}
 
 	list := NewTypedList(validationElements)

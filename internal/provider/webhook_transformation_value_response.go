@@ -25,7 +25,7 @@ func ReadWebhookTransformationValueFromResponse(ctx context.Context, _ path.Path
 
 	bodyValue := jsontypes.NewNormalizedNull()
 	if transformation.Body != nil {
-		bodyValue = NewNormalizedJSONTypesNormalizedValue(transformation.Body)
+		bodyValue = NewNormalizedJSONValue(transformation.Body)
 	}
 
 	value, valueDiags := NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{

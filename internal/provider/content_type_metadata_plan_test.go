@@ -16,7 +16,7 @@ func TestReconcileContentTypeMetadataPlan(t *testing.T) {
 	taxonomyPopulated := NewTypedList([]TypedObject[ContentTypeMetadataTaxonomyItemValue]{
 		NewTypedObject(ContentTypeMetadataTaxonomyItemValue{}),
 	})
-	annotations := NewNormalizedJSONTypesNormalizedValue([]byte(`{"ContentType":[]}`))
+	annotations := NewNormalizedJSONValue([]byte(`{"ContentType":[]}`))
 
 	metadata := func(annotations jsontypes.Normalized, taxonomy TypedList[TypedObject[ContentTypeMetadataTaxonomyItemValue]]) TypedObject[ContentTypeMetadataValue] {
 		return NewTypedObject(ContentTypeMetadataValue{

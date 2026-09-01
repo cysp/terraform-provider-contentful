@@ -21,7 +21,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItem(t *testing
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
 	}))
 
 	item, diags := model.Value().ToEditorInterfaceDataControlsItem(path)
@@ -44,7 +44,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItemInvalidSett
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`invalid json`)),
+		"settings":         NewNormalizedJSONValue([]byte(`invalid json`)),
 	}))
 
 	controlsItem, diags := model.Value().ToEditorInterfaceDataControlsItem(path)

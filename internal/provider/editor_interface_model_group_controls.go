@@ -74,7 +74,7 @@ func NewEditorInterfaceGroupControlValueFromResponse(path path.Path, item cm.Edi
 			diags.AddAttributeError(path.AtName("settings"), "Failed to read settings", settingsErr.Error())
 		}
 
-		value.Settings = NewNormalizedJSONTypesNormalizedValue(settings)
+		value.Settings = NewNormalizedJSONValue(settings)
 	}
 
 	return NewTypedObject(value), diags

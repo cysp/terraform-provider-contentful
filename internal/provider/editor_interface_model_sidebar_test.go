@@ -21,7 +21,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItem(t *testing.T) {
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
 		"disabled":         types.BoolNull(),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
 	}))
 
 	item, diags := model.Value().ToEditorInterfaceDataSidebarItem(path)
@@ -44,7 +44,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItemInvalidSettings(t *testing.
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
 		"disabled":         types.BoolNull(),
-		"settings":         NewNormalizedJSONTypesNormalizedValue([]byte(`invalid json`)),
+		"settings":         NewNormalizedJSONValue([]byte(`invalid json`)),
 	}))
 
 	sidebarItem, diags := model.Value().ToEditorInterfaceDataSidebarItem(path)
