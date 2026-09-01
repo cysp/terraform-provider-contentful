@@ -136,7 +136,7 @@ func TestDeliveryAPIKeyEnvironmentRequestEncoding(t *testing.T) {
 				Environments: test.planned,
 			}
 
-			request, diags := model.ToAPIKeyRequestFields(t.Context(), DeliveryAPIKeyModel{Environments: test.configured})
+			request, diags := model.ToDeliveryAPIKeyRequestData(t.Context(), DeliveryAPIKeyModel{Environments: test.configured})
 			if test.expectedError {
 				require.True(t, diags.HasError())
 				assert.Equal(t, []string{"environments"}, attributeDiagnosticPaths(t, diags))

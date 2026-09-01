@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccPreviewApiKeyDataSourceNotFound(t *testing.T) {
+func TestAccPreviewAPIKeyDataSourceNotFound(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
@@ -24,7 +24,7 @@ func TestAccPreviewApiKeyDataSourceNotFound(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile(`Failed to read preview api key`),
+				ExpectError:     regexp.MustCompile(`Failed to read preview API key`),
 			},
 		},
 	})

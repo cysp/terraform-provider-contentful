@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *DeliveryAPIKeyModel) ToAPIKeyRequestFields(ctx context.Context, config DeliveryAPIKeyModel) (cm.ApiKeyRequestData, diag.Diagnostics) {
+func (model *DeliveryAPIKeyModel) ToDeliveryAPIKeyRequestData(ctx context.Context, config DeliveryAPIKeyModel) (cm.ApiKeyRequestData, diag.Diagnostics) {
 	diags := rejectUnknownConfigurationOwnedRequestValue(model.Environments, config.Environments, path.Root("environments"))
 
 	name, nameDiags := requestRequiredString(model.Name, path.Root("name"))

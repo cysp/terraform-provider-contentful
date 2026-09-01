@@ -70,7 +70,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	request, requestDiags := plan.ToAPIKeyRequestFields(ctx, config)
+	request, requestDiags := plan.ToDeliveryAPIKeyRequestData(ctx, config)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -113,7 +113,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 		version = response.Response.Sys.Version
 
 	default:
-		resp.Diagnostics.AddError("Failed to create delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to create delivery API key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -188,14 +188,14 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
 			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+				resp.Diagnostics.AddWarning("Failed to read delivery API key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 				resp.State.RemoveResource(ctx)
 
 				return
 			}
 		}
 
-		resp.Diagnostics.AddError("Failed to read delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to read delivery API key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -233,7 +233,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	request, requestDiags := plan.ToAPIKeyRequestFields(ctx, config)
+	request, requestDiags := plan.ToDeliveryAPIKeyRequestData(ctx, config)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -283,7 +283,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 		version = response.Response.Sys.Version
 
 	default:
-		resp.Diagnostics.AddError("Failed to update delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to update delivery API key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -351,14 +351,14 @@ func (r *deliveryAPIKeyResource) Delete(ctx context.Context, req resource.Delete
 
 		if response, ok := response.(cm.StatusCodeResponse); ok {
 			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Delivery api key already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+				resp.Diagnostics.AddWarning("Delivery API key already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 				handled = true
 			}
 		}
 
 		if !handled {
-			resp.Diagnostics.AddError("Failed to delete delivery api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.Diagnostics.AddError("Failed to delete delivery API key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
 	}
 }
