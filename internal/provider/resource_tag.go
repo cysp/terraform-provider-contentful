@@ -93,7 +93,7 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 		"err":      err,
 	})
 
-	currentVersion := 1
+	version := 1
 
 	var data TagModel
 
@@ -103,7 +103,7 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to create tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -128,7 +128,7 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -162,7 +162,7 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		"err":      err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	var data TagModel
 
@@ -172,7 +172,7 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
+		version = response.Sys.Version
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -206,7 +206,7 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

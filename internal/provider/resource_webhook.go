@@ -86,7 +86,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	currentVersion := 1
+	version := 1
 
 	params := cm.CreateWebhookDefinitionParams{
 		SpaceID: plan.SpaceID.ValueString(),
@@ -109,7 +109,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		resp.Diagnostics.Append(mutationStateDiags...)
 
 		data = mutationState
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to create webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -134,7 +134,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -171,7 +171,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		"err": err,
 	})
 
-	currentVersion := 0
+	version := 0
 
 	var data WebhookModel
 
@@ -181,7 +181,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Sys.Version
+		version = response.Sys.Version
 
 	default:
 		if response, ok := response.(cm.StatusCodeResponse); ok {
@@ -215,7 +215,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

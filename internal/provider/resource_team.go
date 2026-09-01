@@ -96,7 +96,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		"err":      err,
 	})
 
-	var currentVersion int
+	var version int
 
 	var data TeamModel
 
@@ -106,7 +106,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to create team", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -131,7 +131,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl
@@ -169,7 +169,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		"err":      err,
 	})
 
-	var currentVersion int
+	var version int
 
 	var data TeamModel
 
@@ -178,7 +178,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = team.Sys.Version
+		version = team.Sys.Version
 	} else {
 		if response, ok := response.(cm.StatusCodeResponse); ok {
 			if response.GetStatusCode() == http.StatusNotFound {
@@ -211,7 +211,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 //nolint:dupl

@@ -262,7 +262,7 @@ func TestContentTypeActivationResponsePostcondition(t *testing.T) {
 
 	for name, test := range map[string]struct {
 		expectedVersion  int
-		currentVersion   int
+		version          int
 		publishedVersion *int
 		expectError      bool
 		expectWarning    bool
@@ -279,7 +279,7 @@ func TestContentTypeActivationResponsePostcondition(t *testing.T) {
 			t.Parallel()
 
 			response := cm.ContentType{Sys: cm.NewContentTypeSys("space", "environment", "content-type")}
-			response.Sys.Version = test.currentVersion
+			response.Sys.Version = test.version
 
 			if test.publishedVersion != nil {
 				response.Sys.PublishedVersion.SetTo(*test.publishedVersion)
@@ -296,7 +296,7 @@ func TestContentTypeDraftResponsePostcondition(t *testing.T) {
 	t.Parallel()
 
 	for name, test := range map[string]struct {
-		currentVersion   int
+		version          int
 		publishedVersion *int
 		expectError      bool
 	}{
@@ -313,7 +313,7 @@ func TestContentTypeDraftResponsePostcondition(t *testing.T) {
 			t.Parallel()
 
 			response := cm.ContentType{Sys: cm.NewContentTypeSys("space", "environment", "content-type")}
-			response.Sys.Version = test.currentVersion
+			response.Sys.Version = test.version
 
 			if test.publishedVersion != nil {
 				response.Sys.PublishedVersion.SetTo(*test.publishedVersion)
