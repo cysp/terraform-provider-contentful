@@ -490,51 +490,11 @@ func TestReadWebhookDefinitionFilterTermStringArrayDistinguishesNullFromEmpty(t 
 	assert.Empty(t, emptyDiags)
 }
 
-func TestWebhookMutationStateReconcilesKnownPlannedFilters(t *testing.T) {
-	t.Parallel()
-
-	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
-		NewTypedObject(webhookFilterValue(
-			NewTypedObjectNull[WebhookFilterNotValue](),
-			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue("Entry")),
-			NewTypedObjectNull[WebhookFilterInValue](),
-			NewTypedObjectNull[WebhookFilterRegexpValue](),
-		)),
-	})
-	plan := WebhookModel{
-		Filters: plannedFilters,
-		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-	}
-	response := cm.WebhookDefinition{
-		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
-		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
-			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`123`)}},
-		}),
-	}
-
-	mutationState, mutationStateDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
-	assert.False(t, mutationStateDiags.HasError())
-	assert.Len(t, mutationStateDiags.Warnings(), 1)
-	assert.True(t, consistencyDiags.HasError())
-	assert.False(t, mutationState.Filters.Equal(plannedFilters))
-	assert.True(t, mutationState.Filters.Elements()[0].Value().Equals.Value().Value.IsNull())
-
-	readState, readDiags := NewWebhookResourceModelFromResponse(t.Context(), response, plan.Headers.Elements())
-	assert.False(t, readDiags.HasError())
-	assert.Len(t, readDiags.Warnings(), 1)
-	assert.True(t, readState.Filters.Elements()[0].Value().Equals.Value().Value.IsNull())
-}
-
 func TestWebhookMutationStateDoesNotManufactureEqualityFromLossyFallback(t *testing.T) {
 	t.Parallel()
 
 	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
-		NewTypedObject(webhookFilterValue(
-			NewTypedObjectNull[WebhookFilterNotValue](),
-			webhookEqualsValue(types.StringValue("sys.type"), types.StringNull()),
-			NewTypedObjectNull[WebhookFilterInValue](),
-			NewTypedObjectNull[WebhookFilterRegexpValue](),
-		)),
+		webhookEqualsFilter(types.StringValue("sys.type"), types.StringNull()),
 	})
 	plan := WebhookModel{
 		Filters: plannedFilters,
@@ -547,7 +507,7 @@ func TestWebhookMutationStateDoesNotManufactureEqualityFromLossyFallback(t *test
 		}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	mutationState, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
 
 	assert.Len(t, responseDiags.Warnings(), 1)
 	require.True(t, consistencyDiags.HasError())
@@ -560,12 +520,7 @@ func TestWebhookMutationStateRejectsRepresentableFilterContradiction(t *testing.
 	t.Parallel()
 
 	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
-		NewTypedObject(webhookFilterValue(
-			NewTypedObjectNull[WebhookFilterNotValue](),
-			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue("Entry")),
-			NewTypedObjectNull[WebhookFilterInValue](),
-			NewTypedObjectNull[WebhookFilterRegexpValue](),
-		)),
+		webhookEqualsFilter(types.StringValue("sys.type"), types.StringValue("Entry")),
 	})
 	plan := WebhookModel{
 		Filters: plannedFilters,
@@ -579,11 +534,12 @@ func TestWebhookMutationStateRejectsRepresentableFilterContradiction(t *testing.
 		}),
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	mutationState, mutationStateDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
 
 	require.False(t, mutationStateDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	assert.Equal(t, []string{"filters"}, attributeDiagnosticPaths(t, consistencyDiags))
+	assert.Equal(t, "Contentful returned different webhook filters", consistencyDiags.Errors()[0].Summary())
 	assert.Equal(t, "Asset", mutationState.Filters.Elements()[0].Value().Equals.Value().Value.ValueString())
 	assert.Equal(t, "Response webhook", mutationState.Name.ValueString())
 }
@@ -600,9 +556,16 @@ func TestWebhookMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *test
 			})),
 			NewTypedObjectNull[WebhookFilterRegexpValue](),
 		)),
+		webhookEqualsFilter(types.StringValue("sys.type"), types.StringValue("Entry")),
 		NewTypedObject(webhookFilterValue(
-			NewTypedObjectNull[WebhookFilterNotValue](),
-			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue("Entry")),
+			NewTypedObject(WebhookFilterNotValue{
+				Equals: NewTypedObjectNull[WebhookFilterEqualsValue](),
+				In: webhookInValue(types.StringValue("sys.environment.sys.id"), NewTypedList([]types.String{
+					types.StringValue("master"), types.StringValue("preview"),
+				})),
+				Regexp: NewTypedObjectNull[WebhookFilterRegexpValue](),
+			}),
+			NewTypedObjectNull[WebhookFilterEqualsValue](),
 			NewTypedObjectNull[WebhookFilterInValue](),
 			NewTypedObjectNull[WebhookFilterRegexpValue](),
 		)),
@@ -610,6 +573,9 @@ func TestWebhookMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *test
 	response := cm.WebhookDefinition{
 		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
 		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
+			{Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
+				In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.environment.sys.id"}`), []byte(`["preview","master"]`)},
+			})},
 			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)}},
 			{In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.id"}`), []byte(`["a","a","b"]`)}},
 		}),
@@ -619,7 +585,7 @@ func TestWebhookMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *test
 		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	mutationState, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
@@ -630,15 +596,10 @@ func TestWebhookMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *test
 func TestWebhookMutationStatePreservesFilterDuplicateMultiplicity(t *testing.T) {
 	t.Parallel()
 
-	filter := func(value string) TypedObject[WebhookFilterValue] {
-		return NewTypedObject(webhookFilterValue(
-			NewTypedObjectNull[WebhookFilterNotValue](),
-			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue(value)),
-			NewTypedObjectNull[WebhookFilterInValue](),
-			NewTypedObjectNull[WebhookFilterRegexpValue](),
-		))
-	}
-	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{filter("Entry"), filter("Entry")})
+	plannedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
+		webhookEqualsFilter(types.StringValue("sys.type"), types.StringValue("Entry")),
+		webhookEqualsFilter(types.StringValue("sys.type"), types.StringValue("Entry")),
+	})
 	response := cm.WebhookDefinition{
 		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
 		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
@@ -651,7 +612,7 @@ func TestWebhookMutationStatePreservesFilterDuplicateMultiplicity(t *testing.T) 
 		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	mutationState, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
 
 	assert.Empty(t, responseDiags)
 	require.True(t, consistencyDiags.HasError())
@@ -672,7 +633,7 @@ func TestWebhookMutationStateUsesResponseForUnknownFilters(t *testing.T) {
 		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	mutationState, mutationStateDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
 
 	assert.False(t, mutationStateDiags.HasError())
 	assert.Empty(t, consistencyDiags)
@@ -681,7 +642,7 @@ func TestWebhookMutationStateUsesResponseForUnknownFilters(t *testing.T) {
 	assert.Equal(t, "Entry", mutationState.Filters.Elements()[0].Value().Equals.Value().Value.ValueString())
 
 	plan.Filters = NewTypedListNull[TypedObject[WebhookFilterValue]]()
-	nullPlanState, nullPlanDiags, nullConsistencyDiags := NewWebhookResourceModelForMutationState(t.Context(), response, plan)
+	nullPlanState, nullPlanDiags, nullConsistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
 	assert.False(t, nullPlanDiags.HasError())
 	assert.True(t, nullConsistencyDiags.HasError())
 	assert.False(t, nullPlanState.Filters.IsNull())

@@ -353,17 +353,29 @@ func TestContentTypeMutationStateLeavesOmittedTaxonomyResponseOwned(t *testing.T
 	assert.False(t, state.Metadata.Value().Taxonomy.Equal(planTaxonomy))
 }
 
+func editorLayoutPlanGroup(id, name string, items TypedList[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]]) TypedObject[EditorInterfaceEditorLayoutItemValue] {
+	return NewTypedObject(EditorInterfaceEditorLayoutItemValue{
+		Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupValue{
+			GroupID: types.StringValue(id),
+			Name:    types.StringValue(name),
+			Items:   items,
+		}),
+	})
+}
+
+func editorLayoutResponseGroup(id, name string) cm.EditorInterfaceEditorLayoutItem {
+	return cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(cm.EditorInterfaceEditorLayoutGroupItem{
+		GroupId: id,
+		Name:    name,
+		Items:   []cm.EditorInterfaceEditorLayoutItem{},
+	})
+}
+
 func TestEditorInterfaceMutationStateRejectsLossyLayoutProjection(t *testing.T) {
 	t.Parallel()
 
 	plannedLayout := NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemValue]{
-		NewTypedObject(EditorInterfaceEditorLayoutItemValue{
-			Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupValue{
-				GroupID: types.StringValue("layout-group"),
-				Name:    types.StringValue("Layout group"),
-				Items:   NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{}),
-			}),
-		}),
+		editorLayoutPlanGroup("layout-group", "Layout group", NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{})),
 	})
 	response := cm.EditorInterface{
 		Sys: cm.NewEditorInterfaceSys("space", "environment", "content_type", "default"),
@@ -372,25 +384,20 @@ func TestEditorInterfaceMutationStateRejectsLossyLayoutProjection(t *testing.T) 
 		}),
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := NewEditorInterfaceResourceModelForMutationState(t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout})
+	mutationState, mutationStateDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout})
 	assert.False(t, mutationStateDiags.HasError())
 	assert.Len(t, mutationStateDiags.Warnings(), 1)
 	assert.True(t, consistencyDiags.HasError())
 	assert.False(t, mutationState.EditorLayout.Equal(plannedLayout))
 	assert.True(t, mutationState.EditorLayout.Elements()[0].Value().Group.IsNull())
 
-	readState, readDiags := NewEditorInterfaceResourceModelFromResponse(t.Context(), response)
-	assert.False(t, readDiags.HasError())
-	assert.Len(t, readDiags.Warnings(), 1)
-	assert.True(t, readState.EditorLayout.Elements()[0].Value().Group.IsNull())
-
-	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags := NewEditorInterfaceResourceModelForMutationState(t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListUnknown[TypedObject[EditorInterfaceEditorLayoutItemValue]]()})
+	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListUnknown[TypedObject[EditorInterfaceEditorLayoutItemValue]]()})
 	assert.False(t, unknownPlanDiags.HasError())
 	assert.Empty(t, unknownConsistencyDiags)
 	assert.False(t, unknownPlanState.EditorLayout.IsUnknown())
 	assert.True(t, unknownPlanState.EditorLayout.Elements()[0].Value().Group.IsNull())
 
-	nullPlanState, nullPlanDiags, nullConsistencyDiags := NewEditorInterfaceResourceModelForMutationState(t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]]()})
+	nullPlanState, nullPlanDiags, nullConsistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]]()})
 	assert.False(t, nullPlanDiags.HasError())
 	assert.True(t, nullConsistencyDiags.HasError())
 	assert.False(t, nullPlanState.EditorLayout.IsNull())
@@ -401,88 +408,64 @@ func TestEditorInterfaceMutationStateRejectsRepresentableLayoutContradiction(t *
 	t.Parallel()
 
 	plannedLayout := NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemValue]{
-		NewTypedObject(EditorInterfaceEditorLayoutItemValue{
-			Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupValue{
-				GroupID: types.StringValue("planned-group"),
-				Name:    types.StringValue("Planned group"),
-				Items:   NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{}),
-			}),
-		}),
+		editorLayoutPlanGroup("planned-group", "Planned group", NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{})),
 	})
 	response := cm.EditorInterface{
 		Sys: cm.NewEditorInterfaceSys("space", "environment", "content_type", "default"),
 		EditorLayout: cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{
-			cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(cm.EditorInterfaceEditorLayoutGroupItem{
-				GroupId: "response-group",
-				Name:    "Response group",
-				Items:   []cm.EditorInterfaceEditorLayoutItem{},
-			}),
+			editorLayoutResponseGroup("response-group", "Response group"),
 		}),
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := NewEditorInterfaceResourceModelForMutationState(
+	mutationState, mutationStateDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(
 		t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout},
 	)
 
 	require.False(t, mutationStateDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	assert.Equal(t, []string{"editor_layout"}, attributeDiagnosticPaths(t, consistencyDiags))
+	assert.Equal(t, "Contentful returned a different Editor Interface layout", consistencyDiags.Errors()[0].Summary())
 	assert.Equal(t, "response-group", mutationState.EditorLayout.Elements()[0].Value().Group.Value().GroupID.ValueString())
 }
 
-func TestEditorInterfaceMutationStateRestoresEquivalentPlanRepresentation(t *testing.T) {
+func TestEditorInterfaceMutationStateAcceptsEquivalentResponse(t *testing.T) {
 	t.Parallel()
 
 	plannedLayout := NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemValue]{
-		NewTypedObject(EditorInterfaceEditorLayoutItemValue{
-			Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupValue{
-				GroupID: types.StringValue("group"),
-				Name:    types.StringValue("Group"),
-				Items:   NewTypedList[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]](nil),
-			}),
-		}),
+		editorLayoutPlanGroup("group", "Group", NewTypedList[TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]](nil)),
 	})
 	response := cm.EditorInterface{
 		Sys: cm.NewEditorInterfaceSys("space", "environment", "content_type", "default"),
 		EditorLayout: cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{
-			cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(cm.EditorInterfaceEditorLayoutGroupItem{
-				GroupId: "group",
-				Name:    "Group",
-				Items:   []cm.EditorInterfaceEditorLayoutItem{},
-			}),
+			editorLayoutResponseGroup("group", "Group"),
 		}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := NewEditorInterfaceResourceModelForMutationState(
+	mutationState, responseDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(
 		t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout},
 	)
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
 	assert.True(t, mutationState.EditorLayout.Equal(plannedLayout))
-	assert.Nil(t, mutationState.EditorLayout.Elements()[0].Value().Group.Value().Items.Elements())
 }
 
 func TestEditorInterfaceMutationStateTreatsLayoutOrderAsMeaningful(t *testing.T) {
 	t.Parallel()
 
-	group := func(id string) TypedObject[EditorInterfaceEditorLayoutItemValue] {
-		return NewTypedObject(EditorInterfaceEditorLayoutItemValue{Group: NewTypedObject(EditorInterfaceEditorLayoutItemGroupValue{
-			GroupID: types.StringValue(id),
-			Name:    types.StringValue(id),
-			Items:   NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{}),
-		})})
-	}
-	plannedLayout := NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemValue]{group("first"), group("second")})
+	plannedLayout := NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemValue]{
+		editorLayoutPlanGroup("first", "first", NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{})),
+		editorLayoutPlanGroup("second", "second", NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{})),
+	})
 	response := cm.EditorInterface{
 		Sys: cm.NewEditorInterfaceSys("space", "environment", "content_type", "default"),
 		EditorLayout: cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{
-			cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(cm.EditorInterfaceEditorLayoutGroupItem{GroupId: "second", Name: "second", Items: []cm.EditorInterfaceEditorLayoutItem{}}),
-			cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(cm.EditorInterfaceEditorLayoutGroupItem{GroupId: "first", Name: "first", Items: []cm.EditorInterfaceEditorLayoutItem{}}),
+			editorLayoutResponseGroup("second", "second"),
+			editorLayoutResponseGroup("first", "first"),
 		}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := NewEditorInterfaceResourceModelForMutationState(
+	mutationState, responseDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(
 		t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout},
 	)
 
@@ -494,7 +477,7 @@ func TestEditorInterfaceMutationStateTreatsLayoutOrderAsMeaningful(t *testing.T)
 func TestOptionalMutationStateReconcilesOmittedNullValues(t *testing.T) {
 	t.Parallel()
 
-	editorState, editorResponseDiags, editorConsistencyDiags := NewEditorInterfaceResourceModelForMutationState(
+	editorState, editorResponseDiags, editorConsistencyDiags := ReconcileEditorInterfaceMutationResponse(
 		t.Context(),
 		cm.EditorInterface{Sys: cm.NewEditorInterfaceSys("space", "environment", "content_type", "default")},
 		EditorInterfaceModel{EditorLayout: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]]()},
@@ -503,7 +486,7 @@ func TestOptionalMutationStateReconcilesOmittedNullValues(t *testing.T) {
 	assert.Empty(t, editorConsistencyDiags)
 	assert.True(t, editorState.EditorLayout.IsNull())
 
-	webhookState, webhookResponseDiags, webhookConsistencyDiags := NewWebhookResourceModelForMutationState(
+	webhookState, webhookResponseDiags, webhookConsistencyDiags := ReconcileWebhookMutationResponse(
 		t.Context(),
 		cm.WebhookDefinition{Sys: cm.NewWebhookDefinitionSys("space", "webhook")},
 		WebhookModel{
@@ -523,11 +506,7 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 		"Entry": NewTypedList([]types.String{types.StringValue("read")}),
 	})
 	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
-		NewTypedObject(RolePolicyValue{
-			Actions:    NewTypedList([]types.String{types.StringValue("read")}),
-			Constraint: jsontypes.NewNormalizedNull(),
-			Effect:     types.StringValue("allow"),
-		}),
+		rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedNull()),
 	})
 	response := cm.Role{
 		Sys: cm.NewRoleSys("space", "role"),
@@ -540,7 +519,7 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 		}},
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := NewRoleResourceModelForMutationState(t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies})
+	mutationState, mutationStateDiags, consistencyDiags := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies})
 	assert.False(t, mutationStateDiags.HasError())
 	assert.Len(t, mutationStateDiags.Warnings(), 3)
 	assert.True(t, consistencyDiags.HasError())
@@ -548,14 +527,7 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 	assert.False(t, mutationState.Permissions.Equal(plannedPermissions))
 	assert.False(t, mutationState.Policies.Equal(plannedPolicies))
 
-	readState, readDiags := NewRoleResourceModelFromResponse(t.Context(), response)
-	assert.False(t, readDiags.HasError())
-	assert.Len(t, readDiags.Warnings(), 3)
-	assert.True(t, readState.Permissions.Elements()["Entry"].IsNull())
-	assert.True(t, readState.Policies.Elements()[0].Value().Effect.IsNull())
-	assert.True(t, readState.Policies.Elements()[0].Value().Actions.IsNull())
-
-	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags := NewRoleResourceModelForMutationState(t.Context(), response, RoleModel{
+	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{
 		Permissions: NewTypedMapUnknown[TypedList[types.String]](),
 		Policies:    NewTypedListUnknown[TypedObject[RolePolicyValue]](),
 	})
@@ -565,17 +537,6 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 	assert.False(t, unknownPlanState.Policies.IsUnknown())
 	assert.True(t, unknownPlanState.Permissions.Elements()["Entry"].IsNull())
 	assert.True(t, unknownPlanState.Policies.Elements()[0].Value().Effect.IsNull())
-
-	nullPlanState, nullPlanDiags, nullConsistencyDiags := NewRoleResourceModelForMutationState(t.Context(), response, RoleModel{
-		Permissions: NewTypedMapNull[TypedList[types.String]](),
-		Policies:    NewTypedListNull[TypedObject[RolePolicyValue]](),
-	})
-	assert.False(t, nullPlanDiags.HasError())
-	assert.True(t, nullConsistencyDiags.HasError())
-	assert.False(t, nullPlanState.Permissions.IsNull())
-	assert.False(t, nullPlanState.Policies.IsNull())
-	assert.True(t, nullPlanState.Permissions.Elements()["Entry"].IsNull())
-	assert.True(t, nullPlanState.Policies.Elements()[0].Value().Effect.IsNull())
 }
 
 func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testing.T) {
@@ -585,11 +546,7 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 		"Entry": NewTypedList([]types.String{types.StringValue("read")}),
 	})
 	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
-		NewTypedObject(RolePolicyValue{
-			Actions:    NewTypedList([]types.String{types.StringValue("read"), types.StringValue("create")}),
-			Constraint: jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`),
-			Effect:     types.StringValue("allow"),
-		}),
+		rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
 	})
 	response := cm.Role{
 		Sys:  cm.NewRoleSys("space", "role"),
@@ -604,13 +561,14 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 		}},
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := NewRoleResourceModelForMutationState(
+	mutationState, mutationStateDiags, consistencyDiags := ReconcileRoleMutationResponse(
 		t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies},
 	)
 
 	require.False(t, mutationStateDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	assert.Equal(t, []string{"permissions"}, attributeDiagnosticPaths(t, consistencyDiags))
+	assert.Equal(t, "Contentful returned different role permissions", consistencyDiags.Errors()[0].Summary())
 	assert.Equal(t, []types.String{types.StringValue("manage")}, mutationState.Permissions.Elements()["Entry"].Elements())
 	assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, mutationState.Policies.Elements()[0].Value().Actions.Elements())
 	assert.Equal(t, "Response role", mutationState.Name.ValueString())
@@ -623,16 +581,8 @@ func TestRoleMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *testing
 		"Entry": NewTypedList([]types.String{types.StringValue("read"), types.StringValue("create"), types.StringValue("read")}),
 	})
 	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
-		NewTypedObject(RolePolicyValue{
-			Actions:    NewTypedList([]types.String{types.StringValue("read"), types.StringValue("create")}),
-			Constraint: jsontypes.NewNormalizedValue(`{"b":2,"a":1}`),
-			Effect:     types.StringValue("allow"),
-		}),
-		NewTypedObject(RolePolicyValue{
-			Actions:    NewTypedList([]types.String{types.StringValue("delete")}),
-			Constraint: jsontypes.NewNormalizedNull(),
-			Effect:     types.StringValue("deny"),
-		}),
+		rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(`{"b":2,"a":1}`)),
+		rolePolicyValue("deny", []string{"delete"}, jsontypes.NewNormalizedNull()),
 	})
 	response := cm.Role{
 		Sys:  cm.NewRoleSys("space", "role"),
@@ -646,7 +596,7 @@ func TestRoleMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *testing
 		},
 	}
 
-	mutationState, responseDiags, consistencyDiags := NewRoleResourceModelForMutationState(
+	mutationState, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(
 		t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies},
 	)
 
@@ -671,7 +621,7 @@ func TestRoleMutationStatePreservesDuplicateMultiplicity(t *testing.T) {
 		Policies: []cm.RolePoliciesItem{},
 	}
 
-	mutationState, responseDiags, consistencyDiags := NewRoleResourceModelForMutationState(
+	mutationState, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(
 		t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies},
 	)
 
@@ -684,28 +634,8 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 	t.Parallel()
 
 	plannedPermissions := NewTypedMap(map[string]TypedList[types.String]{
-		"Entry": NewTypedList([]types.String{types.StringValue("read")}),
+		"Entry": NewTypedList([]types.String{types.StringValue("read"), types.StringValue("create")}),
 	})
-	policy := func(effect string, actions []string, constraint string) TypedObject[RolePolicyValue] {
-		typedActions := make([]types.String, len(actions))
-		for index, action := range actions {
-			typedActions[index] = types.StringValue(action)
-		}
-
-		return NewTypedObject(RolePolicyValue{
-			Actions:    NewTypedList(typedActions),
-			Constraint: jsontypes.NewNormalizedValue(constraint),
-			Effect:     types.StringValue(effect),
-		})
-	}
-	responsePolicy := func(effect string, actions []string, constraint string) cm.RolePoliciesItem {
-		return cm.RolePoliciesItem{
-			Actions:    cm.NewStringArrayRolePoliciesItemActions(actions),
-			Constraint: []byte(constraint),
-			Effect:     cm.RolePoliciesItemEffect(effect),
-		}
-	}
-
 	for name, test := range map[string]struct {
 		planned             []TypedObject[RolePolicyValue]
 		response            []cm.RolePoliciesItem
@@ -715,10 +645,10 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 	}{
 		"effect": {
 			planned: []TypedObject[RolePolicyValue]{
-				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
 			},
 			response: []cm.RolePoliciesItem{
-				responsePolicy("deny", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+				rolePolicyResponse("deny", []string{"read"}, `{"sys":{"type":"Entry"}}`),
 			},
 			expectedEffects:     []string{"deny"},
 			expectedActions:     [][]types.String{{types.StringValue("read")}},
@@ -726,10 +656,10 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 		},
 		"actions": {
 			planned: []TypedObject[RolePolicyValue]{
-				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
 			},
 			response: []cm.RolePoliciesItem{
-				responsePolicy("allow", []string{"create"}, `{"sys":{"type":"Entry"}}`),
+				rolePolicyResponse("allow", []string{"create"}, `{"sys":{"type":"Entry"}}`),
 			},
 			expectedEffects:     []string{"allow"},
 			expectedActions:     [][]types.String{{types.StringValue("create")}},
@@ -737,10 +667,10 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 		},
 		"constraint": {
 			planned: []TypedObject[RolePolicyValue]{
-				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
 			},
 			response: []cm.RolePoliciesItem{
-				responsePolicy("allow", []string{"read"}, `{"sys":{"type":"Asset"}}`),
+				rolePolicyResponse("allow", []string{"read"}, `{"sys":{"type":"Asset"}}`),
 			},
 			expectedEffects:     []string{"allow"},
 			expectedActions:     [][]types.String{{types.StringValue("read")}},
@@ -748,12 +678,12 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 		},
 		"duplicate multiplicity": {
 			planned: []TypedObject[RolePolicyValue]{
-				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
-				policy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
 			},
 			response: []cm.RolePoliciesItem{
-				responsePolicy("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
-				responsePolicy("allow", []string{"read"}, `{"sys":{"type":"Asset"}}`),
+				rolePolicyResponse("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+				rolePolicyResponse("allow", []string{"read"}, `{"sys":{"type":"Asset"}}`),
 			},
 			expectedEffects:     []string{"allow", "allow"},
 			expectedActions:     [][]types.String{{types.StringValue("read")}, {types.StringValue("read")}},
@@ -767,11 +697,11 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 			response := cm.Role{
 				Sys:         cm.NewRoleSys("space", "role"),
 				Name:        "Response role",
-				Permissions: cm.RolePermissions{"Entry": cm.NewStringArrayRolePermissionsItem([]string{"read"})},
+				Permissions: cm.RolePermissions{"Entry": cm.NewStringArrayRolePermissionsItem([]string{"create", "read"})},
 				Policies:    test.response,
 			}
 
-			mutationState, responseDiags, consistencyDiags := NewRoleResourceModelForMutationState(
+			mutationState, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(
 				t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies},
 			)
 
@@ -780,7 +710,8 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 			assert.Equal(t, []string{"policies"}, attributeDiagnosticPaths(t, consistencyDiags))
 			assert.False(t, mutationState.Policies.Equal(plannedPolicies))
 			assert.Equal(t, "Response role", mutationState.Name.ValueString())
-			assert.True(t, mutationState.Permissions.Equal(plannedPermissions))
+			assert.False(t, mutationState.Permissions.Equal(plannedPermissions))
+			assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, mutationState.Permissions.Elements()["Entry"].Elements())
 			require.Len(t, mutationState.Policies.Elements(), len(test.expectedEffects))
 
 			for index, expectedEffect := range test.expectedEffects {
@@ -790,5 +721,26 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 				assert.Equal(t, test.expectedConstraints[index], actualPolicy.Constraint.ValueString())
 			}
 		})
+	}
+}
+
+func rolePolicyValue(effect string, actions []string, constraint jsontypes.Normalized) TypedObject[RolePolicyValue] {
+	typedActions := make([]types.String, len(actions))
+	for index, action := range actions {
+		typedActions[index] = types.StringValue(action)
+	}
+
+	return NewTypedObject(RolePolicyValue{
+		Actions:    NewTypedList(typedActions),
+		Constraint: constraint,
+		Effect:     types.StringValue(effect),
+	})
+}
+
+func rolePolicyResponse(effect string, actions []string, constraint string) cm.RolePoliciesItem {
+	return cm.RolePoliciesItem{
+		Actions:    cm.NewStringArrayRolePoliciesItemActions(actions),
+		Constraint: []byte(constraint),
+		Effect:     cm.RolePoliciesItemEffect(effect),
 	}
 }

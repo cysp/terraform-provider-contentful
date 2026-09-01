@@ -86,45 +86,9 @@ func entryMetadataEquivalent(left, right TypedObject[EntryMetadataValue]) bool {
 		return (left.IsNull() && right.IsNull()) || (left.IsUnknown() && right.IsUnknown())
 	}
 
-	return entryStringListUnorderedEquivalent(left.Value().Concepts, right.Value().Concepts) &&
-		entryStringListUnorderedEquivalent(left.Value().Tags, right.Value().Tags)
-}
-
-// entryStringListUnorderedEquivalent ignores metadata-link ordering while
-// preserving duplicate multiplicity. CMA has been observed to return unchanged
-// links in an order different from the request.
-func entryStringListUnorderedEquivalent(left, right TypedList[types.String]) bool {
-	if left.IsNull() || left.IsUnknown() || right.IsNull() || right.IsUnknown() {
-		return left.Equal(right)
-	}
-
-	leftElements := left.Elements()
-
-	rightElements := right.Elements()
-	if len(leftElements) != len(rightElements) {
-		return false
-	}
-
-	matched := make([]bool, len(rightElements))
-
-	for _, leftElement := range leftElements {
-		found := false
-
-		for index, rightElement := range rightElements {
-			if !matched[index] && leftElement.Equal(rightElement) {
-				matched[index] = true
-				found = true
-
-				break
-			}
-		}
-
-		if !found {
-			return false
-		}
-	}
-
-	return true
+	// CMA has been observed to reorder unchanged metadata links.
+	return unorderedStringListsEquivalent(left.Value().Concepts, right.Value().Concepts) &&
+		unorderedStringListsEquivalent(left.Value().Tags, right.Value().Tags)
 }
 
 func entryFieldsEquivalent(ctx context.Context, left, right TypedMap[jsontypes.Normalized]) (bool, diag.Diagnostics) {

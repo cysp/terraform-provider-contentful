@@ -72,27 +72,22 @@ func newEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 	return model, diags, editorLayoutDiags
 }
 
-// NewEditorInterfaceResourceModelForMutationState starts with the complete
-// response projection. It restores the exact known Plan representation only
-// after ordered editor_layout equality is proven; lossy or contradictory
-// responses remain available as recovery state with a consistency diagnostic.
-// Unknown Plan values resolve from the response. Read skips reconciliation.
-func NewEditorInterfaceResourceModelForMutationState(ctx context.Context, editorInterface cm.EditorInterface, appliedPlan EditorInterfaceModel) (EditorInterfaceModel, diag.Diagnostics, diag.Diagnostics) {
-	mutationState, responseDiags, editorLayoutDiags := newEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
-	if appliedPlan.EditorLayout.IsUnknown() {
-		return mutationState, responseDiags, nil
+// ReconcileEditorInterfaceMutationResponse projects the complete mutation
+// response and verifies ordered, lossless editor_layout equivalence.
+func ReconcileEditorInterfaceMutationResponse(ctx context.Context, editorInterface cm.EditorInterface, plan EditorInterfaceModel) (EditorInterfaceModel, diag.Diagnostics, diag.Diagnostics) {
+	state, responseDiags, editorLayoutDiags := newEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
+	if plan.EditorLayout.IsUnknown() {
+		return state, responseDiags, nil
 	}
 
 	consistencyDiags := diag.Diagnostics{}
 
 	switch {
 	case len(editorLayoutDiags) != 0:
-		consistencyDiags.AddAttributeError(path.Root("editor_layout"), "Unexpected Contentful editor interface response", "The editor_layout response could not be projected without loss, so equivalence with the Terraform plan could not be established.")
-	case appliedPlan.EditorLayout.Equal(mutationState.EditorLayout):
-		mutationState.EditorLayout = appliedPlan.EditorLayout
-	default:
-		consistencyDiags.AddAttributeError(path.Root("editor_layout"), "Unexpected Contentful editor interface response", "The editor_layout response differed meaningfully from the Terraform plan.")
+		consistencyDiags.AddAttributeError(path.Root("editor_layout"), "Provider cannot fully represent Editor Interface layout", "Contentful accepted the request, but the returned Editor Interface layout contains values this provider cannot fully represent. Terraform retained the representable response values but cannot verify that they match the value Terraform applied. Review the Editor Interface in Contentful before applying again.")
+	case !plan.EditorLayout.Equal(state.EditorLayout):
+		consistencyDiags.AddAttributeError(path.Root("editor_layout"), "Contentful returned a different Editor Interface layout", "Contentful accepted the request but returned an Editor Interface layout that differs from the value Terraform applied. Terraform retained the returned value in state rather than substituting the planned value. Review the Editor Interface and configuration before applying again.")
 	}
 
-	return mutationState, responseDiags, consistencyDiags
+	return state, responseDiags, consistencyDiags
 }

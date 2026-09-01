@@ -109,13 +109,13 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		mutationState, mutationStateDiags, mutationConsistencyDiags := NewWebhookResourceModelForMutationState(ctx, response.Response, plan)
-		resp.Diagnostics.Append(mutationStateDiags...)
+		var responseDiags diag.Diagnostics
 
-		data = mutationState
+		data, responseDiags, consistencyDiags = ReconcileWebhookMutationResponse(ctx, response.Response, plan)
+
+		resp.Diagnostics.Append(responseDiags...)
+
 		version = response.Response.Sys.Version
-
-		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -289,13 +289,13 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
-		mutationState, mutationStateDiags, mutationConsistencyDiags := NewWebhookResourceModelForMutationState(ctx, response.Response, plan)
-		resp.Diagnostics.Append(mutationStateDiags...)
+		var responseDiags diag.Diagnostics
 
-		data = mutationState
+		data, responseDiags, consistencyDiags = ReconcileWebhookMutationResponse(ctx, response.Response, plan)
+
+		resp.Diagnostics.Append(responseDiags...)
+
 		version = response.Response.Sys.Version
-
-		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))

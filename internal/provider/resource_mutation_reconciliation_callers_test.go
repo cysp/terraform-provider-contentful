@@ -1,54 +1,29 @@
 package provider_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"regexp"
-	"strconv"
 	"sync"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
-	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	errMutationResourceAbsentFromPlan = errors.New("mutation resource was absent from the Terraform plan")
-	errUnexpectedMutationTransition   = errors.New("unexpected mutation response recovery transition")
-)
+var errUnexpectedTerraformPlan = errors.New("unexpected Terraform plan")
 
-func TestAccEditorInterfaceUpdateMutationResponseContradictionRetainsTruthfulState(t *testing.T) {
-	t.Parallel()
-
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
-	server.SetContentType("space", "master", "article", cm.ContentTypeRequestData{Name: "Article"})
-	server.SetEditorInterface("space", "master", "article", cm.EditorInterfaceData{
-		EditorLayout: cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{
-			cm.NewEditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem(cm.EditorInterfaceEditorLayoutGroupItem{
-				GroupId: "response",
-				Name:    "Group",
-				Items:   []cm.EditorInterfaceEditorLayoutItem{},
-			}),
-		}),
-	})
-
-	adapter := &mutationJSONResponseAdapter{delegate: server}
-	config := func(groupID string) string {
-		return fmt.Sprintf(`
+func editorInterfaceLayoutConfig(groupID string) string {
+	return fmt.Sprintf(`
 resource "contentful_editor_interface" "test" {
   space_id        = "space"
   environment_id  = "master"
@@ -62,14 +37,38 @@ resource "contentful_editor_interface" "test" {
   }]
 }
 `, groupID)
+}
+
+func replaceEditorInterfaceResponseLayout(groupID string) func(map[string]any) {
+	return func(response map[string]any) {
+		response["editorLayout"] = []any{map[string]any{
+			"groupId": groupID,
+			"name":    "Group",
+			"items":   []any{},
+		}}
 	}
+}
+
+func TestAccEditorInterfaceUpdateConsistencyErrorRetainsResponseState(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.SetContentType("space", "master", "article", cm.ContentTypeRequestData{Name: "Article"})
+	server.SetEditorInterface("space", "master", "article", cm.EditorInterfaceData{
+		EditorLayout: cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{
+			editorLayoutResponseGroup("response", "Group"),
+		}),
+	})
+
+	adapter := &mutationJSONResponseAdapter{delegate: server}
 	groupIDPath := tfjsonpath.New("editor_layout").AtSliceIndex(0).AtMapKey("group").AtMapKey("group_id")
 
 	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
-				Config:             config("response"),
+				Config:             editorInterfaceLayoutConfig("response"),
 				ResourceName:       "contentful_editor_interface.test",
 				ImportState:        true,
 				ImportStateId:      "space/master/article",
@@ -77,37 +76,27 @@ resource "contentful_editor_interface" "test" {
 			},
 			{
 				PreConfig: func() {
-					adapter.arm(http.MethodPut, func(response map[string]any) {
-						response["editorLayout"] = []any{map[string]any{
-							"groupId": "response",
-							"name":    "Group",
-							"items":   []any{},
-						}}
-					})
+					adapter.mutateNext(http.MethodPut, replaceEditorInterfaceResponseLayout("response"))
 				},
-				Config:      config("planned"),
-				ExpectError: regexp.MustCompile(`editor_layout response differed meaningfully from the Terraform plan`),
+				Config:      editorInterfaceLayoutConfig("planned"),
+				ExpectError: regexp.MustCompile(`Contentful returned a different Editor Interface layout`),
 			},
 			{
-				Config: config("planned"),
+				Config: editorInterfaceLayoutConfig("planned"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionUpdate),
-					expectMutationPlanTransition{
+					expectResponseStateInPlan{
 						address:   "contentful_editor_interface.test",
 						valuePath: groupIDPath,
-						before:    "response",
-						after:     "planned",
+						value:     "response",
 					},
 				}},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("contentful_editor_interface.test", groupIDPath, knownvalue.StringExact("planned")),
-				},
 			},
 		},
 	})
 }
 
-func TestAccEditorInterfaceCreateMutationResponseContradictionRequiresImport(t *testing.T) {
+func TestAccEditorInterfaceCreateConsistencyErrorRetainsStateAndRequiresImport(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -116,21 +105,7 @@ func TestAccEditorInterfaceCreateMutationResponseContradictionRequiresImport(t *
 	server.SetEditorInterface("space", "master", "article", cm.EditorInterfaceData{})
 
 	adapter := &mutationJSONResponseAdapter{delegate: server}
-	handler := &editorInterfaceRequestCountingHandler{next: adapter}
-	config := `
-resource "contentful_editor_interface" "test" {
-  space_id        = "space"
-  environment_id  = "master"
-  content_type_id = "article"
-  editor_layout = [{
-    group = {
-      group_id = "planned"
-      name     = "Group"
-      items    = []
-    }
-  }]
-}
-`
+	handler := &editorInterfaceRequestRecorder{next: adapter}
 	groupIDPath := tfjsonpath.New("editor_layout").AtSliceIndex(0).AtMapKey("group").AtMapKey("group_id")
 
 	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
@@ -138,90 +113,30 @@ resource "contentful_editor_interface" "test" {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					adapter.arm(http.MethodPut, func(response map[string]any) {
-						response["editorLayout"] = []any{map[string]any{
-							"groupId": "response",
-							"name":    "Group",
-							"items":   []any{},
-						}}
-					})
+					adapter.mutateNext(http.MethodPut, replaceEditorInterfaceResponseLayout("response"))
 				},
-				Config:      config,
-				ExpectError: regexp.MustCompile(`editor_layout response differed meaningfully from the Terraform plan`),
+				Config:      editorInterfaceLayoutConfig("planned"),
+				ExpectError: regexp.MustCompile(`Contentful returned a different Editor Interface layout`),
 			},
 			{
-				Config:      config,
-				ExpectError: regexp.MustCompile(`Editor interface must be imported`),
+				Config:      editorInterfaceLayoutConfig("planned"),
+				ExpectError: regexp.MustCompile(`Editor Interface requires import`),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionReplace),
-					expectMutationPlanTransition{
+					expectResponseStateInPlan{
 						address:   "contentful_editor_interface.test",
 						valuePath: groupIDPath,
-						before:    "response",
-						after:     "planned",
+						value:     "response",
 					},
 				}},
 			},
 		},
 	})
 
-	require.Equal(t, int64(0), handler.gets.Load())
-	require.Equal(t, int64(2), handler.puts.Load())
-	require.Equal(t, []string{"1", "1"}, handler.PutVersions())
+	require.Equal(t, []string{"PUT:1", "PUT:1"}, handler.Requests())
 }
 
-func TestAccRoleCreateMutationResponseContradictionRetainsTaintedState(t *testing.T) {
-	t.Parallel()
-
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
-	server.RegisterSpaceEnvironment("space", "master")
-
-	adapter := &mutationJSONResponseAdapter{delegate: server}
-	config := `
-resource "contentful_role" "test" {
-  space_id = "space"
-  name     = "Role"
-  permissions = {
-    Entry = ["read"]
-  }
-  policies = []
-}
-`
-	permissionPath := tfjsonpath.New("permissions").AtMapKey("Entry").AtSliceIndex(0)
-
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
-		Steps: []resource.TestStep{
-			{
-				PreConfig: func() {
-					adapter.arm(http.MethodPost, func(response map[string]any) {
-						response["permissions"] = map[string]any{"Entry": []any{"manage"}}
-					})
-				},
-				Config:      config,
-				ExpectError: regexp.MustCompile(`permissions response differed meaningfully from the Terraform plan`),
-			},
-			{
-				Config: config,
-				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectResourceAction("contentful_role.test", plancheck.ResourceActionReplace),
-					expectMutationPlanTransition{
-						address:   "contentful_role.test",
-						valuePath: permissionPath,
-						before:    "manage",
-						after:     "read",
-					},
-				}},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("contentful_role.test", permissionPath, knownvalue.StringExact("read")),
-				},
-			},
-		},
-	})
-}
-
-func TestAccRoleUpdateMutationResponseContradictionRetainsTruthfulState(t *testing.T) {
+func TestAccRoleConsistencyErrorsRetainResponseState(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -247,31 +162,44 @@ resource "contentful_role" "test" {
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
+				PreConfig: func() {
+					adapter.mutateNext(http.MethodPost, func(response map[string]any) {
+						response["permissions"] = map[string]any{"Entry": []any{"manage"}}
+					})
+				},
+				Config:      config("read"),
+				ExpectError: regexp.MustCompile(`Contentful returned different role permissions`),
+			},
+			{
 				Config: config("read"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_role.test", plancheck.ResourceActionReplace),
+					expectResponseStateInPlan{
+						address:   "contentful_role.test",
+						valuePath: permissionPath,
+						value:     "manage",
+					},
+				}},
 			},
 			{
 				PreConfig: func() {
-					adapter.arm(http.MethodPut, func(response map[string]any) {
+					adapter.mutateNext(http.MethodPut, func(response map[string]any) {
 						response["permissions"] = map[string]any{"Entry": []any{"manage"}}
 					})
 				},
 				Config:      config("create"),
-				ExpectError: regexp.MustCompile(`permissions response differed meaningfully from the Terraform plan`),
+				ExpectError: regexp.MustCompile(`Contentful returned different role permissions`),
 			},
 			{
 				Config: config("create"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_role.test", plancheck.ResourceActionUpdate),
-					expectMutationPlanTransition{
+					expectResponseStateInPlan{
 						address:   "contentful_role.test",
 						valuePath: permissionPath,
-						before:    "manage",
-						after:     "create",
+						value:     "manage",
 					},
 				}},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("contentful_role.test", permissionPath, knownvalue.StringExact("create")),
-				},
 			},
 		},
 	})
@@ -280,7 +208,6 @@ resource "contentful_role" "test" {
 type mutationJSONResponseAdapter struct {
 	delegate http.Handler
 	mu       sync.Mutex
-	armed    bool
 	method   string
 	mutate   func(map[string]any)
 }
@@ -290,7 +217,7 @@ func (a *mutationJSONResponseAdapter) ServeHTTP(responseWriter http.ResponseWrit
 	a.delegate.ServeHTTP(recorder, request)
 
 	body := recorder.Body.Bytes()
-	if mutate, ok := a.responseMutation(request.Method, recorder.Code); ok {
+	if mutate, ok := a.takeMutation(request.Method, recorder.Code); ok {
 		var response map[string]any
 
 		err := json.Unmarshal(body, &response)
@@ -304,27 +231,22 @@ func (a *mutationJSONResponseAdapter) ServeHTTP(responseWriter http.ResponseWrit
 		}
 	}
 
-	for key, values := range recorder.Header() {
-		for _, value := range values {
-			responseWriter.Header().Add(key, value)
-		}
-	}
+	maps.Copy(responseWriter.Header(), recorder.Header())
 
-	responseWriter.Header().Set("Content-Length", strconv.Itoa(len(body)))
+	responseWriter.Header().Del("Content-Length")
 	responseWriter.WriteHeader(recorder.Code)
-	_, _ = io.Copy(responseWriter, bytes.NewReader(body))
+	_, _ = responseWriter.Write(body)
 }
 
-func (a *mutationJSONResponseAdapter) arm(method string, mutate func(map[string]any)) {
+func (a *mutationJSONResponseAdapter) mutateNext(method string, mutate func(map[string]any)) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	a.armed = true
 	a.method = method
 	a.mutate = mutate
 }
 
-func (a *mutationJSONResponseAdapter) responseMutation(method string, statusCode int) (func(map[string]any), bool) {
+func (a *mutationJSONResponseAdapter) takeMutation(method string, statusCode int) (func(map[string]any), bool) {
 	if statusCode < http.StatusOK || statusCode >= http.StatusMultipleChoices {
 		return nil, false
 	}
@@ -332,48 +254,41 @@ func (a *mutationJSONResponseAdapter) responseMutation(method string, statusCode
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	if !a.armed || method != a.method {
+	if a.mutate == nil || method != a.method {
 		return nil, false
 	}
 
-	a.armed = false
+	mutate := a.mutate
+	a.mutate = nil
 
-	return a.mutate, true
+	return mutate, true
 }
 
-type expectMutationPlanTransition struct {
+type expectResponseStateInPlan struct {
 	address   string
 	valuePath tfjsonpath.Path
-	before    any
-	after     any
+	value     string
 }
 
-func (check expectMutationPlanTransition) CheckPlan(_ context.Context, request plancheck.CheckPlanRequest, response *plancheck.CheckPlanResponse) {
+func (check expectResponseStateInPlan) CheckPlan(_ context.Context, request plancheck.CheckPlanRequest, response *plancheck.CheckPlanResponse) {
 	for _, change := range request.Plan.ResourceChanges {
 		if change.Address != check.address {
 			continue
 		}
 
-		before, err := tfjsonpath.Traverse(change.Change.Before, check.valuePath)
+		value, err := tfjsonpath.Traverse(change.Change.Before, check.valuePath)
 		if err != nil {
 			response.Error = fmt.Errorf("read response-derived value from plan: %w", err)
 
 			return
 		}
 
-		after, err := tfjsonpath.Traverse(change.Change.After, check.valuePath)
-		if err != nil {
-			response.Error = fmt.Errorf("read configured value from plan: %w", err)
-
-			return
-		}
-
-		if !reflect.DeepEqual(before, check.before) || !reflect.DeepEqual(after, check.after) {
-			response.Error = fmt.Errorf("%w: before=%#v after=%#v, want before=%#v after=%#v", errUnexpectedMutationTransition, before, after, check.before, check.after)
+		if value != check.value {
+			response.Error = fmt.Errorf("%w: response-derived value is %#v, want %q", errUnexpectedTerraformPlan, value, check.value)
 		}
 
 		return
 	}
 
-	response.Error = fmt.Errorf("%w: %s", errMutationResourceAbsentFromPlan, check.address)
+	response.Error = fmt.Errorf("%w: resource %s is absent", errUnexpectedTerraformPlan, check.address)
 }

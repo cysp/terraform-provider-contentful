@@ -3,12 +3,11 @@ package provider
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func unorderedMutationElementsEquivalent[T any](planned, response []T, elementsEquivalent func(T, T) (bool, diag.Diagnostics)) (bool, diag.Diagnostics) {
+func unorderedElementsEquivalent[T any](planned, response []T, elementsEquivalent func(T, T) (bool, diag.Diagnostics)) (bool, diag.Diagnostics) {
 	if len(planned) != len(response) {
 		return false, nil
 	}
@@ -50,10 +49,9 @@ func unorderedMutationElementsEquivalent[T any](planned, response []T, elementsE
 	return true, comparisonDiags
 }
 
-// String-list values used by Contentful filters and roles are semantically
-// unordered. Matching each occurrence separately preserves duplicate
-// multiplicity while accepting response canonicalization by order.
-func mutationStringListsEquivalent(planned, response TypedList[types.String]) bool {
+// Matching each occurrence separately accepts order changes without discarding
+// duplicate multiplicity.
+func unorderedStringListsEquivalent(planned, response TypedList[types.String]) bool {
 	if planned.Equal(response) {
 		return true
 	}
@@ -62,7 +60,7 @@ func mutationStringListsEquivalent(planned, response TypedList[types.String]) bo
 		return false
 	}
 
-	equivalent, _ := unorderedMutationElementsEquivalent(planned.Elements(), response.Elements(), func(plannedElement, responseElement types.String) (bool, diag.Diagnostics) {
+	equivalent, _ := unorderedElementsEquivalent(planned.Elements(), response.Elements(), func(plannedElement, responseElement types.String) (bool, diag.Diagnostics) {
 		return plannedElement.Equal(responseElement), nil
 	})
 
@@ -78,7 +76,7 @@ func webhookFiltersEquivalent(planned, response TypedList[TypedObject[WebhookFil
 		return false
 	}
 
-	equivalent, _ := unorderedMutationElementsEquivalent(planned.Elements(), response.Elements(), func(plannedElement, responseElement TypedObject[WebhookFilterValue]) (bool, diag.Diagnostics) {
+	equivalent, _ := unorderedElementsEquivalent(planned.Elements(), response.Elements(), func(plannedElement, responseElement TypedObject[WebhookFilterValue]) (bool, diag.Diagnostics) {
 		return webhookFilterEquivalent(plannedElement, responseElement), nil
 	})
 
@@ -132,7 +130,7 @@ func webhookFilterInEquivalent(planned, response TypedObject[WebhookFilterInValu
 		return false
 	}
 
-	return plannedValue.Doc.Equal(responseValue.Doc) && mutationStringListsEquivalent(plannedValue.Values, responseValue.Values)
+	return plannedValue.Doc.Equal(responseValue.Doc) && unorderedStringListsEquivalent(plannedValue.Values, responseValue.Values)
 }
 
 func rolePermissionsEquivalent(planned, response TypedMap[TypedList[types.String]]) bool {
@@ -153,7 +151,7 @@ func rolePermissionsEquivalent(planned, response TypedMap[TypedList[types.String
 
 	for name, plannedActions := range plannedElements {
 		responseActions, ok := responseElements[name]
-		if !ok || !mutationStringListsEquivalent(plannedActions, responseActions) {
+		if !ok || !unorderedStringListsEquivalent(plannedActions, responseActions) {
 			return false
 		}
 	}
@@ -170,7 +168,7 @@ func rolePoliciesEquivalent(ctx context.Context, planned, response TypedList[Typ
 		return false, nil
 	}
 
-	return unorderedMutationElementsEquivalent(planned.Elements(), response.Elements(), func(plannedElement, responseElement TypedObject[RolePolicyValue]) (bool, diag.Diagnostics) {
+	return unorderedElementsEquivalent(planned.Elements(), response.Elements(), func(plannedElement, responseElement TypedObject[RolePolicyValue]) (bool, diag.Diagnostics) {
 		return rolePolicyEquivalent(ctx, plannedElement, responseElement)
 	})
 }
@@ -184,21 +182,20 @@ func rolePolicyEquivalent(ctx context.Context, planned, response TypedObject[Rol
 
 	responseValue, responseKnown := response.GetValue()
 	if !plannedKnown || !responseKnown || !plannedValue.Effect.Equal(responseValue.Effect) ||
-		!mutationStringListsEquivalent(plannedValue.Actions, responseValue.Actions) {
+		!unorderedStringListsEquivalent(plannedValue.Actions, responseValue.Actions) {
 		return false, nil
 	}
 
-	return normalizedJSONEquivalent(ctx, plannedValue.Constraint, responseValue.Constraint)
-}
+	plannedConstraint := plannedValue.Constraint
 
-func normalizedJSONEquivalent(ctx context.Context, planned, response jsontypes.Normalized) (bool, diag.Diagnostics) {
-	if planned.Equal(response) {
+	responseConstraint := responseValue.Constraint
+	if plannedConstraint.Equal(responseConstraint) {
 		return true, nil
 	}
 
-	if planned.IsNull() || planned.IsUnknown() || response.IsNull() || response.IsUnknown() {
+	if plannedConstraint.IsNull() || plannedConstraint.IsUnknown() || responseConstraint.IsNull() || responseConstraint.IsUnknown() {
 		return false, nil
 	}
 
-	return planned.StringSemanticEquals(ctx, response)
+	return plannedConstraint.StringSemanticEquals(ctx, responseConstraint)
 }

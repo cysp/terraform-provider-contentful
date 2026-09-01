@@ -15,137 +15,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccWebhookMutationResponseContradictionRetainsTruthfulState(t *testing.T) {
-	t.Parallel()
-
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
-	server.RegisterSpaceEnvironment("space", "master")
-
-	adapter := &mutationJSONResponseAdapter{delegate: server}
-	config := func(name, filterType string) string {
-		return fmt.Sprintf(`
-resource "contentful_webhook" "test" {
-  space_id = "space"
-  name     = %q
-  url      = "https://example.com/webhook"
-  topics   = []
-  filters = [{
-    equals = {
-      doc   = "sys.type"
-      value = %q
-    }
-  }]
-}
-`, name, filterType)
+func webhookMutationConfig(name, filterType string, ignoreFilters bool) string {
+	lifecycle := ""
+	if ignoreFilters {
+		lifecycle = "lifecycle { ignore_changes = [filters] }"
 	}
 
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
-		Steps: []resource.TestStep{
-			{
-				Config: config("Initial webhook", "Asset"),
-			},
-			{
-				PreConfig: func() {
-					adapter.arm(http.MethodPut, replaceWebhookResponseFilter("Asset"))
-				},
-				Config:      config("Updated webhook", "Entry"),
-				ExpectError: regexp.MustCompile(`filters response differed meaningfully from the Terraform plan`),
-			},
-			{
-				Config: config("Updated webhook", "Entry"),
-				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
-					expectMutationPlanTransition{
-						address:   "contentful_webhook.test",
-						valuePath: tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value"),
-						before:    "Asset",
-						after:     "Entry",
-					},
-				}},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(
-						"contentful_webhook.test",
-						tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value"),
-						knownvalue.StringExact("Entry"),
-					),
-				},
-			},
-		},
-	})
-}
-
-func TestAccWebhookCreateMutationResponseContradictionRetainsTaintedState(t *testing.T) {
-	t.Parallel()
-
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
-	server.RegisterSpaceEnvironment("space", "master")
-
-	adapter := &mutationJSONResponseAdapter{delegate: server}
-	config := `
-resource "contentful_webhook" "test" {
-  space_id = "space"
-  name     = "Created webhook"
-  url      = "https://example.com/webhook"
-  topics   = []
-  filters = [{
-    equals = {
-      doc   = "sys.type"
-      value = "Entry"
-    }
-  }]
-}
-`
-
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
-		Steps: []resource.TestStep{
-			{
-				PreConfig: func() {
-					adapter.arm(http.MethodPost, replaceWebhookResponseFilter("Asset"))
-				},
-				Config:      config,
-				ExpectError: regexp.MustCompile(`filters response differed meaningfully from the Terraform plan`),
-			},
-			{
-				Config: config,
-				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionReplace),
-					expectMutationPlanTransition{
-						address:   "contentful_webhook.test",
-						valuePath: tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value"),
-						before:    "Asset",
-						after:     "Entry",
-					},
-				}},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(
-						"contentful_webhook.test",
-						tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value"),
-						knownvalue.StringExact("Entry"),
-					),
-				},
-			},
-		},
-	})
-}
-
-func TestAccWebhookMutationReconciliationUsesEffectivePlanWithIgnoreChanges(t *testing.T) {
-	t.Parallel()
-
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
-	server.RegisterSpaceEnvironment("space", "master")
-
-	config := func(name, filterType string, ignoreFilters bool) string {
-		lifecycle := ""
-		if ignoreFilters {
-			lifecycle = "lifecycle { ignore_changes = [filters] }"
-		}
-
-		return fmt.Sprintf(`
+	return fmt.Sprintf(`
 resource "contentful_webhook" "test" {
   space_id = "space"
   name     = %q
@@ -160,14 +36,74 @@ resource "contentful_webhook" "test" {
   %s
 }
 `, name, filterType, lifecycle)
-	}
+}
+
+func TestAccWebhookConsistencyErrorsRetainResponseState(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+
+	adapter := &mutationJSONResponseAdapter{delegate: server}
+	filterValuePath := tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value")
+
+	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					adapter.mutateNext(http.MethodPost, replaceWebhookResponseFilter("Asset"))
+				},
+				Config:      webhookMutationConfig("Created webhook", "Entry", false),
+				ExpectError: regexp.MustCompile(`Contentful returned different webhook filters`),
+			},
+			{
+				Config: webhookMutationConfig("Created webhook", "Entry", false),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionReplace),
+					expectResponseStateInPlan{
+						address:   "contentful_webhook.test",
+						valuePath: filterValuePath,
+						value:     "Asset",
+					},
+				}},
+			},
+			{
+				PreConfig: func() {
+					adapter.mutateNext(http.MethodPut, replaceWebhookResponseFilter("Entry"))
+				},
+				Config:      webhookMutationConfig("Updated webhook", "Asset", false),
+				ExpectError: regexp.MustCompile(`Contentful returned different webhook filters`),
+			},
+			{
+				Config: webhookMutationConfig("Updated webhook", "Asset", false),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
+					expectResponseStateInPlan{
+						address:   "contentful_webhook.test",
+						valuePath: filterValuePath,
+						value:     "Entry",
+					},
+				}},
+			},
+		},
+	})
+}
+
+func TestAccWebhookMutationReconciliationUsesEffectivePlanWithIgnoreChanges(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{
-			Config: config("Initial webhook", "Asset", false),
+			Config: webhookMutationConfig("Initial webhook", "Asset", false),
 		},
 		{
-			Config: config("Updated webhook", "Entry", true),
+			Config: webhookMutationConfig("Updated webhook", "Entry", true),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
 			}},
@@ -180,7 +116,7 @@ resource "contentful_webhook" "test" {
 			},
 		},
 		{
-			Config: config("Updated webhook", "Entry", true),
+			Config: webhookMutationConfig("Updated webhook", "Entry", true),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
 			}},
