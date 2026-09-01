@@ -64,14 +64,13 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	ctx = maskAppSigningSecretValues(ctx, plan.Value)
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceCreateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.PutAppSigningSecretParams{
@@ -140,16 +139,13 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 	ctx = maskAppSigningSecretValues(ctx, state.Value)
 
-	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.GetAppSigningSecretParams{
@@ -220,14 +216,13 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	ctx = maskAppSigningSecretValues(ctx, state.Value, plan.Value)
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.PutAppSigningSecretParams{
@@ -334,16 +329,13 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	response, err := r.providerData.client.DeleteAppSigningSecret(ctx, cm.DeleteAppSigningSecretParams{
