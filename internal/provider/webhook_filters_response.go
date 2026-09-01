@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
@@ -36,6 +37,7 @@ func ReadWebhookFiltersListValueFromResponse(ctx context.Context, path path.Path
 
 func ReadWebhookFilterValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilter) (TypedObject[WebhookFilterValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
+	addUnsupportedWebhookFilterPropertiesWarning(&diags, path, input.AdditionalProps)
 
 	value := WebhookFilterValue{
 		Not:    NewTypedObjectNull[WebhookFilterNotValue](),
@@ -77,6 +79,7 @@ func ReadWebhookFilterValueFromResponse(ctx context.Context, path path.Path, inp
 
 func ReadWebhookFilterNotValueFromResponse(ctx context.Context, path path.Path, input cm.WebhookDefinitionFilterNot) (TypedObject[WebhookFilterNotValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
+	addUnsupportedWebhookFilterPropertiesWarning(&diags, path, input.AdditionalProps)
 
 	value := WebhookFilterNotValue{
 		Equals: NewTypedObjectNull[WebhookFilterEqualsValue](),
@@ -281,6 +284,18 @@ func ReadWebhookDefinitionFilterTermStringObject(_ context.Context, path path.Pa
 		return types.StringNull(), diags
 	}
 
+	if len(object) > 1 {
+		unsupportedProperties := make([]string, 0, len(object)-1)
+		for propertyName := range object {
+			if propertyName != name {
+				unsupportedProperties = append(unsupportedProperties, propertyName)
+			}
+		}
+
+		slices.Sort(unsupportedProperties)
+		diags.AddAttributeWarning(path, "Unsupported webhook filter term response properties", fmt.Sprintf("Contentful returned properties %q alongside the required %q property. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.", unsupportedProperties, name))
+	}
+
 	var value *string
 
 	err = json.Unmarshal(rawValue, &value)
@@ -297,4 +312,18 @@ func ReadWebhookDefinitionFilterTermStringObject(_ context.Context, path path.Pa
 	}
 
 	return types.StringValue(*value), diags
+}
+
+func addUnsupportedWebhookFilterPropertiesWarning(diags *diag.Diagnostics, valuePath path.Path, properties map[string]jx.Raw) {
+	if len(properties) == 0 {
+		return
+	}
+
+	propertyNames := make([]string, 0, len(properties))
+	for propertyName := range properties {
+		propertyNames = append(propertyNames, propertyName)
+	}
+
+	slices.Sort(propertyNames)
+	diags.AddAttributeWarning(valuePath, "Unsupported webhook filter response properties", fmt.Sprintf("Contentful returned webhook filter properties %q that this provider cannot represent. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.", propertyNames))
 }
