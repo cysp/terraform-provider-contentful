@@ -69,14 +69,13 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceCreateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	version := 1
@@ -133,16 +132,13 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.GetDeliveryAPIKeyParams{
@@ -218,14 +214,13 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
@@ -289,16 +284,13 @@ func (r *deliveryAPIKeyResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.DeleteDeliveryAPIKeyParams{

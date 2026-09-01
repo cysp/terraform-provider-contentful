@@ -70,14 +70,13 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceCreateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	version := 1
@@ -144,16 +143,13 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.GetWebhookDefinitionParams{
@@ -229,14 +225,13 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
@@ -311,16 +306,13 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	response, err := r.providerData.client.DeleteWebhookDefinition(ctx, cm.DeleteWebhookDefinitionParams{

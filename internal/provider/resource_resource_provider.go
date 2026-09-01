@@ -62,14 +62,13 @@ func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req 
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceCreateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.PutResourceProviderParams{
@@ -129,16 +128,13 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.GetResourceProviderParams{
@@ -199,14 +195,13 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.PutResourceProviderParams{
@@ -266,16 +261,13 @@ func (r *appDefinitionResourceProviderResource) Delete(ctx context.Context, req 
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	response, err := r.providerData.client.DeleteResourceProvider(ctx, cm.DeleteResourceProviderParams{

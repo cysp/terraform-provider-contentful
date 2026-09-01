@@ -59,14 +59,13 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceCreateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	version := 1
@@ -132,16 +131,13 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.GetEnvironmentAliasParams{
@@ -206,14 +202,13 @@ func (r *environmentAliasResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	request, requestDiags := plan.ToEnvironmentAliasData(ctx)
@@ -284,16 +279,13 @@ func (r *environmentAliasResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.DeleteEnvironmentAliasParams{

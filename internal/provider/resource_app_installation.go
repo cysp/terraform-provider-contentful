@@ -60,14 +60,13 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceCreateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue()
@@ -131,16 +130,13 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.GetAppInstallationParams{
@@ -202,14 +198,13 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	xContentfulMarketplace, xContentfulMarketplaceDiags := plan.ToXContentfulMarketplaceHeaderValue()
@@ -274,16 +269,13 @@ func (r *appInstallationResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.DeleteAppInstallationParams{

@@ -56,14 +56,13 @@ func (r *taxonomyConceptResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	timeout, timeoutDiags := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiags := resourceCreateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	prepared, prepareDiags := prepareTaxonomyConceptMutation(config, plan)
@@ -118,14 +117,13 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	timeout, timeoutDiags := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiags := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, max(timeout, minimumStoredResourceOperationTimeout))
 	defer cancel()
 
 	params := cm.GetTaxonomyConceptParams{OrganizationID: state.OrganizationID.ValueString(), TaxonomyConceptID: state.ConceptID.ValueString()}
@@ -171,14 +169,13 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	timeout, timeoutDiags := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiags := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	prepared, prepareDiags := prepareTaxonomyConceptMutation(config, plan)
@@ -248,14 +245,13 @@ func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	timeout, timeoutDiags := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiags := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, max(timeout, minimumStoredResourceOperationTimeout))
 	defer cancel()
 
 	organizationID, conceptID := state.OrganizationID.ValueString(), state.ConceptID.ValueString()
