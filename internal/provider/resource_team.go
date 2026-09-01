@@ -3,7 +3,6 @@ package provider
 
 import (
 	"context"
-	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -162,13 +161,11 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		data = responseModel
 		version = team.Sys.Version
 	} else {
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read team", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Failed to read team", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.State.RemoveResource(ctx)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read team", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -296,12 +293,10 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	default:
 		handled := false
 
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Team already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Team already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-				handled = true
-			}
+			handled = true
 		}
 
 		if !handled {

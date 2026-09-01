@@ -147,13 +147,11 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 		data = responseModel
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Failed to read personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.State.RemoveResource(ctx)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -215,18 +213,14 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 	default:
 		handled := false
 
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			switch response.GetStatusCode() {
-			case http.StatusNotFound:
-				resp.Diagnostics.AddWarning("personal access token not found", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("personal access token not found", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-				handled = true
+			handled = true
+		} else if response, ok := response.(cm.StatusCodeResponse); ok && response.GetStatusCode() == http.StatusConflict {
+			resp.Diagnostics.AddWarning("personal access token already revoked", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			case http.StatusConflict:
-				resp.Diagnostics.AddWarning("personal access token already revoked", util.ErrorDetailFromContentfulManagementResponse(response, err))
-
-				handled = true
-			}
+			handled = true
 		}
 
 		if !handled {

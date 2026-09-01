@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -317,13 +316,11 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		observedPublishedVersion = response.Sys.PublishedVersion
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.State.RemoveResource(ctx)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read content type", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -480,7 +477,7 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 
 		if response, ok := response.(cm.ErrorStatusCodeResponse); ok {
 			responseError, _ := response.GetError()
-			if response.GetStatusCode() == http.StatusNotFound || (responseError.Sys.ID == "BadRequest" && responseError.Message.Value == "Not published") {
+			if contentfulResponseIsNotFound(response) || (responseError.Sys.ID == "BadRequest" && responseError.Message.Value == "Not published") {
 				resp.Diagnostics.AddWarning("Content type already deactivated", "")
 
 				handled = true
@@ -516,12 +513,10 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 	default:
 		handled := false
 
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Content type already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Content type already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-				handled = true
-			}
+			handled = true
 		}
 
 		if !handled {

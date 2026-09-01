@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -166,13 +165,11 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 		version = response.Sys.Version
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read environment alias", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Failed to read environment alias", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.State.RemoveResource(ctx)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read environment alias", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -307,12 +304,10 @@ func (r *environmentAliasResource) Delete(ctx context.Context, req resource.Dele
 	default:
 		handled := false
 
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Environment alias already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Environment alias already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-				handled = true
-			}
+			handled = true
 		}
 
 		if !handled {

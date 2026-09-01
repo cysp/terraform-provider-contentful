@@ -241,13 +241,11 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		observedPublishedVersion = response.Sys.PublishedVersion
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Failed to read entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.State.RemoveResource(ctx)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -649,12 +647,10 @@ func (r *entryResource) deleteEntry(ctx context.Context, entry EntryModel, diags
 	default:
 		handled := false
 
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				diags.AddWarning("Entry already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if contentfulResponseIsNotFound(response) {
+			diags.AddWarning("Entry already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-				handled = true
-			}
+			handled = true
 		}
 
 		if !handled {
@@ -687,7 +683,7 @@ func (r *entryResource) unpublishEntry(ctx context.Context, entry EntryModel, di
 
 		if response, ok := response.(cm.ErrorStatusCodeResponse); ok {
 			responseError, _ := response.GetError()
-			if response.GetStatusCode() == http.StatusNotFound ||
+			if contentfulResponseIsNotFound(response) ||
 				(response.GetStatusCode() == http.StatusBadRequest && responseError.Sys.ID == "BadRequest" && responseError.Message.Value == "Not published") {
 				diags.AddWarning("Entry already unpublished", "")
 
