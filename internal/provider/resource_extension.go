@@ -14,11 +14,12 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*extensionResource)(nil)
-	_ resource.ResourceWithConfigure   = (*extensionResource)(nil)
-	_ resource.ResourceWithIdentity    = (*extensionResource)(nil)
-	_ resource.ResourceWithImportState = (*extensionResource)(nil)
-	_ resource.ResourceWithModifyPlan  = (*extensionResource)(nil)
+	_ resource.Resource                 = (*extensionResource)(nil)
+	_ resource.ResourceWithConfigure    = (*extensionResource)(nil)
+	_ resource.ResourceWithIdentity     = (*extensionResource)(nil)
+	_ resource.ResourceWithImportState  = (*extensionResource)(nil)
+	_ resource.ResourceWithModifyPlan   = (*extensionResource)(nil)
+	_ resource.ResourceWithUpgradeState = (*extensionResource)(nil)
 )
 
 //nolint:ireturn
@@ -122,45 +123,8 @@ func (r *extensionResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		return
 	}
 
-	preserveExtensionSourcePlan(ctx, stateSrc, stateSrcdoc, resp)
-}
-
-func preserveExtensionSourcePlan(
-	ctx context.Context,
-	stateSrc types.String,
-	stateSrcdoc types.String,
-	resp *resource.ModifyPlanResponse,
-) {
-	srcPath := path.Root("extension").AtName("src")
-	srcdocPath := path.Root("extension").AtName("srcdoc")
-
-	// Older provider versions projected an absent source as an empty string.
-	// An empty src is invalid in Contentful, so it can only be that legacy
-	// placeholder. A valid src paired with an empty srcdoc is likewise the old
-	// absent-sibling encoding; two genuine source values remain invalid.
-	stateSrcKnown := !stateSrc.IsNull() && !stateSrc.IsUnknown()
-	stateSrcdocKnown := !stateSrcdoc.IsNull() && !stateSrcdoc.IsUnknown()
-
-	switch {
-	case stateSrcKnown && stateSrc.ValueString() != "" && (!stateSrcdocKnown || stateSrcdoc.ValueString() == ""):
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcPath, stateSrc)...)
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcdocPath, types.StringNull())...)
-	case (!stateSrcKnown || stateSrc.ValueString() == "") && stateSrcdocKnown:
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcPath, types.StringNull())...)
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcdocPath, stateSrcdoc)...)
-	case stateSrcKnown && stateSrcdocKnown:
-		resp.Diagnostics.AddAttributeError(
-			srcdocPath,
-			"Conflicting extension sources",
-			"The prior state contains both extension.src and extension.srcdoc, but a Contentful extension update requires exactly one source.",
-		)
-	default:
-		resp.Diagnostics.AddAttributeError(
-			srcPath,
-			"Missing extension source",
-			"The prior state does not contain the extension.src or extension.srcdoc value required for a Contentful update.",
-		)
-	}
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcPath, stateSrc)...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, srcdocPath, stateSrcdoc)...)
 }
 
 func (r *extensionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

@@ -17,6 +17,7 @@ import (
 
 func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Version:     1,
 		Description: "Manages a Contentful UI Extension.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
