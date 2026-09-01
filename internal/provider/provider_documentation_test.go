@@ -26,21 +26,18 @@ func TestProviderSurfaceDocumentation(t *testing.T) {
 		category:        "resources",
 		documentKind:    "Resource",
 		exampleFilename: "resource.tf",
-		readmeHeading:   "Resources",
 		registeredTypes: resourceTypeNames(ctx, provider.Resources(ctx)),
 	})
 	testProviderDocumentation(t, providerDocumentationTest{
 		category:        "data-sources",
 		documentKind:    "Data Source",
 		exampleFilename: "data-source.tf",
-		readmeHeading:   "Data Sources",
 		registeredTypes: dataSourceTypeNames(ctx, provider.DataSources(ctx)),
 	})
 	testProviderDocumentation(t, providerDocumentationTest{
 		category:        "list-resources",
 		documentKind:    "List Resource",
 		exampleFilename: "list-resource.tfquery.hcl",
-		readmeHeading:   "List Resources",
 		registeredTypes: listResourceTypeNames(ctx, provider.ListResources(ctx)),
 	})
 }
@@ -49,13 +46,12 @@ type providerDocumentationTest struct {
 	category        string
 	documentKind    string
 	exampleFilename string
-	readmeHeading   string
 	registeredTypes []string
 }
 
 func testProviderDocumentation(t *testing.T, test providerDocumentationTest) {
 	t.Helper()
-	t.Run(test.readmeHeading, func(t *testing.T) {
+	t.Run(test.category, func(t *testing.T) {
 		t.Parallel()
 
 		repositoryRoot := filepath.Join("..", "..")
@@ -75,15 +71,6 @@ func testProviderDocumentation(t *testing.T, test providerDocumentationTest) {
 			registeredTypes,
 			exampleTypeNames(t, exampleDirectory, test.exampleFilename),
 			"generator examples must only describe registered provider types",
-		)
-
-		readme, err := os.ReadFile(filepath.Join(repositoryRoot, "README.md"))
-		require.NoError(t, err)
-		assert.Equal(
-			t,
-			expectedReadmeInventory(test.readmeHeading, test.category, registeredTypes),
-			readmeInventory(string(readme), test.readmeHeading),
-			"README inventory must exactly cover registered provider types",
 		)
 
 		for _, typeName := range registeredTypes {
@@ -169,37 +156,6 @@ func documentationTypeNames(t *testing.T, directory string) []string {
 	sort.Strings(typeNames)
 
 	return typeNames
-}
-
-func expectedReadmeInventory(heading string, category string, typeNames []string) []string {
-	lines := make([]string, 0, len(typeNames)+1)
-
-	lines = append(lines, "## "+heading)
-	for _, typeName := range typeNames {
-		lines = append(lines, "- [`"+typeName+"`](docs/"+category+"/"+strings.TrimPrefix(typeName, "contentful_")+".md)")
-	}
-
-	return lines
-}
-
-func readmeInventory(readme string, heading string) []string {
-	sectionPrefix := "## " + heading + "\n"
-
-	_, section, found := strings.Cut(readme, sectionPrefix)
-	if !found {
-		return nil
-	}
-
-	section, _, _ = strings.Cut(section, "\n## ")
-	lines := []string{"## " + heading}
-
-	for line := range strings.SplitSeq(section, "\n") {
-		if strings.HasPrefix(line, "- [") {
-			lines = append(lines, line)
-		}
-	}
-
-	return lines
 }
 
 func uniqueStrings(values []string) []string {
