@@ -19,7 +19,7 @@ for the exact boundary.
 
 ## Documentation
 
-- Terraform Registry: [cysp/contentful](https://registry.terraform.io/providers/cysp/contentful)
+- Complete provider reference: [cysp/contentful on the Terraform Registry](https://registry.terraform.io/providers/cysp/contentful)
 - Provider design: [Terraform value semantics](docs/design/terraform-value-semantics.md) and
   [Contentful HTTP retry policy](docs/design/contentful-http-retry-policy.md)
 
@@ -38,44 +38,6 @@ provider "contentful" {
   access_token = var.contentful_access_token
 }
 ```
-
-## Resources
-
-- [`contentful_app_definition`](docs/resources/app_definition.md)
-- [`contentful_app_installation`](docs/resources/app_installation.md)
-- [`contentful_app_key`](docs/resources/app_key.md)
-- [`contentful_app_signing_secret`](docs/resources/app_signing_secret.md)
-- [`contentful_content_type`](docs/resources/content_type.md)
-- [`contentful_delivery_api_key`](docs/resources/delivery_api_key.md)
-- [`contentful_editor_interface`](docs/resources/editor_interface.md)
-- [`contentful_entry`](docs/resources/entry.md)
-- [`contentful_environment`](docs/resources/environment.md)
-- [`contentful_environment_alias`](docs/resources/environment_alias.md)
-- [`contentful_extension`](docs/resources/extension.md)
-- [`contentful_personal_access_token`](docs/resources/personal_access_token.md)
-- [`contentful_resource_provider`](docs/resources/resource_provider.md)
-- [`contentful_resource_type`](docs/resources/resource_type.md)
-- [`contentful_role`](docs/resources/role.md)
-- [`contentful_space_enablements`](docs/resources/space_enablements.md)
-- [`contentful_tag`](docs/resources/tag.md)
-- [`contentful_taxonomy_concept`](docs/resources/taxonomy_concept.md)
-- [`contentful_taxonomy_concept_scheme`](docs/resources/taxonomy_concept_scheme.md)
-- [`contentful_team`](docs/resources/team.md)
-- [`contentful_team_space_membership`](docs/resources/team_space_membership.md)
-- [`contentful_webhook`](docs/resources/webhook.md)
-
-## List Resources
-
-- [`contentful_content_type`](docs/list-resources/content_type.md)
-- [`contentful_entry`](docs/list-resources/entry.md)
-
-## Data Sources
-
-- [`contentful_app_definition`](docs/data-sources/app_definition.md)
-- [`contentful_environment_status_ready`](docs/data-sources/environment_status_ready.md)
-- [`contentful_marketplace_app_definition`](docs/data-sources/marketplace_app_definition.md)
-- [`contentful_preview_api_key`](docs/data-sources/preview_api_key.md)
-- [`contentful_teams`](docs/data-sources/teams.md)
 
 ## License
 
