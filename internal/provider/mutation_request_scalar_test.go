@@ -154,7 +154,7 @@ func TestDeliveryAPIKeyRequestRejectsUnknownScalarsAndPreservesNullPolicy(t *tes
 		Environments: NewTypedListNull[types.String](),
 	}
 
-	request, diags := model.ToAPIKeyRequestFields(t.Context(), DeliveryAPIKeyModel{Environments: model.Environments})
+	request, diags := model.ToDeliveryAPIKeyRequestData(t.Context(), DeliveryAPIKeyModel{Environments: model.Environments})
 
 	assert.Equal(t, cm.ApiKeyRequestData{}, request)
 	require.True(t, diags.HasError())
@@ -162,7 +162,7 @@ func TestDeliveryAPIKeyRequestRejectsUnknownScalarsAndPreservesNullPolicy(t *tes
 
 	model.Name = types.StringValue("")
 	model.Description = types.StringNull()
-	request, diags = model.ToAPIKeyRequestFields(t.Context(), DeliveryAPIKeyModel{Environments: model.Environments})
+	request, diags = model.ToDeliveryAPIKeyRequestData(t.Context(), DeliveryAPIKeyModel{Environments: model.Environments})
 
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.Empty(t, request.Name)

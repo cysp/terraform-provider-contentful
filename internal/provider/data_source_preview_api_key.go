@@ -76,7 +76,7 @@ func (d *previewAPIKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 		data = responseModel
 
 	default:
-		resp.Diagnostics.AddError("Failed to read preview api key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to read preview API key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
 	if resp.Diagnostics.HasError() {

@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccDeliveryApiKeyResource(t *testing.T) {
+func TestAccDeliveryAPIKeyResource(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
@@ -53,7 +53,7 @@ func TestAccDeliveryApiKeyResource(t *testing.T) {
 	})
 }
 
-func TestAccDeliveryApiKeyResourceImportNotFound(t *testing.T) {
+func TestAccDeliveryAPIKeyResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
