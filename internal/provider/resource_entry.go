@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -33,6 +32,10 @@ type entryResource struct {
 	providerData ContentfulProviderData
 }
 
+func entryIdentityAttributeNames() []string {
+	return []string{"space_id", "environment_id", "entry_id"}
+}
+
 const entryPendingPublicationVersionPrivateKey = "pending_publication_version"
 
 func (r *entryResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -48,21 +51,11 @@ func (r *entryResource) Configure(_ context.Context, req resource.ConfigureReque
 }
 
 func (r *entryResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":       identityschema.StringAttribute{RequiredForImport: true},
-			"environment_id": identityschema.StringAttribute{RequiredForImport: true},
-			"entry_id":       identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(entryIdentityAttributeNames())
 }
 
 func (r *entryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("environment_id"),
-		path.Root("entry_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, entryIdentityAttributeNames(), req, resp)
 }
 
 func (r *entryResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -281,14 +274,7 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel EntryIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, entryIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

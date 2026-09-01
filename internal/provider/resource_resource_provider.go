@@ -9,7 +9,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -29,6 +28,10 @@ type appDefinitionResourceProviderResource struct {
 	providerData ContentfulProviderData
 }
 
+func resourceProviderIdentityAttributeNames() []string {
+	return []string{"organization_id", "app_definition_id"}
+}
+
 func (r *appDefinitionResourceProviderResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_resource_provider"
 }
@@ -42,19 +45,11 @@ func (r *appDefinitionResourceProviderResource) Configure(_ context.Context, req
 }
 
 func (r *appDefinitionResourceProviderResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"organization_id":   identityschema.StringAttribute{RequiredForImport: true},
-			"app_definition_id": identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(resourceProviderIdentityAttributeNames())
 }
 
 func (r *appDefinitionResourceProviderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("organization_id"),
-		path.Root("app_definition_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, resourceProviderIdentityAttributeNames(), req, resp)
 }
 
 //nolint:dupl
@@ -117,14 +112,7 @@ func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req 
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel ResourceProviderIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceProviderIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -194,14 +182,7 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel ResourceProviderIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceProviderIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -268,14 +249,7 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel ResourceProviderIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceProviderIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -31,6 +30,10 @@ func NewContentTypeResource() resource.Resource {
 
 type contentTypeResource struct {
 	providerData ContentfulProviderData
+}
+
+func contentTypeIdentityAttributeNames() []string {
+	return []string{"space_id", "environment_id", "content_type_id"}
 }
 
 const contentTypePendingActivationVersionPrivateKey = "pending_activation_version"
@@ -91,21 +94,11 @@ func (r *contentTypeResource) Configure(_ context.Context, req resource.Configur
 }
 
 func (r *contentTypeResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":        identityschema.StringAttribute{RequiredForImport: true},
-			"environment_id":  identityschema.StringAttribute{RequiredForImport: true},
-			"content_type_id": identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(contentTypeIdentityAttributeNames())
 }
 
 func (r *contentTypeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("environment_id"),
-		path.Root("content_type_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, contentTypeIdentityAttributeNames(), req, resp)
 }
 
 func (r *contentTypeResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -368,14 +361,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel ContentTypeIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, contentTypeIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -876,15 +862,7 @@ func setContentTypeIdentityStateAndVersion(
 	private PrivateProviderData,
 	result contentTypeMutationResult,
 ) diag.Diagnostics {
-	var identityModel ContentTypeIdentityModel
-
-	diags := CopyAttributeValues(ctx, &identityModel, &result.state)
-
-	if diags.HasError() {
-		return diags
-	}
-
-	diags.Append(setResourceIdentityAndState(ctx, identity, state, &identityModel, &result.state)...)
+	diags := setResourceIdentityAndState(ctx, identity, state, contentTypeIdentityAttributeNames(), &result.state)
 
 	if diags.HasError() {
 		return diags

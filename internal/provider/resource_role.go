@@ -8,9 +8,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -30,6 +28,8 @@ type roleResource struct {
 	providerData ContentfulProviderData
 }
 
+func roleIdentityAttributeNames() []string { return []string{"space_id", "role_id"} }
+
 func (r *roleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_role"
 }
@@ -43,19 +43,11 @@ func (r *roleResource) Configure(_ context.Context, req resource.ConfigureReques
 }
 
 func (r *roleResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id": identityschema.StringAttribute{RequiredForImport: true},
-			"role_id":  identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(roleIdentityAttributeNames())
 }
 
 func (r *roleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("role_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, roleIdentityAttributeNames(), req, resp)
 }
 
 func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -124,14 +116,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel RoleIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, roleIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -212,14 +197,7 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel RoleIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, roleIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -301,14 +279,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel RoleIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, roleIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

@@ -7,9 +7,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -25,6 +23,10 @@ func NewTaxonomyConceptResource() resource.Resource { return &taxonomyConceptRes
 
 type taxonomyConceptResource struct{ providerData ContentfulProviderData }
 
+func taxonomyConceptIdentityAttributeNames() []string {
+	return []string{"organization_id", "concept_id"}
+}
+
 func (r *taxonomyConceptResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_taxonomy_concept"
 }
@@ -38,14 +40,11 @@ func (r *taxonomyConceptResource) Configure(_ context.Context, req resource.Conf
 }
 
 func (r *taxonomyConceptResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{Attributes: map[string]identityschema.Attribute{
-		"organization_id": identityschema.StringAttribute{RequiredForImport: true},
-		"concept_id":      identityschema.StringAttribute{RequiredForImport: true},
-	}}
+	resp.IdentitySchema = resourceIdentitySchema(taxonomyConceptIdentityAttributeNames())
 }
 
 func (r *taxonomyConceptResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{path.Root("organization_id"), path.Root("concept_id")}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, taxonomyConceptIdentityAttributeNames(), req, resp)
 }
 
 func (r *taxonomyConceptResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -98,13 +97,8 @@ func (r *taxonomyConceptResource) Create(ctx context.Context, req resource.Creat
 	statePublished := false
 
 	if !resp.Diagnostics.HasError() {
-		var identity TaxonomyConceptIdentityModel
-		resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
-
-		if !resp.Diagnostics.HasError() {
-			resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
-			statePublished = !resp.Diagnostics.HasError()
-		}
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, taxonomyConceptIdentityAttributeNames(), &data)...)
+		statePublished = !resp.Diagnostics.HasError()
 	}
 
 	if statePublished {
@@ -158,14 +152,7 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	var identity TaxonomyConceptIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, taxonomyConceptIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -211,12 +198,7 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 	if len(patch) == 0 {
 		data := prepared.NoopState(state)
 
-		var identity TaxonomyConceptIdentityModel
-		resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
-
-		if !resp.Diagnostics.HasError() {
-			resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
-		}
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, taxonomyConceptIdentityAttributeNames(), &data)...)
 
 		return
 	}
@@ -245,13 +227,8 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 	statePublished := false
 
 	if !resp.Diagnostics.HasError() {
-		var identity TaxonomyConceptIdentityModel
-		resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
-
-		if !resp.Diagnostics.HasError() {
-			resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identity, &data)...)
-			statePublished = !resp.Diagnostics.HasError()
-		}
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, taxonomyConceptIdentityAttributeNames(), &data)...)
+		statePublished = !resp.Diagnostics.HasError()
 	}
 
 	if statePublished {

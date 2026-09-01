@@ -8,7 +8,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -28,6 +27,8 @@ type tagResource struct {
 	providerData ContentfulProviderData
 }
 
+func tagIdentityAttributeNames() []string { return []string{"space_id", "environment_id", "tag_id"} }
+
 func (r *tagResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_tag"
 }
@@ -41,21 +42,11 @@ func (r *tagResource) Configure(_ context.Context, req resource.ConfigureRequest
 }
 
 func (r *tagResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":       identityschema.StringAttribute{RequiredForImport: true},
-			"environment_id": identityschema.StringAttribute{RequiredForImport: true},
-			"tag_id":         identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(tagIdentityAttributeNames())
 }
 
 func (r *tagResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("environment_id"),
-		path.Root("tag_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, tagIdentityAttributeNames(), req, resp)
 }
 
 func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -115,14 +106,7 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel TagIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, tagIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -193,14 +177,7 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel TagIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, tagIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -273,14 +250,7 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel TagIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, tagIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

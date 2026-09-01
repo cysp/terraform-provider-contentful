@@ -8,7 +8,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -28,6 +27,10 @@ type appDefinitionResourceTypeResource struct {
 	providerData ContentfulProviderData
 }
 
+func resourceTypeIdentityAttributeNames() []string {
+	return []string{"organization_id", "app_definition_id", "resource_type_id"}
+}
+
 func (r *appDefinitionResourceTypeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_resource_type"
 }
@@ -41,21 +44,11 @@ func (r *appDefinitionResourceTypeResource) Configure(_ context.Context, req res
 }
 
 func (r *appDefinitionResourceTypeResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"organization_id":   identityschema.StringAttribute{RequiredForImport: true},
-			"app_definition_id": identityschema.StringAttribute{RequiredForImport: true},
-			"resource_type_id":  identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(resourceTypeIdentityAttributeNames())
 }
 
 func (r *appDefinitionResourceTypeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("organization_id"),
-		path.Root("app_definition_id"),
-		path.Root("resource_type_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, resourceTypeIdentityAttributeNames(), req, resp)
 }
 
 //nolint:dupl
@@ -119,14 +112,7 @@ func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req reso
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel ResourceTypeIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceTypeIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -196,14 +182,7 @@ func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resour
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel ResourceTypeIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceTypeIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -271,14 +250,7 @@ func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req reso
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel ResourceTypeIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceTypeIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

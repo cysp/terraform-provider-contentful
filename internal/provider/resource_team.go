@@ -9,7 +9,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -29,6 +28,8 @@ type teamResource struct {
 	providerData ContentfulProviderData
 }
 
+func teamIdentityAttributeNames() []string { return []string{"organization_id", "team_id"} }
+
 func (r *teamResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team"
 }
@@ -42,19 +43,11 @@ func (r *teamResource) Configure(_ context.Context, req resource.ConfigureReques
 }
 
 func (r *teamResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"organization_id": identityschema.StringAttribute{RequiredForImport: true},
-			"team_id":         identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(teamIdentityAttributeNames())
 }
 
 func (r *teamResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("organization_id"),
-		path.Root("team_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, teamIdentityAttributeNames(), req, resp)
 }
 
 func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -118,14 +111,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel TeamIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -198,14 +184,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel TeamIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -283,14 +262,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel TeamIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

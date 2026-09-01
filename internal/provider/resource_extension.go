@@ -8,7 +8,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -31,6 +30,10 @@ type extensionResource struct {
 	providerData ContentfulProviderData
 }
 
+func extensionIdentityAttributeNames() []string {
+	return []string{"space_id", "environment_id", "extension_id"}
+}
+
 func (r *extensionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_extension"
 }
@@ -44,21 +47,11 @@ func (r *extensionResource) Configure(_ context.Context, req resource.ConfigureR
 }
 
 func (r *extensionResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":       identityschema.StringAttribute{RequiredForImport: true},
-			"environment_id": identityschema.StringAttribute{RequiredForImport: true},
-			"extension_id":   identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(extensionIdentityAttributeNames())
 }
 
 func (r *extensionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("environment_id"),
-		path.Root("extension_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, extensionIdentityAttributeNames(), req, resp)
 }
 
 func (r *extensionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -194,14 +187,7 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel ExtensionIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, extensionIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -276,14 +262,7 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel ExtensionIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, extensionIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -365,14 +344,7 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel ExtensionIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, extensionIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

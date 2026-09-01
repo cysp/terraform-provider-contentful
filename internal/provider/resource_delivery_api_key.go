@@ -7,9 +7,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -29,6 +27,8 @@ type deliveryAPIKeyResource struct {
 	providerData ContentfulProviderData
 }
 
+func deliveryAPIKeyIdentityAttributeNames() []string { return []string{"space_id", "api_key_id"} }
+
 func (r *deliveryAPIKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_delivery_api_key"
 }
@@ -42,19 +42,11 @@ func (r *deliveryAPIKeyResource) Configure(_ context.Context, req resource.Confi
 }
 
 func (r *deliveryAPIKeyResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":   identityschema.StringAttribute{RequiredForImport: true},
-			"api_key_id": identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(deliveryAPIKeyIdentityAttributeNames())
 }
 
 func (r *deliveryAPIKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("api_key_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, deliveryAPIKeyIdentityAttributeNames(), req, resp)
 }
 
 func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -122,14 +114,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel DeliveryAPIKeyIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, deliveryAPIKeyIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -204,14 +189,7 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel DeliveryAPIKeyIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, deliveryAPIKeyIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -292,14 +270,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel DeliveryAPIKeyIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, deliveryAPIKeyIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	importStatePassthroughPaths          = []path.Path{path.Root("space_id"), path.Root("entry_id")}
-	importStatePassthroughResourceSchema = schema.Schema{
+	importStatePassthroughIdentityAttributeNames = []string{"space_id", "entry_id"}
+	importStatePassthroughResourceSchema         = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"space_id": schema.StringAttribute{Optional: true},
 			"entry_id": schema.StringAttribute{Optional: true},
@@ -96,7 +96,7 @@ func TestImportStatePassthroughMultipartID(t *testing.T) {
 				resp.Identity = nil
 			}
 
-			provider.ImportStatePassthroughMultipartID(t.Context(), importStatePassthroughPaths, test.request, resp)
+			provider.ImportStatePassthroughMultipartID(t.Context(), importStatePassthroughIdentityAttributeNames, test.request, resp)
 
 			require.False(t, resp.Diagnostics.HasError(), resp.Diagnostics.Errors())
 			assertValues(t, resp, test.expectIdentity)
@@ -120,7 +120,7 @@ func TestImportStatePassthroughMultipartIDFromIdentityRejectsInvalidComponent(t 
 			reqIdentity := importStatePassthroughIdentity(importStateRawValues("space", component))
 			resp := importStatePassthroughResponse()
 
-			provider.ImportStatePassthroughMultipartID(t.Context(), importStatePassthroughPaths, resource.ImportStateRequest{
+			provider.ImportStatePassthroughMultipartID(t.Context(), importStatePassthroughIdentityAttributeNames, resource.ImportStateRequest{
 				Identity: reqIdentity,
 			}, resp)
 
@@ -138,7 +138,7 @@ func TestImportStatePassthroughMultipartIDFromIDRejectsEmptyComponent(t *testing
 
 	provider.ImportStatePassthroughMultipartID(
 		t.Context(),
-		importStatePassthroughPaths,
+		importStatePassthroughIdentityAttributeNames,
 		resource.ImportStateRequest{ID: "space/"},
 		resp,
 	)
@@ -164,7 +164,7 @@ func TestImportStatePassthroughMultipartIDFromIdentityRejectsDecodeError(t *test
 	}
 	resp := importStatePassthroughResponse()
 
-	provider.ImportStatePassthroughMultipartID(t.Context(), importStatePassthroughPaths, resource.ImportStateRequest{
+	provider.ImportStatePassthroughMultipartID(t.Context(), importStatePassthroughIdentityAttributeNames, resource.ImportStateRequest{
 		Identity: reqIdentity,
 	}, resp)
 
@@ -192,7 +192,7 @@ func TestImportStatePassthroughMultipartIDFromIDIsAtomicAfterLateSetterError(t *
 
 	provider.ImportStatePassthroughMultipartID(
 		t.Context(),
-		[]path.Path{path.Root("space_id"), path.Root("missing")},
+		[]string{"space_id", "missing"},
 		resource.ImportStateRequest{ID: "space/entry"},
 		resp,
 	)
@@ -246,7 +246,7 @@ func TestImportStatePassthroughMultipartIDFromIdentityIsAtomicAfterLateSetterErr
 
 	provider.ImportStatePassthroughMultipartID(
 		t.Context(),
-		[]path.Path{path.Root("space_id"), path.Root("missing")},
+		[]string{"space_id", "missing"},
 		resource.ImportStateRequest{Identity: reqIdentity},
 		resp,
 	)
@@ -294,7 +294,7 @@ func TestImportStatePassthroughMultipartIDIsAtomicAfterIdentitySetterError(t *te
 
 	provider.ImportStatePassthroughMultipartID(
 		t.Context(),
-		importStatePassthroughPaths,
+		importStatePassthroughIdentityAttributeNames,
 		resource.ImportStateRequest{ID: "space/entry"},
 		resp,
 	)
