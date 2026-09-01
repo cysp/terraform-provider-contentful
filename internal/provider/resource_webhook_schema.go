@@ -62,8 +62,9 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"filters": WebhookFiltersSchema(ctx, true),
 			"http_basic_password": schema.StringAttribute{
-				Description: "HTTP Basic authentication password.",
+				Description: "HTTP Basic authentication password. Terraform marks this value sensitive, which obscures CLI output but does not encrypt or omit plan or state data.",
 				Optional:    true,
+				Sensitive:   true,
 			},
 			"http_basic_username": schema.StringAttribute{
 				Description: "HTTP Basic authentication username.",
