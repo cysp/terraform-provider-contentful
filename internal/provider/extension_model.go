@@ -16,13 +16,13 @@ type ExtensionModel struct {
 	IDIdentityModel
 	ExtensionIdentityModel
 
-	Extension  *ExtensionModelExtension `tfsdk:"extension"`
-	Parameters jsontypes.Normalized     `tfsdk:"parameters"`
+	Extension  *ExtensionConfiguration `tfsdk:"extension"`
+	Parameters jsontypes.Normalized    `tfsdk:"parameters"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-type ExtensionModelExtension struct {
+type ExtensionConfiguration struct {
 	Name       types.String                          `tfsdk:"name"`
 	FieldTypes []AppDefinitionLocationFieldTypesItem `tfsdk:"field_types"`
 	Src        types.String                          `tfsdk:"src"`
@@ -31,13 +31,13 @@ type ExtensionModelExtension struct {
 	Sidebar    types.Bool                            `tfsdk:"sidebar"`
 }
 
-type ExtensionModelExtensionFieldType struct {
-	Type     types.String                           `tfsdk:"type"`
-	LinkType types.String                           `tfsdk:"link_type"`
-	Items    *ExtensionModelExtensionFieldTypeItems `tfsdk:"items"`
+type ExtensionConfigurationFieldType struct {
+	Type     types.String                          `tfsdk:"type"`
+	LinkType types.String                          `tfsdk:"link_type"`
+	Items    *ExtensionConfigurationFieldTypeItems `tfsdk:"items"`
 }
 
-type ExtensionModelExtensionFieldTypeItems struct {
+type ExtensionConfigurationFieldTypeItems struct {
 	Type     types.String `tfsdk:"type"`
 	LinkType types.String `tfsdk:"link_type"`
 }

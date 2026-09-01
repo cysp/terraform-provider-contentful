@@ -179,7 +179,7 @@ func extensionPlanTestModel(src, srcdoc types.String) ExtensionModel {
 			EnvironmentID: types.StringValue("environment"),
 			ExtensionID:   types.StringValue("extension"),
 		},
-		Extension: &ExtensionModelExtension{
+		Extension: &ExtensionConfiguration{
 			Name:       types.StringValue("Extension"),
 			Src:        src,
 			SrcDoc:     srcdoc,
