@@ -111,17 +111,16 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
-		mutationState, mutationStateDiags, mutationConsistencyDiags := NewEditorInterfaceResourceModelForMutationState(ctx, response.Response, plan)
-		resp.Diagnostics.Append(mutationStateDiags...)
+		var responseDiags diag.Diagnostics
 
-		data = mutationState
+		data, responseDiags, consistencyDiags = ReconcileEditorInterfaceMutationResponse(ctx, response.Response, plan)
+		resp.Diagnostics.Append(responseDiags...)
+
 		version = response.Response.Sys.Version
-
-		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		if contentfulResponseIsVersionMismatch(response) {
-			resp.Diagnostics.AddError("Editor interface must be imported", "Contentful rejected logical creation because the editor interface has already been modified. Import it into this resource before managing it with Terraform.")
+			resp.Diagnostics.AddError("Editor Interface requires import", "Contentful rejected the request because the Editor Interface version did not match. Import the Editor Interface into this resource before applying again. If Terraform already tracks this resource, remove its existing state entry before importing it.")
 		} else {
 			resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
@@ -298,13 +297,13 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
-		mutationState, mutationStateDiags, mutationConsistencyDiags := NewEditorInterfaceResourceModelForMutationState(ctx, response.Response, plan)
-		resp.Diagnostics.Append(mutationStateDiags...)
+		var responseDiags diag.Diagnostics
 
-		data = mutationState
+		data, responseDiags, consistencyDiags = ReconcileEditorInterfaceMutationResponse(ctx, response.Response, plan)
+
+		resp.Diagnostics.Append(responseDiags...)
+
 		version = response.Response.Sys.Version
-
-		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))

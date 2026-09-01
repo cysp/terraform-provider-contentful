@@ -106,13 +106,13 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
-		mutationState, mutationStateDiags, mutationConsistencyDiags := NewRoleResourceModelForMutationState(ctx, response.Response, plan)
-		resp.Diagnostics.Append(mutationStateDiags...)
+		var responseDiags diag.Diagnostics
 
-		data = mutationState
+		data, responseDiags, consistencyDiags = ReconcileRoleMutationResponse(ctx, response.Response, plan)
+
+		resp.Diagnostics.Append(responseDiags...)
+
 		version = response.Response.Sys.Version
-
-		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create role", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -283,13 +283,13 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
-		mutationState, mutationStateDiags, mutationConsistencyDiags := NewRoleResourceModelForMutationState(ctx, response.Response, plan)
-		resp.Diagnostics.Append(mutationStateDiags...)
+		var responseDiags diag.Diagnostics
 
-		data = mutationState
+		data, responseDiags, consistencyDiags = ReconcileRoleMutationResponse(ctx, response.Response, plan)
+
+		resp.Diagnostics.Append(responseDiags...)
+
 		version = response.Response.Sys.Version
-
-		consistencyDiags.Append(mutationConsistencyDiags...)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update role", util.ErrorDetailFromContentfulManagementResponse(response, err))

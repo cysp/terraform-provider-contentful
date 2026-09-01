@@ -59,28 +59,25 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 	return model, diags, filtersListDiags
 }
 
-// NewWebhookResourceModelForMutationState starts with the complete response
-// projection and uses fallback headers only for values omitted from secret or
-// redacted responses. It restores the exact known Plan filter representation
-// only after semantic equality is proven; lossy or contradictory projections
-// remain recovery state with a consistency diagnostic. Unknown Plan filters
-// resolve from the response. Read projects remote state without reconciliation.
-func NewWebhookResourceModelForMutationState(ctx context.Context, webhookDefinition cm.WebhookDefinition, appliedPlan WebhookModel) (WebhookModel, diag.Diagnostics, diag.Diagnostics) {
-	mutationState, responseDiags, filtersDiags := newWebhookResourceModelFromResponse(ctx, webhookDefinition, appliedPlan.Headers.Elements())
-	if appliedPlan.Filters.IsUnknown() {
-		return mutationState, responseDiags, nil
+// ReconcileWebhookMutationResponse projects the complete mutation
+// response and restores the planned filters representation only after proving
+// lossless semantic equivalence.
+func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, plan WebhookModel) (WebhookModel, diag.Diagnostics, diag.Diagnostics) {
+	state, responseDiags, filtersDiags := newWebhookResourceModelFromResponse(ctx, webhookDefinition, plan.Headers.Elements())
+	if plan.Filters.IsUnknown() {
+		return state, responseDiags, nil
 	}
 
 	consistencyDiags := diag.Diagnostics{}
 
 	switch {
 	case len(filtersDiags) != 0:
-		consistencyDiags.AddAttributeError(path.Root("filters"), "Unexpected Contentful webhook response", "The filters response could not be projected without loss, so equivalence with the Terraform plan could not be established.")
-	case webhookFiltersEquivalent(appliedPlan.Filters, mutationState.Filters):
-		mutationState.Filters = appliedPlan.Filters
+		consistencyDiags.AddAttributeError(path.Root("filters"), "Provider cannot fully represent webhook filters", "Contentful accepted the request, but the returned webhook filters contain values this provider cannot fully represent. Terraform retained the representable response values but cannot verify that they match the value Terraform applied. Review the webhook in Contentful before applying again.")
+	case webhookFiltersEquivalent(plan.Filters, state.Filters):
+		state.Filters = plan.Filters
 	default:
-		consistencyDiags.AddAttributeError(path.Root("filters"), "Unexpected Contentful webhook response", "The filters response differed meaningfully from the Terraform plan.")
+		consistencyDiags.AddAttributeError(path.Root("filters"), "Contentful returned different webhook filters", "Contentful accepted the request but returned webhook filters that differ from the value Terraform applied. Terraform retained the returned value in state rather than substituting the planned value. Review the webhook and configuration before applying again.")
 	}
 
-	return mutationState, responseDiags, consistencyDiags
+	return state, responseDiags, consistencyDiags
 }
