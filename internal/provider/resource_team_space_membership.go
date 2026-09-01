@@ -9,7 +9,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -29,6 +28,10 @@ type teamSpaceMembershipResource struct {
 	providerData ContentfulProviderData
 }
 
+func teamSpaceMembershipIdentityAttributeNames() []string {
+	return []string{"space_id", "team_space_membership_id"}
+}
+
 func (r *teamSpaceMembershipResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_space_membership"
 }
@@ -42,19 +45,11 @@ func (r *teamSpaceMembershipResource) Configure(_ context.Context, req resource.
 }
 
 func (r *teamSpaceMembershipResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":                 identityschema.StringAttribute{RequiredForImport: true},
-			"team_space_membership_id": identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(teamSpaceMembershipIdentityAttributeNames())
 }
 
 func (r *teamSpaceMembershipResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("team_space_membership_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, teamSpaceMembershipIdentityAttributeNames(), req, resp)
 }
 
 //nolint:dupl
@@ -117,14 +112,7 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel TeamSpaceMembershipIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -194,14 +182,7 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel TeamSpaceMembershipIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -268,14 +249,7 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel TeamSpaceMembershipIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

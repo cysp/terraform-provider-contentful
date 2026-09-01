@@ -9,7 +9,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -30,6 +29,10 @@ type appSigningSecretResource struct {
 	providerData ContentfulProviderData
 }
 
+func appSigningSecretIdentityAttributeNames() []string {
+	return []string{"organization_id", "app_definition_id"}
+}
+
 func (r *appSigningSecretResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_app_signing_secret"
 }
@@ -43,19 +46,11 @@ func (r *appSigningSecretResource) Configure(_ context.Context, req resource.Con
 }
 
 func (r *appSigningSecretResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"organization_id":   identityschema.StringAttribute{RequiredForImport: true},
-			"app_definition_id": identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(appSigningSecretIdentityAttributeNames())
 }
 
 func (r *appSigningSecretResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("organization_id"),
-		path.Root("app_definition_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, appSigningSecretIdentityAttributeNames(), req, resp)
 }
 
 func (r *appSigningSecretResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -127,14 +122,7 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel AppSigningSecretIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -213,14 +201,7 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel AppSigningSecretIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -301,14 +282,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel AppSigningSecretIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

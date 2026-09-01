@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -16,7 +17,29 @@ type importAttribute struct {
 	value types.String
 }
 
-func ImportStatePassthroughMultipartID(ctx context.Context, attrPaths []path.Path, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func resourceIdentitySchema(attributeNames []string) identityschema.Schema {
+	attributes := make(map[string]identityschema.Attribute, len(attributeNames))
+
+	for _, attributeName := range attributeNames {
+		attributes[attributeName] = identityschema.StringAttribute{RequiredForImport: true}
+	}
+
+	return identityschema.Schema{Attributes: attributes}
+}
+
+func resourceIdentityPaths(attributeNames []string) []path.Path {
+	attributePaths := make([]path.Path, 0, len(attributeNames))
+
+	for _, attributeName := range attributeNames {
+		attributePaths = append(attributePaths, path.Root(attributeName))
+	}
+
+	return attributePaths
+}
+
+func ImportStatePassthroughMultipartID(ctx context.Context, identityAttributeNames []string, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	attrPaths := resourceIdentityPaths(identityAttributeNames)
+
 	if req.ID != "" {
 		attrValues := strings.Split(req.ID, "/")
 		if len(attrPaths) != len(attrValues) {

@@ -6,9 +6,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -28,6 +26,10 @@ type environmentAliasResource struct {
 	providerData ContentfulProviderData
 }
 
+func environmentAliasIdentityAttributeNames() []string {
+	return []string{"space_id", "environment_alias_id"}
+}
+
 func (r *environmentAliasResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_environment_alias"
 }
@@ -41,19 +43,11 @@ func (r *environmentAliasResource) Configure(_ context.Context, req resource.Con
 }
 
 func (r *environmentAliasResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":             identityschema.StringAttribute{RequiredForImport: true},
-			"environment_alias_id": identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(environmentAliasIdentityAttributeNames())
 }
 
 func (r *environmentAliasResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("environment_alias_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, environmentAliasIdentityAttributeNames(), req, resp)
 }
 
 func (r *environmentAliasResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -119,14 +113,7 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel EnvironmentAliasIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, environmentAliasIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -201,14 +188,7 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel EnvironmentAliasIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, environmentAliasIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -285,14 +265,7 @@ func (r *environmentAliasResource) Update(ctx context.Context, req resource.Upda
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel EnvironmentAliasIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, environmentAliasIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return

@@ -18,14 +18,7 @@ func setEntryIdentityStateAndVersion(
 	model EntryModel,
 	version int,
 ) diag.Diagnostics {
-	var identityModel EntryIdentityModel
-
-	diags := CopyAttributeValues(ctx, &identityModel, &model)
-	if diags.HasError() {
-		return diags
-	}
-
-	diags.Append(setResourceIdentityAndState(ctx, identity, state, &identityModel, &model)...)
+	diags := setResourceIdentityAndState(ctx, identity, state, entryIdentityAttributeNames(), &model)
 
 	if diags.HasError() {
 		return diags

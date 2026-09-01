@@ -21,11 +21,20 @@ type publicationStateModel struct {
 	ID types.String `tfsdk:"id"`
 }
 
+type publicationBoolStateModel struct {
+	ID types.Bool `tfsdk:"id"`
+}
+
+type publicationTwoStringStateModel struct {
+	ID    types.String `tfsdk:"id"`
+	Other types.String `tfsdk:"other"`
+}
+
 type invalidPublicationModel struct {
 	Missing types.String `tfsdk:"missing"`
 }
 
-func TestSetResourceIdentityAndStateLeavesBothTargetsUnchangedAfterIdentityEncodingError(t *testing.T) {
+func TestSetResourceIdentityAndStateLeavesBothTargetsUnchangedAfterIdentityExtractionError(t *testing.T) {
 	t.Parallel()
 
 	identity, state := emptyPublicationTargets()
@@ -33,7 +42,7 @@ func TestSetResourceIdentityAndStateLeavesBothTargetsUnchangedAfterIdentityEncod
 		t.Context(),
 		identity,
 		state,
-		&invalidPublicationModel{Missing: types.StringValue("invalid")},
+		[]string{"missing"},
 		&publicationStateModel{ID: types.StringValue("state")},
 	)
 
@@ -49,7 +58,7 @@ func TestSetResourceIdentityAndStateLeavesBothTargetsUnchangedAfterStateEncoding
 		t.Context(),
 		identity,
 		state,
-		&publicationIdentityModel{ID: types.StringValue("identity")},
+		[]string{"id"},
 		&invalidPublicationModel{Missing: types.StringValue("invalid")},
 	)
 
@@ -65,7 +74,7 @@ func TestSetResourceIdentityAndStateSetsBothTargets(t *testing.T) {
 		t.Context(),
 		identity,
 		state,
-		&publicationIdentityModel{ID: types.StringValue("identity")},
+		[]string{"id"},
 		&publicationStateModel{ID: types.StringValue("state")},
 	)
 
@@ -77,8 +86,93 @@ func TestSetResourceIdentityAndStateSetsBothTargets(t *testing.T) {
 
 	require.False(t, identity.Get(t.Context(), &identityModel).HasError())
 	require.False(t, state.Get(t.Context(), &stateModel).HasError())
-	assert.Equal(t, types.StringValue("identity"), identityModel.ID)
+	assert.Equal(t, types.StringValue("state"), identityModel.ID)
 	assert.Equal(t, types.StringValue("state"), stateModel.ID)
+}
+
+func TestSetResourceIdentityAndStatePreservesNullAndUnknownIdentityValues(t *testing.T) {
+	t.Parallel()
+
+	for name, value := range map[string]types.String{
+		"null":    types.StringNull(),
+		"unknown": types.StringUnknown(),
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			identity, state := emptyPublicationTargets()
+			diags := setResourceIdentityAndState(
+				t.Context(),
+				identity,
+				state,
+				[]string{"id"},
+				&publicationStateModel{ID: value},
+			)
+
+			require.False(t, diags.HasError(), diags.Errors())
+
+			var identityModel publicationIdentityModel
+
+			var stateModel publicationStateModel
+
+			require.False(t, identity.Get(t.Context(), &identityModel).HasError())
+			require.False(t, state.Get(t.Context(), &stateModel).HasError())
+			assert.Equal(t, value, identityModel.ID)
+			assert.Equal(t, value, stateModel.ID)
+		})
+	}
+}
+
+func TestSetResourceIdentityAndStateLeavesBothTargetsUnchangedForNonStringIdentityAttribute(t *testing.T) {
+	t.Parallel()
+
+	identity, state := nonStringPublicationTargets()
+	diags := setResourceIdentityAndState(
+		t.Context(),
+		identity,
+		state,
+		[]string{"id"},
+		&publicationBoolStateModel{ID: types.BoolValue(true)},
+	)
+
+	require.True(t, diags.HasError())
+
+	var identityModel publicationIdentityModel
+
+	var stateModel publicationBoolStateModel
+
+	require.False(t, identity.Get(t.Context(), &identityModel).HasError())
+	require.False(t, state.Get(t.Context(), &stateModel).HasError())
+	assert.True(t, identityModel.ID.IsNull())
+	assert.True(t, stateModel.ID.IsNull())
+}
+
+func TestSetResourceIdentityAndStateLeavesBothTargetsUnchangedAfterLateIdentityEncodingError(t *testing.T) {
+	t.Parallel()
+
+	identity, state := lateIdentityEncodingErrorPublicationTargets()
+	diags := setResourceIdentityAndState(
+		t.Context(),
+		identity,
+		state,
+		[]string{"id", "other"},
+		&publicationTwoStringStateModel{
+			ID:    types.StringValue("id"),
+			Other: types.StringValue("other"),
+		},
+	)
+
+	require.True(t, diags.HasError())
+
+	var identityModel publicationIdentityModel
+
+	var stateModel publicationTwoStringStateModel
+
+	require.False(t, identity.Get(t.Context(), &identityModel).HasError())
+	require.False(t, state.Get(t.Context(), &stateModel).HasError())
+	assert.True(t, identityModel.ID.IsNull())
+	assert.True(t, stateModel.ID.IsNull())
+	assert.True(t, stateModel.Other.IsNull())
 }
 
 func TestSetResourceIdentityAndStateRejectsMissingIdentity(t *testing.T) {
@@ -90,11 +184,58 @@ func TestSetResourceIdentityAndStateRejectsMissingIdentity(t *testing.T) {
 		t.Context(),
 		nil,
 		state,
-		&publicationIdentityModel{ID: types.StringValue("identity")},
+		[]string{"id"},
 		&publicationStateModel{ID: types.StringValue("state")},
 	)
 
 	assert.True(t, diags.HasError())
+}
+
+func nonStringPublicationTargets() (*tfsdk.ResourceIdentity, *tfsdk.State) {
+	identityRawType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"id": tftypes.String}}
+	stateRawType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"id": tftypes.Bool}}
+
+	return &tfsdk.ResourceIdentity{
+			Schema: identityschema.Schema{Attributes: map[string]identityschema.Attribute{
+				"id": identityschema.StringAttribute{RequiredForImport: true},
+			}},
+			Raw: tftypes.NewValue(identityRawType, map[string]tftypes.Value{
+				"id": tftypes.NewValue(tftypes.String, nil),
+			}),
+		}, &tfsdk.State{
+			Schema: schema.Schema{Attributes: map[string]schema.Attribute{
+				"id": schema.BoolAttribute{Computed: true},
+			}},
+			Raw: tftypes.NewValue(stateRawType, map[string]tftypes.Value{
+				"id": tftypes.NewValue(tftypes.Bool, nil),
+			}),
+		}
+}
+
+func lateIdentityEncodingErrorPublicationTargets() (*tfsdk.ResourceIdentity, *tfsdk.State) {
+	identityRawType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"id": tftypes.String}}
+	stateRawType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":    tftypes.String,
+		"other": tftypes.String,
+	}}
+
+	return &tfsdk.ResourceIdentity{
+			Schema: identityschema.Schema{Attributes: map[string]identityschema.Attribute{
+				"id": identityschema.StringAttribute{RequiredForImport: true},
+			}},
+			Raw: tftypes.NewValue(identityRawType, map[string]tftypes.Value{
+				"id": tftypes.NewValue(tftypes.String, nil),
+			}),
+		}, &tfsdk.State{
+			Schema: schema.Schema{Attributes: map[string]schema.Attribute{
+				"id":    schema.StringAttribute{Computed: true},
+				"other": schema.StringAttribute{Computed: true},
+			}},
+			Raw: tftypes.NewValue(stateRawType, map[string]tftypes.Value{
+				"id":    tftypes.NewValue(tftypes.String, nil),
+				"other": tftypes.NewValue(tftypes.String, nil),
+			}),
+		}
 }
 
 func emptyPublicationTargets() (*tfsdk.ResourceIdentity, *tfsdk.State) {

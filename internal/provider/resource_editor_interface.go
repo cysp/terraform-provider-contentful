@@ -7,9 +7,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -29,6 +27,10 @@ type editorInterfaceResource struct {
 	providerData ContentfulProviderData
 }
 
+func editorInterfaceIdentityAttributeNames() []string {
+	return []string{"space_id", "environment_id", "content_type_id"}
+}
+
 func (r *editorInterfaceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_editor_interface"
 }
@@ -42,21 +44,11 @@ func (r *editorInterfaceResource) Configure(_ context.Context, req resource.Conf
 }
 
 func (r *editorInterfaceResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":        identityschema.StringAttribute{RequiredForImport: true},
-			"environment_id":  identityschema.StringAttribute{RequiredForImport: true},
-			"content_type_id": identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(editorInterfaceIdentityAttributeNames())
 }
 
 func (r *editorInterfaceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("environment_id"),
-		path.Root("content_type_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, editorInterfaceIdentityAttributeNames(), req, resp)
 }
 
 func (r *editorInterfaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -132,14 +124,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel EditorInterfaceIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, editorInterfaceIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -151,7 +136,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Reset(data.SpaceID.ValueString(), data.EnvironmentID.ValueString(), data.ContentTypeID.ValueString())
 	resp.Diagnostics.Append(consistencyDiags...)
 }
 
@@ -221,14 +206,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel EditorInterfaceIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, editorInterfaceIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -236,7 +214,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 
-	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Reset(data.SpaceID.ValueString(), data.EnvironmentID.ValueString(), data.ContentTypeID.ValueString())
 }
 
 func (r *editorInterfaceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -315,14 +293,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel EditorInterfaceIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, editorInterfaceIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -334,7 +305,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	r.providerData.editorInterfaceVersionOffset.Reset(identityModel.SpaceID.ValueString(), identityModel.EnvironmentID.ValueString(), identityModel.ContentTypeID.ValueString())
+	r.providerData.editorInterfaceVersionOffset.Reset(data.SpaceID.ValueString(), data.EnvironmentID.ValueString(), data.ContentTypeID.ValueString())
 	resp.Diagnostics.Append(consistencyDiags...)
 }
 

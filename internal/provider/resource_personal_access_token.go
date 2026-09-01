@@ -6,9 +6,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -28,6 +26,8 @@ type personalAccessTokenResource struct {
 	providerData ContentfulProviderData
 }
 
+func personalAccessTokenIdentityAttributeNames() []string { return []string{"id"} }
+
 func (r *personalAccessTokenResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_personal_access_token"
 }
@@ -41,17 +41,11 @@ func (r *personalAccessTokenResource) Configure(_ context.Context, req resource.
 }
 
 func (r *personalAccessTokenResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"id": identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(personalAccessTokenIdentityAttributeNames())
 }
 
 func (r *personalAccessTokenResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, personalAccessTokenIdentityAttributeNames(), req, resp)
 }
 
 func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -107,14 +101,7 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 
 	data.Timeouts = plan.Timeouts
 
-	var identityModel IDIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, personalAccessTokenIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -182,14 +169,7 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 
 	data.Timeouts = state.Timeouts
 
-	var identityModel IDIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, personalAccessTokenIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
