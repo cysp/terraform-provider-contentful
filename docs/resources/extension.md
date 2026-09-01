@@ -66,7 +66,7 @@ resource "contentful_extension" "example" {
 
 ### Optional
 
-- `parameters` (String) Definitions of configuration parameters.
+- `parameters` (String) Definitions of configuration parameters. Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

@@ -61,7 +61,7 @@ resource "contentful_webhook" "this" {
 - `active` (Boolean) Whether the webhook is active.
 - `filters` (Attributes List) (see [below for nested schema](#nestedatt--filters))
 - `headers` (Attributes Map) (see [below for nested schema](#nestedatt--headers))
-- `http_basic_password` (String) HTTP Basic authentication password.
+- `http_basic_password` (String, Sensitive) HTTP Basic authentication password. Terraform marks this value sensitive, which obscures CLI output but does not encrypt or omit plan or state data.
 - `http_basic_username` (String) HTTP Basic authentication username.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `topics` (List of String) List of event topics to which the webhook subscribes.
@@ -152,7 +152,7 @@ Required:
 
 Required:
 
-- `value` (String)
+- `value` (String) Header value. Contentful's secret flag does not make the Terraform value sensitive. Use a sensitive Terraform expression when needed. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
 
 Optional:
 

@@ -132,7 +132,8 @@ func exactlyOneWebhookFilterOperator(names ...string) []validator.Object {
 func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"value": schema.StringAttribute{
-			Required: true,
+			Description: "Header value. Contentful's secret flag does not make the Terraform value sensitive. Use a sensitive Terraform expression when needed. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.",
+			Required:    true,
 		},
 		"secret": schema.BoolAttribute{
 			Optional: true,

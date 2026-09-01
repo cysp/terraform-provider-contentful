@@ -53,7 +53,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"parameters": schema.StringAttribute{
-				Description: "Definitions of configuration parameters.",
+				Description: "Definitions of configuration parameters. Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 				Computed:    true,

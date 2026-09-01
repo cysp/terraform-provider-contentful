@@ -204,10 +204,10 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 	response, err := r.providerData.client.PutExtension(ctx, &request, params)
 
 	tflog.Info(ctx, "extension.create", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data ExtensionModel
@@ -276,9 +276,9 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 	response, err := r.providerData.client.GetExtension(ctx, params)
 
 	tflog.Info(ctx, "extension.read", map[string]any{
-		"params":   params,
-		"response": response,
-		"err":      err,
+		"params": params,
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	version := 0
@@ -375,10 +375,10 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 	response, err := r.providerData.client.PutExtension(ctx, &request, params)
 
 	tflog.Info(ctx, "extension.update", map[string]any{
-		"params":   params,
-		"request":  request,
-		"response": response,
-		"err":      err,
+		"params": params,
+		// "request": request, omitted to avoid logging sensitive values
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	var data ExtensionModel
