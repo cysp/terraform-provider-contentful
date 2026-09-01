@@ -426,6 +426,20 @@ func TestEditorInterfaceMutationStateRejectsRepresentableLayoutContradiction(t *
 	assert.Equal(t, []string{"editor_layout"}, attributeDiagnosticPaths(t, consistencyDiags))
 	assert.Equal(t, "Contentful returned a different Editor Interface layout", consistencyDiags.Errors()[0].Summary())
 	assert.Equal(t, "response-group", mutationState.EditorLayout.Elements()[0].Value().Group.Value().GroupID.ValueString())
+
+	nullPlanState, nullPlanResponseDiags, nullPlanConsistencyDiags := ReconcileEditorInterfaceMutationResponse(
+		t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]]()},
+	)
+
+	assert.Empty(t, nullPlanResponseDiags)
+	require.True(t, nullPlanConsistencyDiags.HasError())
+	assert.Equal(t, []string{"editor_layout"}, attributeDiagnosticPaths(t, nullPlanConsistencyDiags))
+	require.Len(t, nullPlanState.EditorLayout.Elements(), 1)
+	nullPlanLayoutItem := nullPlanState.EditorLayout.Elements()[0].Value()
+	require.False(t, nullPlanLayoutItem.Group.IsNull())
+	assert.Equal(t, "response-group", nullPlanLayoutItem.Group.Value().GroupID.ValueString())
+	assert.Equal(t, "Response group", nullPlanLayoutItem.Group.Value().Name.ValueString())
+	assert.Empty(t, nullPlanLayoutItem.Group.Value().Items.Elements())
 }
 
 func TestEditorInterfaceMutationStateAcceptsEquivalentResponse(t *testing.T) {
@@ -497,6 +511,67 @@ func TestOptionalMutationStateReconcilesOmittedNullValues(t *testing.T) {
 	assert.Empty(t, webhookResponseDiags)
 	assert.Empty(t, webhookConsistencyDiags)
 	assert.True(t, webhookState.Filters.IsNull())
+}
+
+func TestWebhookMutationStateDistinguishesNullAndEmptyFilters(t *testing.T) {
+	t.Parallel()
+
+	nullFilters := NewTypedListNull[TypedObject[WebhookFilterValue]]()
+	emptyFilters := NewTypedList([]TypedObject[WebhookFilterValue]{})
+
+	for name, test := range map[string]struct {
+		plan                TypedList[TypedObject[WebhookFilterValue]]
+		response            cm.OptNilWebhookDefinitionFilterArray
+		expectedState       TypedList[TypedObject[WebhookFilterValue]]
+		expectContradiction bool
+	}{
+		"null plan and empty response": {
+			plan:                nullFilters,
+			response:            cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{}),
+			expectedState:       emptyFilters,
+			expectContradiction: true,
+		},
+		"empty plan and null response": {
+			plan:                emptyFilters,
+			response:            cm.NewOptNilWebhookDefinitionFilterArrayNull(),
+			expectedState:       nullFilters,
+			expectContradiction: true,
+		},
+		"empty plan and empty response": {
+			plan:          emptyFilters,
+			response:      cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{}),
+			expectedState: emptyFilters,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			state, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(
+				t.Context(),
+				cm.WebhookDefinition{
+					Sys:     cm.NewWebhookDefinitionSys("space", "webhook"),
+					Filters: test.response,
+				},
+				WebhookModel{
+					Filters: test.plan,
+					Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+				},
+			)
+
+			assert.Empty(t, responseDiags)
+			assert.Equal(t, test.expectedState, state.Filters)
+
+			if test.expectContradiction {
+				require.True(t, consistencyDiags.HasError())
+				assert.Equal(t, []string{"filters"}, attributeDiagnosticPaths(t, consistencyDiags))
+				assert.Equal(t, "Contentful returned different webhook filters", consistencyDiags.Errors()[0].Summary())
+
+				return
+			}
+
+			assert.Empty(t, consistencyDiags)
+		})
+	}
 }
 
 func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testing.T) {
