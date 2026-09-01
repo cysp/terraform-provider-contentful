@@ -153,7 +153,7 @@ func (r *contentTypeResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	plannedPublishedVersion := state.PublishedVersion
-	//nolint:contextcheck // attr.Value.Equal and TypedObject.Equal expose no context-aware alternative.
+
 	draftMutation := contentTypeDraftMutationRequired(configMetadata, plan, state)
 	if draftMutation || pending {
 		version, versionDiags := requiredPrivateVersion(ctx, req.Private)
@@ -389,7 +389,6 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	//nolint:contextcheck // attr.Value.Equal and TypedObject.Equal expose no context-aware alternative.
 	draftMutationRequired := contentTypeDraftMutationRequired(config.Metadata, plan, state)
 	pendingVersion, pending, pendingDiags := optionalPendingLifecycleVersion(
 		ctx, req.Private, contentTypePendingActivationVersionPrivateKey, "Content Type activation",

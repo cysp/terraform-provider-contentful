@@ -57,8 +57,6 @@ func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm
 // being hidden in Terraform state. Configuration remains separate from Plan so
 // an omitted Optional+Computed taxonomy stays Contentful-owned even after plan
 // reconciliation has made it known.
-//
-//nolint:contextcheck // attr.Value.Equal and TypedObject.Equal expose no context-aware alternative.
 func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.ContentType, config, plan ContentTypeModel) (ContentTypeModel, diag.Diagnostics, diag.Diagnostics) {
 	data, responseDiags := NewContentTypeResourceModelFromResponse(ctx, contentType)
 

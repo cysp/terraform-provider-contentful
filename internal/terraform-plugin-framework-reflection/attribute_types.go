@@ -17,16 +17,6 @@ func AttributeTypesFor[T any](ctx context.Context) map[string]attr.Type {
 	return attributeTypes
 }
 
-func AttributeTypesOf(ctx context.Context, value any) map[string]attr.Type {
-	typ := reflect.TypeOf(value)
-
-	attributeTypes := make(map[string]attr.Type)
-
-	extractAttributeTypesOf(ctx, attributeTypes, typ)
-
-	return attributeTypes
-}
-
 func extractAttributeTypesOf(ctx context.Context, attributeTypes map[string]attr.Type, typ reflect.Type) {
 	if typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()

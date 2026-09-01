@@ -95,6 +95,11 @@ func TestTypedMapEqual(t *testing.T) {
 			t.Parallel()
 
 			assert.Equal(t, testcase.expected, testcase.map1.Equal(testcase.map2))
+
+			otherMap, ok := testcase.map2.(TypedMap[types.String])
+			if ok {
+				assert.Equal(t, testcase.expected, otherMap.Equal(testcase.map1))
+			}
 		})
 	}
 }

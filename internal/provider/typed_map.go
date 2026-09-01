@@ -85,31 +85,17 @@ func (v TypedMap[T]) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if v.elements == nil && other.elements == nil {
-		return true
+	if len(v.elements) != len(other.elements) {
+		return false
 	}
 
-	keys := make(map[string]struct{}, len(v.elements))
-	for k := range v.elements {
-		keys[k] = struct{}{}
-	}
-
-	for k := range other.elements {
-		keys[k] = struct{}{}
-	}
-
-	for k := range keys {
-		aElementK, aElementKFound := v.elements[k]
-		if !aElementKFound {
+	for key, element := range v.elements {
+		otherElement, ok := other.elements[key]
+		if !ok {
 			return false
 		}
 
-		bElementK, bElementKFound := other.elements[k]
-		if !bElementKFound {
-			return false
-		}
-
-		if !aElementK.Equal(bElementK) {
+		if !element.Equal(otherElement) {
 			return false
 		}
 	}
