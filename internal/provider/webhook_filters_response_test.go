@@ -126,6 +126,147 @@ func TestReadWebhookFiltersListValueFromResponsePreservesSiblingsAndPositions(t 
 	assert.True(t, actual.Elements()[1].Value().Equals.IsNull())
 }
 
+func TestWebhookFilterResponseDecoderRetainsUnsupportedProperties(t *testing.T) {
+	t.Parallel()
+
+	var decoded cm.OptNilWebhookDefinitionFilterArray
+	require.NoError(t, decoded.UnmarshalJSON([]byte(`[
+  {
+    "equals": [{"doc": "sys.type"}, "Entry"],
+    "futureTop": {"mode": "preview"}
+  },
+  {
+    "not": {
+      "in": [{"doc": "sys.id"}, ["entry"]],
+      "futureNot": [1, 2]
+    }
+  }
+]`)))
+
+	filters, ok := decoded.Get()
+	require.True(t, ok)
+	require.Len(t, filters, 2)
+	require.Len(t, filters[0].AdditionalProps, 1)
+	assert.JSONEq(t, `{"mode":"preview"}`, string(filters[0].AdditionalProps["futureTop"]))
+
+	negated, ok := filters[1].Not.Get()
+	require.True(t, ok)
+	require.Len(t, negated.AdditionalProps, 1)
+	assert.JSONEq(t, `[1,2]`, string(negated.AdditionalProps["futureNot"]))
+}
+
+func TestWebhookFilterResponseProjectionReportsUnsupportedProperties(t *testing.T) {
+	t.Parallel()
+
+	var decoded cm.OptNilWebhookDefinitionFilterArray
+	require.NoError(t, decoded.UnmarshalJSON([]byte(`[
+  {
+    "equals": [{"doc": "sys.type", "zeta": false, "alpha": 1}, "Entry"],
+    "futureTop": [{"doc": "sys.id"}, "ignored"]
+  },
+  {
+    "not": {
+      "equals": [{"doc": "sys.id"}, "entry"],
+      "futureNot": [{"doc": "sys.type"}, "Asset"]
+    }
+  },
+  {
+    "futureOnly": [{"doc": "sys.type"}, "Asset"]
+  },
+  {
+    "in": [{"doc": "sys.id"}, ["first", "second"]]
+  }
+]`)))
+
+	model, diags := NewWebhookResourceModelFromResponse(t.Context(), cm.WebhookDefinition{
+		Sys:     cm.NewWebhookDefinitionSys("space", "webhook"),
+		Name:    "Response webhook",
+		URL:     "https://example.com/webhook",
+		Topics:  []string{"Entry.create", "Entry.save"},
+		Filters: decoded,
+		Headers: cm.WebhookDefinitionHeaders{},
+	}, map[string]TypedObject[WebhookHeaderValue]{})
+
+	expectedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			webhookEqualsValue(types.StringValue("sys.type"), types.StringValue("Entry")),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+		NewTypedObject(webhookFilterValue(
+			NewTypedObject(webhookNotValue(
+				webhookEqualsValue(types.StringValue("sys.id"), types.StringValue("entry")),
+				NewTypedObjectNull[WebhookFilterInValue](),
+				NewTypedObjectNull[WebhookFilterRegexpValue](),
+			)),
+			NewTypedObjectNull[WebhookFilterEqualsValue](),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			NewTypedObjectNull[WebhookFilterEqualsValue](),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			NewTypedObjectNull[WebhookFilterEqualsValue](),
+			webhookInValue(types.StringValue("sys.id"), NewTypedList([]types.String{
+				types.StringValue("first"),
+				types.StringValue("second"),
+			})),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+	})
+
+	assert.Equal(t, expectedFilters, model.Filters)
+	assert.Equal(t, "Response webhook", model.Name.ValueString())
+	assert.Equal(t, "https://example.com/webhook", model.URL.ValueString())
+	assert.Equal(t, []types.String{types.StringValue("Entry.create"), types.StringValue("Entry.save")}, model.Topics.Elements())
+
+	expectedDiagnostics := []struct {
+		path    string
+		summary string
+		detail  string
+	}{
+		{
+			path:    "filters[0]",
+			summary: "Unsupported webhook filter response properties",
+			detail:  `Contentful returned webhook filter properties ["futureTop"] that this provider cannot represent. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
+		},
+		{
+			path:    "filters[0].equals.doc",
+			summary: "Unsupported webhook filter term response properties",
+			detail:  `Contentful returned properties ["alpha" "zeta"] alongside the required "doc" property. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
+		},
+		{
+			path:    "filters[1].not",
+			summary: "Unsupported webhook filter response properties",
+			detail:  `Contentful returned webhook filter properties ["futureNot"] that this provider cannot represent. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
+		},
+		{
+			path:    "filters[2]",
+			summary: "Unsupported webhook filter response properties",
+			detail:  `Contentful returned webhook filter properties ["futureOnly"] that this provider cannot represent. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
+		},
+	}
+
+	require.Len(t, diags, len(expectedDiagnostics))
+
+	for index, expected := range expectedDiagnostics {
+		diagnostic := diags[index]
+		assert.Equal(t, diag.SeverityWarning, diagnostic.Severity())
+		assert.Equal(t, expected.summary, diagnostic.Summary())
+		assert.Equal(t, expected.detail, diagnostic.Detail())
+
+		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
+		require.True(t, ok)
+		assert.Equal(t, expected.path, withPath.Path().String())
+	}
+}
+
 func TestReadWebhookDefinitionFilterTermString(t *testing.T) {
 	t.Parallel()
 

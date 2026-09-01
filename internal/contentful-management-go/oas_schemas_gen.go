@@ -12912,10 +12912,11 @@ func (s *WebhookDefinitionDataTransformation) SetBody(val jx.Raw) {
 
 // Ref: #/WebhookDefinitionFilter
 type WebhookDefinitionFilter struct {
-	Not    OptWebhookDefinitionFilterNot `json:"not"`
-	Equals WebhookDefinitionFilterEquals `json:"equals"`
-	In     WebhookDefinitionFilterIn     `json:"in"`
-	Regexp WebhookDefinitionFilterRegexp `json:"regexp"`
+	Not             OptWebhookDefinitionFilterNot `json:"not"`
+	Equals          WebhookDefinitionFilterEquals `json:"equals"`
+	In              WebhookDefinitionFilterIn     `json:"in"`
+	Regexp          WebhookDefinitionFilterRegexp `json:"regexp"`
+	AdditionalProps WebhookDefinitionFilterAdditional
 }
 
 // GetNot returns the value of Not.
@@ -12938,6 +12939,11 @@ func (s *WebhookDefinitionFilter) GetRegexp() WebhookDefinitionFilterRegexp {
 	return s.Regexp
 }
 
+// GetAdditionalProps returns the value of AdditionalProps.
+func (s *WebhookDefinitionFilter) GetAdditionalProps() WebhookDefinitionFilterAdditional {
+	return s.AdditionalProps
+}
+
 // SetNot sets the value of Not.
 func (s *WebhookDefinitionFilter) SetNot(val OptWebhookDefinitionFilterNot) {
 	s.Not = val
@@ -12958,15 +12964,32 @@ func (s *WebhookDefinitionFilter) SetRegexp(val WebhookDefinitionFilterRegexp) {
 	s.Regexp = val
 }
 
+// SetAdditionalProps sets the value of AdditionalProps.
+func (s *WebhookDefinitionFilter) SetAdditionalProps(val WebhookDefinitionFilterAdditional) {
+	s.AdditionalProps = val
+}
+
+type WebhookDefinitionFilterAdditional map[string]jx.Raw
+
+func (s *WebhookDefinitionFilterAdditional) init() WebhookDefinitionFilterAdditional {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
 type WebhookDefinitionFilterEquals []jx.Raw
 
 type WebhookDefinitionFilterIn []jx.Raw
 
 // Ref: #/WebhookDefinitionFilterNot
 type WebhookDefinitionFilterNot struct {
-	Equals WebhookDefinitionFilterEquals `json:"equals"`
-	In     WebhookDefinitionFilterIn     `json:"in"`
-	Regexp WebhookDefinitionFilterRegexp `json:"regexp"`
+	Equals          WebhookDefinitionFilterEquals `json:"equals"`
+	In              WebhookDefinitionFilterIn     `json:"in"`
+	Regexp          WebhookDefinitionFilterRegexp `json:"regexp"`
+	AdditionalProps WebhookDefinitionFilterNotAdditional
 }
 
 // GetEquals returns the value of Equals.
@@ -12984,6 +13007,11 @@ func (s *WebhookDefinitionFilterNot) GetRegexp() WebhookDefinitionFilterRegexp {
 	return s.Regexp
 }
 
+// GetAdditionalProps returns the value of AdditionalProps.
+func (s *WebhookDefinitionFilterNot) GetAdditionalProps() WebhookDefinitionFilterNotAdditional {
+	return s.AdditionalProps
+}
+
 // SetEquals sets the value of Equals.
 func (s *WebhookDefinitionFilterNot) SetEquals(val WebhookDefinitionFilterEquals) {
 	s.Equals = val
@@ -12997,6 +13025,22 @@ func (s *WebhookDefinitionFilterNot) SetIn(val WebhookDefinitionFilterIn) {
 // SetRegexp sets the value of Regexp.
 func (s *WebhookDefinitionFilterNot) SetRegexp(val WebhookDefinitionFilterRegexp) {
 	s.Regexp = val
+}
+
+// SetAdditionalProps sets the value of AdditionalProps.
+func (s *WebhookDefinitionFilterNot) SetAdditionalProps(val WebhookDefinitionFilterNotAdditional) {
+	s.AdditionalProps = val
+}
+
+type WebhookDefinitionFilterNotAdditional map[string]jx.Raw
+
+func (s *WebhookDefinitionFilterNotAdditional) init() WebhookDefinitionFilterNotAdditional {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
 }
 
 type WebhookDefinitionFilterRegexp []jx.Raw

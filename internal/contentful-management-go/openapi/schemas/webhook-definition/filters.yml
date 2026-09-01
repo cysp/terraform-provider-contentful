@@ -1,5 +1,6 @@
 WebhookDefinitionFilter:
   type: object
+  additionalProperties: {}
   properties:
     not:
       $ref: "#/WebhookDefinitionFilterNot"
@@ -12,6 +13,7 @@ WebhookDefinitionFilter:
 
 WebhookDefinitionFilterNot:
   type: object
+  additionalProperties: {}
   properties:
     equals:
       $ref: "#/WebhookDefinitionFilterEquals"
