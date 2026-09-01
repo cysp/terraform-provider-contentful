@@ -3,7 +3,6 @@ package provider
 
 import (
 	"context"
-	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -132,7 +131,7 @@ func (r *taxonomyConceptSchemeResource) Read(ctx context.Context, req resource.R
 
 	scheme, ok := response.(*cm.TaxonomyConceptScheme)
 	if !ok {
-		if status, ok := response.(cm.StatusCodeResponse); ok && status.GetStatusCode() == http.StatusNotFound {
+		if contentfulResponseIsNotFound(response) {
 			resp.State.RemoveResource(ctx)
 
 			return
@@ -269,7 +268,7 @@ func (r *taxonomyConceptSchemeResource) Delete(ctx context.Context, req resource
 
 		scheme, ok := response.(*cm.TaxonomyConceptScheme)
 		if !ok {
-			if status, ok := response.(cm.StatusCodeResponse); ok && status.GetStatusCode() == http.StatusNotFound {
+			if contentfulResponseIsNotFound(response) {
 				return
 			}
 
@@ -289,7 +288,7 @@ func (r *taxonomyConceptSchemeResource) Delete(ctx context.Context, req resource
 		return
 	}
 
-	if status, ok := response.(cm.StatusCodeResponse); ok && status.GetStatusCode() == http.StatusNotFound {
+	if contentfulResponseIsNotFound(response) {
 		return
 	}
 

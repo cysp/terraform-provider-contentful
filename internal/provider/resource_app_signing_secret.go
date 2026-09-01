@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"net/http"
 	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -179,13 +178,11 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 		data = readState
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
-				resp.State.RemoveResource(ctx)
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Failed to read app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
+			resp.State.RemoveResource(ctx)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
@@ -349,12 +346,10 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 	default:
 		handled := false
 
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("App signing secret already deleted", appSigningSecretErrorDetail(response, err, state.Value))
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("App signing secret already deleted", appSigningSecretErrorDetail(response, err, state.Value))
 
-				handled = true
-			}
+			handled = true
 		}
 
 		if !handled {

@@ -3,7 +3,6 @@ package provider
 
 import (
 	"context"
-	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -167,13 +166,11 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		version = response.Sys.Version
 
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read delivery API key", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Failed to read delivery API key", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.State.RemoveResource(ctx)
 
-				return
-			}
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to read delivery API key", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -312,12 +309,10 @@ func (r *deliveryAPIKeyResource) Delete(ctx context.Context, req resource.Delete
 	default:
 		handled := false
 
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Delivery API key already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if contentfulResponseIsNotFound(response) {
+			resp.Diagnostics.AddWarning("Delivery API key already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-				handled = true
-			}
+			handled = true
 		}
 
 		if !handled {

@@ -24,6 +24,16 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			},
 			expected: "Error: UnknownError",
 		},
+		"Error pointer": {
+			response: &cm.Error{
+				Sys: cm.NewErrorSys("UnknownError"),
+			},
+			expected: "Error: UnknownError",
+		},
+		"nil Error pointer": {
+			response: (*cm.Error)(nil),
+			expected: "<nil>",
+		},
 		"Error: *ApplicationJSONError": {
 			response: &cm.ApplicationJSONError{
 				Type: cm.ErrorApplicationJSONError,

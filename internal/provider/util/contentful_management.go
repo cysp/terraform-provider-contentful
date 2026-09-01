@@ -3,7 +3,6 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -11,12 +10,6 @@ import (
 )
 
 func ErrorDetailFromContentfulManagementResponse(response any, err error) string {
-	if response, ok := response.(cm.ErrorStatusCodeResponse); ok {
-		if detail := ErrorDetailFromContentfulManagementErrorStatusCode(response); detail != "" {
-			return detail
-		}
-	}
-
 	if response, ok := response.(cm.ErrorResponse); ok {
 		responseError, responseErrorOk := response.GetError()
 		if responseErrorOk {
@@ -26,19 +19,12 @@ func ErrorDetailFromContentfulManagementResponse(response any, err error) string
 		}
 	}
 
-	if response != nil {
-		cmErrorType := reflect.TypeFor[cm.Error]()
-
-		rValue := reflect.ValueOf(response)
-		if rValue.Kind() == reflect.Pointer && !rValue.IsNil() {
-			rValue = rValue.Elem()
-		}
-
-		if rValue.CanConvert(cmErrorType) {
-			cmError, ok := rValue.Convert(cmErrorType).Interface().(cm.Error)
-			if ok {
-				return ErrorDetailFromContentfulManagementError(cmError)
-			}
+	switch response := response.(type) {
+	case cm.Error:
+		return ErrorDetailFromContentfulManagementError(response)
+	case *cm.Error:
+		if response != nil {
+			return ErrorDetailFromContentfulManagementError(*response)
 		}
 	}
 
@@ -47,19 +33,6 @@ func ErrorDetailFromContentfulManagementResponse(response any, err error) string
 	}
 
 	return fmt.Sprintf("%v", response)
-}
-
-func ErrorDetailFromContentfulManagementErrorStatusCode(response cm.ErrorStatusCodeResponse) string {
-	if response == nil {
-		return ""
-	}
-
-	responseError, responseErrorOk := response.GetError()
-	if !responseErrorOk {
-		return ""
-	}
-
-	return ErrorDetailFromContentfulManagementError(responseError)
 }
 
 func ErrorDetailFromContentfulManagementError(response cm.Error) string {
