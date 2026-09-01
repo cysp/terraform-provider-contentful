@@ -91,6 +91,50 @@ func TestAccWebhookConsistencyErrorsRetainResponseState(t *testing.T) {
 	})
 }
 
+func TestAccWebhookUnsupportedResponsePropertiesPreventFalseConvergence(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+
+	adapter := &mutationJSONResponseAdapter{delegate: server}
+	filterValuePath := tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value")
+	webhookIDPath := tfjsonpath.New("webhook_id")
+
+	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					adapter.mutateNext(http.MethodPost, func(response map[string]any) {
+						response["filters"] = []any{map[string]any{
+							"equals":         []any{map[string]any{"doc": "sys.type"}, "Entry"},
+							"futureOperator": []any{map[string]any{"doc": "sys.id"}, "entry"},
+						}}
+					})
+				},
+				Config:      webhookMutationConfig("Created webhook", "Entry", false),
+				ExpectError: regexp.MustCompile(`Provider cannot fully represent webhook filters`),
+			},
+			{
+				Config:             webhookMutationConfig("Created webhook", "Entry", false),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionReplace),
+					expectResponseStateInPlan{
+						address:            "contentful_webhook.test",
+						valuePath:          filterValuePath,
+						value:              "Entry",
+						nonEmptyBeforePath: &webhookIDPath,
+					},
+				}},
+			},
+		},
+	})
+}
+
 func TestAccWebhookMutationReconciliationUsesEffectivePlanWithIgnoreChanges(t *testing.T) {
 	t.Parallel()
 

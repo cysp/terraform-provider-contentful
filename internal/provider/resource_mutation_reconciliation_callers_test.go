@@ -265,9 +265,10 @@ func (a *mutationJSONResponseAdapter) takeMutation(method string, statusCode int
 }
 
 type expectResponseStateInPlan struct {
-	address   string
-	valuePath tfjsonpath.Path
-	value     string
+	address            string
+	valuePath          tfjsonpath.Path
+	value              string
+	nonEmptyBeforePath *tfjsonpath.Path
 }
 
 func (check expectResponseStateInPlan) CheckPlan(_ context.Context, request plancheck.CheckPlanRequest, response *plancheck.CheckPlanResponse) {
@@ -285,6 +286,22 @@ func (check expectResponseStateInPlan) CheckPlan(_ context.Context, request plan
 
 		if value != check.value {
 			response.Error = fmt.Errorf("%w: response-derived value is %#v, want %q", errUnexpectedTerraformPlan, value, check.value)
+
+			return
+		}
+
+		if check.nonEmptyBeforePath != nil {
+			beforeValue, err := tfjsonpath.Traverse(change.Change.Before, *check.nonEmptyBeforePath)
+			if err != nil {
+				response.Error = fmt.Errorf("read response-derived value from prior state: %w", err)
+
+				return
+			}
+
+			stringValue, ok := beforeValue.(string)
+			if !ok || stringValue == "" {
+				response.Error = fmt.Errorf("%w: prior state value at %s is %#v, want a nonempty string", errUnexpectedTerraformPlan, check.nonEmptyBeforePath.String(), beforeValue)
+			}
 		}
 
 		return
