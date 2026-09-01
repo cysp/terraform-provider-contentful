@@ -27,10 +27,10 @@ func NewExtensionModelFromResponse(ctx context.Context, response cm.Extension) (
 		},
 	}
 
-	extensionExtension, extensionExtensionDiags := NewExtensionModelExtensionFromResponse(ctx, response.Extension)
-	diags.Append(extensionExtensionDiags...)
+	extensionConfiguration, extensionConfigurationDiags := NewExtensionConfigurationFromResponse(ctx, response.Extension)
+	diags.Append(extensionConfigurationDiags...)
 
-	model.Extension = &extensionExtension
+	model.Extension = &extensionConfiguration
 
 	if response.Parameters != nil {
 		constraint, err := util.JxNormalizeOpaqueBytes(response.Parameters, util.JxEncodeOpaqueOptions{EscapeStrings: true})
@@ -46,10 +46,10 @@ func NewExtensionModelFromResponse(ctx context.Context, response cm.Extension) (
 	return model, diags
 }
 
-func NewExtensionModelExtensionFromResponse(ctx context.Context, response cm.ExtensionExtension) (ExtensionModelExtension, diag.Diagnostics) {
+func NewExtensionConfigurationFromResponse(ctx context.Context, response cm.ExtensionExtension) (ExtensionConfiguration, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	model := ExtensionModelExtension{
+	model := ExtensionConfiguration{
 		Name:    types.StringValue(response.Name),
 		Src:     types.StringNull(),
 		SrcDoc:  types.StringNull(),

@@ -14,7 +14,7 @@ import (
 
 func validExtensionRequestModel() ExtensionModel {
 	return ExtensionModel{
-		Extension: &ExtensionModelExtension{
+		Extension: &ExtensionConfiguration{
 			Name:   types.StringValue("Extension"),
 			Src:    types.StringValue("https://example.com/extension.js"),
 			SrcDoc: types.StringNull(),
@@ -126,7 +126,7 @@ func TestExtensionRequestPreservesOptionalScalarPresence(t *testing.T) {
 	model.Extension.Sidebar = types.BoolValue(false)
 
 	actual, diags := model.ToExtensionData(ExtensionModel{
-		Extension: &ExtensionModelExtension{
+		Extension: &ExtensionConfiguration{
 			SrcDoc: types.StringValue(""),
 		},
 	}, path.Empty())
@@ -176,7 +176,7 @@ func TestExtensionRequestUsesKnownPlanSourcesWhenConfigurationIsNull(t *testing.
 			model.Extension.SrcDoc = test.srcdoc
 
 			actual, diags := model.ToExtensionData(ExtensionModel{
-				Extension: &ExtensionModelExtension{
+				Extension: &ExtensionConfiguration{
 					Src:    types.StringNull(),
 					SrcDoc: types.StringNull(),
 				},
@@ -236,7 +236,7 @@ func TestExtensionRequestRejectsConflictingSources(t *testing.T) {
 	model.Parameters = jsontypes.NewNormalizedValue(`{"known":true}`)
 
 	actual, diags := model.ToExtensionData(ExtensionModel{
-		Extension: &ExtensionModelExtension{
+		Extension: &ExtensionConfiguration{
 			Src:    types.StringValue("https://example.com"),
 			SrcDoc: types.StringValue("<html></html>"),
 		},
@@ -251,7 +251,7 @@ func TestExtensionParameterListsFailClosed(t *testing.T) {
 	t.Parallel()
 
 	model := ExtensionModel{
-		Extension: &ExtensionModelExtension{
+		Extension: &ExtensionConfiguration{
 			Name:   types.StringValue("Extension"),
 			SrcDoc: types.StringValue(""),
 			Parameters: &AppDefinitionParameters{
@@ -285,7 +285,7 @@ func TestExtensionParameterListsPreserveNilAndEmpty(t *testing.T) {
 	t.Parallel()
 
 	model := ExtensionModel{
-		Extension: &ExtensionModelExtension{
+		Extension: &ExtensionConfiguration{
 			Name:   types.StringValue("Extension"),
 			SrcDoc: types.StringValue(""),
 			Parameters: &AppDefinitionParameters{
@@ -311,7 +311,7 @@ func TestExtensionRequestRejectsUnknownResponseOwnedSources(t *testing.T) {
 	t.Parallel()
 
 	model := ExtensionModel{
-		Extension: &ExtensionModelExtension{
+		Extension: &ExtensionConfiguration{
 			Name:   types.StringValue("Extension"),
 			Src:    types.StringUnknown(),
 			SrcDoc: types.StringUnknown(),

@@ -605,7 +605,7 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 			EnvironmentID: types.StringValue("environment"),
 			ExtensionID:   types.StringValue("extension"),
 		},
-		Extension: &ExtensionModelExtension{
+		Extension: &ExtensionConfiguration{
 			Name:       types.StringValue("Extension"),
 			Src:        types.StringNull(),
 			SrcDoc:     types.StringUnknown(),
@@ -617,7 +617,7 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 	}
 	extensionConfig := extensionPlan
 	extensionConfig.ID = types.StringNull()
-	extensionConfig.Extension = &ExtensionModelExtension{
+	extensionConfig.Extension = &ExtensionConfiguration{
 		Name:       types.StringValue("Extension"),
 		Src:        types.StringNull(),
 		SrcDoc:     types.StringValue("<!doctype html>"),

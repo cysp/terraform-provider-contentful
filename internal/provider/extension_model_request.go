@@ -13,7 +13,7 @@ func (model *ExtensionModel) validateRequestConfiguration(config ExtensionModel,
 	if model.Extension != nil {
 		extensionPath := modelPath.AtName("extension")
 
-		var configured ExtensionModelExtension
+		var configured ExtensionConfiguration
 
 		if config.Extension != nil {
 			configured = *config.Extension
@@ -67,10 +67,10 @@ func (model *ExtensionModel) ToExtensionData(config ExtensionModel, path path.Pa
 		)
 	}
 
-	fieldsExtension, fieldsExtensionDiags := model.Extension.ToExtensionExtensionData(path.AtName("extension"))
-	diags.Append(fieldsExtensionDiags...)
+	extensionData, extensionDataDiags := model.Extension.ToExtensionDataExtension(path.AtName("extension"))
+	diags.Append(extensionDataDiags...)
 
-	fields.Extension = fieldsExtension
+	fields.Extension = extensionData
 
 	// An unknown Optional+Computed plan is omitted only when configuration is
 	// null. Every known plan value remains the request source.
@@ -85,7 +85,7 @@ func (model *ExtensionModel) ToExtensionData(config ExtensionModel, path path.Pa
 	return fields, diags
 }
 
-func (model *ExtensionModelExtension) ToExtensionExtensionData(
+func (model *ExtensionConfiguration) ToExtensionDataExtension(
 	path path.Path,
 ) (cm.ExtensionDataExtension, diag.Diagnostics) {
 	diags := diag.Diagnostics{}

@@ -29,7 +29,7 @@ func TestExtensionResponsePreservesSourcePresence(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			actual, diags := NewExtensionModelExtensionFromResponse(t.Context(), test.response)
+			actual, diags := NewExtensionConfigurationFromResponse(t.Context(), test.response)
 
 			require.False(t, diags.HasError(), diags.Errors())
 			assert.Equal(t, test.wantSrcNull, actual.Src.IsNull())

@@ -59,7 +59,7 @@ func TestExtensionSourceSchemaMatchesContentfulContract(t *testing.T) {
 					EnvironmentID: types.StringValue("environment"),
 					ExtensionID:   types.StringValue("extension"),
 				},
-				Extension: &ExtensionModelExtension{
+				Extension: &ExtensionConfiguration{
 					Name:       types.StringValue("Extension"),
 					Src:        test.src,
 					SrcDoc:     test.srcdoc,
