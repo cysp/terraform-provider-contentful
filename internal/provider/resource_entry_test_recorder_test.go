@@ -13,20 +13,22 @@ import (
 )
 
 const (
-	entryTestUpdatePath  = "/spaces/space/environments/environment/entries/entry"
-	entryTestPublishPath = entryTestUpdatePath + "/published"
+	entryTestCollectionPath = "/spaces/space/environments/environment/entries"
+	entryTestUpdatePath     = "/spaces/space/environments/environment/entries/entry"
+	entryTestPublishPath    = entryTestUpdatePath + "/published"
 )
 
 type entryMutationRequest struct {
-	method         string
-	path           string
-	version        string
-	versionPresent bool
-	versionValues  []string
-	body           []byte
-	contentLength  int64
-	contentType    string
-	fields         map[string]json.RawMessage
+	method             string
+	path               string
+	version            string
+	versionPresent     bool
+	versionValues      []string
+	contentTypePresent bool
+	contentTypeValues  []string
+	body               []byte
+	contentLength      int64
+	fields             map[string]json.RawMessage
 }
 
 type entryMutationRecorder struct {
@@ -42,9 +44,11 @@ func newEntryMutationRecorder(delegate http.Handler, errorSink *entryFixtureErro
 }
 
 func (h *entryMutationRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	h.recordUpdate(request)
+	h.recordDraftMutation(request)
+	h.recordDelete(request)
 
-	if request.Method == http.MethodPut && strings.HasSuffix(request.URL.Path, "/entries/entry/published") {
+	if request.Method == http.MethodPut && strings.HasPrefix(request.URL.Path, entryTestCollectionPath+"/") &&
+		strings.HasSuffix(request.URL.Path, "/published") {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			h.errorSink.record(err)
@@ -54,22 +58,29 @@ func (h *entryMutationRecorder) ServeHTTP(responseWriter http.ResponseWriter, re
 
 		request.Body = io.NopCloser(bytes.NewReader(body))
 
-		h.record(entryMutationRequest{
-			method:         request.Method,
-			path:           request.URL.Path,
-			version:        request.Header.Get("X-Contentful-Version"),
-			versionPresent: len(request.Header.Values("X-Contentful-Version")) > 0,
-			versionValues:  append([]string(nil), request.Header.Values("X-Contentful-Version")...),
-			body:           append([]byte(nil), body...),
-			contentLength:  request.ContentLength,
-		})
+		mutation := entryMutationRequestFromHTTP(request)
+
+		mutation.body = append([]byte(nil), body...)
+		h.record(mutation)
 	}
 
 	h.delegate.ServeHTTP(responseWriter, request)
 }
 
-func (h *entryMutationRecorder) recordUpdate(request *http.Request) {
-	if request.Method != http.MethodPut || !strings.HasSuffix(request.URL.Path, "/entries/entry") {
+func (h *entryMutationRecorder) recordDelete(request *http.Request) {
+	if request.Method != http.MethodDelete || !strings.HasPrefix(request.URL.Path, entryTestCollectionPath+"/") {
+		return
+	}
+
+	h.record(entryMutationRequestFromHTTP(request))
+}
+
+func (h *entryMutationRecorder) recordDraftMutation(request *http.Request) {
+	isGeneratedCreate := request.Method == http.MethodPost && request.URL.Path == entryTestCollectionPath
+
+	isMemberPut := request.Method == http.MethodPut && strings.HasPrefix(request.URL.Path, entryTestCollectionPath+"/") &&
+		!strings.HasSuffix(request.URL.Path, "/published")
+	if !isGeneratedCreate && !isMemberPut {
 		return
 	}
 
@@ -93,17 +104,24 @@ func (h *entryMutationRecorder) recordUpdate(request *http.Request) {
 		return
 	}
 
-	h.record(entryMutationRequest{
-		method:         request.Method,
-		path:           request.URL.Path,
-		version:        request.Header.Get("X-Contentful-Version"),
-		versionPresent: len(request.Header.Values("X-Contentful-Version")) > 0,
-		versionValues:  append([]string(nil), request.Header.Values("X-Contentful-Version")...),
-		body:           append([]byte(nil), body...),
-		contentLength:  request.ContentLength,
-		contentType:    request.Header.Get("X-Contentful-Content-Type"),
-		fields:         payload.Fields,
-	})
+	mutation := entryMutationRequestFromHTTP(request)
+
+	mutation.body = append([]byte(nil), body...)
+	mutation.fields = payload.Fields
+	h.record(mutation)
+}
+
+func entryMutationRequestFromHTTP(request *http.Request) entryMutationRequest {
+	return entryMutationRequest{
+		method:             request.Method,
+		path:               request.URL.Path,
+		version:            request.Header.Get("X-Contentful-Version"),
+		versionPresent:     len(request.Header.Values("X-Contentful-Version")) > 0,
+		versionValues:      append([]string(nil), request.Header.Values("X-Contentful-Version")...),
+		contentTypePresent: len(request.Header.Values("X-Contentful-Content-Type")) > 0,
+		contentTypeValues:  append([]string(nil), request.Header.Values("X-Contentful-Content-Type")...),
+		contentLength:      request.ContentLength,
+	}
 }
 
 func (h *entryMutationRecorder) record(request entryMutationRequest) {

@@ -509,11 +509,10 @@ func (r *entryResource) updateEntry(
 	diags *diag.Diagnostics,
 ) (EntryModel, int, bool) {
 	putEntryParams := cm.PutEntryParams{
-		SpaceID:                entry.SpaceID.ValueString(),
-		EnvironmentID:          entry.EnvironmentID.ValueString(),
-		EntryID:                entry.EntryID.ValueString(),
-		XContentfulContentType: cm.NewOptPointerString(entry.ContentTypeID.ValueStringPointer()),
-		XContentfulVersion:     cm.NewOptInt(version),
+		SpaceID:            entry.SpaceID.ValueString(),
+		EnvironmentID:      entry.EnvironmentID.ValueString(),
+		EntryID:            entry.EntryID.ValueString(),
+		XContentfulVersion: cm.NewOptInt(version),
 	}
 
 	putEntryRequest, putEntryRequestDiags := entry.ToEntryRequest(ctx)
