@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ogen-go/ogen/ogenerrors"
+	"github.com/ogen-go/ogen/validate"
 )
 
 func errorHandler(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
@@ -29,7 +30,40 @@ func errorHandler(ctx context.Context, w http.ResponseWriter, r *http.Request, e
 		}
 	}
 
+	if isMissingWebhookTopics(err) {
+		message := "Validation error"
+		_ = WriteContentfulManagementErrorResponse(
+			w,
+			http.StatusUnprocessableEntity,
+			"ValidationFailed",
+			&message,
+			missingWebhookTopicsValidationDetails(),
+		)
+
+		return
+	}
+
 	ogenerrors.DefaultErrorHandler(ctx, w, r, err)
+}
+
+func isMissingWebhookTopics(err error) bool {
+	decodeRequestErr, ok := errors.AsType[*ogenerrors.DecodeRequestError](err)
+	if !ok || (decodeRequestErr.OperationName() != "CreateWebhookDefinition" && decodeRequestErr.OperationName() != "UpdateWebhookDefinition") {
+		return false
+	}
+
+	validationErr, ok := errors.AsType[*validate.Error](decodeRequestErr)
+	if !ok {
+		return false
+	}
+
+	for _, field := range validationErr.Fields {
+		if field.Name == "topics" && errors.Is(field.Error, validate.ErrFieldRequired) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func isMissingTaxonomyDeleteVersion(r *http.Request, err error) bool {

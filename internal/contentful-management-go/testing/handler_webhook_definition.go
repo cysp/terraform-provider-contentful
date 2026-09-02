@@ -12,6 +12,10 @@ func (ts *Handler) CreateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if len(req.Topics) == 0 {
+		return newEmptyWebhookTopicsValidationError(), nil
+	}
+
 	if ts.environments.Get(params.SpaceID, "master") == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
@@ -46,6 +50,10 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if len(req.Topics) == 0 {
+		return newEmptyWebhookTopicsValidationError(), nil
+	}
+
 	if ts.environments.Get(params.SpaceID, "master") == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
@@ -73,6 +81,17 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 		StatusCode: http.StatusOK,
 		Response:   response,
 	}, nil
+}
+
+func missingWebhookTopicsValidationDetails() []byte {
+	return []byte(`{"errors":[{"name":"invalid_type","path":["topics"],"details":"Invalid input: expected array, received undefined at \"topics\""}]}`)
+}
+
+func newEmptyWebhookTopicsValidationError() *cm.ErrorStatusCode {
+	return NewContentfulManagementErrorStatusCodeValidationFailed(
+		new("Validation error"),
+		[]byte(`{"errors":[{"name":"topics","path":[],"details":"Topics cannot be empty"}]}`),
+	)
 }
 
 //nolint:ireturn

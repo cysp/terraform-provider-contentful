@@ -6,6 +6,7 @@ resource "contentful_webhook" "this" {
 
   active = false
 
+  # Contentful requires at least one topic.
   topics = ["Entry.save", "Entry.publish", "Entry.unpublish"]
 
   filters = [

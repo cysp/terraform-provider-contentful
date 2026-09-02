@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"regexp"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -22,6 +23,72 @@ import (
 )
 
 var errWebhookUpdateMismatch = errors.New("webhook update mismatch")
+
+func TestAccWebhookResourceTopicsValidation(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name            string
+		topics          string
+		expectError     *regexp.Regexp
+		expectedCreates int64
+	}{
+		{
+			name:        "omitted",
+			expectError: regexp.MustCompile(`(?s)Missing required argument.*topics`),
+		},
+		{
+			name:        "empty",
+			topics:      "topics = []",
+			expectError: regexp.MustCompile(`list must contain at least 1 elements`),
+		},
+		{
+			name:            "one topic",
+			topics:          `topics = ["Entry.publish"]`,
+			expectedCreates: 1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+			require.NoError(t, err)
+			server.RegisterSpaceEnvironment("space", "master")
+
+			counter := &webhookCreateCounter{next: server}
+			configuration := fmt.Sprintf(`
+resource "contentful_webhook" "test" {
+  space_id = "space"
+  name     = "Topics validation"
+  url      = "https://example.com/webhook"
+  %s
+}
+`, test.topics)
+
+			ContentfulProviderMockedResourceTest(t, counter, resource.TestCase{Steps: []resource.TestStep{{
+				Config:      configuration,
+				ExpectError: test.expectError,
+			}}})
+
+			require.Equal(t, test.expectedCreates, counter.creates.Load())
+		})
+	}
+}
+
+type webhookCreateCounter struct {
+	next    http.Handler
+	creates atomic.Int64
+}
+
+func (c *webhookCreateCounter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodPost && request.URL.Path == "/spaces/space/webhook_definitions" {
+		c.creates.Add(1)
+	}
+
+	c.next.ServeHTTP(responseWriter, request)
+}
 
 //nolint:paralleltest
 func TestAccWebhookResourceImport(t *testing.T) {
@@ -47,7 +114,7 @@ func TestAccWebhookResourceImport(t *testing.T) {
 				Secret: cm.NewOptBool(true),
 			},
 		},
-		Topics: []string{},
+		Topics: []string{"Entry.publish"},
 	})
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
@@ -84,7 +151,7 @@ func TestAccWebhookResourcePreservesImportedSecretHeadersOnUpdate(t *testing.T) 
 			{Key: "X-Ordinary", Value: cm.NewOptString("ordinary"), Secret: cm.NewOptBool(false)},
 			{Key: "X-Secret", Value: cm.NewOptString("existing-secret"), Secret: cm.NewOptBool(true)},
 		},
-		Topics: []string{},
+		Topics: []string{"Entry.publish"},
 	})
 
 	recorder := &webhookUpdateRecorder{next: server}
@@ -94,7 +161,7 @@ resource "contentful_webhook" "test" {
   space_id = "space"
   name     = %q
   url      = "https://example.com/webhook"
-  topics   = []
+  topics   = ["Entry.publish"]
   %s
 }
 `, name, headers)

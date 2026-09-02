@@ -21,6 +21,7 @@ resource "contentful_webhook" "this" {
 
   active = false
 
+  # Contentful requires at least one topic.
   topics = ["Entry.save", "Entry.publish", "Entry.unpublish"]
 
   filters = [
@@ -54,6 +55,7 @@ resource "contentful_webhook" "this" {
 
 - `name` (String) Name of the webhook.
 - `space_id` (String) ID of the space containing the webhook.
+- `topics` (List of String) List of one or more event topics to which the webhook subscribes.
 - `url` (String) Preconfigured HTTP endpoint that is called when content has changed.
 
 ### Optional
@@ -64,7 +66,6 @@ resource "contentful_webhook" "this" {
 - `http_basic_password` (String, Sensitive) HTTP Basic authentication password. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. Terraform marks the value sensitive, which obscures CLI output but does not encrypt or omit plan or state data.
 - `http_basic_username` (String) HTTP Basic authentication username.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `topics` (List of String) List of event topics to which the webhook subscribes.
 - `transformation` (Attributes) (see [below for nested schema](#nestedatt--transformation))
 
 ### Read-Only

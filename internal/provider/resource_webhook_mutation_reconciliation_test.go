@@ -26,7 +26,7 @@ resource "contentful_webhook" "test" {
   space_id = "space"
   name     = %q
   url      = "https://example.com/webhook"
-  topics   = []
+  topics   = ["Entry.publish"]
   filters = [{
     equals = {
       doc   = "sys.type"

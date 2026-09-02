@@ -81,6 +81,7 @@ resource "contentful_webhook" "plan" {
   space_id            = "plan-space"
   name                = "Plan Webhook"
   url                 = "https://example.invalid/webhook"
+  topics              = ["Entry.publish"]
   http_basic_password = var.webhook_password
 
   headers = {
@@ -312,7 +313,7 @@ resource "contentful_webhook" "logs" {
   space_id            = "log-space"
   name                = %q
   url                 = "https://example.invalid/webhook"
-  topics              = []
+  topics              = ["Entry.publish"]
   http_basic_username = "user"
   http_basic_password = %q
 }
