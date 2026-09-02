@@ -9,6 +9,7 @@ import (
 
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 type contentfulRequestMethodContextKey struct{}
@@ -88,6 +89,7 @@ func (t contentfulRequestContextRoundTripper) RoundTrip(request *http.Request) (
 
 func newContentfulHTTPClient(httpClient *http.Client) *http.Client {
 	retryableClient := retryablehttp.NewClient()
+	retryableClient.Logger = nil
 	retryCoordinator := contentfulRetryCoordinator{
 		client: retryableClient,
 	}
@@ -143,16 +145,32 @@ func (c contentfulRetryCoordinator) checkRetry(
 		return false, err //nolint:wrapcheck // preserve authoritative context cancellation identity.
 	}
 
+	method, _ := ctx.Value(contentfulRequestMethodContextKey{}).(string)
+	logFields := map[string]any{
+		"decision":      "retry",
+		"method":        method,
+		"status_code":   response.StatusCode,
+		"retry_ordinal": attempt + 1,
+		"wait_ms":       backoff.Milliseconds(),
+	}
+
 	if deadline, ok := ctx.Deadline(); ok {
 		remaining := time.Until(deadline)
 		if remaining <= 0 {
 			return false, context.DeadlineExceeded
 		}
 
+		logFields["deadline_remaining_ms"] = remaining.Milliseconds()
+
 		if backoff >= remaining {
+			logFields["decision"] = "decline_deadline"
+			tflog.Debug(ctx, "contentful.response_retry", logFields)
+
 			return false, nil
 		}
 	}
+
+	tflog.Debug(ctx, "contentful.response_retry", logFields)
 
 	retryState.backoffAttempt = attempt
 	retryState.backoff = backoff
