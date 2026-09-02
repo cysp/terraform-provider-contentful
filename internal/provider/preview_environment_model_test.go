@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -113,65 +114,122 @@ func TestPreviewEnvironmentModelResponseIdentityNormalization(t *testing.T) {
 	}
 }
 
-func TestPreviewEnvironmentModelResponseRejectsInvalidConfigurations(t *testing.T) {
+func TestPreviewEnvironmentModelResponseWarnsAndPreservesRepresentableSiblings(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string][]cm.PreviewEnvironmentConfiguration{
+	tests := map[string]struct {
+		configuration cm.PreviewEnvironmentConfiguration
+		expectedPath  string
+	}{
 		"missing identity": {
-			{URL: "https://preview.invalid/page", Enabled: true},
+			configuration: cm.PreviewEnvironmentConfiguration{URL: "https://preview.invalid/invalid", Enabled: true},
+			expectedPath:  "content_type_configurations",
 		},
 		"conflicting aliases": {
-			{
+			configuration: cm.PreviewEnvironmentConfiguration{
 				URL:         "https://preview.invalid/page",
 				EntityType:  cm.NewOptString("ContentType"),
 				EntityId:    cm.NewOptString("page"),
 				ContentType: cm.NewOptString("article"),
 				Enabled:     true,
 			},
+			expectedPath: `content_type_configurations["page"]`,
 		},
 		"unsupported enabled entity": {
-			{
+			configuration: cm.PreviewEnvironmentConfiguration{
 				URL:        "https://preview.invalid/page",
 				EntityType: cm.NewOptString("Entry"),
 				EntityId:   cm.NewOptString("page"),
 				Enabled:    true,
 			},
-		},
-		"unsupported disabled entity": {
-			{
-				URL:        "https://preview.invalid/page",
-				EntityType: cm.NewOptString("Entry"),
-				EntityId:   cm.NewOptString("page"),
-				Enabled:    false,
-			},
-		},
-		"duplicate identity": {
-			{
-				URL:        "https://preview.invalid/page",
-				EntityType: cm.NewOptString("ContentType"),
-				EntityId:   cm.NewOptString("page"),
-				Enabled:    true,
-			},
-			{
-				URL:        "https://preview.invalid/page-disabled",
-				EntityType: cm.NewOptString("ContentType"),
-				EntityId:   cm.NewOptString("page"),
-				Enabled:    false,
-			},
+			expectedPath: `content_type_configurations["page"]`,
 		},
 	}
 
-	for name, configurations := range tests {
+	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, diagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), cm.PreviewEnvironment{
-				Sys:            cm.NewPreviewEnvironmentSys("space", "preview"),
-				Name:           "Preview",
-				Description:    "",
-				Configurations: configurations,
+			model, diagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), cm.PreviewEnvironment{
+				Sys:         cm.NewPreviewEnvironmentSys("space", "preview"),
+				Name:        "Preview",
+				Description: "",
+				Configurations: []cm.PreviewEnvironmentConfiguration{
+					{
+						URL:        "https://preview.invalid/author",
+						EntityType: cm.NewOptString("ContentType"),
+						EntityId:   cm.NewOptString("author"),
+						Enabled:    true,
+					},
+					test.configuration,
+				},
 			})
+			require.False(t, diagnostics.HasError())
+			require.Len(t, diagnostics.Warnings(), 1)
+			diagnostic, ok := diagnostics.Warnings()[0].(diag.DiagnosticWithPath)
+			require.True(t, ok)
+			assert.Equal(t, test.expectedPath, diagnostic.Path().String())
+			require.Len(t, model.ContentTypeConfigurations.Elements(), 1)
+			assert.Equal(
+				t,
+				types.StringValue("https://preview.invalid/author"),
+				model.ContentTypeConfigurations.Elements()["author"].Value().URL,
+			)
+		})
+	}
+}
+
+func TestPreviewEnvironmentModelResponseKeepsFirstActiveDuplicate(t *testing.T) {
+	t.Parallel()
+
+	model, diagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), cm.PreviewEnvironment{
+		Sys:         cm.NewPreviewEnvironmentSys("space", "preview"),
+		Name:        "Preview",
+		Description: "",
+		Configurations: []cm.PreviewEnvironmentConfiguration{
+			previewEnvironmentResponseConfiguration("page", "https://preview.invalid/first", true),
+			previewEnvironmentResponseConfiguration("page", "https://preview.invalid/second", true),
+			{
+				URL:        "https://preview.invalid/disabled",
+				EntityType: cm.NewOptString("Entry"),
+				EntityId:   cm.NewOptString("unsupported-disabled"),
+				Enabled:    false,
+			},
+		},
+	})
+
+	require.False(t, diagnostics.HasError())
+	require.Len(t, diagnostics.Warnings(), 1)
+	diagnostic, ok := diagnostics.Warnings()[0].(diag.DiagnosticWithPath)
+	require.True(t, ok)
+	assert.Equal(t, `content_type_configurations["page"]`, diagnostic.Path().String())
+	require.Len(t, model.ContentTypeConfigurations.Elements(), 1)
+	assert.Equal(
+		t,
+		types.StringValue("https://preview.invalid/first"),
+		model.ContentTypeConfigurations.Elements()["page"].Value().URL,
+	)
+}
+
+func TestPreviewEnvironmentModelResponseRequiresResourceIdentity(t *testing.T) {
+	t.Parallel()
+
+	for name, response := range map[string]cm.PreviewEnvironment{
+		"missing space ID": {
+			Sys: cm.NewPreviewEnvironmentSys("", "preview"),
+		},
+		"missing preview environment ID": {
+			Sys: cm.NewPreviewEnvironmentSys("space", ""),
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			_, diagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), response)
 			require.True(t, diagnostics.HasError())
+			require.Len(t, diagnostics.Errors(), 1)
+			_, ok := diagnostics.Errors()[0].(diag.DiagnosticWithPath)
+			require.True(t, ok)
 		})
 	}
 }
@@ -330,39 +388,79 @@ func TestPreviewEnvironmentUpdateDataUsesStateToPlanDelta(t *testing.T) {
 	}
 }
 
-func TestValidatePreviewEnvironmentUpdateResponse(t *testing.T) {
+func TestReconcilePreviewEnvironmentMutationResponseRestoresEquivalentPlan(t *testing.T) {
+	t.Parallel()
+
+	plan := previewEnvironmentMutationModel("preview", "planned description", map[string]string{
+		"author": "https://preview.invalid/author",
+		"page":   "https://preview.invalid/page",
+	})
+	response := previewEnvironmentResponse("space", "preview", "Planned", "planned description", map[string]string{
+		"page":   "https://preview.invalid/page",
+		"author": "https://preview.invalid/author",
+	})
+
+	state, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+		t.Context(),
+		response,
+		plan,
+		plan.PreviewEnvironmentIdentityModel,
+	)
+
+	assert.Empty(t, responseDiagnostics)
+	assert.Empty(t, consistencyDiagnostics)
+	assert.Equal(t, plan.Name, state.Name)
+	assert.Equal(t, plan.Description, state.Description)
+	assert.True(t, plan.ContentTypeConfigurations.Equal(state.ContentTypeConfigurations))
+}
+
+func TestReconcilePreviewEnvironmentMutationResponseDetectsEveryOwnedContradiction(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		state       map[string]string
-		plan        map[string]string
-		response    map[string]string
-		expectError bool
+		response     cm.PreviewEnvironment
+		expectedPath string
 	}{
-		"changed value applied with unrelated remote value": {
-			state: map[string]string{"page": "https://preview.invalid/page"},
-			plan:  map[string]string{"page": "https://preview.invalid/page-new"},
-			response: map[string]string{
-				"page":   "https://preview.invalid/page-new",
+		"name": {
+			response: previewEnvironmentResponse("space", "preview", "Remote", "Planned description", map[string]string{
+				"page": "https://preview.invalid/page",
+			}),
+			expectedPath: "name",
+		},
+		"description": {
+			response: previewEnvironmentResponse("space", "preview", "Planned", "Remote description", map[string]string{
+				"page": "https://preview.invalid/page",
+			}),
+			expectedPath: "description",
+		},
+		"space identity": {
+			response: previewEnvironmentResponse("other-space", "preview", "Planned", "Planned description", map[string]string{
+				"page": "https://preview.invalid/page",
+			}),
+			expectedPath: "space_id",
+		},
+		"selected identity": {
+			response: previewEnvironmentResponse("space", "other-preview", "Planned", "Planned description", map[string]string{
+				"page": "https://preview.invalid/page",
+			}),
+			expectedPath: "preview_environment_id",
+		},
+		"changed or unchanged configuration contradicted": {
+			response: previewEnvironmentResponse("space", "preview", "Planned", "Planned description", map[string]string{
+				"page": "https://preview.invalid/remote-page",
+			}),
+			expectedPath: `content_type_configurations["page"].url`,
+		},
+		"planned configuration omitted": {
+			response:     previewEnvironmentResponse("space", "preview", "Planned", "Planned description", map[string]string{}),
+			expectedPath: `content_type_configurations["page"]`,
+		},
+		"removed or unexpected configuration remains active": {
+			response: previewEnvironmentResponse("space", "preview", "Planned", "Planned description", map[string]string{
+				"page":   "https://preview.invalid/page",
 				"author": "https://preview.invalid/author",
-			},
-		},
-		"changed value not applied": {
-			state:       map[string]string{"page": "https://preview.invalid/page"},
-			plan:        map[string]string{"page": "https://preview.invalid/page-new"},
-			response:    map[string]string{"page": "https://preview.invalid/page"},
-			expectError: true,
-		},
-		"removal applied": {
-			state:    map[string]string{"page": "https://preview.invalid/page"},
-			plan:     map[string]string{},
-			response: map[string]string{},
-		},
-		"removal not applied": {
-			state:       map[string]string{"page": "https://preview.invalid/page"},
-			plan:        map[string]string{},
-			response:    map[string]string{"page": "https://preview.invalid/page"},
-			expectError: true,
+			}),
+			expectedPath: `content_type_configurations["author"]`,
 		},
 	}
 
@@ -370,19 +468,90 @@ func TestValidatePreviewEnvironmentUpdateResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			state := previewEnvironmentModel(test.state)
-			plan := previewEnvironmentModel(test.plan)
-			response := previewEnvironmentModel(test.response)
-			diagnostics := ValidatePreviewEnvironmentUpdateResponse(
+			plan := previewEnvironmentMutationModel("preview", "Planned description", map[string]string{
+				"page": "https://preview.invalid/page",
+			})
+			state, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
 				t.Context(),
-				path.Empty(),
-				&state,
-				&plan,
-				&response,
+				test.response,
+				plan,
+				plan.PreviewEnvironmentIdentityModel,
 			)
-			assert.Equal(t, test.expectError, diagnostics.HasError())
+
+			assert.Empty(t, responseDiagnostics)
+			require.True(t, consistencyDiagnostics.HasError())
+			assert.Contains(t, attributeDiagnosticPaths(t, consistencyDiagnostics), test.expectedPath)
+
+			projectedResponse, projectionDiagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), test.response)
+			require.False(t, projectionDiagnostics.HasError())
+			assert.Equal(t, projectedResponse.Name, state.Name)
+			assert.Equal(t, projectedResponse.Description, state.Description)
+			assert.True(t, projectedResponse.ContentTypeConfigurations.Equal(state.ContentTypeConfigurations))
+			assert.Equal(t, types.StringValue("space"), state.SpaceID)
+			assert.Equal(t, types.StringValue("preview"), state.PreviewEnvironmentID)
+			assert.Equal(t, types.StringValue("space/preview"), state.ID)
 		})
 	}
+}
+
+func TestReconcilePreviewEnvironmentMutationResponseHonorsSelectedIDOwnership(t *testing.T) {
+	t.Parallel()
+
+	plan := previewEnvironmentMutationModel("planned-id", "", map[string]string{})
+	response := previewEnvironmentResponse("space", "generated-id", "Planned", "", map[string]string{})
+
+	generatedState, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+		t.Context(),
+		response,
+		plan,
+		PreviewEnvironmentIdentityModel{SpaceID: plan.SpaceID, PreviewEnvironmentID: types.StringNull()},
+	)
+	assert.Empty(t, responseDiagnostics)
+	assert.Empty(t, consistencyDiagnostics)
+	assert.Equal(t, types.StringValue("generated-id"), generatedState.PreviewEnvironmentID)
+	assert.Equal(t, types.StringValue("space/generated-id"), generatedState.ID)
+
+	selectedState, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+		t.Context(),
+		response,
+		plan,
+		plan.PreviewEnvironmentIdentityModel,
+	)
+	assert.Empty(t, responseDiagnostics)
+	require.True(t, consistencyDiagnostics.HasError())
+	assert.Contains(t, attributeDiagnosticPaths(t, consistencyDiagnostics), "preview_environment_id")
+	assert.Equal(t, types.StringValue("planned-id"), selectedState.PreviewEnvironmentID)
+	assert.Equal(t, types.StringValue("space/planned-id"), selectedState.ID)
+}
+
+func TestReconcilePreviewEnvironmentMutationResponseRetainsProjectionWarnings(t *testing.T) {
+	t.Parallel()
+
+	plan := previewEnvironmentMutationModel("preview", "", map[string]string{
+		"page": "https://preview.invalid/page",
+	})
+	response := previewEnvironmentResponse("space", "preview", "Planned", "", map[string]string{
+		"page": "https://preview.invalid/page",
+	})
+	response.Configurations = append(response.Configurations, cm.PreviewEnvironmentConfiguration{
+		URL:        "https://preview.invalid/unsupported",
+		EntityType: cm.NewOptString("Entry"),
+		EntityId:   cm.NewOptString("entry"),
+		Enabled:    true,
+	})
+
+	state, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+		t.Context(),
+		response,
+		plan,
+		plan.PreviewEnvironmentIdentityModel,
+	)
+
+	require.False(t, responseDiagnostics.HasError())
+	require.Len(t, responseDiagnostics.Warnings(), 1)
+	require.True(t, consistencyDiagnostics.HasError())
+	assert.Equal(t, []string{"content_type_configurations"}, attributeDiagnosticPaths(t, consistencyDiagnostics))
+	assert.True(t, plan.ContentTypeConfigurations.Equal(state.ContentTypeConfigurations))
 }
 
 func previewEnvironmentConfigurationData(contentTypeID, url string, enabled bool) cm.PreviewEnvironmentConfigurationData {
@@ -391,5 +560,50 @@ func previewEnvironmentConfigurationData(contentTypeID, url string, enabled bool
 		EntityType: "ContentType",
 		EntityId:   contentTypeID,
 		Enabled:    enabled,
+	}
+}
+
+func previewEnvironmentMutationModel(
+	previewEnvironmentID string,
+	description string,
+	configurations map[string]string,
+) PreviewEnvironmentModel {
+	model := previewEnvironmentModel(configurations)
+	model.ID = types.StringValue("space/" + previewEnvironmentID)
+	model.SpaceID = types.StringValue("space")
+	model.PreviewEnvironmentID = types.StringValue(previewEnvironmentID)
+	model.Name = types.StringValue("Planned")
+	model.Description = types.StringValue(description)
+
+	return model
+}
+
+func previewEnvironmentResponse(
+	spaceID string,
+	previewEnvironmentID string,
+	name string,
+	description string,
+	configurations map[string]string,
+) cm.PreviewEnvironment {
+	responseConfigurations := make([]cm.PreviewEnvironmentConfiguration, 0, len(configurations))
+	for contentTypeID, url := range configurations {
+		responseConfigurations = append(responseConfigurations, previewEnvironmentResponseConfiguration(contentTypeID, url, true))
+	}
+
+	return cm.PreviewEnvironment{
+		Sys:            cm.NewPreviewEnvironmentSys(spaceID, previewEnvironmentID),
+		Name:           name,
+		Description:    description,
+		Configurations: responseConfigurations,
+	}
+}
+
+func previewEnvironmentResponseConfiguration(contentTypeID, url string, enabled bool) cm.PreviewEnvironmentConfiguration {
+	return cm.PreviewEnvironmentConfiguration{
+		URL:         url,
+		EntityType:  cm.NewOptString("ContentType"),
+		EntityId:    cm.NewOptString(contentTypeID),
+		ContentType: cm.NewOptString(contentTypeID),
+		Enabled:     enabled,
 	}
 }

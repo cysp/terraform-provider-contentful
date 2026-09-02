@@ -53,7 +53,7 @@ resource "contentful_preview_environment" "selected_id" {
 ### Optional
 
 - `description` (String) Description of the content preview platform.
-- `preview_environment_id` (String) System ID of the content preview platform. When omitted, Contentful generates an ID. When forcing replacement of a configured platform with a caller-selected ID, choose a different ID because Contentful may prevent immediate recreation under the previous value.
+- `preview_environment_id` (String) System ID of the content preview platform. When omitted, Contentful generates an ID. Caller-selected IDs must contain 1–64 ASCII letters, digits, hyphens, or underscores. When forcing replacement of a configured platform with a caller-selected ID, choose a different ID because Contentful may prevent immediate recreation under the previous value.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
@@ -12,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
+
+const maxPreviewEnvironmentIDLength = 64
 
 func PreviewEnvironmentResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
@@ -31,9 +34,13 @@ func PreviewEnvironmentResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"preview_environment_id": schema.StringAttribute{
-				Description: "System ID of the content preview platform. When omitted, Contentful generates an ID. When forcing replacement of a configured platform with a caller-selected ID, choose a different ID because Contentful may prevent immediate recreation under the previous value.",
+				Description: "System ID of the content preview platform. When omitted, Contentful generates an ID. Caller-selected IDs must contain 1–64 ASCII letters, digits, hyphens, or underscores. When forcing replacement of a configured platform with a caller-selected ID, choose a different ID because Contentful may prevent immediate recreation under the previous value.",
 				Optional:    true,
 				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, maxPreviewEnvironmentIDLength),
+					stringvalidator.RegexMatches(regexp.MustCompile(`^[A-Za-z0-9_-]+$`), "must contain only ASCII letters, digits, hyphens, or underscores"),
+				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 					stringplanmodifier.UseStateForUnknown(),

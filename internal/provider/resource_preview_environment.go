@@ -2,13 +2,11 @@ package provider
 
 import (
 	"context"
-	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -28,6 +26,10 @@ type previewEnvironmentResource struct {
 	providerData ContentfulProviderData
 }
 
+func previewEnvironmentIdentityAttributeNames() []string {
+	return []string{"space_id", "preview_environment_id"}
+}
+
 func (r *previewEnvironmentResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_preview_environment"
 }
@@ -41,41 +43,56 @@ func (r *previewEnvironmentResource) Configure(_ context.Context, req resource.C
 }
 
 func (r *previewEnvironmentResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":               identityschema.StringAttribute{RequiredForImport: true},
-			"preview_environment_id": identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(previewEnvironmentIdentityAttributeNames())
 }
 
 func (r *previewEnvironmentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("preview_environment_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, previewEnvironmentIdentityAttributeNames(), req, resp)
 }
 
 func (r *previewEnvironmentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan PreviewEnvironmentModel
+	var (
+		plan   PreviewEnvironmentModel
+		config PreviewEnvironmentModel
+	)
+
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceCreateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	request, requestDiagnostics := plan.ToPreviewEnvironmentData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiagnostics...)
+
+	spaceID, spaceIDDiagnostics := requestRequiredString(plan.SpaceID, path.Root("space_id"))
+	resp.Diagnostics.Append(spaceIDDiagnostics...)
+
+	selectedID := ""
+	selectedIDConfigured := !config.PreviewEnvironmentID.IsNull() && !config.PreviewEnvironmentID.IsUnknown()
+
+	if config.PreviewEnvironmentID.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("preview_environment_id"),
+			"Unexpected unknown configured preview environment ID",
+			"The preview environment ID configuration must be known before the provider can choose the Contentful create endpoint.",
+		)
+	} else if selectedIDConfigured {
+		selectedIDValue, selectedIDDiagnostics := requestRequiredString(plan.PreviewEnvironmentID, path.Root("preview_environment_id"))
+		resp.Diagnostics.Append(selectedIDDiagnostics...)
+
+		selectedID = selectedIDValue
+	}
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -85,16 +102,16 @@ func (r *previewEnvironmentResource) Create(ctx context.Context, req resource.Cr
 		response any
 		err      error
 	)
-	if !plan.PreviewEnvironmentID.IsNull() && !plan.PreviewEnvironmentID.IsUnknown() {
+	if selectedIDConfigured {
 		response, err = r.providerData.client.PutPreviewEnvironment(ctx, &request, cm.PutPreviewEnvironmentParams{
-			SpaceID:              plan.SpaceID.ValueString(),
-			PreviewEnvironmentID: plan.PreviewEnvironmentID.ValueString(),
+			SpaceID:              spaceID,
+			PreviewEnvironmentID: selectedID,
 			XContentfulVersion:   0,
 		})
 	} else {
 		createRequest := cm.NewPreviewEnvironmentCreateData(request)
 		response, err = r.providerData.client.CreatePreviewEnvironment(ctx, &createRequest, cm.CreatePreviewEnvironmentParams{
-			SpaceID: plan.SpaceID.ValueString(),
+			SpaceID: spaceID,
 		})
 	}
 
@@ -111,11 +128,47 @@ func (r *previewEnvironmentResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	data, dataDiagnostics := NewPreviewEnvironmentModelFromResponse(ctx, *previewEnvironment)
+	ownedIdentity := PreviewEnvironmentIdentityModel{
+		SpaceID:              plan.SpaceID,
+		PreviewEnvironmentID: plan.PreviewEnvironmentID,
+	}
+	if !selectedIDConfigured {
+		ownedIdentity.PreviewEnvironmentID = config.PreviewEnvironmentID
+	}
+
+	data, dataDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+		ctx,
+		*previewEnvironment,
+		plan,
+		ownedIdentity,
+	)
 	resp.Diagnostics.Append(dataDiagnostics...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
-	r.setCreateState(ctx, data, previewEnvironment.Sys.Version, resp)
+
+	resp.Diagnostics.Append(setResourceIdentityAndState(
+		ctx,
+		resp.Identity,
+		&resp.State,
+		previewEnvironmentIdentityAttributeNames(),
+		&data,
+	)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", previewEnvironment.Sys.Version)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(consistencyDiagnostics...)
 }
 
 func (r *previewEnvironmentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -126,16 +179,13 @@ func (r *previewEnvironmentResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := cm.GetPreviewEnvironmentParams{
@@ -149,15 +199,15 @@ func (r *previewEnvironmentResource) Read(ctx context.Context, req resource.Read
 		"err":      err,
 	})
 
+	if contentfulResponseIsNotFound(response) {
+		resp.Diagnostics.AddWarning("Content preview platform not found", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
 	previewEnvironment, ok := response.(*cm.PreviewEnvironment)
 	if !ok {
-		if statusCodeResponse, statusOK := response.(cm.StatusCodeResponse); statusOK && statusCodeResponse.GetStatusCode() == http.StatusNotFound {
-			resp.Diagnostics.AddWarning("Content preview platform not found", util.ErrorDetailFromContentfulManagementResponse(response, err))
-			resp.State.RemoveResource(ctx)
-
-			return
-		}
-
 		resp.Diagnostics.AddError("Failed to read content preview platform", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 		return
@@ -166,17 +216,24 @@ func (r *previewEnvironmentResource) Read(ctx context.Context, req resource.Read
 	data, dataDiagnostics := NewPreviewEnvironmentModelFromResponse(ctx, *previewEnvironment)
 	resp.Diagnostics.Append(dataDiagnostics...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = state.Timeouts
 
-	var identity PreviewEnvironmentIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(
+		ctx,
+		resp.Identity,
+		&resp.State,
+		previewEnvironmentIdentityAttributeNames(),
+		&data,
+	)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", previewEnvironment.Sys.Version)...)
 }
 
@@ -191,28 +248,41 @@ func (r *previewEnvironmentResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
 	request, requestDiagnostics := ToPreviewEnvironmentUpdateData(ctx, path.Empty(), &state, &plan)
 	resp.Diagnostics.Append(requestDiagnostics...)
+
+	spaceID, spaceIDDiagnostics := requestRequiredString(plan.SpaceID, path.Root("space_id"))
+	resp.Diagnostics.Append(spaceIDDiagnostics...)
+
+	previewEnvironmentID, previewEnvironmentIDDiagnostics := requestRequiredString(
+		plan.PreviewEnvironmentID,
+		path.Root("preview_environment_id"),
+	)
+	resp.Diagnostics.Append(previewEnvironmentIDDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	currentVersion, versionDiagnostics := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	params := cm.PutPreviewEnvironmentParams{
-		SpaceID:              plan.SpaceID.ValueString(),
-		PreviewEnvironmentID: plan.PreviewEnvironmentID.ValueString(),
+		SpaceID:              spaceID,
+		PreviewEnvironmentID: previewEnvironmentID,
 		XContentfulVersion:   currentVersion,
 	}
 	response, err := r.providerData.client.PutPreviewEnvironment(ctx, &request, params)
@@ -230,20 +300,39 @@ func (r *previewEnvironmentResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	responseData, dataDiagnostics := NewPreviewEnvironmentModelFromResponse(ctx, *previewEnvironment)
+	data, dataDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+		ctx,
+		*previewEnvironment,
+		plan,
+		plan.PreviewEnvironmentIdentityModel,
+	)
 	resp.Diagnostics.Append(dataDiagnostics...)
-	resp.Diagnostics.Append(ValidatePreviewEnvironmentUpdateResponse(ctx, path.Empty(), &state, &plan, &responseData)...)
-
-	var identity PreviewEnvironmentIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	data.Timeouts = plan.Timeouts
+
+	resp.Diagnostics.Append(setResourceIdentityAndState(
+		ctx,
+		resp.Identity,
+		&resp.State,
+		previewEnvironmentIdentityAttributeNames(),
+		&data,
+	)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", previewEnvironment.Sys.Version)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(consistencyDiagnostics...)
 }
 
 func (r *previewEnvironmentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -254,16 +343,13 @@ func (r *previewEnvironmentResource) Delete(ctx context.Context, req resource.De
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	response, err := r.providerData.client.DeletePreviewEnvironment(ctx, cm.DeletePreviewEnvironmentParams{
@@ -274,7 +360,7 @@ func (r *previewEnvironmentResource) Delete(ctx context.Context, req resource.De
 	case *cm.NoContent:
 		return
 	default:
-		if statusCodeResponse, ok := response.(cm.StatusCodeResponse); ok && statusCodeResponse.GetStatusCode() == http.StatusNotFound {
+		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Content preview platform already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 			return
@@ -282,17 +368,4 @@ func (r *previewEnvironmentResource) Delete(ctx context.Context, req resource.De
 
 		resp.Diagnostics.AddError("Failed to delete content preview platform", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
-}
-
-func (r *previewEnvironmentResource) setCreateState(ctx context.Context, data PreviewEnvironmentModel, version int, resp *resource.CreateResponse) {
-	var identity PreviewEnvironmentIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identity, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }

@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"slices"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -87,60 +86,6 @@ func ToPreviewEnvironmentUpdateData(
 	}
 
 	return newPreviewEnvironmentData(name, description, requestConfigurations), diagnostics
-}
-
-func ValidatePreviewEnvironmentUpdateResponse(
-	_ context.Context,
-	modelPath path.Path,
-	state *PreviewEnvironmentModel,
-	plan *PreviewEnvironmentModel,
-	response *PreviewEnvironmentModel,
-) diag.Diagnostics {
-	stateConfigurations, diagnostics := previewEnvironmentContentTypeConfigurationValues(state, modelPath)
-
-	planConfigurations, planDiagnostics := previewEnvironmentContentTypeConfigurationValues(plan, modelPath)
-	diagnostics.Append(planDiagnostics...)
-
-	responseConfigurations, responseDiagnostics := previewEnvironmentContentTypeConfigurationValues(response, modelPath)
-	diagnostics.Append(responseDiagnostics...)
-
-	if diagnostics.HasError() {
-		return diagnostics
-	}
-
-	configurationsPath := modelPath.AtName("content_type_configurations")
-
-	for contentTypeID, planConfiguration := range planConfigurations {
-		stateConfiguration, existed := stateConfigurations[contentTypeID]
-		if existed && stateConfiguration.URL.Equal(planConfiguration.URL) {
-			continue
-		}
-
-		responseConfiguration, enabled := responseConfigurations[contentTypeID]
-		if !enabled || !responseConfiguration.URL.Equal(planConfiguration.URL) {
-			diagnostics.AddAttributeError(
-				configurationsPath.AtMapKey(contentTypeID),
-				"Content preview configuration update was not applied",
-				fmt.Sprintf("Contentful did not return content type %q enabled with the planned URL.", contentTypeID),
-			)
-		}
-	}
-
-	for contentTypeID := range stateConfigurations {
-		if _, remainsEnabled := planConfigurations[contentTypeID]; remainsEnabled {
-			continue
-		}
-
-		if _, remainsEnabled := responseConfigurations[contentTypeID]; remainsEnabled {
-			diagnostics.AddAttributeError(
-				configurationsPath.AtMapKey(contentTypeID),
-				"Content preview configuration removal was not applied",
-				fmt.Sprintf("Contentful returned content type %q still enabled after it was disabled.", contentTypeID),
-			)
-		}
-	}
-
-	return diagnostics
 }
 
 func previewEnvironmentContentTypeConfigurationValues(
