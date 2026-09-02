@@ -259,6 +259,23 @@ establish mutation commitment or exact-version authority. The evidence,
 deadline, and backoff contracts are recorded in
 [Contentful HTTP retry policy](contentful-http-retry-policy.md).
 
+### Entry specified-ID request selection
+
+The Entry specified-ID endpoint serves both Create and Update, so the provider
+selects the operation through its request headers. Create sends
+`X-Contentful-Content-Type` and no `X-Contentful-Version`. A collision must fail
+without mutating, publishing, or adopting the existing Entry. Update sends the
+exact prior `sys.version` in `X-Contentful-Version` and omits
+`X-Contentful-Content-Type`.
+
+If an Entry disappears after refresh, or refresh is skipped and Terraform state
+is stale, the Update request therefore fails instead of recreating the absent
+Entry and proceeding toward publication. A preflight existence read cannot
+provide this boundary because another writer can change target existence
+between the read and the `PUT`. The Contentful contract and direct CMA evidence
+are recorded in
+[Entry and Content Type PUT header semantics](../research/entry-and-content-type-put-headers.md).
+
 ### Entry publication ownership and partial field ownership
 
 `contentful_entry` publishes only the exact draft returned by the same Create or
