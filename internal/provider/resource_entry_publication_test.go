@@ -23,16 +23,24 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftWithoutRefresh(t *testin
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	var providerFactoryCalls atomic.Int64
+	var (
+		providerFactoryCalls atomic.Int64
+		preUpdateVersion     int
+		draftVersion         int
+	)
 
 	ContentfulProviderMockedResourceTestWithFactoryCounter(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
 		Steps: []resource.TestStep{
-			{Config: config("one"), Check: resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "1")},
+			{Config: config("one")},
 			{
 				PreConfig: func() {
+					entry := getTestEntry(t, server)
+					preUpdateVersion = entry.Sys.Version
+					require.Positive(t, preUpdateVersion)
+
 					recorder.reset()
 					fault.shot.arm()
 				},
@@ -42,12 +50,14 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftWithoutRefresh(t *testin
 			{
 				PreConfig: func() {
 					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-					require.True(t, update.versionPresent)
-					require.Equal(t, []string{"2"}, update.versionValues)
-					require.False(t, update.contentTypePresent, "Entry Update must omit X-Contentful-Content-Type")
+					require.Equal(t, []string{strconv.Itoa(preUpdateVersion)}, update.versionValues)
 					require.Empty(t, update.contentTypeValues)
 					require.JSONEq(t, `{"fields":{"managed":{"en-US":"two"}},"metadata":{"concepts":[],"tags":[]}}`, string(update.body))
-					require.Equal(t, "3", publish.version)
+
+					entry := getTestEntry(t, server)
+					draftVersion = entry.Sys.Version
+					require.Greater(t, draftVersion, preUpdateVersion)
+					require.Equal(t, []string{strconv.Itoa(draftVersion)}, publish.versionValues)
 					recorder.reset()
 				},
 				Config: config("two"),
@@ -57,15 +67,16 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftWithoutRefresh(t *testin
 				Check: func(state *terraform.State) error {
 					requests := recorder.snapshot()
 					require.Len(t, requests, 1, "recovery must not repeat the confirmed draft PUT")
-					requireEntryPublish(t, requests[0])
-					require.Equal(t, http.MethodPut, requests[0].method)
-					require.True(t, requests[0].versionPresent)
-					require.Equal(t, "3", requests[0].version)
+					requireEntryPublish(t, requests[0], entryTestPublishPath)
+					require.Equal(t, []string{strconv.Itoa(draftVersion)}, requests[0].versionValues)
 
 					entry := getTestEntry(t, server)
-					require.Equal(t, 4, entry.Sys.Version)
-					require.Equal(t, 3, entry.Sys.PublishedVersion.Or(0))
-					require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "3")(state))
+					publishedVersion := entry.Sys.PublishedVersion.Or(0)
+					require.Equal(t, draftVersion, publishedVersion)
+					require.Greater(t, entry.Sys.Version, publishedVersion)
+					require.NoError(t, resource.TestCheckResourceAttr(
+						"contentful_entry.test", "published_version", strconv.Itoa(publishedVersion),
+					)(state))
 					require.GreaterOrEqual(t, providerFactoryCalls.Load(), int64(3), "recovery must survive provider restart and private-state serialization")
 
 					return nil
@@ -73,6 +84,81 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftWithoutRefresh(t *testin
 			},
 		},
 	}, &providerFactoryCalls)
+}
+
+func TestAccEntryResourceUpdateDoesNotRecreateExternallyDeletedEntryWithoutRefresh(t *testing.T) {
+	t.Parallel()
+
+	fixture := newEntryAcceptanceFixture(t)
+	config := managedEntryConfig
+
+	var priorVersion int
+
+	ContentfulProviderMockedResourceTest(t, fixture.recorder, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{Config: config("one")},
+			{
+				PreConfig: func() {
+					entry := getTestEntry(t, fixture.server)
+					priorVersion = entry.Sys.Version
+					require.Positive(t, priorVersion)
+
+					unpublishResponse, err := fixture.server.Handler().UnpublishEntry(t.Context(), cm.UnpublishEntryParams{
+						SpaceID: "space", EnvironmentID: "environment", EntryID: "entry",
+					})
+					require.NoError(t, err)
+					require.IsType(t, &cm.Entry{}, unpublishResponse)
+
+					deleteResponse, err := fixture.server.Handler().DeleteEntry(t.Context(), cm.DeleteEntryParams{
+						SpaceID: "space", EnvironmentID: "environment", EntryID: "entry",
+					})
+					require.NoError(t, err)
+					require.IsType(t, &cm.NoContent{}, deleteResponse)
+
+					getResponse, err := fixture.server.Handler().GetEntry(t.Context(), cm.GetEntryParams{
+						SpaceID: "space", EnvironmentID: "environment", EntryID: "entry",
+					})
+					require.NoError(t, err)
+
+					status, ok := getResponse.(cm.StatusCodeResponse)
+					require.True(t, ok)
+					require.Equal(t, http.StatusNotFound, status.GetStatusCode())
+
+					fixture.recorder.reset()
+				},
+				Config:      config("two"),
+				ExpectError: regexp.MustCompile(`(?s)Failed to update entry.*BadRequest.*provide a content type`),
+			},
+			{
+				PreConfig: func() {
+					require.NoError(t, fixture.recorder.handlerError())
+
+					requests := fixture.recorder.snapshot()
+					require.Len(t, requests, 1, "a rejected stale Update must not be followed by Publish or Delete")
+					update := requests[0]
+					requireEntryUpdate(t, update)
+					require.Equal(t, []string{strconv.Itoa(priorVersion)}, update.versionValues)
+					require.Empty(t, update.contentTypeValues)
+					require.JSONEq(t, `{"fields":{"managed":{"en-US":"two"}},"metadata":{"concepts":[],"tags":[]}}`, string(update.body))
+
+					getResponse, err := fixture.server.Handler().GetEntry(t.Context(), cm.GetEntryParams{
+						SpaceID: "space", EnvironmentID: "environment", EntryID: "entry",
+					})
+					require.NoError(t, err)
+
+					status, ok := getResponse.(cm.StatusCodeResponse)
+					require.True(t, ok)
+					require.Equal(t, http.StatusNotFound, status.GetStatusCode(), "the rejected Update must leave the remote target absent")
+
+					fixture.recorder.reset()
+				},
+				Config:             config("two"),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
 }
 
 func TestAccEntryResourceInitialPublishVersionMismatchRevokesAuthority(t *testing.T) {
@@ -194,7 +280,7 @@ func TestAccEntryResourcePublicationRateLimitRetainsExactAuthority(t *testing.T)
 				Check: func(*terraform.State) error {
 					requests := recorder.snapshot()
 					require.Len(t, requests, 1, "recovery must submit only the retained lifecycle mutation")
-					requireEntryPublish(t, requests[0])
+					requireEntryPublish(t, requests[0], entryTestPublishPath)
 					require.Equal(t, "3", requests[0].version)
 
 					return nil
@@ -333,43 +419,30 @@ resource "contentful_entry" "test" {
 
 			fixture := newEntryAcceptanceFixture(t)
 			recorder := fixture.recorder
-			fault := &entryRejectedPublishAdapter{delegate: fixture.server}
-			recorder.delegate = fault
-
-			var entryID, draftVersion string
-
-			requirePublish := func(request entryMutationRequest) {
-				t.Helper()
-
-				require.Equal(t, http.MethodPut, request.method)
-				require.Equal(t, entryTestCollectionPath+"/"+entryID+"/published", request.path)
-				require.True(t, request.versionPresent)
-				require.Len(t, request.versionValues, 1)
-				require.NotEmpty(t, request.version)
-				require.False(t, request.contentTypePresent)
-				require.Empty(t, request.contentTypeValues)
-				require.Empty(t, request.body)
-				require.Zero(t, request.contentLength)
+			publishFailure := &entryRejectedPublishAdapter{delegate: fixture.server}
+			versionFault := &entryVersionOffsetAdapter{
+				delegate: publishFailure, offset: 3, errorSink: fixture.errorSink,
 			}
+			recorder.delegate = versionFault
+
+			var (
+				entryID      string
+				draftVersion int
+			)
 
 			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps: []resource.TestStep{
 					{
-						PreConfig:          fault.shot.arm,
+						PreConfig:          publishFailure.shot.arm,
 						Config:             test.config,
 						ExpectNonEmptyPlan: true,
 						Check: func(state *terraform.State) error {
-							captureEntryID := resource.TestCheckResourceAttrWith("contentful_entry.test", "entry_id", func(value string) error {
+							require.NoError(t, resource.TestCheckResourceAttrWith("contentful_entry.test", "entry_id", func(value string) error {
 								entryID = value
 
 								return nil
-							})
-
-							err := captureEntryID(state)
-							if err != nil {
-								return err
-							}
+							})(state))
 
 							require.NotEmpty(t, entryID)
 
@@ -378,15 +451,16 @@ resource "contentful_entry" "test" {
 							draft, publish := requests[0], requests[1]
 							require.Equal(t, test.draftMethod, draft.method)
 							require.Equal(t, test.draftPath, draft.path)
-							require.False(t, draft.versionPresent, "Entry Create must omit X-Contentful-Version")
 							require.Empty(t, draft.versionValues)
-							require.True(t, draft.contentTypePresent)
 							require.Equal(t, []string{"article"}, draft.contentTypeValues)
 							require.JSONEq(t, `{"fields":{"managed":{"en-US":"one"}},"metadata":{"concepts":[],"tags":[]}}`, string(draft.body))
 							require.Positive(t, draft.contentLength)
-							requirePublish(publish)
-							draftVersion = publish.version
-							require.NotEmpty(t, draftVersion)
+							requireEntryPublish(t, publish, entryTestCollectionPath+"/"+entryID+"/published")
+
+							observed := versionFault.snapshotObservation()
+							draftVersion = observed.draftVersion
+							require.Greater(t, draftVersion, 1, "the Create response must expose the injected arbitrary positive version")
+							require.Equal(t, []string{strconv.Itoa(draftVersion)}, publish.versionValues)
 
 							recorder.reset()
 
@@ -401,15 +475,19 @@ resource "contentful_entry" "test" {
 						Check: func(state *terraform.State) error {
 							requests := recorder.snapshot()
 							require.Len(t, requests, 1, "Create recovery must not repeat the confirmed draft mutation or delete the draft")
-							requirePublish(requests[0])
-							require.Equal(t, draftVersion, requests[0].version)
+							requireEntryPublish(t, requests[0], entryTestCollectionPath+"/"+entryID+"/published")
+							require.Equal(t, []string{strconv.Itoa(draftVersion)}, requests[0].versionValues)
 							require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "entry_id", entryID)(state))
-							require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", draftVersion)(state))
 
-							version, err := strconv.Atoi(draftVersion)
-							require.NoError(t, err)
+							observed := versionFault.snapshotObservation()
+							require.Equal(t, draftVersion, observed.publishedVersion)
+							require.Greater(t, observed.responseVersion, observed.publishedVersion)
+							require.NoError(t, resource.TestCheckResourceAttr(
+								"contentful_entry.test", "published_version", strconv.Itoa(observed.publishedVersion),
+							)(state))
+
 							entry := getTestEntryForIDs(t, fixture.server, "space", "environment", entryID)
-							require.Equal(t, version, entry.Sys.PublishedVersion.Or(0))
+							require.Positive(t, entry.Sys.PublishedVersion.Or(0))
 							require.Equal(t, "article", entry.Sys.ContentType.Sys.ID)
 							require.JSONEq(t, `{"en-US":"one"}`, string(entry.Fields.Value["managed"]))
 
@@ -435,63 +513,43 @@ resource "contentful_entry" "test" {
 	}
 }
 
-func TestAccEntryResourceCreateUsesExactPositiveReturnedVersion(t *testing.T) {
-	t.Parallel()
-
-	fixture := newEntryAcceptanceFixture(t)
-	recorder := fixture.recorder
-	recorder.delegate = &entryVersionOffsetAdapter{delegate: fixture.server, offset: 3, errorSink: fixture.errorSink}
-	config := managedEntryConfig("one")
-
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
-		{
-			Config: config,
-			Check: func(state *terraform.State) error {
-				update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.False(t, update.versionPresent)
-				require.JSONEq(t, `{"fields":{"managed":{"en-US":"one"}},"metadata":{"concepts":[],"tags":[]}}`, string(update.body))
-				require.Equal(t, "4", publish.version)
-				require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "4")(state))
-
-				return nil
-			},
-		},
-		{
-			PreConfig: recorder.reset,
-			Config:    config,
-			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-				plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
-			}},
-			Check: func(*terraform.State) error {
-				requireNoEntryMutations(t, recorder)
-
-				return nil
-			},
-		},
-	}})
-}
-
 func TestAccEntryResourceUpdateUsesExactArbitraryPositiveReturnedVersion(t *testing.T) {
 	t.Parallel()
 
 	fixture := newEntryAcceptanceFixture(t)
 	recorder := fixture.recorder
-	recorder.delegate = &entryVersionOffsetAdapter{
+	versionFault := &entryVersionOffsetAdapter{
 		delegate: fixture.server, jumpOnDraftUpdate: 40, errorSink: fixture.errorSink,
 	}
+	recorder.delegate = versionFault
 	config := managedEntryConfig
+
+	var preUpdateVersion int
 
 	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("one")},
 		{
-			PreConfig: recorder.reset,
-			Config:    config("two"),
+			PreConfig: func() {
+				preUpdateVersion = getTestEntry(t, fixture.server).Sys.Version
+				require.Positive(t, preUpdateVersion)
+				versionFault.resetObservation()
+				recorder.reset()
+			},
+			Config: config("two"),
 			Check: func(state *terraform.State) error {
 				update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.Equal(t, "2", update.version)
-				require.JSONEq(t, `{"en-US":"two"}`, string(update.fields["managed"]))
-				require.Equal(t, "43", publish.version)
-				require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "43")(state))
+				require.Equal(t, []string{strconv.Itoa(preUpdateVersion)}, update.versionValues)
+				require.Empty(t, update.contentTypeValues)
+				require.JSONEq(t, `{"fields":{"managed":{"en-US":"two"}},"metadata":{"concepts":[],"tags":[]}}`, string(update.body))
+
+				observed := versionFault.snapshotObservation()
+				require.Greater(t, observed.draftVersion, preUpdateVersion)
+				require.Equal(t, observed.draftVersion, observed.publishedVersion)
+				require.Greater(t, observed.responseVersion, observed.publishedVersion)
+				require.Equal(t, []string{strconv.Itoa(observed.draftVersion)}, publish.versionValues)
+				require.NoError(t, resource.TestCheckResourceAttr(
+					"contentful_entry.test", "published_version", strconv.Itoa(observed.publishedVersion),
+				)(state))
 
 				return nil
 			},
@@ -539,9 +597,7 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftAfterRefresh(t *testing.
 			Check: func(state *terraform.State) error {
 				requests := recorder.snapshot()
 				require.Len(t, requests, 1, "refresh recovery must not repeat the confirmed draft PUT")
-				requireEntryPublish(t, requests[0])
-				require.Equal(t, http.MethodPut, requests[0].method)
-				require.True(t, requests[0].versionPresent)
+				requireEntryPublish(t, requests[0], entryTestPublishPath)
 				require.Equal(t, "3", requests[0].version)
 				require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "3")(state))
 
@@ -685,7 +741,7 @@ func TestAccEntryResourceRecoveryContradictionRevokesAuthority(t *testing.T) {
 				PreConfig: func() {
 					requests := recorder.snapshot()
 					require.Len(t, requests, 1)
-					requireEntryPublish(t, requests[0])
+					requireEntryPublish(t, requests[0], entryTestPublishPath)
 					require.Equal(t, "3", requests[0].version)
 					recorder.reset()
 				},
@@ -1051,7 +1107,7 @@ func TestAccEntryResourceInterveningDraftRevokesRecoveryWithoutRefresh(t *testin
 				PreConfig: func() {
 					requests := recorder.snapshot()
 					require.Len(t, requests, 1, "recovery must not write another draft")
-					requireEntryPublish(t, requests[0])
+					requireEntryPublish(t, requests[0], entryTestPublishPath)
 					require.Equal(t, "3", requests[0].version, "recovery must never adopt the externally advanced version")
 
 					entry := getTestEntry(t, server)
@@ -1141,7 +1197,7 @@ func TestAccEntryResourceRefreshDisabledRecoveryAfterCommittedPublishDoesNotPubl
 				PreConfig: func() {
 					requests := recorder.snapshot()
 					require.Len(t, requests, 1, "recovery must not repeat the draft PUT")
-					requireEntryPublish(t, requests[0])
+					requireEntryPublish(t, requests[0], entryTestPublishPath)
 					require.Equal(t, "3", requests[0].version, "recovery must never adopt the post-publication version")
 
 					entry := getTestEntry(t, server)

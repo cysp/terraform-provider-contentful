@@ -384,8 +384,15 @@ type entryVersionOffsetAdapter struct {
 	jumpOnDraftUpdate int
 	errorSink         *entryFixtureErrorSink
 
-	mu     sync.Mutex
-	jumped bool
+	mu          sync.Mutex
+	jumped      bool
+	observation entryVersionObservation
+}
+
+type entryVersionObservation struct {
+	draftVersion     int
+	publishedVersion int
+	responseVersion  int
 }
 
 // entryAdditionalPublishFieldAdapter injects one response-only field into one
@@ -528,9 +535,11 @@ func (h *entryHigherPostPublishVersionAdapter) ServeHTTP(responseWriter http.Res
 }
 
 func (h *entryVersionOffsetAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	isEntry := strings.HasSuffix(request.URL.Path, "/entries/entry") ||
-		strings.HasSuffix(request.URL.Path, "/entries/entry/published")
-	if !isEntry || (request.Method != http.MethodGet && request.Method != http.MethodPut) {
+	isGeneratedCreate := request.Method == http.MethodPost && request.URL.Path == entryTestCollectionPath
+
+	isMemberRequest := strings.HasPrefix(request.URL.Path, entryTestCollectionPath+"/") &&
+		(request.Method == http.MethodGet || request.Method == http.MethodPut)
+	if !isGeneratedCreate && !isMemberRequest {
 		h.delegate.ServeHTTP(responseWriter, request)
 
 		return
@@ -541,7 +550,9 @@ func (h *entryVersionOffsetAdapter) ServeHTTP(responseWriter http.ResponseWriter
 	h.mu.Unlock()
 
 	versionValues := request.Header.Values("X-Contentful-Version")
-	isDraftUpdate := request.URL.Path == entryTestUpdatePath && request.Method == http.MethodPut && len(versionValues) == 1
+	isPublish := request.Method == http.MethodPut && strings.HasSuffix(request.URL.Path, "/published")
+	isDraftMutation := isGeneratedCreate || (request.Method == http.MethodPut && !isPublish)
+	isDraftUpdate := isDraftMutation && len(versionValues) == 1
 
 	if len(versionValues) == 1 {
 		version, err := strconv.Atoi(versionValues[0])
@@ -588,13 +599,46 @@ func (h *entryVersionOffsetAdapter) ServeHTTP(responseWriter http.ResponseWriter
 		return
 	}
 
+	offsetEntryVersionTuple(sys, offset)
+	h.recordObservation(sys, isDraftMutation, isPublish)
+
+	writeEntryAdapterJSONResponse(responseWriter, recorder, payload, h.errorSink)
+}
+
+func offsetEntryVersionTuple(sys map[string]any, offset int) {
 	for _, name := range []string{"version", "publishedVersion"} {
 		if value, present := sys[name].(float64); present {
 			sys[name] = int(value) + offset
 		}
 	}
+}
 
-	writeEntryAdapterJSONResponse(responseWriter, recorder, payload, h.errorSink)
+func (h *entryVersionOffsetAdapter) recordObservation(sys map[string]any, isDraftMutation, isPublish bool) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	if isDraftMutation {
+		h.observation.draftVersion, _ = sys["version"].(int)
+	}
+
+	if isPublish {
+		h.observation.publishedVersion, _ = sys["publishedVersion"].(int)
+		h.observation.responseVersion, _ = sys["version"].(int)
+	}
+}
+
+func (h *entryVersionOffsetAdapter) resetObservation() {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	h.observation = entryVersionObservation{}
+}
+
+func (h *entryVersionOffsetAdapter) snapshotObservation() entryVersionObservation {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	return h.observation
 }
 
 func (h *entryAdditionalPublishFieldAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {

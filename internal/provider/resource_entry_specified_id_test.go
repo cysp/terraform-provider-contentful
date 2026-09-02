@@ -62,18 +62,11 @@ func TestAccEntryResourceSpecifiedIDCreateUsesCreateOnlyRequest(t *testing.T) {
 					draft, publish := requireEntryUpdateThenPublish(t, fixture.recorder.snapshot())
 					require.Equal(t, http.MethodPut, draft.method)
 					require.Equal(t, entryTestUpdatePath, draft.path)
-					require.False(t, draft.versionPresent, "specified-ID Create must omit X-Contentful-Version")
 					require.Empty(t, draft.versionValues)
-					require.True(t, draft.contentTypePresent)
 					require.Equal(t, []string{"article"}, draft.contentTypeValues)
 					require.JSONEq(t, `{"fields":{"managed":{"en-US":"created"}},"metadata":{"concepts":[],"tags":[]}}`, string(draft.body))
 
-					require.Equal(t, http.MethodPut, publish.method)
-					require.Equal(t, entryTestPublishPath, publish.path)
-					require.True(t, publish.versionPresent)
-					require.Len(t, publish.versionValues, 1)
-					require.False(t, publish.contentTypePresent)
-					require.Empty(t, publish.contentTypeValues)
+					requireEntryPublish(t, publish, entryTestPublishPath)
 					require.Equal(t, "1", publish.version, "Create must publish the version returned by the draft PUT")
 
 					entry := getTestEntry(t, fixture.server)
@@ -134,8 +127,8 @@ func TestAccEntryResourceSpecifiedIDCollisionDoesNotMutateOrAdopt(t *testing.T) 
 					requests := fixture.recorder.snapshot()
 					require.Len(t, requests, 1, "collision must not be followed by Publish")
 					requireEntryUpdate(t, requests[0])
-					require.False(t, requests[0].versionPresent, "collision request must be create-only")
 					require.Empty(t, requests[0].version)
+					require.Empty(t, requests[0].versionValues, "collision request must be create-only")
 				},
 				Config:      managedEntryConfig("must not replace sentinel"),
 				ExpectError: regexp.MustCompile(`(?s)Failed to create entry.*VersionMismatch.*version precondition was not\s+satisfied`),
