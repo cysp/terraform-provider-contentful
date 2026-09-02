@@ -18,24 +18,3 @@ func NewPreviewEnvironmentCreateData(data PreviewEnvironmentData) PreviewEnviron
 		Configurations: configurations,
 	}
 }
-
-func NewPreviewEnvironmentDataFromCreate(data PreviewEnvironmentCreateData) PreviewEnvironmentData {
-	configurations := make([]PreviewEnvironmentConfigurationData, 0, len(data.Configurations))
-	for _, configuration := range data.Configurations {
-		entityID := configuration.EntityId.Or(configuration.ContentType.Or(""))
-
-		configurations = append(configurations, PreviewEnvironmentConfigurationData{
-			URL:        configuration.URL,
-			EntityType: configuration.EntityType.Or("ContentType"),
-			EntityId:   entityID,
-			Enabled:    configuration.Enabled,
-			Example:    configuration.Example,
-		})
-	}
-
-	return PreviewEnvironmentData{
-		Name:           data.Name,
-		Description:    data.Description,
-		Configurations: configurations,
-	}
-}

@@ -16,7 +16,7 @@ func (ts *Handler) CreatePreviewEnvironment(_ context.Context, req *cm.PreviewEn
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
-	data := cm.NewPreviewEnvironmentDataFromCreate(*req)
+	data := previewEnvironmentDataFromCreate(*req)
 	if validationError := validatePreviewEnvironmentData(data); validationError != nil {
 		return validationError, nil
 	}
@@ -25,6 +25,25 @@ func (ts *Handler) CreatePreviewEnvironment(_ context.Context, req *cm.PreviewEn
 	ts.previewEnvironments.Set(params.SpaceID, previewEnvironment.Sys.ID, &previewEnvironment)
 
 	return &previewEnvironment, nil
+}
+
+func previewEnvironmentDataFromCreate(request cm.PreviewEnvironmentCreateData) cm.PreviewEnvironmentData {
+	configurations := make([]cm.PreviewEnvironmentConfigurationData, 0, len(request.Configurations))
+	for _, configuration := range request.Configurations {
+		configurations = append(configurations, cm.PreviewEnvironmentConfigurationData{
+			URL:        configuration.URL,
+			EntityType: configuration.EntityType.Or("ContentType"),
+			EntityId:   configuration.EntityId.Or(configuration.ContentType.Or("")),
+			Enabled:    configuration.Enabled,
+			Example:    configuration.Example,
+		})
+	}
+
+	return cm.PreviewEnvironmentData{
+		Name:           request.Name,
+		Description:    request.Description,
+		Configurations: configurations,
+	}
 }
 
 //nolint:ireturn

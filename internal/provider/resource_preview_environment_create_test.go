@@ -2,6 +2,7 @@
 package provider
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -62,13 +63,22 @@ func TestPreviewEnvironmentCreateEndpointFollowsConfiguredIDOwnership(t *testing
 			var requests []struct {
 				method string
 				path   string
+				body   []byte
 			}
 
 			testServer := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+				body, err := io.ReadAll(request.Body)
+				if err != nil {
+					http.Error(response, "failed to read request", http.StatusInternalServerError)
+
+					return
+				}
+
 				requests = append(requests, struct {
 					method string
 					path   string
-				}{method: request.Method, path: request.URL.Path})
+					body   []byte
+				}{method: request.Method, path: request.URL.Path, body: body})
 
 				response.WriteHeader(http.StatusInternalServerError)
 			}))
@@ -102,6 +112,16 @@ func TestPreviewEnvironmentCreateEndpointFollowsConfiguredIDOwnership(t *testing
 			require.Len(t, requests, 1)
 			assert.Equal(t, test.expectedMethod, requests[0].method)
 			assert.Equal(t, test.expectedPath, requests[0].path)
+			require.JSONEq(t, `{
+				"name": "Preview",
+				"description": "",
+				"configurations": [{
+					"url": "https://preview.invalid/page",
+					"entityType": "ContentType",
+					"entityId": "page",
+					"enabled": true
+				}]
+			}`, string(requests[0].body))
 		})
 	}
 }

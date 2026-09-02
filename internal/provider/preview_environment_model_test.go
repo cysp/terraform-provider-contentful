@@ -418,49 +418,76 @@ func TestReconcilePreviewEnvironmentMutationResponseDetectsEveryOwnedContradicti
 	t.Parallel()
 
 	tests := map[string]struct {
-		response     cm.PreviewEnvironment
-		expectedPath string
+		response               cm.PreviewEnvironment
+		expectedPath           string
+		expectedName           string
+		expectedDescription    string
+		expectedConfigurations map[string]string
 	}{
 		"name": {
 			response: previewEnvironmentResponse("space", "preview", "Remote", "Planned description", map[string]string{
 				"page": "https://preview.invalid/page",
 			}),
-			expectedPath: "name",
+			expectedPath:           "name",
+			expectedName:           "Remote",
+			expectedDescription:    "Planned description",
+			expectedConfigurations: map[string]string{"page": "https://preview.invalid/page"},
 		},
 		"description": {
 			response: previewEnvironmentResponse("space", "preview", "Planned", "Remote description", map[string]string{
 				"page": "https://preview.invalid/page",
 			}),
-			expectedPath: "description",
+			expectedPath:           "description",
+			expectedName:           "Planned",
+			expectedDescription:    "Remote description",
+			expectedConfigurations: map[string]string{"page": "https://preview.invalid/page"},
 		},
 		"space identity": {
 			response: previewEnvironmentResponse("other-space", "preview", "Planned", "Planned description", map[string]string{
 				"page": "https://preview.invalid/page",
 			}),
-			expectedPath: "space_id",
+			expectedPath:           "space_id",
+			expectedName:           "Planned",
+			expectedDescription:    "Planned description",
+			expectedConfigurations: map[string]string{"page": "https://preview.invalid/page"},
 		},
 		"selected identity": {
 			response: previewEnvironmentResponse("space", "other-preview", "Planned", "Planned description", map[string]string{
 				"page": "https://preview.invalid/page",
 			}),
-			expectedPath: "preview_environment_id",
+			expectedPath:           "preview_environment_id",
+			expectedName:           "Planned",
+			expectedDescription:    "Planned description",
+			expectedConfigurations: map[string]string{"page": "https://preview.invalid/page"},
 		},
 		"changed or unchanged configuration contradicted": {
 			response: previewEnvironmentResponse("space", "preview", "Planned", "Planned description", map[string]string{
 				"page": "https://preview.invalid/remote-page",
 			}),
-			expectedPath: `content_type_configurations["page"].url`,
+			expectedPath:           `content_type_configurations["page"].url`,
+			expectedName:           "Planned",
+			expectedDescription:    "Planned description",
+			expectedConfigurations: map[string]string{"page": "https://preview.invalid/remote-page"},
 		},
 		"planned configuration omitted": {
-			response:     previewEnvironmentResponse("space", "preview", "Planned", "Planned description", map[string]string{}),
-			expectedPath: `content_type_configurations["page"]`,
+			response:               previewEnvironmentResponse("space", "preview", "Planned", "Planned description", map[string]string{}),
+			expectedPath:           `content_type_configurations["page"]`,
+			expectedName:           "Planned",
+			expectedDescription:    "Planned description",
+			expectedConfigurations: map[string]string{},
 		},
 		"removed or unexpected configuration remains active": {
 			response: previewEnvironmentResponse("space", "preview", "Planned", "Planned description", map[string]string{
 				"page":   "https://preview.invalid/page",
 				"author": "https://preview.invalid/author",
 			}),
-			expectedPath: `content_type_configurations["author"]`,
+			expectedPath:        `content_type_configurations["author"]`,
+			expectedName:        "Planned",
+			expectedDescription: "Planned description",
+			expectedConfigurations: map[string]string{
+				"page":   "https://preview.invalid/page",
+				"author": "https://preview.invalid/author",
+			},
 		},
 	}
 
@@ -482,11 +509,10 @@ func TestReconcilePreviewEnvironmentMutationResponseDetectsEveryOwnedContradicti
 			require.True(t, consistencyDiagnostics.HasError())
 			assert.Contains(t, attributeDiagnosticPaths(t, consistencyDiagnostics), test.expectedPath)
 
-			projectedResponse, projectionDiagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), test.response)
-			require.False(t, projectionDiagnostics.HasError())
-			assert.Equal(t, projectedResponse.Name, state.Name)
-			assert.Equal(t, projectedResponse.Description, state.Description)
-			assert.True(t, projectedResponse.ContentTypeConfigurations.Equal(state.ContentTypeConfigurations))
+			assert.Equal(t, types.StringValue(test.expectedName), state.Name)
+			assert.Equal(t, types.StringValue(test.expectedDescription), state.Description)
+			expectedConfigurations := previewEnvironmentModel(test.expectedConfigurations).ContentTypeConfigurations
+			assert.True(t, expectedConfigurations.Equal(state.ContentTypeConfigurations))
 			assert.Equal(t, types.StringValue("space"), state.SpaceID)
 			assert.Equal(t, types.StringValue("preview"), state.PreviewEnvironmentID)
 			assert.Equal(t, types.StringValue("space/preview"), state.ID)

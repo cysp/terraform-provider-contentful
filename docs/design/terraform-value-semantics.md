@@ -215,6 +215,13 @@ endpoint identity, recovery preserves the complete returned response except
 that the requested endpoint identity and legacy ID intentionally remain the
 Terraform target.
 
+Preview Environment mutation recovery has the same targeted endpoint-identity
+exception. When a successful response contradicts the requested space or
+preview environment ID, Terraform retains the requested endpoint identity and
+legacy multipart ID while checkpointing every other response-derived value and
+the returned `sys.version` before reporting the consistency error. For
+generated-ID creation, the preview environment ID remains response-owned.
+
 Ownership follows the schema at the individual attribute, including attributes
 nested inside known objects:
 

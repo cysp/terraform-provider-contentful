@@ -7,25 +7,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPreviewEnvironmentConfigurationDataOmitsExample(t *testing.T) {
+func TestPreviewEnvironmentDataSerialization(t *testing.T) {
 	t.Parallel()
 
-	data, err := new(cm.PreviewEnvironmentConfigurationData{
-		URL:        "https://preview.invalid/{entry.sys.id}",
-		EntityType: "ContentType",
-		EntityId:   "page",
-		Enabled:    true,
+	data, err := new(cm.PreviewEnvironmentData{
+		Name:        "Preview",
+		Description: "",
+		Configurations: []cm.PreviewEnvironmentConfigurationData{{
+			URL:        "https://preview.invalid/{entry.sys.id}",
+			EntityType: "ContentType",
+			EntityId:   "page",
+			Enabled:    true,
+		}},
 	}).MarshalJSON()
 	require.NoError(t, err)
 	require.JSONEq(t, `{
-		"url": "https://preview.invalid/{entry.sys.id}",
-		"entityType": "ContentType",
-		"entityId": "page",
-		"enabled": true
+		"name": "Preview",
+		"description": "",
+		"configurations": [{
+			"url": "https://preview.invalid/{entry.sys.id}",
+			"entityType": "ContentType",
+			"entityId": "page",
+			"enabled": true
+		}]
 	}`, string(data))
 }
 
-func TestPreviewEnvironmentCreateDataOmitsExample(t *testing.T) {
+func TestPreviewEnvironmentCreateDataSerialization(t *testing.T) {
 	t.Parallel()
 
 	createData := cm.NewPreviewEnvironmentCreateData(cm.PreviewEnvironmentData{
@@ -42,5 +50,14 @@ func TestPreviewEnvironmentCreateDataOmitsExample(t *testing.T) {
 	})
 	data, err := createData.MarshalJSON()
 	require.NoError(t, err)
-	require.NotContains(t, string(data), `"example"`)
+	require.JSONEq(t, `{
+		"name": "Preview",
+		"description": "",
+		"configurations": [{
+			"url": "https://preview.invalid/{entry.sys.id}",
+			"entityType": "ContentType",
+			"entityId": "page",
+			"enabled": true
+		}]
+	}`, string(data))
 }
