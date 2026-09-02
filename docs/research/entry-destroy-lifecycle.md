@@ -13,8 +13,8 @@ The whole-Entry [unpublish](https://www.contentful.com/developers/docs/reference
 and [delete](https://www.contentful.com/developers/docs/references/content-management-api/entries/delete-an-entry/)
 references show an optional `X-Contentful-Version` header. The JavaScript client
 sends no version or ETag precondition for
-[unpublish](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/entry.ts#L1123-L1168)
-or [delete](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/entry.ts#L1073-L1089).
+[unpublish](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/entry.ts#L187-L209)
+or [delete](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/entry.ts#L158-L166).
 The .NET client instead requires and sends a version for
 [unpublish](https://github.com/contentful/contentful.net/blob/090889393b58113f50af45214d92fe92045c50d5/Contentful.Core/ContentfulManagementClient.cs#L713-L732)
 and [delete](https://github.com/contentful/contentful.net/blob/090889393b58113f50af45214d92fe92045c50d5/Contentful.Core/ContentfulManagementClient.cs#L674-L688).
