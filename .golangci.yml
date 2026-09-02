@@ -5,6 +5,7 @@ linters:
   disable:
     - depguard
     - exhaustruct
+    - exhaustruct_v5
     - funlen
     - goconst
     - gomodguard
@@ -55,7 +56,7 @@ formatters:
   enable:
     - gci
     - gofmt
-    - gofumpt
+    # - gofumpt # Disabled because v0.11.0 is based on Go 1.26 and conflicts with Go 1.27 formatting.
     - goimports
   exclusions:
     generated: lax

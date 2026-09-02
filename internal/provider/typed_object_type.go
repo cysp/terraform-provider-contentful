@@ -75,7 +75,7 @@ func (t TypedObjectType[T]) ValueFromTerraform(ctx context.Context, tfval tftype
 
 	typ := reflect.TypeFor[T]()
 
-	val, valOk := reflect.New(typ).Elem().Interface().(T)
+	val, valOk := reflect.TypeAssert[T](reflect.New(typ).Elem())
 	if !valOk {
 		//nolint:err113
 		return nil, fmt.Errorf("error converting value to type %T", val)

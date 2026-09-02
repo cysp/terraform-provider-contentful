@@ -196,20 +196,20 @@ func nonStringPublicationTargets() (*tfsdk.ResourceIdentity, *tfsdk.State) {
 	stateRawType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"id": tftypes.Bool}}
 
 	return &tfsdk.ResourceIdentity{
-			Schema: identityschema.Schema{Attributes: map[string]identityschema.Attribute{
-				"id": identityschema.StringAttribute{RequiredForImport: true},
-			}},
-			Raw: tftypes.NewValue(identityRawType, map[string]tftypes.Value{
-				"id": tftypes.NewValue(tftypes.String, nil),
-			}),
-		}, &tfsdk.State{
-			Schema: schema.Schema{Attributes: map[string]schema.Attribute{
-				"id": schema.BoolAttribute{Computed: true},
-			}},
-			Raw: tftypes.NewValue(stateRawType, map[string]tftypes.Value{
-				"id": tftypes.NewValue(tftypes.Bool, nil),
-			}),
-		}
+		Schema: identityschema.Schema{Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{RequiredForImport: true},
+		}},
+		Raw: tftypes.NewValue(identityRawType, map[string]tftypes.Value{
+			"id": tftypes.NewValue(tftypes.String, nil),
+		}),
+	}, &tfsdk.State{
+		Schema: schema.Schema{Attributes: map[string]schema.Attribute{
+			"id": schema.BoolAttribute{Computed: true},
+		}},
+		Raw: tftypes.NewValue(stateRawType, map[string]tftypes.Value{
+			"id": tftypes.NewValue(tftypes.Bool, nil),
+		}),
+	}
 }
 
 func lateIdentityEncodingErrorPublicationTargets() (*tfsdk.ResourceIdentity, *tfsdk.State) {
@@ -220,22 +220,22 @@ func lateIdentityEncodingErrorPublicationTargets() (*tfsdk.ResourceIdentity, *tf
 	}}
 
 	return &tfsdk.ResourceIdentity{
-			Schema: identityschema.Schema{Attributes: map[string]identityschema.Attribute{
-				"id": identityschema.StringAttribute{RequiredForImport: true},
-			}},
-			Raw: tftypes.NewValue(identityRawType, map[string]tftypes.Value{
-				"id": tftypes.NewValue(tftypes.String, nil),
-			}),
-		}, &tfsdk.State{
-			Schema: schema.Schema{Attributes: map[string]schema.Attribute{
-				"id":    schema.StringAttribute{Computed: true},
-				"other": schema.StringAttribute{Computed: true},
-			}},
-			Raw: tftypes.NewValue(stateRawType, map[string]tftypes.Value{
-				"id":    tftypes.NewValue(tftypes.String, nil),
-				"other": tftypes.NewValue(tftypes.String, nil),
-			}),
-		}
+		Schema: identityschema.Schema{Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{RequiredForImport: true},
+		}},
+		Raw: tftypes.NewValue(identityRawType, map[string]tftypes.Value{
+			"id": tftypes.NewValue(tftypes.String, nil),
+		}),
+	}, &tfsdk.State{
+		Schema: schema.Schema{Attributes: map[string]schema.Attribute{
+			"id":    schema.StringAttribute{Computed: true},
+			"other": schema.StringAttribute{Computed: true},
+		}},
+		Raw: tftypes.NewValue(stateRawType, map[string]tftypes.Value{
+			"id":    tftypes.NewValue(tftypes.String, nil),
+			"other": tftypes.NewValue(tftypes.String, nil),
+		}),
+	}
 }
 
 func emptyPublicationTargets() (*tfsdk.ResourceIdentity, *tfsdk.State) {
@@ -245,16 +245,16 @@ func emptyPublicationTargets() (*tfsdk.ResourceIdentity, *tfsdk.State) {
 	})
 
 	return &tfsdk.ResourceIdentity{
-			Schema: identityschema.Schema{Attributes: map[string]identityschema.Attribute{
-				"id": identityschema.StringAttribute{RequiredForImport: true},
-			}},
-			Raw: raw,
-		}, &tfsdk.State{
-			Schema: schema.Schema{Attributes: map[string]schema.Attribute{
-				"id": schema.StringAttribute{Computed: true},
-			}},
-			Raw: raw,
-		}
+		Schema: identityschema.Schema{Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{RequiredForImport: true},
+		}},
+		Raw: raw,
+	}, &tfsdk.State{
+		Schema: schema.Schema{Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{Computed: true},
+		}},
+		Raw: raw,
+	}
 }
 
 func assertPublicationTargetsNull(t *testing.T, identity *tfsdk.ResourceIdentity, state *tfsdk.State) {
