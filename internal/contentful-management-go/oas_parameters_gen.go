@@ -1015,6 +1015,71 @@ func decodeCreateOrUpdateEnvironmentAliasParams(args [2]string, argsEscaped bool
 	return params, nil
 }
 
+// CreatePreviewEnvironmentParams is parameters of createPreviewEnvironment operation.
+type CreatePreviewEnvironmentParams struct {
+	SpaceID string
+}
+
+func unpackCreatePreviewEnvironmentParams(packed middleware.Parameters) (params CreatePreviewEnvironmentParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeCreatePreviewEnvironmentParams(args [1]string, argsEscaped bool, r *http.Request) (params CreatePreviewEnvironmentParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // CreateRoleParams is parameters of createRole operation.
 type CreateRoleParams struct {
 	SpaceID string
@@ -2927,6 +2992,124 @@ func decodeDeleteExtensionParams(args [3]string, argsEscaped bool, r *http.Reque
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "extension_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// DeletePreviewEnvironmentParams is parameters of deletePreviewEnvironment operation.
+type DeletePreviewEnvironmentParams struct {
+	SpaceID              string
+	PreviewEnvironmentID string
+}
+
+func unpackDeletePreviewEnvironmentParams(packed middleware.Parameters) (params DeletePreviewEnvironmentParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "preview_environment_id",
+			In:   "path",
+		}
+		params.PreviewEnvironmentID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeDeletePreviewEnvironmentParams(args [2]string, argsEscaped bool, r *http.Request) (params DeletePreviewEnvironmentParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: preview_environment_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "preview_environment_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.PreviewEnvironmentID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "preview_environment_id",
 			In:   "path",
 			Err:  err,
 		}
@@ -6943,6 +7126,124 @@ func decodeGetPreviewAPIKeyParams(args [2]string, argsEscaped bool, r *http.Requ
 	return params, nil
 }
 
+// GetPreviewEnvironmentParams is parameters of getPreviewEnvironment operation.
+type GetPreviewEnvironmentParams struct {
+	SpaceID              string
+	PreviewEnvironmentID string
+}
+
+func unpackGetPreviewEnvironmentParams(packed middleware.Parameters) (params GetPreviewEnvironmentParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "preview_environment_id",
+			In:   "path",
+		}
+		params.PreviewEnvironmentID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetPreviewEnvironmentParams(args [2]string, argsEscaped bool, r *http.Request) (params GetPreviewEnvironmentParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: preview_environment_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "preview_environment_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.PreviewEnvironmentID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "preview_environment_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetResourceProviderParams is parameters of getResourceProvider operation.
 type GetResourceProviderParams struct {
 	OrganizationID  string
@@ -10215,6 +10516,167 @@ func decodePutExtensionParams(args [3]string, argsEscaped bool, r *http.Request)
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "extension_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Contentful-Version.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Version",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt(val)
+				if err != nil {
+					return err
+				}
+
+				params.XContentfulVersion = c
+				return nil
+			}); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Version",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PutPreviewEnvironmentParams is parameters of putPreviewEnvironment operation.
+type PutPreviewEnvironmentParams struct {
+	SpaceID              string
+	PreviewEnvironmentID string
+	XContentfulVersion   int
+}
+
+func unpackPutPreviewEnvironmentParams(packed middleware.Parameters) (params PutPreviewEnvironmentParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "preview_environment_id",
+			In:   "path",
+		}
+		params.PreviewEnvironmentID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Version",
+			In:   "header",
+		}
+		params.XContentfulVersion = packed[key].(int)
+	}
+	return params
+}
+
+func decodePutPreviewEnvironmentParams(args [2]string, argsEscaped bool, r *http.Request) (params PutPreviewEnvironmentParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: preview_environment_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "preview_environment_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.PreviewEnvironmentID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "preview_environment_id",
 			In:   "path",
 			Err:  err,
 		}

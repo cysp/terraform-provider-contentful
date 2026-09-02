@@ -224,6 +224,36 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 			},
 			expectedPath: `permissions["ContentModel"]`,
 		},
+		"preview environment": {
+			model: PreviewEnvironmentModel{
+				IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
+				PreviewEnvironmentIdentityModel: PreviewEnvironmentIdentityModel{
+					SpaceID:              types.StringValue("space"),
+					PreviewEnvironmentID: types.StringUnknown(),
+				},
+				Name:                      types.StringUnknown(),
+				Description:               types.StringValue(""),
+				ContentTypeConfigurations: NewTypedMap(map[string]TypedObject[PreviewEnvironmentContentTypeConfigurationValue]{}),
+				Timeouts:                  TimeoutsNull(),
+			},
+			config: PreviewEnvironmentModel{
+				IDIdentityModel: IDIdentityModel{ID: types.StringNull()},
+				PreviewEnvironmentIdentityModel: PreviewEnvironmentIdentityModel{
+					SpaceID:              types.StringValue("space"),
+					PreviewEnvironmentID: types.StringNull(),
+				},
+				Name:                      types.StringValue("Configured"),
+				Description:               types.StringValue(""),
+				ContentTypeConfigurations: NewTypedMap(map[string]TypedObject[PreviewEnvironmentContentTypeConfigurationValue]{}),
+				Timeouts:                  TimeoutsNull(),
+			},
+			resourceSchema: PreviewEnvironmentResourceSchema(ctx),
+			create: func(client *cm.Client, request resource.CreateRequest, response *resource.CreateResponse) {
+				implementation := previewEnvironmentResource{providerData: ContentfulProviderData{client: client}}
+				implementation.Create(ctx, request, response)
+			},
+			expectedPath: "name",
+		},
 		"tag": {
 			model: TagModel{
 				IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
@@ -430,6 +460,25 @@ func TestUpdateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 			resourceSchema: ResourceTypeResourceSchema(ctx),
 			update: func(client *cm.Client, request resource.UpdateRequest, response *resource.UpdateResponse) {
 				implementation := appDefinitionResourceTypeResource{providerData: ContentfulProviderData{client: client}}
+				implementation.Update(ctx, request, response)
+			},
+			expectedPath: "name",
+		},
+		"preview environment": {
+			model: PreviewEnvironmentModel{
+				IDIdentityModel: IDIdentityModel{ID: types.StringValue("space/preview")},
+				PreviewEnvironmentIdentityModel: PreviewEnvironmentIdentityModel{
+					SpaceID:              types.StringValue("space"),
+					PreviewEnvironmentID: types.StringValue("preview"),
+				},
+				Name:                      types.StringUnknown(),
+				Description:               types.StringValue(""),
+				ContentTypeConfigurations: NewTypedMap(map[string]TypedObject[PreviewEnvironmentContentTypeConfigurationValue]{}),
+				Timeouts:                  TimeoutsNull(),
+			},
+			resourceSchema: PreviewEnvironmentResourceSchema(ctx),
+			update: func(client *cm.Client, request resource.UpdateRequest, response *resource.UpdateResponse) {
+				implementation := previewEnvironmentResource{providerData: ContentfulProviderData{client: client}}
 				implementation.Update(ctx, request, response)
 			},
 			expectedPath: "name",
