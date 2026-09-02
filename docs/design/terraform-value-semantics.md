@@ -141,6 +141,40 @@ without an effective `en-US` entry, are rejected. It does
 not model secondary taxonomy locale enablement or provider-side locale
 validation.
 
+### Webhook Basic password
+
+Contentful accepts `httpBasicPassword` on Webhook Create and Update but omits
+the property from successful mutation and GET responses. The generated client
+distinguishes absence (`Set` is false) from explicit JSON `null` (`Set` and
+`Null` are true). Only absence receives the password fallback; explicit null
+and returned values remain response truth.
+
+| Operation | Config | Effective Plan | Prior State | CMA password response | Request password | Terraform password state | Diagnostic |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Create | configured | known | none | absent | Plan value | exact Plan value | none |
+| Create or Update | configured | unknown | any | not reached | no request | unchanged | attribute error |
+| Read/refresh | any | n/a | known managed value | absent | none | exact prior value | none; equality is not established |
+| Read/import | omitted or configured | n/a | imported null | absent | none | null | none |
+| Read | any | n/a | any | explicit null or returned value | none | response value | none |
+| Ordinary Update or rotation | configured | known | any | absent | effective Plan value | exact Plan value | none |
+| Update with `ignore_changes` | changed | prior value retained | known | absent | effective Plan value | exact effective Plan value | none |
+| Credential removal | explicit null for both Basic credentials | null for both | known | absent | null for both | null | none |
+| Update after omission | omitted | null | known or null | absent | null | null | none |
+| Post-import ownership | configured | known | imported null | absent | effective Plan value | exact Plan value | intentional Update |
+| Mutation contradiction | configured | known | any | explicit null or different returned value | effective Plan value | response value | Terraform consistency error |
+
+Mutation state starts from the complete CMA response. Only an absent password
+property restores a known, non-null effective Plan value. Read similarly
+preserves only a known, non-null prior state value; import has no such value and
+therefore leaves the password null. The fallback never copies Config or another
+planned attribute and never introduces an unknown value into state.
+
+Contentful does not expose the stored password. Preserving prior Terraform
+state therefore prevents false drift but is not evidence that the remote
+password is equal. Refresh cannot detect another actor rotating or removing
+the password. Import likewise cannot discover or claim ownership of it; later
+password configuration is an intentional update.
+
 ## Lifecycle ownership and plan consistency
 
 Content Type publication metadata is observation, not activation authority.

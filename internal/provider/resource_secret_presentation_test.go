@@ -157,6 +157,45 @@ func TestAccExtensionLifecycleLogsExcludeParameters(t *testing.T) {
 	}
 }
 
+func TestAccWebhookLifecycleLogsAndOutputExcludeBasicPassword(t *testing.T) {
+	t.Parallel()
+
+	sentinels := []string{
+		"LOG_WEBHOOK_BASIC_PASSWORD_CREATE_SENTINEL_6c5fd1",
+		"LOG_WEBHOOK_BASIC_PASSWORD_UPDATE_SENTINEL_b86312",
+	}
+
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("log-space", "master")
+
+	testServer := httptest.NewServer(server)
+	t.Cleanup(testServer.Close)
+
+	runtime := newTerraformTestRuntime(t)
+	runtime.providerURL = testServer.URL
+	runtime.logPath = filepath.Join(runtime.workingDirectory, "provider.log")
+
+	for index, sentinel := range sentinels {
+		runtime.writeConfig(t, webhookLoggingTestConfig(sentinel, fmt.Sprintf("Webhook %d", index)))
+		output, applyErr := runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
+		require.NoError(t, applyErr, output)
+		assert.NotContains(t, output, sentinel)
+	}
+
+	logOutput, err := os.ReadFile(runtime.logPath)
+	require.NoError(t, err)
+
+	logs := string(logOutput)
+	assert.Contains(t, logs, "webhook.create")
+	assert.Contains(t, logs, "webhook.read")
+	assert.Contains(t, logs, "webhook.update")
+
+	for _, sentinel := range sentinels {
+		assert.NotContains(t, logs, sentinel)
+	}
+}
+
 type terraformTestRuntime struct {
 	terraformPath    string
 	workingDirectory string
@@ -263,6 +302,19 @@ resource "contentful_extension" "logs" {
   parameters = jsonencode({
     api_key = %q
   })
+}
+`, name, sentinel)
+}
+
+func webhookLoggingTestConfig(sentinel, name string) string {
+	return fmt.Sprintf(`
+resource "contentful_webhook" "logs" {
+  space_id            = "log-space"
+  name                = %q
+  url                 = "https://example.invalid/webhook"
+  topics              = []
+  http_basic_username = "user"
+  http_basic_password = %q
 }
 `, name, sentinel)
 }
