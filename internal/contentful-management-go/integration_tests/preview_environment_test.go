@@ -90,18 +90,6 @@ func TestPreviewEnvironmentLifecycle(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, "Conflict", staleErrorBody.Sys.ID)
 
-	listResponse, err := client.GetPreviewEnvironments(t.Context(), cm.GetPreviewEnvironmentsParams{
-		SpaceID: "space",
-		Skip:    cm.NewOptInt64(0),
-		Limit:   cm.NewOptInt64(1),
-	})
-	require.NoError(t, err)
-
-	collection, ok := listResponse.(*cm.PreviewEnvironmentCollection)
-	require.True(t, ok)
-	require.Equal(t, 1, collection.Total)
-	require.Len(t, collection.Items, 1)
-
 	deleteResponse, err := client.DeletePreviewEnvironment(t.Context(), cm.DeletePreviewEnvironmentParams{
 		SpaceID:              "space",
 		PreviewEnvironmentID: created.Sys.ID,

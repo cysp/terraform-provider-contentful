@@ -41,44 +41,6 @@ func (ts *Handler) GetPreviewEnvironment(_ context.Context, params cm.GetPreview
 }
 
 //nolint:ireturn
-func (ts *Handler) GetPreviewEnvironments(_ context.Context, params cm.GetPreviewEnvironmentsParams) (cm.GetPreviewEnvironmentsRes, error) {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
-	ids := ts.previewEnvironments.IDs(params.SpaceID)
-	total := len(ids)
-
-	skip := 0
-	if value, ok := params.Skip.Get(); ok && value > 0 {
-		skip = min(int(value), total)
-	}
-
-	limit := total
-	if value, ok := params.Limit.Get(); ok && value >= 0 {
-		limit = int(value)
-	}
-
-	end := min(skip+limit, total)
-
-	items := make([]cm.PreviewEnvironment, 0, end-skip)
-	for _, id := range ids[skip:end] {
-		if previewEnvironment := ts.previewEnvironments.Get(params.SpaceID, id); previewEnvironment != nil {
-			items = append(items, *previewEnvironment)
-		}
-	}
-
-	return &cm.PreviewEnvironmentCollection{
-		Sys: cm.PreviewEnvironmentCollectionSys{
-			Type: cm.PreviewEnvironmentCollectionSysTypeArray,
-		},
-		Total: total,
-		Skip:  skip,
-		Limit: limit,
-		Items: items,
-	}, nil
-}
-
-//nolint:ireturn
 func (ts *Handler) PutPreviewEnvironment(_ context.Context, req *cm.PreviewEnvironmentData, params cm.PutPreviewEnvironmentParams) (cm.PutPreviewEnvironmentRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()

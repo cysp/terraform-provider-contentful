@@ -1750,23 +1750,6 @@ paths:
   /spaces/{space_id}/preview_environments:
     parameters:
       - $ref: "#/components/parameters/space_id"
-    get:
-      operationId: getPreviewEnvironments
-      summary: Get content preview platforms
-      parameters:
-        - $ref: "#/components/parameters/skip"
-        - $ref: "#/components/parameters/limit"
-      responses:
-        200:
-          description: Content preview platforms
-          content:
-            application/json:
-              schema:
-                $ref: "./schemas/preview-environment/collection.yml#/PreviewEnvironmentCollection"
-        401:
-          $ref: "#/components/responses/unauthorized"
-        default:
-          $ref: "#/components/responses/error"
     post:
       operationId: createPreviewEnvironment
       summary: Create a content preview platform

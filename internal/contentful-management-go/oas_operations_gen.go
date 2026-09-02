@@ -59,7 +59,6 @@ const (
 	GetPersonalAccessTokenOperation         OperationName = "GetPersonalAccessToken"
 	GetPreviewAPIKeyOperation               OperationName = "GetPreviewAPIKey"
 	GetPreviewEnvironmentOperation          OperationName = "GetPreviewEnvironment"
-	GetPreviewEnvironmentsOperation         OperationName = "GetPreviewEnvironments"
 	GetResourceProviderOperation            OperationName = "GetResourceProvider"
 	GetResourceTypeOperation                OperationName = "GetResourceType"
 	GetRoleOperation                        OperationName = "GetRole"

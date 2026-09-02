@@ -136,7 +136,6 @@ var (
 		"GET": "Authorization",
 	}
 	rn23AllowedHeaders = map[string]string{
-		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
 	rn43AllowedHeaders = map[string]string{
@@ -1584,17 +1583,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 							if len(elem) == 0 {
 								switch r.Method {
-								case "GET":
-									s.handleGetPreviewEnvironmentsRequest([1]string{
-										args[0],
-									}, elemIsEscaped, w, r)
 								case "POST":
 									s.handleCreatePreviewEnvironmentRequest([1]string{
 										args[0],
 									}, elemIsEscaped, w, r)
 								default:
 									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "GET,POST",
+										allowedMethods: "POST",
 										allowedHeaders: rn23AllowedHeaders,
 										acceptPost:     "application/vnd.contentful.management.v1+json",
 										acceptPatch:    "",
@@ -3510,15 +3505,6 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 							if len(elem) == 0 {
 								switch method {
-								case "GET":
-									r.name = GetPreviewEnvironmentsOperation
-									r.summary = "Get content preview platforms"
-									r.operationID = "getPreviewEnvironments"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/preview_environments"
-									r.args = args
-									r.count = 1
-									return r, true
 								case "POST":
 									r.name = CreatePreviewEnvironmentOperation
 									r.summary = "Create a content preview platform"

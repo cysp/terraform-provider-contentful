@@ -87,7 +87,6 @@ var operationRolesAccessToken = map[string][]string{
 	GetPersonalAccessTokenOperation:         []string{},
 	GetPreviewAPIKeyOperation:               []string{},
 	GetPreviewEnvironmentOperation:          []string{},
-	GetPreviewEnvironmentsOperation:         []string{},
 	GetResourceProviderOperation:            []string{},
 	GetResourceTypeOperation:                []string{},
 	GetRoleOperation:                        []string{},

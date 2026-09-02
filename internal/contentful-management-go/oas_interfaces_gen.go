@@ -213,10 +213,6 @@ type GetPreviewEnvironmentRes interface {
 	getPreviewEnvironmentRes()
 }
 
-type GetPreviewEnvironmentsRes interface {
-	getPreviewEnvironmentsRes()
-}
-
 type GetResourceProviderRes interface {
 	getResourceProviderRes()
 }

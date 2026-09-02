@@ -54,7 +54,7 @@ type Handler struct {
 
 	webhookDefinitions cm.SpaceMap[*cm.WebhookDefinition]
 
-	previewEnvironments previewEnvironmentStore
+	previewEnvironments cm.SpaceMap[*cm.PreviewEnvironment]
 }
 
 var _ cm.Handler = (*Handler)(nil)
@@ -88,7 +88,7 @@ func NewHandler() *Handler {
 		taxonomyConcepts:               NewOrganizationMap[*cm.TaxonomyConcept](),
 		taxonomyConceptSchemes:         NewOrganizationMap[*cm.TaxonomyConceptScheme](),
 		webhookDefinitions:             cm.NewSpaceMap[*cm.WebhookDefinition](),
-		previewEnvironments:            newPreviewEnvironmentStore(),
+		previewEnvironments:            cm.NewSpaceMap[*cm.PreviewEnvironment](),
 	}
 }
 

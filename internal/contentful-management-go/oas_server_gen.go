@@ -326,12 +326,6 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/preview_environments/{preview_environment_id}
 	GetPreviewEnvironment(ctx context.Context, params GetPreviewEnvironmentParams) (GetPreviewEnvironmentRes, error)
-	// GetPreviewEnvironments implements getPreviewEnvironments operation.
-	//
-	// Get content preview platforms.
-	//
-	// GET /spaces/{space_id}/preview_environments
-	GetPreviewEnvironments(ctx context.Context, params GetPreviewEnvironmentsParams) (GetPreviewEnvironmentsRes, error)
 	// GetResourceProvider implements getResourceProvider operation.
 	//
 	// Get one resource provider definition.

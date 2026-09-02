@@ -2003,7 +2003,6 @@ func (*ApplicationJSONError) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationJSONError) getPersonalAccessTokenRes()         {}
 func (*ApplicationJSONError) getPreviewAPIKeyRes()               {}
 func (*ApplicationJSONError) getPreviewEnvironmentRes()          {}
-func (*ApplicationJSONError) getPreviewEnvironmentsRes()         {}
 func (*ApplicationJSONError) getResourceProviderRes()            {}
 func (*ApplicationJSONError) getResourceTypeRes()                {}
 func (*ApplicationJSONError) getRoleRes()                        {}
@@ -4654,7 +4653,6 @@ func (*ErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
 func (*ErrorStatusCode) getPersonalAccessTokenRes()         {}
 func (*ErrorStatusCode) getPreviewAPIKeyRes()               {}
 func (*ErrorStatusCode) getPreviewEnvironmentRes()          {}
-func (*ErrorStatusCode) getPreviewEnvironmentsRes()         {}
 func (*ErrorStatusCode) getResourceProviderRes()            {}
 func (*ErrorStatusCode) getResourceTypeRes()                {}
 func (*ErrorStatusCode) getRoleRes()                        {}
@@ -8357,115 +8355,6 @@ func (s *PreviewEnvironment) SetConfigurations(val []PreviewEnvironmentConfigura
 func (*PreviewEnvironment) createPreviewEnvironmentRes() {}
 func (*PreviewEnvironment) getPreviewEnvironmentRes()    {}
 func (*PreviewEnvironment) putPreviewEnvironmentRes()    {}
-
-// Ref: #/PreviewEnvironmentCollection
-type PreviewEnvironmentCollection struct {
-	Sys   PreviewEnvironmentCollectionSys `json:"sys"`
-	Total int                             `json:"total"`
-	Skip  int                             `json:"skip"`
-	Limit int                             `json:"limit"`
-	Items []PreviewEnvironment            `json:"items"`
-}
-
-// GetSys returns the value of Sys.
-func (s *PreviewEnvironmentCollection) GetSys() PreviewEnvironmentCollectionSys {
-	return s.Sys
-}
-
-// GetTotal returns the value of Total.
-func (s *PreviewEnvironmentCollection) GetTotal() int {
-	return s.Total
-}
-
-// GetSkip returns the value of Skip.
-func (s *PreviewEnvironmentCollection) GetSkip() int {
-	return s.Skip
-}
-
-// GetLimit returns the value of Limit.
-func (s *PreviewEnvironmentCollection) GetLimit() int {
-	return s.Limit
-}
-
-// GetItems returns the value of Items.
-func (s *PreviewEnvironmentCollection) GetItems() []PreviewEnvironment {
-	return s.Items
-}
-
-// SetSys sets the value of Sys.
-func (s *PreviewEnvironmentCollection) SetSys(val PreviewEnvironmentCollectionSys) {
-	s.Sys = val
-}
-
-// SetTotal sets the value of Total.
-func (s *PreviewEnvironmentCollection) SetTotal(val int) {
-	s.Total = val
-}
-
-// SetSkip sets the value of Skip.
-func (s *PreviewEnvironmentCollection) SetSkip(val int) {
-	s.Skip = val
-}
-
-// SetLimit sets the value of Limit.
-func (s *PreviewEnvironmentCollection) SetLimit(val int) {
-	s.Limit = val
-}
-
-// SetItems sets the value of Items.
-func (s *PreviewEnvironmentCollection) SetItems(val []PreviewEnvironment) {
-	s.Items = val
-}
-
-func (*PreviewEnvironmentCollection) getPreviewEnvironmentsRes() {}
-
-type PreviewEnvironmentCollectionSys struct {
-	Type PreviewEnvironmentCollectionSysType `json:"type"`
-}
-
-// GetType returns the value of Type.
-func (s *PreviewEnvironmentCollectionSys) GetType() PreviewEnvironmentCollectionSysType {
-	return s.Type
-}
-
-// SetType sets the value of Type.
-func (s *PreviewEnvironmentCollectionSys) SetType(val PreviewEnvironmentCollectionSysType) {
-	s.Type = val
-}
-
-type PreviewEnvironmentCollectionSysType string
-
-const (
-	PreviewEnvironmentCollectionSysTypeArray PreviewEnvironmentCollectionSysType = "Array"
-)
-
-// AllValues returns all PreviewEnvironmentCollectionSysType values.
-func (PreviewEnvironmentCollectionSysType) AllValues() []PreviewEnvironmentCollectionSysType {
-	return []PreviewEnvironmentCollectionSysType{
-		PreviewEnvironmentCollectionSysTypeArray,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s PreviewEnvironmentCollectionSysType) MarshalText() ([]byte, error) {
-	switch s {
-	case PreviewEnvironmentCollectionSysTypeArray:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *PreviewEnvironmentCollectionSysType) UnmarshalText(data []byte) error {
-	switch PreviewEnvironmentCollectionSysType(data) {
-	case PreviewEnvironmentCollectionSysTypeArray:
-		*s = PreviewEnvironmentCollectionSysTypeArray
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
 
 // Ref: #/PreviewEnvironmentConfiguration
 type PreviewEnvironmentConfiguration struct {
