@@ -81,9 +81,11 @@ the Terraform acceptance-test harness.
 
 ## Linting
 
-Run the repository lint checks with:
+Install the [official golangci-lint binary](https://golangci-lint.run/docs/welcome/install/local/#binaries)
+at the version recorded in [`.golangci-lint-version`](.golangci-lint-version),
+then run the repository checks:
 
 ```sh
-golangci-lint cache clean
 golangci-lint run
+golangci-lint fmt --diff
 ```

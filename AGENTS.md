@@ -18,5 +18,4 @@
 - Leave unrelated concerns out of each change, preserve unrelated worktree changes, and use a separate worktree and pull request when concurrently pursuing an independent concern; keep history reviewable.
 - Use Conventional Commit messages. Choose a scope for the affected codebase area, following recent repository history when a matching scope exists.
 - After changing a schema or another input to generated code or documentation, run `go generate ./...` and inspect the generated diff.
-- Before every `golangci-lint run`, run `golangci-lint cache clean`.
 - Run focused tests for changed behavior plus proportionate broader verification.
