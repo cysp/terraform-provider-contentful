@@ -102,7 +102,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 
 	return map[string]schema.Attribute{
 		"concepts": schema.ListAttribute{
-			Description: "IDs of Contentful taxonomy concepts attached to the entry. Comparison ignores ordering but preserves duplicate occurrences. Reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
+			Description: "IDs of Contentful taxonomy concepts attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Optional:    true,
@@ -113,10 +113,11 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 			},
 			Validators: []validator.List{
 				listvalidator.NoNullValues(),
+				listvalidator.UniqueValues(),
 			},
 		},
 		"tags": schema.ListAttribute{
-			Description: "IDs of Contentful tags attached to the entry. Comparison ignores ordering but preserves duplicate occurrences. Reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
+			Description: "IDs of Contentful tags attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Optional:    true,
@@ -127,6 +128,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 			},
 			Validators: []validator.List{
 				listvalidator.NoNullValues(),
+				listvalidator.UniqueValues(),
 			},
 		},
 	}

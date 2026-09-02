@@ -492,3 +492,28 @@ resource "contentful_entry" "test" {
 		},
 	}})
 }
+
+func TestAccEntryResourceMetadataRejectsDuplicateAssignments(t *testing.T) {
+	t.Parallel()
+
+	fixture := newEntryAcceptanceFixture(t)
+	config := func(attributeName string) string {
+		return fmt.Sprintf(`
+resource "contentful_entry" "test" {
+  space_id        = "space"
+  environment_id  = "environment"
+  entry_id        = "entry"
+  content_type_id = "article"
+  fields          = { managed = jsonencode({ "en-US" = "one" }) }
+  metadata        = { %s = ["duplicate", "duplicate"] }
+}
+`, attributeName)
+	}
+
+	ContentfulProviderMockedResourceTest(t, fixture.recorder, resource.TestCase{Steps: []resource.TestStep{
+		{Config: config("concepts"), ExpectError: regexp.MustCompile(`Duplicate List Value`)},
+		{Config: config("tags"), ExpectError: regexp.MustCompile(`Duplicate List Value`)},
+	}})
+
+	requireNoEntryMutations(t, fixture.recorder, "invalid duplicate metadata must not mutate an Entry")
+}
