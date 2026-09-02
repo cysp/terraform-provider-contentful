@@ -46,6 +46,7 @@ func UpdateWebhookDefinitionFromFields(webhookDefinition *cm.WebhookDefinition, 
 
 func redactWebhookDefinitionSecrets(webhookDefinition cm.WebhookDefinition) cm.WebhookDefinition {
 	redacted := webhookDefinition
+	redacted.HttpBasicPassword.Reset()
 	redacted.Headers = make(cm.WebhookDefinitionHeaders, len(webhookDefinition.Headers))
 	copy(redacted.Headers, webhookDefinition.Headers)
 

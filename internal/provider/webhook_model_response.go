@@ -59,16 +59,24 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 	return model, diags, filtersListDiags
 }
 
-// ReconcileWebhookMutationResponse projects the complete mutation
-// response and restores the planned filters representation only after proving
-// lossless semantic equivalence.
+// ReconcileWebhookMutationResponse projects the complete mutation response and
+// restores planned values only for narrow Contentful response normalizations.
 func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, plan WebhookModel) (WebhookModel, diag.Diagnostics, diag.Diagnostics) {
 	state, responseDiags, filtersDiags := newWebhookResourceModelFromResponse(ctx, webhookDefinition, plan.Headers.Elements())
-	if plan.Filters.IsUnknown() {
-		return state, responseDiags, nil
+	consistencyDiags := diag.Diagnostics{}
+
+	if !plan.HTTPBasicPassword.IsUnknown() {
+		switch {
+		case webhookDefinition.HttpBasicPassword.IsEmpty() && !plan.HTTPBasicPassword.IsNull():
+			state.HTTPBasicPassword = plan.HTTPBasicPassword
+		case !webhookDefinition.HttpBasicPassword.IsEmpty() && !plan.HTTPBasicPassword.Equal(state.HTTPBasicPassword):
+			consistencyDiags.AddAttributeError(path.Root("http_basic_password"), "Contentful returned a different webhook Basic password", "Contentful accepted the request but returned a webhook Basic password that differs from the value Terraform applied. Terraform retained the returned value in state. Review the webhook and configuration before applying again.")
+		}
 	}
 
-	consistencyDiags := diag.Diagnostics{}
+	if plan.Filters.IsUnknown() {
+		return state, responseDiags, consistencyDiags
+	}
 
 	switch {
 	case len(filtersDiags) != 0:

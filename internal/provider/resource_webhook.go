@@ -173,6 +173,10 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers.Elements())
 		resp.Diagnostics.Append(responseModelDiags...)
 
+		if response.HttpBasicPassword.IsEmpty() && !state.HTTPBasicPassword.IsNull() && !state.HTTPBasicPassword.IsUnknown() {
+			responseModel.HTTPBasicPassword = state.HTTPBasicPassword
+		}
+
 		data = responseModel
 		version = response.Sys.Version
 
