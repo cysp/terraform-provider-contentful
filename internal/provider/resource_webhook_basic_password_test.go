@@ -30,7 +30,7 @@ const rawWebhookWithoutBasicPassword = `{
   },
   "name": "Basic webhook",
   "url": "https://example.com/webhook",
-  "topics": [],
+  "topics": ["Entry.publish"],
   "filters": null,
   "httpBasicUsername": "user",
   "headers": [],
@@ -127,7 +127,7 @@ func TestAccWebhookBasicPasswordImportRequiresUpdate(t *testing.T) {
 	server.SetWebhookDefinition("space", "imported-webhook", cm.WebhookDefinitionData{
 		Name:              "Imported webhook",
 		URL:               "https://example.com/webhook",
-		Topics:            []string{},
+		Topics:            []string{"Entry.publish"},
 		HttpBasicUsername: cm.NewOptNilString("user"),
 		HttpBasicPassword: cm.NewOptNilString("remote-password"),
 	})
@@ -205,7 +205,7 @@ resource "contentful_webhook" "test" {
   space_id            = "space"
   name                = %q
   url                 = "https://example.com/webhook"
-  topics              = []
+  topics              = ["Entry.publish"]
   http_basic_username = %s
   http_basic_password = %s
   %s

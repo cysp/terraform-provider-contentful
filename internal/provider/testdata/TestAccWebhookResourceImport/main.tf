@@ -4,4 +4,6 @@ resource "contentful_webhook" "test" {
   name = "test"
 
   url = "https://example.org/webhook"
+
+  topics = ["Entry.publish"]
 }

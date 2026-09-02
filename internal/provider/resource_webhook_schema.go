@@ -52,12 +52,13 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"topics": schema.ListAttribute{
-				Description: "List of event topics to which the webhook subscribes.",
+				Description: "List of one or more event topics to which the webhook subscribes.",
 				ElementType: types.StringType,
 				CustomType:  TypedList[types.String]{}.CustomType(ctx),
-				Optional:    true,
+				Required:    true,
 				Validators: []validator.List{
 					listvalidator.NoNullValues(),
+					listvalidator.SizeAtLeast(1),
 				},
 			},
 			"filters": WebhookFiltersSchema(ctx, true),
