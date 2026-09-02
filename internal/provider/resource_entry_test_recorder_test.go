@@ -14,21 +14,19 @@ import (
 
 const (
 	entryTestCollectionPath = "/spaces/space/environments/environment/entries"
-	entryTestUpdatePath     = "/spaces/space/environments/environment/entries/entry"
+	entryTestUpdatePath     = entryTestCollectionPath + "/entry"
 	entryTestPublishPath    = entryTestUpdatePath + "/published"
 )
 
 type entryMutationRequest struct {
-	method             string
-	path               string
-	version            string
-	versionPresent     bool
-	versionValues      []string
-	contentTypePresent bool
-	contentTypeValues  []string
-	body               []byte
-	contentLength      int64
-	fields             map[string]json.RawMessage
+	method            string
+	path              string
+	version           string
+	versionValues     []string
+	contentTypeValues []string
+	body              []byte
+	contentLength     int64
+	fields            map[string]json.RawMessage
 }
 
 type entryMutationRecorder struct {
@@ -113,14 +111,12 @@ func (h *entryMutationRecorder) recordDraftMutation(request *http.Request) {
 
 func entryMutationRequestFromHTTP(request *http.Request) entryMutationRequest {
 	return entryMutationRequest{
-		method:             request.Method,
-		path:               request.URL.Path,
-		version:            request.Header.Get("X-Contentful-Version"),
-		versionPresent:     len(request.Header.Values("X-Contentful-Version")) > 0,
-		versionValues:      append([]string(nil), request.Header.Values("X-Contentful-Version")...),
-		contentTypePresent: len(request.Header.Values("X-Contentful-Content-Type")) > 0,
-		contentTypeValues:  append([]string(nil), request.Header.Values("X-Contentful-Content-Type")...),
-		contentLength:      request.ContentLength,
+		method:            request.Method,
+		path:              request.URL.Path,
+		version:           request.Header.Get("X-Contentful-Version"),
+		versionValues:     append([]string(nil), request.Header.Values("X-Contentful-Version")...),
+		contentTypeValues: append([]string(nil), request.Header.Values("X-Contentful-Content-Type")...),
+		contentLength:     request.ContentLength,
 	}
 }
 
@@ -158,12 +154,14 @@ func requireEntryUpdate(t *testing.T, request entryMutationRequest) {
 	require.Positive(t, request.contentLength)
 }
 
-func requireEntryPublish(t *testing.T, request entryMutationRequest) {
+func requireEntryPublish(t *testing.T, request entryMutationRequest, expectedPath string) {
 	t.Helper()
 
-	require.Equal(t, entryTestPublishPath, request.path, "expected an Entry publication")
 	require.Equal(t, http.MethodPut, request.method)
-	require.Equal(t, []string{request.version}, request.versionValues)
+	require.Equal(t, expectedPath, request.path, "expected an Entry publication")
+	require.Len(t, request.versionValues, 1)
+	require.NotEmpty(t, request.versionValues[0])
+	require.Empty(t, request.contentTypeValues)
 	require.Empty(t, request.body, "Entry Publish must have a zero-byte request body")
 	require.Zero(t, request.contentLength)
 }
@@ -176,7 +174,7 @@ func requireEntryUpdateThenPublish(
 
 	require.Len(t, requests, 2, "expected one Entry draft update followed by one publication")
 	requireEntryUpdate(t, requests[0])
-	requireEntryPublish(t, requests[1])
+	requireEntryPublish(t, requests[1], entryTestPublishPath)
 
 	return requests[0], requests[1]
 }
