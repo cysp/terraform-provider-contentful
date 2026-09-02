@@ -58,8 +58,11 @@ func TestPrivateVersionValuesAreForwardedToRepresentativeMutations(t *testing.T)
 			cases = append(cases, privateVersionForwardingCase{
 				requiredPrivateVersionResourceCase: test, method: expected.method, path: expected.path,
 			})
+			delete(selected, test.name)
 		}
 	}
+
+	require.Empty(t, selected, "missing representative private version resource cases")
 
 	cases = append(cases,
 		privateVersionForwardingCase{
