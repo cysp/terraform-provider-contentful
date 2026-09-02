@@ -277,23 +277,23 @@ func ReadWebhookDefinitionFilterTermStringObject(_ context.Context, path path.Pa
 		return types.StringNull(), diags
 	}
 
+	unsupportedProperties := make([]string, 0, len(object))
+	for propertyName := range object {
+		if propertyName != name {
+			unsupportedProperties = append(unsupportedProperties, propertyName)
+		}
+	}
+
+	if len(unsupportedProperties) > 0 {
+		slices.Sort(unsupportedProperties)
+		diags.AddAttributeWarning(path, "Unsupported webhook filter term response properties", fmt.Sprintf("Contentful returned unsupported properties %q in a webhook filter term object whose supported property is %q. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.", unsupportedProperties, name))
+	}
+
 	rawValue, ok := object[name]
 	if !ok {
 		diags.AddAttributeWarning(path, "Unsupported webhook filter value", fmt.Sprintf("Contentful returned an object without the required %q property. Terraform state retains a null value; a later request conversion will reject it until configured.", name))
 
 		return types.StringNull(), diags
-	}
-
-	if len(object) > 1 {
-		unsupportedProperties := make([]string, 0, len(object)-1)
-		for propertyName := range object {
-			if propertyName != name {
-				unsupportedProperties = append(unsupportedProperties, propertyName)
-			}
-		}
-
-		slices.Sort(unsupportedProperties)
-		diags.AddAttributeWarning(path, "Unsupported webhook filter term response properties", fmt.Sprintf("Contentful returned properties %q alongside the required %q property. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.", unsupportedProperties, name))
 	}
 
 	var value *string
