@@ -175,6 +175,15 @@ func TestWebhookFilterResponseProjectionReportsUnsupportedProperties(t *testing.
   },
   {
     "in": [{"doc": "sys.id"}, ["first", "second"]]
+  },
+  {
+    "equals": [{"futureDoc": "sys.type"}, "Asset"]
+  },
+  {
+    "regexp": [{"doc": "sys.id"}, {"futurePattern": "entry.*"}]
+  },
+  {
+    "in": [{"zeta": false, "alpha": 1}, ["third"]]
   }
 ]`)))
 
@@ -219,6 +228,24 @@ func TestWebhookFilterResponseProjectionReportsUnsupportedProperties(t *testing.
 			})),
 			NewTypedObjectNull[WebhookFilterRegexpValue](),
 		)),
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			webhookEqualsValue(types.StringNull(), types.StringValue("Asset")),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			NewTypedObjectNull[WebhookFilterEqualsValue](),
+			NewTypedObjectNull[WebhookFilterInValue](),
+			webhookRegexpValue(types.StringValue("sys.id"), types.StringNull()),
+		)),
+		NewTypedObject(webhookFilterValue(
+			NewTypedObjectNull[WebhookFilterNotValue](),
+			NewTypedObjectNull[WebhookFilterEqualsValue](),
+			webhookInValue(types.StringNull(), NewTypedList([]types.String{types.StringValue("third")})),
+			NewTypedObjectNull[WebhookFilterRegexpValue](),
+		)),
 	})
 
 	assert.Equal(t, expectedFilters, model.Filters)
@@ -239,7 +266,7 @@ func TestWebhookFilterResponseProjectionReportsUnsupportedProperties(t *testing.
 		{
 			path:    "filters[0].equals.doc",
 			summary: "Unsupported webhook filter term response properties",
-			detail:  `Contentful returned properties ["alpha" "zeta"] alongside the required "doc" property. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
+			detail:  `Contentful returned unsupported properties ["alpha" "zeta"] in a webhook filter term object whose supported property is "doc". The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
 		},
 		{
 			path:    "filters[1].not",
@@ -250,6 +277,36 @@ func TestWebhookFilterResponseProjectionReportsUnsupportedProperties(t *testing.
 			path:    "filters[2]",
 			summary: "Unsupported webhook filter response properties",
 			detail:  `Contentful returned webhook filter properties ["futureOnly"] that this provider cannot represent. The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
+		},
+		{
+			path:    "filters[4].equals.doc",
+			summary: "Unsupported webhook filter term response properties",
+			detail:  `Contentful returned unsupported properties ["futureDoc"] in a webhook filter term object whose supported property is "doc". The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
+		},
+		{
+			path:    "filters[4].equals.doc",
+			summary: "Unsupported webhook filter value",
+			detail:  `Contentful returned an object without the required "doc" property. Terraform state retains a null value; a later request conversion will reject it until configured.`,
+		},
+		{
+			path:    "filters[5].regexp.pattern",
+			summary: "Unsupported webhook filter term response properties",
+			detail:  `Contentful returned unsupported properties ["futurePattern"] in a webhook filter term object whose supported property is "pattern". The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
+		},
+		{
+			path:    "filters[5].regexp.pattern",
+			summary: "Unsupported webhook filter value",
+			detail:  `Contentful returned an object without the required "pattern" property. Terraform state retains a null value; a later request conversion will reject it until configured.`,
+		},
+		{
+			path:    "filters[6].in.doc",
+			summary: "Unsupported webhook filter term response properties",
+			detail:  `Contentful returned unsupported properties ["alpha" "zeta"] in a webhook filter term object whose supported property is "doc". The unsupported properties are omitted from Terraform state, and a later Terraform update to this webhook cannot preserve them.`,
+		},
+		{
+			path:    "filters[6].in.doc",
+			summary: "Unsupported webhook filter value",
+			detail:  `Contentful returned an object without the required "doc" property. Terraform state retains a null value; a later request conversion will reject it until configured.`,
 		},
 	}
 
