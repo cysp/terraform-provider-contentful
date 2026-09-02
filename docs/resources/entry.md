@@ -83,8 +83,8 @@ After creating an Entry in Contentful, or after a provider-managed Contentful En
 
 Optional:
 
-- `concepts` (List of String) IDs of Contentful taxonomy concepts attached to the entry. Comparison ignores ordering but preserves duplicate occurrences. Reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.
-- `tags` (List of String) IDs of Contentful tags attached to the entry. Comparison ignores ordering but preserves duplicate occurrences. Reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.
+- `concepts` (List of String) IDs of Contentful taxonomy concepts attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.
+- `tags` (List of String) IDs of Contentful tags attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.
 
 
 <a id="nestedatt--timeouts"></a>

@@ -378,11 +378,11 @@ effective plan. They may also restore planned Terraform-null, raw JSON-null, or
 localized all-empty-array fields when the response omits those individual keys.
 Other partial or changed maps remain response truth and a plan contradiction.
 
-Entry metadata tags and taxonomy concepts retain their public List schema, while
-the provider compares them without regard to order while preserving duplicate
-multiplicity. A configuration-only reorder is therefore a representation-only
-Update: Terraform stores the desired list representation without writing or
-publishing an Entry.
+Entry metadata tags and taxonomy concepts retain their public List schema.
+Configured values must be unique. Comparison ignores order but remains
+multiplicity-sensitive for response/state data so irregular remote duplicates
+are not hidden. A configuration-only reorder changes only Terraform's stored
+list representation; it does not write or publish an Entry.
 
 Contentful may apply Content Type default values to fields omitted during Entry
 creation. A Create response may therefore add response-only field keys,

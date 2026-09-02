@@ -34,10 +34,12 @@ The reviewed Contentful JavaScript client is v12.15.0 (commit
   response. A later unchanged operation may publish only that marked version;
   Read, import, prior state, field equality, and fresh GET responses never create
   or replace the marker.
-- Primary sources do not declare Entry metadata tags or concepts ordered, and a
-  sanitized live multi-tag probe demonstrated that CMA can return tag order
-  different from the order in the latest Update request. That justifies
-  order-insensitive tag comparison, but not a public List-to-Set schema change.
+- Primary sources do not declare Entry metadata tags or concepts ordered and do
+  not define duplicate-link semantics. Separate sanitized probes of both
+  properties found that immediate mutation responses echoed submitted order and
+  duplicate occurrences, while subsequent GET and Publish responses restored an
+  earlier assignment order and reduced each repeated link to one occurrence.
+  This is observed canonicalization, not a documented set contract.
 - A sanitized live unpublish probe returned an Entry whose `version` advanced
   beyond the pending draft and whose `publishedVersion` was absent; a subsequent
   GET returned the same tuple. This establishes the fake's normal unpublish
@@ -218,102 +220,52 @@ Update response and confirms publication from exact `publishedVersion == V`
 plus positive current `version > V`. No observed increment becomes client
 policy or new authority.
 
-## Metadata ordering
+## Metadata ordering and duplicate behavior
 
-The Entry reference calls `metadata.tags` and `metadata.concepts` lists. The
-[Tags reference](https://www.contentful.com/developers/docs/references/content-management-api/tags/#tags-on-entries-and-assets)
-describes adding/removing tag links and supports filters such as
-`[all]` and `[in]`; it does not promise response order or say order is meaningful.
-The taxonomy/Entry references likewise provide no ordering guarantee for concept
-assignments.
+Reviewed 2026-09-03 against Contentful's current published references and
+`contentful-management.js` v12.15.0 commit
+[`cc096a3`](https://github.com/contentful/contentful-management.js/tree/cc096a337f0e1db6114e8da645d69bb6eb90f11c).
 
-The first-party client types both properties as arrays in
-[`MetadataProps`](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/common-types.ts#L486-L489).
-The Entry adapter deep-copies and sends the caller's metadata without sorting,
-and wraps returned Entry data without semantic normalization. This shows that the
-client round-trips array order; it does **not** show that CMA guarantees that
-order or that users assign semantic meaning to it.
+The [Entry](https://www.contentful.com/developers/docs/references/content-management-api/entries/),
+[Tags](https://www.contentful.com/developers/docs/references/content-management-api/tags/#tags-on-entries-and-assets),
+and [Taxonomy](https://www.contentful.com/developers/docs/references/content-management-api/taxonomy/#concepts-on-entries)
+references describe both properties as lists of links, but do not define order
+or repeated-link semantics. These are **C** sources. The first-party client
+models both as arrays in
+[`MetadataProps`](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/common-types.ts#L486-L489),
+[sends supplied metadata unchanged](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/entry.ts#L133-L155),
+and [wraps returned data](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/entities/entry.ts#L64-L68)
+without normalizing it. That is **D** evidence about the client, not a CMA
+preservation guarantee.
 
-The sanitized live probe below used three tags. CMA returned the request order in
-the immediate Create and Update responses. After an Update submitted the same
-three tag assignments in reverse or mixed order, however, the next GET and the
-subsequent Publish response returned the original assignment order. Repeated GETs
-were stable in that order. This is direct **E** evidence that tag request order is
-not preserved across lifecycle boundaries. It does not establish a documented
-set contract, nor does it establish concept behavior.
+### Sanitized direct observations
 
-The public representation choices remain materially different:
+The **E** probe used separate disposable Entries and activated Content Types for
+three private tags and three concepts in a disposable concept scheme. Symbols
+identify resources by creation order. For each property, the first unique
+submission created the Entry; the remaining three submissions used full-body PUT
+at the exact current version. Each mutation was followed by GET, whole-Entry
+Publish, and another GET.
 
-- keep Lists and compare metadata as unordered while preserving a stable
-  practitioner representation (no schema migration, moderate custom logic);
-- migrate Lists to Sets (clean unordered model, but public type/state addressing
-  and migration compatibility impact);
-- retain order-sensitive Lists and document stable ordering as a provider
-  assumption (no implementation churn, but possible false diffs if CMA reorders).
+| Property | Unique submissions | Duplicate submissions | Immediate responses | Later GET and Publish responses |
+| --- | --- | --- | --- | --- |
+| Tags | `T1,T2,T3`; `T3,T1,T2` | `T1,T2,T1`; `T2,T1,T2` | Echoed each submission | `T1,T2,T3` after unique; `T1,T2` after duplicate |
+| Concepts | `C1,C2,C3`; `C3,C1,C2` | `C1,C2,C1`; `C2,C1,C2` | Echoed each submission | `C1,C2,C3` after unique; `C1,C2` after duplicate |
 
-Because actual CMA reordering is observed, the resource keeps Lists for schema
-compatibility but compares metadata without regard to order while preserving
-duplicate multiplicity. It preserves the configured or prior order when the
-assignments are otherwise equivalent. Concept ordering remains an explicit
-provider assumption because the live probe could not exercise it.
+All eight mutations succeeded. For both properties, mutation responses echoed
+submitted order and duplicates;
+GET and Publish restored the first assignment order and reduced repeated links
+to one occurrence. Neither characteristic was therefore durable. The matching
+tag and concept results were measured independently. They do not establish a
+documented set contract or a general canonical-order rule.
 
-## Sanitized live CMA probe
-
-This direct **E** probe used credentials from the ignored example repository.
-No access token, space/environment identifier, Entry identifier, tag identifier,
-Content Type identifier, locale, or taxonomy identifier was logged or retained.
-All objects created in the space used a unique per-run suffix.
-
-The operations and response status classes were:
-
-1. Read the target environment and default locale (`200`), and read up to three
-   existing organization concepts (`200`, read-only).
-2. Create three private, environment-scoped tags (`201` each).
-3. Try to create a disposable Content Type referring directly to the three
-   existing concepts. CMA rejected that shape with `422`; no organization-level
-   taxonomy object was created or modified. Retry without taxonomy succeeded
-   (`201`), and activation succeeded (`200`). Concept ordering was therefore not
-   probed.
-4. Create an Entry at a caller-selected ID with a PUT containing
-   `X-Contentful-Content-Type` and deliberately no `X-Contentful-Version`
-   (`201`). This directly confirms that the documented and first-party
-   create-with-ID request shape is accepted by the associated live CMA.
-5. Publish the returned draft version (`200`), perform a full-body Update with
-   the three tag links reversed (`200`), publish (`200`), then perform another
-   full-body Update in a mixed tag order (`200`) and publish (`200`). Repeated
-   GETs were made after each publication and around the reverse-order draft.
-
-The sanitized version tuples were:
-
-| Boundary | `version` | `publishedVersion` |
-| --- | ---: | ---: |
-| Create response | 1 | absent |
-| First Publish response and five GETs | 2 | 1 |
-| Reverse-order Update response and three draft GETs | 3 | 1 |
-| Second Publish response and five GETs | 4 | 3 |
-| Mixed-order Update response | 5 | 3 |
-| Third Publish response and five GETs | 6 | 5 |
-
-All three rounds exhibited the normal `+1` arithmetic. This strengthens the
-repeated-live-observation class **E** only; it does not resolve the absence of a
-documented arithmetic guarantee and therefore does not settle the strict versus
-tolerant post-publication policy.
-
-The tags were labelled symbolically by creation order as `T1`, `T2`, and `T3`:
-
-| Boundary | Request order | Response/GET order |
-| --- | --- | --- |
-| Create response, first Publish, five GETs | `T1,T2,T3` | `T1,T2,T3` |
-| Reverse full-body Update response | `T3,T2,T1` | `T3,T2,T1` |
-| Three GETs of that draft | no new order submitted | `T1,T2,T3` |
-| Second Publish response and five GETs | no new order submitted | `T1,T2,T3` |
-| Mixed full-body Update response | `T2,T1,T3` | `T2,T1,T3` |
-| Third Publish response and five GETs | no new order submitted | `T1,T2,T3` |
-
-Thus the immediate mutation response echoed request order, while later CMA reads
-and publication canonicalized the unchanged assignments to an older assignment
-order. Tests should not model metadata List order as stable across these
-boundaries.
+The probe covered one account on the standard global CMA endpoint, three private
+tags, and three concepts in one scheme. It did not cover other endpoints, public
+tags, Assets, PATCH, locale-based publishing, concurrent mutations, or other
+collection sizes. No credential or real identifier is retained here. All
+disposable objects were removed; individual GETs returned HTTP 404 and a
+collection scan found no matching identifier prefix. No non-disposable resource
+or access-control setting was modified.
 
 A separate sanitized [whole-Entry unpublish probe](entry-unpublish-version.md)
 observed HTTP 200, an Entry response whose `version` advanced beyond the pending
