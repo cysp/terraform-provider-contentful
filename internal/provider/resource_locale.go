@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -67,8 +68,15 @@ func (r *localeResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	defer cancel()
 
-	params := plan.ToCreateLocaleParams()
-	request := plan.ToLocaleData()
+	params, paramsDiagnostics := plan.ToCreateLocaleParams(path.Empty())
+	resp.Diagnostics.Append(paramsDiagnostics...)
+
+	request, requestDiagnostics := plan.ToLocaleData(path.Empty())
+	resp.Diagnostics.Append(requestDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	response, err := r.providerData.client.CreateLocale(ctx, &request, params)
 
@@ -188,6 +196,16 @@ func (r *localeResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	defer cancel()
 
+	params, paramsDiagnostics := plan.ToPutLocaleParams(path.Empty())
+	resp.Diagnostics.Append(paramsDiagnostics...)
+
+	request, requestDiagnostics := plan.ToLocaleData(path.Empty())
+	resp.Diagnostics.Append(requestDiagnostics...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	version, versionDiagnostics := requiredPrivateVersion(ctx, req.Private)
 	resp.Diagnostics.Append(versionDiagnostics...)
 
@@ -195,8 +213,7 @@ func (r *localeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	params := plan.ToPutLocaleParams(version)
-	request := plan.ToLocaleData()
+	params.XContentfulVersion = version
 
 	response, err := r.providerData.client.PutLocale(ctx, &request, params)
 

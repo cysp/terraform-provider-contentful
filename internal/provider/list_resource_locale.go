@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -52,34 +53,34 @@ func (r *localeListResource) List(ctx context.Context, req list.ListRequest, str
 		return
 	}
 
-	stream.Results = paginateContentfulCollectionItemsAsListResults(ctx, req,
-		"Failed to list locales",
-		func(ctx context.Context, skip int64, limit int64) (cm.GetLocalesRes, error) {
-			pageParams := params
-			pageParams.Skip = cm.NewOptInt64(skip)
-			pageParams.Limit = cm.NewOptInt64(limit)
+	fetchPage := func(ctx context.Context, skip int64, limit int64) (cm.GetLocalesRes, error) {
+		pageParams := params
+		pageParams.Skip = cm.NewOptInt64(skip)
+		pageParams.Limit = cm.NewOptInt64(limit)
 
-			return r.providerData.client.GetLocales(ctx, pageParams)
-		},
-		func(item cm.Locale) list.ListResult {
-			result := req.NewListResult(ctx)
-
-			result.DisplayName = item.Name
-
-			result.Diagnostics.Append(result.Identity.Set(ctx, LocaleIdentityModel{
+		return r.providerData.client.GetLocales(ctx, pageParams)
+	}
+	newResult := func(item cm.Locale) list.ListResult {
+		return newListResultFromResponse(
+			ctx,
+			req,
+			item.Name,
+			LocaleIdentityModel{
 				SpaceID:       types.StringValue(item.Sys.Space.Sys.ID),
 				EnvironmentID: types.StringValue(item.Sys.Environment.Sys.ID),
 				LocaleID:      types.StringValue(item.Sys.ID),
-			})...)
+			},
+			func() (LocaleModel, diag.Diagnostics) {
+				return NewLocaleResourceModelFromResponse(ctx, item)
+			},
+		)
+	}
 
-			if req.IncludeResource {
-				responseModel, responseModelDiags := NewLocaleResourceModelFromResponse(ctx, item)
-				result.Diagnostics.Append(responseModelDiags...)
-
-				result.Diagnostics.Append(result.Resource.Set(ctx, responseModel)...)
-			}
-
-			return result
-		},
+	stream.Results = paginateContentfulCollectionItemsAsListResults(
+		ctx,
+		req,
+		"Failed to list locales",
+		fetchPage,
+		newResult,
 	)
 }

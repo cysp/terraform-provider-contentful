@@ -136,6 +136,30 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 			},
 			expectedPath: "target_environment_id",
 		},
+		"locale": {
+			model: LocaleModel{
+				IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
+				LocaleIdentityModel: LocaleIdentityModel{
+					SpaceID:       types.StringValue("space"),
+					EnvironmentID: types.StringValue("environment"),
+					LocaleID:      types.StringUnknown(),
+				},
+				Name:                 types.StringUnknown(),
+				Code:                 types.StringValue("en-AU"),
+				FallbackCode:         types.StringNull(),
+				ContentDeliveryAPI:   types.BoolValue(true),
+				ContentManagementAPI: types.BoolValue(true),
+				Optional:             types.BoolValue(false),
+				Default:              types.BoolUnknown(),
+				Timeouts:             TimeoutsNull(),
+			},
+			resourceSchema: LocaleResourceSchema(ctx),
+			create: func(client *cm.Client, request resource.CreateRequest, response *resource.CreateResponse) {
+				implementation := localeResource{providerData: ContentfulProviderData{client: client}}
+				implementation.Create(ctx, request, response)
+			},
+			expectedPath: "name",
+		},
 		"entry": {
 			model: EntryModel{
 				IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
@@ -390,6 +414,30 @@ func TestUpdateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 				implementation.Update(ctx, request, response)
 			},
 			expectedPath: "target_environment_id",
+		},
+		"locale": {
+			model: LocaleModel{
+				IDIdentityModel: IDIdentityModel{ID: types.StringValue("space/environment/locale")},
+				LocaleIdentityModel: LocaleIdentityModel{
+					SpaceID:       types.StringValue("space"),
+					EnvironmentID: types.StringValue("environment"),
+					LocaleID:      types.StringValue("locale"),
+				},
+				Name:                 types.StringUnknown(),
+				Code:                 types.StringValue("en-AU"),
+				FallbackCode:         types.StringNull(),
+				ContentDeliveryAPI:   types.BoolValue(true),
+				ContentManagementAPI: types.BoolValue(true),
+				Optional:             types.BoolValue(false),
+				Default:              types.BoolValue(false),
+				Timeouts:             TimeoutsNull(),
+			},
+			resourceSchema: LocaleResourceSchema(ctx),
+			update: func(client *cm.Client, request resource.UpdateRequest, response *resource.UpdateResponse) {
+				implementation := localeResource{providerData: ContentfulProviderData{client: client}}
+				implementation.Update(ctx, request, response)
+			},
+			expectedPath: "name",
 		},
 		"resource provider": {
 			model: ResourceProviderModel{
