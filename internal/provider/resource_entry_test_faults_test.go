@@ -194,7 +194,8 @@ type entryRateLimitAdapter struct {
 }
 
 func (h *entryRejectedPublishAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	if request.Method == http.MethodPut && strings.HasSuffix(request.URL.Path, "/entries/entry/published") && h.shot.take() {
+	if request.Method == http.MethodPut && strings.HasPrefix(request.URL.Path, entryTestCollectionPath+"/") &&
+		strings.HasSuffix(request.URL.Path, "/published") && h.shot.take() {
 		message := "injected publish failure"
 		_ = cmt.WriteContentfulManagementErrorResponse(responseWriter, http.StatusBadRequest, "BadRequest", &message, nil)
 

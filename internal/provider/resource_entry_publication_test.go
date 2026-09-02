@@ -42,8 +42,11 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftWithoutRefresh(t *testin
 			{
 				PreConfig: func() {
 					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-					require.Equal(t, "2", update.version)
-					require.JSONEq(t, `{"en-US":"two"}`, string(update.fields["managed"]))
+					require.True(t, update.versionPresent)
+					require.Equal(t, []string{"2"}, update.versionValues)
+					require.False(t, update.contentTypePresent, "Entry Update must omit X-Contentful-Content-Type")
+					require.Empty(t, update.contentTypeValues)
+					require.JSONEq(t, `{"fields":{"managed":{"en-US":"two"}},"metadata":{"concepts":[],"tags":[]}}`, string(update.body))
 					require.Equal(t, "3", publish.version)
 					recorder.reset()
 				},
@@ -300,49 +303,136 @@ func TestAccEntryResourceAmbiguousDraftWriteIsNotClaimedAfterRefresh(t *testing.
 func TestAccEntryResourceCreatePublishFailureRecoversExactDraft(t *testing.T) {
 	t.Parallel()
 
-	fixture := newEntryAcceptanceFixture(t)
-	server, recorder := fixture.server, fixture.recorder
-	fault := &entryRejectedPublishAdapter{delegate: server}
-	recorder.delegate = fault
-	config := managedEntryConfig("one")
-
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
-		Steps: []resource.TestStep{
-			{
-				PreConfig: func() {
-					fault.shot.arm()
-				},
-				Config:             config,
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				PreConfig: func() {
-					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-					require.False(t, update.versionPresent)
-					require.Empty(t, update.version)
-					require.True(t, publish.versionPresent)
-					require.Equal(t, "1", publish.version)
-					recorder.reset()
-				},
-				Config: config,
-				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionUpdate),
-				}},
-				Check: func(state *terraform.State) error {
-					requests := recorder.snapshot()
-					require.Len(t, requests, 1, "Create recovery must not repeat the confirmed draft PUT")
-					requireEntryPublish(t, requests[0])
-					require.Equal(t, http.MethodPut, requests[0].method)
-					require.True(t, requests[0].versionPresent)
-					require.Equal(t, "1", requests[0].version)
-					require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "1")(state))
-
-					return nil
-				},
-			},
+	tests := map[string]struct {
+		config      string
+		draftMethod string
+		draftPath   string
+	}{
+		"generated ID": {
+			config: `
+resource "contentful_entry" "test" {
+  space_id        = "space"
+  environment_id  = "environment"
+  content_type_id = "article"
+  fields = { managed = jsonencode({ "en-US" = "one" }) }
+}
+`,
+			draftMethod: http.MethodPost,
+			draftPath:   entryTestCollectionPath,
 		},
-	})
+		"specified ID": {
+			config:      managedEntryConfig("one"),
+			draftMethod: http.MethodPut,
+			draftPath:   entryTestUpdatePath,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			fixture := newEntryAcceptanceFixture(t)
+			recorder := fixture.recorder
+			fault := &entryRejectedPublishAdapter{delegate: fixture.server}
+			recorder.delegate = fault
+
+			var entryID, draftVersion string
+
+			requirePublish := func(request entryMutationRequest) {
+				t.Helper()
+
+				require.Equal(t, http.MethodPut, request.method)
+				require.Equal(t, entryTestCollectionPath+"/"+entryID+"/published", request.path)
+				require.True(t, request.versionPresent)
+				require.Len(t, request.versionValues, 1)
+				require.NotEmpty(t, request.version)
+				require.False(t, request.contentTypePresent)
+				require.Empty(t, request.contentTypeValues)
+				require.Empty(t, request.body)
+				require.Zero(t, request.contentLength)
+			}
+
+			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+				Steps: []resource.TestStep{
+					{
+						PreConfig:          fault.shot.arm,
+						Config:             test.config,
+						ExpectNonEmptyPlan: true,
+						Check: func(state *terraform.State) error {
+							captureEntryID := resource.TestCheckResourceAttrWith("contentful_entry.test", "entry_id", func(value string) error {
+								entryID = value
+
+								return nil
+							})
+
+							err := captureEntryID(state)
+							if err != nil {
+								return err
+							}
+
+							require.NotEmpty(t, entryID)
+
+							requests := recorder.snapshot()
+							require.Len(t, requests, 2, "Create must send one draft mutation and one Publish attempt")
+							draft, publish := requests[0], requests[1]
+							require.Equal(t, test.draftMethod, draft.method)
+							require.Equal(t, test.draftPath, draft.path)
+							require.False(t, draft.versionPresent, "Entry Create must omit X-Contentful-Version")
+							require.Empty(t, draft.versionValues)
+							require.True(t, draft.contentTypePresent)
+							require.Equal(t, []string{"article"}, draft.contentTypeValues)
+							require.JSONEq(t, `{"fields":{"managed":{"en-US":"one"}},"metadata":{"concepts":[],"tags":[]}}`, string(draft.body))
+							require.Positive(t, draft.contentLength)
+							requirePublish(publish)
+							draftVersion = publish.version
+							require.NotEmpty(t, draftVersion)
+
+							recorder.reset()
+
+							return nil
+						},
+					},
+					{
+						Config: test.config,
+						ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+							plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionUpdate),
+						}},
+						Check: func(state *terraform.State) error {
+							requests := recorder.snapshot()
+							require.Len(t, requests, 1, "Create recovery must not repeat the confirmed draft mutation or delete the draft")
+							requirePublish(requests[0])
+							require.Equal(t, draftVersion, requests[0].version)
+							require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "entry_id", entryID)(state))
+							require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", draftVersion)(state))
+
+							version, err := strconv.Atoi(draftVersion)
+							require.NoError(t, err)
+							entry := getTestEntryForIDs(t, fixture.server, "space", "environment", entryID)
+							require.Equal(t, version, entry.Sys.PublishedVersion.Or(0))
+							require.Equal(t, "article", entry.Sys.ContentType.Sys.ID)
+							require.JSONEq(t, `{"en-US":"one"}`, string(entry.Fields.Value["managed"]))
+
+							recorder.reset()
+
+							return nil
+						},
+					},
+					{
+						Config: test.config,
+						ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+							plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
+						}},
+						Check: func(*terraform.State) error {
+							requireNoEntryMutations(t, recorder, "recovered Entry Create must converge")
+
+							return nil
+						},
+					},
+				},
+			})
+		})
+	}
 }
 
 func TestAccEntryResourceCreateUsesExactPositiveReturnedVersion(t *testing.T) {
