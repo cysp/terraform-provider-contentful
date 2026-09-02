@@ -2,13 +2,10 @@ package provider
 
 import (
 	"context"
-	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -28,6 +25,10 @@ type localeResource struct {
 	providerData ContentfulProviderData
 }
 
+func localeIdentityAttributeNames() []string {
+	return []string{"space_id", "environment_id", "locale_id"}
+}
+
 func (r *localeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_locale"
 }
@@ -41,21 +42,11 @@ func (r *localeResource) Configure(_ context.Context, req resource.ConfigureRequ
 }
 
 func (r *localeResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"space_id":       identityschema.StringAttribute{RequiredForImport: true},
-			"environment_id": identityschema.StringAttribute{RequiredForImport: true},
-			"locale_id":      identityschema.StringAttribute{RequiredForImport: true},
-		},
-	}
+	resp.IdentitySchema = resourceIdentitySchema(localeIdentityAttributeNames())
 }
 
 func (r *localeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ImportStatePassthroughMultipartID(ctx, []path.Path{
-		path.Root("space_id"),
-		path.Root("environment_id"),
-		path.Root("locale_id"),
-	}, req, resp)
+	ImportStatePassthroughMultipartID(ctx, localeIdentityAttributeNames(), req, resp)
 }
 
 func (r *localeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -67,14 +58,13 @@ func (r *localeResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Create(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceCreateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := plan.ToCreateLocaleParams()
@@ -89,7 +79,7 @@ func (r *localeResource) Create(ctx context.Context, req resource.CreateRequest,
 		"err":      err,
 	})
 
-	currentVersion := 1
+	version := 1
 
 	var data LocaleModel
 
@@ -99,24 +89,25 @@ func (r *localeResource) Create(ctx context.Context, req resource.CreateRequest,
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to create locale", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
-	var identityModel LocaleIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, localeIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *localeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -128,16 +119,13 @@ func (r *localeResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Read(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := state.ToGetLocaleParams()
@@ -150,43 +138,36 @@ func (r *localeResource) Read(ctx context.Context, req resource.ReadRequest, res
 		"err":      err,
 	})
 
-	currentVersion := 0
+	if contentfulResponseIsNotFound(response) {
+		resp.Diagnostics.AddWarning("Failed to read locale", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.State.RemoveResource(ctx)
 
-	var data LocaleModel
-
-	switch response := response.(type) {
-	case *cm.Locale:
-		responseModel, responseModelDiags := NewLocaleResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
-		currentVersion = response.Sys.Version
-
-	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				resp.Diagnostics.AddWarning("Failed to read locale", util.ErrorDetailFromContentfulManagementResponse(response, err))
-				resp.State.RemoveResource(ctx)
-
-				return
-			}
-		}
-
-		resp.Diagnostics.AddError("Failed to read locale", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		return
 	}
 
-	data.Timeouts = state.Timeouts
+	locale, ok := response.(*cm.Locale)
+	if !ok {
+		resp.Diagnostics.AddError("Failed to read locale", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-	var identityModel LocaleIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+		return
+	}
+
+	data, dataDiagnostics := NewLocaleResourceModelFromResponse(ctx, *locale)
+	resp.Diagnostics.Append(dataDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	data.Timeouts = state.Timeouts
+
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, localeIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", locale.Sys.Version)...)
 }
 
 func (r *localeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -198,21 +179,23 @@ func (r *localeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	timeout, timeoutDiagnostics := plan.Timeouts.Update(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var currentVersion int
+	version, versionDiagnostics := requiredPrivateVersion(ctx, req.Private)
+	resp.Diagnostics.Append(versionDiagnostics...)
 
-	resp.Diagnostics.Append(GetPrivateProviderData(ctx, req.Private, "version", &currentVersion)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	params := plan.ToPutLocaleParams(currentVersion)
+	params := plan.ToPutLocaleParams(version)
 	request := plan.ToLocaleData()
 
 	response, err := r.providerData.client.PutLocale(ctx, &request, params)
@@ -232,24 +215,25 @@ func (r *localeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
-		currentVersion = response.Response.Sys.Version
+		version = response.Response.Sys.Version
 
 	default:
 		resp.Diagnostics.AddError("Failed to update locale", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.Timeouts = plan.Timeouts
 
-	var identityModel LocaleIdentityModel
-	resp.Diagnostics.Append(CopyAttributeValues(ctx, &identityModel, &data)...)
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, localeIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identityModel)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", currentVersion)...)
+	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
 func (r *localeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -261,16 +245,13 @@ func (r *localeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	timeout, timeoutDiagnostics := state.Timeouts.Delete(ctx, defaultResourceOperationTimeout)
+	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	timeout = max(timeout, minimumStoredResourceOperationTimeout)
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	params := state.ToDeleteLocaleParams()
@@ -286,10 +267,8 @@ func (r *localeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	switch response := response.(type) {
 	case *cm.NoContent:
 	default:
-		if response, ok := response.(cm.StatusCodeResponse); ok {
-			if response.GetStatusCode() == http.StatusNotFound {
-				return
-			}
+		if contentfulResponseIsNotFound(response) {
+			return
 		}
 
 		resp.Diagnostics.AddError("Failed to delete locale", util.ErrorDetailFromContentfulManagementResponse(response, err))
