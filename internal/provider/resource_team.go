@@ -273,9 +273,17 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteTeam(ctx, cm.DeleteTeamParams{
+	params := cm.DeleteTeamParams{
 		OrganizationID: state.OrganizationID.ValueString(),
 		TeamID:         state.TeamID.ValueString(),
+	}
+
+	response, err := r.providerData.client.DeleteTeam(ctx, params)
+
+	tflog.Info(ctx, "team.delete", map[string]any{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {

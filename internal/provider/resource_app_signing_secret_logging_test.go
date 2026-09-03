@@ -110,6 +110,7 @@ func TestAppSigningSecretLifecycleRuntimeOutputExcludesValues(t *testing.T) {
 		"app_signing_secret.create",
 		"app_signing_secret.read",
 		"app_signing_secret.update",
+		"app_signing_secret.delete",
 	)
 	assertAppSigningSecretRuntimeOutputExcludes(t, logOutput.String(), []diag.Diagnostics{
 		createResponse.Diagnostics,
@@ -160,6 +161,7 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 			},
 		},
 		"delete": {
+			message: "app_signing_secret.delete",
 			run: func(t *testing.T, implementation *appSigningSecretResource, _ tfsdk.Plan, state tfsdk.State, identity *tfsdk.ResourceIdentity, logs *bytes.Buffer) diag.Diagnostics {
 				t.Helper()
 

@@ -261,9 +261,17 @@ func (r *appDefinitionResource) Delete(ctx context.Context, req resource.DeleteR
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteAppDefinition(ctx, cm.DeleteAppDefinitionParams{
+	params := cm.DeleteAppDefinitionParams{
 		OrganizationID:  state.OrganizationID.ValueString(),
 		AppDefinitionID: state.AppDefinitionID.ValueString(),
+	}
+
+	response, err := r.providerData.client.DeleteAppDefinition(ctx, params)
+
+	tflog.Info(ctx, "app_definition.delete", map[string]any{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {

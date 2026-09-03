@@ -296,6 +296,8 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
+	ctx = maskAppSigningSecretValues(ctx, state.Value)
+
 	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
@@ -305,9 +307,17 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteAppSigningSecret(ctx, cm.DeleteAppSigningSecretParams{
+	params := cm.DeleteAppSigningSecretParams{
 		OrganizationID:  state.OrganizationID.ValueString(),
 		AppDefinitionID: state.AppDefinitionID.ValueString(),
+	}
+
+	response, err := r.providerData.client.DeleteAppSigningSecret(ctx, params)
+
+	tflog.Info(ctx, "app_signing_secret.delete", map[string]any{
+		"params": params,
+		// "response": response, omitted to avoid logging sensitive values
+		"err": appSigningSecretLogError(err, state.Value),
 	})
 
 	switch response := response.(type) {
