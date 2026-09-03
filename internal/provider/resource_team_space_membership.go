@@ -246,9 +246,17 @@ func (r *teamSpaceMembershipResource) Delete(ctx context.Context, req resource.D
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteTeamSpaceMembership(ctx, cm.DeleteTeamSpaceMembershipParams{
+	params := cm.DeleteTeamSpaceMembershipParams{
 		SpaceID:               state.SpaceID.ValueString(),
 		TeamSpaceMembershipID: state.TeamSpaceMembershipID.ValueString(),
+	}
+
+	response, err := r.providerData.client.DeleteTeamSpaceMembership(ctx, params)
+
+	tflog.Info(ctx, "team_space_membership.delete", map[string]any{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {

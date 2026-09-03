@@ -228,6 +228,7 @@ func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req reso
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceTypeIdentityAttributeNames(), &data)...)
 }
 
+//nolint:dupl
 func (r *appDefinitionResourceTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state ResourceTypeModel
 
@@ -246,10 +247,18 @@ func (r *appDefinitionResourceTypeResource) Delete(ctx context.Context, req reso
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteResourceType(ctx, cm.DeleteResourceTypeParams{
+	params := cm.DeleteResourceTypeParams{
 		OrganizationID:  state.OrganizationID.ValueString(),
 		AppDefinitionID: state.AppDefinitionID.ValueString(),
 		ResourceTypeID:  state.ResourceTypeID.ValueString(),
+	}
+
+	response, err := r.providerData.client.DeleteResourceType(ctx, params)
+
+	tflog.Info(ctx, "resource_type.delete", map[string]any{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {

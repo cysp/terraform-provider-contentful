@@ -297,7 +297,6 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	resp.Diagnostics.Append(consistencyDiags...)
 }
 
-//nolint:dupl
 func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state WebhookModel
 
@@ -316,9 +315,17 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteWebhookDefinition(ctx, cm.DeleteWebhookDefinitionParams{
+	params := cm.DeleteWebhookDefinitionParams{
 		SpaceID:             state.SpaceID.ValueString(),
 		WebhookDefinitionID: state.WebhookID.ValueString(),
+	}
+
+	response, err := r.providerData.client.DeleteWebhookDefinition(ctx, params)
+
+	tflog.Info(ctx, "webhook.delete", map[string]any{
+		"params": params,
+		// "response": response, omitted to avoid logging sensitive values
+		"err": err,
 	})
 
 	switch response := response.(type) {

@@ -246,9 +246,17 @@ func (r *appDefinitionResourceProviderResource) Delete(ctx context.Context, req 
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteResourceProvider(ctx, cm.DeleteResourceProviderParams{
+	params := cm.DeleteResourceProviderParams{
 		OrganizationID:  state.OrganizationID.ValueString(),
 		AppDefinitionID: state.AppDefinitionID.ValueString(),
+	}
+
+	response, err := r.providerData.client.DeleteResourceProvider(ctx, params)
+
+	tflog.Info(ctx, "resource_provider.delete", map[string]any{
+		"params":   params,
+		"response": response,
+		"err":      err,
 	})
 
 	switch response := response.(type) {
