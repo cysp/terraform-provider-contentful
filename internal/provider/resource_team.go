@@ -93,10 +93,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	switch response := response.(type) {
 	case *cm.TeamStatusCode:
-		responseModel, responseModelDiags := NewTeamResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewTeamResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:
@@ -155,10 +152,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	var data TeamModel
 
 	if team, ok := response.(*cm.Team); ok {
-		responseModel, responseModelDiags := NewTeamResourceModelFromResponse(ctx, *team)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewTeamResourceModelFromResponse(*team)
 		version = team.Sys.Version
 	} else {
 		if contentfulResponseIsNotFound(response) {
@@ -238,10 +232,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	switch response := response.(type) {
 	case *cm.TeamStatusCode:
-		responseModel, responseModelDiags := NewTeamResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewTeamResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:

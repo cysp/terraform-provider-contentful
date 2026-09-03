@@ -97,13 +97,7 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	switch response := response.(type) {
 	case *cm.AppSigningSecretStatusCode:
-		mutationState, mutationStateDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(mutationStateDiags...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
+		mutationState := NewAppSigningSecretResourceModelFromResponse(response.Response)
 		if mutationState.Value.IsNull() && !plan.Value.IsUnknown() {
 			mutationState.Value = plan.Value
 		}
@@ -164,13 +158,7 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 	switch response := response.(type) {
 	case *cm.AppSigningSecret:
-		readState, readStateDiags := NewAppSigningSecretResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(readStateDiags...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
+		readState := NewAppSigningSecretResourceModelFromResponse(*response)
 		if readState.Value.IsNull() && !state.Value.IsUnknown() {
 			readState.Value = state.Value
 		}
@@ -247,13 +235,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	switch response := response.(type) {
 	case *cm.AppSigningSecretStatusCode:
-		mutationState, mutationStateDiags := NewAppSigningSecretResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(mutationStateDiags...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
+		mutationState := NewAppSigningSecretResourceModelFromResponse(response.Response)
 		if mutationState.Value.IsNull() {
 			if !plan.Value.IsUnknown() {
 				mutationState.Value = plan.Value

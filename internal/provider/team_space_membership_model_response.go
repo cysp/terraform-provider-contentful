@@ -1,16 +1,11 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewTeamSpaceMembershipResourceModelFromResponse(_ context.Context, response cm.TeamSpaceMembership) (TeamSpaceMembershipModel, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewTeamSpaceMembershipResourceModelFromResponse(response cm.TeamSpaceMembership) TeamSpaceMembershipModel {
 	spaceID := response.Sys.Space.Sys.ID
 	teamSpaceMembershipID := response.Sys.ID
 	teamID := response.Sys.Team.Sys.ID
@@ -34,5 +29,5 @@ func NewTeamSpaceMembershipResourceModelFromResponse(_ context.Context, response
 		model.Roles = roles
 	}
 
-	return model, diags
+	return model
 }

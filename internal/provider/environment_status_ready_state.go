@@ -15,21 +15,8 @@ func publishEnvironmentStatusReadyResponse(
 	response cm.Environment,
 	configuredTimeouts datasourcetimeouts.Value,
 ) (bool, diag.Diagnostics) {
-	model, diags := NewEnvironmentStatusReadyModelFromResponse(ctx, response)
-
-	return publishEnvironmentStatusReadyConversion(ctx, state, configuredTimeouts, model, diags)
-}
-
-func publishEnvironmentStatusReadyConversion(
-	ctx context.Context,
-	state *tfsdk.State,
-	configuredTimeouts datasourcetimeouts.Value,
-	model EnvironmentStatusReadyModel,
-	diags diag.Diagnostics,
-) (bool, diag.Diagnostics) {
-	if diags.HasError() {
-		return false, diags
-	}
+	model := NewEnvironmentStatusReadyModelFromResponse(response)
+	diags := diag.Diagnostics{}
 
 	model.Timeouts = configuredTimeouts
 	diags.Append(state.Set(ctx, &model)...)

@@ -96,10 +96,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 
 	switch response := response.(type) {
 	case *cm.ApiKeyStatusCode:
-		responseModel, responseModelDiags := NewDeliveryAPIKeyResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewDeliveryAPIKeyResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:
@@ -159,10 +156,7 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	switch response := response.(type) {
 	case *cm.ApiKey:
-		responseModel, responseModelDiags := NewDeliveryAPIKeyResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewDeliveryAPIKeyResourceModelFromResponse(*response)
 		version = response.Sys.Version
 
 	default:
@@ -246,10 +240,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 
 	switch response := response.(type) {
 	case *cm.ApiKeyStatusCode:
-		responseModel, responseModelDiags := NewDeliveryAPIKeyResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewDeliveryAPIKeyResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:

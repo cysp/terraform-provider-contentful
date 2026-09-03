@@ -8,7 +8,6 @@ import (
 	datasourcetimeouts "github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -19,69 +18,6 @@ func environmentStatusReadyTimeoutAttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"read": types.StringType,
 	}
-}
-
-func TestPublishEnvironmentStatusReadyConversionErrorDoesNotPublish(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-	state := tfsdk.State{Schema: EnvironmentStatusReadyDataSourceSchema(ctx)}
-	current := environmentStatusReadyTestModel(
-		types.StringValue("queued"),
-		datasourcetimeouts.Value{
-			Object: types.ObjectNull(environmentStatusReadyTimeoutAttributeTypes()),
-		},
-	)
-	require.False(t, state.Set(ctx, &current).HasError())
-	before := state.Raw
-	conversionDiags := diag.Diagnostics{
-		diag.NewWarningDiagnostic("Incomplete Contentful response", "conversion warning"),
-		diag.NewErrorDiagnostic("Malformed Contentful response", "conversion failed"),
-	}
-
-	continuePolling, diags := publishEnvironmentStatusReadyConversion(
-		ctx,
-		&state,
-		datasourcetimeouts.Value{Object: types.ObjectUnknown(environmentStatusReadyTimeoutAttributeTypes())},
-		EnvironmentStatusReadyModel{Status: types.StringUnknown()},
-		conversionDiags,
-	)
-
-	require.True(t, diags.HasError())
-	assert.False(t, continuePolling)
-	assert.Equal(t, conversionDiags, diags)
-	assert.True(t, before.Equal(state.Raw))
-}
-
-func TestPublishEnvironmentStatusReadyConversionWarningPublishes(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-	state := tfsdk.State{Schema: EnvironmentStatusReadyDataSourceSchema(ctx)}
-	configuredTimeouts := environmentStatusReadyTimeoutValue(types.StringUnknown())
-	conversionDiags := diag.Diagnostics{
-		diag.NewWarningDiagnostic("Incomplete Contentful response", "conversion warning"),
-	}
-
-	continuePolling, diags := publishEnvironmentStatusReadyConversion(
-		ctx,
-		&state,
-		configuredTimeouts,
-		environmentStatusReadyTestModel(types.StringValue("queued"), datasourcetimeouts.Value{}),
-		conversionDiags,
-	)
-
-	require.False(t, diags.HasError())
-	assert.True(t, continuePolling)
-	assert.Equal(t, conversionDiags, diags)
-
-	var published EnvironmentStatusReadyModel
-	require.False(t, state.Get(ctx, &published).HasError())
-	assert.Equal(t, types.StringValue("space/environment"), published.ID)
-	assert.Equal(t, types.StringValue("space"), published.SpaceID)
-	assert.Equal(t, types.StringValue("environment"), published.EnvironmentID)
-	assert.Equal(t, types.StringValue("queued"), published.Status)
-	assert.True(t, configuredTimeouts.Equal(published.Timeouts))
 }
 
 func TestPublishEnvironmentStatusReadyResponsePreservesTimeoutsAndControlsPolling(t *testing.T) {

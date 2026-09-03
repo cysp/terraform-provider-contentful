@@ -97,10 +97,7 @@ func (r *environmentResource) Create(ctx context.Context, req resource.CreateReq
 
 	switch response := response.(type) {
 	case *cm.EnvironmentStatusCode:
-		responseModel, responseModelDiags := NewEnvironmentResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewEnvironmentResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:
@@ -160,10 +157,7 @@ func (r *environmentResource) Read(ctx context.Context, req resource.ReadRequest
 
 	switch response := response.(type) {
 	case *cm.Environment:
-		responseModel, responseModelDiags := NewEnvironmentResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewEnvironmentResourceModelFromResponse(*response)
 		version = response.Sys.Version
 
 	default:
@@ -244,10 +238,7 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 
 	switch response := response.(type) {
 	case *cm.EnvironmentStatusCode:
-		responseModel, responseModelDiags := NewEnvironmentResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewEnvironmentResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:

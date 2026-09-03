@@ -95,10 +95,7 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 
 	switch response := response.(type) {
 	case *cm.EnvironmentAliasStatusCode:
-		responseModel, responseModelDiags := NewEnvironmentAliasResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewEnvironmentAliasResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:
@@ -120,7 +117,6 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 }
 
-//nolint:dupl
 func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state EnvironmentAliasModel
 
@@ -158,10 +154,7 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 
 	switch response := response.(type) {
 	case *cm.EnvironmentAlias:
-		responseModel, responseModelDiags := NewEnvironmentAliasResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewEnvironmentAliasResourceModelFromResponse(*response)
 		version = response.Sys.Version
 
 	default:
@@ -241,10 +234,7 @@ func (r *environmentAliasResource) Update(ctx context.Context, req resource.Upda
 
 	switch response := response.(type) {
 	case *cm.EnvironmentAliasStatusCode:
-		responseModel, responseModelDiags := NewEnvironmentAliasResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewEnvironmentAliasResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:

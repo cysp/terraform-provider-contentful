@@ -1,17 +1,12 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPersonalAccessTokenResourceModelFromResponse(_ context.Context, personalAccessToken cm.PersonalAccessToken, existingToken types.String, expiresIn types.Int64) (PersonalAccessTokenModel, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewPersonalAccessTokenResourceModelFromResponse(personalAccessToken cm.PersonalAccessToken, existingToken types.String, expiresIn types.Int64) PersonalAccessTokenModel {
 	model := PersonalAccessTokenModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(personalAccessToken.Sys.ID),
 	}
@@ -30,5 +25,5 @@ func NewPersonalAccessTokenResourceModelFromResponse(_ context.Context, personal
 
 	model.RevokedAt = timetypes.NewRFC3339TimePointerValue(personalAccessToken.RevokedAt.ValueTimePointer())
 
-	return model, diags
+	return model
 }

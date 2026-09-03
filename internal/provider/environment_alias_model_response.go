@@ -1,16 +1,11 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEnvironmentAliasResourceModelFromResponse(_ context.Context, environmentAlias cm.EnvironmentAlias) (EnvironmentAliasModel, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewEnvironmentAliasResourceModelFromResponse(environmentAlias cm.EnvironmentAlias) EnvironmentAliasModel {
 	spaceID := environmentAlias.Sys.Space.Sys.ID
 	environmentAliasID := environmentAlias.Sys.ID
 	targetEnvironmentID := environmentAlias.Environment.Sys.ID
@@ -25,5 +20,5 @@ func NewEnvironmentAliasResourceModelFromResponse(_ context.Context, environment
 
 	model.TargetEnvironmentID = types.StringValue(targetEnvironmentID)
 
-	return model, diags
+	return model
 }

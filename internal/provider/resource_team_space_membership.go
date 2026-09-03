@@ -95,10 +95,7 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 
 	switch response := response.(type) {
 	case *cm.TeamSpaceMembershipStatusCode:
-		responseModel, responseModelDiags := NewTeamSpaceMembershipResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewTeamSpaceMembershipResourceModelFromResponse(response.Response)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -153,10 +150,7 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 
 	switch response := response.(type) {
 	case *cm.TeamSpaceMembership:
-		responseModel, responseModelDiags := NewTeamSpaceMembershipResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewTeamSpaceMembershipResourceModelFromResponse(*response)
 
 	default:
 		if contentfulResponseIsNotFound(response) {
@@ -226,10 +220,7 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 
 	switch response := response.(type) {
 	case *cm.TeamSpaceMembershipStatusCode:
-		responseModel, responseModelDiags := NewTeamSpaceMembershipResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewTeamSpaceMembershipResourceModelFromResponse(response.Response)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))

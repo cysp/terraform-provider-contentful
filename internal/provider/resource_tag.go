@@ -88,10 +88,7 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	switch response := response.(type) {
 	case *cm.TagStatusCode:
-		responseModel, responseModelDiags := NewTagResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewTagResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:
@@ -147,10 +144,7 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 
 	switch response := response.(type) {
 	case *cm.Tag:
-		responseModel, responseModelDiags := NewTagResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewTagResourceModelFromResponse(*response)
 		version = response.Sys.Version
 
 	default:
@@ -226,10 +220,7 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	switch response := response.(type) {
 	case *cm.TagStatusCode:
-		responseModel, responseModelDiags := NewTagResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewTagResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:

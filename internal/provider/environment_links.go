@@ -35,11 +35,9 @@ func ToEnvironmentLinks(_ context.Context, valuePath path.Path, value TypedList[
 	return environments, diags
 }
 
-func NewEnvironmentIDsListValueFromEnvironmentLinks(_ context.Context, _ path.Path, environmentLinks []cm.EnvironmentLink) (TypedList[types.String], diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewEnvironmentIDsListValueFromEnvironmentLinks(environmentLinks []cm.EnvironmentLink) TypedList[types.String] {
 	if environmentLinks == nil {
-		return NewTypedListNull[types.String](), diags
+		return NewTypedListNull[types.String]()
 	}
 
 	listElementValues := make([]types.String, len(environmentLinks))
@@ -50,5 +48,5 @@ func NewEnvironmentIDsListValueFromEnvironmentLinks(_ context.Context, _ path.Pa
 
 	list := NewTypedList(listElementValues)
 
-	return list, diags
+	return list
 }

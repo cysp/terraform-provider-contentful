@@ -1,16 +1,11 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewResourceTypeResourceModelFromResponse(_ context.Context, response cm.ResourceType) (ResourceTypeModel, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewResourceTypeResourceModelFromResponse(response cm.ResourceType) ResourceTypeModel {
 	organizationID := response.Sys.Organization.Sys.ID
 	appDefinitionID := response.Sys.AppDefinition.Sys.ID
 	resourceProviderID := response.Sys.ResourceProvider.Sys.ID
@@ -51,5 +46,5 @@ func NewResourceTypeResourceModelFromResponse(_ context.Context, response cm.Res
 
 	model.DefaultFieldMapping = &defaultFieldMapping
 
-	return model, diags
+	return model
 }

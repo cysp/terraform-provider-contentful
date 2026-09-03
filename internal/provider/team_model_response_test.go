@@ -7,7 +7,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNewTeamResourceModelFromResponseDescription(t *testing.T) {
@@ -35,12 +34,11 @@ func TestNewTeamResourceModelFromResponseDescription(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model, diags := provider.NewTeamResourceModelFromResponse(t.Context(), cm.Team{
+			model := provider.NewTeamResourceModelFromResponse(cm.Team{
 				Sys:         cm.NewTeamSys("organization-id", "team-id"),
 				Name:        "Test Team",
 				Description: test.description,
 			})
-			require.False(t, diags.HasError())
 
 			assert.Equal(t, test.expected, model.Description)
 		})
