@@ -280,7 +280,7 @@ func (v EditorInterfaceSidebarValue) SchemaAttributes(_ context.Context) map[str
 			Optional:    true,
 		},
 		"disabled": schema.BoolAttribute{
-			Description: "Whether this sidebar widget is disabled.",
+			Description: "Whether this sidebar widget is disabled. Defaults to `false`.",
 			Optional:    true,
 			Computed:    true,
 			Default:     booldefault.StaticBool(false),

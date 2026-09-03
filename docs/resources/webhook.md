@@ -60,9 +60,9 @@ resource "contentful_webhook" "this" {
 
 ### Optional
 
-- `active` (Boolean) Whether the webhook is active.
+- `active` (Boolean) Whether the webhook is active. Defaults to `true`.
 - `filters` (Attributes List) (see [below for nested schema](#nestedatt--filters))
-- `headers` (Attributes Map) (see [below for nested schema](#nestedatt--headers))
+- `headers` (Attributes Map) HTTP headers sent by the webhook. When omitted on Create, Terraform adopts the headers returned by Contentful. When omitted on Update, Terraform preserves known prior headers. Set to `{}` to remove all headers. (see [below for nested schema](#nestedatt--headers))
 - `http_basic_password` (String, Sensitive) HTTP Basic authentication password. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. Terraform marks the value sensitive, which obscures CLI output but does not encrypt or omit plan or state data.
 - `http_basic_username` (String) HTTP Basic authentication username.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
@@ -157,7 +157,7 @@ Required:
 
 Optional:
 
-- `secret` (Boolean)
+- `secret` (Boolean) Whether Contentful treats the header value as secret. Defaults to `false`.
 
 
 <a id="nestedatt--timeouts"></a>

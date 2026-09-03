@@ -46,6 +46,30 @@ Update occurred, and each successfully created probe was deleted.
 | `PUT /spaces/{space}/webhook_definitions/{webhook}` with `topics: []` | 422 | Same empty-topic validation shape as Create; the existing Webhook remained unchanged |
 | `DELETE /spaces/{space}/webhook_definitions/{webhook}` | 204 | The disposable probes were removed |
 
+Separate disposable Webhook probes recorded only response-member presence,
+selected Boolean values, and whether an ordinary test header value matched the
+request. They did not retain the bearer token, space ID, generated Webhook IDs,
+request IDs, or unrelated Webhook data.
+
+| Request | Status | Structural observation |
+| --- | ---: | --- |
+| Create with `active` and `headers` omitted | 200 | Response contained `active: true` and `headers: []` |
+| Update with `active` omitted | 200 | Response contained `active: true` |
+| Update after storing a header, with `headers` omitted | 200 | Response contained `headers: []`; the prior header was absent |
+| Create with a header whose `secret` member was omitted | 200 | Response omitted `secret` but retained the ordinary header value unchanged |
+| Create with a header whose `secret` member was `false` | 200 | Response contained Boolean `secret: false` and retained the ordinary value |
+
+A disposable Content Type was created and activated to make its Editor
+Interface available. Two separate Editor Interface updates compared an omitted
+sidebar `disabled` member with explicit `false`. The Content Type was
+deactivated and deleted afterward. The retained probe record contains no
+credentials or resource identifiers.
+
+| Request | Status | Structural observation |
+| --- | ---: | --- |
+| Editor Interface update with `sidebar[].disabled` omitted | 200 | Response omitted `disabled` |
+| Editor Interface update with `sidebar[].disabled: false` | 200 | Response contained Boolean `disabled: false` |
+
 A disposable Delivery API key was created in an existing disposable test space,
 updated once, sent one stale update, and deleted. Only status codes, `sys.type`,
 `sys.version`, response-member presence, and the error classification were
