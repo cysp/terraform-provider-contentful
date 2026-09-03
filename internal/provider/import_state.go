@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -44,8 +45,8 @@ func ImportStatePassthroughMultipartID(ctx context.Context, identityAttributeNam
 		attrValues := strings.Split(req.ID, "/")
 		if len(attrPaths) != len(attrValues) {
 			resp.Diagnostics.AddError(
-				"Resource Import Passthrough Multipart ID Mismatch",
-				"",
+				"Invalid import ID",
+				fmt.Sprintf("Expected %d slash-separated import ID components, but received %d.", len(attrPaths), len(attrValues)),
 			)
 
 			return
@@ -54,7 +55,7 @@ func ImportStatePassthroughMultipartID(ctx context.Context, identityAttributeNam
 		attributes := make([]importAttribute, 0, len(attrPaths))
 		for i, attrPath := range attrPaths {
 			if attrValues[i] == "" {
-				resp.Diagnostics.AddAttributeError(attrPath, "Resource Import Passthrough Multipart ID Mismatch", "Import identity components must not be empty.")
+				resp.Diagnostics.AddAttributeError(attrPath, "Invalid import ID", "Import ID components must not be empty.")
 
 				return
 			}
@@ -68,7 +69,7 @@ func ImportStatePassthroughMultipartID(ctx context.Context, identityAttributeNam
 	}
 
 	if req.Identity == nil {
-		resp.Diagnostics.AddError("Resource Import Passthrough Multipart ID Mismatch", "No import identity was provided.")
+		resp.Diagnostics.AddError("Missing import identity", "No import identity was provided.")
 
 		return
 	}
@@ -85,7 +86,7 @@ func ImportStatePassthroughMultipartID(ctx context.Context, identityAttributeNam
 		}
 
 		if identityValue.IsUnknown() || identityValue.IsNull() || identityValue.ValueString() == "" {
-			resp.Diagnostics.AddAttributeError(attrPath, "Resource Import Passthrough Multipart ID Mismatch", "Import identity components must be known, non-null, and non-empty.")
+			resp.Diagnostics.AddAttributeError(attrPath, "Invalid import identity", "Import identity components must be known, non-null, and non-empty.")
 
 			return
 		}
