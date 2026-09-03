@@ -1,18 +1,12 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewDeliveryAPIKeyResourceModelFromResponse(ctx context.Context, apiKey cm.ApiKey) (DeliveryAPIKeyModel, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewDeliveryAPIKeyResourceModelFromResponse(apiKey cm.ApiKey) DeliveryAPIKeyModel {
 	spaceID := apiKey.Sys.Space.Sys.ID
 	apiKeyID := apiKey.Sys.ID
 
@@ -29,10 +23,7 @@ func NewDeliveryAPIKeyResourceModelFromResponse(ctx context.Context, apiKey cm.A
 
 	model.AccessToken = types.StringValue(apiKey.AccessToken)
 
-	environmentsList, environmentsListDiags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, path.Root("environments"), apiKey.Environments)
-	diags.Append(environmentsListDiags...)
-
-	model.Environments = environmentsList
+	model.Environments = NewEnvironmentIDsListValueFromEnvironmentLinks(apiKey.Environments)
 
 	if previewAPIKey, ok := apiKey.PreviewAPIKey.Get(); ok {
 		model.PreviewAPIKeyID = types.StringValue(previewAPIKey.Sys.ID)
@@ -40,5 +31,5 @@ func NewDeliveryAPIKeyResourceModelFromResponse(ctx context.Context, apiKey cm.A
 		model.PreviewAPIKeyID = types.StringNull()
 	}
 
-	return model, diags
+	return model
 }

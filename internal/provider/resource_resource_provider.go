@@ -95,10 +95,7 @@ func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req 
 
 	switch response := response.(type) {
 	case *cm.ResourceProviderStatusCode:
-		responseModel, responseModelDiags := NewResourceProviderResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewResourceProviderResourceModelFromResponse(response.Response)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create resource provider definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
@@ -153,10 +150,7 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 
 	switch response := response.(type) {
 	case *cm.ResourceProvider:
-		responseModel, responseModelDiags := NewResourceProviderResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewResourceProviderResourceModelFromResponse(*response)
 
 	default:
 		if contentfulResponseIsNotFound(response) {
@@ -226,10 +220,7 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 
 	switch response := response.(type) {
 	case *cm.ResourceProviderStatusCode:
-		responseModel, responseModelDiags := NewResourceProviderResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewResourceProviderResourceModelFromResponse(response.Response)
 
 	default:
 		resp.Diagnostics.AddError("Failed to update resource provider definition", util.ErrorDetailFromContentfulManagementResponse(response, err))

@@ -157,9 +157,6 @@ func TestDeliveryAPIKeyEnvironmentRequestEncoding(t *testing.T) {
 func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 	t.Parallel()
 
-	ctx := t.Context()
-	path := path.Root("test")
-
 	tests := map[string]struct {
 		environmentLinks []cm.EnvironmentLink
 		expected         TypedList[types.String]
@@ -188,8 +185,7 @@ func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, diags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, path, test.environmentLinks)
-			assert.Empty(t, diags)
+			result := NewEnvironmentIDsListValueFromEnvironmentLinks(test.environmentLinks)
 			assert.Equal(t, test.expected, result)
 		})
 	}
@@ -215,9 +211,7 @@ func TestEnvironmentLinksRequestResponseRoundTrip(t *testing.T) {
 			environmentLinks, requestDiags := ToEnvironmentLinks(ctx, valuePath, value)
 			require.False(t, requestDiags.HasError(), requestDiags.Errors())
 
-			result, responseDiags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, valuePath, environmentLinks)
-			require.False(t, responseDiags.HasError(), responseDiags.Errors())
-
+			result := NewEnvironmentIDsListValueFromEnvironmentLinks(environmentLinks)
 			assert.Equal(t, value, result)
 		})
 	}
@@ -274,9 +268,7 @@ func TestEnvironmentLinksJSONRoundTrip(t *testing.T) {
 			var decoded cm.ApiKey
 			require.NoError(t, decoded.UnmarshalJSON(encoded))
 
-			result, responseDiags := NewEnvironmentIDsListValueFromEnvironmentLinks(ctx, valuePath, decoded.Environments)
-			require.False(t, responseDiags.HasError(), responseDiags.Errors())
-
+			result := NewEnvironmentIDsListValueFromEnvironmentLinks(decoded.Environments)
 			assert.Equal(t, test.value, result)
 		})
 	}

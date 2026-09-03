@@ -1,14 +1,11 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewSpaceEnablementsResourceModelFromResponse(_ context.Context, response cm.SpaceEnablement) (SpaceEnablementsModel, diag.Diagnostics) {
+func NewSpaceEnablementsResourceModelFromResponse(response cm.SpaceEnablement) SpaceEnablementsModel {
 	spaceID := response.Sys.Space.Sys.ID
 
 	model := SpaceEnablementsModel{
@@ -23,7 +20,7 @@ func NewSpaceEnablementsResourceModelFromResponse(_ context.Context, response cm
 	model.StudioExperiences = boolValueFromOptSpaceEnablementField(response.StudioExperiences)
 	model.SuggestConcepts = boolValueFromOptSpaceEnablementField(response.SuggestConcepts)
 
-	return model, nil
+	return model
 }
 
 func boolValueFromOptSpaceEnablementField(field cm.OptSpaceEnablementField) types.Bool {

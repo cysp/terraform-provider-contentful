@@ -69,9 +69,7 @@ func (d *previewAPIKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	switch response := response.(type) {
 	case *cm.PreviewApiKey:
-		responseModel, responseModelDiags := NewPreviewAPIKeyDataSourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
+		responseModel := NewPreviewAPIKeyDataSourceModelFromResponse(*response)
 		responseModel.Timeouts = data.Timeouts
 		data = responseModel
 

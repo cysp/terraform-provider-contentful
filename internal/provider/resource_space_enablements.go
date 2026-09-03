@@ -96,10 +96,7 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 
 	switch response := response.(type) {
 	case *cm.SpaceEnablementStatusCode:
-		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewSpaceEnablementsResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:
@@ -157,10 +154,7 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 
 	switch response := response.(type) {
 	case *cm.SpaceEnablement:
-		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, *response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewSpaceEnablementsResourceModelFromResponse(*response)
 		version = response.Sys.Version
 
 	default:
@@ -243,10 +237,7 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 
 	switch response := response.(type) {
 	case *cm.SpaceEnablementStatusCode:
-		responseModel, responseModelDiags := NewSpaceEnablementsResourceModelFromResponse(ctx, response.Response)
-		resp.Diagnostics.Append(responseModelDiags...)
-
-		data = responseModel
+		data = NewSpaceEnablementsResourceModelFromResponse(response.Response)
 		version = response.Response.Sys.Version
 
 	default:

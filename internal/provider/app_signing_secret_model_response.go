@@ -1,16 +1,11 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewAppSigningSecretResourceModelFromResponse(_ context.Context, res cm.AppSigningSecret) (AppSigningSecretModel, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret) AppSigningSecretModel {
 	organizationID := res.Sys.Organization.Sys.ID
 	appDefinitionID := res.Sys.AppDefinition.Sys.ID
 
@@ -22,5 +17,5 @@ func NewAppSigningSecretResourceModelFromResponse(_ context.Context, res cm.AppS
 		},
 	}
 
-	return model, diags
+	return model
 }

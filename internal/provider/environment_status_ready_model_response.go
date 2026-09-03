@@ -1,16 +1,11 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewEnvironmentStatusReadyModelFromResponse(_ context.Context, environment cm.Environment) (EnvironmentStatusReadyModel, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewEnvironmentStatusReadyModelFromResponse(environment cm.Environment) EnvironmentStatusReadyModel {
 	spaceID := environment.Sys.Space.Sys.ID
 	environmentID := environment.Sys.ID
 
@@ -23,5 +18,5 @@ func NewEnvironmentStatusReadyModelFromResponse(_ context.Context, environment c
 		Status: types.StringValue(environment.Sys.Status.Sys.ID),
 	}
 
-	return model, diags
+	return model
 }
