@@ -85,6 +85,45 @@ func TestAccExtensionResource(t *testing.T) {
 	})
 }
 
+func TestAccExtensionResourceExtensionIDChangeRequiresReplacement(t *testing.T) {
+	t.Parallel()
+
+	server, _ := cmt.NewContentfulManagementServer()
+	server.RegisterSpaceEnvironment("space", "environment")
+
+	config := func(extensionID string) string {
+		return fmt.Sprintf(`
+resource "contentful_extension" "test" {
+  space_id       = "space"
+  environment_id = "environment"
+  extension_id   = %q
+
+  extension = {
+    name        = "Replacement test"
+    srcdoc      = "<!doctype html>"
+    field_types = []
+  }
+}
+`, extensionID)
+	}
+
+	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: config("initial-extension"),
+			},
+			{
+				Config: config("replacement-extension"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_extension.test", plancheck.ResourceActionReplace),
+					},
+				},
+			},
+		},
+	})
+}
+
 func testAccExtensionSources(
 	server *cmt.Server,
 	spaceID string,

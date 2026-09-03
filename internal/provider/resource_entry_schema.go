@@ -30,7 +30,6 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
@@ -39,7 +38,6 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
@@ -47,7 +45,6 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"entry_id": schema.StringAttribute{
@@ -64,7 +61,6 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"published_version": schema.Int64Attribute{

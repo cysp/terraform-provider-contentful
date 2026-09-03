@@ -44,8 +44,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 				Description: "ID of the extension.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplaceIfConfigured(),
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"extension": schema.SingleNestedAttribute{
