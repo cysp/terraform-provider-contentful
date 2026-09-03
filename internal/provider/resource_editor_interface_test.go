@@ -87,7 +87,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 				ResourceName:    "contentful_editor_interface.test",
 				ImportState:     true,
 				ImportStateId:   "a",
-				ExpectError:     regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
+				ExpectError:     regexp.MustCompile(`Invalid import ID`),
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -95,7 +95,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 				ResourceName:    "contentful_editor_interface.test",
 				ImportState:     true,
 				ImportStateId:   "a/b",
-				ExpectError:     regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
+				ExpectError:     regexp.MustCompile(`Invalid import ID`),
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -103,7 +103,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 				ResourceName:    "contentful_editor_interface.test",
 				ImportState:     true,
 				ImportStateId:   "a/b/c/d",
-				ExpectError:     regexp.MustCompile(`Resource Import Passthrough Multipart ID Mismatch`),
+				ExpectError:     regexp.MustCompile(`Invalid import ID`),
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),

@@ -124,8 +124,38 @@ func TestImportStatePassthroughMultipartIDFromIdentityRejectsInvalidComponent(t 
 				Identity: reqIdentity,
 			}, resp)
 
-			assert.True(t, resp.Diagnostics.HasError())
+			assertImportDiagnostic(t, resp.Diagnostics, "Invalid import identity", "Import identity components must be known, non-null, and non-empty.")
 			assert.Equal(t, []string{"entry_id"}, importDiagnosticPaths(t, resp.Diagnostics))
+			assertImportStatePassthroughUntouched(t, resp)
+		})
+	}
+}
+
+func TestImportStatePassthroughMultipartIDFromIDRejectsWrongComponentCount(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		id     string
+		detail string
+	}{
+		"too few":  {id: "space", detail: "Expected 2 slash-separated import ID components, but received 1."},
+		"too many": {id: "space/entry/extra", detail: "Expected 2 slash-separated import ID components, but received 3."},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			resp := importStatePassthroughResponse()
+
+			provider.ImportStatePassthroughMultipartID(
+				t.Context(),
+				importStatePassthroughIdentityAttributeNames,
+				resource.ImportStateRequest{ID: test.id},
+				resp,
+			)
+
+			assertImportDiagnostic(t, resp.Diagnostics, "Invalid import ID", test.detail)
 			assertImportStatePassthroughUntouched(t, resp)
 		})
 	}
@@ -143,9 +173,25 @@ func TestImportStatePassthroughMultipartIDFromIDRejectsEmptyComponent(t *testing
 		resp,
 	)
 
-	assert.True(t, resp.Diagnostics.HasError())
+	assertImportDiagnostic(t, resp.Diagnostics, "Invalid import ID", "Import ID components must not be empty.")
 	assert.Equal(t, []string{"entry_id"}, importDiagnosticPaths(t, resp.Diagnostics))
 	assertImportStatePassthroughUntouched(t, resp)
+}
+
+func TestImportStatePassthroughMultipartIDRejectsMissingIdentity(t *testing.T) {
+	t.Parallel()
+
+	resp := importStatePassthroughResponse()
+	resp.Identity = nil
+
+	provider.ImportStatePassthroughMultipartID(
+		t.Context(),
+		importStatePassthroughIdentityAttributeNames,
+		resource.ImportStateRequest{},
+		resp,
+	)
+
+	assertImportDiagnostic(t, resp.Diagnostics, "Missing import identity", "No import identity was provided.")
 }
 
 func TestImportStatePassthroughMultipartIDFromIdentityRejectsDecodeError(t *testing.T) {
@@ -361,4 +407,13 @@ func importDiagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
 	}
 
 	return paths
+}
+
+func assertImportDiagnostic(t *testing.T, diags diag.Diagnostics, summary, detail string) {
+	t.Helper()
+
+	errors := diags.Errors()
+	require.Len(t, errors, 1)
+	assert.Equal(t, summary, errors[0].Summary())
+	assert.Equal(t, detail, errors[0].Detail())
 }
