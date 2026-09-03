@@ -88,11 +88,11 @@ func (model TaxonomyConceptModel) ToRequest(_ context.Context) (cm.TaxonomyConce
 	related, valueDiags := optionalComputedStringListValue(model.RelatedConceptIDs, path.Root("related_concept_ids"))
 	diags.Append(valueDiags...)
 
-	uri, uriDiags := optionalKnownStringPointer(model.URI, path.Root("uri"))
+	uri, uriDiags := requestNullableString(model.URI, path.Root("uri"))
 	diags.Append(uriDiags...)
 
 	request := cm.TaxonomyConceptRequest{
-		URI:           cm.NewOptNilPointerString(uri),
+		URI:           uri,
 		PrefLabel:     cm.LocalizedString(prefLabel),
 		AltLabels:     altLabels,
 		HiddenLabels:  hiddenLabels,
@@ -202,11 +202,11 @@ func (model TaxonomyConceptSchemeModel) ToRequest(_ context.Context) (cm.Taxonom
 	ids, valueDiags := optionalComputedStringListValue(model.ConceptIDs, path.Root("concept_ids"))
 	diags.Append(valueDiags...)
 
-	uri, uriDiags := optionalKnownStringPointer(model.URI, path.Root("uri"))
+	uri, uriDiags := requestNullableString(model.URI, path.Root("uri"))
 	diags.Append(uriDiags...)
 
 	request := cm.TaxonomyConceptSchemeRequest{
-		URI: cm.NewOptNilPointerString(uri), PrefLabel: cm.LocalizedString(prefLabel),
+		URI: uri, PrefLabel: cm.LocalizedString(prefLabel),
 		Definition: nullableLocalizedString(model.Definition, path.Root("definition"), &diags), TopConcepts: conceptLinks(topIDs), Concepts: conceptLinks(ids),
 	}
 
@@ -215,20 +215,6 @@ func (model TaxonomyConceptSchemeModel) ToRequest(_ context.Context) (cm.Taxonom
 	}
 
 	return request, diags
-}
-
-func optionalKnownStringPointer(value types.String, valuePath path.Path) (*string, diag.Diagnostics) {
-	if value.IsNull() {
-		return nil, nil
-	}
-
-	if value.IsUnknown() {
-		return nil, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Unexpected unknown value", "The optional string must be known before it can be sent to Contentful.")}
-	}
-
-	result := value.ValueString()
-
-	return &result, nil
 }
 
 func NewTaxonomyConceptSchemeModelFromResponse(ctx context.Context, response cm.TaxonomyConceptScheme) (TaxonomyConceptSchemeModel, diag.Diagnostics) {

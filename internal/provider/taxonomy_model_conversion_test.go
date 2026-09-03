@@ -1377,6 +1377,103 @@ func TestLocalizedStringConversions(t *testing.T) {
 	assert.Equal(t, configured, localizedStringValue(ctx, known, &diags))
 }
 
+func TestTaxonomyURIRequestValues(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		value         types.String
+		expected      cm.OptNilString
+		expectedJSON  string
+		expectedError bool
+	}{
+		{
+			name:         "null sends explicit null",
+			value:        types.StringNull(),
+			expected:     cm.NewOptNilStringNull(),
+			expectedJSON: "null",
+		},
+		{
+			name:         "known empty sends empty string",
+			value:        types.StringValue(""),
+			expected:     cm.NewOptNilString(""),
+			expectedJSON: `""`,
+		},
+		{
+			name:         "known sends string",
+			value:        types.StringValue("https://example.com/taxonomy"),
+			expected:     cm.NewOptNilString("https://example.com/taxonomy"),
+			expectedJSON: `"https://example.com/taxonomy"`,
+		},
+		{
+			name:          "unknown fails closed",
+			value:         types.StringUnknown(),
+			expectedError: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("concept", func(t *testing.T) {
+				t.Parallel()
+
+				model := taxonomyConceptUpdatePlan()
+				model.URI = test.value
+				request, diags := model.ToRequest(t.Context())
+
+				if test.expectedError {
+					assert.Equal(t, cm.TaxonomyConceptRequest{}, request)
+					require.True(t, diags.HasError())
+					require.Len(t, diags.Errors(), 1)
+					assertTaxonomyDiagnosticPath(t, diags, path.Root("uri"))
+
+					return
+				}
+
+				require.False(t, diags.HasError(), diags.Errors())
+				assertTaxonomyURIWireValue(t, request.URI, test.expected, test.expectedJSON)
+			})
+
+			t.Run("concept scheme", func(t *testing.T) {
+				t.Parallel()
+
+				model := taxonomyConceptSchemeUpdatePlan()
+				model.URI = test.value
+				request, diags := model.ToRequest(t.Context())
+
+				if test.expectedError {
+					assert.Equal(t, cm.TaxonomyConceptSchemeRequest{}, request)
+					require.True(t, diags.HasError())
+					require.Len(t, diags.Errors(), 1)
+					assertTaxonomyDiagnosticPath(t, diags, path.Root("uri"))
+
+					return
+				}
+
+				require.False(t, diags.HasError(), diags.Errors())
+				assertTaxonomyURIWireValue(t, request.URI, test.expected, test.expectedJSON)
+			})
+		})
+	}
+}
+
+func assertTaxonomyURIWireValue(
+	t *testing.T,
+	actual cm.OptNilString,
+	expected cm.OptNilString,
+	expectedJSON string,
+) {
+	t.Helper()
+
+	assert.Equal(t, expected, actual)
+
+	payload, err := json.Marshal(actual)
+	require.NoError(t, err)
+	assert.JSONEq(t, expectedJSON, string(payload))
+}
+
 func TestTaxonomyToRequestRejectsUnknownOptionalValues(t *testing.T) {
 	t.Parallel()
 

@@ -166,13 +166,13 @@ func appDefinitionLocationFieldTypeToExtensionDataExtensionFieldTypesItem(
 
 	fieldTypesItem := cm.ExtensionDataExtensionFieldTypesItem{
 		Type:     requestFieldType.Type,
-		LinkType: cm.NewOptPointerString(requestFieldType.LinkType),
+		LinkType: requestFieldType.LinkType,
 	}
 
 	if requestFieldType.Items != nil {
 		fieldTypesItem.Items.SetTo(cm.ExtensionDataExtensionFieldTypesItemItems{
 			Type:     requestFieldType.Items.Type,
-			LinkType: cm.NewOptPointerString(requestFieldType.Items.LinkType),
+			LinkType: requestFieldType.Items.LinkType,
 		})
 	}
 

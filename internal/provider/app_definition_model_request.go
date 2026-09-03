@@ -87,13 +87,13 @@ func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(path pa
 
 			fieldTypesItem := cm.AppDefinitionDataLocationsItemFieldTypesItem{
 				Type:     fieldType.Type,
-				LinkType: cm.NewOptPointerString(fieldType.LinkType),
+				LinkType: fieldType.LinkType,
 			}
 
 			if fieldType.Items != nil {
 				fieldTypesItem.Items.SetTo(cm.AppDefinitionDataLocationsItemFieldTypesItemItems{
 					Type:     fieldType.Items.Type,
-					LinkType: cm.NewOptPointerString(fieldType.Items.LinkType),
+					LinkType: fieldType.Items.LinkType,
 				})
 			}
 
@@ -125,7 +125,7 @@ func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(path pa
 
 type appDefinitionLocationFieldTypeRequest struct {
 	Type     string
-	LinkType *string
+	LinkType cm.OptString
 	Items    *appDefinitionLocationFieldTypeRequest
 }
 
@@ -136,7 +136,7 @@ func appDefinitionLocationFieldTypeToRequest(
 	diags := diag.Diagnostics{}
 
 	typeValue, typeDiags := requestRequiredString(model.Type, path.AtName("type"))
-	linkType, linkTypeDiags := appRequestOptionalString(model.LinkType, path.AtName("link_type"))
+	linkType, linkTypeDiags := requestOmittableString(model.LinkType, path.AtName("link_type"))
 
 	diags.Append(typeDiags...)
 	diags.Append(linkTypeDiags...)
@@ -148,7 +148,7 @@ func appDefinitionLocationFieldTypeToRequest(
 
 	if model.Items != nil {
 		itemsType, itemsTypeDiags := requestRequiredString(model.Items.Type, path.AtName("items").AtName("type"))
-		itemsLinkType, itemsLinkTypeDiags := appRequestOptionalString(model.Items.LinkType, path.AtName("items").AtName("link_type"))
+		itemsLinkType, itemsLinkTypeDiags := requestOmittableString(model.Items.LinkType, path.AtName("items").AtName("link_type"))
 
 		diags.Append(itemsTypeDiags...)
 		diags.Append(itemsLinkTypeDiags...)
