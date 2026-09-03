@@ -121,10 +121,6 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -195,10 +191,6 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 	data.Timeouts = state.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *appSigningSecretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -275,10 +267,6 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func maskAppSigningSecretValues(ctx context.Context, values ...types.String) context.Context {
@@ -344,16 +332,12 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("App signing secret already deleted", appSigningSecretErrorDetail(response, err, state.Value))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
-		}
+		resp.Diagnostics.AddError("Failed to delete app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
 	}
 }

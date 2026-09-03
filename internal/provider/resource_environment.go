@@ -306,16 +306,12 @@ func (r *environmentResource) Delete(ctx context.Context, req resource.DeleteReq
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Environment already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete environment", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete environment", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }

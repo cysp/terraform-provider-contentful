@@ -101,10 +101,6 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, personalAccessTokenIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -164,10 +160,6 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 	data.Timeouts = state.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, personalAccessTokenIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *personalAccessTokenResource) Update(_ context.Context, _ resource.UpdateRequest, resp *resource.UpdateResponse) {

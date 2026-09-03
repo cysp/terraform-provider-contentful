@@ -325,16 +325,12 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Webhook already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }

@@ -322,16 +322,12 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Role already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete role", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete role", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }

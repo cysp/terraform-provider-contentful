@@ -113,10 +113,6 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appDefinitionIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 //nolint:dupl
@@ -178,10 +174,6 @@ func (r *appDefinitionResource) Read(ctx context.Context, req resource.ReadReque
 	data.Timeouts = state.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appDefinitionIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 //nolint:dupl
@@ -248,10 +240,6 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appDefinitionIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 //nolint:dupl
@@ -282,16 +270,12 @@ func (r *appDefinitionResource) Delete(ctx context.Context, req resource.DeleteR
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Resource type definition already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete app definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }

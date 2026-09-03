@@ -111,10 +111,6 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 //nolint:dupl
@@ -176,10 +172,6 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 	data.Timeouts = state.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 //nolint:dupl
@@ -242,10 +234,6 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 //nolint:dupl
@@ -276,16 +264,12 @@ func (r *teamSpaceMembershipResource) Delete(ctx context.Context, req resource.D
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Team space membership already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete team space membership", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }

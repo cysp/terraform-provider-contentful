@@ -291,16 +291,12 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Team already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete team", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete team", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }
