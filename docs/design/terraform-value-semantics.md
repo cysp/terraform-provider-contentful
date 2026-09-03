@@ -232,37 +232,147 @@ A normal post-upgrade refresh projects `sys.publishedVersion`. With
 but no pending activation marker exists, so publication remains observational
 and the unchanged transition is a no-op.
 
-After Create or Update, state must remain consistent with every known
-configuration-owned value in the plan. Post-mutation state construction starts
-with the complete response projection, compares each owned value against it,
-and restores the exact plan representation only after every comparison is
-semantically equivalent. If Contentful meaningfully contradicts the plan, the
-provider emits an attribute-scoped consistency error and retains complete,
-truthful response-derived recovery state; it never hides the contradiction by
-copying plan values over it. Unknown and response-owned values come from the
-response. Projection warnings are retained. A later Read skips this
-reconciliation and projects the remote representation so meaningful remote
-drift remains visible.
+After Create or Update, state must remain consistent with every known effective
+Plan value. Post-mutation state construction starts with the complete response
+projection, compares each constrained API-backed value against it, and restores
+the exact Plan representation only after every comparison is semantically
+equivalent. If Contentful meaningfully contradicts the Plan, the provider emits
+an attribute-scoped consistency error and retains complete, truthful
+response-derived recovery state; it never hides the contradiction by copying
+Plan values over it. Unknown values come from the response. Projection warnings
+are retained. A later Read skips this reconciliation and projects the remote
+representation so meaningful remote drift remains visible.
 
 When a successful taxonomy mutation response disagrees with the requested
 endpoint identity, recovery preserves the complete returned response except
 that the requested endpoint identity and legacy ID intentionally remain the
 Terraform target.
 
-Ownership follows the schema at the individual attribute, including attributes
-nested inside known objects:
+Apply-time authority follows the effective Plan at the individual attribute,
+including attributes nested inside known objects:
 
 - Optional values, including known null and known empty values, are
-  configuration-owned.
-- Optional+Computed values are response-owned when configuration omits them;
-  known configured values remain configuration-owned.
+  Plan-constrained.
+- Configuration omission permits an Optional+Computed value to be
+  response-owned only while its effective Plan remains unknown. A known value
+  supplied by a default, a plan modifier, prior state, or `ignore_changes` is
+  Plan-constrained for that apply.
 - Computed-only values are response-owned.
-- Plan modifiers may preserve prior state for unknown computed plans, but must
-  not replace an unknown planned value for a configuration-owned attribute or
-  turn known empty configuration into unknown.
+- Plan modifiers may preserve prior state for unknown computed plans. Once they
+  do, the resulting known Plan value is constrained and must not be replaced by
+  a different response value.
 
 Null, omission, and known empty values remain distinct throughout request and
 response conversion.
+
+The tables below use these common rules:
+
+- `ignore_changes` may replace changed Config with prior State in the effective
+  Plan; reconciliation always uses that effective Plan and never copies Config.
+- A known null or empty Plan is compared as a real value. An unknown Plan takes
+  the response. A required value that remains null or unknown cannot reach a
+  successful mutation because request conversion fails first.
+- A semantically equivalent response restores the exact Plan representation.
+  A meaningful difference or unsupported/lossy projection retains the complete
+  response projection and adds the listed attribute error. Any such mismatch
+  prevents every otherwise valid API-backed Plan overlay for that resource.
+- Endpoint identity and provider-local `timeouts` are outside that atomic
+  overlay. Endpoint identity remains the mutation target; `timeouts` has no CMA
+  projection and always retains its effective Plan representation.
+
+The production callers differ only where the endpoint supplies identity or the
+request needs Config to decide omission. All six publish response-derived state
+and private version before appending consistency diagnostics, allowing
+Terraform to retain recovery state when apply reports the error.
+
+| Resource caller | Mutation and identity | Inputs to request conversion | Reconciliation boundary |
+| --- | --- | --- | --- |
+| Role Create | `POST` to the planned `space_id`; CMA allocates `role_id`. | Effective Plan. | Unknown created identity comes from response; all known Plan values are compared. |
+| Role Update | `PUT` to planned `space_id/role_id` with prior private version. | Effective Plan. | Both endpoint identities are pinned; all known Plan values are compared. |
+| Editor Interface Create | Versioned `PUT` to planned `space_id/environment_id/content_type_id`. | Effective Plan. | All identity is endpoint-owned and pinned; all known Plan values are compared. |
+| Editor Interface Update | Versioned `PUT` to the same planned endpoint, including any version offset. | Effective Plan. | Same reconciliation as Create; prior private version affects only the request lock. |
+| Webhook Create | `POST` to planned `space_id`; CMA allocates `webhook_id`. | Effective Plan values; Config is consulted only for Optional+Computed request omission. | Reconciliation receives the effective Plan, not Config. Unknown created identity and unknown Optional+Computed values come from response. |
+| Webhook Update | Versioned `PUT` to planned `space_id/webhook_id`. | Effective Plan values; Config is consulted only for Optional+Computed request omission. | Endpoint identity is pinned. Defaults, `UseStateForUnknown`, and `ignore_changes` constrain every known Plan value. |
+
+Role, Editor Interface, and Webhook Read callers do not use mutation
+reconciliation. They project the current response, retain only documented
+write-only fallbacks, and thereby expose meaningful remote drift.
+
+### Role mutation decisions
+
+| Attribute | Schema and identity | Config, effective Plan, and prior State | Response projection and equivalence | State and diagnostic |
+| --- | --- | --- | --- | --- |
+| `id` | Computed legacy identity | Config cannot set it. Create Plan is unknown; Update may preserve prior State. | Derived as `space_id/role_id`; no independent CMA field. | Use the endpoint-derived identity. If a known Plan `id` conflicts with that identity, retain the endpoint identity and add an `id` error. |
+| `space_id` | Required endpoint identity | Config must be known and non-null. Replacement and `ignore_changes` are already reflected in Plan; prior State otherwise has no authority. | Exact comparison with `sys.space.sys.id`. | Always retain the requested endpoint value. A different response adds a `space_id` error and cannot retarget the resource. |
+| `role_id` | Computed response-owned identity on Create; endpoint identity on Update | Config cannot set it. Create Plan is unknown; Update normally preserves prior State. | Exact comparison with `sys.id` when Plan is known. | Unknown Plan takes the created response ID. Known mismatch retains the endpoint ID and adds a `role_id` error. |
+| `name` | Required | Config and effective Plan must be known; prior State matters only through `ignore_changes`. Empty is a known value. | Exact scalar comparison. | Equivalent response restores Plan. Difference retains response and adds a `name` error. |
+| `description` | Optional | Omitted Config produces known null; explicit empty remains empty. Effective Plan, including prior State selected by `ignore_changes`, is authoritative. | Exact nullable scalar comparison; null and empty are distinct. | Equivalent response restores Plan. Difference retains response and adds a `description` error. |
+| `permissions` | Required map of lists | Null/unknown cannot reach mutation. Empty map and empty action lists are known. Effective Plan may come from `ignore_changes`. | Map keys are exact; each action list is unordered while duplicate multiplicity is preserved. Unsupported permission variants make projection lossy. | Equivalent response restores the exact map/list Plan representation. Difference adds a `permissions` error; lossy projection retains its warning and adds the same scoped consistency error. |
+| `policies` | Required list of objects | Null/unknown cannot reach mutation; an empty list is known. Effective Plan may come from `ignore_changes`. | Policy order is insignificant while duplicate multiplicity is preserved. Each policy matches only when all nested attributes below are equivalent. Unsupported policy variants make projection lossy. | Equivalent response restores exact Plan order and representation. Difference adds a `policies` error; lossy projection also retains its warning. |
+| `policies[].actions` | Required list | Null/unknown cannot reach mutation; empty is known when accepted by validation. | Unordered string comparison preserving duplicates; Contentful scalar `"all"` and Terraform `["all"]` are the established request/response projection. | Participates in the parent `policies` decision and diagnostic. |
+| `policies[].constraint` | Optional normalized JSON string | Omitted is null; known JSON, including `{}` or `[]`, remains distinct from null. | JSON semantic comparison normalizes representation; array order remains meaningful. Unsupported JSON projection prevents equivalence. | Exact Plan JSON text is restored only when equivalent; otherwise the complete policies response remains with a `policies` error. |
+| `policies[].effect` | Required | Must be known and non-null; empty remains a known scalar if it passes earlier validation. | Exact scalar comparison. | Participates in the parent `policies` decision and diagnostic. |
+| `timeouts` | Optional provider-local object | Omitted is null; configured children and values selected by `ignore_changes` are known Plan values. | No CMA projection or comparison. | Always retain exact Plan. No mutation-consistency diagnostic. |
+| `timeouts.create`, `timeouts.read`, `timeouts.update`, `timeouts.delete` | Optional provider-local strings | Omitted children are null; configured durations remain exact Plan strings. | Parsed only for the corresponding operation; never returned by CMA. | Retained inside `timeouts`; invalid durations fail validation before mutation. |
+
+### Editor Interface mutation decisions
+
+| Attribute | Schema and identity | Config, effective Plan, and prior State | Response projection and equivalence | State and diagnostic |
+| --- | --- | --- | --- | --- |
+| `id` | Computed legacy identity | Config cannot set it. Create Plan is unknown; Update may preserve prior State. | Derived as `space_id/environment_id/content_type_id`; no independent CMA field. | Use the endpoint-derived identity. A conflicting known Plan adds an `id` error. |
+| `space_id`, `environment_id`, `content_type_id` | Required endpoint identity | Each Config value must be known and non-null. Replacement and `ignore_changes` are already reflected in Plan. | Exact comparison with the corresponding `sys` link. | Always retain each requested endpoint value. A different response adds an error at that identity path and cannot retarget the resource. |
+| `editor_layout` | Optional ordered list | Omitted is null; explicit `[]` is distinct. A known Plan, including one selected by `ignore_changes`, is authoritative; unknown takes response. | Ordered, exact structural comparison. The schema cannot represent top-level field layout items, so such a response is lossy. | Equivalent response restores exact Plan. Difference adds an `editor_layout` error. Lossy projection retains its warning and adds the same scoped consistency error when Plan is known. |
+| `editor_layout[].group` | Required object | Required whenever the parent element is present. | Exact object structure. | Participates in `editor_layout`; mismatch is reported at `editor_layout`. |
+| `editor_layout[].group.group_id`, `editor_layout[].group.name` | Required strings | Must be known and non-null; empty is still a known scalar. | Exact comparison. | Participates in `editor_layout`. |
+| `editor_layout[].group.items` | Required ordered list | Must be known; `[]` is valid and distinct from null. | Ordered structural comparison. | Participates in `editor_layout`. |
+| `editor_layout[].group.items[].field`, `editor_layout[].group.items[].group` | Optional exclusive objects | Exactly one must be configured. Null marks the unselected alternative; unknown cannot reach request conversion. | Exact selected-alternative and structure comparison. | Participates in `editor_layout`; unsupported alternatives cannot manufacture equivalence. |
+| `editor_layout[].group.items[].field.field_id` | Required string | Must be known and non-null. | Exact comparison. | Participates in `editor_layout`. |
+| `editor_layout[].group.items[].group.group_id`, `editor_layout[].group.items[].group.name` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `editor_layout`. |
+| `editor_layout[].group.items[].group.items` | Required ordered list | Must be known; `[]` is distinct from null. | Ordered structural comparison. | Participates in `editor_layout`. |
+| `editor_layout[].group.items[].group.items[].field` | Required object | Must be present and known. | Exact structure comparison. | Participates in `editor_layout`. |
+| `editor_layout[].group.items[].group.items[].field.field_id` | Required string | Must be known and non-null. | Exact comparison. | Participates in `editor_layout`. |
+| `controls` | Optional ordered list | Omitted is null; `[]` is known. Unknown takes response; known Plan may reflect `ignore_changes`. | Ordered element comparison; nested `settings` uses JSON semantics. | Equivalent response restores exact Plan. Difference or lossy projection adds a `controls` error and retains response. |
+| `controls[].field_id` | Required string | Must be known and non-null. | Exact comparison. | Participates in `controls`. |
+| `controls[].widget_namespace`, `controls[].widget_id` | Optional strings | Omitted is null; empty remains distinct. | Exact nullable scalar comparison. | Participates in `controls`. |
+| `controls[].settings` | Optional normalized JSON string | Omitted is null; known JSON remains distinct from null. | JSON semantic comparison; array order remains meaningful. | Equivalent response restores exact Plan JSON representation; otherwise `controls` fails atomically. |
+| `group_controls` | Optional ordered list | Omitted is null; `[]` is known. Unknown takes response; known Plan may reflect `ignore_changes`. | Ordered element comparison; nested `settings` uses JSON semantics. | Equivalent response restores exact Plan. Difference or lossy projection adds a `group_controls` error and retains response. |
+| `group_controls[].group_id` | Required string | Must be known and non-null. | Exact comparison. | Participates in `group_controls`. |
+| `group_controls[].widget_namespace`, `group_controls[].widget_id` | Optional strings | Omitted is null; empty remains distinct. | Exact nullable scalar comparison. | Participates in `group_controls`. |
+| `group_controls[].settings` | Optional normalized JSON string | Omitted is null; known JSON remains distinct from null. | JSON semantic comparison. | Equivalent response restores exact Plan JSON representation; otherwise `group_controls` fails atomically. |
+| `sidebar` | Optional ordered list | Omitted is null; `[]` is known. Unknown takes response; known Plan may reflect `ignore_changes`. | Ordered element comparison; nested `settings` uses JSON semantics and `disabled` is exact. | Equivalent response restores exact Plan. Difference or lossy projection adds a `sidebar` error and retains response. |
+| `sidebar[].widget_namespace`, `sidebar[].widget_id` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `sidebar`. |
+| `sidebar[].settings` | Optional normalized JSON string | Omitted is null; known JSON remains distinct from null. | JSON semantic comparison. | Equivalent response restores exact Plan JSON representation; otherwise `sidebar` fails atomically. |
+| `sidebar[].disabled` | Optional+Computed with static `false` default | Omission normally yields known `false`, so prior State or a differing response cannot override it during apply. Only an actually unknown effective Plan is response-owned. | Exact boolean comparison. | Equivalent response restores Plan. Difference retains response and adds a `sidebar` error. |
+| `timeouts` | Optional provider-local object | Omitted is null; configured children and `ignore_changes` results are Plan-owned. | No CMA projection. | Always retain exact Plan without a consistency diagnostic. |
+| `timeouts.create`, `timeouts.read`, `timeouts.update` | Optional provider-local strings | Omitted children are null; configured durations remain exact Plan strings. | Parsed only for the corresponding operation. | Retained inside `timeouts`; invalid durations fail before mutation. |
+
+### Webhook mutation decisions
+
+| Attribute | Schema and identity | Config, effective Plan, and prior State | Response projection and equivalence | State and diagnostic |
+| --- | --- | --- | --- | --- |
+| `id` | Computed legacy identity | Config cannot set it. Create Plan is unknown; Update may preserve prior State. | Derived as `space_id/webhook_id`; no independent CMA field. | Use endpoint-derived identity. A conflicting known Plan adds an `id` error. |
+| `space_id` | Required endpoint identity | Must be known and non-null. Replacement and `ignore_changes` are already reflected in Plan. | Exact comparison with `sys.space.sys.id`. | Always retain requested endpoint value. Difference adds a `space_id` error and cannot retarget the resource. |
+| `webhook_id` | Computed response-owned identity on Create; endpoint identity on Update | Config cannot set it. Create Plan is unknown; Update normally preserves prior State. | Exact comparison with `sys.id` when Plan is known. | Unknown Plan takes created response ID. Known mismatch retains endpoint ID and adds a `webhook_id` error. |
+| `active` | Optional+Computed with static `true` default | Omitted Config normally yields known `true`; explicit Config, prior State selected by planning, and `ignore_changes` likewise produce the effective Plan. Only an actually unknown Plan is response-owned. | Exact boolean comparison. | Equivalent response restores Plan. Difference retains response and adds an `active` error. |
+| `name`, `url` | Required strings | Must be known and non-null; empty remains a known value. Prior State matters only through `ignore_changes`. | Exact scalar comparison. | Equivalent response restores Plan. Difference retains response and adds an error at `name` or `url`. |
+| `topics` | Required non-empty ordered list of strings | Null, unknown, empty, or null-element values fail validation or request conversion before mutation. The known non-empty effective Plan, including a value selected by `ignore_changes`, is authoritative. | Exact ordered comparison; duplicates remain meaningful. | Equivalent response restores the exact effective Plan. Difference retains response and adds a `topics` error. |
+| `filters` | Optional unordered list of operator objects | Omitted is null; explicit `[]` is distinct. Unknown takes response; known Plan may reflect `ignore_changes`. | Outer order is insignificant while duplicate multiplicity is preserved. Exactly one recognized operator must project for each element. Unknown operators make projection lossy. | Equivalent response restores exact Plan order and representation. Difference adds a `filters` error; lossy projection retains its warning and adds the scoped consistency error when Plan is known. |
+| `filters[].not`, `filters[].equals`, `filters[].in`, `filters[].regexp` | Optional exclusive objects | Exactly one must be selected; unselected alternatives are null. Unknown cannot reach request conversion. | Selected operator and all nested values must match. | Participates in `filters`; unsupported or multiple response operators cannot establish equivalence. |
+| `filters[].not.equals`, `filters[].not.in`, `filters[].not.regexp` | Optional exclusive objects | Exactly one nested negated operator must be selected. | Same operator-specific rules as their non-negated forms. | Participates in `filters`. |
+| `filters[].equals.doc`, `filters[].equals.value`, `filters[].not.equals.doc`, `filters[].not.equals.value` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `filters`. |
+| `filters[].in.doc`, `filters[].not.in.doc` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `filters`. |
+| `filters[].in.values`, `filters[].not.in.values` | Required lists | Must be known; `[]` is distinct from null. | Unordered string comparison preserving duplicate multiplicity. | Participates in `filters`; equivalent response restores the exact Plan order. |
+| `filters[].regexp.doc`, `filters[].regexp.pattern`, `filters[].not.regexp.doc`, `filters[].not.regexp.pattern` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `filters`. |
+| `http_basic_username` | Optional string | Omitted is null; empty is known. Effective Plan, including `ignore_changes`, is authoritative. | Exact nullable scalar comparison. | Equivalent response restores Plan. Difference retains response and adds an `http_basic_username` error. |
+| `http_basic_password` | Optional sensitive write-only API value | Omitted and explicit null remain null; configured, rotated, prior-State, and `ignore_changes` cases use the effective Plan. Unknown configured input fails before mutation. | Apply the established password table above: only property absence permits the narrow known non-null Plan fallback; explicit null or a returned value is response truth. | Absent property restores the known non-null Plan even when another attribute mismatches. Explicit contradiction retains response and adds an `http_basic_password` error. Read continues to use prior-state preservation without claiming remote equality. |
+| `headers` | Optional+Computed map | Omitted Create commonly leaves Plan unknown and therefore response-owned. On Update, `UseStateForUnknown`, explicit Config, or `ignore_changes` may make Plan known and constrained. Known null and `{}` remain distinct. | Map keys and complete header objects compare exactly after the established secret-value fallback. | Unknown Plan takes response. Equivalent known Plan restores its exact representation. Difference adds a `headers` error. |
+| `headers[*].value` | Required string | Must be known for configured headers. Prior State may supply a secret value through the known `headers` Plan. | Exact comparison when CMA returns it. For a secret header whose value CMA omits, response projection uses only the corresponding Plan value as the established narrow fallback. | Fallback value is retained even during another contradiction because CMA supplies no competing value. A returned different value causes the parent `headers` error. |
+| `headers[*].secret` | Optional+Computed with static `false` default and `UseStateForUnknown` | Omission inside a configured header normally yields known `false`; prior State may be preserved when planning leaves it unknown. Any known effective Plan is constrained. | Exact boolean comparison; CMA response owns only an actually unknown Plan. | Difference causes the parent `headers` error; equivalence restores exact Plan. |
+| `transformation` | Optional object | Omitted is null; a known object may contain null children. Unknown takes response; `ignore_changes` may select prior State. | Object comparison uses exact scalars and JSON semantics for `body`. | Equivalent response restores exact Plan. Difference or lossy projection adds a `transformation` error and retains response. |
+| `transformation.method`, `transformation.content_type`, `transformation.include_content_length` | Optional scalars | Omitted children are null; empty strings and explicit booleans are known. | Exact nullable scalar comparison. | Participates in `transformation`. |
+| `transformation.body` | Optional normalized JSON string | Omitted is null; known JSON remains distinct from null. | JSON semantic comparison; array order remains meaningful. | Equivalent response restores exact Plan JSON text; otherwise `transformation` fails atomically. |
+| `timeouts` | Optional provider-local object | Omitted is null; configured children and `ignore_changes` results are Plan-owned. | No CMA projection. | Always retain exact Plan without a consistency diagnostic. |
+| `timeouts.create`, `timeouts.read`, `timeouts.update`, `timeouts.delete` | Optional provider-local strings | Omitted children are null; configured durations remain exact Plan strings. | Parsed only for the corresponding operation. | Retained inside `timeouts`; invalid durations fail before mutation. |
 
 ### CMA transport retry safety
 

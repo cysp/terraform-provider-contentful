@@ -73,21 +73,64 @@ func newEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 }
 
 // ReconcileEditorInterfaceMutationResponse projects the complete mutation
-// response and verifies ordered, lossless editor_layout equivalence.
+// response and restores known effective Plan values only after proving that
+// every API-backed value is losslessly, semantically equivalent. Endpoint
+// identity always remains the requested Terraform target.
 func ReconcileEditorInterfaceMutationResponse(ctx context.Context, editorInterface cm.EditorInterface, plan EditorInterfaceModel) (EditorInterfaceModel, diag.Diagnostics, diag.Diagnostics) {
 	state, responseDiags, editorLayoutDiags := newEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
-	if plan.EditorLayout.IsUnknown() {
-		return state, responseDiags, nil
+	reconciler := mutationResponseReconciler{resourceName: "Editor Interface"}
+	reconciler.pinIdentity(path.Root("space_id"), plan.SpaceID, state.SpaceID, &state.SpaceID)
+	reconciler.pinIdentity(path.Root("environment_id"), plan.EnvironmentID, state.EnvironmentID, &state.EnvironmentID)
+	reconciler.pinIdentity(path.Root("content_type_id"), plan.ContentTypeID, state.ContentTypeID, &state.ContentTypeID)
+
+	state.IDIdentityModel = NewIDIdentityModelFromMultipartID(state.SpaceID.ValueString(), state.EnvironmentID.ValueString(), state.ContentTypeID.ValueString())
+
+	if !plan.ID.IsNull() && !plan.ID.IsUnknown() && !plan.ID.Equal(state.ID) {
+		reconciler.diagnostics.AddAttributeError(path.Root("id"), "Editor Interface identity is inconsistent with its endpoint", "The planned legacy ID differs from the requested Editor Interface endpoint identity. Terraform retained the endpoint identity as the resource target and the remaining returned values as recovery state. Review or re-import the Editor Interface before applying again.")
 	}
 
-	consistencyDiags := diag.Diagnostics{}
-
-	switch {
-	case len(editorLayoutDiags) != 0:
-		consistencyDiags.AddAttributeError(path.Root("editor_layout"), "Provider cannot fully represent Editor Interface layout", "Contentful accepted the request, but the returned Editor Interface layout contains values this provider cannot fully represent. Terraform retained the representable response values but cannot verify that they match the value Terraform applied. Review the Editor Interface in Contentful before applying again.")
-	case !plan.EditorLayout.Equal(state.EditorLayout):
-		consistencyDiags.AddAttributeError(path.Root("editor_layout"), "Contentful returned a different Editor Interface layout", "Contentful accepted the request but returned an Editor Interface layout that differs from the value Terraform applied. Terraform retained the returned value in state rather than substituting the planned value. Review the Editor Interface and configuration before applying again.")
+	candidateState := state
+	if reconciler.compareSemantic(
+		path.Root("editor_layout"), "Editor Interface layout", "Contentful returned a different Editor Interface layout",
+		plan.EditorLayout.IsUnknown(), editorLayoutDiags,
+		func() (bool, diag.Diagnostics) { return plan.EditorLayout.Equal(state.EditorLayout), nil },
+	) {
+		candidateState.EditorLayout = plan.EditorLayout
 	}
 
-	return state, responseDiags, consistencyDiags
+	if reconciler.compareSemantic(
+		path.Root("controls"), "Editor Interface controls", "Contentful returned different Editor Interface controls",
+		plan.Controls.IsUnknown(), diag.Diagnostics{},
+		func() (bool, diag.Diagnostics) {
+			return editorInterfaceControlsEquivalent(ctx, plan.Controls, state.Controls)
+		},
+	) {
+		candidateState.Controls = plan.Controls
+	}
+
+	if reconciler.compareSemantic(
+		path.Root("group_controls"), "Editor Interface group controls", "Contentful returned different Editor Interface group controls",
+		plan.GroupControls.IsUnknown(), diag.Diagnostics{},
+		func() (bool, diag.Diagnostics) {
+			return editorInterfaceGroupControlsEquivalent(ctx, plan.GroupControls, state.GroupControls)
+		},
+	) {
+		candidateState.GroupControls = plan.GroupControls
+	}
+
+	if reconciler.compareSemantic(
+		path.Root("sidebar"), "Editor Interface sidebar", "Contentful returned a different Editor Interface sidebar",
+		plan.Sidebar.IsUnknown(), diag.Diagnostics{},
+		func() (bool, diag.Diagnostics) {
+			return editorInterfaceSidebarEquivalent(ctx, plan.Sidebar, state.Sidebar)
+		},
+	) {
+		candidateState.Sidebar = plan.Sidebar
+	}
+
+	if !reconciler.diagnostics.HasError() {
+		state = candidateState
+	}
+
+	return state, responseDiags, reconciler.diagnostics
 }

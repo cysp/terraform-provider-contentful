@@ -8,6 +8,7 @@ import (
 	"maps"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"regexp"
 	"sync"
 	"testing"
@@ -267,7 +268,7 @@ func (a *mutationJSONResponseAdapter) takeMutation(method string, statusCode int
 type expectResponseStateInPlan struct {
 	address            string
 	valuePath          tfjsonpath.Path
-	value              string
+	value              any
 	nonEmptyBeforePath *tfjsonpath.Path
 }
 
@@ -284,8 +285,8 @@ func (check expectResponseStateInPlan) CheckPlan(_ context.Context, request plan
 			return
 		}
 
-		if value != check.value {
-			response.Error = fmt.Errorf("%w: response-derived value is %#v, want %q", errUnexpectedTerraformPlan, value, check.value)
+		if !reflect.DeepEqual(value, check.value) {
+			response.Error = fmt.Errorf("%w: response-derived value is %#v, want %#v", errUnexpectedTerraformPlan, value, check.value)
 
 			return
 		}
