@@ -168,6 +168,44 @@ func TestAccWebhookMutationReconciliationUsesEffectivePlanWithIgnoreChanges(t *t
 	}})
 }
 
+func TestAccWebhookKnownDefaultContradictionRetainsResponseState(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+
+	adapter := &mutationJSONResponseAdapter{delegate: server}
+	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					adapter.mutateNext(http.MethodPost, func(response map[string]any) {
+						response["active"] = false
+					})
+				},
+				Config: webhookMutationConfig("Defaulted active webhook", "Entry", false),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectKnownValue("contentful_webhook.test", tfjsonpath.New("active"), knownvalue.Bool(true)),
+				}},
+				ExpectError: regexp.MustCompile(`Contentful returned a different webhook active value`),
+			},
+			{
+				Config: webhookMutationConfig("Defaulted active webhook", "Entry", false),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionReplace),
+					expectResponseStateInPlan{
+						address:   "contentful_webhook.test",
+						valuePath: tfjsonpath.New("active"),
+						value:     false,
+					},
+				}},
+			},
+		},
+	})
+}
+
 func replaceWebhookResponseFilter(value string) func(map[string]any) {
 	return func(response map[string]any) {
 		response["filters"] = []any{map[string]any{

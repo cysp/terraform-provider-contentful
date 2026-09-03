@@ -504,8 +504,11 @@ func TestOptionalMutationStateReconcilesOmittedNullValues(t *testing.T) {
 		t.Context(),
 		cm.WebhookDefinition{Sys: cm.NewWebhookDefinitionSys("space", "webhook")},
 		WebhookModel{
+			Name:    types.StringUnknown(),
+			URL:     types.StringUnknown(),
 			Filters: NewTypedListNull[TypedObject[WebhookFilterValue]](),
 			Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+			Topics:  NewTypedList([]types.String{}),
 		},
 	)
 	assert.Empty(t, webhookResponseDiags)
@@ -553,8 +556,11 @@ func TestWebhookMutationStateDistinguishesNullAndEmptyFilters(t *testing.T) {
 					Filters: test.response,
 				},
 				WebhookModel{
+					Name:    types.StringUnknown(),
+					URL:     types.StringUnknown(),
 					Filters: test.plan,
 					Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+					Topics:  NewTypedList([]types.String{}),
 				},
 			)
 
@@ -594,7 +600,7 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 		}},
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies})
+	mutationState, mutationStateDiags, consistencyDiags := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies})
 	assert.False(t, mutationStateDiags.HasError())
 	assert.Len(t, mutationStateDiags.Warnings(), 3)
 	assert.True(t, consistencyDiags.HasError())
@@ -603,6 +609,7 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 	assert.False(t, mutationState.Policies.Equal(plannedPolicies))
 
 	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{
+		Name:        types.StringUnknown(),
 		Permissions: NewTypedMapUnknown[TypedList[types.String]](),
 		Policies:    NewTypedListUnknown[TypedObject[RolePolicyValue]](),
 	})
@@ -637,7 +644,7 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 	}
 
 	mutationState, mutationStateDiags, consistencyDiags := ReconcileRoleMutationResponse(
-		t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies},
+		t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies},
 	)
 
 	require.False(t, mutationStateDiags.HasError())
@@ -672,7 +679,7 @@ func TestRoleMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *testing
 	}
 
 	mutationState, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(
-		t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies},
+		t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies},
 	)
 
 	assert.Empty(t, responseDiags)
@@ -697,7 +704,7 @@ func TestRoleMutationStatePreservesDuplicateMultiplicity(t *testing.T) {
 	}
 
 	mutationState, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(
-		t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies},
+		t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies},
 	)
 
 	assert.Empty(t, responseDiags)
@@ -777,7 +784,7 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 			}
 
 			mutationState, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(
-				t.Context(), response, RoleModel{Permissions: plannedPermissions, Policies: plannedPolicies},
+				t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies},
 			)
 
 			assert.Empty(t, responseDiags)
