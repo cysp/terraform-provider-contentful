@@ -187,7 +187,7 @@ Required:
 
 Optional:
 
-- `disabled` (Boolean) Whether this sidebar widget is disabled.
+- `disabled` (Boolean) Whether this sidebar widget is disabled. Defaults to `false`.
 - `settings` (String) Widget-specific settings in JSON format.
 
 

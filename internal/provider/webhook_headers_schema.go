@@ -13,6 +13,7 @@ import (
 //nolint:ireturn
 func WebhookHeadersSchema(ctx context.Context, optional bool) schema.Attribute {
 	return schema.MapNestedAttribute{
+		Description: "HTTP headers sent by the webhook. When omitted on Create, Terraform adopts the headers returned by Contentful. When omitted on Update, Terraform preserves known prior headers. Set to `{}` to remove all headers.",
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: WebhookHeaderValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookHeaderValue]().CustomType(ctx),

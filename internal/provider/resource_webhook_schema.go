@@ -38,7 +38,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"active": schema.BoolAttribute{
-				Description: "Whether the webhook is active.",
+				Description: "Whether the webhook is active. Defaults to `true`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),

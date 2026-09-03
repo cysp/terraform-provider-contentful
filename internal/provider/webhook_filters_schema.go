@@ -136,9 +136,10 @@ func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schem
 			Required:    true,
 		},
 		"secret": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
+			Description: "Whether Contentful treats the header value as secret. Defaults to `false`.",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 			PlanModifiers: []planmodifier.Bool{
 				boolplanmodifier.UseStateForUnknown(),
 			},
