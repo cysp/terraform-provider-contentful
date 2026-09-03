@@ -271,7 +271,7 @@ func (r *appDefinitionResource) Delete(ctx context.Context, req resource.DeleteR
 
 	default:
 		if contentfulResponseIsNotFound(response) {
-			resp.Diagnostics.AddWarning("Resource type definition already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.Diagnostics.AddWarning("App definition already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
 			return
 		}

@@ -64,7 +64,7 @@ Required:
 
 Optional:
 
-- `field_types` (Attributes List) Field types where an extension can be used. (see [below for nested schema](#nestedatt--locations--field_types))
+- `field_types` (Attributes List) Field types that this location supports. (see [below for nested schema](#nestedatt--locations--field_types))
 - `navigation_item` (Attributes) Navigation item configuration for page locations. (see [below for nested schema](#nestedatt--locations--navigation_item))
 
 <a id="nestedatt--locations--field_types"></a>
