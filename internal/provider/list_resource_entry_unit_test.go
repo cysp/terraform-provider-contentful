@@ -2,6 +2,7 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"github.com/hashicorp/terraform-plugin-log/tflogtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +26,14 @@ import (
 func TestEntryListResourceListSendsFiltersAndOwnsPagination(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	const (
+		queryValueSentinel = "ENTRY_QUERY_VALUE_SENTINEL"
+		fieldValueSentinel = "ENTRY_FIELD_VALUE_SENTINEL"
+	)
+
+	var logOutput bytes.Buffer
+
+	ctx := tflogtest.RootLogger(t.Context(), &logOutput)
 
 	var requestCount atomic.Int64
 
@@ -36,7 +45,7 @@ func TestEntryListResourceListSendsFiltersAndOwnsPagination(t *testing.T) {
 		assert.Equal(t, "Bearer "+cmt.ValidAccessToken, r.Header.Get("Authorization"))
 		assert.Equal(t, url.Values{
 			"content_type":    []string{"author"},
-			"fields.name[ne]": []string{"nonexistent"},
+			"fields.name[ne]": []string{queryValueSentinel},
 			"limit":           []string{"100"},
 			"order":           []string{"sys.createdAt"},
 			"skip":            []string{"0"},
@@ -44,7 +53,7 @@ func TestEntryListResourceListSendsFiltersAndOwnsPagination(t *testing.T) {
 
 		entry := cmt.NewEntryFromRequest("space", "environment", "author", "entry-1", &cm.EntryRequest{
 			Fields: cm.NewOptEntryFields(cm.EntryFields{
-				"name": jx.Raw(`{"en-US":"Entry 1"}`),
+				"name": jx.Raw(`{"en-US":"` + fieldValueSentinel + `"}`),
 			}),
 		})
 
@@ -75,7 +84,7 @@ func TestEntryListResourceListSendsFiltersAndOwnsPagination(t *testing.T) {
 
 	var stream list.ListResultsStream
 	listResource.List(ctx, list.ListRequest{
-		Config:                 newEntryListResourceConfig(ctx),
+		Config:                 newEntryListResourceConfig(ctx, "fields.name[ne]", queryValueSentinel),
 		ResourceSchema:         EntryResourceSchema(ctx),
 		ResourceIdentitySchema: identitySchemaResponse.IdentitySchema,
 	}, &stream)
@@ -92,6 +101,18 @@ func TestEntryListResourceListSendsFiltersAndOwnsPagination(t *testing.T) {
 	assert.False(t, results[0].Diagnostics.HasError(), results[0].Diagnostics)
 	assert.Equal(t, "entry-1", results[0].DisplayName)
 	assert.Equal(t, int64(1), requestCount.Load())
+
+	logEntries, err := tflogtest.MultilineJSONDecode(bytes.NewReader(logOutput.Bytes()))
+	require.NoError(t, err)
+	require.Len(t, logEntries, 1)
+	assert.Equal(t, "entry.list", logEntries[0]["@message"])
+	assert.Equal(t, "info", logEntries[0]["@level"])
+	assert.Contains(t, logEntries[0], "params")
+	assert.Contains(t, logEntries[0], "query")
+	assert.Contains(t, logEntries[0], "err")
+	assert.NotContains(t, logEntries[0], "response")
+	assert.Contains(t, logOutput.String(), queryValueSentinel)
+	assert.NotContains(t, logOutput.String(), fieldValueSentinel)
 }
 
 func TestSetEntryListQueryParamSkipsPaginatorParams(t *testing.T) {
@@ -108,7 +129,7 @@ func TestSetEntryListQueryParamSkipsPaginatorParams(t *testing.T) {
 	}, query)
 }
 
-func newEntryListResourceConfig(ctx context.Context) tfsdk.Config {
+func newEntryListResourceConfig(ctx context.Context, queryKey string, queryValue string) tfsdk.Config {
 	schema := EntryListResourceConfigSchema(ctx)
 
 	return tfsdk.Config{
@@ -128,9 +149,9 @@ func newEntryListResourceConfig(ctx context.Context) tfsdk.Config {
 				tftypes.NewValue(tftypes.String, "sys.createdAt"),
 			}),
 			"query": tftypes.NewValue(tftypes.Map{ElementType: tftypes.String}, map[string]tftypes.Value{
-				"fields.name[ne]": tftypes.NewValue(tftypes.String, "nonexistent"),
-				"limit":           tftypes.NewValue(tftypes.String, "1"),
-				"skip":            tftypes.NewValue(tftypes.String, "100"),
+				queryKey: tftypes.NewValue(tftypes.String, queryValue),
+				"limit":  tftypes.NewValue(tftypes.String, "1"),
+				"skip":   tftypes.NewValue(tftypes.String, "100"),
 			}),
 		}),
 		Schema: schema,
