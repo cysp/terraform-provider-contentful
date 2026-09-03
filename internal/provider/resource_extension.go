@@ -382,16 +382,12 @@ func (r *extensionResource) Delete(ctx context.Context, req resource.DeleteReque
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Extension already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete extension", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete extension", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }

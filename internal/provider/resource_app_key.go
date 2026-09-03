@@ -121,10 +121,6 @@ func (r *appKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appKeyIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *appKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -183,10 +179,6 @@ func (r *appKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	data.Timeouts = state.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appKeyIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *appKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -202,10 +194,6 @@ func (r *appKeyResource) Update(ctx context.Context, req resource.UpdateRequest,
 	state.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appKeyIdentityAttributeNames(), &state)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *appKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -242,16 +230,12 @@ func (r *appKeyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	switch response := response.(type) {
 	case *cm.NoContent:
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("App key already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete app key", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete app key", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }

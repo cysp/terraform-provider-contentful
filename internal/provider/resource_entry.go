@@ -644,17 +644,13 @@ func (r *entryResource) deleteEntry(ctx context.Context, entry EntryModel, diags
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			diags.AddWarning("Entry already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			diags.AddError("Failed to delete entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		diags.AddError("Failed to delete entry", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }
 

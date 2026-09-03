@@ -292,16 +292,12 @@ func (r *environmentAliasResource) Delete(ctx context.Context, req resource.Dele
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Environment alias already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete environment alias", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete environment alias", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }

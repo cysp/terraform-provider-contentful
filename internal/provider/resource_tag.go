@@ -282,16 +282,12 @@ func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	case *cm.NoContent:
 
 	default:
-		handled := false
-
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Tag already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
 
-			handled = true
+			return
 		}
 
-		if !handled {
-			resp.Diagnostics.AddError("Failed to delete tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		}
+		resp.Diagnostics.AddError("Failed to delete tag", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
 }
