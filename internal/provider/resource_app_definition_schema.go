@@ -69,7 +69,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 							Required:    true,
 						},
 						"field_types": schema.ListNestedAttribute{
-							Description: "Field types where an extension can be used.",
+							Description: "Field types that this location supports.",
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"type": schema.StringAttribute{
