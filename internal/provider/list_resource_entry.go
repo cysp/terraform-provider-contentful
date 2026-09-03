@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
@@ -75,7 +76,16 @@ func (r *entryListResource) List(ctx context.Context, req list.ListRequest, stre
 			pageParams.Skip = cm.NewOptInt64(skip)
 			pageParams.Limit = cm.NewOptInt64(limit)
 
-			return r.providerData.client.GetEntries(ctx, pageParams, getEntriesQueryOption)
+			response, err := r.providerData.client.GetEntries(ctx, pageParams, getEntriesQueryOption)
+
+			tflog.Info(ctx, "entry.list", map[string]any{
+				"params": pageParams,
+				"query":  request.query,
+				// "response": response, omitted to avoid logging complete entry payloads
+				"err": err,
+			})
+
+			return response, err //nolint:wrapcheck // preserve generated CMA client errors for list diagnostics.
 		},
 		func(item cm.Entry) list.ListResult {
 			return newListResultFromResponse(

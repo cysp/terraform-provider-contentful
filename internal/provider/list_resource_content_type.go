@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
@@ -60,7 +61,15 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 			pageParams.Skip = cm.NewOptInt64(skip)
 			pageParams.Limit = cm.NewOptInt64(limit)
 
-			return r.providerData.client.GetContentTypes(ctx, pageParams)
+			response, err := r.providerData.client.GetContentTypes(ctx, pageParams)
+
+			tflog.Info(ctx, "content_type.list", map[string]any{
+				"params":   pageParams,
+				"response": response,
+				"err":      err,
+			})
+
+			return response, err //nolint:wrapcheck // preserve generated CMA client errors for list diagnostics.
 		},
 		func(item cm.ContentType) list.ListResult {
 			return newListResultFromResponse(
