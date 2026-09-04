@@ -30,16 +30,18 @@ jobs:
           go-version-file: "go.mod"
           cache: true
 
-      - name: Require existing draft
+      - name: Require existing published release
         id: release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           release="$(gh release view "$GITHUB_REF_NAME" \
             --repo "$GITHUB_REPOSITORY" \
-            --json databaseId,isDraft,name)"
-          test "$(jq -r .isDraft <<<"$release")" = true
+            --json databaseId,isDraft,isPrerelease,name,tagName)"
+          test "$(jq -r .isDraft <<<"$release")" = false
+          test "$(jq -r .isPrerelease <<<"$release")" = false
           test "$(jq -r .name <<<"$release")" = "$GITHUB_REF_NAME"
+          test "$(jq -r .tagName <<<"$release")" = "$GITHUB_REF_NAME"
           echo "id=$(jq -r .databaseId <<<"$release")" >> "$GITHUB_OUTPUT"
 
       - name: Import GPG key
@@ -77,13 +79,16 @@ jobs:
             dist/*_SHA256SUMS
             dist/*_SHA256SUMS.sig
 
-      - name: Publish release
+      - name: Verify published release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_ID: ${{ steps.release.outputs.id }}
         run: |
           release="$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID")"
-          test "$(jq -r .draft <<<"$release")" = true
+          test "$(jq -r .draft <<<"$release")" = false
+          test "$(jq -r .prerelease <<<"$release")" = false
+          test "$(jq -r .name <<<"$release")" = "$GITHUB_REF_NAME"
+          test "$(jq -r .tag_name <<<"$release")" = "$GITHUB_REF_NAME"
 
           subjects=(dist/*.zip dist/*_manifest.json \
             dist/*_SHA256SUMS dist/*_SHA256SUMS.sig)
@@ -95,7 +100,3 @@ jobs:
               '.assets[] | select(.name == $name) | .digest' <<<"$release")"
             test "$local_digest" = "$remote_digest"
           done
-
-          gh api --method PATCH \
-            "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
-            -F draft=false
