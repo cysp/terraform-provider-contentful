@@ -1,39 +1,32 @@
 # Provider releases
 
-GoReleaser is pinned to `v2.18.0`. A release starts as a GitHub draft and is
-published only after its artifacts have been signed and attested.
+GoReleaser is pinned to `v2.18.0`. Publishing a GitHub release creates its tag
+and starts the release workflow. GoReleaser signs and uploads the provider
+artifacts to that existing release.
 
 ## Publishing a release
 
-1. In GitHub, draft a new release named for the next `vMAJOR.MINOR.PATCH` tag,
-   target `main`, write the release notes, and save it as a draft. Do not click
-   **Publish release**.
-2. Update local `main`, create that exact tag at the intended commit, and push
-   the tag:
-
-   ```bash
-   git switch main
-   git pull --ff-only
-   git tag v0.0.63
-   git push origin v0.0.63
-   ```
-
-3. The tag starts the release workflow. The protected `release` environment
-   supplies the GPG signing key. GoReleaser builds once, signs the checksum file,
-   and uploads the artifacts to the existing draft.
+1. In GitHub, create a release named for the next `vMAJOR.MINOR.PATCH` tag,
+   choose to create that same tag on publish, target `main`, write the release
+   notes, and click **Publish release**.
+2. Publishing the release creates the tag and starts the release workflow. The
+   workflow requires an existing published release whose name and tag both
+   match that version.
+3. The protected `release` environment supplies the GPG signing key. GoReleaser
+   builds once, signs the checksum file, and uploads the artifacts directly to
+   the existing release.
 4. The workflow verifies the checksums and GPG signature, creates GitHub
-   build-provenance attestations, and checks the uploaded asset digests. Its
-   final step publishes that same draft.
+   build-provenance attestations, and checks every uploaded asset digest.
 
 The separate GoReleaser configuration workflow is read-only and has no release
-secrets. Signing and publication run only in the protected `release`
-environment, using its release-specific secrets. Releases are serialized so
-two tags or reruns cannot publish concurrently.
+secrets. Signing and artifact upload run only in the protected `release`
+environment, using its release-specific secrets. Release jobs are serialized
+so two tags or reruns cannot upload concurrently.
 
-If the workflow fails, the release remains a non-public draft. Fix the cause and
-rerun the failed workflow. GoReleaser replaces assets from the previous attempt;
-the workflow rechecks every digest before publishing. Do not publish the draft
-manually after a failed run.
+The release is public while the workflow runs. If the workflow fails, it may
+remain incomplete until the failed workflow is rerun successfully. GoReleaser
+replaces assets from the previous attempt, and the workflow rechecks every
+digest.
 
 ## Verifying a published release
 
