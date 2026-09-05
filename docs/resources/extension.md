@@ -14,8 +14,8 @@ Manages a Contentful UI Extension.
 
 ```terraform
 resource "contentful_extension" "example" {
-  space_id       = var.space_id
-  environment_id = var.environment_id
+  space_id       = var.contentful_space_id
+  environment_id = var.contentful_environment_id
   extension_id   = "custom-field-extension"
 
   extension = {
@@ -66,7 +66,7 @@ resource "contentful_extension" "example" {
 
 ### Optional
 
-- `parameters` (String) Definitions of configuration parameters. Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
+- `parameters` (String) Values for the extension installation parameters, encoded as JSON with jsonencode(...). Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

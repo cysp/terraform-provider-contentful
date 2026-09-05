@@ -54,7 +54,7 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"parameters": schema.StringAttribute{
-				Description: "App-specific configuration variables. Optional free-form object with values managed by the app. The stringified value cannot be longer than 16kB.",
+				Description: "App-specific configuration as a JSON-encoded object. Use jsonencode(...) to encode Terraform values. The stringified value cannot be longer than 16kB.",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 			},

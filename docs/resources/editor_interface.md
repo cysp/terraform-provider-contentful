@@ -13,6 +13,7 @@ Manages the Editor Interface associated with a Content Type. Contentful creates 
 ## Example Usage
 
 ```terraform
+# This snippet uses contentful_content_type.author from the Content Type example.
 resource "contentful_editor_interface" "author" {
   space_id        = contentful_content_type.author.space_id
   environment_id  = contentful_content_type.author.environment_id
