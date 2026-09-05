@@ -9,8 +9,11 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -988,14 +991,14 @@ func TestAccEntryResourcePublicationTupleChangeAtMarkedVersionRevokesAuthority(t
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
 				}},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckNoResourceAttr("contentful_entry.test", "published_version"),
-					func(*terraform.State) error {
-						requireNoEntryMutations(t, recorder, "a changed publication tuple at the marked version must revoke without mutation")
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("published_version"), knownvalue.Null()),
+				},
+				Check: func(*terraform.State) error {
+					requireNoEntryMutations(t, recorder, "a changed publication tuple at the marked version must revoke without mutation")
 
-						return nil
-					},
-				),
+					return nil
+				},
 			},
 			{
 				PreConfig: func() {
@@ -1054,14 +1057,14 @@ func TestAccEntryResourceExternalUnpublishDoesNotAuthorizePublication(t *testing
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
 			}},
-			Check: resource.ComposeTestCheckFunc(
-				resource.TestCheckNoResourceAttr("contentful_entry.test", "published_version"),
-				func(*terraform.State) error {
-					requireNoEntryMutations(t, recorder, "external unpublish must not grant publication authority")
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("published_version"), knownvalue.Null()),
+			},
+			Check: func(*terraform.State) error {
+				requireNoEntryMutations(t, recorder, "external unpublish must not grant publication authority")
 
-					return nil
-				},
-			),
+				return nil
+			},
 		},
 	}})
 }

@@ -10,7 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,13 +50,12 @@ func TestAccTagResourceImport(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				ConfigDirectory:    config.TestNameDirectory(),
-				ConfigVariables:    configVariables,
-				ResourceName:       "contentful_tag.test",
-				ImportState:        true,
-				ImportStateId:      "0p38pssr0fi3/test/example",
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: true,
+				ConfigDirectory:  config.TestNameDirectory(),
+				ConfigVariables:  configVariables,
+				ResourceName:     "contentful_tag.test",
+				ImportState:      true,
+				ImportStateId:    "0p38pssr0fi3/test/example",
+				ImportStateCheck: testAccImportAttributes(map[string]string{"id": "0p38pssr0fi3/test/example", "space_id": "0p38pssr0fi3", "environment_id": "test", "tag_id": "example", "name": "Example", "visibility": "private"}),
 			},
 		},
 	})
@@ -123,6 +125,10 @@ func TestAccTagResourceCreateUpdate(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables1,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_tag.test", tfjsonpath.New("name"), knownvalue.StringExact(tagID)),
+					statecheck.ExpectKnownValue("contentful_tag.test", tfjsonpath.New("visibility"), knownvalue.StringExact("private")),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_tag.test", plancheck.ResourceActionCreate),
@@ -132,6 +138,10 @@ func TestAccTagResourceCreateUpdate(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables2,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_tag.test", tfjsonpath.New("name"), knownvalue.StringExact(tagID+" (updated)")),
+					statecheck.ExpectKnownValue("contentful_tag.test", tfjsonpath.New("visibility"), knownvalue.StringExact("private")),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_tag.test", plancheck.ResourceActionUpdate),
@@ -141,6 +151,10 @@ func TestAccTagResourceCreateUpdate(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables3,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_tag.test", tfjsonpath.New("name"), knownvalue.StringExact(tagID)),
+					statecheck.ExpectKnownValue("contentful_tag.test", tfjsonpath.New("visibility"), knownvalue.StringExact("public")),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_tag.test", plancheck.ResourceActionReplace),

@@ -88,10 +88,11 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 				ConfigVariables: configVariables,
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ResourceName:    "contentful_app_installation.test",
-				ImportState:     true,
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables,
+				ResourceName:      "contentful_app_installation.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -203,10 +204,18 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: stepVariables1,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_app_installation.test", tfjsonpath.New("id"), knownvalue.StringExact("0p38pssr0fi3/master/1WkQ2J9LERPtbMTdUfSHka")),
+					statecheck.ExpectKnownValue("contentful_app_installation.test", tfjsonpath.New("parameters"), knownvalue.Null()),
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: stepVariables2,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_app_installation.test", tfjsonpath.New("id"), knownvalue.StringExact("0p38pssr0fi3/master/1WkQ2J9LERPtbMTdUfSHka")),
+					statecheck.ExpectKnownValue("contentful_app_installation.test", tfjsonpath.New("parameters"), knownvalue.StringExact(`{"foo":"bar"}`)),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_app_installation.test", plancheck.ResourceActionUpdate),
@@ -216,6 +225,10 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: stepVariables3,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_app_installation.test", tfjsonpath.New("id"), knownvalue.StringExact("0p38pssr0fi3/master/1WkQ2J9LERPtbMTdUfSHka")),
+					statecheck.ExpectKnownValue("contentful_app_installation.test", tfjsonpath.New("parameters"), knownvalue.Null()),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_app_installation.test", plancheck.ResourceActionUpdate),

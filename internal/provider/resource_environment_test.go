@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"maps"
+	"net/http"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -9,6 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,20 +40,42 @@ func TestAccEnvironmentResourceLifecycle(t *testing.T) {
 	configVariables2["environment_name"] = config.StringVariable("Updated Test Environment")
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+		CheckDestroy: func(_ *terraform.State) error {
+			response, err := server.Handler().GetEnvironment(t.Context(), cm.GetEnvironmentParams{SpaceID: "space-id", EnvironmentID: environmentID})
+			require.NoError(t, err)
+
+			status, ok := response.(cm.StatusCodeResponse)
+			require.True(t, ok, "unexpected response after destroy: %T", response)
+			require.Equal(t, http.StatusNotFound, status.GetStatusCode())
+
+			return nil
+		},
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables1,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/"+environmentID)),
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("name"), knownvalue.StringExact("Test Environment")),
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("environment_id"), knownvalue.StringExact(environmentID)),
+				},
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables2,
+				ConfigDirectory:  config.TestNameDirectory(),
+				ConfigVariables:  configVariables2,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_environment.test", plancheck.ResourceActionUpdate)}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/"+environmentID)),
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("name"), knownvalue.StringExact("Updated Test Environment")),
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("environment_id"), knownvalue.StringExact(environmentID)),
+				},
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables2,
-				ImportState:     true,
-				ResourceName:    "contentful_environment.test",
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables2,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "contentful_environment.test",
 			},
 		},
 	})
@@ -85,10 +113,11 @@ func TestAccEnvironmentResourceImport(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ImportState:     true,
-				ResourceName:    "contentful_environment.test",
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "contentful_environment.test",
 			},
 		},
 	})

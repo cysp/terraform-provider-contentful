@@ -61,19 +61,15 @@ func TestAccTeamResourceImport(t *testing.T) {
 				ResourceName:  "contentful_team.test",
 				ImportState:   true,
 				ImportStateId: "2zuSjSO4A0e6GKBrhJRe2m/team-id",
-				Check:         testAccTeamResourceImportCheck(),
+				ImportStateCheck: testAccImportAttributes(map[string]string{
+					"organization_id": "2zuSjSO4A0e6GKBrhJRe2m",
+					"team_id":         "team-id",
+					"name":            "Test Team",
+					"description":     "",
+				}),
 			},
 		},
 	})
-}
-
-func testAccTeamResourceImportCheck() resource.TestCheckFunc {
-	return resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr("contentful_team.test", "organization_id", "2zuSjSO4A0e6GKBrhJRe2m"),
-		resource.TestCheckResourceAttr("contentful_team.test", "team_id", "team-id"),
-		resource.TestCheckResourceAttr("contentful_team.test", "name", "Test Team"),
-		resource.TestCheckResourceAttr("contentful_team.test", "description", ""),
-	)
 }
 
 func testAccTeamResourceImportConfig() string {

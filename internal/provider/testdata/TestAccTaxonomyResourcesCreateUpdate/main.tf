@@ -14,7 +14,7 @@ resource "contentful_taxonomy_concept" "test" {
 }
 
 resource "contentful_taxonomy_concept_scheme" "test" {
-  organization_id  = var.organization_id
+  organization_id   = var.organization_id
   concept_scheme_id = var.concept_scheme_id
   pref_label = {
     "en-US" = var.scheme_label
