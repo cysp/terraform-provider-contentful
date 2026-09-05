@@ -90,7 +90,7 @@ Contentful does not enforce version or ETag preconditions when destroy unpublish
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/entry_id form.
 - `published_version` (Number) Contentful `sys.publishedVersion` for the Entry. Null when Contentful reports the Entry as unpublished.
 
 <a id="nestedatt--metadata"></a>
