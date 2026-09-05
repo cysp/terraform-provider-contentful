@@ -144,6 +144,48 @@ func TestActivateContentTypeAddsControlsOnlyForNewFields(t *testing.T) {
 	assert.Equal(t, []string{"subtitle"}, editorInterfaceControlFieldIDs(t, editorInterface))
 }
 
+// Deactivation removes the interface; reactivation creates defaults at version 1.
+// This sequence is observed CMA behavior, including loss of prior customization.
+func TestDeactivateContentTypeRemovesEditorInterface(t *testing.T) {
+	t.Parallel()
+
+	handler := newContentTypeTestHandler()
+	request := newContentTypeRequest()
+	createContentType(t, handler, &request)
+	activateContentType(t, handler, 1)
+
+	response, err := handler.PutEditorInterface(t.Context(), &cm.EditorInterfaceData{
+		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{{
+			FieldId: "title", WidgetNamespace: cm.NewOptString("builtin"), WidgetId: cm.NewOptString("singleLine"),
+			Settings: []byte(`{"helpText":"custom help"}`),
+		}}),
+	}, cm.PutEditorInterfaceParams{
+		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
+	})
+	require.NoError(t, err)
+	require.IsType(t, &cm.EditorInterfaceStatusCode{}, response)
+	require.Equal(t, 2, getEditorInterface(t, handler).Sys.Version)
+
+	_, err = handler.DeactivateContentType(t.Context(), cm.DeactivateContentTypeParams{
+		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type",
+	})
+	require.NoError(t, err)
+	editorResponse, err := handler.GetEditorInterface(t.Context(), contentTypeEditorInterfaceParams())
+	require.NoError(t, err)
+	requireContentfulError(t, editorResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "EditorInterface not found")
+
+	activateContentType(t, handler, 3)
+	editorInterface := getEditorInterface(t, handler)
+	require.Equal(t, 1, editorInterface.Sys.Version)
+	controls, ok := editorInterface.Controls.Get()
+	require.True(t, ok)
+	require.Equal(t, []cm.EditorInterfaceControlsItem{{FieldId: "title"}}, controls)
+
+	// Activating an already published type still advances the existing interface.
+	activateContentType(t, handler, 4)
+	require.Equal(t, 2, getEditorInterface(t, handler).Sys.Version)
+}
+
 func contentTypeEditorInterfaceParams() cm.GetEditorInterfaceParams {
 	return cm.GetEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type",
