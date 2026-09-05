@@ -3,12 +3,12 @@
 page_title: "contentful_app_signing_secret Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Signing Secret. Contentful returns only redactedValue, so refresh preserves the configured value already in Terraform state and cannot detect an out-of-band replacement. The terraform import command leaves value null until a subsequent apply writes the configured replacement. A configuration-driven import can write the configured replacement during the import apply.
+  Manages a Contentful App Signing Secret. Contentful does not return the complete secret after it is written; see Secrets and Terraform state for refresh, drift, and import consequences.
 ---
 
 # contentful_app_signing_secret (Resource)
 
-Manages a Contentful App Signing Secret. Contentful returns only `redactedValue`, so refresh preserves the configured `value` already in Terraform state and cannot detect an out-of-band replacement. The `terraform import` command leaves `value` null until a subsequent apply writes the configured replacement. A configuration-driven import can write the configured replacement during the import apply.
+Manages a Contentful App Signing Secret. Contentful does not return the complete secret after it is written; see [Secrets and Terraform state](../guides/secrets-and-state) for refresh, drift, and import consequences.
 
 ## Example Usage
 
@@ -42,7 +42,7 @@ resource "random_password" "contentful_app_signing_secret" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in organization_id/app_definition_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
