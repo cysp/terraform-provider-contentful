@@ -58,7 +58,7 @@ resource "contentful_taxonomy_concept" "furniture" {
 ### Read-Only
 
 - `concept_scheme_ids` (Set of String) IDs of schemes containing the concept.
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in organization_id/concept_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
