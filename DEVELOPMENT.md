@@ -16,7 +16,8 @@ go build .
 ```
 
 Use the narrower checks below while iterating, then expand verification according
-to the changed behavior before merge.
+to the changed behavior before merge. For Terraform CLI behavior, also test a
+local provider build as described in [Local provider build](#local-provider-build).
 
 ## Repository guidance
 
@@ -24,6 +25,8 @@ to the changed behavior before merge.
 [CLAUDE.md](CLAUDE.md) and [GEMINI.md](GEMINI.md) import it. Keep shared rules
 there and command details here. Design contracts belong in `docs/design/`;
 link them from the instructions with the conditions that require reading them.
+See the [design documentation map](docs/design/README.md) for the distinction
+between provider-wide invariants and resource-specific contracts.
 
 ## Repository map
 
@@ -56,7 +59,7 @@ credentials alone do not establish that authorization.
 | Agent instructions or prose only | Review instruction consistency, links, and the final diff; run `git diff --check`. |
 | Go behavior | Run tests for the affected packages and the lint and format checks. Use `go test ./...` and `go build .` for shared behavior or when preparing for merge. |
 | Terraform planning, state, or lifecycle | Run focused mocked acceptance tests for the affected transitions in addition to the Go checks; extend coverage where existing tests do not establish the changed behavior. |
-| Schema, examples, templates, OpenAPI, or other generation inputs | Follow the [generation requirement](AGENTS.md#documentation-and-workflow) using [Code Generation](#code-generation), plus checks for the affected behavior. |
+| Schema, examples, templates, OpenAPI, or other generation inputs | Follow the [generation requirement](AGENTS.md#documentation-and-workflow) using [Code Generation](#code-generation), then follow [Documentation verification](#documentation-verification), plus checks for the affected behavior. |
 | A claim about live Contentful behavior | Use primary documentation or an authorized live experiment; mocked tests establish provider behavior against the fixture, not CMA conformance. |
 
 If a check cannot run, record the command and concrete blocker. Distinguish a
@@ -84,11 +87,71 @@ files. Do not hand-edit generated pages to make a durable change, and do not
 remove the entire `docs/` tree because it also contains handwritten developer
 documentation.
 
-When adding practitioner prose, keep attribute-level contracts concise in the
-schema, put multi-step workflows in templates or guides, and keep implementation
-algorithms and evidence details in developer documentation. Preserve
-resource-specific semantics rather than applying a generic omission, retry, or
-secret-handling rule where behavior differs.
+Resource-page examples are normally reference snippets rather than standalone
+Terraform modules. Keep them small, but make each resource directory internally
+consistent: when the configuration example declares one resource address, its
+identity import, string-ID import, and CLI import examples should target that
+same address unless the difference is intentional and explained. Workflow guides
+are the appropriate place for complete setup and multi-step examples.
+
+When documenting identifiers, distinguish the Terraform resource identifier
+from a Contentful system ID whenever both concepts exist. In particular, do not
+use a generic "ID of this resource" description when `id` is composite and a
+separate `*_id` attribute is the Contentful object ID.
+
+### Practitioner writing conventions
+
+- Open with what the provider manages, reads, lists, or waits for.
+- Explain Terraform-visible behavior and required practitioner action before
+  implementation mechanisms.
+- State warnings as condition, consequence, and available action when an action
+  exists.
+- Preserve established Terraform and Contentful terminology and exact API
+  identifiers.
+- Keep short contracts in schema descriptions, multi-step workflows in templates
+  or guides, and algorithms or evidence details in developer documentation.
+- Distinguish provider guarantees, documented Contentful behavior, direct
+  observations, and assumptions; do not present one category as another.
+- Keep simple attributes concise. Add detail when omission, explicit empty
+  values, drift, import, sensitive values, or another lifecycle distinction
+  changes practitioner behavior.
+
+## Documentation verification
+
+Documentation checks prove different things and should not be collapsed into a
+single generation-success signal.
+
+After changing a schema, example, template, or guide input, run:
+
+```sh
+go generate ./...
+go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs \
+  validate --provider-name=terraform-provider-contentful
+git diff --check
+```
+
+The pinned `tfplugindocs` validator checks Registry documentation structure,
+front matter, and schema/document correspondence. Its Registry-documentation
+glob covers `docs/index.md` and the recognized Registry subdirectories; it does
+not treat `docs/design/`, `docs/research/`, or `docs/releasing.md` as Registry
+pages. Generation reproducibility remains a separate check: inspect tracked and
+untracked output after regeneration.
+
+Also review what the automated checks do not establish:
+
+- Inspect rendered relative links and navigation from the pages you changed.
+- Compare practitioner claims with provider behavior and, for Contentful
+  behavior, primary documentation or authorized direct evidence.
+- Review all configuration and import variants for the affected resource
+  together so their resource addresses, variables, and composite IDs agree.
+- When an example is intended to be standalone, copy it into an isolated
+  Terraform configuration, supply its provider and required variables, run
+  `terraform init`, and run `terraform validate`. Do not treat a resource example
+  directory containing alternative import forms as one executable module.
+- Treat `.tfquery.hcl` examples as Terraform query configurations. Use Terraform
+  1.14 or later and the `terraform query` workflow when exercising them; ordinary
+  `terraform validate` of `.tf` configuration is not a substitute for checking
+  list-resource behavior.
 
 ## Code Generation
 
@@ -178,6 +241,36 @@ env -u TF_ACC_MOCKED TF_ACC=1 go test ./internal/provider -run '^TestAcc' -count
 Acceptance tests require a Terraform CLI on `PATH`. Mocked acceptance tests use
 local HTTP test servers; they do not call Contentful, but they still exercise
 the Terraform acceptance-test harness.
+
+## Local provider build
+
+Use Terraform development overrides when a change needs manual CLI verification
+against a local provider build. Keep the override scoped to a temporary CLI
+configuration rather than changing your normal Terraform installation policy.
+
+Build the provider into a dedicated directory:
+
+```sh
+mkdir -p /tmp/terraform-provider-contentful-dev
+go build -o /tmp/terraform-provider-contentful-dev/terraform-provider-contentful .
+```
+
+Create a temporary Terraform CLI configuration:
+
+```hcl
+provider_installation {
+  dev_overrides {
+    "cysp/contentful" = "/tmp/terraform-provider-contentful-dev"
+  }
+  direct {}
+}
+```
+
+Point `TF_CLI_CONFIG_FILE` at that file when running `terraform plan` or another
+command in an isolated test configuration. Terraform still performs normal
+version selection during `terraform init`; commands after initialization use the
+development override for `cysp/contentful`. Do not use a development override as
+a deployment or released-provider installation mechanism.
 
 ## Linting
 
