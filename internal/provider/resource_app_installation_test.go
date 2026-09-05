@@ -88,10 +88,11 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 				ConfigVariables: configVariables,
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ResourceName:    "contentful_app_installation.test",
-				ImportState:     true,
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables,
+				ResourceName:      "contentful_app_installation.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),

@@ -112,11 +112,13 @@ func TestAccTaxonomyResourcesLifecycle(t *testing.T) {
 			ConfigStateChecks: append(taxonomyLifecycleStateChecks(ids, taxonomyLifecycleClear), taxonomyConceptSchemeMembershipCheck(ids, false)),
 		},
 		{
-			Config:                  taxonomyLifecycleConfig(ids, taxonomyLifecycleClear),
-			ResourceName:            "contentful_taxonomy_concept.test",
-			ImportState:             true,
-			ImportStateId:           taxonomyAcceptanceOrganizationID + "/" + ids.concept,
-			ImportStateVerify:       true,
+			Config:            taxonomyLifecycleConfig(ids, taxonomyLifecycleClear),
+			ResourceName:      "contentful_taxonomy_concept.test",
+			ImportState:       true,
+			ImportStateId:     taxonomyAcceptanceOrganizationID + "/" + ids.concept,
+			ImportStateVerify: true,
+			// Import has no prior locale representation to preserve. The ownership
+			// and imported-label scenarios below check CMA-added empty locales separately.
 			ImportStateVerifyIgnore: []string{"alt_labels", "hidden_labels"},
 		},
 		{

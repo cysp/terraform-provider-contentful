@@ -70,12 +70,12 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 				ExpectError:     regexp.MustCompile(`Invalid import ID`),
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ResourceName:    "contentful_content_type.author",
-				ImportState:     true,
-				ImportStateId:   "0p38pssr0fi3/test/author",
-				// ImportStateVerify: true,
+				ConfigDirectory:  config.TestNameDirectory(),
+				ConfigVariables:  configVariables,
+				ResourceName:     "contentful_content_type.author",
+				ImportState:      true,
+				ImportStateId:    "0p38pssr0fi3/test/author",
+				ImportStateCheck: testAccImportAttributes(map[string]string{"id": "0p38pssr0fi3/test/author", "space_id": "0p38pssr0fi3", "environment_id": "test", "content_type_id": "author"}),
 			},
 		},
 	})

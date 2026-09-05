@@ -44,10 +44,11 @@ func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 				ConfigVariables: configVariables2,
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables2,
-				ImportState:     true,
-				ResourceName:    "contentful_environment_alias.test",
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables2,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "contentful_environment_alias.test",
 			},
 		},
 	})
@@ -80,10 +81,11 @@ func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ImportState:     true,
-				ResourceName:    "contentful_environment_alias.test",
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "contentful_environment_alias.test",
 			},
 		},
 	})

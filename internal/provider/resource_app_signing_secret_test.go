@@ -178,13 +178,7 @@ func TestAccAppSigningSecretResourceImport(t *testing.T) {
 				ImportStateId:      "organization-id/app-definition-id",
 				ImportStatePersist: true,
 				ResourceName:       "contentful_app_signing_secret.test",
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(
-						"contentful_app_signing_secret.test",
-						tfjsonpath.New("value"),
-						knownvalue.Null(),
-					),
-				},
+				ImportStateCheck:   testAccImportAttributes(map[string]string{"id": "organization-id/app-definition-id"}),
 			},
 			{
 				PreConfig:       func() { putCount.Store(0) },
@@ -192,6 +186,7 @@ func TestAccAppSigningSecretResourceImport(t *testing.T) {
 				ConfigVariables: configVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						testAccPriorState{check: statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("value"), knownvalue.Null())},
 						plancheck.ExpectResourceAction("contentful_app_signing_secret.test", plancheck.ResourceActionUpdate),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
