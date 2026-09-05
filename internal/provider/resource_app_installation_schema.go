@@ -18,7 +18,8 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful App Installation.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id/app_definition_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
