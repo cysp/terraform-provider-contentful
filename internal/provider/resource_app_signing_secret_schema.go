@@ -44,8 +44,8 @@ func (v appSigningSecretValueValidator) ValidateString(ctx context.Context, req 
 
 func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description:         "Manages a Contentful App Signing Secret.",
-		MarkdownDescription: "Manages a Contentful App Signing Secret. Contentful does not return the complete secret after it is written; see [Secrets and Terraform state](../guides/secrets-and-state) for refresh, drift, and import consequences.",
+		Description: "Manages a Contentful App Signing Secret. Contentful returns only a redacted representation after the secret is written, so refresh cannot detect an out-of-band replacement. Command-line import cannot recover the existing secret and leaves value null; a later apply with value configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply.",
+		MarkdownDescription: "Manages a Contentful App Signing Secret. Contentful returns only a redacted representation after the secret is written, so refresh cannot detect an out-of-band replacement. Command-line import cannot recover the existing secret and leaves `value` null; a later apply with `value` configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in organization_id/app_definition_id form.",
@@ -69,9 +69,10 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"value": schema.StringAttribute{
-				Description: appSigningValueDescription,
-				Required:    true,
-				Sensitive:   true,
+				Description:         appSigningValueDescription,
+				MarkdownDescription: appSigningValueDescription + " See [Secrets and Terraform state](../guides/secrets-and-state) for storage, refresh, and import guidance.",
+				Required:            true,
+				Sensitive:           true,
 				Validators: []validator.String{
 					appSigningSecretValueValidator{},
 				},
