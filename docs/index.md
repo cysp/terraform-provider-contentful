@@ -17,6 +17,8 @@ Most configurations should leave `url` unset and use the public Contentful Manag
 
 Resources operate on existing Contentful spaces. Supply the required space IDs to individual resources; this provider does not create or delete spaces.
 
+For a complete first configuration and plan, see [Getting started](guides/getting-started). For timeout defaults and environment-readiness behavior, see [Operation timeouts](guides/operation-timeouts).
+
 ## Example Usage
 
 ```terraform
