@@ -33,6 +33,9 @@ resource "contentful_content_type" "author" {
       localized = false
       omitted   = false
       required  = true
+      validations = [jsonencode({
+        size = { min = 1 }
+      })]
     },
     {
       id        = "avatar"
@@ -113,12 +116,12 @@ Required:
 Optional:
 
 - `allowed_resources` (Attributes List) For Resource Link fields, defines the allowed resource types that can be linked. (see [below for nested schema](#nestedatt--fields--allowed_resources))
-- `default_value` (String) Default value for the field in JSON format.
+- `default_value` (String) JSON-encoded object mapping locale codes to default field values, for example jsonencode({ "en-US" = "Untitled" }) for a Symbol field. Contentful applies defaults to omitted values when an Entry is created; changing a default does not rewrite existing Entries. For a non-localized field, use the environment's default locale. Omission configures no default.
 - `disabled` (Boolean) Whether the field is disabled (not editable in the UI).
 - `items` (Attributes) For Array fields, defines the type of items in the array. (see [below for nested schema](#nestedatt--fields--items))
 - `link_type` (String) For Link or Array of Links fields, specifies the type of resource being linked to (e.g., Entry, Asset).
 - `omitted` (Boolean) Whether the field is omitted from API responses. Before removing a field while the content type is activated, set omitted to true and apply so Contentful activates that change, then remove the field in a later apply.
-- `validations` (List of String)
+- `validations` (List of String) Contentful validation rules for this field, encoded as one JSON object string per rule, for example validations = [jsonencode({ size = { min = 1 } })] for a Symbol field. Supported rules depend on the field type. Omission defaults to an empty list of rules.
 
 <a id="nestedatt--fields--allowed_resources"></a>
 ### Nested Schema for `fields.allowed_resources`
@@ -156,7 +159,7 @@ Required:
 Optional:
 
 - `link_type` (String) For arrays of Links, specifies the type of resource being linked to.
-- `validations` (List of String)
+- `validations` (List of String) Contentful validation rules for each array item, encoded as one JSON object string per rule. For an array of Entry links, use validations = [jsonencode({ linkContentType = ["author"] })]. Supported rules depend on the item type. Omission defaults to an empty list of rules.
 
 
 
@@ -165,7 +168,7 @@ Optional:
 
 Optional:
 
-- `annotations` (String) Annotations for this content type, represented as a JSON object fragment.
+- `annotations` (String) Contentful annotations for this content type, encoded as a JSON object string using jsonencode(...).
 - `taxonomy` (Attributes List) List of taxonomy items for this content type. Each item represents a taxonomy term that may be associated with the content type. (see [below for nested schema](#nestedatt--metadata--taxonomy))
 
 <a id="nestedatt--metadata--taxonomy"></a>
