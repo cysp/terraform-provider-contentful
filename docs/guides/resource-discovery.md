@@ -10,6 +10,16 @@ The provider supports Terraform list resources for `contentful_entry` and `conte
 
 Use this workflow when you need to discover existing Contentful objects before bringing them under Terraform management. For one known object, the Import section on the corresponding resource page is usually simpler.
 
+## Choose the appropriate Terraform surface
+
+The provider exposes three different Terraform concepts for different jobs:
+
+- **Managed resources** such as `contentful_entry` declare objects that Terraform creates, updates, imports into state, and may destroy according to the resource lifecycle.
+- **Data sources** read existing Contentful information for use by a configuration without bringing the returned object under managed-resource lifecycle control. Use the provider's data-source pages for the specific read-only lookups it supports.
+- **List resources** query collections of existing objects for discovery. They run through `terraform query` rather than ordinary resource planning and can produce configuration and import blocks that you review before adopting the discovered objects as managed resources.
+
+Use a managed resource when Terraform should own an object's lifecycle, a data source when configuration only needs to read provider-supported existing information, and a list resource when the task is discovery or bulk import.
+
 ## Configure the provider
 
 Declare and configure the provider in the normal Terraform `.tf` files in the root configuration directory. Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment before running Terraform unless you intentionally configure `access_token` directly.
