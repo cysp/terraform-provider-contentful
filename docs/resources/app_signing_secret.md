@@ -3,12 +3,12 @@
 page_title: "contentful_app_signing_secret Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Signing Secret. Contentful returns only redactedValue, so refresh preserves the configured value already in Terraform state and cannot detect an out-of-band replacement. The terraform import command leaves value null until a subsequent apply writes the configured replacement. A configuration-driven import can write the configured replacement during the import apply.
+  Manages a Contentful App Signing Secret. Contentful does not return the complete secret after it is written, so refresh preserves the previously managed value and cannot detect an out-of-band replacement.
 ---
 
 # contentful_app_signing_secret (Resource)
 
-Manages a Contentful App Signing Secret. Contentful returns only `redactedValue`, so refresh preserves the configured `value` already in Terraform state and cannot detect an out-of-band replacement. The `terraform import` command leaves `value` null until a subsequent apply writes the configured replacement. A configuration-driven import can write the configured replacement during the import apply.
+Manages a Contentful App Signing Secret. Contentful does not return the complete secret after it is written, so refresh preserves the previously managed value and cannot detect an out-of-band replacement.
 
 ## Example Usage
 
@@ -34,7 +34,7 @@ resource "random_password" "contentful_app_signing_secret" {
 
 - `app_definition_id` (String) ID of the app definition for which the signing secret is created.
 - `organization_id` (String) ID of the organization that owns the app.
-- `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. The complete configured value is stored in Terraform state after a successful Create or Update.
+- `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. The complete configured value is stored in Terraform state after a successful Create or Update. Command-line import cannot recover the existing secret and leaves `value` null; a later apply with `value` configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply. See [Secrets and Terraform state](../guides/secrets-and-state) for storage, refresh, and import guidance.
 
 ### Optional
 
@@ -42,7 +42,7 @@ resource "random_password" "contentful_app_signing_secret" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in organization_id/app_definition_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
