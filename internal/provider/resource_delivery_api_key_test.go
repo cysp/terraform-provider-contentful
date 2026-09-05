@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"maps"
 	"regexp"
 	"testing"
 
@@ -27,6 +28,9 @@ func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
 		"test_delivery_api_key_name": config.StringVariable(apiKeyName),
 	}
 
+	updatedVariables := maps.Clone(configVariables)
+	updatedVariables["test_delivery_api_key_name"] = config.StringVariable(apiKeyName + " updated")
+
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
@@ -46,10 +50,7 @@ func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				PreConfig: func() {
-					configVariables["test_delivery_api_key_name"] = config.StringVariable(apiKeyName + " updated")
-				},
+				ConfigVariables: updatedVariables,
 			},
 		},
 	})

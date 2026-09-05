@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"maps"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -25,15 +26,21 @@ func TestAccResourceProviderResourceLifecycle(t *testing.T) {
 		Name: "Test App",
 	})
 
+	stepVariables1 := maps.Clone(configVariables)
+	stepVariables1["function_id"] = config.StringVariable("resourceProvider")
+
+	stepVariables2 := maps.Clone(configVariables)
+	stepVariables2["function_id"] = config.StringVariable("resourceProviderTwo")
+
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables1,
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables2,
 			},
 		},
 	})
