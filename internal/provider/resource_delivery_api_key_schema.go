@@ -46,7 +46,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"environments": schema.ListAttribute{
-				Description: "List of environment IDs that the token can access. Only the environments specified in this property can be accessed using this token.",
+				Description: "List of Contentful environment IDs that the token can access. Omission lets Contentful choose the initial environments; on later updates, an omitted configuration retains the environments already observed in Terraform state. An explicit empty list is sent as [] rather than omitted. Contentful has been observed to replace [] with its default environment, which can cause an inconsistent-result error for a configured empty list. Specify the intended environment IDs explicitly to avoid relying on that default; do not use [] to revoke all access.",
 				ElementType: types.StringType,
 				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Optional:    true,

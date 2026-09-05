@@ -31,7 +31,7 @@ resource "contentful_delivery_api_key" "this" {
 ### Optional
 
 - `description` (String) Description of the API key.
-- `environments` (List of String) List of environment IDs that the token can access. Only the environments specified in this property can be accessed using this token.
+- `environments` (List of String) List of Contentful environment IDs that the token can access. Omission lets Contentful choose the initial environments; on later updates, an omitted configuration retains the environments already observed in Terraform state. An explicit empty list is sent as [] rather than omitted. Contentful has been observed to replace [] with its default environment, which can cause an inconsistent-result error for a configured empty list. Specify the intended environment IDs explicitly to avoid relying on that default; do not use [] to revoke all access.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
