@@ -11,11 +11,11 @@ description: |-
 
 ## Authentication
 
-Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment before running Terraform to avoid placing a Contentful Management API token directly in configuration. You can instead set the `access_token` provider attribute; a configured non-null value takes precedence over the environment variable. The provider reports an error if the resolved token is empty.
+Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment before running Terraform to avoid placing a Contentful Management API token directly in configuration. You can instead set the `access_token` provider attribute; a configured non-null value takes precedence over the environment variable. The attribute appears as Optional because the environment can supply the token; the provider still requires a known, non-empty token to configure its client. An explicitly empty token overrides the environment and causes an error.
 
-Most configurations should leave `url` unset and use the public Contentful Management API. Use `CONTENTFUL_URL` or the `url` provider attribute only when a different API base URL is required; a configured non-null `url` takes precedence over the environment variable.
+Most configurations should leave `url` unset and use the public Contentful Management API. Use `CONTENTFUL_URL` or the `url` provider attribute only when a different API base URL is required; a configured non-null `url` takes precedence over the environment variable. An empty resolved URL selects the public API.
 
-Resources operate on existing Contentful spaces. Supply the required space IDs to individual resources; this provider does not create or delete spaces.
+Space-scoped resources require an existing space ID; organization- and account-scoped resources use their own documented identifiers.
 
 For a complete first configuration and plan, see [Getting started](guides/getting-started). For timeout defaults and environment-readiness behavior, see [Operation timeouts](guides/operation-timeouts).
 
@@ -27,7 +27,7 @@ For a complete first configuration and plan, see [Getting started](guides/gettin
 {{ tffile . }}
 {{- end }}
 
-The example requires the ID of an existing Contentful space and, unless changed, uses its `master` environment. With a valid management token, the first plan proposes creating one private `contentful_tag` named `Terraform example`; review that plan before applying it.
+The example requires the ID of an existing Contentful space and, unless changed, uses its `master` environment. The Tag ID `terraform-example` must be unused; import an existing Tag instead. The first plan proposes creating one private `contentful_tag.example` named `Terraform example`; it does not verify the remote space, environment, or permissions for a new Tag. Review the plan before applying it.
 {{- end }}
 
 {{ .SchemaMarkdown | trimspace }}
