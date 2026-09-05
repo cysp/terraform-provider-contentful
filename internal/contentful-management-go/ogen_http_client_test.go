@@ -1,6 +1,7 @@
 package contentfulmanagement_test
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -12,10 +13,11 @@ import (
 
 type staticClient struct {
 	resp *http.Response
+	err  error
 }
 
 func (c staticClient) Do(*http.Request) (*http.Response, error) {
-	return c.resp, nil
+	return c.resp, c.err
 }
 
 type recordingClient struct {
@@ -29,7 +31,7 @@ func (c *recordingClient) Do(req *http.Request) (*http.Response, error) {
 	return c.resp, nil
 }
 
-func TestResponseContentTypeNormalizingClientNormalizesResponseContentType(t *testing.T) {
+func TestTransportClientNormalizesResponseContentType(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -72,7 +74,7 @@ func TestResponseContentTypeNormalizingClientNormalizesResponseContentType(t *te
 			}
 			resp.Header.Set("Content-Type", test.contentType)
 
-			client := cm.NewResponseContentTypeNormalizingClient(staticClient{resp: resp})
+			client := cm.NewTransportClient(staticClient{resp: resp}, "test-user-agent")
 			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.contentful.com", nil)
 			require.NoError(t, err)
 
@@ -88,10 +90,10 @@ func TestResponseContentTypeNormalizingClientNormalizesResponseContentType(t *te
 	}
 }
 
-func TestResponseContentTypeNormalizingClientAllowsNilResponse(t *testing.T) {
+func TestTransportClientAllowsNilResponse(t *testing.T) {
 	t.Parallel()
 
-	client := cm.NewResponseContentTypeNormalizingClient(staticClient{})
+	client := cm.NewTransportClient(staticClient{}, "test-user-agent")
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.contentful.com", nil)
 	require.NoError(t, err)
 
@@ -107,7 +109,7 @@ func TestResponseContentTypeNormalizingClientAllowsNilResponse(t *testing.T) {
 	require.Nil(t, resp)
 }
 
-func TestUserAgentClientSetsDefaultUserAgent(t *testing.T) {
+func TestTransportClientSetsDefaultUserAgent(t *testing.T) {
 	t.Parallel()
 
 	resp := &http.Response{
@@ -115,7 +117,7 @@ func TestUserAgentClientSetsDefaultUserAgent(t *testing.T) {
 		Body:   io.NopCloser(strings.NewReader("")),
 	}
 	inner := &recordingClient{resp: resp}
-	client := cm.NewUserAgentClient(inner, "test-user-agent")
+	client := cm.NewTransportClient(inner, "test-user-agent")
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.contentful.com", nil)
 	require.NoError(t, err)
 
@@ -129,7 +131,7 @@ func TestUserAgentClientSetsDefaultUserAgent(t *testing.T) {
 	require.Equal(t, "test-user-agent", inner.req.Header.Get("User-Agent"))
 }
 
-func TestUserAgentClientPreservesExistingUserAgent(t *testing.T) {
+func TestTransportClientPreservesExistingUserAgent(t *testing.T) {
 	t.Parallel()
 
 	resp := &http.Response{
@@ -137,7 +139,7 @@ func TestUserAgentClientPreservesExistingUserAgent(t *testing.T) {
 		Body:   io.NopCloser(strings.NewReader("")),
 	}
 	inner := &recordingClient{resp: resp}
-	client := cm.NewUserAgentClient(inner, "test-user-agent")
+	client := cm.NewTransportClient(inner, "test-user-agent")
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.contentful.com", nil)
 	require.NoError(t, err)
 	req.Header.Set("User-Agent", "existing-user-agent")
@@ -175,4 +177,63 @@ func TestTransportClientComposesTransportBehavior(t *testing.T) {
 
 	require.Equal(t, "test-user-agent", inner.req.Header.Get("User-Agent"))
 	require.Equal(t, "application/json", got.Header.Get("Content-Type"))
+}
+
+func TestTransportClientAllowsEmptyDefaultUserAgent(t *testing.T) {
+	t.Parallel()
+
+	inner := &recordingClient{}
+	client := cm.NewTransportClient(inner, "")
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.contentful.com", nil)
+	require.NoError(t, err)
+
+	got, err := client.Do(req)
+	require.NoError(t, err)
+
+	if got != nil && got.Body != nil {
+		defer func() {
+			require.NoError(t, got.Body.Close())
+		}()
+	}
+
+	require.Nil(t, got)
+	require.Empty(t, inner.req.Header.Get("User-Agent"))
+}
+
+func TestTransportClientPreservesResponseAndError(t *testing.T) {
+	t.Parallel()
+
+	for _, withResponse := range []bool{false, true} {
+		t.Run(fmt.Sprintf("response=%t", withResponse), func(t *testing.T) {
+			t.Parallel()
+
+			var response *http.Response
+			if withResponse {
+				response = &http.Response{Header: http.Header{
+					"Content-Type": []string{"application/vnd.contentful.management.v1+json"},
+				}}
+			}
+
+			transportError := io.ErrUnexpectedEOF
+			client := cm.NewTransportClient(staticClient{resp: response, err: transportError}, "test-user-agent")
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.contentful.com", nil)
+			require.NoError(t, err)
+
+			got, err := client.Do(req)
+			require.Same(t, transportError, err)
+
+			if got != nil && got.Body != nil {
+				defer func() {
+					require.NoError(t, got.Body.Close())
+				}()
+			}
+
+			if response == nil {
+				require.Nil(t, got)
+			} else {
+				require.Same(t, response, got)
+				require.Equal(t, "application/json", got.Header.Get("Content-Type"))
+			}
+		})
+	}
 }
