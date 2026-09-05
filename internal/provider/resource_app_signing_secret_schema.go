@@ -44,7 +44,8 @@ func (v appSigningSecretValueValidator) ValidateString(ctx context.Context, req 
 
 func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Signing Secret. Contentful returns only `redactedValue`, so refresh preserves the configured `value` already in Terraform state and cannot detect an out-of-band replacement. The `terraform import` command leaves `value` null until a subsequent apply writes the configured replacement. A configuration-driven import can write the configured replacement during the import apply.",
+		Description:         "Manages a Contentful App Signing Secret.",
+		MarkdownDescription: "Manages a Contentful App Signing Secret. Contentful does not return the complete secret after it is written; see [Secrets and Terraform state](../guides/secrets-and-state) for refresh, drift, and import consequences.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
