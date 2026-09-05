@@ -18,7 +18,8 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Webhook.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/webhook_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -63,9 +64,9 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"filters": WebhookFiltersSchema(ctx, true),
 			"http_basic_password": schema.StringAttribute{
-				Description: "HTTP Basic authentication password. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. Terraform marks the value sensitive, which obscures CLI output but does not encrypt or omit plan or state data.",
-				Optional:    true,
-				Sensitive:   true,
+				MarkdownDescription: "HTTP Basic authentication password. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. Terraform marks the value sensitive, which obscures CLI output but does not encrypt or omit plan or state data. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.",
+				Optional:            true,
+				Sensitive:           true,
 			},
 			"http_basic_username": schema.StringAttribute{
 				Description: "HTTP Basic authentication username.",
