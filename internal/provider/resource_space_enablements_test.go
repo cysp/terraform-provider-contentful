@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"regexp"
 	"sync"
@@ -30,7 +31,8 @@ var (
 func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
@@ -326,7 +328,8 @@ func requireStoredSpaceEnablementsFields(
 func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
@@ -349,7 +352,8 @@ func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -357,15 +361,23 @@ func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
+	stepVariables1 := maps.Clone(configVariables)
+	stepVariables1["cross_space_links"] = config.BoolVariable(false)
+	stepVariables1["space_templates"] = config.BoolVariable(false)
+
+	stepVariables2 := maps.Clone(configVariables)
+	stepVariables2["cross_space_links"] = config.BoolVariable(true)
+	stepVariables2["space_templates"] = config.BoolVariable(true)
+
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables1,
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables2,
 			},
 		},
 	})

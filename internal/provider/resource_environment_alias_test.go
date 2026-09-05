@@ -8,12 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/require"
 )
 
-func TestAccEnvironmentAliasResource(t *testing.T) {
+func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-id", "master")
 	server.RegisterSpaceEnvironment("space-id", "staging")
@@ -51,10 +53,11 @@ func TestAccEnvironmentAliasResource(t *testing.T) {
 	})
 }
 
-func TestAccEnvironmentAliasImport(t *testing.T) {
+func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-id", "master-1970-01-01")
 

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestJsonMarshalEscaping(t *testing.T) {
+func TestJSONMarshalEscaping(t *testing.T) {
 	t.Parallel()
 
 	input := map[string]string{

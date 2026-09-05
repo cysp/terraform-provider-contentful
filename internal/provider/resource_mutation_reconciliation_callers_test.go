@@ -50,7 +50,7 @@ func replaceEditorInterfaceResponseLayout(groupID string) func(map[string]any) {
 	}
 }
 
-func TestAccEditorInterfaceUpdateConsistencyErrorRetainsResponseState(t *testing.T) {
+func TestAccEditorInterfaceResourceUpdateConsistencyErrorRetainsResponseState(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -97,7 +97,7 @@ func TestAccEditorInterfaceUpdateConsistencyErrorRetainsResponseState(t *testing
 	})
 }
 
-func TestAccEditorInterfaceCreateConsistencyErrorRetainsStateAndRequiresImport(t *testing.T) {
+func TestAccEditorInterfaceResourceCreateConsistencyErrorRetainsStateAndRequiresImport(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -137,7 +137,7 @@ func TestAccEditorInterfaceCreateConsistencyErrorRetainsStateAndRequiresImport(t
 	require.Equal(t, []string{"PUT:1", "PUT:1"}, handler.Requests())
 }
 
-func TestAccRoleConsistencyErrorsRetainResponseState(t *testing.T) {
+func TestAccRoleResourceConsistencyErrorsRetainResponseState(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))

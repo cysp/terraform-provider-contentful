@@ -96,7 +96,7 @@ go test ./internal/provider -run TestContentTypeModelRoundTrip -count=1
 Run mocked Terraform acceptance tests locally:
 
 ```sh
-TF_ACC=1 TF_ACC_MOCKED=1 go test ./internal/provider -run '^TestAcc' -count=1
+TF_ACC=1 TF_ACC_MOCKED=1 go test ./internal/provider -run '^TestAcc' -count=1 -timeout 15m
 ```
 
 For authorized live Terraform acceptance tests, configure
@@ -104,12 +104,32 @@ For authorized live Terraform acceptance tests, configure
 for the command so an inherited mock setting cannot mask a live check:
 
 ```sh
-env -u TF_ACC_MOCKED TF_ACC=1 go test ./internal/provider -run '^TestAcc' -count=1
+env -u TF_ACC_MOCKED TF_ACC=1 go test ./internal/provider -run '^TestAcc' -count=1 -timeout 15m
 ```
 
-Acceptance tests require a Terraform CLI on `PATH`. Mocked acceptance tests use
-local HTTP test servers; they do not call Contentful, but they still exercise
-the Terraform acceptance-test harness.
+All `TestAcc` tests require `TF_ACC`, including registry upgrades and tests that
+invoke Terraform directly to inspect logs and terminal output. With `TF_ACC`
+unset, the ordinary suite runs unit, provider protocol, local HTTP integration,
+mock conformance, property tests, and fuzz seeds without invoking Terraform.
+Table-driven acceptance parents can report PASS when all their subtests skip;
+inspect the subtest results when checking what actually executed.
+Fuzz seeds are regression examples; active fuzzing requires `-fuzz` and a bound,
+for example `go test ./internal/provider -run '^$' -fuzz '^FuzzExtensionModelRoundTrip$' -fuzztime 30s`.
+
+Install Terraform on `PATH` or set `TF_ACC_TERRAFORM_PATH` to an existing binary
+for reproducible acceptance runs. The framework can otherwise download Terraform;
+the direct CLI presentation tests require an installed binary. Registry-upgrade
+tests always use local Contentful servers but download the pinned released
+provider from the Terraform registry, even with `TF_ACC_MOCKED=1`.
+
+Mocked acceptance tests use isolated local HTTP servers. Mock-only tests always
+use those servers; live-capable tests use them when `TF_ACC_MOCKED` is set.
+The live-only App Key sibling skips in mocked mode. Live-capable harness calls
+serialize access to the shared account and quota; do not remove that serialization
+merely to speed up tests. Query tests require Terraform 1.14 and skip on 1.13.
+CI runs mocked acceptance on 1.13 and 1.14, and authorized live acceptance on 1.14
+when the repository secret is available. See the workflow for exact coverage
+flags: ordinary, client, mocked, and live results have separate Codecov flags.
 
 ## Linting
 
@@ -121,3 +141,26 @@ then run the repository checks:
 golangci-lint run
 golangci-lint fmt --diff
 ```
+
+### Test conventions
+
+Name comparable acceptance scenarios `TestAcc<Subject>Resource<Scenario>`,
+`TestAcc<Subject>DataSource<Scenario>`, or `TestAcc<Subject>ListResource<Scenario>`.
+Keep combined resource contracts named for their shared concern. Use `Test` for
+unit, protocol, and local HTTP tests, and `Fuzz` for fuzz targets; spell acronyms
+as `ID`, `API`, `HTTP`, `JSON`, and `JWK`, and use `RoundTrip` consistently.
+Rename `TestNameDirectory` fixtures and fuzz corpus directories with their test.
+
+Use independent cases in tables and sequential lifecycle transitions in explicit
+steps. Prefer a scenario directory and independent per-step `ConfigVariables`
+for simple value changes. Keep structural changes, unknown-producing expressions,
+literal lifecycle settings, and substantial nested HCL visible in separate
+fixtures or concise inline configuration. Do not encode phases or a fixture
+language merely to reduce directory count.
+
+Prefer typed state and plan checks when null, empty, unknown, collection semantics,
+or action timing matter. Retain API checks and phase-specific legacy hooks.
+CLI imports use `ImportStateCheck` for direct imported-state assertions;
+`Check` and `ConfigStateChecks` are not invoked by that import path. Use
+`ImportStateVerify` when a preceding apply supplies the comparison state.
+Explain verification exclusions and test those attributes separately.

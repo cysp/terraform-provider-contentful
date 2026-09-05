@@ -7,12 +7,14 @@ import (
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/require"
 )
 
-func TestAccMarketplaceAppDefinitionDataSource(t *testing.T) {
+func TestAccMarketplaceAppDefinitionDataSourceRead(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"app_definition_id": config.StringVariable("5KySdUzG7OWuCE2V3fgtIa"),

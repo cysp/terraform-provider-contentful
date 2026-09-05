@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func FuzzExtensionModelRoundtrip(f *testing.F) {
+func FuzzExtensionModelRoundTrip(f *testing.F) {
 	corpus := []cm.Extension{
 		{
 			Sys: cm.NewExtensionSys("space-id", "environment-id", "extension-id"),

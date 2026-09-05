@@ -3,5 +3,5 @@ resource "contentful_resource_provider" "test" {
   app_definition_id = var.app_definition_id
 
   resource_provider_id = "test"
-  function_id          = "resourceProviderTwo"
+  function_id          = var.function_id
 }

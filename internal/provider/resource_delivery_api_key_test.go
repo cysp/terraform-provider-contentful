@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"maps"
 	"regexp"
 	"testing"
 
@@ -8,12 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/require"
 )
 
-func TestAccDeliveryAPIKeyResource(t *testing.T) {
+func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -24,6 +27,9 @@ func TestAccDeliveryAPIKeyResource(t *testing.T) {
 		"environment_id":             config.StringVariable("test"),
 		"test_delivery_api_key_name": config.StringVariable(apiKeyName),
 	}
+
+	updatedVariables := maps.Clone(configVariables)
+	updatedVariables["test_delivery_api_key_name"] = config.StringVariable(apiKeyName + " updated")
 
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
@@ -44,10 +50,7 @@ func TestAccDeliveryAPIKeyResource(t *testing.T) {
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				PreConfig: func() {
-					configVariables["test_delivery_api_key_name"] = config.StringVariable(apiKeyName + " updated")
-				},
+				ConfigVariables: updatedVariables,
 			},
 		},
 	})
@@ -56,7 +59,8 @@ func TestAccDeliveryAPIKeyResource(t *testing.T) {
 func TestAccDeliveryAPIKeyResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	apiKeyName := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 

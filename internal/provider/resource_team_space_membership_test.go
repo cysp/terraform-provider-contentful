@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -17,10 +18,11 @@ var (
 	errUnexpectedImportedAttr     = errors.New("unexpected imported attribute")
 )
 
-func TestAccTeamSpaceMembershipResource(t *testing.T) {
+func TestAccTeamSpaceMembershipResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-id", "master")
 
@@ -41,7 +43,8 @@ func TestAccTeamSpaceMembershipResource(t *testing.T) {
 func TestAccTeamSpaceMembershipResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-id", "master")
 

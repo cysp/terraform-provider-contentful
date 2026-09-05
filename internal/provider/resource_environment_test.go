@@ -9,12 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/require"
 )
 
-func TestAccEnvironmentResource(t *testing.T) {
+func TestAccEnvironmentResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-id", "master")
 
@@ -51,10 +53,11 @@ func TestAccEnvironmentResource(t *testing.T) {
 	})
 }
 
-func TestAccEnvironmentImport(t *testing.T) {
+func TestAccEnvironmentResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-id", "master")
 

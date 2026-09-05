@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWebhookFiltersRoundtrip(t *testing.T) {
+func TestWebhookFiltersRoundTrip(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/stretchr/testify/require"
 )
 
 var errUnexpectedTeamListRequestCount = errors.New("unexpected team-list request count")
@@ -24,10 +25,12 @@ var errUnexpectedTeamListRequestCount = errors.New("unexpected team-list request
 // consumed by the provider, not live authorization or visibility of
 // SCIM-managed teams.
 
-func TestAccTeamsDataSource(t *testing.T) {
+func TestAccTeamsDataSourceRead(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+
 	organizationID := "2zuSjSO4A0e6GKBrhJRe2m"
 
 	server.SetTeam(organizationID, "team-b", cm.TeamData{
@@ -65,7 +68,9 @@ func TestAccTeamsDataSource(t *testing.T) {
 func TestAccTeamsDataSourceEmpty(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+
 	organizationID := "2zuSjSO4A0e6GKBrhJRe2m"
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
@@ -254,7 +259,9 @@ func TestAccTeamsDataSourcePaginationWithoutTotal(t *testing.T) {
 func TestAccTeamsDataSourceAssignment(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+
 	organizationID := "2zuSjSO4A0e6GKBrhJRe2m"
 
 	server.RegisterSpaceEnvironment("space-id", "master")

@@ -10,10 +10,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccTeamResource(t *testing.T) {
+func TestAccTeamResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
@@ -89,7 +90,8 @@ resource "contentful_team" "test" {
 func TestAccTeamResourceImportUpdateUsesDefaultDescription(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.SetTeam("2zuSjSO4A0e6GKBrhJRe2m", "team-id", cm.TeamData{
 		Name:        "Test Team",
@@ -128,7 +130,8 @@ resource "contentful_team" "test" {
 func TestAccTeamResourceImportNullDescriptionUsesDefault(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.SetTeam("2zuSjSO4A0e6GKBrhJRe2m", "team-id", cm.TeamData{
 		Name:        "Test Team",

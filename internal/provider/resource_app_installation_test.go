@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"maps"
 	"regexp"
 	"testing"
 
@@ -12,13 +13,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/require"
 )
 
 //nolint:paralleltest
-func TestAccAppInstallationResource(t *testing.T) {
+func TestAccAppInstallationResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -63,7 +66,8 @@ func TestAccAppInstallationResource(t *testing.T) {
 func TestAccAppInstallationResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -121,7 +125,8 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":          config.StringVariable("0p38pssr0fi3"),
@@ -147,7 +152,8 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":          config.StringVariable("0p38pssr0fi3"),
@@ -170,7 +176,8 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 func TestAccAppInstallationResourceUpdate(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -184,15 +191,22 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
+	stepVariables1 := maps.Clone(configVariables)
+
+	stepVariables2 := maps.Clone(configVariables)
+	stepVariables2["parameters"] = config.StringVariable(`{"foo":"bar"}`)
+
+	stepVariables3 := maps.Clone(configVariables)
+
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables1,
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables2,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_app_installation.test", plancheck.ResourceActionUpdate),
@@ -200,8 +214,8 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 				},
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables3,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_app_installation.test", plancheck.ResourceActionUpdate),
@@ -216,7 +230,8 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 func TestAccAppInstallationResourceDeleted(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
