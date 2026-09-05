@@ -24,7 +24,8 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Content Type. Create and Terraform-managed updates activate the exact draft returned by that operation. Imported Content Types, external drafts, and external deactivation remain observational until a Terraform-managed draft change authors a new draft.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id/content_type_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
