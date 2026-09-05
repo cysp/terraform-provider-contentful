@@ -68,7 +68,7 @@ resource "contentful_role" "editor" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/role_id form.
 - `role_id` (String) System ID of the role.
 
 <a id="nestedatt--policies"></a>
