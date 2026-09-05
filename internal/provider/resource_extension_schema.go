@@ -21,7 +21,8 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful UI Extension.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id/extension_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
