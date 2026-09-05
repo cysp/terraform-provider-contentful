@@ -701,7 +701,7 @@ func TestAccTaxonomyResourcesRejectResponseIdentityRetargeting(t *testing.T) {
 }
 
 //nolint:paralleltest
-func TestAccTaxonomyConceptPreservesExplicitEmptyLabelMapsAgainstCanonicalResponse(t *testing.T) {
+func TestAccTaxonomyConceptResourcePreservesExplicitEmptyLabelMapsAgainstCanonicalResponse(t *testing.T) {
 	parallelWhenMocked(t)
 
 	tests := map[string]struct {
@@ -767,7 +767,7 @@ func TestAccTaxonomyConceptPreservesExplicitEmptyLabelMapsAgainstCanonicalRespon
 }
 
 //nolint:paralleltest
-func TestAccTaxonomyConceptProjectsOutOfBandLabelLocalesByOwnership(t *testing.T) {
+func TestAccTaxonomyConceptResourceProjectsOutOfBandLabelLocalesByOwnership(t *testing.T) {
 	parallelWhenMocked(t)
 
 	tests := map[string]struct {
@@ -1444,7 +1444,7 @@ func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
 }
 
 //nolint:paralleltest
-func TestAccTaxonomyConceptImportProjectsNonemptyLabelMaps(t *testing.T) {
+func TestAccTaxonomyConceptResourceImportProjectsNonemptyLabelMaps(t *testing.T) {
 	parallelWhenMocked(t)
 
 	server, err := cmt.NewContentfulManagementServer()

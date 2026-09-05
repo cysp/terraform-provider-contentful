@@ -39,7 +39,7 @@ const contentTypeListResourceConfig = `
 	}
 `
 
-func TestAccContentTypeListResource(t *testing.T) {
+func TestAccContentTypeListResourceQuery(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

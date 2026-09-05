@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccResourceTypeResource(t *testing.T) {
+func TestAccResourceTypeResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

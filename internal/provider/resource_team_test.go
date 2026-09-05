@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccTeamResource(t *testing.T) {
+func TestAccTeamResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

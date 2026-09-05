@@ -65,7 +65,7 @@ func (h *environmentStatusReadyTestHandler) StatusesServed() []string {
 	return append([]string(nil), h.statusesServed...)
 }
 
-func TestAccEnvironmentStatusReadyDataSource(t *testing.T) {
+func TestAccEnvironmentStatusReadyDataSourceRead(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

@@ -34,7 +34,7 @@ var (
 	errMissingExtensionPut         = errors.New("no extension PUT request was recorded")
 )
 
-func TestAccExtensionResource(t *testing.T) {
+func TestAccExtensionResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccDeliveryAPIKeyResource(t *testing.T) {
+func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

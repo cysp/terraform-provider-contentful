@@ -38,7 +38,7 @@ const rawWebhookWithoutBasicPassword = `{
   "active": true
 }`
 
-func TestAccWebhookBasicPasswordOmittedFromRawCMAResponse(t *testing.T) {
+func TestAccWebhookResourceBasicPasswordOmittedFromRawCMAResponse(t *testing.T) {
 	t.Parallel()
 
 	config := webhookBasicPasswordConfig("Basic webhook", `"basic-password-test-sentinel"`, "")
@@ -76,7 +76,7 @@ func (rawWebhookPasswordOmissionHandler) ServeHTTP(responseWriter http.ResponseW
 	}
 }
 
-func TestAccWebhookBasicPasswordLifecycle(t *testing.T) {
+func TestAccWebhookResourceBasicPasswordLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -118,7 +118,7 @@ func TestAccWebhookBasicPasswordLifecycle(t *testing.T) {
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: steps})
 }
 
-func TestAccWebhookBasicPasswordImportRequiresUpdate(t *testing.T) {
+func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -168,7 +168,7 @@ func TestAccWebhookBasicPasswordImportRequiresUpdate(t *testing.T) {
 	}})
 }
 
-func TestAccWebhookBasicPasswordIgnoreChangesUsesEffectivePlan(t *testing.T) {
+func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))

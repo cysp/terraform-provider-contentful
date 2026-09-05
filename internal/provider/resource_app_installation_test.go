@@ -15,7 +15,7 @@ import (
 )
 
 //nolint:paralleltest
-func TestAccAppInstallationResource(t *testing.T) {
+func TestAccAppInstallationResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
 	server, _ := cmt.NewContentfulManagementServer()

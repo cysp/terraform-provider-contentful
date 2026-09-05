@@ -24,7 +24,7 @@ var errUnexpectedTeamListRequestCount = errors.New("unexpected team-list request
 // consumed by the provider, not live authorization or visibility of
 // SCIM-managed teams.
 
-func TestAccTeamsDataSource(t *testing.T) {
+func TestAccTeamsDataSourceRead(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

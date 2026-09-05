@@ -117,7 +117,7 @@ resource "contentful_webhook" "plan" {
 	assert.Regexp(t, `(?ms)^\s+\+ "SensitiveAuthorization"\s+= \{\s+\+ secret\s+= true\s+\+ value\s+= \(sensitive value\)\s+\},$`, output)
 }
 
-func TestAccExtensionLifecycleLogsExcludeParameters(t *testing.T) {
+func TestAccExtensionResourceLifecycleLogsExcludeParameters(t *testing.T) {
 	t.Parallel()
 
 	const (
@@ -158,7 +158,7 @@ func TestAccExtensionLifecycleLogsExcludeParameters(t *testing.T) {
 	}
 }
 
-func TestAccWebhookLifecycleLogsAndOutputExcludeBasicPassword(t *testing.T) {
+func TestAccWebhookResourceLifecycleLogsAndOutputExcludeBasicPassword(t *testing.T) {
 	t.Parallel()
 
 	sentinels := []string{
