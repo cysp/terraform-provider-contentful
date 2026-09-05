@@ -106,7 +106,7 @@ import {
     space_id = var.contentful_space_id
     role_id  = var.role_id
   }
-  to = contentful_role.this
+  to = contentful_role.editor
 }
 ```
 
@@ -123,12 +123,12 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.role_id}"
-  to = contentful_role.this
+  to = contentful_role.editor
 }
 ```
 
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_role.this $CONTENTFUL_SPACE_ID/abcdef
+terraform import contentful_role.editor $CONTENTFUL_SPACE_ID/abcdef
 ```
