@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAccEntryListResource(t *testing.T) {
+func TestAccEntryListResourceQuery(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

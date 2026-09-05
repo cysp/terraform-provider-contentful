@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWebhookFilterRegexpValueObjectRoundtrip(t *testing.T) {
+func TestWebhookFilterRegexpValueObjectRoundTrip(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()

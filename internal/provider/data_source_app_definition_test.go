@@ -10,7 +10,7 @@ import (
 )
 
 //nolint:paralleltest
-func TestAccAppDefinitionDataSource(t *testing.T) {
+func TestAccAppDefinitionDataSourceRead(t *testing.T) {
 	parallelWhenMocked(t)
 
 	server, _ := cmt.NewContentfulManagementServer()

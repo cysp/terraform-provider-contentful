@@ -17,7 +17,7 @@ var (
 	errUnexpectedImportedAttr     = errors.New("unexpected imported attribute")
 )
 
-func TestAccTeamSpaceMembershipResource(t *testing.T) {
+func TestAccTeamSpaceMembershipResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

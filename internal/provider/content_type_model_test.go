@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestContentTypeFieldValueToTerraformValueRoundtrip(t *testing.T) {
+func TestContentTypeFieldValueToTerraformValueRoundTrip(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -84,7 +84,7 @@ func TestContentTypeFieldValueToTerraformValueRoundtrip(t *testing.T) {
 	}
 }
 
-func TestContentTypeFieldItemsValueToTerraformValueRoundtrip(t *testing.T) {
+func TestContentTypeFieldItemsValueToTerraformValueRoundTrip(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccMarketplaceAppDefinitionDataSource(t *testing.T) {
+func TestAccMarketplaceAppDefinitionDataSourceRead(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

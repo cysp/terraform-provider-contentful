@@ -38,7 +38,7 @@ resource "contentful_webhook" "test" {
 `, name, filterType, lifecycle)
 }
 
-func TestAccWebhookConsistencyErrorsRetainResponseState(t *testing.T) {
+func TestAccWebhookResourceConsistencyErrorsRetainResponseState(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -91,7 +91,7 @@ func TestAccWebhookConsistencyErrorsRetainResponseState(t *testing.T) {
 	})
 }
 
-func TestAccWebhookUnsupportedResponsePropertiesPreventFalseConvergence(t *testing.T) {
+func TestAccWebhookResourceUnsupportedResponsePropertiesPreventFalseConvergence(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -135,7 +135,7 @@ func TestAccWebhookUnsupportedResponsePropertiesPreventFalseConvergence(t *testi
 	})
 }
 
-func TestAccWebhookMutationReconciliationUsesEffectivePlanWithIgnoreChanges(t *testing.T) {
+func TestAccWebhookResourceMutationReconciliationUsesEffectivePlanWithIgnoreChanges(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -168,7 +168,7 @@ func TestAccWebhookMutationReconciliationUsesEffectivePlanWithIgnoreChanges(t *t
 	}})
 }
 
-func TestAccWebhookKnownDefaultContradictionRetainsResponseState(t *testing.T) {
+func TestAccWebhookResourceKnownDefaultContradictionRetainsResponseState(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))

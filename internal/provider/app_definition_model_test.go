@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func FuzzAppDefinitionResourceModelRoundtrip(f *testing.F) {
+func FuzzAppDefinitionResourceModelRoundTrip(f *testing.F) {
 	corpus := []cm.AppDefinition{
 		{
 			Sys:  cm.NewAppDefinitionSys("organization-id", "app-definition-id"),

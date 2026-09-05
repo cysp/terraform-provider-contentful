@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccEnvironmentResource(t *testing.T) {
+func TestAccEnvironmentResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
@@ -51,7 +51,7 @@ func TestAccEnvironmentResource(t *testing.T) {
 	})
 }
 
-func TestAccEnvironmentImport(t *testing.T) {
+func TestAccEnvironmentResourceImport(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()

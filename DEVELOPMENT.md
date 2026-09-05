@@ -111,8 +111,10 @@ All `TestAcc` tests require `TF_ACC`, including registry upgrades and tests that
 invoke Terraform directly to inspect logs and terminal output. With `TF_ACC`
 unset, the ordinary suite runs unit, provider protocol, local HTTP integration,
 mock conformance, property tests, and fuzz seeds without invoking Terraform.
+Table-driven acceptance parents can report PASS when all their subtests skip;
+inspect the subtest results when checking what actually executed.
 Fuzz seeds are regression examples; active fuzzing requires `-fuzz` and a bound,
-for example `go test ./internal/provider -run '^$' -fuzz '^FuzzExtensionModelRoundtrip$' -fuzztime 30s`.
+for example `go test ./internal/provider -run '^$' -fuzz '^FuzzExtensionModelRoundTrip$' -fuzztime 30s`.
 
 Install Terraform on `PATH` or set `TF_ACC_TERRAFORM_PATH` to an existing binary
 for reproducible acceptance runs. The framework can otherwise download Terraform;
@@ -139,3 +141,26 @@ then run the repository checks:
 golangci-lint run
 golangci-lint fmt --diff
 ```
+
+### Test conventions
+
+Name comparable acceptance scenarios `TestAcc<Subject>Resource<Scenario>`,
+`TestAcc<Subject>DataSource<Scenario>`, or `TestAcc<Subject>ListResource<Scenario>`.
+Keep combined resource contracts named for their shared concern. Use `Test` for
+unit, protocol, and local HTTP tests, and `Fuzz` for fuzz targets; spell acronyms
+as `ID`, `API`, `HTTP`, `JSON`, and `JWK`, and use `RoundTrip` consistently.
+Rename `TestNameDirectory` fixtures and fuzz corpus directories with their test.
+
+Use independent cases in tables and sequential lifecycle transitions in explicit
+steps. Prefer a scenario directory and independent per-step `ConfigVariables`
+for simple value changes. Keep structural changes, unknown-producing expressions,
+literal lifecycle settings, and substantial nested HCL visible in separate
+fixtures or concise inline configuration. Do not encode phases or a fixture
+language merely to reduce directory count.
+
+Prefer typed state and plan checks when null, empty, unknown, collection semantics,
+or action timing matter. Retain API checks and phase-specific legacy hooks.
+CLI imports use `ImportStateCheck` for direct imported-state assertions;
+`Check` and `ConfigStateChecks` are not invoked by that import path. Use
+`ImportStateVerify` when a preceding apply supplies the comparison state.
+Explain verification exclusions and test those attributes separately.

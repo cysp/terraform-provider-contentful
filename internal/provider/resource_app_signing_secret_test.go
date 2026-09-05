@@ -29,7 +29,7 @@ const (
 	testAppSigningSecretRemoteValue  = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccQr65+=_/-"
 )
 
-func TestAccAppSigningSecretResource(t *testing.T) {
+func TestAccAppSigningSecretResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
@@ -132,7 +132,7 @@ resource "contentful_app_signing_secret" "test" {
 	}
 }
 
-func TestAccAppSigningSecretImport(t *testing.T) {
+func TestAccAppSigningSecretResourceImport(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
@@ -214,7 +214,7 @@ func TestAccAppSigningSecretImport(t *testing.T) {
 	require.Equal(t, int64(1), putCount.Load())
 }
 
-func TestAccAppSigningSecretImportBlockWritesConfiguredValue(t *testing.T) {
+func TestAccAppSigningSecretResourceImportBlockWritesConfiguredValue(t *testing.T) {
 	t.Parallel()
 
 	server, _ := cmt.NewContentfulManagementServer()
