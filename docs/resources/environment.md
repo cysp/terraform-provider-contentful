@@ -81,7 +81,7 @@ import {
     space_id       = var.contentful_space_id
     environment_id = var.contentful_environment_id
   }
-  to = contentful_environment.this
+  to = contentful_environment.staging
 }
 ```
 
@@ -98,6 +98,6 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}"
-  to = contentful_environment.this
+  to = contentful_environment.staging
 }
 ```
