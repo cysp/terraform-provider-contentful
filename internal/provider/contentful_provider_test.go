@@ -2,7 +2,6 @@ package provider_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
@@ -77,8 +76,9 @@ func TestProtocol6ProviderServerSchemaVersion(t *testing.T) {
 	require.NoError(t, err)
 
 	resp, err := providerServer.GetProviderSchema(t.Context(), &tfprotov6.GetProviderSchemaRequest{})
-	require.NotNil(t, resp.Provider)
 	require.NoError(t, err)
+	require.NotNil(t, resp)
+	require.NotNil(t, resp.Provider)
 	assert.Empty(t, resp.Diagnostics)
 
 	assert.EqualValues(t, 0, resp.Provider.Version)
@@ -92,8 +92,9 @@ func TestProtocol6ProviderServerSchemaDocumentsProviderConfiguration(t *testing.
 	require.NoError(t, err)
 
 	resp, err := providerServer.GetProviderSchema(t.Context(), &tfprotov6.GetProviderSchemaRequest{})
-	require.NotNil(t, resp.Provider)
 	require.NoError(t, err)
+	require.NotNil(t, resp)
+	require.NotNil(t, resp.Provider)
 	require.Empty(t, resp.Diagnostics)
 
 	attributes := map[string]*tfprotov6.SchemaAttribute{}
@@ -111,10 +112,6 @@ func TestProtocol6ProviderServerSchemaDocumentsProviderConfiguration(t *testing.
 }
 
 func TestProtocol6ProviderServerConfigure(t *testing.T) {
-	if os.Getenv("TF_ACC") != "" {
-		return
-	}
-
 	tests := map[string]struct {
 		config              map[string]any
 		env                 map[string]string
@@ -361,10 +358,6 @@ func TestProviderConfigureErrorsDoNotSetProviderData(t *testing.T) {
 
 func TestProtocol6ProviderServerConfigureOverridesUnknownValues(t *testing.T) {
 	t.Parallel()
-
-	if os.Getenv("TF_ACC") != "" {
-		return
-	}
 
 	providerFactories := makeTestAccProtoV6ProviderFactories(
 		WithContentfulURL("https://api.test.contentful.com"),

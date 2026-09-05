@@ -18,7 +18,8 @@ import (
 func TestAccAppDefinitionResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
@@ -108,7 +109,8 @@ resource "contentful_app_definition" "test" {
 func TestAccAppDefinitionResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
@@ -144,7 +146,8 @@ func TestAccAppDefinitionResourceImport(t *testing.T) {
 func TestAccAppDefinitionResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),

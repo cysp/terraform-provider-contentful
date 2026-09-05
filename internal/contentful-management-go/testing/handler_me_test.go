@@ -14,7 +14,8 @@ import (
 func TestContentfulManagementServerGetAuthenticatedUserFound(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	hts := httptest.NewServer(server)
 	defer hts.Close()
@@ -41,7 +42,8 @@ func TestContentfulManagementServerGetAuthenticatedUserFound(t *testing.T) {
 func TestContentfulManagementServerGetAuthenticatedUserNotFound(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	hts := httptest.NewServer(server)
 	defer hts.Close()

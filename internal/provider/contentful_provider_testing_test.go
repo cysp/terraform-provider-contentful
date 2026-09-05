@@ -43,9 +43,9 @@ func ContentfulProviderMockedResourceTestWithFactoryCounter(
 	t.Helper()
 
 	if result, ok := handler.(resourceTestHandlerResult); ok {
-		defer func() {
+		t.Cleanup(func() {
 			require.NoError(t, result.handlerError())
-		}()
+		})
 	}
 
 	testserver := httptest.NewServer(handler)
@@ -72,9 +72,9 @@ func contentfulProviderMockableResourceTest(t *testing.T, handler http.Handler, 
 	t.Helper()
 
 	if result, ok := handler.(resourceTestHandlerResult); ok {
-		defer func() {
+		t.Cleanup(func() {
 			require.NoError(t, result.handlerError())
-		}()
+		})
 	}
 
 	switch {

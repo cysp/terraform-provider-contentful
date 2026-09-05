@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -27,7 +28,8 @@ var (
 func TestAccAppKeyResourceMockLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
 	jwk := testAccAppKeyJWK(t)
@@ -68,7 +70,8 @@ func TestAccAppKeyResourceMockLifecycle(t *testing.T) {
 func TestAccAppKeyResourceMockParentReplacement(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
 	jwk := testAccAppKeyJWK(t)
@@ -101,7 +104,8 @@ func TestAccAppKeyResourceMockParentReplacement(t *testing.T) {
 func TestAccAppKeyResourceMockTimeoutUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 	counter := &appKeyMutationCounter{handler: server}
 	jwk := testAccAppKeyJWK(t)
@@ -157,7 +161,8 @@ func TestAccAppKeyResourceMockTimeoutUpdate(t *testing.T) {
 func TestAccAppKeyResourceMockImport(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
 	jwk := testAccAppKeyJWK(t)
@@ -185,7 +190,8 @@ func TestAccAppKeyResourceMockImport(t *testing.T) {
 func TestAccAppKeyResourceMockExternalDeletion(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
 	jwk := testAccAppKeyJWK(t)
@@ -223,7 +229,8 @@ func TestAccAppKeyResourceMockExternalDeletion(t *testing.T) {
 func TestAccAppKeyResourceMockCreateBeforeDestroyRejectsReusedKey(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
 	jwk := testAccAppKeyJWK(t)
@@ -264,7 +271,8 @@ func TestAccAppKeyResourceMockInvalidJWKMaterial(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, _ := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer()
+			require.NoError(t, err)
 			setTestAccAppKeyAppDefinitions(server)
 			counter := &appKeyMutationCounter{handler: server}
 
@@ -285,7 +293,8 @@ func TestAccAppKeyResourceMockInvalidJWKMaterial(t *testing.T) {
 func TestAccAppKeyResourceMockAcceptsFingerprintableMaterial(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
 	jwk := testAccAppKeyJWKFromDER(bytes.Repeat([]byte{0}, 600))
@@ -303,7 +312,8 @@ func TestAccAppKeyResourceMockAcceptsFingerprintableMaterial(t *testing.T) {
 func TestAccAppKeyResourceMockPreservesNonCanonicalBase64(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
 	publicKeyBytes := bytes.Repeat([]byte{0}, 550)
@@ -346,7 +356,8 @@ func TestAccAppKeyResourceMockPreservesNonCanonicalBase64(t *testing.T) {
 func TestAccAppKeyResourceMockDefersUnknownJWKValidation(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
 	jwk := testAccAppKeyJWK(t)
