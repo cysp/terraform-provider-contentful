@@ -3,12 +3,15 @@
 page_title: "contentful_editor_interface Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages the Editor Interface associated with a Content Type. Contentful creates the Editor Interface when the Content Type is first activated. Terraform can begin managing its initial configuration without import, including after this provider updates the Content Type earlier in the same apply. Import an Editor Interface that was modified before Terraform began managing it.
+  Manages the Editor Interface associated with a Content Type. Contentful creates the Editor Interface when the Content Type is first activated. Terraform can begin managing its initial configuration without import, including after an earlier Content Type update in the same apply when both resources use the same provider configuration. Import an existing modified Editor Interface to deliberately adopt it.
+  When changing both resources in one apply, use the same provider configuration and reference the Content Type resource to order their operations. Version adjustments are not shared across provider aliases. Updates use the previously observed version plus activation adjustments; a version conflict fails without fetching a newer version and retrying. Review a refreshed plan before applying again.
 ---
 
 # contentful_editor_interface (Resource)
 
-Manages the Editor Interface associated with a Content Type. Contentful creates the Editor Interface when the Content Type is first activated. Terraform can begin managing its initial configuration without import, including after this provider updates the Content Type earlier in the same apply. Import an Editor Interface that was modified before Terraform began managing it.
+Manages the Editor Interface associated with a Content Type. Contentful creates the Editor Interface when the Content Type is first activated. Terraform can begin managing its initial configuration without import, including after an earlier Content Type update in the same apply when both resources use the same provider configuration. Import an existing modified Editor Interface to deliberately adopt it.
+
+When changing both resources in one apply, use the same provider configuration and reference the Content Type resource to order their operations. Version adjustments are not shared across provider aliases. Updates use the previously observed version plus activation adjustments; a version conflict fails without fetching a newer version and retrying. Review a refreshed plan before applying again.
 
 ## Example Usage
 
