@@ -221,7 +221,7 @@ import {
     environment_id  = var.contentful_environment_id
     content_type_id = var.content_type_id
   }
-  to = contentful_content_type.this
+  to = contentful_content_type.author
 }
 ```
 
@@ -239,7 +239,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
-  to = contentful_content_type.this
+  to = contentful_content_type.author
 }
 ```
 
