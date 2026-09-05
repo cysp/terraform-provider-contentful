@@ -3,15 +3,15 @@
 page_title: "contentful_editor_interface Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages the Editor Interface associated with a Content Type. Contentful creates the Editor Interface when the Content Type is first activated. Terraform can begin managing its initial configuration without import, including after an earlier Content Type update in the same apply when both resources use the same provider configuration. Import an existing modified Editor Interface to deliberately adopt it.
-  When changing both resources in one apply, use the same provider configuration and reference the Content Type resource to order their operations. Version adjustments are not shared across provider aliases. Updates use the previously observed version plus activation adjustments; a version conflict fails without fetching a newer version and retrying. Review a refreshed plan before applying again.
+  Manages a Content Type's Editor Interface. Contentful creates it at version 1 on first activation. Terraform can manage that initial interface without import, including after Content Type updates earlier in the same apply through the same provider configuration. Import an existing modified interface to adopt it.
+  Use the same provider configuration and a reference to the Content Type resource when changing both resources together. Version offsets are not shared across aliases. Updates use the previously observed version plus activation offsets and fail on conflict without fetching a newer version or retrying. Review a refreshed plan before applying again.
 ---
 
 # contentful_editor_interface (Resource)
 
-Manages the Editor Interface associated with a Content Type. Contentful creates the Editor Interface when the Content Type is first activated. Terraform can begin managing its initial configuration without import, including after an earlier Content Type update in the same apply when both resources use the same provider configuration. Import an existing modified Editor Interface to deliberately adopt it.
+Manages a Content Type's Editor Interface. Contentful creates it at version 1 on first activation. Terraform can manage that initial interface without import, including after Content Type updates earlier in the same apply through the same provider configuration. Import an existing modified interface to adopt it.
 
-When changing both resources in one apply, use the same provider configuration and reference the Content Type resource to order their operations. Version adjustments are not shared across provider aliases. Updates use the previously observed version plus activation adjustments; a version conflict fails without fetching a newer version and retrying. Review a refreshed plan before applying again.
+Use the same provider configuration and a reference to the Content Type resource when changing both resources together. Version offsets are not shared across aliases. Updates use the previously observed version plus activation offsets and fail on conflict without fetching a newer version or retrying. Review a refreshed plan before applying again.
 
 ## Example Usage
 

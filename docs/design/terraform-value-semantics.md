@@ -328,65 +328,44 @@ write-only fallbacks, and thereby expose meaningful remote drift.
 
 ### Editor Interface version preconditions
 
-Editor Interface Create sends `X-Contentful-Version: 1` plus the configured
-provider's counted Content Type activations. This permits management of an
-initial automatically created interface, including after a subsequent Content
-Type activation earlier in the same apply. It does not fetch a newer version to
-adopt an existing modified interface; deliberate adoption requires import.
-A mismatch establishes only that the version precondition failed, not who
-changed the interface or whether import is the only remedy.
+Create sends `X-Contentful-Version: 1` plus the provider's counted Content Type
+activations. This permits management of the initial automatically created
+interface, including after a subsequent activation in the same apply. Update
+uses the private `version` last observed by Read or an interface mutation, plus
+the same count. A version conflict fails without fetching a newer version or
+retrying; adopting an existing modified interface requires import. A mismatch
+alone does not establish its cause or whether import is necessary.
 
-Update requires the private `version` last observed by Read or a successful
-interface mutation, plus the same activation count. It sends the effective
-Plan with that version and fails on `VersionMismatch` without a fresh GET or
-retry. This preserves optimistic concurrency for edits after refresh or saved
-plan creation. Read and successful Create/Update publish the actual response
-`sys.version` and reset the count after publishing state; mutation consistency
-diagnostics are reported after that checkpoint.
+The count is in-memory, scoped to one provider configuration, and keyed by
+`space_id`, `environment_id`, and `content_type_id`. Resources changing together
+must use the same provider configuration and a Terraform dependency. Separate
+aliases do not share counts, even with identical credentials. Read and successful
+Create/Update checkpoint the actual response version and reset the count before
+reporting mutation consistency errors. Restart discards the count; refresh
+supplies a new observed baseline. Counting does not schedule or order writes.
 
-The counter is in-memory and scoped to one configured provider, keyed by
-`space_id`, `environment_id`, and `content_type_id`. It is not Content Type
-`sys.version`, persistent Terraform state, or evidence about other writers.
-Resources changing together must use the same provider configuration and a
-Terraform dependency, normally a reference to the Content Type resource.
-Separate aliases do not exchange offsets, even with identical credentials and
-correct dependency ordering. An Editor Interface update can therefore conflict
-after a Content Type activation through another alias. Review a refreshed plan
-before applying again; an interface whose initial version cannot be accounted
-for may require deliberate import. A provider restart discards the count;
-refresh supplies the next observed baseline. The counter neither orders
-resources nor causes an otherwise unplanned Editor Interface update.
+Only activation of an already published Content Type advances an existing
+interface. Determine this from the known, response-derived `published_version`
+**before activation**, including recovery through Update. An unpublished draft
+has no interface, so activation creates version 1 and contributes no offset.
+Count the increment after checkpointing the activation response and before
+reporting consistency or activation diagnostics; failed activation responses do
+not reach this checkpoint.
 
-Activation of an unpublished Content Type creates interface version 1; it does
-not increment the offset from that initial base. Activation of an already
-published Content Type advances the existing interface once. Determine this
-from the known **pre-activation** checkpoint's response-derived
-`published_version`, including when recovering a pending activation through
-Update. The post-activation value cannot distinguish these cases. Count an
-existing interface's increment after checkpointing the activation response and
-before reporting consistency or activation diagnostics. Failed activation
-responses do not reach that checkpoint and contribute no count.
-
-Direct CMA experiments establish these mock and lifecycle test oracles:
+Direct CMA experiments establish the lifecycle expectations used by the tests:
 
 | Content Type operation | Editor Interface observation |
 | --- | --- |
 | Create an unpublished draft | GET returns 404. |
 | First activation | Interface starts at version 1. |
 | Update the draft before activation | Interface version is unchanged. |
-| Activate a published type after description-only, field-name, or added-field changes | Interface version increments once. |
-| Activate again with no content changes | Interface version increments once. |
+| Activate an already published type, including unchanged content or description-only, field-name, and added-field changes | Interface version increments once. |
 | Deactivate | GET returns 404. |
 | Reactivate after deactivation | Default interface at version 1; previous widget settings are absent. |
 
-Recovery after a rejected initial activation is covered separately by mocked
-Terraform tests, with and without refresh. The live first-activation observation
-supplies the independent version-1 expectation. These observations describe the
-tested CMA behavior, not a guarantee of all future server behavior. Deactivation removes the mock interface; it does not
-clear unrelated field-publication history. Editor Interface Read removes a
-missing resource from Terraform state. This does not grant authority to
-reactivate an externally deactivated Content Type. Editor Interface Delete
-only relinquishes Terraform ownership and makes no CMA deletion request.
+The mock follows these observations. Read removes a missing interface from
+Terraform state; this grants no authority to reactivate an externally deactivated
+Content Type. Editor Interface Delete only relinquishes Terraform ownership.
 
 ### Editor Interface mutation decisions
 
