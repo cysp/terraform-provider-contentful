@@ -7,37 +7,24 @@ import (
 )
 
 func SetProviderDataFromDataSourceConfigureRequest[ProviderData any](req datasource.ConfigureRequest, out *ProviderData) diag.Diagnostics {
-	diags := diag.Diagnostics{}
-
-	if req.ProviderData == nil {
-		return diags
-	}
-
-	if providerData, ok := req.ProviderData.(ProviderData); ok {
-		*out = providerData
-
-		return diags
-	}
-
-	diags.AddError("Invalid provider data", "")
-
-	return diags
+	return setProviderData(req.ProviderData, out)
 }
 
 func SetProviderDataFromResourceConfigureRequest[ProviderData any](req resource.ConfigureRequest, out *ProviderData) diag.Diagnostics {
-	diags := diag.Diagnostics{}
+	return setProviderData(req.ProviderData, out)
+}
 
-	if req.ProviderData == nil {
-		return diags
+func setProviderData[ProviderData any](data any, out *ProviderData) diag.Diagnostics {
+	if data == nil {
+		return nil
 	}
 
-	if providerData, ok := req.ProviderData.(ProviderData); ok {
-		*out = providerData
-
-		return diags
+	providerData, ok := data.(ProviderData)
+	if !ok {
+		return diag.Diagnostics{diag.NewErrorDiagnostic("Invalid provider data", "")}
 	}
 
-	diags.AddError("Invalid provider data", "")
+	*out = providerData
 
-	return diags
+	return nil
 }
