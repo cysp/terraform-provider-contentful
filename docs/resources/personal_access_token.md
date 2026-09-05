@@ -38,7 +38,7 @@ resource "contentful_personal_access_token" "this" {
 - `expires_at` (String) Timestamp when the token expires.
 - `id` (String) The ID of this resource.
 - `revoked_at` (String) Timestamp when the token was revoked.
-- `token` (String, Sensitive) The access token for the Content Management API. This is only available immediately after creation.
+- `token` (String, Sensitive) The access token for the Content Management API. Contentful returns it only on creation; Terraform retains the known value in state during later refreshes. Import cannot recover the token and leaves this attribute null. Terraform marks it sensitive, but the value remains in state and saved plans.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

@@ -22,7 +22,7 @@ A command-line import cannot recover the existing signing secret and leaves `val
 
 ## Webhook credentials and secret headers
 
-For [`contentful_webhook`](../resources/webhook), Contentful does not return the HTTP Basic authentication password. Terraform therefore preserves a previously managed `http_basic_password` during refresh and cannot detect an out-of-band password change. Import leaves the password null. Configuring a password after import writes that value on the next update. Updates send the planned Basic credentials: a null plan for both credentials clears them, while `ignore_changes` can retain a previously managed value in the plan. Import alone does not change the credentials.
+For [`contentful_webhook`](../resources/webhook), Contentful does not return the HTTP Basic authentication password. Terraform therefore preserves a previously managed `http_basic_password` during refresh and cannot detect an out-of-band password change. Import leaves the password null. Configure both the username and password together after import to write those credentials on the next update. Updates send the planned Basic credentials: a null plan for both credentials clears them, while `ignore_changes` can retain a previously managed value in the plan. Import alone does not change the credentials.
 
 Contentful's `secret = true` flag on a custom webhook header is separate from Terraform sensitivity. It controls how Contentful treats the header value; it does not cause Terraform to mark that value sensitive. Supply the header value from a sensitive Terraform expression when it should be redacted from normal Terraform output. The value can still be present in plan or state data.
 
