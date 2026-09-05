@@ -3,12 +3,12 @@
 page_title: "contentful_app_key Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use lifecycle { create_before_destroy = true } only when rotating to different key material, a free key slot exists, and the old and new keys must overlap.
+  Manages a Contentful App Key from caller-supplied public key material. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use lifecycle { create_before_destroy = true } only when rotating to different key material, a free key slot exists, and the old and new keys must overlap. See Secrets and Terraform state for private-key and state-handling guidance.
 ---
 
 # contentful_app_key (Resource)
 
-Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use `lifecycle { create_before_destroy = true }` only when rotating to different key material, a free key slot exists, and the old and new keys must overlap.
+Manages a Contentful App Key from caller-supplied public key material. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use `lifecycle { create_before_destroy = true }` only when rotating to different key material, a free key slot exists, and the old and new keys must overlap. See [Secrets and Terraform state](../guides/secrets-and-state) for private-key and state-handling guidance.
 
 ## Example Usage
 
