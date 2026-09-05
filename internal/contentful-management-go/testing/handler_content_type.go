@@ -241,5 +241,7 @@ func (ts *Handler) DeactivateContentType(_ context.Context, params cm.Deactivate
 	contentType.Sys.PublishedAt.Reset()
 	contentType.Sys.Version++
 
+	ts.editorInterfaces.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+
 	return contentType, nil
 }
