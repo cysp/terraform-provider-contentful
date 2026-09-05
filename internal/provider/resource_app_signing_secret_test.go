@@ -32,7 +32,8 @@ const (
 func TestAccAppSigningSecretResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
@@ -135,7 +136,8 @@ resource "contentful_app_signing_secret" "test" {
 func TestAccAppSigningSecretResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"organization_id":      config.StringVariable("organization-id"),
@@ -217,7 +219,8 @@ func TestAccAppSigningSecretResourceImport(t *testing.T) {
 func TestAccAppSigningSecretResourceImportBlockWritesConfiguredValue(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",

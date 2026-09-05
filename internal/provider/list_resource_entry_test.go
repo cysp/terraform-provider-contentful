@@ -14,12 +14,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/querycheck/queryfilter"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccEntryListResourceQuery(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	spaceID := "0p38pssr0fi3"
 	environmentID := "test"
@@ -153,7 +155,8 @@ func TestAccEntryListResourceQuery(t *testing.T) {
 func TestAccEntryListResourceNotFoundEnvironment(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),

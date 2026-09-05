@@ -7,13 +7,15 @@ import (
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/require"
 )
 
 //nolint:paralleltest
 func TestAccAppDefinitionDataSourceRead(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"organization_id":   config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),

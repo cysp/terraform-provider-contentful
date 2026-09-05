@@ -12,13 +12,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/require"
 )
 
 //nolint:paralleltest
 func TestAccAppInstallationResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -63,7 +65,8 @@ func TestAccAppInstallationResourceLifecycle(t *testing.T) {
 func TestAccAppInstallationResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -121,7 +124,8 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":          config.StringVariable("0p38pssr0fi3"),
@@ -147,7 +151,8 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":          config.StringVariable("0p38pssr0fi3"),
@@ -170,7 +175,8 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 func TestAccAppInstallationResourceUpdate(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -216,7 +222,8 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 func TestAccAppInstallationResourceDeleted(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 

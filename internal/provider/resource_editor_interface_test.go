@@ -59,7 +59,8 @@ func (h *editorInterfaceRequestRecorder) Requests() []string {
 func TestAccEditorInterfaceResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -121,7 +122,8 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -153,7 +155,8 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -176,7 +179,8 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -250,7 +254,8 @@ func TestAccEditorInterfaceResourceCreateAfterContentTypeUpdateUsesObservedVersi
 func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -319,7 +324,8 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -377,7 +383,8 @@ func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 func TestAccEditorInterfaceResourceUpdateWithContentTypeMultipleSpaceEnvironments(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-a", "environment-a-a")
 	server.RegisterSpaceEnvironment("space-a", "environment-a-b")

@@ -30,7 +30,8 @@ var (
 func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
@@ -326,7 +327,8 @@ func requireStoredSpaceEnablementsFields(
 func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
@@ -349,7 +351,8 @@ func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 

@@ -11,12 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccTagResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -61,7 +63,8 @@ func TestAccTagResourceImport(t *testing.T) {
 func TestAccTagResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -93,7 +96,8 @@ func TestAccTagResourceImportNotFound(t *testing.T) {
 func TestAccTagResourceCreateUpdate(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, _ := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 

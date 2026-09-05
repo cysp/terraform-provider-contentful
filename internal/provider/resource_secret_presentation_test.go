@@ -215,6 +215,7 @@ func newTerraformTestRuntime(t *testing.T) *terraformTestRuntime {
 	terraformPath := os.Getenv("TF_ACC_TERRAFORM_PATH")
 	if terraformPath == "" {
 		var err error
+
 		terraformPath, err = exec.LookPath("terraform")
 		require.NoError(t, err, "Terraform CLI is required for acceptance tests")
 	}
