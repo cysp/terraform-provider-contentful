@@ -92,7 +92,7 @@ Values retained by `ignore_changes` remain in any later provider-managed full dr
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/content_type_id form.
 - `published_version` (Number) The Contentful version most recently activated, or null when the content type is not activated.
 
 <a id="nestedatt--fields"></a>
