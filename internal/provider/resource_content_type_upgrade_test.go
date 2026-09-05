@@ -50,7 +50,6 @@ func TestAccContentTypeResourceRegistryV0062ImportRemainsObservational(t *testin
 	options := ContentfulProviderOptionsWithHTTPTestServer(testserver)
 
 	testingresource.Test(t, testingresource.TestCase{
-		IsUnitTest:           true,
 		WorkingDir:           workingDirectoryParent,
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []testingresource.TestStep{
