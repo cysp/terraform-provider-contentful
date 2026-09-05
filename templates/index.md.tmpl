@@ -26,6 +26,8 @@ For a complete first configuration and plan, see [Getting started](guides/gettin
 
 {{ tffile . }}
 {{- end }}
+
+The example requires the ID of an existing Contentful space and, unless changed, uses its `master` environment. With a valid management token, the first plan proposes creating one private `contentful_tag` named `Terraform example`; review that plan before applying it.
 {{- end }}
 
 {{ .SchemaMarkdown | trimspace }}
