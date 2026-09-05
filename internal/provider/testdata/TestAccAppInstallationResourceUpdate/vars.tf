@@ -10,3 +10,8 @@ variable "environment_id" {
 variable "app_definition_id" {
   type = string
 }
+
+variable "parameters" {
+  type    = string
+  default = null
+}

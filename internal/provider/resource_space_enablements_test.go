@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"regexp"
 	"sync"
@@ -360,15 +361,23 @@ func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
+	stepVariables1 := maps.Clone(configVariables)
+	stepVariables1["cross_space_links"] = config.BoolVariable(false)
+	stepVariables1["space_templates"] = config.BoolVariable(false)
+
+	stepVariables2 := maps.Clone(configVariables)
+	stepVariables2["cross_space_links"] = config.BoolVariable(true)
+	stepVariables2["space_templates"] = config.BoolVariable(true)
+
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables1,
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables2,
 			},
 		},
 	})

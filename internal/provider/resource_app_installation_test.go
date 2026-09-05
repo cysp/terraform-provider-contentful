@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"maps"
 	"regexp"
 	"testing"
 
@@ -190,15 +191,22 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
 	}
 
+	stepVariables1 := maps.Clone(configVariables)
+
+	stepVariables2 := maps.Clone(configVariables)
+	stepVariables2["parameters"] = config.StringVariable(`{"foo":"bar"}`)
+
+	stepVariables3 := maps.Clone(configVariables)
+
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables1,
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables2,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_app_installation.test", plancheck.ResourceActionUpdate),
@@ -206,8 +214,8 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 				},
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory: config.TestNameDirectory(),
+				ConfigVariables: stepVariables3,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_app_installation.test", plancheck.ResourceActionUpdate),

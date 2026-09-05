@@ -5,3 +5,7 @@ variable "organization_id" {
 variable "app_definition_id" {
   type = string
 }
+
+variable "function_id" {
+  type = string
+}

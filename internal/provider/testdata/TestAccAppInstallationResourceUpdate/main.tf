@@ -3,5 +3,5 @@ resource "contentful_app_installation" "test" {
   environment_id    = var.environment_id
   app_definition_id = var.app_definition_id
 
-  parameters = jsonencode({ foo = "bar" })
+  parameters = var.parameters
 }
