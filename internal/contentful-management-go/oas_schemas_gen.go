@@ -1955,6 +1955,7 @@ func (*ApplicationJSONError) createAppDefinitionRes()            {}
 func (*ApplicationJSONError) createAppKeyRes()                   {}
 func (*ApplicationJSONError) createDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONError) createEntryRes()                    {}
+func (*ApplicationJSONError) createLocaleRes()                   {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentAliasRes() {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationJSONError) createPersonalAccessTokenRes()      {}
@@ -1973,6 +1974,7 @@ func (*ApplicationJSONError) deleteEntryRes()                    {}
 func (*ApplicationJSONError) deleteEnvironmentAliasRes()         {}
 func (*ApplicationJSONError) deleteEnvironmentRes()              {}
 func (*ApplicationJSONError) deleteExtensionRes()                {}
+func (*ApplicationJSONError) deleteLocaleRes()                   {}
 func (*ApplicationJSONError) deleteResourceProviderRes()         {}
 func (*ApplicationJSONError) deleteResourceTypeRes()             {}
 func (*ApplicationJSONError) deleteRoleRes()                     {}
@@ -1997,6 +1999,8 @@ func (*ApplicationJSONError) getEntryRes()                       {}
 func (*ApplicationJSONError) getEnvironmentAliasRes()            {}
 func (*ApplicationJSONError) getEnvironmentRes()                 {}
 func (*ApplicationJSONError) getExtensionRes()                   {}
+func (*ApplicationJSONError) getLocaleRes()                      {}
+func (*ApplicationJSONError) getLocalesRes()                     {}
 func (*ApplicationJSONError) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationJSONError) getPersonalAccessTokenRes()         {}
 func (*ApplicationJSONError) getPreviewAPIKeyRes()               {}
@@ -2021,6 +2025,7 @@ func (*ApplicationJSONError) putContentTypeRes()                 {}
 func (*ApplicationJSONError) putEditorInterfaceRes()             {}
 func (*ApplicationJSONError) putEntryRes()                       {}
 func (*ApplicationJSONError) putExtensionRes()                   {}
+func (*ApplicationJSONError) putLocaleRes()                      {}
 func (*ApplicationJSONError) putResourceProviderRes()            {}
 func (*ApplicationJSONError) putResourceTypeRes()                {}
 func (*ApplicationJSONError) putSpaceEnablementsRes()            {}
@@ -4601,6 +4606,7 @@ func (*ErrorStatusCode) createAppDefinitionRes()            {}
 func (*ErrorStatusCode) createAppKeyRes()                   {}
 func (*ErrorStatusCode) createDeliveryAPIKeyRes()           {}
 func (*ErrorStatusCode) createEntryRes()                    {}
+func (*ErrorStatusCode) createLocaleRes()                   {}
 func (*ErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
 func (*ErrorStatusCode) createOrUpdateEnvironmentRes()      {}
 func (*ErrorStatusCode) createPersonalAccessTokenRes()      {}
@@ -4619,6 +4625,7 @@ func (*ErrorStatusCode) deleteEntryRes()                    {}
 func (*ErrorStatusCode) deleteEnvironmentAliasRes()         {}
 func (*ErrorStatusCode) deleteEnvironmentRes()              {}
 func (*ErrorStatusCode) deleteExtensionRes()                {}
+func (*ErrorStatusCode) deleteLocaleRes()                   {}
 func (*ErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ErrorStatusCode) deleteResourceTypeRes()             {}
 func (*ErrorStatusCode) deleteRoleRes()                     {}
@@ -4643,6 +4650,8 @@ func (*ErrorStatusCode) getEntryRes()                       {}
 func (*ErrorStatusCode) getEnvironmentAliasRes()            {}
 func (*ErrorStatusCode) getEnvironmentRes()                 {}
 func (*ErrorStatusCode) getExtensionRes()                   {}
+func (*ErrorStatusCode) getLocaleRes()                      {}
+func (*ErrorStatusCode) getLocalesRes()                     {}
 func (*ErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
 func (*ErrorStatusCode) getPersonalAccessTokenRes()         {}
 func (*ErrorStatusCode) getPreviewAPIKeyRes()               {}
@@ -4667,6 +4676,7 @@ func (*ErrorStatusCode) putContentTypeRes()                 {}
 func (*ErrorStatusCode) putEditorInterfaceRes()             {}
 func (*ErrorStatusCode) putEntryRes()                       {}
 func (*ErrorStatusCode) putExtensionRes()                   {}
+func (*ErrorStatusCode) putLocaleRes()                      {}
 func (*ErrorStatusCode) putResourceProviderRes()            {}
 func (*ErrorStatusCode) putResourceTypeRes()                {}
 func (*ErrorStatusCode) putSpaceEnablementsRes()            {}
@@ -5401,6 +5411,405 @@ func (s *GetMarketplaceAppDefinitionsOKSysType) UnmarshalText(data []byte) error
 	}
 }
 
+// Merged schema.
+// Ref: #/Locale
+type Locale struct {
+	Sys                  LocaleSys `json:"sys"`
+	Name                 string    `json:"name"`
+	Code                 string    `json:"code"`
+	FallbackCode         NilString `json:"fallbackCode"`
+	ContentDeliveryApi   bool      `json:"contentDeliveryApi"`
+	ContentManagementApi bool      `json:"contentManagementApi"`
+	Optional             bool      `json:"optional"`
+	Default              bool      `json:"default"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Locale) GetSys() LocaleSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Locale) GetName() string {
+	return s.Name
+}
+
+// GetCode returns the value of Code.
+func (s *Locale) GetCode() string {
+	return s.Code
+}
+
+// GetFallbackCode returns the value of FallbackCode.
+func (s *Locale) GetFallbackCode() NilString {
+	return s.FallbackCode
+}
+
+// GetContentDeliveryApi returns the value of ContentDeliveryApi.
+func (s *Locale) GetContentDeliveryApi() bool {
+	return s.ContentDeliveryApi
+}
+
+// GetContentManagementApi returns the value of ContentManagementApi.
+func (s *Locale) GetContentManagementApi() bool {
+	return s.ContentManagementApi
+}
+
+// GetOptional returns the value of Optional.
+func (s *Locale) GetOptional() bool {
+	return s.Optional
+}
+
+// GetDefault returns the value of Default.
+func (s *Locale) GetDefault() bool {
+	return s.Default
+}
+
+// SetSys sets the value of Sys.
+func (s *Locale) SetSys(val LocaleSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Locale) SetName(val string) {
+	s.Name = val
+}
+
+// SetCode sets the value of Code.
+func (s *Locale) SetCode(val string) {
+	s.Code = val
+}
+
+// SetFallbackCode sets the value of FallbackCode.
+func (s *Locale) SetFallbackCode(val NilString) {
+	s.FallbackCode = val
+}
+
+// SetContentDeliveryApi sets the value of ContentDeliveryApi.
+func (s *Locale) SetContentDeliveryApi(val bool) {
+	s.ContentDeliveryApi = val
+}
+
+// SetContentManagementApi sets the value of ContentManagementApi.
+func (s *Locale) SetContentManagementApi(val bool) {
+	s.ContentManagementApi = val
+}
+
+// SetOptional sets the value of Optional.
+func (s *Locale) SetOptional(val bool) {
+	s.Optional = val
+}
+
+// SetDefault sets the value of Default.
+func (s *Locale) SetDefault(val bool) {
+	s.Default = val
+}
+
+func (*Locale) getLocaleRes() {}
+
+// Ref: #/LocaleCollection
+type LocaleCollection struct {
+	Sys   LocaleCollectionSys `json:"sys"`
+	Total OptInt              `json:"total"`
+	Skip  OptInt              `json:"skip"`
+	Limit OptInt              `json:"limit"`
+	Items []Locale            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *LocaleCollection) GetSys() LocaleCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *LocaleCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *LocaleCollection) GetSkip() OptInt {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *LocaleCollection) GetLimit() OptInt {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *LocaleCollection) GetItems() []Locale {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *LocaleCollection) SetSys(val LocaleCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *LocaleCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *LocaleCollection) SetSkip(val OptInt) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *LocaleCollection) SetLimit(val OptInt) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *LocaleCollection) SetItems(val []Locale) {
+	s.Items = val
+}
+
+func (*LocaleCollection) getLocalesRes() {}
+
+type LocaleCollectionSys struct {
+	Type LocaleCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *LocaleCollectionSys) GetType() LocaleCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *LocaleCollectionSys) SetType(val LocaleCollectionSysType) {
+	s.Type = val
+}
+
+type LocaleCollectionSysType string
+
+const (
+	LocaleCollectionSysTypeArray LocaleCollectionSysType = "Array"
+)
+
+// AllValues returns all LocaleCollectionSysType values.
+func (LocaleCollectionSysType) AllValues() []LocaleCollectionSysType {
+	return []LocaleCollectionSysType{
+		LocaleCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s LocaleCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case LocaleCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *LocaleCollectionSysType) UnmarshalText(data []byte) error {
+	switch LocaleCollectionSysType(data) {
+	case LocaleCollectionSysTypeArray:
+		*s = LocaleCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/LocaleData
+type LocaleData struct {
+	Name                 string    `json:"name"`
+	Code                 string    `json:"code"`
+	FallbackCode         NilString `json:"fallbackCode"`
+	ContentDeliveryApi   bool      `json:"contentDeliveryApi"`
+	ContentManagementApi bool      `json:"contentManagementApi"`
+	Optional             bool      `json:"optional"`
+}
+
+// GetName returns the value of Name.
+func (s *LocaleData) GetName() string {
+	return s.Name
+}
+
+// GetCode returns the value of Code.
+func (s *LocaleData) GetCode() string {
+	return s.Code
+}
+
+// GetFallbackCode returns the value of FallbackCode.
+func (s *LocaleData) GetFallbackCode() NilString {
+	return s.FallbackCode
+}
+
+// GetContentDeliveryApi returns the value of ContentDeliveryApi.
+func (s *LocaleData) GetContentDeliveryApi() bool {
+	return s.ContentDeliveryApi
+}
+
+// GetContentManagementApi returns the value of ContentManagementApi.
+func (s *LocaleData) GetContentManagementApi() bool {
+	return s.ContentManagementApi
+}
+
+// GetOptional returns the value of Optional.
+func (s *LocaleData) GetOptional() bool {
+	return s.Optional
+}
+
+// SetName sets the value of Name.
+func (s *LocaleData) SetName(val string) {
+	s.Name = val
+}
+
+// SetCode sets the value of Code.
+func (s *LocaleData) SetCode(val string) {
+	s.Code = val
+}
+
+// SetFallbackCode sets the value of FallbackCode.
+func (s *LocaleData) SetFallbackCode(val NilString) {
+	s.FallbackCode = val
+}
+
+// SetContentDeliveryApi sets the value of ContentDeliveryApi.
+func (s *LocaleData) SetContentDeliveryApi(val bool) {
+	s.ContentDeliveryApi = val
+}
+
+// SetContentManagementApi sets the value of ContentManagementApi.
+func (s *LocaleData) SetContentManagementApi(val bool) {
+	s.ContentManagementApi = val
+}
+
+// SetOptional sets the value of Optional.
+func (s *LocaleData) SetOptional(val bool) {
+	s.Optional = val
+}
+
+// LocaleStatusCode wraps Locale with StatusCode.
+type LocaleStatusCode struct {
+	StatusCode int
+	Response   Locale
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *LocaleStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *LocaleStatusCode) GetResponse() Locale {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *LocaleStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *LocaleStatusCode) SetResponse(val Locale) {
+	s.Response = val
+}
+
+func (*LocaleStatusCode) createLocaleRes() {}
+func (*LocaleStatusCode) putLocaleRes()    {}
+
+// Merged schema.
+// Ref: #/LocaleSys
+type LocaleSys struct {
+	Space       SpaceLink       `json:"space"`
+	Environment EnvironmentLink `json:"environment"`
+	// Merged property.
+	Type    LocaleSysType `json:"type"`
+	ID      string        `json:"id"`
+	Version int           `json:"version"`
+}
+
+// GetSpace returns the value of Space.
+func (s *LocaleSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *LocaleSys) GetEnvironment() EnvironmentLink {
+	return s.Environment
+}
+
+// GetType returns the value of Type.
+func (s *LocaleSys) GetType() LocaleSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *LocaleSys) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *LocaleSys) GetVersion() int {
+	return s.Version
+}
+
+// SetSpace sets the value of Space.
+func (s *LocaleSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *LocaleSys) SetEnvironment(val EnvironmentLink) {
+	s.Environment = val
+}
+
+// SetType sets the value of Type.
+func (s *LocaleSys) SetType(val LocaleSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *LocaleSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *LocaleSys) SetVersion(val int) {
+	s.Version = val
+}
+
+// Merged schema.
+type LocaleSysType string
+
+const (
+	LocaleSysTypeLocale LocaleSysType = "Locale"
+)
+
+// AllValues returns all LocaleSysType values.
+func (LocaleSysType) AllValues() []LocaleSysType {
+	return []LocaleSysType{
+		LocaleSysTypeLocale,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s LocaleSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case LocaleSysTypeLocale:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *LocaleSysType) UnmarshalText(data []byte) error {
+	switch LocaleSysType(data) {
+	case LocaleSysTypeLocale:
+		*s = LocaleSysTypeLocale
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/LocalizedString
 type LocalizedString map[string]string
 
@@ -5484,6 +5893,7 @@ func (*NoContent) deleteEntryRes()                 {}
 func (*NoContent) deleteEnvironmentAliasRes()      {}
 func (*NoContent) deleteEnvironmentRes()           {}
 func (*NoContent) deleteExtensionRes()             {}
+func (*NoContent) deleteLocaleRes()                {}
 func (*NoContent) deleteResourceProviderRes()      {}
 func (*NoContent) deleteResourceTypeRes()          {}
 func (*NoContent) deleteRoleRes()                  {}
