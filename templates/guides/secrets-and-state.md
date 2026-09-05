@@ -22,13 +22,17 @@ A command-line import cannot recover the existing signing secret and leaves `val
 
 ## Webhook credentials and secret headers
 
-For [`contentful_webhook`](../resources/webhook), Contentful does not return the HTTP Basic authentication password. Terraform therefore preserves a previously managed `http_basic_password` during refresh and cannot detect an out-of-band password change. Import leaves the password null.
+For [`contentful_webhook`](../resources/webhook), Contentful does not return the HTTP Basic authentication password. Terraform therefore preserves a previously managed `http_basic_password` during refresh and cannot detect an out-of-band password change. Import leaves the password null. Configuring a password after import writes that value on the next update. Updates send the planned Basic credentials: a null plan for both credentials clears them, while `ignore_changes` can retain a previously managed value in the plan. Import alone does not change the credentials.
 
 Contentful's `secret = true` flag on a custom webhook header is separate from Terraform sensitivity. It controls how Contentful treats the header value; it does not cause Terraform to mark that value sensitive. Supply the header value from a sensitive Terraform expression when it should be redacted from normal Terraform output. The value can still be present in plan or state data.
+
+Contentful also omits secret custom-header values from responses. Refresh preserves a previously managed value for the matching header but cannot verify it or detect an out-of-band replacement. Import leaves an unreadable secret-header value null. When `headers` is omitted from configuration, later updates preserve imported headers and send an unreadable secret header without a value so Contentful retains its secret. Explicitly configuring `headers` requires values for the configured headers; `headers = {}` clears all custom headers.
 
 ## App keys
 
 [`contentful_app_key`](../resources/app_key) manages caller-supplied public JWK material. The corresponding private key is not sent to Contentful and is not stored by this resource. Generate and retain the private key outside the resource, and follow the resource-specific key-rotation constraints when replacing public key material.
+
+Unlike the redacted secrets above, the public JWK is readable: import and refresh populate it from Contentful. Refresh also detects deletion of the App Key. Changing configured JWK material replaces the App Key rather than updating it in place; importing the public key cannot recover its corresponding private key.
 
 ## Review the resource contract
 
