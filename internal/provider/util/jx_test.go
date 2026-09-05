@@ -7,6 +7,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestJsonMarshalEscaping(t *testing.T) {
@@ -36,6 +37,16 @@ func TestJxNormalizeOpaqueBytes(t *testing.T) {
 			input:                      []byte(`{"string": "string", "number": 2, "boolean": true, "null": null, "string_with_escapes": "a<b&c>d"}`),
 			expected:                   []byte(`{"boolean":true,"null":null,"number":2,"string":"string","string_with_escapes":"a<b&c>d"}`),
 			expectedWithEscapedStrings: []byte(`{"boolean":true,"null":null,"number":2,"string":"string","string_with_escapes":"a\u003cb\u0026c\u003ed"}`),
+		},
+		"object key escaping is independent of string value escaping": {
+			input:                      []byte(`{"a<b&c>d\"\\\n": "e<f&g>h"}`),
+			expected:                   []byte(`{"a<b&c>d\"\\\n":"e<f&g>h"}`),
+			expectedWithEscapedStrings: []byte(`{"a<b&c>d\"\\\n":"e\u003cf\u0026g\u003eh"}`),
+		},
+		"nested objects and arrays with escaping": {
+			input:                      []byte(`{"z": [{"z": "<last>", "a&b": "first&"}, "<second>"], "a": {"<key>": ">value"}}`),
+			expected:                   []byte(`{"a":{"<key>":">value"},"z":[{"a&b":"first&","z":"<last>"},"<second>"]}`),
+			expectedWithEscapedStrings: []byte(`{"a":{"<key>":"\u003evalue"},"z":[{"a&b":"first\u0026","z":"\u003clast\u003e"},"\u003csecond\u003e"]}`),
 		},
 		"array": {
 			input:    []byte(`["string", 2, true]`),
@@ -92,7 +103,8 @@ func TestJxNormalizeOpaqueBytes(t *testing.T) {
 			}
 
 			assert.Equal(t, expected, actual)
-			assert.NoError(t, err)
+			require.NoError(t, err)
+			assert.True(t, json.Valid(actual), "normalized output must be valid JSON")
 		})
 	}
 }
@@ -101,9 +113,14 @@ func TestJxNormalizeOpaqueBytesInvalid(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string][]byte{
-		"invalid value":      []byte("invalid"),
-		"trailing value":     []byte("true false"),
-		"trailing non-value": []byte("9007199254740993 trailing"),
+		"invalid value":               []byte("invalid"),
+		"trailing value":              []byte("true false"),
+		"trailing non-value":          []byte("9007199254740993 trailing"),
+		"trailing object":             []byte(`{}{}`),
+		"trailing malformed value":    []byte(`true {`),
+		"invalid nested object value": []byte(`{"a": {"b": invalid}}`),
+		"invalid nested array value":  []byte(`{"a": [true, invalid]}`),
+		"incomplete nested structure": []byte(`{"a": [{"b": true}`),
 	}
 
 	for name, input := range tests {
