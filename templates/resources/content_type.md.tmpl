@@ -21,16 +21,25 @@ description: |-
 
 ## Lifecycle behavior
 
-Create and provider-managed updates activate the exact Content Type draft returned by that operation. A Terraform Update that changes only state representation or timeouts sends neither a Content Type PUT nor an Activate request. `published_version` reflects Contentful `sys.publishedVersion`; it is observed computed state, not configurable activation intent.
+Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. An Update that changes only Terraform's state representation or timeouts sends neither a Content Type PUT nor an Activate request. `published_version` reflects Contentful `sys.publishedVersion`; it is observed state, not configurable activation intent.
 
-- After a complete, identity-valid, lifecycle-valid, plan-consistent provider-managed draft response is checkpointed, Terraform records only that exact positive returned `version` as pending activation authority. Create and Update do not assume any version increment. If Activate is not confirmed, an unchanged later apply automatically activates that marked version without repeating the Content Type PUT.
-- With normal refresh, Terraform first observes the Content Type. It preserves pending recovery only while both current `sys.version` and the publication tuple exactly match the checkpointed draft, clears recovery without replay when the marked version is already activated, and revokes recovery without mutation for every changed or malformed tuple. With `-refresh=false`, recovery still sends only the marked version; `VersionMismatch` revokes the marker immediately and Terraform never fetches and activates a newer version.
-- Activation is confirmed when `sys.publishedVersion` equals the exact submitted version and current `sys.version` is greater. No particular increment is required; the marker is cleared, and the returned version never becomes new activation authority.
-- Content Type Create, Update, and Activate are never transparently replayed after 429, transport, or 5xx outcomes. GET and unrelated provider operations retain their normal retry behavior.
-- Imported Content Types, drafts written outside the resource, external deactivation, legacy state, matching configuration, and ordinary Read never create pending activation authority.
-- If Terraform cannot confirm the draft PUT, it does not claim a later matching GET as provider-authored and does not activate it.
-- Values retained by `ignore_changes` remain in any later provider-managed full draft PUT. An ignored-only external draft is left untouched.
-- If Activate is not confirmed after a valid Create draft has been checkpointed, Terraform retains that exact draft and automatically recovers it on a later apply without repeating the Create PUT. Failures before that checkpoint grant no activation authority.
+### Activation recovery
+
+After a Create or Update returns a complete, valid draft for the expected Content Type, the provider records only the exact positive returned `version` as eligible for automatic activation recovery. It does not assume a particular version increment. If activation is not confirmed, an unchanged later apply can activate that same version without repeating the Content Type PUT.
+
+- Imported Content Types, drafts written outside this resource, external deactivation, legacy state, matching configuration, and an ordinary Read do not make a draft eligible for automatic activation.
+- With normal refresh, Terraform reads the Content Type before recovery. Recovery continues only while current `sys.version` and publication state still match the recorded draft. If that exact version is already activated, recovery is cleared without another Activate request. If the version or publication state has changed or is malformed, recovery is abandoned without mutation.
+- With `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` abandons recovery immediately; the provider never fetches and activates a newer version instead.
+- Activation is confirmed when `sys.publishedVersion` equals the submitted version and current `sys.version` is greater. No particular increment is required. The response returned after activation does not make its newer `sys.version` eligible for another automatic Activate.
+- If Terraform cannot confirm the draft PUT itself, it does not treat a later matching GET as provider-authored and does not automatically activate it.
+
+### Retry boundaries
+
+Content Type Create, Update, and Activate operations are not transparently replayed after 429, transport, or 5xx outcomes. GET requests and unrelated provider operations retain their normal retry behavior.
+
+### Drift and ignored changes
+
+Values retained by `ignore_changes` remain in any later provider-managed full draft PUT. An ignored-only external draft is left untouched. External deactivation also remains observed state until a later provider-managed draft change creates a draft that this resource can activate.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}

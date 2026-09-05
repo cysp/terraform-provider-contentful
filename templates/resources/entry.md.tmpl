@@ -21,21 +21,34 @@ description: |-
 
 ## Lifecycle behavior
 
-After creating an Entry in Contentful, or after a provider-managed Contentful Entry `fields` or `metadata` mutation, the resource automatically publishes the resulting draft. A Terraform Update that changes only the state representation sends neither an Entry PUT nor a Publish request. `published_version` reflects Contentful `sys.publishedVersion`; it is observed computed state, not configurable publication intent.
+Creating an Entry, or changing its `fields` or `metadata` through Terraform, writes a draft and then publishes that draft. An Update that changes only Terraform's state representation sends neither an Entry PUT nor a Publish request. `published_version` reflects Contentful `sys.publishedVersion`; it is observed state, not configurable publication intent.
 
-- Imported Entries and drafts written outside the resource are not automatically published just because their fields match the configuration.
-- After a complete, identity-valid, lifecycle-valid, plan-consistent provider-managed draft response is checkpointed, Terraform records only that exact positive returned `version` as pending publication authority. Create and Update do not assume any version increment. If Publish is not confirmed, an unchanged later apply automatically publishes that marked version without repeating the Entry PUT.
-- With normal refresh, Terraform first observes the Entry. It preserves pending recovery only while both current `sys.version` and the publication tuple exactly match the checkpointed draft, clears recovery without replay when the marked version is already published, and revokes recovery without mutation for every changed or malformed tuple. With `-refresh=false`, recovery still sends only the marked version; `VersionMismatch` revokes the marker immediately and Terraform never fetches and publishes a newer version.
-- Publication is confirmed when `sys.publishedVersion` equals the exact submitted version and current `sys.version` is greater. No particular increment is required; the marker is cleared, and the returned version never becomes new publication authority.
-- Entry Create, specified-ID Create, Update, and Publish are never transparently replayed after 429, transport, or 5xx outcomes. GET and unrelated provider operations retain their normal retry behavior.
-- If Terraform cannot confirm the draft write, it does not claim matching remote content. An ambiguous response or process loss can therefore leave matching content unpublished.
-- For Entry Create, when `entry_id` is omitted, Contentful generates the Entry ID. The HTTP client does not replay that POST within the failed operation after an ambiguous transport error or ordinary 5xx response. Because such a response does not establish whether Contentful committed the Create, it may leave Terraform without that ID; a later apply may create another Entry.
-- An external unpublish is preserved as observed state: `published_version` becomes null and Terraform does not republish solely to restore the previous publication. A later provider-managed remote `fields` or `metadata` change creates and publishes a new draft normally.
+### Publication recovery
+
+After a Create or Update returns a complete, valid draft for the expected Entry, the provider records only the exact positive returned `version` as eligible for automatic publication recovery. It does not assume a particular version increment. If publication is not confirmed, an unchanged later apply can publish that same version without repeating the Entry PUT.
+
+- Imported Entries and drafts written outside this resource are not automatically published merely because their fields match the configuration.
+- With normal refresh, Terraform reads the Entry before recovery. Recovery continues only while current `sys.version` and publication state still match the recorded draft. If that exact version is already published, recovery is cleared without another Publish request. If the version or publication state has changed or is malformed, recovery is abandoned without mutation.
+- With `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` abandons recovery immediately; the provider never fetches and publishes a newer version instead.
+- Publication is confirmed when `sys.publishedVersion` equals the submitted version and current `sys.version` is greater. No particular increment is required. The response returned after publication does not make its newer `sys.version` eligible for another automatic Publish.
+- If Terraform cannot confirm the draft write itself, it does not treat later matching remote content as provider-authored and does not automatically publish it. An ambiguous response or process loss can therefore leave matching content unpublished.
+
+### Retry and create ambiguity
+
+Entry Create, specified-ID Create, Update, and Publish operations are not transparently replayed after 429, transport, or 5xx outcomes. GET requests and unrelated provider operations retain their normal retry behavior.
+
+When `entry_id` is omitted, Contentful generates the Entry ID. If the Create response is ambiguous, Terraform may not know whether Contentful committed the Create or what ID it assigned. A later apply may therefore create another Entry.
+
+### Drift and field ownership
+
+- An external unpublish is preserved as observed state: `published_version` becomes null, and Terraform does not republish solely to restore the previous publication. A later provider-managed `fields` or `metadata` change writes and publishes a new draft normally.
 - Entry updates replace the complete `fields` payload. Values retained by `ignore_changes` remain in that payload and are published with any later managed change. An ignored-only external draft is left untouched.
 - Content Type defaults may be added when an Entry is created, but Contentful does not reapply them on updates. Use `ignore_changes` for defaulted fields that another system should continue to manage.
-- If Publish is not confirmed after a valid Create draft has been checkpointed, Terraform retains that exact draft and automatically recovers it on a later apply without repeating the Create PUT. Failures before that checkpoint grant no publication authority.
 - The resource uses whole-Entry publication and does not model independent locale publication. Locale-based publishing is currently unsupported.
-- Contentful does not enforce version or ETag preconditions when destroy unpublishes and deletes the current remote Entry, so changes made outside Terraform since the last refresh do not prevent deletion.
+
+### Destroy
+
+Contentful does not enforce version or ETag preconditions when destroy unpublishes and deletes the current remote Entry. Changes made outside Terraform since the last refresh therefore do not prevent deletion.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
