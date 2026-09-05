@@ -208,9 +208,15 @@ type terraformTestRuntime struct {
 func newTerraformTestRuntime(t *testing.T) *terraformTestRuntime {
 	t.Helper()
 
-	terraformPath, err := exec.LookPath("terraform")
-	if err != nil {
-		t.Skip("terraform CLI is required")
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("TF_ACC must be set for Terraform CLI tests")
+	}
+
+	terraformPath := os.Getenv("TF_ACC_TERRAFORM_PATH")
+	if terraformPath == "" {
+		var err error
+		terraformPath, err = exec.LookPath("terraform")
+		require.NoError(t, err, "Terraform CLI is required for acceptance tests")
 	}
 
 	_, filename, _, ok := runtime.Caller(0)

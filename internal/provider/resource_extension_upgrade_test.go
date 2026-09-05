@@ -137,7 +137,6 @@ terraform {
 	}
 
 	testingresource.Test(t, testingresource.TestCase{
-		IsUnitTest:           true,
 		WorkingDir:           t.TempDir(),
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []testingresource.TestStep{
