@@ -121,7 +121,7 @@ func TestAccEditorInterfaceCreateConsistencyErrorRetainsStateAndRequiresImport(t
 			},
 			{
 				Config:      editorInterfaceLayoutConfig("planned"),
-				ExpectError: regexp.MustCompile(`Editor Interface requires import`),
+				ExpectError: regexp.MustCompile(`Editor Interface version mismatch`),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_editor_interface.test", plancheck.ResourceActionReplace),
 					expectResponseStateInPlan{

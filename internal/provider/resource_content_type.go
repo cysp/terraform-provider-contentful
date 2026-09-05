@@ -427,7 +427,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	if !draftMutationRequired {
-		r.recoverContentTypeActivation(ctx, config, plan, pendingVersion, resp)
+		r.recoverContentTypeActivation(ctx, config, plan, pendingVersion, state.PublishedVersion, resp)
 
 		return
 	}
@@ -525,6 +525,7 @@ func (r *contentTypeResource) recoverContentTypeActivation(
 	config ContentTypeModel,
 	plan ContentTypeModel,
 	pendingVersion int,
+	publishedVersion types.Int64,
 	resp *resource.UpdateResponse,
 ) {
 	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
@@ -539,7 +540,7 @@ func (r *contentTypeResource) recoverContentTypeActivation(
 	activated, failure, activationDiagnostics := r.activateContentType(
 		ctx, config, plan, pendingVersion,
 	)
-	r.applyContentTypeActivationTransition(ctx, activated, failure, activationDiagnostics, resp)
+	r.applyContentTypeActivationTransition(ctx, publishedVersion, activated, failure, activationDiagnostics, resp)
 }
 
 func (r *contentTypeResource) updateAndActivateContentType(
@@ -592,11 +593,12 @@ func (r *contentTypeResource) updateAndActivateContentType(
 	activated, failure, activationDiagnostics := r.activateContentType(
 		ctx, config, plan, draft.version,
 	)
-	r.applyContentTypeActivationTransition(ctx, activated, failure, activationDiagnostics, resp)
+	r.applyContentTypeActivationTransition(ctx, draft.state.PublishedVersion, activated, failure, activationDiagnostics, resp)
 }
 
 func (r *contentTypeResource) applyContentTypeActivationTransition(
 	ctx context.Context,
+	publishedVersion types.Int64,
 	activated contentTypeMutationResult,
 	failure *pendingLifecycleFailure,
 	activationDiagnostics diag.Diagnostics,
@@ -619,11 +621,15 @@ func (r *contentTypeResource) applyContentTypeActivationTransition(
 		return
 	}
 
-	// The activation response state is checkpointed. The editor interface now
-	// observes that version even if a consistency diagnostic makes this apply fail.
-	r.providerData.editorInterfaceVersionOffset.Increment(
-		activated.state.SpaceID.ValueString(), activated.state.EnvironmentID.ValueString(), activated.state.ContentTypeID.ValueString(),
-	)
+	// An unpublished draft has no editor interface; activation creates version 1.
+	// Only activation of an already published type advances an existing interface.
+	// Use the pre-activation checkpoint, even when recovery reaches this via Update.
+	if !publishedVersion.IsNull() && !publishedVersion.IsUnknown() {
+		r.providerData.editorInterfaceVersionOffset.Increment(
+			activated.state.SpaceID.ValueString(), activated.state.EnvironmentID.ValueString(), activated.state.ContentTypeID.ValueString(),
+		)
+	}
+
 	resp.Diagnostics.Append(activated.consistencyDiags...)
 	resp.Diagnostics.Append(activated.activationDiags...)
 }

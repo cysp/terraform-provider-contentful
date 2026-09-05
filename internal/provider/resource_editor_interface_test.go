@@ -216,7 +216,7 @@ func TestAccEditorInterfaceResourceCreateManagesInitialInterface(t *testing.T) {
 	require.Equal(t, []string{"PUT:1", "GET"}, handler.Requests())
 }
 
-func TestAccEditorInterfaceResourceCreateAfterContentTypeUpdateUsesObservedVersion(t *testing.T) {
+func TestAccEditorInterfaceResourceCreateAfterContentTypeUpdateUsesVersionOffset(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))

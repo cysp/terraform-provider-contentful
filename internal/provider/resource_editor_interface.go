@@ -26,6 +26,8 @@ type editorInterfaceResource struct {
 	providerData ContentfulProviderData
 }
 
+const editorInterfaceVersionMismatchDetail = "Contentful rejected the request because the Editor Interface version did not match the expected version. Concurrent changes or a Content Type activation through another provider configuration can invalidate that version. When managing both resources in the same apply, use the same provider configuration and a reference to the Content Type resource to order their operations."
+
 func editorInterfaceIdentityAttributeNames() []string {
 	return []string{"space_id", "environment_id", "content_type_id"}
 }
@@ -110,7 +112,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	default:
 		if contentfulResponseIsVersionMismatch(response) {
-			resp.Diagnostics.AddError("Editor Interface requires import", "Contentful rejected the request because the Editor Interface version did not match. Import the Editor Interface into this resource before applying again. If Terraform already tracks this resource, remove its existing state entry before importing it.")
+			resp.Diagnostics.AddError("Editor Interface version mismatch", editorInterfaceVersionMismatchDetail+" To deliberately adopt an existing modified Editor Interface, import it into this resource. Review a refreshed plan before applying again.")
 		} else {
 			resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
@@ -276,7 +278,11 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 		version = response.Response.Sys.Version
 
 	default:
-		resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		if contentfulResponseIsVersionMismatch(response) {
+			resp.Diagnostics.AddError("Editor Interface version mismatch", editorInterfaceVersionMismatchDetail+" Review a refreshed plan before applying again.")
+		} else {
+			resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		}
 	}
 
 	if resp.Diagnostics.HasError() {
