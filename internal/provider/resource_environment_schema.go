@@ -14,7 +14,8 @@ func EnvironmentResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Environment. A successful Create records Contentful's response but does not wait for the environment to reach ready status.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
