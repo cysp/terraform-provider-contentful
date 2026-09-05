@@ -76,7 +76,7 @@ import {
     environment_id    = var.contentful_environment_id
     app_definition_id = var.app_definition_id
   }
-  to = contentful_app_installation.this
+  to = contentful_app_installation.cool_app
 }
 ```
 
@@ -94,7 +94,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.app_definition_id}"
-  to = contentful_app_installation.this
+  to = contentful_app_installation.cool_app
 }
 ```
 
