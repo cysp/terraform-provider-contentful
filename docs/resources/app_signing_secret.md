@@ -3,7 +3,7 @@
 page_title: "contentful_app_signing_secret Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Signing Secret. Contentful does not return the complete secret after it is written; see Secrets and Terraform state for refresh, drift, and import consequences.
+  Manages a Contentful App Signing Secret. Contentful does not return the complete secret after it is written; see Secrets and Terraform state ../guides/secrets-and-state for refresh, drift, and import consequences.
 ---
 
 # contentful_app_signing_secret (Resource)
