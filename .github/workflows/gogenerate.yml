@@ -34,3 +34,8 @@ jobs:
             printf '%s\n' "$generated_status"
             exit 1
           fi
+
+      - name: Validate Registry documentation
+        run: >-
+          go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+          validate --provider-name=terraform-provider-contentful
