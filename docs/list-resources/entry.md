@@ -12,7 +12,7 @@ Lists Contentful Entries in an existing space and environment.
 
 ## Using list resources
 
-List resources require Terraform 1.14 or later. Put `list` blocks in a file with a `.tfquery.hcl` extension in the root Terraform configuration directory, then run `terraform query`. The examples below show the provider-specific `list` block; they are not complete query files.
+List resources require Terraform 1.14 or later. Put `list` blocks in a file with a `.tfquery.hcl` extension in the root Terraform configuration directory, then run `terraform query`. The examples below show the provider-specific `list` block; they are not complete query files. Declare their input variables in the query file (ordinary `.tf` variables are a separate scope), and configure the provider as described in the guide below.
 
 Use `terraform query -generate-config-out=generated.tf` to generate `resource` and `import` blocks for discovered resources. Review generated configuration before applying it. See [Discover and import existing resources](../guides/resource-discovery) for the complete workflow.
 
@@ -40,6 +40,6 @@ list "contentful_entry" "entries" {
 
 ### Optional
 
-- `content_type` (String) Content Type ID to use when filtering Entries.
-- `order` (List of String) Contentful Entry collection order expressions. Prefix an attribute with `-` for descending order. Empty expressions are ignored.
-- `query` (Map of String) Additional Contentful Entry collection query parameters, keyed by parameter name. `skip` and `limit` are ignored because pagination is controlled by the list operation. Prefer the dedicated `content_type` and `order` attributes for those filters.
+- `content_type` (String) Content Type ID to use when filtering Entries. Omitted or empty values add no Content Type filter. Specify a Content Type when filtering or ordering by its fields.
+- `order` (List of String) Contentful Entry collection order expressions, for example `sys.createdAt` or `-sys.updatedAt`. Prefix an attribute with `-` for descending order; expressions are applied in list order. Omitted or empty lists use Contentful's default ordering, and empty expressions are ignored.
+- `query` (Map of String) Additional Contentful Entry collection query parameters, keyed by parameter name. `skip` and `limit` are ignored because pagination is controlled by the list operation. For example, `"fields.slug" = "welcome"` filters a field when `content_type` is set. Values are query-parameter strings, not JSON. Prefer the dedicated `content_type` and `order` attributes; if also present in this map, the map values override those attributes.

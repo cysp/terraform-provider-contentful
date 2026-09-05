@@ -12,7 +12,7 @@ description: |-
 
 ## Using list resources
 
-List resources require Terraform 1.14 or later. Put `list` blocks in a file with a `.tfquery.hcl` extension in the root Terraform configuration directory, then run `terraform query`. The examples below show the provider-specific `list` block; they are not complete query files.
+List resources require Terraform 1.14 or later. Put `list` blocks in a file with a `.tfquery.hcl` extension in the root Terraform configuration directory, then run `terraform query`. The examples below show the provider-specific `list` block; they are not complete query files. Declare their input variables in the query file (ordinary `.tf` variables are a separate scope), and configure the provider as described in the guide below.
 
 Use `terraform query -generate-config-out=generated.tf` to generate `resource` and `import` blocks for discovered resources. Review generated configuration before applying it. See [Discover and import existing resources](../guides/resource-discovery) for the complete workflow.
 

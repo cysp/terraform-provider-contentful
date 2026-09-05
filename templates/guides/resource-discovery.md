@@ -22,7 +22,22 @@ Use a managed resource when Terraform should own an object's lifecycle, a data s
 
 ## Configure the provider
 
-Declare and configure the provider in the normal Terraform `.tf` files in the root configuration directory. Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment before running Terraform unless you intentionally configure `access_token` directly.
+Declare the provider in a normal Terraform file such as `main.tf` in the root configuration directory:
+
+```terraform
+terraform {
+  required_version = ">= 1.14.0"
+  required_providers {
+    contentful = {
+      source = "cysp/contentful"
+    }
+  }
+}
+
+provider "contentful" {}
+```
+
+Choose a provider-version constraint appropriate to your project before production use; see the [provider documentation](../index). Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment before running Terraform unless you intentionally configure `access_token` directly.
 
 Initialize the working directory before querying:
 
@@ -34,7 +49,7 @@ terraform init
 
 Create a file such as `contentful.tfquery.hcl`. Terraform only accepts `list` blocks in files with the [`.tfquery.hcl` extension](https://developer.hashicorp.com/terraform/language/files/tfquery).
 
-For example, to find Entries of one Content Type:
+For example, to find Entries of one Content Type, replace `SPACE_ID` with an existing space ID and use an existing environment and Content Type ID:
 
 ```terraform
 list "contentful_entry" "blog_posts" {
@@ -58,7 +73,7 @@ Run:
 terraform query
 ```
 
-Terraform prints the identities of matching resources. The Entry list resource can also pass Contentful collection filters through `query` and ordering expressions through `order`; `skip` and `limit` are controlled by the list operation rather than those provider-specific query parameters.
+Terraform prints the identities of matching resources. The Entry list resource can also pass [Contentful collection filters](https://www.contentful.com/developers/docs/references/content-management-api/search-parameters/) through `query` and ordering expressions through `order`; `skip` and `limit` are controlled by the list operation rather than those provider-specific query parameters. Terraform limits each list block to 100 results by default. To request a different maximum, set the Terraform `limit` argument beside `provider`, outside `config`; the provider paginates within that maximum.
 
 ## Generate and review import configuration
 

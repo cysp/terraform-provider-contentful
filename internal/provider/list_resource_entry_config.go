@@ -81,17 +81,17 @@ func EntryListResourceConfigSchema(ctx context.Context) listschema.Schema {
 				Required:    true,
 			},
 			"content_type": listschema.StringAttribute{
-				Description: "Content Type ID to use when filtering Entries.",
+				Description: "Content Type ID to use when filtering Entries. Omitted or empty values add no Content Type filter. Specify a Content Type when filtering or ordering by its fields.",
 				Optional:    true,
 			},
 			"order": listschema.ListAttribute{
-				Description: "Contentful Entry collection order expressions. Prefix an attribute with `-` for descending order. Empty expressions are ignored.",
+				Description: "Contentful Entry collection order expressions, for example `sys.createdAt` or `-sys.updatedAt`. Prefix an attribute with `-` for descending order; expressions are applied in list order. Omitted or empty lists use Contentful's default ordering, and empty expressions are ignored.",
 				ElementType: types.StringNull().Type(ctx),
 				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Optional:    true,
 			},
 			"query": listschema.MapAttribute{
-				Description: "Additional Contentful Entry collection query parameters, keyed by parameter name. `skip` and `limit` are ignored because pagination is controlled by the list operation. Prefer the dedicated `content_type` and `order` attributes for those filters.",
+				Description: "Additional Contentful Entry collection query parameters, keyed by parameter name. `skip` and `limit` are ignored because pagination is controlled by the list operation. For example, `\"fields.slug\" = \"welcome\"` filters a field when `content_type` is set. Values are query-parameter strings, not JSON. Prefer the dedicated `content_type` and `order` attributes; if also present in this map, the map values override those attributes.",
 				ElementType: types.StringNull().Type(ctx),
 				CustomType:  NewTypedMapNull[types.String]().CustomType(ctx),
 				Optional:    true,
