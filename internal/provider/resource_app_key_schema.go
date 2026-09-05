@@ -17,8 +17,8 @@ import (
 
 func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description:         "Manages a Contentful App Key.",
-		MarkdownDescription: "Manages a Contentful App Key from caller-supplied public key material. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use `lifecycle { create_before_destroy = true }` only when rotating to different key material, a free key slot exists, and the old and new keys must overlap. See [Secrets and Terraform state](../guides/secrets-and-state) for private-key and state-handling guidance.",
+		Description: "Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use create_before_destroy only when rotating to different key material, a free key slot exists, and the old and new keys must overlap.",
+		MarkdownDescription: "Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use `lifecycle { create_before_destroy = true }` only when rotating to different key material, a free key slot exists, and the old and new keys must overlap.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in organization_id/app_definition_id/key_kid form.",
@@ -49,10 +49,11 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"jwk": schema.SingleNestedAttribute{
-				Description: "Public JSON Web Key for the app key. Generate and retain the corresponding private key outside this resource.",
-				CustomType:  NewTypedObjectNull[AppKeyJWKModel]().CustomType(ctx),
-				Required:    true,
-				Attributes:  AppKeyJWKSchemaAttributes(ctx),
+				Description:         "Public JSON Web Key for the app key. Generate and retain the corresponding private key outside this resource.",
+				MarkdownDescription: "Public JSON Web Key for the app key. Generate and retain the corresponding private key outside this resource. See [Secrets and Terraform state](../guides/secrets-and-state) for private-key and state-handling guidance.",
+				CustomType:          NewTypedObjectNull[AppKeyJWKModel]().CustomType(ctx),
+				Required:            true,
+				Attributes:          AppKeyJWKSchemaAttributes(ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},
