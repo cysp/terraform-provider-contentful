@@ -28,6 +28,9 @@ jobs:
 
       - run: go generate ./...
 
-      - name: git diff
-        run: |
-          git diff --exit-code
+      - run: |
+          generated_status="$(git status --short --untracked-files=all)"
+          if [ -n "$generated_status" ]; then
+            printf '%s\n' "$generated_status"
+            exit 1
+          fi
