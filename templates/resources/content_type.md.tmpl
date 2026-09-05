@@ -27,7 +27,7 @@ See [Operation timeouts](../guides/operation-timeouts) for the default operation
 
 ### Activation recovery
 
-After a Create or Update returns a complete, valid draft for the expected Content Type, the provider records only the exact positive returned `version` as eligible for automatic activation recovery. It does not assume a particular version increment. If activation is not confirmed, an unchanged later apply can activate that same version without repeating the Content Type PUT.
+After a Create or Update returns a complete, valid draft for the expected Content Type that agrees with the Terraform plan, the provider records only the exact positive returned `version` as eligible for automatic activation recovery. It does not assume a particular version increment. If activation is not confirmed, an unchanged later apply can activate that same version without repeating the Content Type PUT.
 
 - Imported Content Types, drafts written outside this resource, external deactivation, legacy state, matching configuration, and an ordinary Read do not make a draft eligible for automatic activation.
 - With normal refresh, Terraform reads the Content Type before recovery. Recovery continues only while current `sys.version` and publication state still match the recorded draft. If that exact version is already activated, recovery is cleared without another Activate request. If the version or publication state has changed or is malformed, recovery is abandoned without mutation.
@@ -42,6 +42,10 @@ Content Type Create, Update, and Activate operations are not transparently repla
 ### Drift and ignored changes
 
 Values retained by `ignore_changes` remain in any later provider-managed full draft PUT. An ignored-only external draft is left untouched. External deactivation also remains observed state until a later provider-managed draft change creates a draft that this resource can activate.
+
+### Destroy
+
+Destroy deactivates the Content Type before deleting it. If deactivation fails for a reason other than an already absent or unpublished Content Type, deletion stops. These requests do not send a version or ETag precondition, so the provider does not protect an externally changed Content Type with the exact-version safeguard used for activation. Review the current Content Type and its use before destroying it.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}

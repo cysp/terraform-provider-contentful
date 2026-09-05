@@ -12,10 +12,12 @@ Manages a Contentful Entry.
 
 ## Example Usage
 
+This reference snippet uses an existing space and environment, an activated `blogPost` Content Type with `title`, `body`, and `slug` fields, enabled `en-AU` and `en-US` locales, and existing `blog` and `example` tags. Supply the space and environment IDs through the declared example variables and configure the provider in your module.
+
 ```terraform
 resource "contentful_entry" "example" {
-  space_id        = var.space_id
-  environment_id  = var.environment_id
+  space_id        = var.contentful_space_id
+  environment_id  = var.contentful_environment_id
   content_type_id = "blogPost"
 
   fields = {
@@ -47,7 +49,7 @@ See [Operation timeouts](../guides/operation-timeouts) for the default operation
 
 ### Publication recovery
 
-After a Create or Update returns a complete, valid draft for the expected Entry, the provider records only the exact positive returned `version` as eligible for automatic publication recovery. It does not assume a particular version increment. If publication is not confirmed, an unchanged later apply can publish that same version without repeating the Entry PUT.
+After a Create or Update returns a complete, valid draft for the expected Entry that agrees with the Terraform plan, the provider records only the exact positive returned `version` as eligible for automatic publication recovery. It does not assume a particular version increment. If publication is not confirmed, an unchanged later apply can publish that same version without repeating the Entry PUT.
 
 - Imported Entries and drafts written outside this resource are not automatically published merely because their fields match the configuration.
 - With normal refresh, Terraform reads the Entry before recovery. Recovery continues only while current `sys.version` and publication state still match the recorded draft. If that exact version is already published, recovery is cleared without another Publish request. If the version or publication state has changed or is malformed, recovery is abandoned without mutation.
