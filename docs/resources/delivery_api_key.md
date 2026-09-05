@@ -38,7 +38,7 @@ resource "contentful_delivery_api_key" "this" {
 
 - `access_token` (String, Sensitive) The delivery API access token.
 - `api_key_id` (String) System ID of the API key.
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/api_key_id form.
 - `preview_api_key_id` (String) ID of the corresponding preview API key.
 
 <a id="nestedatt--timeouts"></a>
