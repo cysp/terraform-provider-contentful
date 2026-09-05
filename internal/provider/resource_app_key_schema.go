@@ -49,11 +49,11 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"jwk": schema.SingleNestedAttribute{
-				Description: "Public JSON Web Key for the app key. Generate and retain the corresponding private key outside this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique.",
+				Description:         "Public JSON Web Key for the app key. Generate and retain the corresponding private key outside this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique.",
 				MarkdownDescription: "Public JSON Web Key for the app key. Generate and retain the corresponding private key outside this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use `lifecycle { create_before_destroy = true }` only when rotating to different key material, a free key slot exists, and the old and new keys must overlap. See [Secrets and Terraform state](../guides/secrets-and-state) for private-key and state-handling guidance.",
-				CustomType: NewTypedObjectNull[AppKeyJWKModel]().CustomType(ctx),
-				Required:   true,
-				Attributes: AppKeyJWKSchemaAttributes(ctx),
+				CustomType:          NewTypedObjectNull[AppKeyJWKModel]().CustomType(ctx),
+				Required:            true,
+				Attributes:          AppKeyJWKSchemaAttributes(ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},
