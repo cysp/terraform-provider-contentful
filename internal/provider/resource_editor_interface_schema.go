@@ -21,7 +21,8 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages the Editor Interface associated with a Content Type. Contentful creates the Editor Interface when the Content Type is first activated. Terraform can begin managing its initial configuration without import, including after this provider updates the Content Type earlier in the same apply. Import an Editor Interface that was modified before Terraform began managing it.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id/content_type_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
