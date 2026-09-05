@@ -44,7 +44,7 @@ func (v appSigningSecretValueValidator) ValidateString(ctx context.Context, req 
 
 func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Signing Secret. Contentful returns only a redacted representation after the secret is written, so refresh cannot detect an out-of-band replacement. Command-line import cannot recover the existing secret and leaves value null; a later apply with value configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply.",
+		Description:         "Manages a Contentful App Signing Secret.",
 		MarkdownDescription: "Manages a Contentful App Signing Secret. Contentful returns only a redacted representation after the secret is written, so refresh cannot detect an out-of-band replacement. Command-line import cannot recover the existing secret and leaves `value` null; a later apply with `value` configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
