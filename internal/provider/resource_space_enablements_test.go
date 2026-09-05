@@ -46,11 +46,12 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ResourceName:    "contentful_space_enablements.test",
-				ImportState:     true,
-				ImportStateId:   "0p38pssr0fi3",
+				ConfigDirectory:  config.TestNameDirectory(),
+				ConfigVariables:  configVariables,
+				ResourceName:     "contentful_space_enablements.test",
+				ImportState:      true,
+				ImportStateId:    "0p38pssr0fi3",
+				ImportStateCheck: testAccImportAttributes(map[string]string{"id": "0p38pssr0fi3", "space_id": "0p38pssr0fi3"}),
 			},
 		},
 	})

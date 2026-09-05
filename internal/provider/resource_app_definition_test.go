@@ -11,6 +11,10 @@ import (
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -124,19 +128,27 @@ func TestAccAppDefinitionResourceImport(t *testing.T) {
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ResourceName:    "contentful_app_definition.test",
+				ConfigDirectory:    config.TestNameDirectory(),
+				ConfigVariables:    configVariables,
+				ResourceName:       "contentful_app_definition.test",
+				ImportState:        true,
+				ImportStateId:      "2zuSjSO4A0e6GKBrhJRe2m/app-definition-id",
+				ImportStatePersist: true,
+				ImportStateCheck: testAccImportAttributes(map[string]string{
+					"id":        "2zuSjSO4A0e6GKBrhJRe2m/app-definition-id",
+					"bundle_id": "app-bundle-id",
+				}),
 			},
+			// Configured locations = [] intentionally updates the imported null list.
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				ResourceName:    "contentful_app_definition.test",
-				ImportState:     true,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_app_definition.test", "id", "2zuSjSO4A0e6GKBrhJRe2m/app-definition-id"),
-					resource.TestCheckResourceAttr("contentful_app_definition.test", "bundle_id", "app-bundle-id"),
-				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_app_definition.test", plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_app_definition.test", tfjsonpath.New("bundle_id"), knownvalue.StringExact("app-bundle-id")),
+				},
 			},
 		},
 	})
