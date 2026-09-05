@@ -23,6 +23,8 @@ description: |-
 
 Creating an Entry, or changing its `fields` or `metadata` through Terraform, writes a draft and then publishes that draft. An Update that changes only Terraform's state representation sends neither an Entry PUT nor a Publish request. `published_version` reflects Contentful `sys.publishedVersion`; it is observed state, not configurable publication intent.
 
+See [Operation timeouts](../guides/operation-timeouts) for the default operation budgets and deadline precedence that apply to these lifecycle operations.
+
 ### Publication recovery
 
 After a Create or Update returns a complete, valid draft for the expected Entry, the provider records only the exact positive returned `version` as eligible for automatic publication recovery. It does not assume a particular version increment. If publication is not confirmed, an unchanged later apply can publish that same version without repeating the Entry PUT.
