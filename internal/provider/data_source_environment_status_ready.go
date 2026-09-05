@@ -8,6 +8,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -82,6 +83,13 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 			"err":      err,
 		})
 
+		contextErr := ctx.Err()
+		if contextErr != nil {
+			addEnvironmentStatusReadyContextError(&resp.Diagnostics, contextErr)
+
+			return
+		}
+
 		switch response := response.(type) {
 		case *cm.Environment:
 			continuePolling, responseDiags := publishEnvironmentStatusReadyResponse(
@@ -104,15 +112,19 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 
 		select {
 		case <-ctx.Done():
-			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-				resp.Diagnostics.AddError(
-					"Timed out waiting for environment to become ready",
-					"",
-				)
-			}
+			addEnvironmentStatusReadyContextError(&resp.Diagnostics, ctx.Err())
 
 			return
 		case <-ticker.C:
 		}
 	}
+}
+
+func addEnvironmentStatusReadyContextError(diagnostics *diag.Diagnostics, err error) {
+	summary := "Cancelled waiting for environment to become ready"
+	if errors.Is(err, context.DeadlineExceeded) {
+		summary = "Timed out waiting for environment to become ready"
+	}
+
+	diagnostics.AddError(summary, "")
 }
