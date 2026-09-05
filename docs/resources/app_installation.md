@@ -51,7 +51,7 @@ resource "contentful_app_installation" "cool_marketplace_app" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/app_definition_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
