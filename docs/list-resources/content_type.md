@@ -3,12 +3,18 @@
 page_title: "contentful_content_type List Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  List Contentful Content Types.
+  Lists Contentful Content Types in an existing space and environment.
 ---
 
 # contentful_content_type (List Resource)
 
-List Contentful Content Types.
+Lists Contentful Content Types in an existing space and environment.
+
+## Using list resources
+
+List resources require Terraform 1.14 or later. Put `list` blocks in a file with a `.tfquery.hcl` extension in the root Terraform configuration directory, then run `terraform query`. The examples below show the provider-specific `list` block; they are not complete query files.
+
+Use `terraform query -generate-config-out=generated.tf` to generate `resource` and `import` blocks for discovered resources. Review generated configuration before applying it. See [Discover and import existing resources](../guides/resource-discovery) for the complete workflow.
 
 ## Example Usage
 
@@ -28,5 +34,5 @@ list "contentful_content_type" "content_types" {
 
 ### Required
 
-- `environment_id` (String) The ID of the environment for which to list content types.
-- `space_id` (String) The ID of the space for which to list content types.
+- `environment_id` (String) ID of the environment from which to list Content Types.
+- `space_id` (String) ID of the space from which to list Content Types.
