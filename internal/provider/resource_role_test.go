@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -14,9 +15,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -90,27 +96,96 @@ func TestAccRoleResourceImportNotFound(t *testing.T) {
 func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
-
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
-	configVariables := config.Variables{
-		"space_id": config.StringVariable("0p38pssr0fi3"),
-	}
+	var (
+		roleID       string
+		requestMutex sync.Mutex
+		mutations    []string
+	)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			requestMutex.Lock()
+
+			mutations = append(mutations, r.Method+" "+r.URL.Path+" version="+r.Header.Get("X-Contentful-Version"))
+			requestMutex.Unlock()
+		}
+
+		server.ServeHTTP(w, r)
+	})
+	identity := statecheck.CompareValue(compare.ValuesSame())
+	configVariables := config.Variables{"space_id": config.StringVariable("0p38pssr0fi3")}
+
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		CheckDestroy: func(_ *terraform.State) error {
+			response, err := server.Handler().GetRole(t.Context(), cm.GetRoleParams{SpaceID: "0p38pssr0fi3", RoleID: roleID})
+			require.NoError(t, err)
+
+			status, ok := response.(cm.StatusCodeResponse)
+			require.True(t, ok, "unexpected response after destroy: %T", response)
+			require.Equal(t, http.StatusNotFound, status.GetStatusCode())
+
+			return nil
+		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccRoleResourceCreateUpdateDelete/1"),
 				ConfigVariables: configVariables,
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_role.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_role.test", tfjsonpath.New("permissions"), knownvalue.MapExact(map[string]knownvalue.Check{})),
+					statecheck.ExpectKnownValue("contentful_role.test", tfjsonpath.New("policies"), knownvalue.ListExact([]knownvalue.Check{})),
+				},
+				Check: func(state *terraform.State) error {
+					roleID = state.RootModule().Resources["contentful_role.test"].Primary.Attributes["role_id"]
+					require.NotEmpty(t, roleID)
+					response, err := server.Handler().GetRole(t.Context(), cm.GetRoleParams{SpaceID: "0p38pssr0fi3", RoleID: roleID})
+					require.NoError(t, err)
+
+					role, ok := response.(*cm.Role)
+					require.True(t, ok, "unexpected role response: %T", response)
+					require.Equal(t, "Test", role.Name)
+
+					return nil
+				},
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory:   config.StaticDirectory("testdata/TestAccRoleResourceCreateUpdateDelete/1"),
+				ConfigVariables:   configVariables,
+				ResourceName:      "contentful_role.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ConfigDirectory:  config.StaticDirectory("testdata/TestAccRoleResourceCreateUpdateDelete/2"),
+				ConfigVariables:  configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_role.test", plancheck.ResourceActionUpdate)}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_role.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_role.test", tfjsonpath.New("permissions"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"ContentDelivery":    knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("all")}),
+						"ContentModel":       knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("read")}),
+						"EnvironmentAliases": knownvalue.ListExact([]knownvalue.Check{}),
+						"Environments":       knownvalue.ListExact([]knownvalue.Check{}),
+						"Settings":           knownvalue.ListExact([]knownvalue.Check{}),
+						"Tags":               knownvalue.ListExact([]knownvalue.Check{}),
+					})),
+				},
 			},
 		},
 	})
+
+	requestMutex.Lock()
+	defer requestMutex.Unlock()
+
+	require.Equal(t, []string{
+		"POST /spaces/0p38pssr0fi3/roles version=",
+		"PUT /spaces/0p38pssr0fi3/roles/" + roleID + " version=0",
+		"DELETE /spaces/0p38pssr0fi3/roles/" + roleID + " version=",
+	}, mutations)
 }
 
 func TestRoleUpdateRequestConversionErrorStopsBeforeMutation(t *testing.T) {
@@ -173,6 +248,7 @@ func TestRoleUpdateRequestConversionErrorStopsBeforeMutation(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Len(t, response.Diagnostics, 1)
+	assert.Equal(t, tfprotov6.DiagnosticSeverityError, response.Diagnostics[0].Severity)
 	assert.Equal(t, "Invalid policy actions", response.Diagnostics[0].Summary)
 	assert.Equal(t, `"all" must be specified by itself. Remove "all" or the other policy actions from this list.`, response.Diagnostics[0].Detail)
 	assert.Equal(t,
@@ -220,4 +296,62 @@ func TestAccRoleResourceDeleted(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccRoleResourceImportedVersionUsedForUpdate(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
+	server.SetRole("0p38pssr0fi3", "imported", cm.RoleData{Name: "Test"})
+	response, err := server.Handler().GetRole(t.Context(), cm.GetRoleParams{SpaceID: "0p38pssr0fi3", RoleID: "imported"})
+	require.NoError(t, err)
+
+	role, ok := response.(*cm.Role)
+	require.True(t, ok)
+	// Seed before serving any requests; the mock does not model version increments.
+	role.Sys.Version = 37
+
+	var puts, posts atomic.Int64
+
+	var updateVersion atomic.Value
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut && r.URL.Path == "/spaces/0p38pssr0fi3/roles/imported" {
+			puts.Add(1)
+			updateVersion.Store(r.Header.Get("X-Contentful-Version"))
+		}
+
+		if r.Method == http.MethodPost {
+			posts.Add(1)
+		}
+
+		server.ServeHTTP(w, r)
+	})
+	variables := config.Variables{"space_id": config.StringVariable("0p38pssr0fi3")}
+	// Use the version persisted by import, without a planning refresh replacing it.
+	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory:    config.StaticDirectory("testdata/TestAccRoleResourceCreateUpdateDelete/1"),
+				ConfigVariables:    variables,
+				ResourceName:       "contentful_role.test",
+				ImportState:        true,
+				ImportStateId:      "0p38pssr0fi3/imported",
+				ImportStatePersist: true,
+				ImportStateCheck:   testAccImportAttributes(map[string]string{"role_id": "imported", "name": "Test"}),
+			},
+			{
+				ConfigDirectory:   config.StaticDirectory("testdata/TestAccRoleResourceCreateUpdateDelete/2"),
+				ConfigVariables:   variables,
+				ConfigPlanChecks:  resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_role.test", plancheck.ResourceActionUpdate)}},
+				ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue("contentful_role.test", tfjsonpath.New("role_id"), knownvalue.StringExact("imported"))},
+			},
+		},
+	})
+	require.Equal(t, int64(1), puts.Load())
+	require.Zero(t, posts.Load())
+	require.Equal(t, "37", updateVersion.Load())
 }
