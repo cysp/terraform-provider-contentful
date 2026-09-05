@@ -86,7 +86,7 @@ resource "contentful_editor_interface" "author" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/content_type_id form.
 
 <a id="nestedatt--controls"></a>
 ### Nested Schema for `controls`
