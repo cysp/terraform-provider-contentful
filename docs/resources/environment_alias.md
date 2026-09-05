@@ -35,7 +35,7 @@ resource "contentful_environment_alias" "example" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_alias_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -59,7 +59,7 @@ import {
     space_id             = var.contentful_space_id
     environment_alias_id = var.environment_alias_id
   }
-  to = contentful_environment_alias.this
+  to = contentful_environment_alias.example
 }
 ```
 
@@ -76,6 +76,6 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.environment_alias_id}"
-  to = contentful_environment_alias.this
+  to = contentful_environment_alias.example
 }
 ```

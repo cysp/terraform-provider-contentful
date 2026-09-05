@@ -86,7 +86,7 @@ resource "contentful_editor_interface" "author" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/content_type_id form.
 
 <a id="nestedatt--controls"></a>
 ### Nested Schema for `controls`
@@ -213,7 +213,7 @@ import {
     environment_id  = var.contentful_environment_id
     content_type_id = var.content_type_id
   }
-  to = contentful_editor_interface.this
+  to = contentful_editor_interface.author
 }
 ```
 
@@ -231,7 +231,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
-  to = contentful_editor_interface.this
+  to = contentful_editor_interface.author
 }
 ```
 

@@ -56,7 +56,7 @@ resource "contentful_environment_alias" "staging" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id form.
 - `status` (String) Latest environment status returned by the resource operation. This status may not be ready after a successful Create.
 
 <a id="nestedatt--timeouts"></a>
@@ -81,7 +81,7 @@ import {
     space_id       = var.contentful_space_id
     environment_id = var.contentful_environment_id
   }
-  to = contentful_environment.this
+  to = contentful_environment.staging
 }
 ```
 
@@ -98,6 +98,6 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}"
-  to = contentful_environment.this
+  to = contentful_environment.staging
 }
 ```

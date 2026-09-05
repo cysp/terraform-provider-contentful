@@ -18,7 +18,8 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Delivery API Key.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/api_key_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

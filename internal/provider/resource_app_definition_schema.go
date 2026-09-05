@@ -18,7 +18,8 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful App Definition.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in organization_id/app_definition_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

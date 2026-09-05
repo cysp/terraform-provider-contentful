@@ -40,7 +40,7 @@ resource "contentful_tag" "example" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/tag_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

@@ -53,7 +53,7 @@ resource "contentful_app_definition" "this" {
 ### Read-Only
 
 - `app_definition_id` (String) System ID of the app definition.
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in organization_id/app_definition_id form.
 
 <a id="nestedatt--locations"></a>
 ### Nested Schema for `locations`
