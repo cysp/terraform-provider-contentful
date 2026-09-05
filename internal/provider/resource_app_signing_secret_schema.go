@@ -48,7 +48,8 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 		MarkdownDescription: "Manages a Contentful App Signing Secret. Contentful does not return the complete secret after it is written; see [Secrets and Terraform state](../guides/secrets-and-state) for refresh, drift, and import consequences.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in organization_id/app_definition_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
