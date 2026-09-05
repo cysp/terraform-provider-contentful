@@ -12,19 +12,12 @@ const (
 	contentTypeContentfulJSON  = "application/vnd.contentful.management.v1+json"
 )
 
-type userAgentClient struct {
+type transportClient struct {
 	client    ht.Client
 	userAgent string
 }
 
-type responseContentTypeNormalizingClient struct {
-	client ht.Client
-}
-
-var (
-	_ ht.Client = (*userAgentClient)(nil)
-	_ ht.Client = (*responseContentTypeNormalizingClient)(nil)
-)
+var _ ht.Client = (*transportClient)(nil)
 
 // NewTransportClient wraps client with Contentful transport behavior.
 //
@@ -32,40 +25,18 @@ var (
 // vendor JSON response Content-Type values to application/json before decoding.
 //
 //nolint:revive
-func NewTransportClient(client ht.Client, userAgent string) *responseContentTypeNormalizingClient {
-	return NewResponseContentTypeNormalizingClient(NewUserAgentClient(client, userAgent))
-}
-
-// NewUserAgentClient wraps client to set a default User-Agent on outgoing requests.
-//
-//nolint:revive
-func NewUserAgentClient(client ht.Client, userAgent string) *userAgentClient {
-	return &userAgentClient{
+func NewTransportClient(client ht.Client, userAgent string) *transportClient {
+	return &transportClient{
 		client:    client,
 		userAgent: userAgent,
 	}
 }
 
-// NewResponseContentTypeNormalizingClient wraps client to normalize Contentful
-// vendor JSON response Content-Type values to application/json.
-//
-//nolint:revive
-func NewResponseContentTypeNormalizingClient(client ht.Client) *responseContentTypeNormalizingClient {
-	return &responseContentTypeNormalizingClient{
-		client: client,
-	}
-}
-
-func (c *userAgentClient) Do(req *http.Request) (*http.Response, error) {
+func (c *transportClient) Do(req *http.Request) (*http.Response, error) {
 	if req.Header.Get("User-Agent") == "" && c.userAgent != "" {
 		req.Header.Set("User-Agent", c.userAgent)
 	}
 
-	//nolint:wrapcheck
-	return c.client.Do(req)
-}
-
-func (c *responseContentTypeNormalizingClient) Do(req *http.Request) (*http.Response, error) {
 	resp, err := c.client.Do(req)
 	normalizeResponseContentType(resp)
 
