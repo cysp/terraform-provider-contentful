@@ -17,7 +17,7 @@ import (
 
 func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use create_before_destroy only when rotating to different key material, a free key slot exists, and the old and new keys must overlap.",
+		Description:         "Manages a Contentful App Key.",
 		MarkdownDescription: "Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use `lifecycle { create_before_destroy = true }` only when rotating to different key material, a free key slot exists, and the old and new keys must overlap.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
