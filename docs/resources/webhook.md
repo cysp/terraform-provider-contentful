@@ -153,7 +153,7 @@ Required:
 
 Required:
 
-- `value` (String) Header value. Contentful's secret flag does not make the Terraform value sensitive. Use a sensitive Terraform expression when needed. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
+- `value` (String) Header value. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. Use a sensitive Terraform expression when needed. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
 
 Optional:
 
@@ -176,8 +176,8 @@ Optional:
 
 Optional:
 
-- `body` (String) JSON-encoded custom webhook request body. Use `jsonencode(...)` to construct structured values. Contentful can resolve supported JSON-pointer templates and transformation helpers against the original webhook context.
-- `content_type` (String) Content-Type for transformed webhook requests. Contentful defaults to `application/vnd.contentful.management.v1+json` and also supports its UTF-8 variant, `application/json` with or without the UTF-8 charset, and `application/x-www-form-urlencoded` with or without the UTF-8 charset.
+- `body` (String) JSON-encoded custom webhook request body. Use `jsonencode(...)` to construct structured values. When omitted, methods that send a body use Contentful's standard event payload. Contentful can resolve supported JSON-pointer templates and transformation helpers against the original webhook context.
+- `content_type` (String) Content-Type for transformed webhook requests. Contentful defaults to `application/vnd.contentful.management.v1+json` and also supports its UTF-8 variant, `application/json` with or without the UTF-8 charset, and `application/x-www-form-urlencoded` with or without `; charset=utf-8`. The form content type converts the JSON body to URL-encoded form data.
 - `include_content_length` (Boolean) Whether Contentful includes a `Content-Length` header computed from the transformed request body. Contentful omits the header by default.
 - `method` (String) HTTP method for outgoing webhook requests. Contentful defaults to `POST` and supports `POST`, `GET`, `PUT`, `PATCH`, and `DELETE`. `GET` and `DELETE` webhook calls do not include a request body.
 

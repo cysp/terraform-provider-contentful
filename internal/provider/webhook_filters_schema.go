@@ -148,7 +148,7 @@ func exactlyOneWebhookFilterOperator(names ...string) []validator.Object {
 func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"value": schema.StringAttribute{
-			Description: "Header value. Contentful's secret flag does not make the Terraform value sensitive. Use a sensitive Terraform expression when needed. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.",
+			Description: "Header value. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. Use a sensitive Terraform expression when needed. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.",
 			Required:    true,
 		},
 		"secret": schema.BoolAttribute{
@@ -170,7 +170,7 @@ func (v WebhookTransformationValue) SchemaAttributes(_ context.Context) map[stri
 			Optional:    true,
 		},
 		"content_type": schema.StringAttribute{
-			Description: "Content-Type for transformed webhook requests. Contentful defaults to `application/vnd.contentful.management.v1+json` and also supports its UTF-8 variant, `application/json` with or without the UTF-8 charset, and `application/x-www-form-urlencoded` with or without the UTF-8 charset.",
+			Description: "Content-Type for transformed webhook requests. Contentful defaults to `application/vnd.contentful.management.v1+json` and also supports its UTF-8 variant, `application/json` with or without the UTF-8 charset, and `application/x-www-form-urlencoded` with or without `; charset=utf-8`. The form content type converts the JSON body to URL-encoded form data.",
 			Optional:    true,
 		},
 		"include_content_length": schema.BoolAttribute{
@@ -178,7 +178,7 @@ func (v WebhookTransformationValue) SchemaAttributes(_ context.Context) map[stri
 			Optional:    true,
 		},
 		"body": schema.StringAttribute{
-			Description: "JSON-encoded custom webhook request body. Use `jsonencode(...)` to construct structured values. Contentful can resolve supported JSON-pointer templates and transformation helpers against the original webhook context.",
+			Description: "JSON-encoded custom webhook request body. Use `jsonencode(...)` to construct structured values. When omitted, methods that send a body use Contentful's standard event payload. Contentful can resolve supported JSON-pointer templates and transformation helpers against the original webhook context.",
 			Optional:    true,
 			CustomType:  jsontypes.NormalizedType{},
 		},
