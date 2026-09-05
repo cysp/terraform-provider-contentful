@@ -202,7 +202,7 @@ import {
     environment_id = var.contentful_environment_id
     extension_id   = var.extension_id
   }
-  to = contentful_extension.this
+  to = contentful_extension.example
 }
 ```
 
@@ -220,7 +220,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.extension_id}"
-  to = contentful_extension.this
+  to = contentful_extension.example
 }
 ```
 
