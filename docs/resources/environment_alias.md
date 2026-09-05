@@ -35,7 +35,7 @@ resource "contentful_environment_alias" "example" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_alias_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
