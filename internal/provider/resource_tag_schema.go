@@ -48,7 +48,7 @@ func TagResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"visibility": schema.StringAttribute{
-				Description: "Visibility of the tag.",
+				Description: "Tag visibility: private makes it available only through the Content Management API; public also exposes it through the Content Delivery and Preview APIs. Changing visibility requires replacement. Deleting the old Tag removes its assignments from entries and assets.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

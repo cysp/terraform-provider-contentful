@@ -51,7 +51,7 @@ resource "contentful_environment_alias" "staging" {
 
 ### Optional
 
-- `source_environment_id` (String) ID of the source environment from which to copy content. Environments are created as a copy of an existing environment.
+- `source_environment_id` (String) ID of the existing environment to clone when creating this environment. Omitted or empty selects Contentful's default source, master. Changing this value replaces the environment. Contentful does not return the original clone source; import leaves it unset.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

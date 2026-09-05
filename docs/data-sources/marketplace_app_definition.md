@@ -32,7 +32,7 @@ data "contentful_marketplace_app_definition" "this" {
 ### Read-Only
 
 - `bundle_id` (String) The bundle identifier for the marketplace app.
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform identifier in organization_id/app_definition_id form; not a Contentful system ID.
 - `locations` (Attributes List) Locations where the marketplace app can be rendered in the Contentful web app. (see [below for nested schema](#nestedatt--locations))
 - `name` (String) The name of the marketplace app.
 - `organization_id` (String)

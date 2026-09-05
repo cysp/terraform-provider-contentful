@@ -46,7 +46,7 @@ resource "contentful_app_installation" "cool_marketplace_app" {
 ### Optional
 
 - `marketplace` (Set of String) Marketplace information for the app.
-- `parameters` (String) App-specific configuration as a JSON-encoded object. Use jsonencode(...) to encode Terraform values. The stringified value cannot be longer than 16kB.
+- `parameters` (String) App-specific configuration as a JSON-encoded object. Use jsonencode(...) to encode Terraform values.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

@@ -123,9 +123,10 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			},
 		},
 		"sidebar": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
+			Description: "Render the extension in the sidebar instead of replacing a field editing control. Defaults to false.",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 		"parameters": schema.SingleNestedAttribute{
 			Attributes: map[string]schema.Attribute{

@@ -84,7 +84,7 @@ Required:
 Optional:
 
 - `parameters` (Attributes) (see [below for nested schema](#nestedatt--extension--parameters))
-- `sidebar` (Boolean)
+- `sidebar` (Boolean) Render the extension in the sidebar instead of replacing a field editing control. Defaults to false.
 - `src` (String) URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Cannot be configured with srcdoc; both may be omitted to preserve an imported source.
 - `srcdoc` (String) String representation of the extension (e.g. inline HTML code). Cannot be configured with src; both may be omitted to preserve an imported source. Contentful accepts an explicitly empty srcdoc.
 
@@ -132,10 +132,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value for the parameter.
+- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
-- `options` (List of String) List of allowed values for Enum parameters.
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--installation--labels"></a>
@@ -160,10 +160,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value for the parameter.
+- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
-- `options` (List of String) List of allowed values for Enum parameters.
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--instance--labels"></a>

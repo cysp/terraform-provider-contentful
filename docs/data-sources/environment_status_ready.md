@@ -46,7 +46,7 @@ data "contentful_environment_status_ready" "example" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform identifier in space_id/environment_id form; not a Contentful system ID.
 - `status` (String) Latest status reported for the environment.
 
 <a id="nestedatt--timeouts"></a>

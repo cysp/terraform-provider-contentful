@@ -121,10 +121,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value for the parameter.
+- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--parameters--installation--labels))
-- `options` (List of String) List of allowed values for Enum parameters.
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--parameters--installation--labels"></a>
@@ -149,10 +149,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value for the parameter.
+- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--parameters--instance--labels))
-- `options` (List of String) List of allowed values for Enum parameters.
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--parameters--instance--labels"></a>

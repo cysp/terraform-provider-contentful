@@ -18,7 +18,8 @@ The readiness wait is controlled by this data source's timeouts.read value.
 This may be referenced in depends_on chains when creating resources that require an environment to be fully ready.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform identifier in space_id/environment_id form; not a Contentful system ID.",
+				Computed:    true,
 			},
 			"space_id": schema.StringAttribute{
 				Description: "ID of the space containing the environment.",

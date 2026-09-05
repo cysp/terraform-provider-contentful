@@ -14,7 +14,8 @@ func AppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 		Description: "Retrieves a Contentful App Definition.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform identifier in organization_id/app_definition_id form; not a Contentful system ID.",
+				Computed:    true,
 			},
 			"organization_id": schema.StringAttribute{
 				Description: "The ID of the organization.",

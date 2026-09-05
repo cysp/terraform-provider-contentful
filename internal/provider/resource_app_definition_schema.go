@@ -177,12 +177,12 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			Optional:    true,
 		},
 		"default": schema.StringAttribute{
-			Description: "Default value for the parameter.",
+			Description: "Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode(\"text\") for Symbol. An Enum default must match an allowed option.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "List of allowed values for Enum parameters.",
+			Description: "Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode(\"light\"), jsonencode({ dark = \"Dark theme\" })]; objects map a value to its display label.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
