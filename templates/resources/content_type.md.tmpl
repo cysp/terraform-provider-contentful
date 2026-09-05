@@ -23,6 +23,8 @@ description: |-
 
 Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. An Update that changes only Terraform's state representation or timeouts sends neither a Content Type PUT nor an Activate request. `published_version` reflects Contentful `sys.publishedVersion`; it is observed state, not configurable activation intent.
 
+See [Operation timeouts](../guides/operation-timeouts) for the default operation budgets and deadline precedence that apply to these lifecycle operations.
+
 ### Activation recovery
 
 After a Create or Update returns a complete, valid draft for the expected Content Type, the provider records only the exact positive returned `version` as eligible for automatic activation recovery. It does not assume a particular version increment. If activation is not confirmed, an unchanged later apply can activate that same version without repeating the Content Type PUT.
