@@ -70,28 +70,28 @@ func (c entryListResourceConfig) request() (entryListResourceRequest, diag.Diagn
 
 func EntryListResourceConfigSchema(ctx context.Context) listschema.Schema {
 	return listschema.Schema{
-		Description: "List entries from a Contentful space and environment",
+		Description: "Lists Contentful Entries in an existing space and environment.",
 		Attributes: map[string]listschema.Attribute{
 			"space_id": listschema.StringAttribute{
-				Description: "The ID of the space for which to list entries.",
+				Description: "ID of the space from which to list Entries.",
 				Required:    true,
 			},
 			"environment_id": listschema.StringAttribute{
-				Description: "The ID of the environment for which to list entries.",
+				Description: "ID of the environment from which to list Entries.",
 				Required:    true,
 			},
 			"content_type": listschema.StringAttribute{
-				Description: "Query entries for a specific content type.",
+				Description: "Content Type ID to use when filtering Entries.",
 				Optional:    true,
 			},
 			"order": listschema.ListAttribute{
-				Description: "Order entries by one or more attributes.",
+				Description: "Contentful Entry collection order expressions. Prefix an attribute with `-` for descending order. Empty expressions are ignored.",
 				ElementType: types.StringNull().Type(ctx),
 				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Optional:    true,
 			},
 			"query": listschema.MapAttribute{
-				Description: "Query parameters to filter the entries listed.",
+				Description: "Additional Contentful Entry collection query parameters, keyed by parameter name. `skip` and `limit` are ignored because pagination is controlled by the list operation. Prefer the dedicated `content_type` and `order` attributes for those filters.",
 				ElementType: types.StringNull().Type(ctx),
 				CustomType:  NewTypedMapNull[types.String]().CustomType(ctx),
 				Optional:    true,
