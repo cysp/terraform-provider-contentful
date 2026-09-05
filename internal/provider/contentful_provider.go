@@ -91,14 +91,14 @@ func resolveProviderString(override string, configured types.String, environment
 
 func (p *ContentfulProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manage Contentful spaces and related configuration with Terraform.",
+		Description: "Manages Contentful configuration and content within existing spaces with Terraform. The provider does not create or delete spaces.",
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
-				Description: "Contentful Management API base URL. Defaults to the public Contentful Management API. Can also be set with the CONTENTFUL_URL environment variable.",
+				Description: "Contentful Management API base URL. Defaults to the public Contentful Management API. Can also be set with the CONTENTFUL_URL environment variable; a configured non-null value takes precedence.",
 				Optional:    true,
 			},
 			"access_token": schema.StringAttribute{
-				Description: "Contentful Management API access token. Can also be set with the CONTENTFUL_MANAGEMENT_ACCESS_TOKEN environment variable.",
+				Description: "Contentful Management API access token. Set this attribute or the CONTENTFUL_MANAGEMENT_ACCESS_TOKEN environment variable; a configured non-null value takes precedence. The provider requires a non-empty token when configured.",
 				Optional:    true,
 				Sensitive:   true,
 			},
