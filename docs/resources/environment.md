@@ -3,21 +3,40 @@
 page_title: "contentful_environment Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Environment.
+  Manages a Contentful Environment. A successful Create records Contentful's response but does not wait for the environment to reach ready status.
 ---
 
 # contentful_environment (Resource)
 
-Manages a Contentful Environment.
+Manages a Contentful Environment. A successful Create records Contentful's response but does not wait for the environment to reach ready status.
+
+## Environment readiness
+
+Contentful can accept an environment Create before the environment copy is ready for dependent operations. A successful apply of this resource therefore establishes that Contentful accepted the Create; it does not establish that the environment reached `ready` status.
+
+Use the [`contentful_environment_status_ready` data source](../data-sources/environment_status_ready) to wait before creating a resource in the environment or repointing an alias. Its `timeouts.read` value controls the readiness wait; the environment resource's `timeouts.create` value controls only the Create operation. See [Operation timeouts](../guides/operation-timeouts) for all defaults and deadline rules.
 
 ## Example Usage
 
 ```terraform
-resource "contentful_environment" "example" {
+resource "contentful_environment" "staging" {
   space_id              = "your-space-id"
   environment_id        = "staging-yyyy-mm-dd"
   name                  = "Staging (YYYY-MM-DD)"
   source_environment_id = "master"
+}
+
+data "contentful_environment_status_ready" "staging" {
+  space_id       = contentful_environment.staging.space_id
+  environment_id = contentful_environment.staging.environment_id
+}
+
+resource "contentful_environment_alias" "staging" {
+  space_id              = contentful_environment.staging.space_id
+  environment_alias_id  = "staging"
+  target_environment_id = contentful_environment.staging.environment_id
+
+  depends_on = [data.contentful_environment_status_ready.staging]
 }
 ```
 
@@ -38,7 +57,7 @@ resource "contentful_environment" "example" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `status` (String) Status of the environment.
+- `status` (String) Latest environment status returned by the resource operation. This status may not be ready after a successful Create.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
