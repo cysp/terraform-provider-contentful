@@ -44,10 +44,11 @@ func TestAccEnvironmentResourceLifecycle(t *testing.T) {
 				ConfigVariables: configVariables2,
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables2,
-				ImportState:     true,
-				ResourceName:    "contentful_environment.test",
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables2,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "contentful_environment.test",
 			},
 		},
 	})
@@ -85,10 +86,11 @@ func TestAccEnvironmentResourceImport(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ImportState:     true,
-				ResourceName:    "contentful_environment.test",
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "contentful_environment.test",
 			},
 		},
 	})

@@ -77,10 +77,11 @@ func TestAccResourceProviderResourceImport(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ImportState:     true,
-				ResourceName:    "contentful_resource_provider.test",
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "contentful_resource_provider.test",
 			},
 		},
 	})
