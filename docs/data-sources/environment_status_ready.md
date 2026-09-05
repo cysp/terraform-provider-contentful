@@ -5,6 +5,7 @@ subcategory: ""
 description: |-
   Waits until a Contentful environment reaches ready status.
   The data source polls while Contentful reports queued or inProgress. It returns an error immediately if Contentful reports failed. Unrecognized status values remain pollable so that a newly introduced status does not fail prematurely.
+  The readiness wait is controlled by this data source's timeouts.read value.
   This may be referenced in depends_on chains when creating resources that require an environment to be fully ready.
 ---
 
@@ -14,38 +15,20 @@ Waits until a Contentful environment reaches ready status.
 
 The data source polls while Contentful reports queued or inProgress. It returns an error immediately if Contentful reports failed. Unrecognized status values remain pollable so that a newly introduced status does not fail prematurely.
 
+The readiness wait is controlled by this data source's timeouts.read value.
+
 This may be referenced in depends_on chains when creating resources that require an environment to be fully ready.
 
 ## Example Usage
 
 ```terraform
-locals {
-  staging_environments = [
-    "2026-02-11",
-  ]
+data "contentful_environment_status_ready" "example" {
+  space_id       = "your-space-id"
+  environment_id = "staging-yyyy-mm-dd"
 
-  active_staging_environment = local.staging_environments[0]
-}
-
-resource "contentful_environment" "staging" {
-  for_each = toset(local.staging_environments)
-
-  space_id       = var.contentful_space_id
-  environment_id = "staging-${each.key}"
-  name           = "Staging (${each.key})"
-}
-
-data "contentful_environment_status_ready" "staging_active" {
-  space_id       = contentful_environment.staging[local.active_staging_environment].space_id
-  environment_id = contentful_environment.staging[local.active_staging_environment].environment_id
-}
-
-resource "contentful_environment_alias" "staging" {
-  space_id              = var.contentful_space_id
-  environment_alias_id  = "staging"
-  target_environment_id = contentful_environment.staging[local.active_staging_environment].environment_id
-
-  depends_on = [data.contentful_environment_status_ready.staging_active]
+  timeouts = {
+    read = "15m"
+  }
 }
 ```
 

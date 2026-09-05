@@ -13,6 +13,8 @@ func EnvironmentStatusReadyDataSourceSchema(ctx context.Context) schema.Schema {
 
 The data source polls while Contentful reports queued or inProgress. It returns an error immediately if Contentful reports failed. Unrecognized status values remain pollable so that a newly introduced status does not fail prematurely.
 
+The readiness wait is controlled by this data source's timeouts.read value.
+
 This may be referenced in depends_on chains when creating resources that require an environment to be fully ready.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

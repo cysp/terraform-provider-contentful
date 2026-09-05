@@ -11,7 +11,7 @@ import (
 
 func EnvironmentResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Environment.",
+		Description: "Manages a Contentful Environment. A successful Create records Contentful's response but does not wait for the environment to reach ready status.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -38,7 +38,7 @@ func EnvironmentResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"status": schema.StringAttribute{
-				Description: "Status of the environment.",
+				Description: "Latest environment status returned by the resource operation. This status may not be ready after a successful Create.",
 				Computed:    true,
 			},
 			"source_environment_id": schema.StringAttribute{
