@@ -69,10 +69,10 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"value": schema.StringAttribute{
-				Description: appSigningValueDescription + " Command-line import cannot recover the existing secret and leaves value null; a later apply with value configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply.",
+				Description:         appSigningValueDescription + " Command-line import cannot recover the existing secret and leaves value null; a later apply with value configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply.",
 				MarkdownDescription: appSigningValueDescription + " Command-line import cannot recover the existing secret and leaves `value` null; a later apply with `value` configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply. See [Secrets and Terraform state](../guides/secrets-and-state) for storage, refresh, and import guidance.",
-				Required:  true,
-				Sensitive: true,
+				Required:            true,
+				Sensitive:           true,
 				Validators: []validator.String{
 					appSigningSecretValueValidator{},
 				},
