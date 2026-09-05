@@ -3,12 +3,12 @@
 page_title: "contentful_app_key Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Key from caller-supplied public key material. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use lifecycle { create_before_destroy = true } only when rotating to different key material, a free key slot exists, and the old and new keys must overlap. See Secrets and Terraform state ../guides/secrets-and-state for private-key and state-handling guidance.
+  Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use lifecycle { create_before_destroy = true } only when rotating to different key material, a free key slot exists, and the old and new keys must overlap.
 ---
 
 # contentful_app_key (Resource)
 
-Manages a Contentful App Key from caller-supplied public key material. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use `lifecycle { create_before_destroy = true }` only when rotating to different key material, a free key slot exists, and the old and new keys must overlap. See [Secrets and Terraform state](../guides/secrets-and-state) for private-key and state-handling guidance.
+Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Use `lifecycle { create_before_destroy = true }` only when rotating to different key material, a free key slot exists, and the old and new keys must overlap.
 
 ## Example Usage
 
@@ -34,7 +34,7 @@ resource "contentful_app_key" "this" {
 ### Required
 
 - `app_definition_id` (String) ID of the app definition for which the app key is created.
-- `jwk` (Attributes) Public JSON Web Key for the app key. Generate and retain the corresponding private key outside this resource. (see [below for nested schema](#nestedatt--jwk))
+- `jwk` (Attributes) Public JSON Web Key for the app key. Generate and retain the corresponding private key outside this resource. See [Secrets and Terraform state](../guides/secrets-and-state) for private-key and state-handling guidance. (see [below for nested schema](#nestedatt--jwk))
 - `organization_id` (String) ID of the organization that owns the app.
 
 ### Optional
