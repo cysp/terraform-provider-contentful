@@ -4,10 +4,8 @@ This project uses Go-native tooling entrypoints for development workflows.
 
 ## Code Generation
 
-Run the root documentation generator from a checkout or worktree whose leaf
-directory is named `terraform-provider-contentful`; `tfplugindocs` derives the
-provider name from that directory name. The management API client generator has
-no checkout-name requirement.
+The root documentation generator passes the provider name explicitly, so all
+generators work from an ordinary checkout or worktree name.
 
 Running the root generator requires Terraform on `PATH` because it formats
 Terraform examples before regenerating provider documentation. The narrower
@@ -40,12 +38,15 @@ the generated schema sections in `docs/`. Change the provider schema, examples,
 or OpenAPI input, then regenerate the derived files.
 
 After committing generated changes, rerun the generators from a clean checkout.
-The diff check verifies that tracked files remain unchanged; the status check
-also exposes untracked output. Neither command should produce output:
+Use the same cleanliness check as CI; it prints short status, including
+untracked output, before failing when generation causes drift:
 
 ```sh
-git diff --exit-code
-git status --short
+generated_status="$(git status --short --untracked-files=all)"
+if [ -n "$generated_status" ]; then
+  printf '%s\n' "$generated_status"
+  exit 1
+fi
 ```
 
 ## Tests
