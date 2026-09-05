@@ -47,9 +47,7 @@ The reviewed Contentful JavaScript client is v12.15.0 (commit
   longer equals the marked draft, and never grants authority to the new version.
 - Create-with-ID has a distinct create contract: content-type header, create
   payload, and no prior-version lock. The first-party client implements it
-  separately from update. Correcting an inherited update-shaped Create path is
-  justified, but it is not necessary to publication and is best kept in
-  a separate PR.
+  separately from update.
 
 ## Evidence classes
 
@@ -295,9 +293,7 @@ That observation is the evidence for the fake's normal unpublish transition.
 - Disable transparent HTTP replay, including 429, for Entry Create,
   specified-ID Create, Update, and Publish. GET and unrelated operations retain
   the default retry policy.
-- Broaden the public failure limitation beyond transport/server errors: any
+- The public failure limitation extends beyond transport/server errors: any
   incomplete or contradictory successful draft response, or process loss before
   Terraform persists the returned resource state and resource private state, can
   leave a matching unpublished draft that Terraform must not claim later.
-- Keep Create-with-ID correction independent unless publication work directly
-  depends on it.

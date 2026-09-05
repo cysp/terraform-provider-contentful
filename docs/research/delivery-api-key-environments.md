@@ -20,10 +20,16 @@ default environment with a different identifier.
 
 ## Design impact
 
-The provider preserves the request distinction exposed by its generated client:
+The provider applies the ownership and known/null/unknown rules in
+[Terraform value semantics](../design/terraform-value-semantics.md#request-conversion)
+before converting `environments`. In particular, an unknown plan for a
+configuration-owned list is an error, not omission.
 
-- A null or unknown Terraform list becomes a nil Go slice, so the request omits
-  `environments`.
+For values accepted by that boundary, the generated client preserves the
+request distinction:
+
+- A null list or a response-owned unknown list becomes a nil Go slice, so the
+  request omits `environments`.
 - A known empty Terraform list becomes a non-nil empty Go slice, so the request
   contains `"environments":[]`.
 - A known populated list becomes the corresponding Environment links.
