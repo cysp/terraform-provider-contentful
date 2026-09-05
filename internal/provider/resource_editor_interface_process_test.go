@@ -2,10 +2,8 @@ package provider_test
 
 import (
 	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"strings"
-	"sync"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -13,121 +11,89 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// The reattached in-process acceptance provider does not isolate configurations
-// like separate Terraform plugin processes. Exercise that distinction through CLI.
+// Real plugin processes are necessary: the reattached acceptance-test provider
+// does not reproduce the isolation between provider configurations.
 func TestAccEditorInterfaceResourceProviderProcesses(t *testing.T) {
 	t.Parallel()
 
-	for _, separateProvider := range []bool{false, true} {
-		t.Run(fmt.Sprintf("separate_provider=%t", separateProvider), func(t *testing.T) {
-			t.Parallel()
+	runtime := newTerraformTestRuntime(t)
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	handler := &editorInterfaceRequestRecorder{next: server}
+	httpServer := httptest.NewServer(handler)
+	t.Cleanup(httpServer.Close)
+	runtime.providerURL = httpServer.URL
 
-			runtime := newTerraformTestRuntime(t)
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
-			server.RegisterSpaceEnvironment("space", "environment")
+	configuration := func(provider, description, helpText string) string {
+		editorInterface := strings.Replace(editorInterfaceActivationConfig(helpText),
+			`resource "contentful_editor_interface" "test" {`,
+			"resource \"contentful_editor_interface\" \"test\" {\n provider = "+provider, 1)
 
-			var (
-				requestsMu sync.Mutex
-				requests   []string
-			)
-
-			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.Method == http.MethodPut && (strings.HasSuffix(r.URL.Path, "/editor_interface") || strings.HasSuffix(r.URL.Path, "/published")) {
-					requestsMu.Lock()
-
-					requests = append(requests, r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]+":"+r.Header.Get("X-Contentful-Version"))
-					requestsMu.Unlock()
-				}
-
-				server.ServeHTTP(w, r)
-			})
-			httpServer := httptest.NewServer(handler)
-			t.Cleanup(httpServer.Close)
-			runtime.providerURL = httpServer.URL
-
-			configuration := func(description, helpText string) string {
-				editorInterface := editorInterfaceActivationConfig(helpText)
-				if separateProvider {
-					editorInterface = strings.Replace(editorInterface, `resource "contentful_editor_interface" "test" {`, `resource "contentful_editor_interface" "test" {
- provider = contentful.editor`, 1)
-				}
-
-				return fmt.Sprintf(`
+		return fmt.Sprintf(`
 provider "contentful" {
  alias = "editor"
  access_token = %[1]q
  url = %[2]q
 }
 `, cmt.ValidAccessToken, httpServer.URL) + editorInterfaceActivationContentTypeConfig(description) + editorInterface
-			}
-			snapshot := func() []string {
-				requestsMu.Lock()
-				defer requestsMu.Unlock()
-
-				return append([]string(nil), requests...)
-			}
-
-			runtime.writeConfig(t, configuration("initial", "initial"))
-			output, err := runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
-			require.NoError(t, err, output)
-			require.Equal(t, []string{"published:1", "editor_interface:1"}, snapshot())
-
-			runtime.writeConfig(t, configuration("updated", "updated"))
-
-			output, err = runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
-			if separateProvider {
-				require.Error(t, err, output)
-				require.Contains(t, output, "Editor Interface version mismatch")
-				require.Contains(t, output, "another provider configuration")
-				require.Equal(t, []string{"published:1", "editor_interface:1", "published:3", "editor_interface:2"}, snapshot())
-
-				// A new refresh repairs the baseline; the provider did not silently retry.
-				output, err = runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
-				require.NoError(t, err, output)
-				require.Equal(t, []string{"published:1", "editor_interface:1", "published:3", "editor_interface:2", "editor_interface:3"}, snapshot())
-			} else {
-				require.NoError(t, err, output)
-				require.Equal(t, []string{"published:1", "editor_interface:1", "published:3", "editor_interface:3"}, snapshot())
-			}
-
-			// Preserve optimistic concurrency between planning and applying a saved plan.
-			// This mutation uses the mock's public CMA handler, bypassing only the recorder.
-			runtime.writeConfig(t, configuration("updated", "third"))
-			output, err = runtime.run(t.Context(), "plan", "-out=update.tfplan", "-input=false", "-no-color")
-			require.NoError(t, err, output)
-			response, err := server.Handler().PutEditorInterface(t.Context(), &cm.EditorInterfaceData{
-				Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{{
-					FieldId: "name", WidgetNamespace: cm.NewOptString("builtin"), WidgetId: cm.NewOptString("singleLine"),
-					Settings: []byte(`{"helpText":"external"}`),
-				}}),
-			}, cm.PutEditorInterfaceParams{
-				SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "editor-offset", XContentfulVersion: 4,
-			})
-			require.NoError(t, err)
-			require.IsType(t, &cm.EditorInterfaceStatusCode{}, response)
-
-			before := snapshot()
-			output, err = runtime.run(t.Context(), "apply", "-input=false", "-no-color", "update.tfplan")
-			require.Error(t, err, output)
-			require.Contains(t, output, "Editor Interface version mismatch")
-			require.Equal(t, append(before, "editor_interface:4"), snapshot())
-
-			observed, err := server.Handler().GetEditorInterface(t.Context(), cm.GetEditorInterfaceParams{
-				SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "editor-offset",
-			})
-			require.NoError(t, err)
-			require.IsType(t, &cm.EditorInterface{}, observed)
-			editorInterface, ok := observed.(*cm.EditorInterface)
-			require.True(t, ok)
-			require.Equal(t, 5, editorInterface.Sys.Version)
-			controls, ok := editorInterface.Controls.Get()
-			require.True(t, ok)
-			require.Len(t, controls, 1)
-			require.JSONEq(t, `{"helpText":"external"}`, string(controls[0].Settings))
-
-			output, err = runtime.run(t.Context(), "destroy", "-auto-approve", "-input=false", "-no-color")
-			require.NoError(t, err, output)
-		})
 	}
+
+	runtime.writeConfig(t, configuration("contentful", "initial", "initial"))
+	output, err := runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
+	require.NoError(t, err, output)
+
+	// The same provider accounts for activation: interface version 2 advances to 3.
+	runtime.writeConfig(t, configuration("contentful", "updated", "updated"))
+	output, err = runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
+	require.NoError(t, err, output)
+
+	// A different provider cannot account for activation from version 4 to 5.
+	runtime.writeConfig(t, configuration("contentful.editor", "aliased", "aliased"))
+	output, err = runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
+	require.Error(t, err, output)
+	require.Contains(t, output, "Editor Interface version mismatch")
+	require.Contains(t, output, "another provider configuration")
+
+	// An explicit new apply refreshes the baseline; the failed write was not retried.
+	output, err = runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
+	require.NoError(t, err, output)
+
+	// A saved plan must still conflict with a later edit, preserving its payload.
+	runtime.writeConfig(t, configuration("contentful.editor", "aliased", "third"))
+	output, err = runtime.run(t.Context(), "plan", "-out=update.tfplan", "-input=false", "-no-color")
+	require.NoError(t, err, output)
+	response, err := server.Handler().PutEditorInterface(t.Context(), &cm.EditorInterfaceData{
+		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{{
+			FieldId: "name", WidgetNamespace: cm.NewOptString("builtin"), WidgetId: cm.NewOptString("singleLine"),
+			Settings: []byte(`{"helpText":"external"}`),
+		}}),
+	}, cm.PutEditorInterfaceParams{
+		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "editor-offset", XContentfulVersion: 6,
+	})
+	require.NoError(t, err)
+	require.IsType(t, &cm.EditorInterfaceStatusCode{}, response)
+
+	output, err = runtime.run(t.Context(), "apply", "-input=false", "-no-color", "update.tfplan")
+	require.Error(t, err, output)
+	require.Contains(t, output, "Editor Interface version mismatch")
+	require.Equal(t, []string{
+		"PUT:1", "GET", "PUT:3", "GET", "PUT:4", "GET", "PUT:5", "GET", "PUT:6",
+	}, handler.Requests())
+
+	observed, err := server.Handler().GetEditorInterface(t.Context(), cm.GetEditorInterfaceParams{
+		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "editor-offset",
+	})
+	require.NoError(t, err)
+
+	editorInterface, ok := observed.(*cm.EditorInterface)
+	require.True(t, ok)
+	require.Equal(t, 7, editorInterface.Sys.Version)
+	controls, ok := editorInterface.Controls.Get()
+	require.True(t, ok)
+	require.Len(t, controls, 1)
+	require.JSONEq(t, `{"helpText":"external"}`, string(controls[0].Settings))
+
+	output, err = runtime.run(t.Context(), "destroy", "-auto-approve", "-input=false", "-no-color")
+	require.NoError(t, err, output)
 }

@@ -26,7 +26,7 @@ type editorInterfaceResource struct {
 	providerData ContentfulProviderData
 }
 
-const editorInterfaceVersionMismatchDetail = "Contentful rejected the request because the Editor Interface version did not match the expected version. Concurrent changes or a Content Type activation through another provider configuration can invalidate that version. When managing both resources in the same apply, use the same provider configuration and a reference to the Content Type resource to order their operations."
+const editorInterfaceVersionMismatchDetail = "Contentful rejected the expected Editor Interface version. A concurrent edit or Content Type activation through another provider configuration may have changed it. Use the same provider configuration for dependent Content Type and Editor Interface changes, and review a refreshed plan before applying again."
 
 func editorInterfaceIdentityAttributeNames() []string {
 	return []string{"space_id", "environment_id", "content_type_id"}
@@ -112,7 +112,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	default:
 		if contentfulResponseIsVersionMismatch(response) {
-			resp.Diagnostics.AddError("Editor Interface version mismatch", editorInterfaceVersionMismatchDetail+" To deliberately adopt an existing modified Editor Interface, import it into this resource. Review a refreshed plan before applying again.")
+			resp.Diagnostics.AddError("Editor Interface version mismatch", editorInterfaceVersionMismatchDetail+" To adopt an existing modified Editor Interface, import it into this resource.")
 		} else {
 			resp.Diagnostics.AddError("Failed to create editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
@@ -279,7 +279,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	default:
 		if contentfulResponseIsVersionMismatch(response) {
-			resp.Diagnostics.AddError("Editor Interface version mismatch", editorInterfaceVersionMismatchDetail+" Review a refreshed plan before applying again.")
+			resp.Diagnostics.AddError("Editor Interface version mismatch", editorInterfaceVersionMismatchDetail)
 		} else {
 			resp.Diagnostics.AddError("Failed to update editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
 		}
