@@ -17,8 +17,11 @@ import (
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -375,10 +378,21 @@ func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: stepVariables1,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_space_enablements.test", tfjsonpath.New("id"), knownvalue.StringExact("0p38pssr0fi3")),
+					statecheck.ExpectKnownValue("contentful_space_enablements.test", tfjsonpath.New("cross_space_links"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue("contentful_space_enablements.test", tfjsonpath.New("space_templates"), knownvalue.Bool(false)),
+				},
 			},
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: stepVariables2,
+				ConfigDirectory:  config.TestNameDirectory(),
+				ConfigVariables:  stepVariables2,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_space_enablements.test", plancheck.ResourceActionUpdate)}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_space_enablements.test", tfjsonpath.New("id"), knownvalue.StringExact("0p38pssr0fi3")),
+					statecheck.ExpectKnownValue("contentful_space_enablements.test", tfjsonpath.New("cross_space_links"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue("contentful_space_enablements.test", tfjsonpath.New("space_templates"), knownvalue.Bool(true)),
+				},
 			},
 		},
 	})

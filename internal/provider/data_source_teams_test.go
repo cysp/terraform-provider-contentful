@@ -14,7 +14,10 @@ import (
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -155,10 +158,13 @@ func TestAccTeamsDataSourcePagination(t *testing.T) {
 				ConfigVariables: config.Variables{
 					"organization_id": config.StringVariable(organizationID),
 				},
+				// The data source sorts by team_id; positions below verify that contract.
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("teams").AtSliceIndex(0).AtMapKey("description"), knownvalue.Null()),
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.#", "101"),
 					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.0.team_id", "team-000"),
-					resource.TestCheckNoResourceAttr("data.contentful_teams.test", "teams.0.description"),
 					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.100.team_id", "team-100"),
 					func(*terraform.State) error {
 						if actual := requestCount.Load(); actual != 2 {

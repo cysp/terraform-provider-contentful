@@ -5,8 +5,12 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,15 +22,27 @@ func TestAccTeamSpaceMembershipResourceLifecycle(t *testing.T) {
 
 	server.RegisterSpaceEnvironment("space-id", "master")
 
+	identity := statecheck.CompareValue(compare.ValuesSame())
+
 	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: teamSpaceMembershipConfigVariables("space-id", "team-id", true),
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_team_space_membership.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_team_space_membership.test", tfjsonpath.New("admin"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue("contentful_team_space_membership.test", tfjsonpath.New("team_id"), knownvalue.StringExact("team-id")),
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: teamSpaceMembershipConfigVariables("space-id", "team-id", false),
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_team_space_membership.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_team_space_membership.test", tfjsonpath.New("admin"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue("contentful_team_space_membership.test", tfjsonpath.New("team_id"), knownvalue.StringExact("team-id")),
+				},
 			},
 		},
 	})
