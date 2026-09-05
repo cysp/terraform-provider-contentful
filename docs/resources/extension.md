@@ -71,7 +71,7 @@ resource "contentful_extension" "example" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/extension_id form.
 
 <a id="nestedatt--extension"></a>
 ### Nested Schema for `extension`
