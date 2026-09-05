@@ -156,8 +156,19 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, personalAccessTokenIdentityAttributeNames(), &data)...)
 }
 
-func (r *personalAccessTokenResource) Update(_ context.Context, _ resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddError("Update not supported", "Personal access tokens cannot be updated")
+func (r *personalAccessTokenResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var state, plan PersonalAccessTokenModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	state.Timeouts = plan.Timeouts
+
+	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, personalAccessTokenIdentityAttributeNames(), &state)...)
 }
 
 func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
