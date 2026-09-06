@@ -61,16 +61,16 @@ resource "contentful_webhook" "this" {
 ### Optional
 
 - `active` (Boolean) Whether the webhook is active. Defaults to `true`.
-- `filters` (Attributes List) (see [below for nested schema](#nestedatt--filters))
+- `filters` (Attributes List) Filtering constraints applied after `topics`. Contentful combines filters with logical AND; each filter configures exactly one of `equals`, `in`, `regexp`, or `not`. Null or omitted filters default to the `master` environment; `filters = []` sends no constraints. Supported payload paths and event restrictions are defined by [Contentful webhook filters](https://www.contentful.com/developers/docs/extensibility/webhooks/filters/). (see [below for nested schema](#nestedatt--filters))
 - `headers` (Attributes Map) HTTP headers sent by the webhook. When omitted on Create, Terraform adopts the headers returned by Contentful. When omitted on Update, Terraform preserves known prior headers. Set to `{}` to remove all headers. (see [below for nested schema](#nestedatt--headers))
-- `http_basic_password` (String, Sensitive) HTTP Basic authentication password. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. Terraform marks the value sensitive, which obscures CLI output but does not encrypt or omit plan or state data.
-- `http_basic_username` (String) HTTP Basic authentication username.
+- `http_basic_password` (String, Sensitive) HTTP Basic authentication password; configure it together with http_basic_username. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.
+- `http_basic_username` (String) HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `transformation` (Attributes) (see [below for nested schema](#nestedatt--transformation))
+- `transformation` (Attributes) Customizes the outgoing webhook HTTP method, Content-Type, Content-Length header, and request body. When omitted, Contentful uses its standard webhook request behavior. (see [below for nested schema](#nestedatt--transformation))
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/webhook_id form.
 - `webhook_id` (String) System ID of the webhook.
 
 <a id="nestedatt--filters"></a>
@@ -78,18 +78,18 @@ resource "contentful_webhook" "this" {
 
 Optional:
 
-- `equals` (Attributes) (see [below for nested schema](#nestedatt--filters--equals))
-- `in` (Attributes) (see [below for nested schema](#nestedatt--filters--in))
-- `not` (Attributes) (see [below for nested schema](#nestedatt--filters--not))
-- `regexp` (Attributes) (see [below for nested schema](#nestedatt--filters--regexp))
+- `equals` (Attributes) Matches when the selected payload property equals the configured value. (see [below for nested schema](#nestedatt--filters--equals))
+- `in` (Attributes) Matches when the selected payload property equals at least one configured value. (see [below for nested schema](#nestedatt--filters--in))
+- `not` (Attributes) Inverts exactly one nested `equals`, `in`, or `regexp` filter. (see [below for nested schema](#nestedatt--filters--not))
+- `regexp` (Attributes) Matches the selected payload property against a regular-expression pattern. (see [below for nested schema](#nestedatt--filters--regexp))
 
 <a id="nestedatt--filters--equals"></a>
 ### Nested Schema for `filters.equals`
 
 Required:
 
-- `doc` (String)
-- `value` (String)
+- `doc` (String) Webhook payload property path to evaluate, such as `sys.id` or `sys.environment.sys.id`.
+- `value` (String) Literal value to compare with the selected payload property.
 
 
 <a id="nestedatt--filters--in"></a>
@@ -97,8 +97,8 @@ Required:
 
 Required:
 
-- `doc` (String)
-- `values` (List of String)
+- `doc` (String) Webhook payload property path to evaluate, such as `sys.id` or `sys.environment.sys.id`.
+- `values` (List of String) One or more literal values to compare with the selected payload property.
 
 
 <a id="nestedatt--filters--not"></a>
@@ -106,17 +106,17 @@ Required:
 
 Optional:
 
-- `equals` (Attributes) (see [below for nested schema](#nestedatt--filters--not--equals))
-- `in` (Attributes) (see [below for nested schema](#nestedatt--filters--not--in))
-- `regexp` (Attributes) (see [below for nested schema](#nestedatt--filters--not--regexp))
+- `equals` (Attributes) Inverts an equality match. Configure exactly one operator within `not`. (see [below for nested schema](#nestedatt--filters--not--equals))
+- `in` (Attributes) Inverts an inclusion match. Configure exactly one operator within `not`. (see [below for nested schema](#nestedatt--filters--not--in))
+- `regexp` (Attributes) Inverts a regular-expression match. Configure exactly one operator within `not`. (see [below for nested schema](#nestedatt--filters--not--regexp))
 
 <a id="nestedatt--filters--not--equals"></a>
 ### Nested Schema for `filters.not.equals`
 
 Required:
 
-- `doc` (String)
-- `value` (String)
+- `doc` (String) Webhook payload property path to evaluate, such as `sys.id` or `sys.environment.sys.id`.
+- `value` (String) Literal value to compare with the selected payload property.
 
 
 <a id="nestedatt--filters--not--in"></a>
@@ -124,8 +124,8 @@ Required:
 
 Required:
 
-- `doc` (String)
-- `values` (List of String)
+- `doc` (String) Webhook payload property path to evaluate, such as `sys.id` or `sys.environment.sys.id`.
+- `values` (List of String) One or more literal values to compare with the selected payload property.
 
 
 <a id="nestedatt--filters--not--regexp"></a>
@@ -133,8 +133,8 @@ Required:
 
 Required:
 
-- `doc` (String)
-- `pattern` (String)
+- `doc` (String) Webhook payload property path to evaluate, such as `sys.id` or `sys.environment.sys.id`.
+- `pattern` (String) Regular-expression pattern matched against the selected payload property.
 
 
 
@@ -143,8 +143,8 @@ Required:
 
 Required:
 
-- `doc` (String)
-- `pattern` (String)
+- `doc` (String) Webhook payload property path to evaluate, such as `sys.id` or `sys.environment.sys.id`.
+- `pattern` (String) Regular-expression pattern matched against the selected payload property.
 
 
 
@@ -153,7 +153,7 @@ Required:
 
 Required:
 
-- `value` (String) Header value. Contentful's secret flag does not make the Terraform value sensitive. Use a sensitive Terraform expression when needed. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
+- `value` (String) Header value. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).
 
 Optional:
 
@@ -176,10 +176,10 @@ Optional:
 
 Optional:
 
-- `body` (String)
-- `content_type` (String)
-- `include_content_length` (Boolean)
-- `method` (String)
+- `body` (String) JSON-encoded custom webhook request body. Use `jsonencode(...)` to construct structured values. When omitted, methods that send a body use Contentful's standard event payload. Contentful can resolve supported JSON-pointer templates and transformation helpers against the original webhook context.
+- `content_type` (String) Content-Type for transformed webhook requests. Defaults to `application/vnd.contentful.management.v1+json`; `application/x-www-form-urlencoded` converts the JSON body to form data. See [Contentful transformations](https://www.contentful.com/developers/docs/extensibility/webhooks/transformations/) for supported media types and templates.
+- `include_content_length` (Boolean) Whether Contentful includes a `Content-Length` header computed from the transformed request body. Contentful omits the header by default.
+- `method` (String) HTTP method for outgoing webhook requests. Contentful defaults to `POST` and supports `POST`, `GET`, `PUT`, `PATCH`, and `DELETE`. `GET` and `DELETE` webhook calls do not include a request body.
 
 ## Import
 

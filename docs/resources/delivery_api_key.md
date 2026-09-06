@@ -31,14 +31,14 @@ resource "contentful_delivery_api_key" "this" {
 ### Optional
 
 - `description` (String) Description of the API key.
-- `environments` (List of String) List of environment IDs that the token can access. Only the environments specified in this property can be accessed using this token.
+- `environments` (List of String) Contentful environment IDs that the token can access. Omission uses Contentful defaults on creation and retains observed environments on later updates. An explicit [] is sent to Contentful, which has been observed to replace it with the default environment, causing an inconsistent-result error. An empty list is therefore not a reliable way to revoke all access.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
 - `access_token` (String, Sensitive) The delivery API access token.
 - `api_key_id` (String) System ID of the API key.
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/api_key_id form.
 - `preview_api_key_id` (String) ID of the corresponding preview API key.
 
 <a id="nestedatt--timeouts"></a>
