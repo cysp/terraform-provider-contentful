@@ -1,5 +1,4 @@
-//nolint:testpackage // Create endpoint selection depends on package-local resource implementation details.
-package provider
+package provider_test
 
 import (
 	"io"
@@ -8,6 +7,7 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -97,13 +97,13 @@ func TestPreviewEnvironmentCreateEndpointFollowsConfiguredIDOwnership(t *testing
 			configPlan := previewEnvironmentCreateTestPlan(t, resourceSchema, test.configID)
 			config := tfsdk.Config{Raw: configPlan.Raw, Schema: resourceSchema}
 
-			implementation := previewEnvironmentResource{providerData: ContentfulProviderData{client: client}}
+			implementation := NewPreviewEnvironmentResourceWithClient(client)
 			response := resource.CreateResponse{State: tfsdk.State{Schema: resourceSchema}}
 			implementation.Create(ctx, resource.CreateRequest{Config: config, Plan: plan}, &response)
 
 			if test.expectedNoIO {
 				require.True(t, response.Diagnostics.HasError())
-				assert.Contains(t, mutationDiagnosticPaths(t, response.Diagnostics), "preview_environment_id")
+				assert.Contains(t, attributeDiagnosticPaths(t, response.Diagnostics), "preview_environment_id")
 				assert.Empty(t, requests)
 
 				return
