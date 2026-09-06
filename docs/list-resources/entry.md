@@ -3,12 +3,16 @@
 page_title: "contentful_entry List Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  List entries from a Contentful space and environment
+  Lists Contentful Entries in an existing space and environment.
 ---
 
 # contentful_entry (List Resource)
 
-List entries from a Contentful space and environment
+Lists Contentful Entries in an existing space and environment.
+
+## Using list resources
+
+See [Discover and import existing resources](../guides/resource-discovery) for Terraform version requirements and query/import usage. The examples below are `list` blocks for `.tfquery.hcl` files.
 
 ## Example Usage
 
@@ -29,11 +33,11 @@ list "contentful_entry" "entries" {
 
 ### Required
 
-- `environment_id` (String) The ID of the environment for which to list entries.
-- `space_id` (String) The ID of the space for which to list entries.
+- `environment_id` (String) ID of the environment from which to list Entries.
+- `space_id` (String) ID of the space from which to list Entries.
 
 ### Optional
 
-- `content_type` (String) Query entries for a specific content type.
-- `order` (List of String) Order entries by one or more attributes.
-- `query` (Map of String) Query parameters to filter the entries listed.
+- `content_type` (String) Content Type ID to use when filtering Entries. Omitted or empty values add no Content Type filter. Specify a Content Type when filtering or ordering by its fields.
+- `order` (List of String) Contentful Entry collection order expressions, for example `sys.createdAt` or `-sys.updatedAt`. Prefix an attribute with `-` for descending order; expressions are applied in list order. Omitted or empty lists use Contentful's default ordering, and empty expressions are ignored.
+- `query` (Map of String) Additional Contentful Entry collection query parameters, keyed by parameter name. `skip` and `limit` are ignored because pagination is controlled by the list operation. For example, `"fields.slug" = "welcome"` filters a field when `content_type` is set. Values are query-parameter strings, not JSON. Prefer the dedicated `content_type` and `order` attributes; if also present in this map, the map values override those attributes.

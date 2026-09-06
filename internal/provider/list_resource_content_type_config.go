@@ -36,14 +36,14 @@ func (c contentTypeListResourceConfig) requestParams() (cm.GetContentTypesParams
 
 func ContentTypeListResourceConfigSchema(_ context.Context) listschema.Schema {
 	return listschema.Schema{
-		Description: "List Contentful Content Types.",
+		Description: "Lists Contentful Content Types in an existing space and environment.",
 		Attributes: map[string]listschema.Attribute{
 			"space_id": listschema.StringAttribute{
-				Description: "The ID of the space for which to list content types.",
+				Description: "ID of the space from which to list Content Types.",
 				Required:    true,
 			},
 			"environment_id": listschema.StringAttribute{
-				Description: "The ID of the environment for which to list content types.",
+				Description: "ID of the environment from which to list Content Types.",
 				Required:    true,
 			},
 		},
