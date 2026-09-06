@@ -1294,7 +1294,7 @@ func (s *Server) handleCreatePreviewEnvironmentRequest(args [1]string, argsEscap
 		}
 
 		type (
-			Request  = *PreviewEnvironmentCreateData
+			Request  = *PreviewEnvironmentData
 			Params   = CreatePreviewEnvironmentParams
 			Response = CreatePreviewEnvironmentRes
 		)

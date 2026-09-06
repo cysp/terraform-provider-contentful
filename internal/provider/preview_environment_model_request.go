@@ -40,21 +40,20 @@ func (model *PreviewEnvironmentModel) ToPreviewEnvironmentData(_ context.Context
 	}, diagnostics
 }
 
-func ToPreviewEnvironmentUpdateData(
+func (model *PreviewEnvironmentModel) ToPreviewEnvironmentUpdateData(
 	_ context.Context,
 	modelPath path.Path,
 	state *PreviewEnvironmentModel,
-	plan *PreviewEnvironmentModel,
 ) (cm.PreviewEnvironmentData, diag.Diagnostics) {
 	stateConfigurations, diagnostics := previewEnvironmentContentTypeConfigurationValues(state, modelPath)
 
-	planConfigurations, planDiagnostics := previewEnvironmentContentTypeConfigurationValues(plan, modelPath)
+	planConfigurations, planDiagnostics := previewEnvironmentContentTypeConfigurationValues(model, modelPath)
 	diagnostics.Append(planDiagnostics...)
 
-	name, nameDiagnostics := requestRequiredString(plan.Name, modelPath.AtName("name"))
+	name, nameDiagnostics := requestRequiredString(model.Name, modelPath.AtName("name"))
 	diagnostics.Append(nameDiagnostics...)
 
-	description, descriptionDiagnostics := requestRequiredString(plan.Description, modelPath.AtName("description"))
+	description, descriptionDiagnostics := requestRequiredString(model.Description, modelPath.AtName("description"))
 	diagnostics.Append(descriptionDiagnostics...)
 
 	if diagnostics.HasError() {

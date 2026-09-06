@@ -8,7 +8,7 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) CreatePreviewEnvironment(_ context.Context, req *cm.PreviewEnvironmentCreateData, params cm.CreatePreviewEnvironmentParams) (cm.CreatePreviewEnvironmentRes, error) {
+func (ts *Handler) CreatePreviewEnvironment(_ context.Context, req *cm.PreviewEnvironmentData, params cm.CreatePreviewEnvironmentParams) (cm.CreatePreviewEnvironmentRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -16,34 +16,14 @@ func (ts *Handler) CreatePreviewEnvironment(_ context.Context, req *cm.PreviewEn
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
-	data := previewEnvironmentDataFromCreate(*req)
-	if validationError := validatePreviewEnvironmentData(data); validationError != nil {
+	if validationError := validatePreviewEnvironmentData(*req); validationError != nil {
 		return validationError, nil
 	}
 
-	previewEnvironment := NewPreviewEnvironmentFromData(params.SpaceID, generateResourceID(), data)
+	previewEnvironment := NewPreviewEnvironmentFromData(params.SpaceID, generateResourceID(), *req)
 	ts.previewEnvironments.Set(params.SpaceID, previewEnvironment.Sys.ID, &previewEnvironment)
 
 	return &previewEnvironment, nil
-}
-
-func previewEnvironmentDataFromCreate(request cm.PreviewEnvironmentCreateData) cm.PreviewEnvironmentData {
-	configurations := make([]cm.PreviewEnvironmentConfigurationData, 0, len(request.Configurations))
-	for _, configuration := range request.Configurations {
-		configurations = append(configurations, cm.PreviewEnvironmentConfigurationData{
-			URL:        configuration.URL,
-			EntityType: configuration.EntityType.Or("ContentType"),
-			EntityId:   configuration.EntityId.Or(configuration.ContentType.Or("")),
-			Enabled:    configuration.Enabled,
-			Example:    configuration.Example,
-		})
-	}
-
-	return cm.PreviewEnvironmentData{
-		Name:           request.Name,
-		Description:    request.Description,
-		Configurations: configurations,
-	}
 }
 
 //nolint:ireturn

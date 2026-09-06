@@ -109,7 +109,7 @@ func encodeCreatePersonalAccessTokenRequest(
 }
 
 func encodeCreatePreviewEnvironmentRequest(
-	req *PreviewEnvironmentCreateData,
+	req *PreviewEnvironmentData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

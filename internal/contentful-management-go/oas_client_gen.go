@@ -134,7 +134,7 @@ type Invoker interface {
 	// Create a content preview platform.
 	//
 	// POST /spaces/{space_id}/preview_environments
-	CreatePreviewEnvironment(ctx context.Context, request *PreviewEnvironmentCreateData, params CreatePreviewEnvironmentParams, options ...RequestOption) (CreatePreviewEnvironmentRes, error)
+	CreatePreviewEnvironment(ctx context.Context, request *PreviewEnvironmentData, params CreatePreviewEnvironmentParams, options ...RequestOption) (CreatePreviewEnvironmentRes, error)
 	// CreateRole invokes createRole operation.
 	//
 	// Create a role.
@@ -1729,12 +1729,12 @@ func (c *Client) sendCreatePersonalAccessToken(ctx context.Context, request *Per
 // Create a content preview platform.
 //
 // POST /spaces/{space_id}/preview_environments
-func (c *Client) CreatePreviewEnvironment(ctx context.Context, request *PreviewEnvironmentCreateData, params CreatePreviewEnvironmentParams, options ...RequestOption) (CreatePreviewEnvironmentRes, error) {
+func (c *Client) CreatePreviewEnvironment(ctx context.Context, request *PreviewEnvironmentData, params CreatePreviewEnvironmentParams, options ...RequestOption) (CreatePreviewEnvironmentRes, error) {
 	res, err := c.sendCreatePreviewEnvironment(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreatePreviewEnvironment(ctx context.Context, request *PreviewEnvironmentCreateData, params CreatePreviewEnvironmentParams, requestOptions ...RequestOption) (res CreatePreviewEnvironmentRes, err error) {
+func (c *Client) sendCreatePreviewEnvironment(ctx context.Context, request *PreviewEnvironmentData, params CreatePreviewEnvironmentParams, requestOptions ...RequestOption) (res CreatePreviewEnvironmentRes, err error) {
 
 	var reqCfg requestConfig
 	reqCfg.setDefaults(c.baseClient)

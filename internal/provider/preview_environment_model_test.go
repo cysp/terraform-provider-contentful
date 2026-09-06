@@ -52,7 +52,7 @@ func TestPreviewEnvironmentModelFiltersDisabledConfigurations(t *testing.T) {
 		},
 	}
 
-	model, diagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), response)
+	model, diagnostics := NewPreviewEnvironmentResourceModelFromResponse(response)
 	require.False(t, diagnostics.HasError())
 	assert.Equal(t, "space/preview", model.ID.ValueString())
 	require.Len(t, model.ContentTypeConfigurations.Elements(), 1)
@@ -98,7 +98,7 @@ func TestPreviewEnvironmentModelResponseIdentityNormalization(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model, diagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), cm.PreviewEnvironment{
+			model, diagnostics := NewPreviewEnvironmentResourceModelFromResponse(cm.PreviewEnvironment{
 				Sys:            cm.NewPreviewEnvironmentSys("space", "preview"),
 				Name:           "Preview",
 				Description:    "",
@@ -150,7 +150,7 @@ func TestPreviewEnvironmentModelResponseWarnsAndPreservesRepresentableSiblings(t
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model, diagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), cm.PreviewEnvironment{
+			model, diagnostics := NewPreviewEnvironmentResourceModelFromResponse(cm.PreviewEnvironment{
 				Sys:         cm.NewPreviewEnvironmentSys("space", "preview"),
 				Name:        "Preview",
 				Description: "",
@@ -182,7 +182,7 @@ func TestPreviewEnvironmentModelResponseWarnsAndPreservesRepresentableSiblings(t
 func TestPreviewEnvironmentModelResponseKeepsFirstActiveDuplicate(t *testing.T) {
 	t.Parallel()
 
-	model, diagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), cm.PreviewEnvironment{
+	model, diagnostics := NewPreviewEnvironmentResourceModelFromResponse(cm.PreviewEnvironment{
 		Sys:         cm.NewPreviewEnvironmentSys("space", "preview"),
 		Name:        "Preview",
 		Description: "",
@@ -225,7 +225,7 @@ func TestPreviewEnvironmentModelResponseRequiresResourceIdentity(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, diagnostics := NewPreviewEnvironmentModelFromResponse(t.Context(), response)
+			_, diagnostics := NewPreviewEnvironmentResourceModelFromResponse(response)
 			require.True(t, diagnostics.HasError())
 			require.Len(t, diagnostics.Errors(), 1)
 			_, ok := diagnostics.Errors()[0].(diag.DiagnosticWithPath)
@@ -307,11 +307,10 @@ func TestPreviewEnvironmentModelRequestRejectsUnresolvedTopLevelValues(t *testin
 			})
 			mutate(&plan)
 
-			request, diagnostics = ToPreviewEnvironmentUpdateData(
+			request, diagnostics = plan.ToPreviewEnvironmentUpdateData(
 				t.Context(),
 				path.Empty(),
 				&state,
-				&plan,
 			)
 			require.True(t, diagnostics.HasError())
 			assert.Empty(t, request.Name)
@@ -381,7 +380,7 @@ func TestPreviewEnvironmentUpdateDataUsesStateToPlanDelta(t *testing.T) {
 
 			state := previewEnvironmentModel(test.state)
 			plan := previewEnvironmentModel(test.plan)
-			request, diagnostics := ToPreviewEnvironmentUpdateData(t.Context(), path.Empty(), &state, &plan)
+			request, diagnostics := plan.ToPreviewEnvironmentUpdateData(t.Context(), path.Empty(), &state)
 			require.False(t, diagnostics.HasError())
 			assert.Equal(t, test.expected, request.Configurations)
 		})

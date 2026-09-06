@@ -4674,6 +4674,7 @@ func (*ErrorStatusCode) putContentTypeRes()                 {}
 func (*ErrorStatusCode) putEditorInterfaceRes()             {}
 func (*ErrorStatusCode) putEntryRes()                       {}
 func (*ErrorStatusCode) putExtensionRes()                   {}
+func (*ErrorStatusCode) putPreviewEnvironmentRes()          {}
 func (*ErrorStatusCode) putResourceProviderRes()            {}
 func (*ErrorStatusCode) putResourceTypeRes()                {}
 func (*ErrorStatusCode) putSpaceEnablementsRes()            {}
@@ -8485,113 +8486,6 @@ func (s *PreviewEnvironmentConfigurationData) SetExample(val OptBool) {
 	s.Example = val
 }
 
-// Ref: #/PreviewEnvironmentCreateConfigurationData
-type PreviewEnvironmentCreateConfigurationData struct {
-	URL         string    `json:"url"`
-	EntityType  OptString `json:"entityType"`
-	EntityId    OptString `json:"entityId"`
-	Enabled     bool      `json:"enabled"`
-	Example     OptBool   `json:"example"`
-	ContentType OptString `json:"contentType"`
-}
-
-// GetURL returns the value of URL.
-func (s *PreviewEnvironmentCreateConfigurationData) GetURL() string {
-	return s.URL
-}
-
-// GetEntityType returns the value of EntityType.
-func (s *PreviewEnvironmentCreateConfigurationData) GetEntityType() OptString {
-	return s.EntityType
-}
-
-// GetEntityId returns the value of EntityId.
-func (s *PreviewEnvironmentCreateConfigurationData) GetEntityId() OptString {
-	return s.EntityId
-}
-
-// GetEnabled returns the value of Enabled.
-func (s *PreviewEnvironmentCreateConfigurationData) GetEnabled() bool {
-	return s.Enabled
-}
-
-// GetExample returns the value of Example.
-func (s *PreviewEnvironmentCreateConfigurationData) GetExample() OptBool {
-	return s.Example
-}
-
-// GetContentType returns the value of ContentType.
-func (s *PreviewEnvironmentCreateConfigurationData) GetContentType() OptString {
-	return s.ContentType
-}
-
-// SetURL sets the value of URL.
-func (s *PreviewEnvironmentCreateConfigurationData) SetURL(val string) {
-	s.URL = val
-}
-
-// SetEntityType sets the value of EntityType.
-func (s *PreviewEnvironmentCreateConfigurationData) SetEntityType(val OptString) {
-	s.EntityType = val
-}
-
-// SetEntityId sets the value of EntityId.
-func (s *PreviewEnvironmentCreateConfigurationData) SetEntityId(val OptString) {
-	s.EntityId = val
-}
-
-// SetEnabled sets the value of Enabled.
-func (s *PreviewEnvironmentCreateConfigurationData) SetEnabled(val bool) {
-	s.Enabled = val
-}
-
-// SetExample sets the value of Example.
-func (s *PreviewEnvironmentCreateConfigurationData) SetExample(val OptBool) {
-	s.Example = val
-}
-
-// SetContentType sets the value of ContentType.
-func (s *PreviewEnvironmentCreateConfigurationData) SetContentType(val OptString) {
-	s.ContentType = val
-}
-
-// Ref: #/PreviewEnvironmentCreateData
-type PreviewEnvironmentCreateData struct {
-	Name           string                                      `json:"name"`
-	Description    string                                      `json:"description"`
-	Configurations []PreviewEnvironmentCreateConfigurationData `json:"configurations"`
-}
-
-// GetName returns the value of Name.
-func (s *PreviewEnvironmentCreateData) GetName() string {
-	return s.Name
-}
-
-// GetDescription returns the value of Description.
-func (s *PreviewEnvironmentCreateData) GetDescription() string {
-	return s.Description
-}
-
-// GetConfigurations returns the value of Configurations.
-func (s *PreviewEnvironmentCreateData) GetConfigurations() []PreviewEnvironmentCreateConfigurationData {
-	return s.Configurations
-}
-
-// SetName sets the value of Name.
-func (s *PreviewEnvironmentCreateData) SetName(val string) {
-	s.Name = val
-}
-
-// SetDescription sets the value of Description.
-func (s *PreviewEnvironmentCreateData) SetDescription(val string) {
-	s.Description = val
-}
-
-// SetConfigurations sets the value of Configurations.
-func (s *PreviewEnvironmentCreateData) SetConfigurations(val []PreviewEnvironmentCreateConfigurationData) {
-	s.Configurations = val
-}
-
 // Ref: #/PreviewEnvironmentData
 type PreviewEnvironmentData struct {
 	Name           string                                `json:"name"`
@@ -8713,18 +8607,6 @@ func (s *PreviewEnvironmentSysType) UnmarshalText(data []byte) error {
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
-
-type PutPreviewEnvironmentBadRequest ErrorStatusCode
-
-func (*PutPreviewEnvironmentBadRequest) putPreviewEnvironmentRes() {}
-
-type PutPreviewEnvironmentConflict ErrorStatusCode
-
-func (*PutPreviewEnvironmentConflict) putPreviewEnvironmentRes() {}
-
-type PutPreviewEnvironmentNotFound ErrorStatusCode
-
-func (*PutPreviewEnvironmentNotFound) putPreviewEnvironmentRes() {}
 
 // Ref: #/ResourceLink
 type ResourceLink struct {

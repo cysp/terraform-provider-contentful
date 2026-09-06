@@ -52,11 +52,13 @@ The Web App sends `example: false`, but direct API probes established that `exam
 
 The provider therefore:
 
-- uses operation-specific create, update, and response models;
+- shares one canonical request model between create and update, with a distinct response model;
 - uses only `entityType` and `entityId` as request identity fields;
 - normalizes either response identity to the content type ID map key;
 - omits `contentType` and `example` from requests; and
 - never serializes a response object directly into an update request.
+
+The generated client and test server model the canonical request shape used by the provider. The observed legacy create-only `contentType` alias remains historical API evidence and is not exposed as a second request type.
 
 Omitting `description` normalizes it to an empty string. Sending JSON `null` produced `503 UnknownError`, so requests always send a string. Empty configuration lists are accepted on create; on update, an empty or omitted list does not remove existing configurations. Duplicate content-type identities are rejected with `400 ContentPreviewChangeInvalid` on both create and update.
 

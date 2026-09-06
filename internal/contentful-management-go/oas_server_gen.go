@@ -61,7 +61,7 @@ type Handler interface {
 	// Create a content preview platform.
 	//
 	// POST /spaces/{space_id}/preview_environments
-	CreatePreviewEnvironment(ctx context.Context, req *PreviewEnvironmentCreateData, params CreatePreviewEnvironmentParams) (CreatePreviewEnvironmentRes, error)
+	CreatePreviewEnvironment(ctx context.Context, req *PreviewEnvironmentData, params CreatePreviewEnvironmentParams) (CreatePreviewEnvironmentRes, error)
 	// CreateRole implements createRole operation.
 	//
 	// Create a role.
