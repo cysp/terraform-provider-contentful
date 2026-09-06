@@ -28,7 +28,8 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Entry.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id/entry_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

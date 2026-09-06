@@ -18,6 +18,9 @@ resource "contentful_content_type" "author" {
       localized = false
       omitted   = false
       required  = true
+      validations = [jsonencode({
+        size = { min = 1 }
+      })]
     },
     {
       id        = "avatar"
