@@ -218,9 +218,14 @@ The live-only App Key sibling skips in mocked mode. Live-capable harness calls
 serialize access to the shared account and quota; do not remove that serialization
 merely to speed up tests. Query tests require Terraform 1.14 and skip on 1.13.
 The [test workflow](.github/workflows/test.yml) defines the Terraform version
-matrix and runs authorized live acceptance when the repository secret is
-available. See that workflow for the separate ordinary, client, mocked, and live
-coverage flags.
+matrix. CI runs the ordinary suite once, mocked acceptance tests on the two
+newest stable Terraform minors, and authorized live acceptance on the newest
+stable minor when the repository secret is available. The explicit minor ranges
+select the latest patch in each minor; update them together through review when
+a new stable minor is released, and coordinate the corresponding GitHub required
+status check names before merging. This matrix defines CI coverage, not a minimum
+supported Terraform version. See the workflow for the separate ordinary, client,
+mocked, and live coverage flags.
 
 ### Test conventions
 

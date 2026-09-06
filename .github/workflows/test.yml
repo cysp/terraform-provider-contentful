@@ -78,7 +78,7 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - "1.14.*"
+          - "1.16.*"
     concurrency:
       group: testacc
       queue: max
@@ -119,8 +119,8 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - "1.13.*"
-          - "1.14.*"
+          - "1.15.*"
+          - "1.16.*"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
