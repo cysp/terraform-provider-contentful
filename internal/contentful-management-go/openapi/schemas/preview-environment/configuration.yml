@@ -1,0 +1,59 @@
+PreviewEnvironmentConfigurationData:
+  type: object
+  additionalProperties: false
+  properties:
+    url:
+      type: string
+    entityType:
+      type: string
+    entityId:
+      type: string
+    enabled:
+      type: boolean
+    example:
+      type: boolean
+  required:
+    - url
+    - entityType
+    - entityId
+    - enabled
+
+PreviewEnvironmentCreateConfigurationData:
+  type: object
+  additionalProperties: false
+  properties:
+    url:
+      type: string
+    entityType:
+      type: string
+    entityId:
+      type: string
+    enabled:
+      type: boolean
+    example:
+      type: boolean
+    contentType:
+      type: string
+  required:
+    - url
+    - enabled
+
+PreviewEnvironmentConfiguration:
+  type: object
+  properties:
+    url:
+      type: string
+    entityType:
+      type: string
+    entityId:
+      type: string
+    contentType:
+      type: string
+    enabled:
+      type: boolean
+    example:
+      type: boolean
+  required:
+    - url
+    - enabled
+    - example

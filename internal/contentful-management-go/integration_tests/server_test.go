@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testContentfulManagementHTTPTestServer(t *testing.T) (*cmt.Server, *httptest.Server) {
+func testContentfulManagementHTTPTestServer(t *testing.T, opts ...cmt.ServerOption) (*cmt.Server, *httptest.Server) {
 	t.Helper()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(opts...)
 	require.NoError(t, err)
 	require.NotNil(t, server)
 

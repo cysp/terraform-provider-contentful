@@ -248,6 +248,18 @@ endpoint identity, recovery preserves the complete returned response except
 that the requested endpoint identity and legacy ID intentionally remain the
 Terraform target.
 
+Preview Environment mutation recovery has the same targeted endpoint-identity
+exception. When a successful response contradicts the requested space or
+preview environment ID, Terraform retains the requested endpoint identity and
+legacy multipart ID while checkpointing every other response-derived value and
+the returned `sys.version` before reporting the consistency error. For
+generated-ID creation, the returned preview environment ID remains the target;
+an unexpected known planned ID still constrains consistency and a contradiction
+is reported without replacing the generated target. Configuration omission
+selects the generated-ID endpoint; it does not discard known Plan constraints.
+The [preview environment contract](../research/content-preview-environments.md)
+records the active-configuration delta and the limits of version locking.
+
 Apply-time authority follows the effective Plan at the individual attribute,
 including attributes nested inside known objects:
 

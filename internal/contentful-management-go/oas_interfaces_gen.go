@@ -33,6 +33,10 @@ type CreatePersonalAccessTokenRes interface {
 	createPersonalAccessTokenRes()
 }
 
+type CreatePreviewEnvironmentRes interface {
+	createPreviewEnvironmentRes()
+}
+
 type CreateRoleRes interface {
 	createRoleRes()
 }
@@ -91,6 +95,10 @@ type DeleteEnvironmentRes interface {
 
 type DeleteExtensionRes interface {
 	deleteExtensionRes()
+}
+
+type DeletePreviewEnvironmentRes interface {
+	deletePreviewEnvironmentRes()
 }
 
 type DeleteResourceProviderRes interface {
@@ -201,6 +209,10 @@ type GetPreviewAPIKeyRes interface {
 	getPreviewAPIKeyRes()
 }
 
+type GetPreviewEnvironmentRes interface {
+	getPreviewEnvironmentRes()
+}
+
 type GetResourceProviderRes interface {
 	getResourceProviderRes()
 }
@@ -283,6 +295,10 @@ type PutEntryRes interface {
 
 type PutExtensionRes interface {
 	putExtensionRes()
+}
+
+type PutPreviewEnvironmentRes interface {
+	putPreviewEnvironmentRes()
 }
 
 type PutResourceProviderRes interface {

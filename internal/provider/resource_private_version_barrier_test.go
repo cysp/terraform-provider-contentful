@@ -47,7 +47,11 @@ func TestPrivateVersionValuesAreForwardedToRepresentativeMutations(t *testing.T)
 		path   string
 	}{
 		"delivery API key update": {method: http.MethodPut, path: "/spaces/space/api_keys/key"},
-		"tag update":              {method: http.MethodPut, path: "/spaces/space/environments/environment/tags/tag"},
+		"preview environment update": {
+			method: http.MethodPut,
+			path:   "/spaces/space/preview_environments/preview",
+		},
+		"tag update": {method: http.MethodPut, path: "/spaces/space/environments/environment/tags/tag"},
 	}
 
 	var cases []privateVersionForwardingCase
@@ -298,6 +302,15 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 	plannedEntry.Fields = NewTypedMap(map[string]jsontypes.Normalized{
 		"managed": jsontypes.NewNormalizedValue(`{"en-US":"changed"}`),
 	})
+	previewEnvironment := previewEnvironmentModel(map[string]string{
+		"page": "https://preview.invalid/page",
+	})
+	previewEnvironment.ID = types.StringValue("space/preview")
+	previewEnvironment.SpaceID = types.StringValue("space")
+	previewEnvironment.PreviewEnvironmentID = types.StringValue("preview")
+	previewEnvironment.Timeouts = TimeoutsNull()
+	plannedPreviewEnvironment := previewEnvironment
+	plannedPreviewEnvironment.Name = types.StringValue("Changed preview")
 
 	return []requiredPrivateVersionResourceCase{
 		{
@@ -313,6 +326,13 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 			resourceSchema: EntryResourceSchema(t.Context()),
 			model:          entry,
 			plannedModel:   plannedEntry,
+		},
+		{
+			name:           "preview environment update",
+			typeName:       "contentful_preview_environment",
+			resourceSchema: PreviewEnvironmentResourceSchema(t.Context()),
+			model:          previewEnvironment,
+			plannedModel:   plannedPreviewEnvironment,
 		},
 		{
 			name:           "delivery API key update",

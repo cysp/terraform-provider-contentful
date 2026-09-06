@@ -237,6 +237,7 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewEntryResource,
 		NewExtensionResource,
 		NewPersonalAccessTokenResource,
+		NewPreviewEnvironmentResource,
 		NewResourceProviderResource,
 		NewResourceTypeResource,
 		NewRoleResource,
