@@ -44,7 +44,7 @@ resource "contentful_resource_type" "this" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in organization_id/app_definition_id/resource_type_id form.
 - `resource_provider_id` (String) ID of the parent resource provider.
 
 <a id="nestedatt--default_field_mapping"></a>

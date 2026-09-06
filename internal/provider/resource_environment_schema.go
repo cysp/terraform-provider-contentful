@@ -14,7 +14,8 @@ func EnvironmentResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Environment. A successful Create records Contentful's response but does not wait for the environment to reach ready status.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -42,7 +43,7 @@ func EnvironmentResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"source_environment_id": schema.StringAttribute{
-				Description: "ID of the source environment from which to copy content. Environments are created as a copy of an existing environment.",
+				Description: "ID of the existing environment to clone when creating this environment. Omitted or empty selects Contentful's default source, master. Changing this value replaces the environment. Contentful does not return the original clone source; import leaves it unset.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

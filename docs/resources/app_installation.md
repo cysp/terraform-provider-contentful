@@ -46,12 +46,12 @@ resource "contentful_app_installation" "cool_marketplace_app" {
 ### Optional
 
 - `marketplace` (Set of String) Marketplace information for the app.
-- `parameters` (String) App-specific configuration variables. Optional free-form object with values managed by the app. The stringified value cannot be longer than 16kB.
+- `parameters` (String) App-specific configuration as a JSON-encoded object. Use jsonencode(...) to encode Terraform values.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/app_definition_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -74,9 +74,9 @@ import {
   identity = {
     space_id          = var.contentful_space_id
     environment_id    = var.contentful_environment_id
-    app_definition_id = var.app_definition_id
+    app_definition_id = var.cool_app_definition_id
   }
-  to = contentful_app_installation.this
+  to = contentful_app_installation.cool_app
 }
 ```
 
@@ -93,8 +93,8 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.app_definition_id}"
-  to = contentful_app_installation.this
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.cool_app_definition_id}"
+  to = contentful_app_installation.cool_app
 }
 ```
 

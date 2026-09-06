@@ -16,6 +16,7 @@ Use the same provider configuration and a reference to the Content Type resource
 ## Example Usage
 
 ```terraform
+# This snippet uses contentful_content_type.author from the Content Type example.
 resource "contentful_editor_interface" "author" {
   space_id        = contentful_content_type.author.space_id
   environment_id  = contentful_content_type.author.environment_id
@@ -89,7 +90,7 @@ resource "contentful_editor_interface" "author" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/content_type_id form.
 
 <a id="nestedatt--controls"></a>
 ### Nested Schema for `controls`
@@ -216,7 +217,7 @@ import {
     environment_id  = var.contentful_environment_id
     content_type_id = var.content_type_id
   }
-  to = contentful_editor_interface.this
+  to = contentful_editor_interface.author
 }
 ```
 
@@ -234,7 +235,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
-  to = contentful_editor_interface.this
+  to = contentful_editor_interface.author
 }
 ```
 

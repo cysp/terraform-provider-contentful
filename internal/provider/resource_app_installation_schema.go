@@ -18,7 +18,8 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful App Installation.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id/app_definition_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -53,7 +54,7 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"parameters": schema.StringAttribute{
-				Description: "App-specific configuration variables. Optional free-form object with values managed by the app. The stringified value cannot be longer than 16kB.",
+				Description: "App-specific configuration as a JSON-encoded object. Use jsonencode(...) to encode Terraform values.",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 			},

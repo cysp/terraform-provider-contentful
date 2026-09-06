@@ -36,7 +36,7 @@ resource "contentful_team" "this" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in organization_id/team_id form.
 - `team_id` (String) System ID of the team.
 
 <a id="nestedatt--timeouts"></a>

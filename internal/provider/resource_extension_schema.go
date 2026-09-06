@@ -21,7 +21,8 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful UI Extension.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id/extension_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -53,7 +54,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"parameters": schema.StringAttribute{
-				Description: "Definitions of configuration parameters. Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.",
+				Description: "Values for the extension installation parameters, encoded as JSON with jsonencode(...). Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 				Computed:    true,
@@ -122,9 +123,10 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			},
 		},
 		"sidebar": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(false),
+			Description: "Render the extension in the sidebar instead of replacing a field editing control. Defaults to false.",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 		"parameters": schema.SingleNestedAttribute{
 			Attributes: map[string]schema.Attribute{

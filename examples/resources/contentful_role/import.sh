@@ -1,1 +1,1 @@
-terraform import contentful_role.this $CONTENTFUL_SPACE_ID/abcdef
+terraform import contentful_role.editor $CONTENTFUL_SPACE_ID/abcdef

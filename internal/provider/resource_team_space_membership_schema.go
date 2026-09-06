@@ -17,7 +17,8 @@ func TeamSpaceMembershipResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Team Space Membership.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/team_space_membership_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
