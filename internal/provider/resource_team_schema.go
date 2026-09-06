@@ -15,7 +15,8 @@ func TeamResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Team.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in organization_id/team_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

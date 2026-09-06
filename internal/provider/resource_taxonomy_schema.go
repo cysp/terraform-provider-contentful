@@ -24,9 +24,9 @@ func taxonomyIDValidators() []validator.String {
 	}
 }
 
-func taxonomyIdentityAttributes(entityName string) map[string]schema.Attribute {
+func taxonomyIdentityAttributes(entityName, resourceIDDescription string) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"id": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+		"id": schema.StringAttribute{Description: resourceIDDescription, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		"organization_id": schema.StringAttribute{
 			Description:   "ID of the organization that owns the " + entityName + ".",
 			Required:      true,
@@ -62,7 +62,7 @@ func optionalComputedStringList(description string) schema.ListAttribute {
 }
 
 func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
-	attributes := taxonomyIdentityAttributes("taxonomy concept")
+	attributes := taxonomyIdentityAttributes("taxonomy concept", "Composite Terraform resource identifier in organization_id/concept_id form.")
 	attributes["concept_id"] = schema.StringAttribute{Description: "Caller-defined ID of the taxonomy concept.", Required: true, Validators: taxonomyIDValidators(), PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}}
 	attributes["uri"] = schema.StringAttribute{Description: "Optional URI identifying the concept. Empty strings are rejected by Contentful.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
 	attributes["pref_label"] = localizedStringAttribute("Localized preferred labels.", true)
@@ -104,7 +104,7 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 }
 
 func TaxonomyConceptSchemeResourceSchema(ctx context.Context) schema.Schema {
-	attributes := taxonomyIdentityAttributes("taxonomy concept scheme")
+	attributes := taxonomyIdentityAttributes("taxonomy concept scheme", "Composite Terraform resource identifier in organization_id/concept_scheme_id form.")
 	attributes["concept_scheme_id"] = schema.StringAttribute{Description: "Caller-defined ID of the taxonomy concept scheme.", Required: true, Validators: taxonomyIDValidators(), PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}}
 	attributes["uri"] = schema.StringAttribute{Description: "Optional URI identifying the concept scheme. Empty strings are rejected by Contentful.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
 	attributes["pref_label"] = localizedStringAttribute("Localized preferred labels.", true)

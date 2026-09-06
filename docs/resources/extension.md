@@ -14,8 +14,8 @@ Manages a Contentful UI Extension.
 
 ```terraform
 resource "contentful_extension" "example" {
-  space_id       = var.space_id
-  environment_id = var.environment_id
+  space_id       = var.contentful_space_id
+  environment_id = var.contentful_environment_id
   extension_id   = "custom-field-extension"
 
   extension = {
@@ -66,12 +66,12 @@ resource "contentful_extension" "example" {
 
 ### Optional
 
-- `parameters` (String) Definitions of configuration parameters. Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
+- `parameters` (String) Values for the extension installation parameters, encoded as JSON with jsonencode(...). Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/extension_id form.
 
 <a id="nestedatt--extension"></a>
 ### Nested Schema for `extension`
@@ -84,7 +84,7 @@ Required:
 Optional:
 
 - `parameters` (Attributes) (see [below for nested schema](#nestedatt--extension--parameters))
-- `sidebar` (Boolean)
+- `sidebar` (Boolean) Render the extension in the sidebar instead of replacing a field editing control. Defaults to false.
 - `src` (String) URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Cannot be configured with srcdoc; both may be omitted to preserve an imported source.
 - `srcdoc` (String) String representation of the extension (e.g. inline HTML code). Cannot be configured with src; both may be omitted to preserve an imported source. Contentful accepts an explicitly empty srcdoc.
 
@@ -132,10 +132,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value for the parameter.
+- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
-- `options` (List of String) List of allowed values for Enum parameters.
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--installation--labels"></a>
@@ -160,10 +160,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value for the parameter.
+- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
-- `options` (List of String) List of allowed values for Enum parameters.
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--instance--labels"></a>
@@ -202,7 +202,7 @@ import {
     environment_id = var.contentful_environment_id
     extension_id   = var.extension_id
   }
-  to = contentful_extension.this
+  to = contentful_extension.example
 }
 ```
 
@@ -220,7 +220,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.extension_id}"
-  to = contentful_extension.this
+  to = contentful_extension.example
 }
 ```
 

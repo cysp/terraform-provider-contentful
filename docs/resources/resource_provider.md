@@ -37,7 +37,7 @@ resource "contentful_resource_provider" "this" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in organization_id/app_definition_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

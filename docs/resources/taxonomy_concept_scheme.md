@@ -54,7 +54,7 @@ resource "contentful_taxonomy_concept_scheme" "products" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in organization_id/concept_scheme_id form.
 - `total_concepts` (Number) Number of concepts in the scheme.
 
 <a id="nestedatt--timeouts"></a>

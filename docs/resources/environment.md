@@ -51,12 +51,12 @@ resource "contentful_environment_alias" "staging" {
 
 ### Optional
 
-- `source_environment_id` (String) ID of the source environment from which to copy content. Environments are created as a copy of an existing environment.
+- `source_environment_id` (String) ID of the existing environment to clone when creating this environment. Omitted or empty selects Contentful's default source, master. Changing this value replaces the environment. Contentful does not return the original clone source; import leaves it unset.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id form.
 - `status` (String) Latest environment status returned by the resource operation. This status may not be ready after a successful Create.
 
 <a id="nestedatt--timeouts"></a>
@@ -81,7 +81,7 @@ import {
     space_id       = var.contentful_space_id
     environment_id = var.contentful_environment_id
   }
-  to = contentful_environment.this
+  to = contentful_environment.staging
 }
 ```
 
@@ -98,6 +98,6 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}"
-  to = contentful_environment.this
+  to = contentful_environment.staging
 }
 ```

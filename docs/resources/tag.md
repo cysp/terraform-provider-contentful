@@ -32,7 +32,7 @@ resource "contentful_tag" "example" {
 - `name` (String) Name of the tag.
 - `space_id` (String) ID of the space containing the tag.
 - `tag_id` (String) ID of the tag.
-- `visibility` (String) Visibility of the tag.
+- `visibility` (String) Tag visibility: private makes it available only through the Content Management API; public also exposes it through the Content Delivery and Preview APIs. Changing visibility requires replacement. Deleting the old Tag removes its assignments from entries and assets.
 
 ### Optional
 
@@ -40,7 +40,7 @@ resource "contentful_tag" "example" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/tag_id form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

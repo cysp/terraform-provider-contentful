@@ -35,7 +35,7 @@ data "contentful_app_definition" "this" {
 ### Read-Only
 
 - `bundle_id` (String) The bundle identifier for the app.
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform identifier in organization_id/app_definition_id form; not a Contentful system ID.
 - `locations` (Attributes List) Locations where the app can be rendered in the Contentful web app. (see [below for nested schema](#nestedatt--locations))
 - `name` (String) The name of the app.
 - `parameters` (Attributes) Configuration parameters for the app. (see [below for nested schema](#nestedatt--parameters))
