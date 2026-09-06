@@ -62,7 +62,7 @@ func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"token": schema.StringAttribute{
-				Description: "The access token for the Content Management API. This is only available immediately after creation.",
+				Description: "The access token for the Content Management API. Contentful returns it only on creation; Terraform retains the known value in state during later refreshes. Import cannot recover the token and leaves this attribute null.",
 				Computed:    true,
 				Sensitive:   true,
 			},

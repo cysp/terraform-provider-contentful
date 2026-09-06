@@ -18,7 +18,8 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Delivery API Key.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/api_key_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -46,7 +47,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"environments": schema.ListAttribute{
-				Description: "List of environment IDs that the token can access. Only the environments specified in this property can be accessed using this token.",
+				Description: "Contentful environment IDs that the token can access. Omission uses Contentful defaults on creation and retains observed environments on later updates. An explicit [] is sent to Contentful, which has been observed to replace it with the default environment, causing an inconsistent-result error. An empty list is therefore not a reliable way to revoke all access.",
 				ElementType: types.StringType,
 				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Optional:    true,
