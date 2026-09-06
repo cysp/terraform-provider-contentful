@@ -21,10 +21,11 @@ import (
 
 func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Content Type. Create and Terraform-managed updates activate the exact draft returned by that operation. Imported Content Types, external drafts, and external deactivation remain observational until a Terraform-managed draft change authors a new draft.",
+		Description: "Manages a Contentful Content Type. Creating it or changing its draft through Terraform activates that draft. Import and refresh do not activate drafts written outside Terraform.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Composite Terraform resource identifier in space_id/environment_id/content_type_id form.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -158,6 +159,7 @@ func (v ContentTypeFieldItemsValue) SchemaAttributes(ctx context.Context) map[st
 			Optional:    true,
 		},
 		"validations": schema.ListAttribute{
+			Description: `Contentful validation rules for each array item, encoded as one JSON object string per rule. For an array of Entry links, use validations = [jsonencode({ linkContentType = ["author"] })]. Supported rules depend on the item type. Omission defaults to an empty list of rules.`,
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
@@ -195,7 +197,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Optional:    true,
 		},
 		"default_value": schema.StringAttribute{
-			Description: "Default value for the field in JSON format.",
+			Description: `JSON-encoded object mapping locale codes to default field values, for example jsonencode({ "en-US" = "Untitled" }) for a Symbol field. Contentful applies defaults to omitted values when an Entry is created; changing a default does not rewrite existing Entries. For a non-localized field, use the environment's default locale. Omission configures no default.`,
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
@@ -219,6 +221,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Required: true,
 		},
 		"validations": schema.ListAttribute{
+			Description: `Contentful validation rules for this field, encoded as one JSON object string per rule, for example validations = [jsonencode({ size = { min = 1 } })] for a Symbol field. Supported rules depend on the field type. Omission defaults to an empty list of rules.`,
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
@@ -307,7 +310,7 @@ func (v ContentTypeMetadataValue) SchemaAttributes(ctx context.Context) map[stri
 	return map[string]schema.Attribute{
 		"annotations": schema.StringAttribute{
 			CustomType:  jsontypes.NormalizedType{},
-			Description: "Annotations for this content type, represented as a JSON object fragment.",
+			Description: "Contentful annotations for this content type, encoded as a JSON object string using jsonencode(...).",
 			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.AtLeastOneOf(

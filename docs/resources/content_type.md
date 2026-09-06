@@ -3,12 +3,12 @@
 page_title: "contentful_content_type Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Content Type. Create and Terraform-managed updates activate the exact draft returned by that operation. Imported Content Types, external drafts, and external deactivation remain observational until a Terraform-managed draft change authors a new draft.
+  Manages a Contentful Content Type. Creating it or changing its draft through Terraform activates that draft. Import and refresh do not activate drafts written outside Terraform.
 ---
 
 # contentful_content_type (Resource)
 
-Manages a Contentful Content Type. Create and Terraform-managed updates activate the exact draft returned by that operation. Imported Content Types, external drafts, and external deactivation remain observational until a Terraform-managed draft change authors a new draft.
+Manages a Contentful Content Type. Creating it or changing its draft through Terraform activates that draft. Import and refresh do not activate drafts written outside Terraform.
 
 ## Example Usage
 
@@ -33,6 +33,9 @@ resource "contentful_content_type" "author" {
       localized = false
       omitted   = false
       required  = true
+      validations = [jsonencode({
+        size = { min = 1 }
+      })]
     },
     {
       id        = "avatar"
@@ -50,16 +53,30 @@ resource "contentful_content_type" "author" {
 
 ## Lifecycle behavior
 
-Create and provider-managed updates activate the exact Content Type draft returned by that operation. A Terraform Update that changes only state representation or timeouts sends neither a Content Type PUT nor an Activate request. `published_version` reflects Contentful `sys.publishedVersion`; it is observed computed state, not configurable activation intent.
+Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. `published_version` reflects Contentful `sys.publishedVersion`; it is observed state, not configurable activation intent.
 
-- After a complete, identity-valid, lifecycle-valid, plan-consistent provider-managed draft response is checkpointed, Terraform records only that exact positive returned `version` as pending activation authority. Create and Update do not assume any version increment. If Activate is not confirmed, an unchanged later apply automatically activates that marked version without repeating the Content Type PUT.
-- With normal refresh, Terraform first observes the Content Type. It preserves pending recovery only while both current `sys.version` and the publication tuple exactly match the checkpointed draft, clears recovery without replay when the marked version is already activated, and revokes recovery without mutation for every changed or malformed tuple. With `-refresh=false`, recovery still sends only the marked version; `VersionMismatch` revokes the marker immediately and Terraform never fetches and activates a newer version.
-- Activation is confirmed when `sys.publishedVersion` equals the exact submitted version and current `sys.version` is greater. No particular increment is required; the marker is cleared, and the returned version never becomes new activation authority.
-- Content Type Create, Update, and Activate are never transparently replayed after 429, transport, or 5xx outcomes. GET and unrelated provider operations retain their normal retry behavior.
-- Imported Content Types, drafts written outside the resource, external deactivation, legacy state, matching configuration, and ordinary Read never create pending activation authority.
-- If Terraform cannot confirm the draft PUT, it does not claim a later matching GET as provider-authored and does not activate it.
-- Values retained by `ignore_changes` remain in any later provider-managed full draft PUT. An ignored-only external draft is left untouched.
-- If Activate is not confirmed after a valid Create draft has been checkpointed, Terraform retains that exact draft and automatically recovers it on a later apply without repeating the Create PUT. Failures before that checkpoint grant no activation authority.
+See [Operation timeouts](../guides/operation-timeouts) for the default operation budgets and deadline precedence that apply to these lifecycle operations.
+
+### Drift and ignored changes
+
+Later managed updates write the complete draft, including values retained by `ignore_changes`. An ignored-only external draft is left untouched. External deactivation also remains observed state until a later provider-managed draft change creates a draft that this resource can activate.
+
+### Destroy
+
+Destroy deactivates the Content Type before deleting it. If deactivation fails for a reason other than an already absent or unpublished Content Type, deletion stops. These requests do not send a version or ETag precondition, so the provider does not protect an externally changed Content Type with the exact-version safeguard used for activation.
+
+### Activation recovery
+
+If activation fails after the provider confirms its draft write, an unchanged later apply can activate that exact version without repeating the Content Type write.
+
+- Import, refresh, or matching configuration alone does not make an external draft eligible for automatic activation.
+- With normal refresh, recovery continues only while the version and publication state still match that draft. If it is already activated, no further request is sent. Changed or malformed version/publication state stops recovery without modifying the Content Type.
+- With `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; the provider never fetches and activates a newer external draft instead.
+- If the draft write itself was not confirmed, later matching remote content is not automatically activated. An ambiguous response or interrupted operation can therefore leave a draft inactive.
+
+### Retry boundaries
+
+Content Type Create, Update, and Activate operations are not transparently replayed after 429, transport, or 5xx outcomes.
 
 <!-- schema generated by tfplugindocs -->
 ## Schema
@@ -81,7 +98,7 @@ Create and provider-managed updates activate the exact Content Type draft return
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Composite Terraform resource identifier in space_id/environment_id/content_type_id form.
 - `published_version` (Number) The Contentful version most recently activated, or null when the content type is not activated.
 
 <a id="nestedatt--fields"></a>
@@ -98,12 +115,12 @@ Required:
 Optional:
 
 - `allowed_resources` (Attributes List) For Resource Link fields, defines the allowed resource types that can be linked. (see [below for nested schema](#nestedatt--fields--allowed_resources))
-- `default_value` (String) Default value for the field in JSON format.
+- `default_value` (String) JSON-encoded object mapping locale codes to default field values, for example jsonencode({ "en-US" = "Untitled" }) for a Symbol field. Contentful applies defaults to omitted values when an Entry is created; changing a default does not rewrite existing Entries. For a non-localized field, use the environment's default locale. Omission configures no default.
 - `disabled` (Boolean) Whether the field is disabled (not editable in the UI).
 - `items` (Attributes) For Array fields, defines the type of items in the array. (see [below for nested schema](#nestedatt--fields--items))
 - `link_type` (String) For Link or Array of Links fields, specifies the type of resource being linked to (e.g., Entry, Asset).
 - `omitted` (Boolean) Whether the field is omitted from API responses. Before removing a field while the content type is activated, set omitted to true and apply so Contentful activates that change, then remove the field in a later apply.
-- `validations` (List of String)
+- `validations` (List of String) Contentful validation rules for this field, encoded as one JSON object string per rule, for example validations = [jsonencode({ size = { min = 1 } })] for a Symbol field. Supported rules depend on the field type. Omission defaults to an empty list of rules.
 
 <a id="nestedatt--fields--allowed_resources"></a>
 ### Nested Schema for `fields.allowed_resources`
@@ -141,7 +158,7 @@ Required:
 Optional:
 
 - `link_type` (String) For arrays of Links, specifies the type of resource being linked to.
-- `validations` (List of String)
+- `validations` (List of String) Contentful validation rules for each array item, encoded as one JSON object string per rule. For an array of Entry links, use validations = [jsonencode({ linkContentType = ["author"] })]. Supported rules depend on the item type. Omission defaults to an empty list of rules.
 
 
 
@@ -150,7 +167,7 @@ Optional:
 
 Optional:
 
-- `annotations` (String) Annotations for this content type, represented as a JSON object fragment.
+- `annotations` (String) Contentful annotations for this content type, encoded as a JSON object string using jsonencode(...).
 - `taxonomy` (Attributes List) List of taxonomy items for this content type. Each item represents a taxonomy term that may be associated with the content type. (see [below for nested schema](#nestedatt--metadata--taxonomy))
 
 <a id="nestedatt--metadata--taxonomy"></a>
@@ -210,7 +227,7 @@ import {
     environment_id  = var.contentful_environment_id
     content_type_id = var.content_type_id
   }
-  to = contentful_content_type.this
+  to = contentful_content_type.author
 }
 ```
 
@@ -228,7 +245,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
-  to = contentful_content_type.this
+  to = contentful_content_type.author
 }
 ```
 
