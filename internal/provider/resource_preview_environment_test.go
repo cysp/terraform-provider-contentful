@@ -105,18 +105,24 @@ func registerLivePreviewEnvironmentCleanup(t *testing.T, ids *[]string) {
 				require.True(t, statusOK && statusResponse.GetStatusCode() == http.StatusNotFound, "unexpected cleanup delete response: %T", deleteResponse)
 			}
 
-			require.EventuallyWithT(t, func(collect *assert.CollectT) {
-				getResponse, err := client.GetPreviewEnvironment(ctx, cm.GetPreviewEnvironmentParams{
-					SpaceID:              "0p38pssr0fi3",
-					PreviewEnvironmentID: previewEnvironmentID,
-				})
-				assert.NoError(collect, err)
-
-				statusResponse, ok := getResponse.(cm.StatusCodeResponse)
-				assert.True(collect, ok && statusResponse.GetStatusCode() == http.StatusNotFound)
-			}, time.Minute, time.Second, "content preview platform %q still exists after cleanup", previewEnvironmentID)
+			waitForPreviewEnvironmentDeletion(ctx, t, client, "0p38pssr0fi3", previewEnvironmentID)
 		}
 	})
+}
+
+func waitForPreviewEnvironmentDeletion(ctx context.Context, t *testing.T, client *cm.Client, spaceID, previewEnvironmentID string) {
+	t.Helper()
+
+	require.EventuallyWithT(t, func(collect *assert.CollectT) {
+		response, err := client.GetPreviewEnvironment(ctx, cm.GetPreviewEnvironmentParams{
+			SpaceID:              spaceID,
+			PreviewEnvironmentID: previewEnvironmentID,
+		})
+		assert.NoError(collect, err)
+
+		statusResponse, ok := response.(cm.StatusCodeResponse)
+		assert.True(collect, ok && statusResponse.GetStatusCode() == http.StatusNotFound)
+	}, time.Minute, time.Second, "content preview platform %q still exists after deletion", previewEnvironmentID)
 }
 
 //nolint:paralleltest
@@ -424,8 +430,11 @@ func deletePreviewEnvironmentOutOfBand(t *testing.T, server *cmt.Server, spaceID
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
+
 	client := livePreviewEnvironmentClient(t)
-	response, err := client.DeletePreviewEnvironment(t.Context(), cm.DeletePreviewEnvironmentParams{
+	response, err := client.DeletePreviewEnvironment(ctx, cm.DeletePreviewEnvironmentParams{
 		SpaceID:              spaceID,
 		PreviewEnvironmentID: previewEnvironmentID,
 	})
@@ -433,6 +442,8 @@ func deletePreviewEnvironmentOutOfBand(t *testing.T, server *cmt.Server, spaceID
 
 	_, ok := response.(*cm.NoContent)
 	require.True(t, ok, "unexpected out-of-band delete response: %T", response)
+
+	waitForPreviewEnvironmentDeletion(ctx, t, client, spaceID, previewEnvironmentID)
 }
 
 func incrementPreviewEnvironmentVersionOutOfBand(ctx context.Context, t *testing.T, server *cmt.Server, spaceID, previewEnvironmentID string) {
