@@ -11,10 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
-// Run "go generate" to format example terraform files and generate the docs for the registry/website
-
-// If you do not have terraform installed, you can remove the formatting command, but its suggested to
-// ensure the documentation is formatted properly.
+// Root generation requires Terraform on PATH; see DEVELOPMENT.md.
 //go:generate terraform fmt -recursive ./examples/
 
 // Run the docs generation tool, check its repository for more information on how it works and how docs
