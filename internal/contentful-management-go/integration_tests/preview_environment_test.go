@@ -18,10 +18,6 @@ func previewEnvironmentData(name string, configurations ...cm.PreviewEnvironment
 	}
 }
 
-func previewEnvironmentCreateData(name string, configurations ...cm.PreviewEnvironmentConfigurationData) cm.PreviewEnvironmentCreateData {
-	return cm.NewPreviewEnvironmentCreateData(previewEnvironmentData(name, configurations...))
-}
-
 func previewEnvironmentConfiguration(contentTypeID, url string, enabled bool) cm.PreviewEnvironmentConfigurationData {
 	return cm.PreviewEnvironmentConfigurationData{
 		URL:        url,
@@ -41,7 +37,7 @@ func TestPreviewEnvironmentLifecycle(t *testing.T) {
 
 	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
 
-	createResponse, err := client.CreatePreviewEnvironment(t.Context(), new(previewEnvironmentCreateData(
+	createResponse, err := client.CreatePreviewEnvironment(t.Context(), new(previewEnvironmentData(
 		"preview",
 		previewEnvironmentConfiguration("page", "https://preview.invalid/pages/{entry.sys.id}", true),
 	)), cm.CreatePreviewEnvironmentParams{SpaceID: "space"})
@@ -120,7 +116,7 @@ func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 
 	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
 
-	createResponse, err := client.CreatePreviewEnvironment(t.Context(), new(previewEnvironmentCreateData(
+	createResponse, err := client.CreatePreviewEnvironment(t.Context(), new(previewEnvironmentData(
 		"preview",
 		previewEnvironmentConfiguration("page", "https://preview.invalid/page", true),
 		previewEnvironmentConfiguration("author", "https://preview.invalid/author", true),
@@ -150,7 +146,7 @@ func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 	require.Equal(t, "https://preview.invalid/author-v2", updated.Configurations[1].URL)
 	require.False(t, updated.Configurations[1].Enabled)
 
-	duplicateResponse, err := client.CreatePreviewEnvironment(t.Context(), new(previewEnvironmentCreateData(
+	duplicateResponse, err := client.CreatePreviewEnvironment(t.Context(), new(previewEnvironmentData(
 		"duplicates",
 		previewEnvironmentConfiguration("page", "https://one.invalid", true),
 		previewEnvironmentConfiguration("page", "https://two.invalid", true),
@@ -160,43 +156,6 @@ func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 	duplicateError, ok := duplicateResponse.(*cm.ErrorStatusCode)
 	require.True(t, ok)
 	require.Equal(t, 400, duplicateError.StatusCode)
-
-	legacyCreateData := cm.PreviewEnvironmentCreateData{
-		Name:        "accepted legacy create shape",
-		Description: "description",
-		Configurations: []cm.PreviewEnvironmentCreateConfigurationData{
-			{
-				URL:         "https://legacy.invalid",
-				ContentType: cm.NewOptString("page"),
-				Enabled:     true,
-			},
-		},
-	}
-	legacyCreateResponse, err := client.CreatePreviewEnvironment(
-		t.Context(),
-		&legacyCreateData,
-		cm.CreatePreviewEnvironmentParams{SpaceID: "space"},
-	)
-	require.NoError(t, err)
-
-	legacyCreated, ok := legacyCreateResponse.(*cm.PreviewEnvironment)
-	require.True(t, ok)
-	require.Equal(t, "page", legacyCreated.Configurations[0].EntityId.Or(""))
-
-	unsafeCreateData := previewEnvironmentCreateData(
-		"accepted create response shape",
-		previewEnvironmentConfiguration("page", "https://unsafe.invalid", true),
-	)
-	unsafeCreateData.Configurations[0].ContentType.SetTo("page")
-	unsafeResponse, err := client.CreatePreviewEnvironment(
-		t.Context(),
-		&unsafeCreateData,
-		cm.CreatePreviewEnvironmentParams{SpaceID: "space"},
-	)
-	require.NoError(t, err)
-
-	unsafeCreated, ok := unsafeResponse.(*cm.PreviewEnvironment)
-	require.True(t, ok)
 
 	requestBody := `{
 		"name":"unsafe update response round-trip",
@@ -213,7 +172,7 @@ func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 	request, err := http.NewRequestWithContext(
 		t.Context(),
 		http.MethodPut,
-		testserver.URL+"/spaces/space/preview_environments/"+unsafeCreated.Sys.ID,
+		testserver.URL+"/spaces/space/preview_environments/"+created.Sys.ID,
 		strings.NewReader(requestBody),
 	)
 	require.NoError(t, err)

@@ -3260,29 +3260,6 @@ func (s *PreviewEnvironment) Validate() error {
 	return nil
 }
 
-func (s *PreviewEnvironmentCreateData) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if s.Configurations == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "configurations",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
 func (s *PreviewEnvironmentData) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -3347,30 +3324,6 @@ func (s PreviewEnvironmentSysType) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
-}
-
-func (s *PutPreviewEnvironmentBadRequest) Validate() error {
-	alias := (*ErrorStatusCode)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutPreviewEnvironmentConflict) Validate() error {
-	alias := (*ErrorStatusCode)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *PutPreviewEnvironmentNotFound) Validate() error {
-	alias := (*ErrorStatusCode)(s)
-	if err := alias.Validate(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *ResourceProvider) Validate() error {

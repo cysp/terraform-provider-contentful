@@ -18,26 +18,6 @@ PreviewEnvironmentConfigurationData:
     - entityId
     - enabled
 
-PreviewEnvironmentCreateConfigurationData:
-  type: object
-  additionalProperties: false
-  properties:
-    url:
-      type: string
-    entityType:
-      type: string
-    entityId:
-      type: string
-    enabled:
-      type: boolean
-    example:
-      type: boolean
-    contentType:
-      type: string
-  required:
-    - url
-    - enabled
-
 PreviewEnvironmentConfiguration:
   type: object
   properties:

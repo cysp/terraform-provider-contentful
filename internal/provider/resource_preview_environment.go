@@ -109,8 +109,7 @@ func (r *previewEnvironmentResource) Create(ctx context.Context, req resource.Cr
 			XContentfulVersion:   0,
 		})
 	} else {
-		createRequest := cm.NewPreviewEnvironmentCreateData(request)
-		response, err = r.providerData.client.CreatePreviewEnvironment(ctx, &createRequest, cm.CreatePreviewEnvironmentParams{
+		response, err = r.providerData.client.CreatePreviewEnvironment(ctx, &request, cm.CreatePreviewEnvironmentParams{
 			SpaceID: spaceID,
 		})
 	}
@@ -213,7 +212,7 @@ func (r *previewEnvironmentResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	data, dataDiagnostics := NewPreviewEnvironmentModelFromResponse(ctx, *previewEnvironment)
+	data, dataDiagnostics := NewPreviewEnvironmentResourceModelFromResponse(*previewEnvironment)
 	resp.Diagnostics.Append(dataDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
@@ -257,7 +256,7 @@ func (r *previewEnvironmentResource) Update(ctx context.Context, req resource.Up
 
 	defer cancel()
 
-	request, requestDiagnostics := ToPreviewEnvironmentUpdateData(ctx, path.Empty(), &state, &plan)
+	request, requestDiagnostics := plan.ToPreviewEnvironmentUpdateData(ctx, path.Empty(), &state)
 	resp.Diagnostics.Append(requestDiagnostics...)
 
 	spaceID, spaceIDDiagnostics := requestRequiredString(plan.SpaceID, path.Root("space_id"))

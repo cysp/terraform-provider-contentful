@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPreviewEnvironmentModelFromResponse(_ context.Context, previewEnvironment cm.PreviewEnvironment) (PreviewEnvironmentModel, diag.Diagnostics) {
-	model, diagnostics, _ := newPreviewEnvironmentModelFromResponse(previewEnvironment)
+func NewPreviewEnvironmentResourceModelFromResponse(previewEnvironment cm.PreviewEnvironment) (PreviewEnvironmentModel, diag.Diagnostics) {
+	model, diagnostics, _ := newPreviewEnvironmentResourceModelFromResponse(previewEnvironment)
 
 	return model, diagnostics
 }
 
-func newPreviewEnvironmentModelFromResponse(previewEnvironment cm.PreviewEnvironment) (PreviewEnvironmentModel, diag.Diagnostics, diag.Diagnostics) {
+func newPreviewEnvironmentResourceModelFromResponse(previewEnvironment cm.PreviewEnvironment) (PreviewEnvironmentModel, diag.Diagnostics, diag.Diagnostics) {
 	spaceID := previewEnvironment.Sys.Space.Sys.ID
 	previewEnvironmentID := previewEnvironment.Sys.ID
 	diagnostics := diag.Diagnostics{}
@@ -39,8 +39,6 @@ func newPreviewEnvironmentModelFromResponse(previewEnvironment cm.PreviewEnviron
 	}
 
 	configurations := make(map[string]TypedObject[PreviewEnvironmentContentTypeConfigurationValue], len(previewEnvironment.Configurations))
-
-	seenContentTypeIDs := make(map[string]struct{}, len(previewEnvironment.Configurations))
 	for index, configuration := range previewEnvironment.Configurations {
 		if !configuration.Enabled {
 			continue
@@ -55,7 +53,7 @@ func newPreviewEnvironmentModelFromResponse(previewEnvironment cm.PreviewEnviron
 		}
 
 		configurationPath := path.Root("content_type_configurations").AtMapKey(contentTypeID)
-		if _, exists := seenContentTypeIDs[contentTypeID]; exists {
+		if _, exists := configurations[contentTypeID]; exists {
 			duplicateDiagnostic := diag.NewAttributeWarningDiagnostic(
 				configurationPath,
 				"Duplicate content preview configuration response",
@@ -66,8 +64,6 @@ func newPreviewEnvironmentModelFromResponse(previewEnvironment cm.PreviewEnviron
 
 			continue
 		}
-
-		seenContentTypeIDs[contentTypeID] = struct{}{}
 
 		configurations[contentTypeID] = NewTypedObject(PreviewEnvironmentContentTypeConfigurationValue{
 			URL: types.StringValue(configuration.URL),
@@ -150,7 +146,7 @@ func ReconcilePreviewEnvironmentMutationResponse(
 	plan PreviewEnvironmentModel,
 	ownedIdentity PreviewEnvironmentIdentityModel,
 ) (PreviewEnvironmentModel, diag.Diagnostics, diag.Diagnostics) {
-	state, responseDiagnostics, configurationDiagnostics := newPreviewEnvironmentModelFromResponse(previewEnvironment)
+	state, responseDiagnostics, configurationDiagnostics := newPreviewEnvironmentResourceModelFromResponse(previewEnvironment)
 	reconciler := mutationResponseReconciler{resourceName: "content preview platform"}
 	reconciler.pinIdentity(path.Root("space_id"), ownedIdentity.SpaceID, state.SpaceID, &state.SpaceID)
 	reconciler.pinIdentity(path.Root("preview_environment_id"), ownedIdentity.PreviewEnvironmentID, state.PreviewEnvironmentID, &state.PreviewEnvironmentID)

@@ -560,7 +560,7 @@ func (s *Server) decodeCreatePersonalAccessTokenRequest(r *http.Request) (
 }
 
 func (s *Server) decodeCreatePreviewEnvironmentRequest(r *http.Request) (
-	req *PreviewEnvironmentCreateData,
+	req *PreviewEnvironmentData,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -607,7 +607,7 @@ func (s *Server) decodeCreatePreviewEnvironmentRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request PreviewEnvironmentCreateData
+		var request PreviewEnvironmentData
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err
