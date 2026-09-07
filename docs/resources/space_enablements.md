@@ -3,12 +3,12 @@
 page_title: "contentful_space_enablements Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages Contentful Space Enablements.
+  Manages Contentful Space Enablements. Destroying this resource removes it from Terraform state without disabling or resetting the remote enablements. Import the existing Space Enablements to resume management. This retention applies while the parent space exists; this resource does not manage the space lifecycle.
 ---
 
 # contentful_space_enablements (Resource)
 
-Manages Contentful Space Enablements.
+Manages Contentful Space Enablements. Destroying this resource removes it from Terraform state without disabling or resetting the remote enablements. Import the existing Space Enablements to resume management. This retention applies while the parent space exists; this resource does not manage the space lifecycle.
 
 ## Example Usage
 

@@ -3,12 +3,12 @@
 page_title: "contentful_personal_access_token Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Personal Access Token.
+  Manages a Contentful Personal Access Token. Changing name, scopes, or expires_in requires a new token; Terraform revokes the old token during replacement. Changing only timeouts preserves the existing token. Destroy revokes the token.
 ---
 
 # contentful_personal_access_token (Resource)
 
-Manages a Contentful Personal Access Token.
+Manages a Contentful Personal Access Token. Changing name, scopes, or expires_in requires a new token; Terraform revokes the old token during replacement. Changing only timeouts preserves the existing token. Destroy revokes the token.
 
 ## Example Usage
 

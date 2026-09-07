@@ -5,6 +5,7 @@ subcategory: ""
 description: |-
   Manages a Content Type's Editor Interface. Contentful creates it at version 1 on first activation. Terraform can manage that initial interface without import, including after Content Type updates earlier in the same apply through the same provider configuration. Import an existing modified interface to adopt it.
   Use the same provider configuration and a reference to the Content Type resource when changing both resources together. Version offsets are not shared across aliases. Updates use the previously observed version plus activation offsets and fail on conflict without fetching a newer version or retrying. Review a refreshed plan before applying again.
+  Destroying this resource removes it from Terraform state without deleting or resetting the remote Editor Interface. Import the existing interface to resume management. This does not prevent deletion of the parent Content Type or environment.
 ---
 
 # contentful_editor_interface (Resource)
@@ -12,6 +13,8 @@ description: |-
 Manages a Content Type's Editor Interface. Contentful creates it at version 1 on first activation. Terraform can manage that initial interface without import, including after Content Type updates earlier in the same apply through the same provider configuration. Import an existing modified interface to adopt it.
 
 Use the same provider configuration and a reference to the Content Type resource when changing both resources together. Version offsets are not shared across aliases. Updates use the previously observed version plus activation offsets and fail on conflict without fetching a newer version or retrying. Review a refreshed plan before applying again.
+
+Destroying this resource removes it from Terraform state without deleting or resetting the remote Editor Interface. Import the existing interface to resume management. This does not prevent deletion of the parent Content Type or environment.
 
 ## Example Usage
 
