@@ -1,0 +1,102 @@
+[
+  "object",
+  {
+    "environment_id": "string",
+    "extension": [
+      "object",
+      {
+        "field_types": [
+          "list",
+          [
+            "object",
+            {
+              "items": [
+                "object",
+                {
+                  "link_type": "string",
+                  "type": "string"
+                }
+              ],
+              "link_type": "string",
+              "type": "string"
+            }
+          ]
+        ],
+        "name": "string",
+        "parameters": [
+          "object",
+          {
+            "installation": [
+              "list",
+              [
+                "object",
+                {
+                  "default": "string",
+                  "description": "string",
+                  "id": "string",
+                  "labels": [
+                    "object",
+                    {
+                      "empty": "string",
+                      "false": "string",
+                      "true": "string"
+                    }
+                  ],
+                  "name": "string",
+                  "options": [
+                    "list",
+                    "string"
+                  ],
+                  "required": "bool",
+                  "type": "string"
+                }
+              ]
+            ],
+            "instance": [
+              "list",
+              [
+                "object",
+                {
+                  "default": "string",
+                  "description": "string",
+                  "id": "string",
+                  "labels": [
+                    "object",
+                    {
+                      "empty": "string",
+                      "false": "string",
+                      "true": "string"
+                    }
+                  ],
+                  "name": "string",
+                  "options": [
+                    "list",
+                    "string"
+                  ],
+                  "required": "bool",
+                  "type": "string"
+                }
+              ]
+            ]
+          }
+        ],
+        "sidebar": "bool",
+        "src": "string",
+        "srcdoc": "string"
+      }
+    ],
+    "extension_id": "string",
+    "id": "string",
+    "parameters": "string",
+    "space_id": "string",
+    "timeouts": [
+      "object",
+      {
+        "create": "string",
+        "delete": "string",
+        "read": "string",
+        "update": "string"
+      }
+    ]
+  }
+]

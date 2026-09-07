@@ -9,8 +9,7 @@ import (
 )
 
 func (r *extensionResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
-	priorSchema := ExtensionResourceSchema(ctx)
-	priorSchema.Version = 0
+	priorSchema := extensionStateSchemaV0(ctx)
 
 	return map[int64]resource.StateUpgrader{
 		0: {
@@ -21,14 +20,14 @@ func (r *extensionResource) UpgradeState(ctx context.Context) map[int64]resource
 }
 
 func upgradeExtensionStateV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	var state ExtensionModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	var prior extensionStateV0
+	resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if state.Extension == nil {
+	if prior.Extension == nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("extension"),
 			"Missing extension configuration",
@@ -38,6 +37,7 @@ func upgradeExtensionStateV0(ctx context.Context, req resource.UpgradeStateReque
 		return
 	}
 
+	state := prior.currentModel()
 	if state.Extension.Src.ValueString() == "" {
 		state.Extension.Src = types.StringNull()
 	} else if state.Extension.SrcDoc.ValueString() == "" {
