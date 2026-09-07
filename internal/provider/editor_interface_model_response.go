@@ -134,3 +134,33 @@ func ReconcileEditorInterfaceMutationResponse(ctx context.Context, editorInterfa
 
 	return state, responseDiags, reconciler.diagnostics
 }
+
+func editorInterfaceControlsEquivalent(ctx context.Context, planned, response TypedList[TypedObject[EditorInterfaceControlValue]]) (bool, diag.Diagnostics) {
+	return orderedObjectListsEquivalent(planned, response, func(planned, response EditorInterfaceControlValue) (bool, diag.Diagnostics) {
+		if !planned.FieldID.Equal(response.FieldID) || !planned.WidgetNamespace.Equal(response.WidgetNamespace) || !planned.WidgetID.Equal(response.WidgetID) {
+			return false, nil
+		}
+
+		return normalizedJSONEquivalent(ctx, planned.Settings, response.Settings)
+	})
+}
+
+func editorInterfaceGroupControlsEquivalent(ctx context.Context, planned, response TypedList[TypedObject[EditorInterfaceGroupControlValue]]) (bool, diag.Diagnostics) {
+	return orderedObjectListsEquivalent(planned, response, func(planned, response EditorInterfaceGroupControlValue) (bool, diag.Diagnostics) {
+		if !planned.GroupID.Equal(response.GroupID) || !planned.WidgetNamespace.Equal(response.WidgetNamespace) || !planned.WidgetID.Equal(response.WidgetID) {
+			return false, nil
+		}
+
+		return normalizedJSONEquivalent(ctx, planned.Settings, response.Settings)
+	})
+}
+
+func editorInterfaceSidebarEquivalent(ctx context.Context, planned, response TypedList[TypedObject[EditorInterfaceSidebarValue]]) (bool, diag.Diagnostics) {
+	return orderedObjectListsEquivalent(planned, response, func(planned, response EditorInterfaceSidebarValue) (bool, diag.Diagnostics) {
+		if !planned.WidgetNamespace.Equal(response.WidgetNamespace) || !planned.WidgetID.Equal(response.WidgetID) || !planned.Disabled.Equal(response.Disabled) {
+			return false, nil
+		}
+
+		return normalizedJSONEquivalent(ctx, planned.Settings, response.Settings)
+	})
+}
