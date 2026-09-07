@@ -63,6 +63,7 @@ func (ts *Handler) DeleteEnvironment(_ context.Context, params cm.DeleteEnvironm
 	}
 
 	ts.environments.Delete(params.SpaceID, params.EnvironmentID)
+	ts.livePreviewVariables.Delete(params.SpaceID, params.EnvironmentID)
 
 	return &cm.NoContent{}, nil
 }

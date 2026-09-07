@@ -2,6 +2,7 @@ package cmtesting
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -43,6 +44,10 @@ func errorHandler(ctx context.Context, w http.ResponseWriter, r *http.Request, e
 		return
 	}
 
+	if writeLivePreviewVariablesDecodeError(w, err) {
+		return
+	}
+
 	ogenerrors.DefaultErrorHandler(ctx, w, r, err)
 }
 
@@ -80,4 +85,40 @@ func isMissingTaxonomyDeleteVersion(r *http.Request, err error) bool {
 	var decodeParamErr *ogenerrors.DecodeParamError
 
 	return errors.As(err, &decodeParamsErr) && errors.As(err, &decodeParamErr) && decodeParamErr.Name == "X-Contentful-Version"
+}
+
+func writeLivePreviewVariablesDecodeError(w http.ResponseWriter, err error) bool {
+	params, ok := errors.AsType[*ogenerrors.DecodeParamsError](err)
+	if ok && params.OperationName() == "PutLivePreviewVariables" {
+		param, ok := errors.AsType[*ogenerrors.DecodeParamError](params)
+		if ok && param.Name == "X-Contentful-Version" {
+			_ = WriteContentfulManagementErrorResponse(w, http.StatusBadRequest, "BadRequest", new("The 'x-contentful-version' header is missing or invalid."), nil)
+
+			return true
+		}
+	}
+
+	request, ok := errors.AsType[*ogenerrors.DecodeRequestError](err)
+	if !ok || request.OperationName() != "PutLivePreviewVariables" {
+		return false
+	}
+
+	if validation, ok := errors.AsType[*validate.Error](request); ok {
+		for _, field := range validation.Fields {
+			if field.Name == "variables" && errors.Is(field.Error, validate.ErrFieldRequired) {
+				_ = WriteContentfulManagementErrorResponse(w, http.StatusUnprocessableEntity, "ValidationFailed", new("Validation error"), []byte(`{"errors":[{"name":"type","type":"Object","details":"The type of \"value\" is incorrect, expected type: Object"}]}`))
+
+				return true
+			}
+		}
+	}
+
+	body, ok := errors.AsType[*ogenerrors.DecodeBodyError](request)
+	if ok && !json.Valid(body.Body) {
+		_ = WriteContentfulManagementResponse(w, http.StatusBadRequest, json.RawMessage(`{"statusCode":400,"error":"Bad Request","message":"Invalid request payload JSON format"}`))
+
+		return true
+	}
+
+	return false
 }

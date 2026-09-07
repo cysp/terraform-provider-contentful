@@ -97,6 +97,10 @@ type DeleteExtensionRes interface {
 	deleteExtensionRes()
 }
 
+type DeleteLivePreviewVariablesRes interface {
+	deleteLivePreviewVariablesRes()
+}
+
 type DeletePreviewEnvironmentRes interface {
 	deletePreviewEnvironmentRes()
 }
@@ -197,6 +201,10 @@ type GetExtensionRes interface {
 	getExtensionRes()
 }
 
+type GetLivePreviewVariablesRes interface {
+	getLivePreviewVariablesRes()
+}
+
 type GetMarketplaceAppDefinitionsRes interface {
 	getMarketplaceAppDefinitionsRes()
 }
@@ -295,6 +303,10 @@ type PutEntryRes interface {
 
 type PutExtensionRes interface {
 	putExtensionRes()
+}
+
+type PutLivePreviewVariablesRes interface {
+	putLivePreviewVariablesRes()
 }
 
 type PutPreviewEnvironmentRes interface {

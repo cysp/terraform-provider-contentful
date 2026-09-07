@@ -1,0 +1,6 @@
+LivePreviewVariablesData:
+  type: object
+  properties:
+    variables: {}
+  required:
+    - variables
