@@ -191,6 +191,13 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
+	if plan.Value.Equal(state.Value) {
+		state.Timeouts = plan.Timeouts
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &state)...)
+
+		return
+	}
+
 	ctx = maskAppSigningSecretValues(ctx, state.Value, plan.Value)
 
 	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)

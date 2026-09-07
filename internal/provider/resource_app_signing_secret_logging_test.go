@@ -14,6 +14,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -153,6 +154,9 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 			message: "app_signing_secret.update",
 			run: func(t *testing.T, implementation *appSigningSecretResource, plan tfsdk.Plan, state tfsdk.State, identity *tfsdk.ResourceIdentity, logs *bytes.Buffer) diag.Diagnostics {
 				t.Helper()
+
+				// Import leaves value null; adopting the planned value must write.
+				require.False(t, state.SetAttribute(t.Context(), path.Root("value"), types.StringNull()).HasError())
 
 				response := resource.UpdateResponse{State: tfsdk.State(plan), Identity: identity}
 				implementation.Update(tflogtest.RootLogger(t.Context(), logs), resource.UpdateRequest{Plan: plan, State: state, Identity: identity}, &response)

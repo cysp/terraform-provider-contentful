@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-const appSigningValueDescription = "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. The complete configured value is stored in Terraform state after a successful Create or Update."
+const appSigningValueDescription = "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. The complete value is stored in Terraform state when the provider writes a secret to Contentful. Timeout-only updates preserve the remote secret and the stored value."
 
 var appSigningSecretValuePattern = regexp.MustCompile(`^[0-9a-zA-Z+/=_-]+$`)
 
@@ -68,8 +68,8 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"value": schema.StringAttribute{
-				Description:         appSigningValueDescription + " Command-line import cannot recover the existing secret and leaves value null; a later apply with value configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply.",
-				MarkdownDescription: appSigningValueDescription + " Command-line import cannot recover the existing secret and leaves `value` null; a later apply with `value` configured writes that replacement. A configuration-driven import can write the configured replacement during the import apply. See [Secrets and Terraform state](../guides/secrets-and-state) for storage, refresh, and import guidance.",
+				Description:         appSigningValueDescription + " Import cannot recover the existing secret and leaves value null. Without ignore_changes = [value], applying the configured value replaces the remote secret; a configuration-driven import can do this during the import apply. With ignore_changes = [value], the imported value remains null, including after timeout changes.",
+				MarkdownDescription: appSigningValueDescription + " Import cannot recover the existing secret and leaves `value` null. Without `ignore_changes = [value]`, applying the configured value replaces the remote secret; a configuration-driven import can do this during the import apply. With `ignore_changes = [value]`, the imported value remains null, including after timeout changes. See [Secrets and Terraform state](../guides/secrets-and-state) for storage, refresh, and import guidance.",
 				Required:            true,
 				Sensitive:           true,
 				Validators: []validator.String{
