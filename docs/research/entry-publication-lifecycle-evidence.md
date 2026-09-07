@@ -1,13 +1,20 @@
 # Entry publication lifecycle evidence
 
-Reviewed 2026-08-30. This note uses only first-party documentation, upstream
-source, and the repository's sanitized direct experiments. The repository pins
+The provider may publish only an exact draft version returned by a validated
+Create or Update. This note separates the external evidence for that boundary
+from the provider's own consistency and anomaly checks. The authoritative
+[Entry publication contract](../design/terraform-value-semantics.md#entry-publication-ownership-and-partial-field-ownership)
+records the implementation policy.
+
+Lifecycle evidence reviewed 2026-08-30; metadata evidence reviewed 2026-09-03.
+Sources are first-party documentation, upstream source, and the repository's
+sanitized direct experiments. The lifecycle review used
 `terraform-plugin-framework` v1.19.0 (commit
 [`c7ac25e`](https://github.com/hashicorp/terraform-plugin-framework/tree/c7ac25e86333d194946fb5e3fd1114e7d101fc23)).
 The reviewed Contentful JavaScript client is v12.15.0 (commit
 [`cc096a3`](https://github.com/contentful/contentful-management.js/tree/cc096a337f0e1db6114e8da645d69bb6eb90f11c)).
 
-## Conclusions
+## Findings
 
 - Contentful explicitly requires the current Entry version on full-body update
   and describes optimistic locking as rejecting a stale update. The publish
@@ -51,19 +58,15 @@ The reviewed Contentful JavaScript client is v12.15.0 (commit
 
 ## Evidence classes
 
-This note keeps the requested evidence classes separate:
+The classification in the version table distinguishes:
 
-- **C — documented guarantee:** normative Terraform or Contentful documentation.
-- **D — first-party client assumption:** behavior encoded by
-  `contentful-management.js`, which is strong compatibility evidence but not an
-  API contract.
-- **E — direct observation:** a sanitized live result or a documentation example;
-  useful for modelling normal behavior, not proof that all valid responses have
-  that shape.
-- **A/B/F — provider rationale:** respectively a safety/ownership invariant, a
-  Terraform consistency invariant, or defensive anomaly detection. These describe
-  why the provider checks something; they do not turn its Contentful premise into
-  a documented guarantee.
+- **Documentation:** normative Terraform or Contentful requirements.
+- **Client assumption:** behavior encoded by the first-party management client;
+  compatibility evidence that does not establish an API guarantee.
+- **Observation:** a sanitized live result or documentation example; evidence of
+  a normal response, not proof that every valid response has that shape.
+- **Consistency** and **anomaly detection:** reasons for provider checks. These
+  express Terraform constraints or provider defenses, not Contentful guarantees.
 
 ## Terraform lifecycle and state
 
@@ -128,7 +131,7 @@ requires the current version in `X-Contentful-Version` and says Contentful rejec
 the update if the version changed in between.
 
 The [Entry reference](https://www.contentful.com/developers/docs/references/content-management-api/entries/)
-adds these relevant guarantees:
+documents these relevant operations and behaviors:
 
 - Create requires `X-Contentful-Content-Type`, creates a draft, and applies
   Content Type field defaults only for omitted fields at creation; defaults do
@@ -139,9 +142,10 @@ adds these relevant guarantees:
   responses.
 - Publish is a separate `/published` operation; locale-based publication is a
   separate optional feature.
-- Whole-Entry unpublish is an unversioned `DELETE` of `/published`. The
-  first-party client decodes its response as an Entry but does not validate the
-  resulting version tuple.
+- Whole-Entry unpublish uses `DELETE` of `/published`. The endpoint reference
+  lists an optional version header; the first-party client omits it and decodes
+  the response as an Entry without validating the version tuple. The separate
+  [destroy evidence](entry-destroy-lifecycle.md) records direct precondition probes.
 
 The common-system-property table defines `sys.version` as the current version and
 `sys.publishedVersion` as the published version, but specifies no arithmetic
@@ -170,53 +174,36 @@ actual Contentful evidence beneath it.
 
 | Check | Primary classification | Evidence and implication |
 | --- | --- | --- |
-| Create returns draft version `1` | **E** | The current Create example and the repository's sanitized probes return `1`; no narrative contract promises the initial number, and the first-party client does not check it. The provider therefore accepts any positive, plan-consistent Create draft version. |
-| Successful full-body Update returns exactly prior version `+ 1` | **E** | The fake and direct observations exhibit this arithmetic, but optimistic locking documents only the starting fence and Contentful does not document the response increment. The provider does not require it: the direct no-retry response, identity, complete projection, and plan consistency establish provenance for its exact positive returned version. |
-| A draft mutation response has missing or older `publishedVersion` | **F** | CMA defines the fields but does not specify their arithmetic. The provider accepts an absent value or any non-negative value strictly older than the returned draft version; equal, future, negative, or unknown values are contradictory. |
-| Publish returns `publishedVersion ==` submitted draft version | **B/F** | Sending the exact draft version is the safety fence. Once that request succeeds, response equality is post-publication state validation. CMA does not promise the equality and the current generated Publish example sends version `6` but shows `publishedVersion: 9`, so that page cannot support an equality guarantee. |
-| Normal Publish returns current `version == submitted + 1` | **D** | The first-party [`isUpdated` helper](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/plain/checks.ts#L3-L11) explicitly says publishing increments version by one. This is a client assumption and matches the sanitized live observations, but is not in the CMA contract. |
-| A higher coherent current version receives special treatment | **F** | The first-party helper treats `version > publishedVersion + 1` as later unpublished changes, but no source says a Publish response may or may not already contain such a later version. The provider therefore applies no separate warning or field policy to this arithmetic. |
-| On Read, observe positive `publishedVersion >= version` | **F**, informed by **D** | This contradicts the lifecycle ordering required by exact-version recovery. The provider fails closed and cannot preserve or create publication authority from the tuple. |
-| Whole-Entry unpublish advances `version` and removes `publishedVersion` | **E** | The first-party client establishes the unversioned DELETE and Entry response shape but no arithmetic. The sanitized [unpublish probe](entry-unpublish-version.md) observed `version` advance by one from a pending draft and `publishedVersion` disappear in both the response and subsequent GET. The fake models that observed normal transition. The provider does not infer publication authority from the resulting state. |
+| Create returns draft version `1` | **Observation** | The current Create example and the repository's sanitized probes return `1`; no narrative contract promises the initial number, and the first-party client does not check it. The provider therefore accepts any positive, plan-consistent Create draft version. |
+| Successful full-body Update returns exactly prior version `+ 1` | **Observation** | The fake and direct observations exhibit this arithmetic, but optimistic locking documents only the starting fence and Contentful does not document the response increment. The provider does not require it: the direct no-retry response, identity, complete projection, and plan consistency establish provenance for its exact positive returned version. |
+| A draft mutation response has missing or older `publishedVersion` | **Anomaly detection** | CMA defines the fields but does not specify their arithmetic. The provider accepts an absent value or any non-negative value strictly older than the returned draft version; equal, future, negative, or unknown values are contradictory. |
+| Publish returns `publishedVersion ==` submitted draft version | **Consistency / anomaly detection** | Sending the exact draft version is the safety fence. Once that request succeeds, response equality is post-publication state validation. CMA does not promise the equality and the current generated Publish example sends version `6` but shows `publishedVersion: 9`, so that page cannot support an equality guarantee. |
+| Normal Publish returns current `version == submitted + 1` | **Client assumption** | The first-party [`isUpdated` helper](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/plain/checks.ts#L3-L11) explicitly says publishing increments version by one. This is a client assumption and matches the sanitized live observations, but is not in the CMA contract. |
+| A higher coherent current version receives special treatment | **Anomaly detection** | The first-party helper treats `version > publishedVersion + 1` as later unpublished changes, but no source says a Publish response may or may not already contain such a later version. The provider therefore applies no separate warning or field policy to this arithmetic. |
+| On Read, observe positive `publishedVersion >= version` | **Anomaly detection**, informed by **Client assumption** | This contradicts the lifecycle ordering required by exact-version recovery. The provider fails closed and cannot preserve or create publication authority from the tuple. |
+| Whole-Entry unpublish advances `version` and removes `publishedVersion` | **Observation** | The first-party client establishes the unversioned DELETE and Entry response shape but no arithmetic. The sanitized [unpublish probe](entry-unpublish-version.md) observed `version` advance by one from a pending draft and `publishedVersion` disappear in both the response and subsequent GET. The fake models that observed normal transition. The provider does not infer publication authority from the resulting state. |
 
 The repository's existing sanitized direct experiments in
 [Entry null and omission behavior](entry-null-and-omission.md) observed Create
 `1/absent`, first Publish `2/1`, Update `3/1`, and later Publish `4/3` (with
 additional repetitions). The
 [CMA test-server conformance note](cma-test-server-conformance.md#sanitized-direct-observations)
-records another `1 -> 2/1` publication. These are valuable **E** evidence for the
-fake's normal mode, but they do not convert exact `+1` arithmetic into a guarantee.
+records another `1 -> 2/1` publication. These observations support the fake's
+normal mode, but they do not establish an exact `+1` guarantee.
 
 ### Policy implication
 
-The primary evidence supports **strict ownership boundary, tolerant
-observation**:
+The evidence supports an exact ownership boundary without requiring a fixed
+version increment. The provider accepts a positive exact version returned by a
+validated draft mutation and confirms publication only when `publishedVersion`
+equals the submitted version and current `version` is greater. A GET can reveal
+what happened after an ambiguous response, but matching fields or a newly
+observed version cannot establish ownership of that draft.
 
-- Before Publish, require the exact version returned by a validated Create or
-  Update draft response. Never grant or replace authority from content equality,
-  prior state, or a GET that may include another actor's version.
-- Persist that exact positive version only after the complete truthful draft
-  state and optimistic-lock version are checkpointed and identity, lifecycle,
-  projection, and plan-consistency validation succeeds. An explicit or ambiguous
-  Publish failure retains only that marker for an exact later recovery.
-- Read may preserve the marker only when current `sys.version` and the complete
-  publication tuple exactly match the checkpointed draft. It clears an already
-  published marker and revokes any changed or malformed tuple. `VersionMismatch`
-  revokes immediately without a confirming GET or newer-version retry.
-- After a successful exact-version Publish request, confirm only
-  `publishedVersion == V` and current `version > V`. The normally observed
-  `V+1` receives no special treatment. A decoded contradiction checkpoints
-  representable truth and revokes authority rather than authorizing another
-  attempt.
-- A later GET may reconcile observed remote status after an ambiguous response;
-  it must not turn matching fields or a newly observed version into authority to
-  publish.
-
-Confidence is **high** that exact arithmetic is undocumented. The implemented
-policy accepts any positive exact version returned by a validated Create or
-Update response and confirms publication from exact `publishedVersion == V`
-plus positive current `version > V`. No observed increment becomes client
-policy or new authority.
+The [Entry publication contract](../design/terraform-value-semantics.md#entry-publication-ownership-and-partial-field-ownership)
+defines checkpointing, marker preservation and revocation, response consistency,
+and recovery. The [HTTP retry policy](../design/contentful-http-retry-policy.md)
+defines the no-replay boundary that preserves the returned draft's provenance.
 
 ## Metadata ordering and duplicate behavior
 
@@ -228,17 +215,16 @@ The [Entry](https://www.contentful.com/developers/docs/references/content-manage
 [Tags](https://www.contentful.com/developers/docs/references/content-management-api/tags/#tags-on-entries-and-assets),
 and [Taxonomy](https://www.contentful.com/developers/docs/references/content-management-api/taxonomy/#concepts-on-entries)
 references describe both properties as lists of links, but do not define order
-or repeated-link semantics. These are **C** sources. The first-party client
-models both as arrays in
+or repeated-link semantics. The first-party client models both as arrays in
 [`MetadataProps`](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/common-types.ts#L486-L489),
 [sends supplied metadata unchanged](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/entry.ts#L133-L155),
 and [wraps returned data](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/entities/entry.ts#L64-L68)
-without normalizing it. That is **D** evidence about the client, not a CMA
+without normalizing it. That is evidence of client behavior, not a CMA
 preservation guarantee.
 
 ### Sanitized direct observations
 
-The **E** probe used separate disposable Entries and activated Content Types for
+The probe used separate disposable Entries and activated Content Types for
 three private tags and three concepts in a disposable concept scheme. Symbols
 identify resources by creation order. For each property, the first unique
 submission created the Entry; the remaining three submissions used full-body PUT
@@ -265,35 +251,11 @@ disposable objects were removed; individual GETs returned HTTP 404 and a
 collection scan found no matching identifier prefix. No non-disposable resource
 or access-control setting was modified.
 
-A separate sanitized [whole-Entry unpublish probe](entry-unpublish-version.md)
-observed HTTP 200, an Entry response whose `version` advanced beyond the pending
-draft, and absent `publishedVersion`; a subsequent GET returned the same tuple.
-That observation is the evidence for the fake's normal unpublish transition.
+## Recovery limitation
 
-## Implementation boundaries supported by the evidence
-
-- Keep exact `X-Contentful-Version` publication fencing, using only a validated
-  draft version returned by Create or Update. Both accept any positive exact
-  returned version after response identity, projection, and plan consistency are
-  validated.
-- Record only that integer in resource private state after the complete draft
-  checkpoint. An unchanged later apply may retry only Publish of that version,
-  never the draft mutation and never a GET-derived version.
-- Model the live-observed whole-Entry unpublish response as an advanced Entry
-  version without `publishedVersion`; observing that state does not grant a later
-  operation authority to publish it.
-- Do not infer ownership from refreshed fields, import, or matching configuration.
-- Use `UseStateForUnknown` plus later resource-level invalidation to keep
-  `published_version` known for representation-only updates and unknown for real
-  draft-write-and-publication operations.
-- Model `+1` version transitions as direct-observation behavior in the
-  fake's normal mode, but name contradictory tuples as adversarial behavior.
-- Keep Entry creation-default projection independent of publication-version
-  arithmetic. Update and recovery responses retain exact field ownership.
-- Disable transparent HTTP replay, including 429, for Entry Create,
-  specified-ID Create, Update, and Publish. GET and unrelated operations retain
-  the default retry policy.
-- The public failure limitation extends beyond transport/server errors: any
-  incomplete or contradictory successful draft response, or process loss before
-  Terraform persists the returned resource state and resource private state, can
-  leave a matching unpublished draft that Terraform must not claim later.
+An incomplete or contradictory successful draft response, or process loss before
+Terraform persists both resource state and resource private state, can leave a
+matching unpublished draft. Terraform must not claim that draft later merely
+because its fields match the plan. This limitation extends beyond transport and
+server errors: publication authority depends on the validated response and
+persisted checkpoint, not on subsequently observed similarity.

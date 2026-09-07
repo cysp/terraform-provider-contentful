@@ -1,5 +1,11 @@
 # Taxonomy version behavior
 
+Taxonomy PATCH and DELETE require the resource's current version. Direct probes
+observed different errors for omitted or nonpositive versions and for stale
+versions, so tests must retain that endpoint-specific distinction. The provider's
+[optimistic-locking contract](../design/terraform-value-semantics.md#taxonomy-optimistic-version-locking)
+defines how Terraform supplies and retains the version.
+
 ## Published CMA contract
 
 Contentful's CMA references for taxonomy PATCH and DELETE endpoints document
@@ -11,7 +17,7 @@ examples:
 - [Update a concept scheme](https://www.contentful.com/developers/docs/references/content-management-api/taxonomy/update-a-concept-scheme/)
   requires the current version of the concept scheme.
 - [Delete a concept](https://www.contentful.com/developers/docs/references/content-management-api/taxonomy/delete-a-concept/)
-  describes it as the version of the concept. The page currently says "to
+  describes it as the version of the concept. The reviewed page says "to
   update," despite documenting a DELETE operation.
 - [Delete a concept scheme](https://www.contentful.com/developers/docs/references/content-management-api/taxonomy/delete-a-concept-scheme/)
   describes it as the version of the concept scheme to delete.
@@ -29,7 +35,7 @@ establish the runtime contract of the taxonomy endpoints.
 
 ## Direct CMA observations
 
-Raw CMA requests against disposable resources established the following current
+Raw CMA requests against disposable resources established the following observed
 behavior for both concepts and concept schemes. Each resource was created by a
 caller-defined ID and initially returned `sys.version: 1`. A PATCH with version
 `1` succeeded and advanced each resource to version `2`.

@@ -1,7 +1,17 @@
 # Contentful HTTP retry policy
 
-Status: current provider design. This note defines the provider HTTP layer's
-automatic retry and deadline boundaries for Contentful Management API requests.
+Read this contract when changing retries, deadlines, or mutation recovery.
+It defines the provider HTTP layer's automatic retry and deadline boundaries
+for Contentful Management API (CMA) requests. The implementation is in
+[`contentful_http_client.go`](../../internal/provider/contentful_http_client.go).
+
+| Request | Explicit 429 | Transport failure or retryable server response |
+| --- | --- | --- |
+| GET, HEAD, OPTIONS | Retry within the deadline | Retry within the deadline |
+| POST, PUT, PATCH, DELETE by default | Retry within the deadline | Return the result without replay |
+| Entry Create, specified-ID Create, Update, Publish; Content Type Create, Update, Activate | Return the first result without replay | Return the first result without replay |
+
+The response deadline and evidence limits below are part of this policy.
 
 ## Deadline budget
 
@@ -39,7 +49,7 @@ transport failure or an ordinary 5xx response. Those outcomes do not establish
 whether Contentful committed the mutation, so replay could repeat an already
 applied write.
 
-### 429 evidence boundary
+### Rate-limit evidence
 
 | Evidence | Establishes | Does not establish |
 | --- | --- | --- |
@@ -53,6 +63,8 @@ transport failures, and 5xx responses are returned after one request. The
 private request-context signal is checked before the general all-method 429
 branch and survives generated-client request construction; generated client
 code is unchanged. GET and unrelated CMA operations retain the default policy.
+
+## Backoff and final errors
 
 For a valid `X-Contentful-RateLimit-Reset` response, the reset is the earliest
 retry time. The provider waits for the reset plus 100ms and full jitter from a

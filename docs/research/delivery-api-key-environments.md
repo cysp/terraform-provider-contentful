@@ -1,5 +1,12 @@
 # Delivery API key `environments` behavior
 
+Contentful was observed to replace both omission and an empty environment list
+with `[master]`. The provider preserves the request distinction so that future
+service changes remain representable. An explicitly configured empty list can
+therefore conflict with the value Contentful returns; see the [provider contract](../design/terraform-value-semantics.md#delivery-api-key-environments).
+
+## Direct CMA observations
+
 Observed against the Contentful CMA on 2026-07-28 using temporary Delivery API
 keys:
 

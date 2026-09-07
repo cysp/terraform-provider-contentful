@@ -1,5 +1,12 @@
 # Space Enablements request values
 
+Contentful currently validates `spaceTemplates` and `crossSpaceLinks` together.
+The provider keeps its four Terraform attributes independently Optional+Computed
+and lets CMA enforce that pairing. This note records the evidence behind the
+[Space Enablements contract](../design/terraform-value-semantics.md#space-enablements).
+
+## Published evidence
+
 Contentful's [Space Enablements CMA reference](https://www.contentful.com/developers/docs/references/content-management-api/space-enablements/)
 currently says that `spaceTemplates` and `crossSpaceLinks` must be enabled or
 disabled together. The update endpoint describes the request as a map rather
@@ -7,6 +14,8 @@ than publishing a required-member schema. The provider's
 [generated request schema](../../internal/contentful-management-go/openapi/schemas/space-enablement/data.yml)
 likewise defines `crossSpaceLinks`, `spaceTemplates`, `studioExperiences`, and
 `suggestConcepts` as independent optional members.
+
+## Direct CMA observations
 
 On 2026-08-22, isolated live CMA `PUT` requests established the current server
 validation behavior. Each request used the document's current
@@ -22,7 +31,9 @@ validation behavior. Each request used the document's current
 The failed requests did not change the enablement document. A final GET verified
 that its original four-field representation was unchanged.
 
-Provider impact: current member-presence and equality checks are CMA server
+## Provider consequence
+
+current member-presence and equality checks are CMA server
 validation, not structural Terraform configuration invariants. All four
 Terraform attributes remain independently Optional+Computed. Request conversion
 sends every known Plan value, including values preserved from prior state and
