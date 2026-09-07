@@ -20,7 +20,7 @@ import (
 func TestAccAppInstallationResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
@@ -66,7 +66,7 @@ func TestAccAppInstallationResourceLifecycle(t *testing.T) {
 func TestAccAppInstallationResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
@@ -126,7 +126,7 @@ func TestAccAppInstallationResourceImport(t *testing.T) {
 func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -153,7 +153,7 @@ func TestAccAppInstallationResourceImportNotFound(t *testing.T) {
 func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -177,7 +177,7 @@ func TestAccAppInstallationResourceCreateNotFound(t *testing.T) {
 func TestAccAppInstallationResourceUpdate(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
@@ -243,7 +243,7 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 func TestAccAppInstallationResourceDeleted(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")

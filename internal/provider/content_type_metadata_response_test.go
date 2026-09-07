@@ -50,7 +50,7 @@ func TestContentTypeMetadataTaxonomyResponsePreservesUnknownLinkTypeAsKnownSenti
 func TestContentTypeMetadataTaxonomyResponseUnknownLinkTypeIsRejectedAtHTTPBoundary(t *testing.T) {
 	t.Parallel()
 
-	contentfulServer, err := cmt.NewContentfulManagementServer()
+	contentfulServer, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	contentfulServer.RegisterSpaceEnvironment("space", "environment")
 	contentfulServer.SetContentType("space", "environment", "content-type", cm.ContentTypeRequestData{

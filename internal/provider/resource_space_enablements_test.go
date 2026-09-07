@@ -34,7 +34,7 @@ var (
 func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -63,7 +63,7 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 func TestAccSpaceEnablementsResourceRejectsOneSidedCreate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 
@@ -82,7 +82,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedCreate(t *testing.T) {
 func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConverges(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 
@@ -130,7 +130,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 func TestAccSpaceEnablementsResourceRetransmitsImportedKnownValues(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.SetSpaceEnablements("space", cm.SpaceEnablementData{
 		CrossSpaceLinks: cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
@@ -332,7 +332,7 @@ func requireStoredSpaceEnablementsFields(
 func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -356,7 +356,7 @@ func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")

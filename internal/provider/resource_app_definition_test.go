@@ -22,7 +22,7 @@ import (
 func TestAccAppDefinitionResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -86,7 +86,7 @@ resource "contentful_app_definition" "test" {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			var mutationCount atomic.Int64
@@ -113,7 +113,7 @@ resource "contentful_app_definition" "test" {
 func TestAccAppDefinitionResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -158,7 +158,7 @@ func TestAccAppDefinitionResourceImport(t *testing.T) {
 func TestAccAppDefinitionResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{

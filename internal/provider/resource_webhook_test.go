@@ -53,7 +53,7 @@ func TestAccWebhookResourceTopicsValidation(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 			server.RegisterSpaceEnvironment("space", "master")
 
@@ -94,7 +94,7 @@ func (c *webhookCreateCounter) ServeHTTP(responseWriter http.ResponseWriter, req
 func TestAccWebhookResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -141,7 +141,7 @@ func TestAccWebhookResourceImport(t *testing.T) {
 func TestAccWebhookResourcePreservesImportedSecretHeadersOnUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 	server.SetWebhookDefinition("space", "imported-webhook", cm.WebhookDefinitionData{
@@ -320,7 +320,7 @@ func (r *webhookUpdateRecorder) checkEmptyHeadersRequest() resource.TestCheckFun
 func TestAccWebhookResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -350,7 +350,7 @@ func TestAccWebhookResourceImportNotFound(t *testing.T) {
 func TestAccWebhookResourceCreate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
@@ -375,7 +375,7 @@ func TestAccWebhookResourceCreate(t *testing.T) {
 func TestAccWebhookResourceUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")

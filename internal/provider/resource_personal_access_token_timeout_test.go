@@ -25,7 +25,7 @@ const testAccPersonalAccessTokenResourceAddress = "contentful_personal_access_to
 func TestAccPersonalAccessTokenResourceMockTimeoutUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	counter := &personalAccessTokenMutationCounter{handler: server}
@@ -98,7 +98,7 @@ func TestAccPersonalAccessTokenResourceMockTimeoutUpdate(t *testing.T) {
 func TestAccPersonalAccessTokenResourceMockImportedTimeoutUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(100))
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	const importedResourceName = "terraform-provider-contentful-acctest-imported-timeouts"

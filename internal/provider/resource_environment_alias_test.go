@@ -21,7 +21,7 @@ import (
 func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-id", "master")
@@ -83,7 +83,7 @@ func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-id", "master-1970-01-01")

@@ -28,7 +28,7 @@ var (
 func TestAccAppKeyResourceMockLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
@@ -70,7 +70,7 @@ func TestAccAppKeyResourceMockLifecycle(t *testing.T) {
 func TestAccAppKeyResourceMockParentReplacement(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
@@ -104,7 +104,7 @@ func TestAccAppKeyResourceMockParentReplacement(t *testing.T) {
 func TestAccAppKeyResourceMockTimeoutUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 	counter := &appKeyMutationCounter{handler: server}
@@ -161,7 +161,7 @@ func TestAccAppKeyResourceMockTimeoutUpdate(t *testing.T) {
 func TestAccAppKeyResourceMockImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
@@ -190,7 +190,7 @@ func TestAccAppKeyResourceMockImport(t *testing.T) {
 func TestAccAppKeyResourceMockExternalDeletion(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
@@ -229,7 +229,7 @@ func TestAccAppKeyResourceMockExternalDeletion(t *testing.T) {
 func TestAccAppKeyResourceMockCreateBeforeDestroyRejectsReusedKey(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
@@ -271,7 +271,7 @@ func TestAccAppKeyResourceMockInvalidJWKMaterial(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 			setTestAccAppKeyAppDefinitions(server)
 			counter := &appKeyMutationCounter{handler: server}
@@ -293,7 +293,7 @@ func TestAccAppKeyResourceMockInvalidJWKMaterial(t *testing.T) {
 func TestAccAppKeyResourceMockAcceptsFingerprintableMaterial(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
@@ -312,7 +312,7 @@ func TestAccAppKeyResourceMockAcceptsFingerprintableMaterial(t *testing.T) {
 func TestAccAppKeyResourceMockPreservesNonCanonicalBase64(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
@@ -356,7 +356,7 @@ func TestAccAppKeyResourceMockPreservesNonCanonicalBase64(t *testing.T) {
 func TestAccAppKeyResourceMockDefersUnknownJWKValidation(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 

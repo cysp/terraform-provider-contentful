@@ -15,7 +15,7 @@ import (
 func TestAccPersonalAccessTokenResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -74,7 +74,7 @@ func TestAccPersonalAccessTokenResourceLifecycle(t *testing.T) {
 func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -97,7 +97,7 @@ func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 func TestAccPersonalAccessTokenResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")

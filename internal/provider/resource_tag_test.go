@@ -20,7 +20,7 @@ import (
 func TestAccTagResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
@@ -65,7 +65,7 @@ func TestAccTagResourceImport(t *testing.T) {
 func TestAccTagResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -98,7 +98,7 @@ func TestAccTagResourceImportNotFound(t *testing.T) {
 func TestAccTagResourceCreateUpdate(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")

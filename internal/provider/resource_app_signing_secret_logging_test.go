@@ -33,7 +33,7 @@ func TestAppSigningSecretLifecycleRuntimeOutputExcludesValues(t *testing.T) {
 	initialValue := appSigningSecretLogSentinel("CREATE")
 	updatedValue := appSigningSecretLogSentinel("UPDATE")
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.SetAppDefinition("organization", "app-definition", cm.AppDefinitionData{Name: "App"})
 
