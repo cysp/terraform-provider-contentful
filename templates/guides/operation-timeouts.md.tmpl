@@ -27,16 +27,7 @@ Refer to each resource's schema for supported operations and to Terraform's [res
 
 The [`contentful_environment` resource](../resources/environment) returns after Contentful accepts the creation request. Copying can still be in progress. Use [`contentful_environment_status_ready`](../data-sources/environment_status_ready) to wait before creating dependent resources or repointing an alias. Increase the data source's `timeouts.read` for a longer readiness wait:
 
-```terraform
-data "contentful_environment_status_ready" "example" {
-  space_id       = "your-space-id"
-  environment_id = "staging-yyyy-mm-dd"
-
-  timeouts = {
-    read = "15m"
-  }
-}
-```
+{{ tffile "examples/data-sources/contentful_environment_status_ready/data-source.tf" }}
 
 The data source checks immediately, then polls on a 15-second interval until Contentful reports `ready`. A `failed` status ends the wait with an error. Increasing the environment resource's `timeouts.create` does not extend this separate wait.
 

@@ -14,17 +14,7 @@ If you already know an object's ID, use the Import section on its resource page.
 
 With the [provider configured](../index), save this example as `query.tfquery.hcl`. Replace `SPACE_ID` with your existing space ID. It finds Entries of the `blogPost` Content Type in the `master` environment:
 
-```terraform
-list "contentful_entry" "blog_posts" {
-  provider = contentful
-
-  config {
-    space_id       = "SPACE_ID"
-    environment_id = "master"
-    content_type   = "blogPost"
-  }
-}
-```
+{{ tffile "examples/guides/resource-discovery/query.tfquery.hcl" }}
 
 For Content Types, use `list "contentful_content_type"` with the same space and environment arguments. The Entry list resource also accepts Contentful filters through `query` and ordering through `order`; see its schema for those arguments. The provider handles CMA pagination, while Terraform's list `limit` controls the maximum number of results.
 
