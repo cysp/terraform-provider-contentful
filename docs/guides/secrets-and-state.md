@@ -12,9 +12,11 @@ Refresh and import depend on what Contentful returns, so these resources have di
 
 ## App signing secrets
 
-[`contentful_app_signing_secret`](../resources/app_signing_secret) stores the complete configured `value` in Terraform state after a successful Create or Update. Contentful returns only a redacted representation during later reads, so refresh preserves the previously managed value and cannot detect a replacement made outside Terraform.
+Whenever [`contentful_app_signing_secret`](../resources/app_signing_secret) writes a secret to Contentful, it stores the complete configured `value` in Terraform state. Contentful returns only a redacted representation during reads, so refresh preserves the stored value and cannot detect a secret rotated outside Terraform.
 
-A command-line import cannot recover the existing signing secret and leaves `value` null. A subsequent apply with `value` configured writes that configured replacement. A configuration-driven import can write the configured replacement during the import apply.
+Adding, changing, or removing `timeouts` leaves the remote secret unchanged, including an external rotation. To rotate the secret through Terraform, change `value` and apply. With `ignore_changes = [value]`, configuration changes to `value` do not rotate an existing secret.
+
+Import cannot recover the complete secret and leaves `value` null. Without `ignore_changes = [value]`, applying the configured value replaces the remote secret; a configuration-driven import can do this during the import apply. With that lifecycle setting, the imported value remains null, including after timeout changes.
 
 ## Webhook credentials and secret headers
 

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -316,6 +317,11 @@ func TestUpdateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 			},
 			resourceSchema: AppSigningSecretResourceSchema(ctx),
 			update: func(client *cm.Client, request resource.UpdateRequest, response *resource.UpdateResponse) {
+				// Prior state contains a known secret; the unknown plan must be
+				// rejected as a mutation rather than treated as an unchanged value.
+				stateDiags := request.State.SetAttribute(ctx, path.Root("value"), types.StringValue("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"))
+				require.False(t, stateDiags.HasError(), stateDiags.Errors())
+
 				implementation := appSigningSecretResource{providerData: ContentfulProviderData{client: client}}
 				implementation.Update(ctx, request, response)
 			},
