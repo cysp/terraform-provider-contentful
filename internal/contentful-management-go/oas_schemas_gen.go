@@ -5409,6 +5409,224 @@ func (s *GetMarketplaceAppDefinitionsOKSysType) UnmarshalText(data []byte) error
 	}
 }
 
+// Merged schema.
+// Ref: #/LivePreviewVariables
+type LivePreviewVariables struct {
+	Sys       LivePreviewVariablesSys `json:"sys"`
+	Variables jx.Raw                  `json:"variables"`
+}
+
+// GetSys returns the value of Sys.
+func (s *LivePreviewVariables) GetSys() LivePreviewVariablesSys {
+	return s.Sys
+}
+
+// GetVariables returns the value of Variables.
+func (s *LivePreviewVariables) GetVariables() jx.Raw {
+	return s.Variables
+}
+
+// SetSys sets the value of Sys.
+func (s *LivePreviewVariables) SetSys(val LivePreviewVariablesSys) {
+	s.Sys = val
+}
+
+// SetVariables sets the value of Variables.
+func (s *LivePreviewVariables) SetVariables(val jx.Raw) {
+	s.Variables = val
+}
+
+func (*LivePreviewVariables) getLivePreviewVariablesRes() {}
+func (*LivePreviewVariables) putLivePreviewVariablesRes() {}
+
+// Ref: #/LivePreviewVariablesData
+type LivePreviewVariablesData struct {
+	Variables jx.Raw `json:"variables"`
+}
+
+// GetVariables returns the value of Variables.
+func (s *LivePreviewVariablesData) GetVariables() jx.Raw {
+	return s.Variables
+}
+
+// SetVariables sets the value of Variables.
+func (s *LivePreviewVariablesData) SetVariables(val jx.Raw) {
+	s.Variables = val
+}
+
+// Ref: #/LivePreviewVariablesError
+// LivePreviewVariablesError represents sum type.
+type LivePreviewVariablesError struct {
+	// Type selects the active sum variant, switch on this field.
+	Type                             LivePreviewVariablesErrorType
+	Error                            Error
+	LivePreviewVariablesServiceError LivePreviewVariablesServiceError
+}
+
+// LivePreviewVariablesErrorType is oneOf type of LivePreviewVariablesError.
+type LivePreviewVariablesErrorType string
+
+// Possible values for LivePreviewVariablesErrorType.
+const (
+	ErrorLivePreviewVariablesError                            LivePreviewVariablesErrorType = "Error"
+	LivePreviewVariablesServiceErrorLivePreviewVariablesError LivePreviewVariablesErrorType = "LivePreviewVariablesServiceError"
+)
+
+// IsError reports whether LivePreviewVariablesError is Error.
+func (s LivePreviewVariablesError) IsError() bool { return s.Type == ErrorLivePreviewVariablesError }
+
+// IsLivePreviewVariablesServiceError reports whether LivePreviewVariablesError is LivePreviewVariablesServiceError.
+func (s LivePreviewVariablesError) IsLivePreviewVariablesServiceError() bool {
+	return s.Type == LivePreviewVariablesServiceErrorLivePreviewVariablesError
+}
+
+// SetError sets LivePreviewVariablesError to Error.
+func (s *LivePreviewVariablesError) SetError(v Error) {
+	s.Type = ErrorLivePreviewVariablesError
+	s.Error = v
+}
+
+// GetError returns Error and true boolean if LivePreviewVariablesError is Error.
+func (s LivePreviewVariablesError) GetError() (v Error, ok bool) {
+	if !s.IsError() {
+		return v, false
+	}
+	return s.Error, true
+}
+
+// NewErrorLivePreviewVariablesError returns new LivePreviewVariablesError from Error.
+func NewErrorLivePreviewVariablesError(v Error) LivePreviewVariablesError {
+	var s LivePreviewVariablesError
+	s.SetError(v)
+	return s
+}
+
+// SetLivePreviewVariablesServiceError sets LivePreviewVariablesError to LivePreviewVariablesServiceError.
+func (s *LivePreviewVariablesError) SetLivePreviewVariablesServiceError(v LivePreviewVariablesServiceError) {
+	s.Type = LivePreviewVariablesServiceErrorLivePreviewVariablesError
+	s.LivePreviewVariablesServiceError = v
+}
+
+// GetLivePreviewVariablesServiceError returns LivePreviewVariablesServiceError and true boolean if LivePreviewVariablesError is LivePreviewVariablesServiceError.
+func (s LivePreviewVariablesError) GetLivePreviewVariablesServiceError() (v LivePreviewVariablesServiceError, ok bool) {
+	if !s.IsLivePreviewVariablesServiceError() {
+		return v, false
+	}
+	return s.LivePreviewVariablesServiceError, true
+}
+
+// NewLivePreviewVariablesServiceErrorLivePreviewVariablesError returns new LivePreviewVariablesError from LivePreviewVariablesServiceError.
+func NewLivePreviewVariablesServiceErrorLivePreviewVariablesError(v LivePreviewVariablesServiceError) LivePreviewVariablesError {
+	var s LivePreviewVariablesError
+	s.SetLivePreviewVariablesServiceError(v)
+	return s
+}
+
+// LivePreviewVariablesErrorStatusCode wraps LivePreviewVariablesError with StatusCode.
+type LivePreviewVariablesErrorStatusCode struct {
+	StatusCode int
+	Response   LivePreviewVariablesError
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *LivePreviewVariablesErrorStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *LivePreviewVariablesErrorStatusCode) GetResponse() LivePreviewVariablesError {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *LivePreviewVariablesErrorStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *LivePreviewVariablesErrorStatusCode) SetResponse(val LivePreviewVariablesError) {
+	s.Response = val
+}
+
+func (*LivePreviewVariablesErrorStatusCode) deleteLivePreviewVariablesRes() {}
+func (*LivePreviewVariablesErrorStatusCode) getLivePreviewVariablesRes()    {}
+func (*LivePreviewVariablesErrorStatusCode) putLivePreviewVariablesRes()    {}
+
+// Ref: #/LivePreviewVariablesServiceError
+type LivePreviewVariablesServiceError struct {
+	StatusCode int    `json:"statusCode"`
+	Error      string `json:"error"`
+	Message    string `json:"message"`
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *LivePreviewVariablesServiceError) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetError returns the value of Error.
+func (s *LivePreviewVariablesServiceError) GetError() string {
+	return s.Error
+}
+
+// GetMessage returns the value of Message.
+func (s *LivePreviewVariablesServiceError) GetMessage() string {
+	return s.Message
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *LivePreviewVariablesServiceError) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetError sets the value of Error.
+func (s *LivePreviewVariablesServiceError) SetError(val string) {
+	s.Error = val
+}
+
+// SetMessage sets the value of Message.
+func (s *LivePreviewVariablesServiceError) SetMessage(val string) {
+	s.Message = val
+}
+
+// Merged schema.
+// Ref: #/LivePreviewVariablesSys
+type LivePreviewVariablesSys struct {
+	Space       SpaceLink       `json:"space"`
+	Environment EnvironmentLink `json:"environment"`
+	Version     int             `json:"version"`
+}
+
+// GetSpace returns the value of Space.
+func (s *LivePreviewVariablesSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *LivePreviewVariablesSys) GetEnvironment() EnvironmentLink {
+	return s.Environment
+}
+
+// GetVersion returns the value of Version.
+func (s *LivePreviewVariablesSys) GetVersion() int {
+	return s.Version
+}
+
+// SetSpace sets the value of Space.
+func (s *LivePreviewVariablesSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *LivePreviewVariablesSys) SetEnvironment(val EnvironmentLink) {
+	s.Environment = val
+}
+
+// SetVersion sets the value of Version.
+func (s *LivePreviewVariablesSys) SetVersion(val int) {
+	s.Version = val
+}
+
 // Ref: #/LocalizedString
 type LocalizedString map[string]string
 
@@ -5492,6 +5710,7 @@ func (*NoContent) deleteEntryRes()                 {}
 func (*NoContent) deleteEnvironmentAliasRes()      {}
 func (*NoContent) deleteEnvironmentRes()           {}
 func (*NoContent) deleteExtensionRes()             {}
+func (*NoContent) deleteLivePreviewVariablesRes()  {}
 func (*NoContent) deletePreviewEnvironmentRes()    {}
 func (*NoContent) deleteResourceProviderRes()      {}
 func (*NoContent) deleteResourceTypeRes()          {}

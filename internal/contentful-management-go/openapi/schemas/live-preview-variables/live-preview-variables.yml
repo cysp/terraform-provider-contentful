@@ -1,0 +1,9 @@
+LivePreviewVariables:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/LivePreviewVariablesSys"
+      required:
+        - sys
+    - $ref: "./data.yml#/LivePreviewVariablesData"

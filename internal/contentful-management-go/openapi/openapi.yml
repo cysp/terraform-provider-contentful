@@ -1097,6 +1097,62 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/live_preview/variables:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+    get:
+      operationId: getLivePreviewVariables
+      summary: Get live preview variables
+      responses:
+        200:
+          description: Live preview variables
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/live-preview-variables/live-preview-variables.yml#/LivePreviewVariables"
+        default:
+          description: A live preview variables error
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/live-preview-variables/error.yml#/LivePreviewVariablesError"
+    put:
+      operationId: putLivePreviewVariables
+      summary: Replace live preview variables
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version-required"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/live-preview-variables/data.yml#/LivePreviewVariablesData"
+      responses:
+        200:
+          description: Live preview variables
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/live-preview-variables/live-preview-variables.yml#/LivePreviewVariables"
+        default:
+          description: A live preview variables error
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/live-preview-variables/error.yml#/LivePreviewVariablesError"
+    delete:
+      operationId: deleteLivePreviewVariables
+      summary: Delete live preview variables
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        default:
+          description: A live preview variables error
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/live-preview-variables/error.yml#/LivePreviewVariablesError"
   /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}:
     parameters:
       - $ref: "#/components/parameters/space_id"

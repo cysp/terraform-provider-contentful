@@ -152,6 +152,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	DeleteExtension(ctx context.Context, params DeleteExtensionParams) (DeleteExtensionRes, error)
+	// DeleteLivePreviewVariables implements deleteLivePreviewVariables operation.
+	//
+	// Delete live preview variables.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}/live_preview/variables
+	DeleteLivePreviewVariables(ctx context.Context, params DeleteLivePreviewVariablesParams) (DeleteLivePreviewVariablesRes, error)
 	// DeletePreviewEnvironment implements deletePreviewEnvironment operation.
 	//
 	// Delete a content preview platform.
@@ -302,6 +308,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	GetExtension(ctx context.Context, params GetExtensionParams) (GetExtensionRes, error)
+	// GetLivePreviewVariables implements getLivePreviewVariables operation.
+	//
+	// Get live preview variables.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/live_preview/variables
+	GetLivePreviewVariables(ctx context.Context, params GetLivePreviewVariablesParams) (GetLivePreviewVariablesRes, error)
 	// GetMarketplaceAppDefinitions implements getMarketplaceAppDefinitions operation.
 	//
 	// Get marketplace app definitions.
@@ -452,6 +464,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}
 	PutExtension(ctx context.Context, req *ExtensionData, params PutExtensionParams) (PutExtensionRes, error)
+	// PutLivePreviewVariables implements putLivePreviewVariables operation.
+	//
+	// Replace live preview variables.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/live_preview/variables
+	PutLivePreviewVariables(ctx context.Context, req *LivePreviewVariablesData, params PutLivePreviewVariablesParams) (PutLivePreviewVariablesRes, error)
 	// PutPreviewEnvironment implements putPreviewEnvironment operation.
 	//
 	// Create or update a content preview platform with a selected ID.

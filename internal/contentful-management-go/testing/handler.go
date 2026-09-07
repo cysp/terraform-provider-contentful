@@ -37,6 +37,8 @@ type Handler struct {
 
 	appInstallations cm.SpaceEnvironmentMap[*cm.AppInstallation]
 
+	livePreviewVariables cm.SpaceMap[*cm.LivePreviewVariables]
+
 	contentTypes            cm.SpaceEnvironmentMap[*cm.ContentType]
 	contentTypePublications cm.SpaceEnvironmentMap[*contentTypePublicationSnapshot]
 	editorInterfaces        cm.SpaceEnvironmentMap[*cm.EditorInterface]
@@ -78,6 +80,7 @@ func NewHandler() *Handler {
 		appDefinitionResourceTypes:     make(map[string]*cm.ResourceType),
 		appSigningSecrets:              make(map[string]*cm.AppSigningSecret),
 		appInstallations:               cm.NewSpaceEnvironmentMap[*cm.AppInstallation](),
+		livePreviewVariables:           cm.NewSpaceMap[*cm.LivePreviewVariables](),
 		contentTypes:                   cm.NewSpaceEnvironmentMap[*cm.ContentType](),
 		contentTypePublications:        cm.NewSpaceEnvironmentMap[*contentTypePublicationSnapshot](),
 		editorInterfaces:               cm.NewSpaceEnvironmentMap[*cm.EditorInterface](),

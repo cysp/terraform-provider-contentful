@@ -1,0 +1,5 @@
+LivePreviewVariablesSys:
+  allOf:
+    - $ref: "../sys/with-space.yml"
+    - $ref: "../sys/with-environment.yml"
+    - $ref: "../sys/with-version.yml"

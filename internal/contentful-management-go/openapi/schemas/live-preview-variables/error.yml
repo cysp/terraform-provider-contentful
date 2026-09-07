@@ -1,0 +1,17 @@
+LivePreviewVariablesError:
+  oneOf:
+    - $ref: "../error/error.yml#/Error"
+    - $ref: "#/LivePreviewVariablesServiceError"
+LivePreviewVariablesServiceError:
+  type: object
+  properties:
+    statusCode:
+      type: integer
+    error:
+      type: string
+    message:
+      type: string
+  required:
+    - statusCode
+    - error
+    - message
