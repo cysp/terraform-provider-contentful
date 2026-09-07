@@ -27,6 +27,8 @@ Creating an Entry, or changing its `fields` or `metadata` through Terraform, wri
 
 See [Operation timeouts](../guides/operation-timeouts) for the default operation budgets and deadline precedence that apply to these lifecycle operations.
 
+Routine provider logs for Entry operations omit request and response payloads. Contentful error diagnostics can still contain Entry content, even when its Terraform expression is sensitive. Review diagnostics before sharing them. See [Secrets and Terraform state](../guides/secrets-and-state) for storage and redaction behavior.
+
 ### Drift and field ownership
 
 - An external unpublish is preserved as observed state: `published_version` becomes null, and Terraform does not republish solely to restore the previous publication. A later provider-managed `fields` or `metadata` change writes and publishes a new draft normally.

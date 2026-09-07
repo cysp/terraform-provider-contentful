@@ -218,11 +218,7 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	getEntryResponse, err := r.providerData.client.GetEntry(ctx, getEntryParams)
 
-	tflog.Info(ctx, "entry.read", map[string]any{
-		"params":   getEntryParams,
-		"response": getEntryResponse,
-		"err":      err,
-	})
+	tflog.Info(ctx, "entry.read", entryOperationLogFields(getEntryParams, getEntryResponse, err))
 
 	version := 0
 
@@ -435,12 +431,7 @@ func (r *entryResource) createEntry(ctx context.Context, entry EntryModel, diags
 		withContentfulRequestNoRetry(ctx), &createEntryRequest, createEntryParams,
 	)
 
-	tflog.Info(ctx, "entry.create", map[string]any{
-		"params":   createEntryParams,
-		"request":  createEntryRequest,
-		"response": createEntryResponse,
-		"err":      err,
-	})
+	tflog.Info(ctx, "entry.create", entryOperationLogFields(createEntryParams, createEntryResponse, err))
 
 	version := 0
 
@@ -478,12 +469,7 @@ func (r *entryResource) createEntryWithID(ctx context.Context, entry EntryModel,
 		withContentfulRequestNoRetry(ctx), &putEntryRequest, putEntryParams,
 	)
 
-	tflog.Info(ctx, "entry.create", map[string]any{
-		"params":   putEntryParams,
-		"request":  putEntryRequest,
-		"response": putEntryResponse,
-		"err":      err,
-	})
+	tflog.Info(ctx, "entry.create", entryOperationLogFields(putEntryParams, putEntryResponse, err))
 
 	version := 0
 
@@ -526,12 +512,7 @@ func (r *entryResource) updateEntry(
 		withContentfulRequestNoRetry(ctx), &putEntryRequest, putEntryParams,
 	)
 
-	tflog.Info(ctx, "entry.update", map[string]any{
-		"params":   putEntryParams,
-		"request":  putEntryRequest,
-		"response": putEntryResponse,
-		"err":      err,
-	})
+	tflog.Info(ctx, "entry.update", entryOperationLogFields(putEntryParams, putEntryResponse, err))
 
 	switch response := putEntryResponse.(type) {
 	case *cm.EntryStatusCode:
@@ -566,7 +547,7 @@ func (r *entryResource) publishAndCheckpointEntry(
 	publishEntryResponse, err := r.providerData.client.PublishEntry(
 		withContentfulRequestNoRetry(ctx), publishEntryParams,
 	)
-	tflog.Info(ctx, "entry.publish", map[string]any{"params": publishEntryParams, "response": publishEntryResponse, "err": err})
+	tflog.Info(ctx, "entry.publish", entryOperationLogFields(publishEntryParams, publishEntryResponse, err))
 
 	response, ok := publishEntryResponse.(*cm.EntryStatusCode)
 	if !ok {
@@ -634,11 +615,7 @@ func (r *entryResource) deleteEntry(ctx context.Context, entry EntryModel, diags
 
 	deleteEntryResponse, err := r.providerData.client.DeleteEntry(ctx, deleteEntryParams)
 
-	tflog.Info(ctx, "entry.delete", map[string]any{
-		"params":   deleteEntryParams,
-		"response": deleteEntryResponse,
-		"err":      err,
-	})
+	tflog.Info(ctx, "entry.delete", entryOperationLogFields(deleteEntryParams, deleteEntryResponse, err))
 
 	switch response := deleteEntryResponse.(type) {
 	case *cm.NoContent:
@@ -663,11 +640,7 @@ func (r *entryResource) unpublishEntry(ctx context.Context, entry EntryModel, di
 
 	unpublishEntryResponse, err := r.providerData.client.UnpublishEntry(ctx, unpublishEntryParams)
 
-	tflog.Info(ctx, "entry.unpublish", map[string]any{
-		"params":   unpublishEntryParams,
-		"response": unpublishEntryResponse,
-		"err":      err,
-	})
+	tflog.Info(ctx, "entry.unpublish", entryOperationLogFields(unpublishEntryParams, unpublishEntryResponse, err))
 
 	switch response := unpublishEntryResponse.(type) {
 	case *cm.NoContent:
