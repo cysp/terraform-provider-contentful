@@ -314,6 +314,11 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 
 	return []requiredPrivateVersionResourceCase{
 		{
+			name: "live preview variables update", typeName: "contentful_live_preview_variables",
+			resourceSchema: LivePreviewVariablesResourceSchema(t.Context()),
+			model:          livePreviewVariablesModel(`{}`), plannedModel: livePreviewVariablesModel(`{"updated":"value"}`),
+		},
+		{
 			name:           "content type update",
 			typeName:       "contentful_content_type",
 			resourceSchema: ContentTypeResourceSchema(t.Context()),
