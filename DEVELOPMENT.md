@@ -1,5 +1,11 @@
 # Development
 
+Use this guide to change, test, and document the provider. Start with the
+[validation scope](#validation-scope) for your change, then use the relevant
+commands: [tests](#tests), [generation](#code-generation),
+[documentation verification](#documentation-verification), or [linting](#linting).
+For release publishing, see [Provider releases](docs/releasing.md).
+
 ## Prerequisites
 
 Tool requirements come from [`go.mod`](go.mod) (Go and generators),
@@ -47,7 +53,7 @@ credentials alone do not establish that authorization.
 | Agent instructions or prose only | Review instruction consistency, links, and the final diff; run `git diff --check`. |
 | Go behavior | Run tests for the affected packages and the lint and format checks. Use `go test ./...` and `go build .` for shared behavior or when preparing for merge. |
 | Terraform planning, state, or lifecycle | Run focused mocked acceptance tests for the affected transitions in addition to the Go checks; extend coverage where existing tests do not establish the changed behavior. |
-| Schema, examples, templates, OpenAPI, or other generation inputs | Follow the [generation requirement](AGENTS.md#documentation-and-workflow) using [Code Generation](#code-generation), then follow [Documentation verification](#documentation-verification), plus checks for the affected behavior. |
+| Schema, examples, templates, OpenAPI, or other generation inputs | Follow the [generation requirement](AGENTS.md#documentation-and-workflow) using [Code generation](#code-generation), then follow [Documentation verification](#documentation-verification), plus checks for the affected behavior. |
 | A claim about live Contentful behavior | Use primary documentation or an authorized live experiment; mocked tests establish provider behavior against the fixture, not CMA conformance. |
 
 If a check cannot run, record the command and concrete blocker. Distinguish a
@@ -57,7 +63,8 @@ does not establish that remote CI passed.
 ## Documentation authoring
 
 Practitioner-facing Registry documentation is generated with
-`terraform-plugin-docs`. Change the authoritative input for the kind of
+`terraform-plugin-docs`. The [documentation practices and provider examples](docs/research/provider-documentation.md)
+record the external guidance behind this authoring workflow. Change the authoritative input for the kind of
 information being documented, then regenerate and review the rendered output:
 
 | Documentation concern | Authoritative input |
@@ -91,7 +98,7 @@ and the [design evidence boundaries](docs/design/README.md#evidence-boundaries).
 
 ## Documentation verification
 
-After regenerating with [Code Generation](#code-generation), run the pinned
+After regenerating with [Code generation](#code-generation), run the pinned
 Registry validator:
 
 ```sh
@@ -115,7 +122,7 @@ shown below, then review the changed pages for:
   later. See HashiCorp's [query workflow](https://developer.hashicorp.com/terraform/language/import/bulk)
   for the general syntax and commands.
 
-## Code Generation
+## Code generation
 
 The commands below implement the
 [generation requirement](AGENTS.md#documentation-and-workflow).
@@ -167,6 +174,8 @@ fi
 
 ## Tests
 
+### Unit and local integration tests
+
 With `TF_ACC` unset, run the normal unit and local integration test suite:
 
 ```sh
@@ -179,6 +188,8 @@ Run a focused package or test while iterating:
 go test ./internal/provider -run TestContentTypeModelRoundTrip -count=1
 ```
 
+### Mocked acceptance tests
+
 Run a focused mocked lifecycle test, then broaden to the mocked acceptance suite
 when the change requires it:
 
@@ -186,6 +197,8 @@ when the change requires it:
 TF_ACC=1 TF_ACC_MOCKED=1 go test ./internal/provider -run '^TestAccRoleResourceCreateUpdateDelete$' -count=1
 TF_ACC=1 TF_ACC_MOCKED=1 go test ./internal/provider -run '^TestAcc' -count=1 -timeout 15m
 ```
+
+### Live acceptance tests
 
 For authorized live Terraform acceptance tests, configure
 `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment. Clear `TF_ACC_MOCKED`
@@ -195,6 +208,8 @@ for the command so an inherited mock setting cannot mask a live-capable check:
 env -u TF_ACC_MOCKED TF_ACC=1 go test ./internal/provider -run '^TestAcc' -count=1 -timeout 15m
 ```
 
+### Interpreting test results
+
 All `TestAcc` tests require `TF_ACC`, including registry upgrades and tests that
 invoke Terraform directly to inspect logs and terminal output. With `TF_ACC`
 unset, the ordinary suite runs unit, provider protocol, local HTTP integration,
@@ -203,6 +218,8 @@ Table-driven acceptance parents can report PASS when all their subtests skip;
 inspect the subtest results when checking what actually executed.
 Fuzz seeds are regression examples; active fuzzing requires `-fuzz` and a bound,
 for example `go test ./internal/provider -run '^$' -fuzz '^FuzzExtensionModelRoundTrip$' -fuzztime 30s`.
+
+### Terraform binary and test isolation
 
 Install Terraform on `PATH` or set `TF_ACC_TERRAFORM_PATH` to an existing binary
 for reproducible acceptance runs. The framework can otherwise download Terraform;
@@ -214,9 +231,12 @@ Mocked acceptance tests use isolated local HTTP servers. Mock-only tests always
 use those servers; live-capable tests use them when `TF_ACC_MOCKED` is nonempty.
 Check the affected test before treating an unset `TF_ACC_MOCKED` as evidence that
 it ran live.
-The live-only App Key sibling skips in mocked mode. Live-capable harness calls
+The live-only App Key test skips in mocked mode. Live-capable harness calls
 serialize access to the shared account and quota; do not remove that serialization
 merely to speed up tests. Query tests require Terraform 1.14 and skip on 1.13.
+
+### CI coverage
+
 The [test workflow](.github/workflows/test.yml) defines the Terraform version
 matrix. CI runs the ordinary suite once, mocked acceptance tests on the two
 newest stable Terraform minors, and authorized live acceptance on the newest
