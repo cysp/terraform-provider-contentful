@@ -32,7 +32,7 @@ const (
 func TestAccAppSigningSecretResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
@@ -101,7 +101,7 @@ func TestAccAppSigningSecretResourceRejectsInvalidValueBeforeContentfulMutation(
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 			server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{Name: "Test App"})
 
@@ -136,7 +136,7 @@ resource "contentful_app_signing_secret" "test" {
 func TestAccAppSigningSecretResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -214,7 +214,7 @@ func TestAccAppSigningSecretResourceImport(t *testing.T) {
 func TestAccAppSigningSecretResourceImportBlockWritesConfiguredValue(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{

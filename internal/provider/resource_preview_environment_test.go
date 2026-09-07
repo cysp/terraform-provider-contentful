@@ -129,7 +129,7 @@ func waitForPreviewEnvironmentDeletion(ctx context.Context, t *testing.T, client
 func TestAccPreviewEnvironmentResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -241,7 +241,7 @@ func TestAccPreviewEnvironmentResourceLifecycle(t *testing.T) {
 func TestAccPreviewEnvironmentResourceSelectedID(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -303,7 +303,7 @@ func TestAccPreviewEnvironmentResourceSelectedID(t *testing.T) {
 func TestAccPreviewEnvironmentResourceRejectsEmptyContentTypeID(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -320,7 +320,7 @@ func TestAccPreviewEnvironmentResourceRejectsEmptyContentTypeID(t *testing.T) {
 func TestAccPreviewEnvironmentResourceMapOrderIsIgnored(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -346,7 +346,7 @@ func TestAccPreviewEnvironmentResourceMapOrderIsIgnored(t *testing.T) {
 func TestAccPreviewEnvironmentResourceOutOfBandDeletionRecreates(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -395,7 +395,7 @@ func TestAccPreviewEnvironmentResourceOutOfBandDeletionRecreates(t *testing.T) {
 func TestAccPreviewEnvironmentResourceStaleVersionConflict(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -513,7 +513,7 @@ func TestAccPreviewEnvironmentResourceGeneratedIDReplacement(t *testing.T) {
 		t.Run(fmt.Sprintf("create_before_destroy=%t", createBeforeDestroy), func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 			server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 

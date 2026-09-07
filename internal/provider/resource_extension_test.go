@@ -37,7 +37,7 @@ var (
 func TestAccExtensionResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
@@ -89,7 +89,7 @@ func TestAccExtensionResourceLifecycle(t *testing.T) {
 func TestAccExtensionResourceExtensionIDChangeRequiresReplacement(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "environment")
 
@@ -216,7 +216,7 @@ func testContentfulExtensionSources(
 func TestAccExtensionResourceExplicitEmptySrcdocReachesContentful(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "environment")
 
@@ -274,7 +274,7 @@ func TestAccExtensionResourceRejectsInvalidSourcesBeforeContentful(t *testing.T)
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			var requestCount atomic.Int64
@@ -337,7 +337,7 @@ func TestAccExtensionResourcePreservesImportedSourceOnUpdate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 			server.RegisterSpaceEnvironment("space", "environment")
 
@@ -463,7 +463,7 @@ func (r *extensionPutRecorder) checkLastSource(wantKey string) resource.TestChec
 func TestAccExtensionResourceResolvedDependencyValueReachesContentful(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "environment")
 

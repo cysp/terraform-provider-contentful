@@ -42,7 +42,7 @@ const contentTypeListResourceConfig = `
 func TestAccContentTypeListResourceQuery(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
@@ -155,7 +155,7 @@ func TestAccContentTypeListResourceQuery(t *testing.T) {
 func TestAccContentTypeListResourceIncludesUnpublished(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.SetContentType("0p38pssr0fi3", "master", "unpublished", cm.ContentTypeRequestData{
 		Name:         "Unpublished",
@@ -199,7 +199,7 @@ func TestAccContentTypeListResourceIncludesUnpublished(t *testing.T) {
 func TestAccContentTypeListResourceNotFoundEnvironment(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{

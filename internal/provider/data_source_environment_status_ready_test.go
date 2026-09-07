@@ -68,7 +68,7 @@ func (h *environmentStatusReadyTestHandler) StatusesServed() []string {
 func TestAccEnvironmentStatusReadyDataSourceRead(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	server.SetEnvironment("0p38pssr0fi3", "master", "ready", cm.EnvironmentData{
@@ -197,7 +197,7 @@ data "contentful_environment_status_ready" "test" {
 func TestAccEnvironmentStatusReadyDataSourceNotFound(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{

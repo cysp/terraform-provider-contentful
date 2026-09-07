@@ -129,7 +129,7 @@ func TestTaxonomyConceptSchemeUpdateConversionErrorDoesNotPatch(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	_, err = server.Handler().PutTaxonomyConceptScheme(ctx, &cm.TaxonomyConceptSchemeRequest{

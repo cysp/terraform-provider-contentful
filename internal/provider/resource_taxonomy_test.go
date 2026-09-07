@@ -37,7 +37,7 @@ const taxonomyAcceptanceOrganizationID = "2zuSjSO4A0e6GKBrhJRe2m"
 func TestAccTaxonomyResourcesLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -369,7 +369,7 @@ resource "contentful_taxonomy_concept_scheme" "test" {
 func TestAccTaxonomyResourcesRecoverFromDeletion(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -452,7 +452,7 @@ func TestAccTaxonomyResourcesRecoverFromUnexpectedResponses(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -576,7 +576,7 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			hook := &taxonomyRequestHook{next: server}
@@ -649,7 +649,7 @@ func TestAccTaxonomyResourcesRejectResponseIdentityRetargeting(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			mutator := &taxonomyResponseMutator{next: server}
@@ -717,7 +717,7 @@ func TestAccTaxonomyConceptResourcePreservesExplicitEmptyLabelMapsAgainstCanonic
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -809,7 +809,7 @@ func TestAccTaxonomyConceptResourceProjectsOutOfBandLabelLocalesByOwnership(t *t
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -869,7 +869,7 @@ func TestAccTaxonomyResourcesSurfaceVersionConflicts(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -960,7 +960,7 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			if test.prepareRemote != nil {
@@ -1025,7 +1025,7 @@ func TestAccTaxonomyResourcesAllowConcurrentDeletion(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1072,7 +1072,7 @@ func TestAccTaxonomyResourcesSurfaceReadFailures(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1123,7 +1123,7 @@ func TestAccTaxonomyResourcesDoNotGETInsideUpdate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1172,7 +1172,7 @@ func TestAccTaxonomyTaintedReplacementFetchesMissingDeleteVersion(t *testing.T) 
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
@@ -1225,7 +1225,7 @@ func TestAccTaxonomyTaintedReplacementPreservesDeleteVersionLock(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			hook := &taxonomyRequestHook{next: server}
@@ -1291,7 +1291,7 @@ func TestAccTaxonomyTaintedReplacementHandlesMissingResource(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
@@ -1342,7 +1342,7 @@ func TestAccTaxonomyResourcesUseImportedVersion(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
@@ -1423,7 +1423,7 @@ func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
@@ -1449,7 +1449,7 @@ func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
 func TestAccTaxonomyConceptResourceImportProjectsNonemptyLabelMaps(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	request := cm.TaxonomyConceptRequest{
@@ -1788,7 +1788,7 @@ func TestAccTaxonomyReadIdentityFailuresRetainPriorState(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			mutator := &taxonomyResponseMutator{next: server}
@@ -1851,7 +1851,7 @@ func TestAccTaxonomyExplicitEmptyLocalizedMapsRemainStable(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
@@ -1922,7 +1922,7 @@ func TestAccTaxonomyImportRemoteNullThenConfiguresEmptyLocalizedMap(t *testing.T
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer()
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
 			require.NoError(t, test.seed(server))
 			recorder := &taxonomyRequestBodyRecorder{next: server}

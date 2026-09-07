@@ -125,7 +125,7 @@ func TestAccExtensionResourceLifecycleLogsExcludeParameters(t *testing.T) {
 		updateSentinel = "LOG_EXTENSION_UPDATE_API_KEY_SENTINEL_644be9"
 	)
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("log-space", "log-environment")
 
@@ -166,7 +166,7 @@ func TestAccWebhookResourceLifecycleLogsAndOutputExcludeBasicPassword(t *testing
 		"LOG_WEBHOOK_BASIC_PASSWORD_UPDATE_SENTINEL_b86312",
 	}
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("log-space", "master")
 

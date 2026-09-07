@@ -20,7 +20,7 @@ import (
 func TestAccEntryListResourceQuery(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	spaceID := "0p38pssr0fi3"
@@ -155,7 +155,7 @@ func TestAccEntryListResourceQuery(t *testing.T) {
 func TestAccEntryListResourceNotFoundEnvironment(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
 	configVariables := config.Variables{
