@@ -15,20 +15,21 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages Contentful Space Enablements. Destroying this resource removes it from Terraform state without disabling or resetting the remote enablements. Import the existing Space Enablements to resume management. This retention applies while the parent space exists; this resource does not manage the space lifecycle.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Terraform resource identifier, equal to `space_id`.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "ID of the space for which enablements are configured.",
+				Description: "ID of the space for which enablements are configured. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"cross_space_links": schema.BoolAttribute{
-				Description: "Enable cross-space references to link content across multiple spaces. Contentful may reject unsupported combinations with other space enablements.",
+				Description: "Whether cross-space references are enabled. Omission retains the value returned by Contentful. Contentful may reject unsupported combinations with other space enablements.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
@@ -36,7 +37,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_templates": schema.BoolAttribute{
-				Description: "Enable the space templates feature. Contentful may reject unsupported combinations with other space enablements.",
+				Description: "Whether space templates are enabled. Omission retains the value returned by Contentful. Contentful may reject unsupported combinations with other space enablements.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
@@ -44,7 +45,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"studio_experiences": schema.BoolAttribute{
-				Description: "Enable Studio Experiences feature.",
+				Description: "Whether Studio Experiences are enabled. Omission retains the value returned by Contentful.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
@@ -52,7 +53,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"suggest_concepts": schema.BoolAttribute{
-				Description: "Enable concept suggestions feature.",
+				Description: "Whether concept suggestions are enabled. Omission retains the value returned by Contentful.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{

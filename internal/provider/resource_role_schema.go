@@ -88,7 +88,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "ID of the space where the role exists.",
+				Description: "ID of the space where the role exists. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -123,7 +123,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"policies": schema.ListNestedAttribute{
-				Description: "Policies allow or deny access to resources in fine-grained detail. For example, limit read access to only entries of a specific content type or write access to only certain parts of an entry (e.g. a specific locale).",
+				Description: "Policies that allow or deny actions on selected resources, such as Entries of a specific content type or values in a specific locale.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: RolePolicyValue{}.SchemaAttributes(ctx),
 					CustomType: NewTypedObjectUnknown[RolePolicyValue]().CustomType(ctx),
@@ -152,12 +152,12 @@ func (v RolePolicyValue) SchemaAttributes(ctx context.Context) map[string]schema
 			},
 		},
 		"constraint": schema.StringAttribute{
-			Description: "JSON constraint that defines the scope of the policy.",
+			Description: "Contentful policy constraint encoded as a JSON object with `jsonencode(...)`. Defines which resources or parts of a resource the policy applies to.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
 		"effect": schema.StringAttribute{
-			Description: "Whether the policy allows or denies the specified actions.",
+			Description: "Policy effect: `allow` or `deny` for the specified actions.",
 			Required:    true,
 		},
 	}

@@ -1,1 +1,1 @@
-terraform import contentful_personal_access_token.this abcdef
+terraform import contentful_personal_access_token.this "$CONTENTFUL_PERSONAL_ACCESS_TOKEN_ID"

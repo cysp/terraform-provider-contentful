@@ -21,14 +21,14 @@ func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"organization_id": schema.StringAttribute{
-				Description: "ID of the organization.",
+				Description: "ID of the organization. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"app_definition_id": schema.StringAttribute{
-				Description: "ID of the app definition.",
+				Description: "ID of the app definition. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -42,7 +42,7 @@ func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"resource_type_id": schema.StringAttribute{
-				Description: "ID of the resource type.",
+				Description: "ID of the resource type. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -53,23 +53,23 @@ func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"default_field_mapping": schema.SingleNestedAttribute{
-				Description: "Default field mapping configuration for the resource type.",
+				Description: "Maps external resource data to the values displayed in the Contentful web app. Use JSON-pointer templates such as `{ /title }`.",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"title": schema.StringAttribute{
-						Description: "Field path for the title.",
+						Description: "Template for the title.",
 						Required:    true,
 					},
 					"subtitle": schema.StringAttribute{
-						Description: "Field path for the subtitle.",
+						Description: "Template for the subtitle.",
 						Optional:    true,
 					},
 					"description": schema.StringAttribute{
-						Description: "Field path for the description.",
+						Description: "Template for the description.",
 						Optional:    true,
 					},
 					"external_url": schema.StringAttribute{
-						Description: "Field path for the external URL.",
+						Description: "Template for the external URL.",
 						Optional:    true,
 					},
 					"image": schema.SingleNestedAttribute{
@@ -77,11 +77,11 @@ func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"url": schema.StringAttribute{
-								Description: "Field path for the image URL.",
+								Description: "Template for the image URL.",
 								Required:    true,
 							},
 							"alt_text": schema.StringAttribute{
-								Description: "Field path for the image alt text.",
+								Description: "Template for the image alt text.",
 								Optional:    true,
 							},
 						},
@@ -91,11 +91,11 @@ func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"label": schema.StringAttribute{
-								Description: "Field path for the badge label.",
+								Description: "Template for the badge label.",
 								Required:    true,
 							},
 							"variant": schema.StringAttribute{
-								Description: "Field path for the badge variant.",
+								Description: "Template for the badge variant.",
 								Required:    true,
 							},
 						},

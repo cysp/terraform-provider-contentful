@@ -22,7 +22,7 @@ func TeamResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"organization_id": schema.StringAttribute{
-				Description: "ID of the organization that owns the team.",
+				Description: "ID of the organization that owns the team. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

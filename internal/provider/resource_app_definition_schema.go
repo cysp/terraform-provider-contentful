@@ -25,7 +25,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"organization_id": schema.StringAttribute{
-				Description: "ID of the organization that owns the app definition.",
+				Description: "ID of the organization that owns the app definition. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -43,7 +43,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"src": schema.StringAttribute{
-				Description: "Non-empty publicly available source URL of the app. Requires HTTPS with exception of localhost (for development).",
+				Description: "Public URL of the app. Must be non-empty and use HTTPS, except that Contentful accepts HTTP on localhost for development.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
@@ -54,7 +54,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"bundle_id": schema.StringAttribute{
-				Description: "Link to an AppBundle if hosted on Contentful.",
+				Description: "ID of the App Bundle when the app is hosted on Contentful.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -62,7 +62,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"locations": schema.ListNestedAttribute{
-				Description: "List of places in the web app where the app can be rendered.",
+				Description: "Locations where the app can be rendered in the Contentful web app.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"location": schema.StringAttribute{
@@ -127,7 +127,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				Description: "Definitions of configuration parameters.",
 				Attributes: map[string]schema.Attribute{
 					"installation": schema.ListNestedAttribute{
-						Description: "Installation-level parameter definitions.",
+						Description: "Parameter definitions for each app installation.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: AppDefinitionParameterSchemaAttributes(ctx),
 						},
@@ -137,7 +137,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"instance": schema.ListNestedAttribute{
-						Description: "Instance-level parameter definitions.",
+						Description: "Parameter definitions for each use of the app, such as a field editor.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: AppDefinitionParameterSchemaAttributes(ctx),
 						},
@@ -182,7 +182,7 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			Optional:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode(\"light\"), jsonencode({ dark = \"Dark theme\" })]; objects map a value to its display label.",
+			Description: "Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode(\"light\"), jsonencode(\"dark\")]. An option may be a string or an object with string values.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
@@ -191,10 +191,10 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			},
 		},
 		"labels": schema.SingleNestedAttribute{
-			Description: "Custom labels for Boolean parameter values.",
+			Description: "Display labels for Boolean values and the empty Enum selection.",
 			Attributes: map[string]schema.Attribute{
 				"empty": schema.StringAttribute{
-					Description: "Label when no value is set.",
+					Description: "Label displayed when no Enum option is selected.",
 					Optional:    true,
 				},
 				"true": schema.StringAttribute{

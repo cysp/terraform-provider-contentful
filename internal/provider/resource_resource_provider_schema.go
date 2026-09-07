@@ -21,21 +21,21 @@ func ResourceProviderResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"organization_id": schema.StringAttribute{
-				Description: "ID of the organization.",
+				Description: "ID of the organization. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"app_definition_id": schema.StringAttribute{
-				Description: "ID of the app definition for which the resource provider is created.",
+				Description: "ID of the app definition for which the resource provider is created. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"resource_provider_id": schema.StringAttribute{
-				Description: "ID of the resource provider.",
+				Description: "ID of the resource provider. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

@@ -26,10 +26,10 @@ resource "contentful_resource_provider" "this" {
 
 ### Required
 
-- `app_definition_id` (String) ID of the app definition for which the resource provider is created.
+- `app_definition_id` (String) ID of the app definition for which the resource provider is created. Changing this value replaces the resource.
 - `function_id` (String) ID of the function that provides resources.
-- `organization_id` (String) ID of the organization.
-- `resource_provider_id` (String) ID of the resource provider.
+- `organization_id` (String) ID of the organization. Changing this value replaces the resource.
+- `resource_provider_id` (String) ID of the resource provider. Changing this value replaces the resource.
 
 ### Optional
 
@@ -85,5 +85,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_resource_provider.this $CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID
+terraform import contentful_resource_provider.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID"
 ```

@@ -26,7 +26,7 @@ resource "contentful_delivery_api_key" "this" {
 ### Required
 
 - `name` (String) Human-readable name for the API key.
-- `space_id` (String) ID of the space for the API key.
+- `space_id` (String) ID of the space for the API key. Changing this value replaces the resource.
 
 ### Optional
 
@@ -87,5 +87,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_delivery_api_key.this $CONTENTFUL_SPACE_ID/abcdef
+terraform import contentful_delivery_api_key.this "$CONTENTFUL_SPACE_ID/$CONTENTFUL_API_KEY_ID"
 ```

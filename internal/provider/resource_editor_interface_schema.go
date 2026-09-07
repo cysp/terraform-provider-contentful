@@ -28,28 +28,28 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "The ID of the space this editor interface belongs to.",
+				Description: "The ID of the space this editor interface belongs to. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Description: "The ID of the environment this editor interface belongs to.",
+				Description: "The ID of the environment this editor interface belongs to. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"content_type_id": schema.StringAttribute{
-				Description: "The ID of the content type this editor interface configures.",
+				Description: "The ID of the content type this editor interface configures. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"editor_layout": schema.ListNestedAttribute{
-				Description: "Layout configuration for the editor interface, defining how fields and groups are organized.",
+				Description: "Ordered layout groups in the editor. Each top-level item is a group; each group may contain fields and one level of nested groups.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceEditorLayoutItemValue{}.SchemaAttributes(ctx),
 					CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemValue]().CustomType(ctx),
@@ -116,7 +116,7 @@ func (v EditorInterfaceControlValue) SchemaAttributes(_ context.Context) map[str
 			Optional:    true,
 		},
 		"settings": schema.StringAttribute{
-			Description: "Widget-specific settings in JSON format.",
+			Description: "Widget settings encoded as a JSON object with `jsonencode(...)`. Supported settings depend on the widget.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
@@ -218,7 +218,7 @@ func (v EditorInterfaceEditorLayoutItemGroupValue) SchemaAttributes(ctx context.
 			Required:    true,
 		},
 		"items": schema.ListNestedAttribute{
-			Description: "Items within this layout group.",
+			Description: "Ordered fields and nested groups in this layout group. Each item must configure exactly one of `field` or `group`.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: EditorInterfaceEditorLayoutItemGroupItemValue{}.SchemaAttributes(ctx),
 				CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue]().CustomType(ctx),
@@ -258,7 +258,7 @@ func (v EditorInterfaceGroupControlValue) SchemaAttributes(_ context.Context) ma
 			Optional:    true,
 		},
 		"settings": schema.StringAttribute{
-			Description: "Widget-specific settings in JSON format.",
+			Description: "Widget settings encoded as a JSON object with `jsonencode(...)`. Supported settings depend on the widget.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
@@ -276,7 +276,7 @@ func (v EditorInterfaceSidebarValue) SchemaAttributes(_ context.Context) map[str
 			Required:    true,
 		},
 		"settings": schema.StringAttribute{
-			Description: "Widget-specific settings in JSON format.",
+			Description: "Widget settings encoded as a JSON object with `jsonencode(...)`. Supported settings depend on the widget.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},

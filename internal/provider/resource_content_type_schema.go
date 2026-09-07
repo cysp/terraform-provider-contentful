@@ -31,21 +31,21 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "The ID of the space this content type belongs to.",
+				Description: "The ID of the space this content type belongs to. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Description: "The ID of the environment this content type belongs to.",
+				Description: "The ID of the environment this content type belongs to. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"content_type_id": schema.StringAttribute{
-				Description: "The unique identifier for this Content Type. Terraform creates a new Content Type with the specified ID; an existing Content Type with the same ID causes an error and is not adopted.",
+				Description: "ID to assign to the content type. An existing Content Type with the same ID must be imported before management. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -82,7 +82,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 			"metadata": schema.SingleNestedAttribute{
 				Attributes:  ContentTypeMetadataValue{}.SchemaAttributes(ctx),
 				CustomType:  NewTypedObjectNull[ContentTypeMetadataValue]().CustomType(ctx),
-				Description: `Metadata for the content type. Omitting metadata removes annotations but preserves taxonomy items. To remove taxonomy items, configure taxonomy as an empty list`,
+				Description: `Metadata for the content type. Omitting metadata removes annotations but preserves taxonomy items. To remove taxonomy items, set taxonomy to an empty list.`,
 				Optional:    true,
 				Computed:    true,
 			},
@@ -187,7 +187,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Required:    true,
 		},
 		"link_type": schema.StringAttribute{
-			Description: "For Link or Array of Links fields, specifies the type of resource being linked to (e.g., Entry, Asset).",
+			Description: "Type of resource linked by a `Link` field: `Entry` or `Asset`. For an `Array` of links, set `items.link_type` instead.",
 			Optional:    true,
 		},
 		"items": schema.SingleNestedAttribute{
@@ -206,19 +206,20 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Required:    true,
 		},
 		"disabled": schema.BoolAttribute{
-			Description: "Whether the field is disabled (not editable in the UI).",
+			Description: "Whether editing the field is disabled in the Contentful web app. Defaults to `false`.",
 			Optional:    true,
 			Computed:    true,
 			Default:     booldefault.StaticBool(false),
 		},
 		"omitted": schema.BoolAttribute{
-			Description: "Whether the field is omitted from API responses. Before removing a field while the content type is activated, set omitted to true and apply so Contentful activates that change, then remove the field in a later apply.",
+			Description: "Whether the field is omitted from Content Delivery and Preview API responses. Defaults to `false`. Before removing a field from an activated content type, set `omitted = true` and apply, then remove the field in a later apply.",
 			Optional:    true,
 			Computed:    true,
 			Default:     booldefault.StaticBool(false),
 		},
 		"required": schema.BoolAttribute{
-			Required: true,
+			Description: "Whether an Entry must have a value for this field before it can be published.",
+			Required:    true,
 		},
 		"validations": schema.ListAttribute{
 			Description: `Contentful validation rules for this field, encoded as one JSON object string per rule, for example validations = [jsonencode({ size = { min = 1 } })] for a Symbol field. Supported rules depend on the field type. Omission defaults to an empty list of rules.`,
@@ -232,7 +233,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			},
 		},
 		"allowed_resources": schema.ListNestedAttribute{
-			Description: "For Resource Link fields, defines the allowed resource types that can be linked.",
+			Description: "Allowed resources for Resource Link fields. Each item must configure exactly one of `contentful_entry` or `external`.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: ContentTypeFieldAllowedResourceItemValue{}.SchemaAttributes(ctx),
 				CustomType: NewTypedObjectNull[ContentTypeFieldAllowedResourceItemValue]().CustomType(ctx),
@@ -253,7 +254,7 @@ func (v ContentTypeMetadataTaxonomyItemConceptSchemeValue) SchemaAttributes(_ co
 			Required:    true,
 		},
 		"required": schema.BoolAttribute{
-			Description: "Whether this taxonomy concept scheme is required.",
+			Description: "Whether this taxonomy concept scheme is required. Defaults to `false`.",
 			Optional:    true,
 			Computed:    true,
 			Default:     booldefault.StaticBool(false),
@@ -268,7 +269,7 @@ func (v ContentTypeMetadataTaxonomyItemConceptValue) SchemaAttributes(_ context.
 			Required:    true,
 		},
 		"required": schema.BoolAttribute{
-			Description: "Whether this taxonomy concept is required.",
+			Description: "Whether this taxonomy concept is required. Defaults to `false`.",
 			Optional:    true,
 			Computed:    true,
 			Default:     booldefault.StaticBool(false),
@@ -325,7 +326,7 @@ func (v ContentTypeMetadataValue) SchemaAttributes(ctx context.Context) map[stri
 				CustomType: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemValue]().CustomType(ctx),
 			},
 			CustomType:  NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]]().CustomType(ctx),
-			Description: "List of taxonomy items for this content type. Each item represents a taxonomy term that may be associated with the content type.",
+			Description: "Taxonomy concepts and concept schemes associated with this content type. Each item must configure exactly one of `taxonomy_concept` or `taxonomy_concept_scheme`. Omission preserves existing taxonomy items; an empty list removes them.",
 			Optional:    true,
 			Computed:    true,
 			Validators: []validator.List{

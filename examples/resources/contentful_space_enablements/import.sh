@@ -1,1 +1,1 @@
-terraform import contentful_space_enablements.this $CONTENTFUL_SPACE_ID
+terraform import contentful_space_enablements.this "$CONTENTFUL_SPACE_ID"

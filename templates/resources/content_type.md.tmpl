@@ -21,13 +21,13 @@ description: |-
 
 ## Lifecycle behavior
 
-Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. `published_version` reflects Contentful `sys.publishedVersion`; it is observed state, not configurable activation intent.
+Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. The computed `published_version` reports Contentful `sys.publishedVersion`; setting it cannot request activation or deactivation.
 
 See [Operation timeouts](../guides/operation-timeouts) for the default operation budgets and deadline precedence that apply to these lifecycle operations.
 
 ### Drift and ignored changes
 
-Later managed updates write the complete draft, including values retained by `ignore_changes`. An ignored-only external draft is left untouched. External deactivation also remains observed state until a later provider-managed draft change creates a draft that this resource can activate.
+Managed updates write the complete draft, including values retained by `ignore_changes`. An external draft whose changes are all ignored is left untouched. Deactivating outside Terraform is reflected in state; Terraform does not reactivate until a later managed change writes a draft eligible for activation.
 
 ### Destroy
 
@@ -35,7 +35,7 @@ Destroy deactivates the Content Type before deleting it. If deactivation fails f
 
 ### Activation recovery
 
-If activation fails after the provider confirms its draft write, an unchanged later apply can activate that exact version without repeating the Content Type write.
+If activation fails after a confirmed draft write, review the Content Type and run `terraform plan` again. An unchanged later apply can activate the recorded draft version without repeating the write, provided no other editor has changed it.
 
 - Import, refresh, or matching configuration alone does not make an external draft eligible for automatic activation.
 - With normal refresh, recovery continues only while the version and publication state still match that draft. If it is already activated, no further request is sent. Changed or malformed version/publication state stops recovery without modifying the Content Type.
@@ -44,7 +44,7 @@ If activation fails after the provider confirms its draft write, an unchanged la
 
 ### Retry boundaries
 
-Content Type Create, Update, and Activate operations are not transparently replayed after 429, transport, or 5xx outcomes.
+The provider does not automatically retry Content Type creation, updates, or activation after rate limiting (HTTP 429), connection errors, or server errors (HTTP 5xx). A failed response can leave the result uncertain; inspect Contentful before retrying.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}

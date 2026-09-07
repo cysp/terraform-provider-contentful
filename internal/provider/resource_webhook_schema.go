@@ -25,7 +25,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "ID of the space containing the webhook.",
+				Description: "ID of the space containing the webhook. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -49,11 +49,11 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"url": schema.StringAttribute{
-				Description: "Preconfigured HTTP endpoint that is called when content has changed.",
+				Description: "HTTP endpoint that receives events matching the webhook topics and filters.",
 				Required:    true,
 			},
 			"topics": schema.ListAttribute{
-				Description: "List of one or more event topics to which the webhook subscribes.",
+				Description: "One or more Contentful event topics, such as `Entry.publish`, `Entry.unpublish`, or `Asset.save`.",
 				ElementType: types.StringType,
 				CustomType:  TypedList[types.String]{}.CustomType(ctx),
 				Required:    true,

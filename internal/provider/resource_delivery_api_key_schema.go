@@ -25,7 +25,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "ID of the space for the API key.",
+				Description: "ID of the space for the API key. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

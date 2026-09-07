@@ -12,14 +12,15 @@ func TeamsDataSourceSchema(ctx context.Context) schema.Schema {
 		Description: "Retrieves all Contentful Teams in an organization.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Terraform identifier for this lookup, equal to `organization_id`.",
+				Computed:    true,
 			},
 			"organization_id": schema.StringAttribute{
 				Description: "The ID of the organization.",
 				Required:    true,
 			},
 			"teams": schema.ListNestedAttribute{
-				Description: "The teams in the organization, ordered lexicographically by team_id.",
+				Description: "Teams in the organization, ordered lexicographically by `team_id`. An organization with no teams returns an empty list.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"team_id": schema.StringAttribute{

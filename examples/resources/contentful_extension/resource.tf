@@ -34,6 +34,6 @@ resource "contentful_extension" "example" {
   }
 
   parameters = jsonencode({
-    apiKey = "your-api-key-here"
+    apiKey = var.extension_api_key
   })
 }

@@ -28,10 +28,10 @@ resource "contentful_tag" "example" {
 
 ### Required
 
-- `environment_id` (String) ID of the environment containing the tag.
+- `environment_id` (String) ID of the environment containing the tag. Changing this value replaces the resource.
 - `name` (String) Name of the tag.
-- `space_id` (String) ID of the space containing the tag.
-- `tag_id` (String) ID of the tag.
+- `space_id` (String) ID of the space containing the tag. Changing this value replaces the resource.
+- `tag_id` (String) ID of the tag. Changing this value replaces the resource.
 - `visibility` (String) Tag visibility: private makes it available only through the Content Management API; public also exposes it through the Content Delivery and Preview APIs. Changing visibility requires replacement. Deleting the old Tag removes its assignments from entries and assets.
 
 ### Optional
@@ -90,5 +90,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_tag.example $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_TAG_ID
+terraform import contentful_tag.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_TAG_ID"
 ```

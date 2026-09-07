@@ -28,21 +28,21 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "ID of the space containing the extension.",
+				Description: "ID of the space containing the extension. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Description: "ID of the environment where the extension is installed.",
+				Description: "ID of the environment where the extension is installed. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"extension_id": schema.StringAttribute{
-				Description: "ID of the extension.",
+				Description: "ID of the extension. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -85,7 +85,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			},
 		},
 		"srcdoc": schema.StringAttribute{
-			Description: "String representation of the extension (e.g. inline HTML code). Cannot be configured with src; both may be omitted to preserve an imported source. Contentful accepts an explicitly empty srcdoc.",
+			Description: "Inline HTML document for the extension. Cannot be configured with `src`; both may be omitted to preserve an imported source. An empty string is accepted.",
 			Optional:    true,
 			Computed:    true,
 		},
@@ -129,8 +129,10 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			Default:     booldefault.StaticBool(false),
 		},
 		"parameters": schema.SingleNestedAttribute{
+			Description: "Parameter definitions for configuring the extension. Set installation values in the resource-level `parameters` attribute.",
 			Attributes: map[string]schema.Attribute{
 				"installation": schema.ListNestedAttribute{
+					Description: "Parameter definitions for each extension installation.",
 					NestedObject: schema.NestedAttributeObject{
 						Attributes: AppDefinitionParameterSchemaAttributes(ctx),
 					},
@@ -140,6 +142,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 					},
 				},
 				"instance": schema.ListNestedAttribute{
+					Description: "Parameter definitions for each use of the extension as a field editor.",
 					NestedObject: schema.NestedAttributeObject{
 						Attributes: AppDefinitionParameterSchemaAttributes(ctx),
 					},

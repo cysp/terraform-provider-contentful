@@ -20,37 +20,38 @@ func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful Personal Access Token. Changing name, scopes, or expires_in requires a new token; Terraform revokes the old token during replacement. Changing only timeouts preserves the existing token. Destroy revokes the token.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "System ID of the personal access token. This is distinct from the secret `token` value.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Description: "Name of the token.",
+				Description: "Name of the token. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"expires_in": schema.Int64Attribute{
-				Description: "Time-to-live (TTL) of the token expressed in seconds. If not provided, the token will not auto-expire.",
+				Description: "Time-to-live (TTL) of the token expressed in seconds. If not provided, the token will not auto-expire. Changing this value replaces the resource.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"expires_at": schema.StringAttribute{
-				Description: "Timestamp when the token expires.",
+				Description: "RFC 3339 timestamp when the token expires.",
 				CustomType:  timetypes.RFC3339Type{},
 				Computed:    true,
 			},
 			"revoked_at": schema.StringAttribute{
-				Description: "Timestamp when the token was revoked.",
+				Description: "RFC 3339 timestamp when the token was revoked.",
 				CustomType:  timetypes.RFC3339Type{},
 				Computed:    true,
 			},
 			"scopes": schema.ListAttribute{
-				Description: "Scopes used to limit a token's access. Supported scopes are 'content_management_read' (Read-only access) and 'content_management_manage' (Read and write access).",
+				Description: "Access granted to the token: `content_management_read` for read access or `content_management_manage` for read and write access. Changing this value replaces the resource.",
 				ElementType: types.StringType,
 				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Required:    true,

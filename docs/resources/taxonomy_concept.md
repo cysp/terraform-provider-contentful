@@ -34,23 +34,23 @@ resource "contentful_taxonomy_concept" "furniture" {
 
 ### Required
 
-- `concept_id` (String) Caller-defined ID of the taxonomy concept.
-- `organization_id` (String) ID of the organization that owns the taxonomy concept.
-- `pref_label` (Map of String) Localized preferred labels.
+- `concept_id` (String) ID to assign to the taxonomy concept. Must contain 1–64 ASCII letters, digits, dots, hyphens, or underscores. Changing this value replaces the resource.
+- `organization_id` (String) ID of the organization that owns the taxonomy concept. Changing this value replaces the resource.
+- `pref_label` (Map of String) Preferred labels keyed by locale code, for example `{ "en-US" = "Furniture" }`.
 
 ### Optional
 
-- `alt_labels` (Map of List of String) Localized alternative labels. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
-- `broader_concept_ids` (List of String) Ordered IDs of broader concepts. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
+- `alt_labels` (Map of List of String) Alternative labels keyed by locale code, with a list of labels for each locale. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
+- `broader_concept_ids` (List of String) Ordered IDs of broader concepts. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
 - `change_note` (Map of String) Localized change notes.
 - `definition` (Map of String) Localized definitions.
 - `editorial_note` (Map of String) Localized editorial notes.
 - `example` (Map of String) Localized examples.
-- `hidden_labels` (Map of List of String) Localized hidden labels. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
+- `hidden_labels` (Map of List of String) Hidden labels keyed by locale code, with a list of labels for each locale. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
 - `history_note` (Map of String) Localized history notes.
-- `notations` (List of String) Ordered notation values. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
+- `notations` (List of String) Ordered notation values. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
 - `note` (Map of String) Localized notes.
-- `related_concept_ids` (List of String) Ordered IDs of related concepts. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
+- `related_concept_ids` (List of String) Ordered IDs of related concepts. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
 - `scope_note` (Map of String) Localized scope notes.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `uri` (String) Optional URI identifying the concept. Empty strings are rejected by Contentful.

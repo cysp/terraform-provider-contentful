@@ -10,6 +10,6 @@ variable "content_type_id" {
   type = string
 }
 
-variable "cool_app_definition_id" {
+variable "app_definition_id" {
   type = string
 }

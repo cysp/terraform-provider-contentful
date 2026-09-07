@@ -49,7 +49,7 @@ resource "contentful_extension" "example" {
   }
 
   parameters = jsonencode({
-    apiKey = "your-api-key-here"
+    apiKey = var.extension_api_key
   })
 }
 ```
@@ -59,10 +59,10 @@ resource "contentful_extension" "example" {
 
 ### Required
 
-- `environment_id` (String) ID of the environment where the extension is installed.
+- `environment_id` (String) ID of the environment where the extension is installed. Changing this value replaces the resource.
 - `extension` (Attributes) Extension configuration. (see [below for nested schema](#nestedatt--extension))
-- `extension_id` (String) ID of the extension.
-- `space_id` (String) ID of the space containing the extension.
+- `extension_id` (String) ID of the extension. Changing this value replaces the resource.
+- `space_id` (String) ID of the space containing the extension. Changing this value replaces the resource.
 
 ### Optional
 
@@ -83,10 +83,10 @@ Required:
 
 Optional:
 
-- `parameters` (Attributes) (see [below for nested schema](#nestedatt--extension--parameters))
+- `parameters` (Attributes) Parameter definitions for configuring the extension. Set installation values in the resource-level `parameters` attribute. (see [below for nested schema](#nestedatt--extension--parameters))
 - `sidebar` (Boolean) Render the extension in the sidebar instead of replacing a field editing control. Defaults to false.
 - `src` (String) URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Cannot be configured with srcdoc; both may be omitted to preserve an imported source.
-- `srcdoc` (String) String representation of the extension (e.g. inline HTML code). Cannot be configured with src; both may be omitted to preserve an imported source. Contentful accepts an explicitly empty srcdoc.
+- `srcdoc` (String) Inline HTML document for the extension. Cannot be configured with `src`; both may be omitted to preserve an imported source. An empty string is accepted.
 
 <a id="nestedatt--extension--field_types"></a>
 ### Nested Schema for `extension.field_types`
@@ -118,8 +118,8 @@ Optional:
 
 Optional:
 
-- `installation` (Attributes List) (see [below for nested schema](#nestedatt--extension--parameters--installation))
-- `instance` (Attributes List) (see [below for nested schema](#nestedatt--extension--parameters--instance))
+- `installation` (Attributes List) Parameter definitions for each extension installation. (see [below for nested schema](#nestedatt--extension--parameters--installation))
+- `instance` (Attributes List) Parameter definitions for each use of the extension as a field editor. (see [below for nested schema](#nestedatt--extension--parameters--instance))
 
 <a id="nestedatt--extension--parameters--installation"></a>
 ### Nested Schema for `extension.parameters.installation`
@@ -134,8 +134,8 @@ Optional:
 
 - `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
-- `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
+- `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode("dark")]. An option may be a string or an object with string values.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--installation--labels"></a>
@@ -143,7 +143,7 @@ Optional:
 
 Optional:
 
-- `empty` (String) Label when no value is set.
+- `empty` (String) Label displayed when no Enum option is selected.
 - `false` (String) Label for false value.
 - `true` (String) Label for true value.
 
@@ -162,8 +162,8 @@ Optional:
 
 - `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
-- `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
+- `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode("dark")]. An option may be a string or an object with string values.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--instance--labels"></a>
@@ -171,7 +171,7 @@ Optional:
 
 Optional:
 
-- `empty` (String) Label when no value is set.
+- `empty` (String) Label displayed when no Enum option is selected.
 - `false` (String) Label for false value.
 - `true` (String) Label for true value.
 
@@ -227,5 +227,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_extension.example $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_EXTENSION_ID
+terraform import contentful_extension.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_EXTENSION_ID"
 ```

@@ -25,19 +25,19 @@ resource "contentful_personal_access_token" "this" {
 
 ### Required
 
-- `name` (String) Name of the token.
-- `scopes` (List of String) Scopes used to limit a token's access. Supported scopes are 'content_management_read' (Read-only access) and 'content_management_manage' (Read and write access).
+- `name` (String) Name of the token. Changing this value replaces the resource.
+- `scopes` (List of String) Access granted to the token: `content_management_read` for read access or `content_management_manage` for read and write access. Changing this value replaces the resource.
 
 ### Optional
 
-- `expires_in` (Number) Time-to-live (TTL) of the token expressed in seconds. If not provided, the token will not auto-expire.
+- `expires_in` (Number) Time-to-live (TTL) of the token expressed in seconds. If not provided, the token will not auto-expire. Changing this value replaces the resource.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `expires_at` (String) Timestamp when the token expires.
-- `id` (String) The ID of this resource.
-- `revoked_at` (String) Timestamp when the token was revoked.
+- `expires_at` (String) RFC 3339 timestamp when the token expires.
+- `id` (String) System ID of the personal access token. This is distinct from the secret `token` value.
+- `revoked_at` (String) RFC 3339 timestamp when the token was revoked.
 - `token` (String, Sensitive) The access token for the Content Management API. Contentful returns it only on creation; Terraform retains the known value in state during later refreshes. Import cannot recover the token and leaves this attribute null.
 
 <a id="nestedatt--timeouts"></a>
@@ -83,5 +83,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_personal_access_token.this abcdef
+terraform import contentful_personal_access_token.this "$CONTENTFUL_PERSONAL_ACCESS_TOKEN_ID"
 ```

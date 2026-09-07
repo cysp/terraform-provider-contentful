@@ -40,16 +40,16 @@ resource "contentful_taxonomy_concept_scheme" "products" {
 
 ### Required
 
-- `concept_scheme_id` (String) Caller-defined ID of the taxonomy concept scheme.
-- `organization_id` (String) ID of the organization that owns the taxonomy concept scheme.
-- `pref_label` (Map of String) Localized preferred labels.
+- `concept_scheme_id` (String) ID to assign to the taxonomy concept scheme. Must contain 1–64 ASCII letters, digits, dots, hyphens, or underscores. Changing this value replaces the resource.
+- `organization_id` (String) ID of the organization that owns the taxonomy concept scheme. Changing this value replaces the resource.
+- `pref_label` (Map of String) Preferred labels keyed by locale code, for example `{ "en-US" = "Furniture" }`.
 
 ### Optional
 
-- `concept_ids` (List of String) Ordered IDs of concepts in the scheme. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
+- `concept_ids` (List of String) Ordered IDs of concepts in the scheme. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
 - `definition` (Map of String) Localized definitions.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `top_concept_ids` (List of String) Ordered IDs of top concepts. Every top concept must also occur in concept_ids. When configured with a known value, including an explicit empty value, Terraform manages this collection; when omitted, state reflects Contentful.
+- `top_concept_ids` (List of String) Ordered IDs of top concepts. Every top concept must also occur in concept_ids. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
 - `uri` (String) Optional URI identifying the concept scheme. Empty strings are rejected by Contentful.
 
 ### Read-Only

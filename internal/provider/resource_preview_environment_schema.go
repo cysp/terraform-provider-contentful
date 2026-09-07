@@ -28,7 +28,7 @@ func PreviewEnvironmentResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "ID of the space containing the content preview platform.",
+				Description: "ID of the space containing the content preview platform. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

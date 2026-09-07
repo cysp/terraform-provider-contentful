@@ -42,7 +42,7 @@ func AppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"location": schema.StringAttribute{
-							Description: "The location where the app can be rendered.",
+							Description: "Location identifier in the Contentful web app, such as `entry-field` or `entry-sidebar`.",
 							Computed:    true,
 						},
 						"field_types": schema.ListNestedAttribute{
@@ -96,17 +96,17 @@ func AppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"parameters": schema.SingleNestedAttribute{
-				Description: "Configuration parameters for the app.",
+				Description: "Parameter definitions for configuring the app.",
 				Attributes: map[string]schema.Attribute{
 					"installation": schema.ListNestedAttribute{
-						Description: "Installation-level parameters for the app.",
+						Description: "Parameter definitions for each app installation.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: AppDefinitionParameterDataSourceSchemaAttributes(ctx),
 						},
 						Computed: true,
 					},
 					"instance": schema.ListNestedAttribute{
-						Description: "Instance-level parameters for the app.",
+						Description: "Parameter definitions for each use of the app, such as a field editor.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: AppDefinitionParameterDataSourceSchemaAttributes(ctx),
 						},
@@ -124,7 +124,8 @@ func AppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 func AppDefinitionParameterDataSourceSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Computed: true,
+			Description: "Unique identifier for the parameter.",
+			Computed:    true,
 		},
 		"type": schema.StringAttribute{
 			Description: "The type of this parameter.",
@@ -148,16 +149,16 @@ func AppDefinitionParameterDataSourceSchemaAttributes(ctx context.Context) map[s
 			Computed:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Available options for this parameter.",
+			Description: "Allowed options for an Enum parameter, each encoded as JSON. An option may be a string or an object with string values.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Computed:    true,
 		},
 		"labels": schema.SingleNestedAttribute{
-			Description: "Labels for boolean parameter values.",
+			Description: "Display labels for Boolean values and the empty Enum selection.",
 			Attributes: map[string]schema.Attribute{
 				"empty": schema.StringAttribute{
-					Description: "Label for empty value.",
+					Description: "Label displayed when no Enum option is selected.",
 					Computed:    true,
 				},
 				"true": schema.StringAttribute{

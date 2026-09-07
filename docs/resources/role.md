@@ -16,8 +16,7 @@ Manages a Contentful Role.
 resource "contentful_role" "editor" {
   space_id = var.contentful_space_id
 
-  name        = "Editor"
-  description = null
+  name = "Editor"
 
   permissions = {
     ContentDelivery    = ["all"]
@@ -58,8 +57,8 @@ resource "contentful_role" "editor" {
 
 - `name` (String) Name of the role.
 - `permissions` (Map of List of String) Map of Contentful permission names to their values. Use an empty list to disable a permission, `["read"]` for read-only access where supported, and `["manage"]` or `["all"]` for read and write access. Terraform `["all"]` is sent to Contentful as the scalar `"all"`; `"all"` must be the only value in its list.
-- `policies` (Attributes List) Policies allow or deny access to resources in fine-grained detail. For example, limit read access to only entries of a specific content type or write access to only certain parts of an entry (e.g. a specific locale). (see [below for nested schema](#nestedatt--policies))
-- `space_id` (String) ID of the space where the role exists.
+- `policies` (Attributes List) Policies that allow or deny actions on selected resources, such as Entries of a specific content type or values in a specific locale. (see [below for nested schema](#nestedatt--policies))
+- `space_id` (String) ID of the space where the role exists. Changing this value replaces the resource.
 
 ### Optional
 
@@ -77,11 +76,11 @@ resource "contentful_role" "editor" {
 Required:
 
 - `actions` (List of String) Actions that the policy allows or denies. Terraform `["all"]` sends Contentful’s scalar `"all"`, which aliases the content actions `read`, `create`, `update`, `delete`, `archive`, `unarchive`, `publish`, and `unpublish`; use `["access"]` for environment access. `"all"` must be the only action in the list.
-- `effect` (String) Whether the policy allows or denies the specified actions.
+- `effect` (String) Policy effect: `allow` or `deny` for the specified actions.
 
 Optional:
 
-- `constraint` (String) JSON constraint that defines the scope of the policy.
+- `constraint` (String) Contentful policy constraint encoded as a JSON object with `jsonencode(...)`. Defines which resources or parts of a resource the policy applies to.
 
 
 <a id="nestedatt--timeouts"></a>
@@ -130,5 +129,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_role.editor $CONTENTFUL_SPACE_ID/abcdef
+terraform import contentful_role.editor "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ROLE_ID"
 ```
