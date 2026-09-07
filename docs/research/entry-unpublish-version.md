@@ -1,5 +1,10 @@
 # Entry unpublish version behavior
 
+Whole-Entry unpublish was observed to advance `sys.version` and remove
+`sys.publishedVersion`. That transition revokes any pending authority to publish
+the earlier draft; it does not authorize publication of the newly observed
+version. The exact `+1` increment is an observation, not a provider requirement.
+
 Reviewed 2026-08-26 against Contentful's current CMA documentation, the
 first-party JavaScript management client at commit
 [`cc096a3`](https://github.com/contentful/contentful-management.js/tree/cc096a337f0e1db6114e8da645d69bb6eb90f11c),

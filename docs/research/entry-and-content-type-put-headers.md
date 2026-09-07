@@ -1,8 +1,14 @@
 # Entry and Content Type PUT header semantics
 
-This note distinguishes Contentful's documented contract, pinned JavaScript
-client behavior, and sanitized direct observations of the standard global
-Content Management API (CMA).
+Entry Create and Update share a PUT path but require different headers. The
+provider must omit `X-Contentful-Content-Type` on Update so that an Entry deleted
+after refresh is not silently recreated. A version header alone does not prevent
+creation of an absent Content Type.
+
+This note separates Contentful's documented contract, pinned JavaScript client
+behavior, and sanitized direct observations of the standard global Content
+Management API (CMA). The provider's [request-selection contract](../design/terraform-value-semantics.md#entry-specified-id-request-selection)
+uses this evidence.
 
 ## Documented contract
 

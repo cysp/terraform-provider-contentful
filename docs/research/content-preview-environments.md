@@ -1,6 +1,12 @@
 # Content preview environment CMA contract
 
-Last verified: 2026-07-17
+A preview environment manages content-type preview URLs at space level. Updates
+merge configurations by content-type identity: removal requires disabling a
+configuration, and omission leaves it unchanged. The provider exposes active
+configurations as a map and translates removals into those disable operations.
+
+Last directly verified: 2026-07-17. The dates below describe the retained evidence,
+not a guarantee that the undocumented service is unchanged.
 
 ## Status and terminology
 

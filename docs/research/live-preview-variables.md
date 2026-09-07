@@ -1,5 +1,14 @@
 # Live preview variables CMA contract
 
+Live preview variables form one document per environment. The observed PUT
+replaces the whole document and requires its version; the observed DELETE ignores
+version preconditions. The
+provider's [Live Preview variables contract](../design/terraform-value-semantics.md#live-preview-variables)
+defines request validation and mutation reconciliation against these observed
+endpoint behaviors.
+
+## Evidence and scope
+
 The [sanitized probe ledger, revision 9dbed84465f622758be08555e19a128ea461212b](https://gist.github.com/cysp/1fa4a7a837bf3220837e571ddf1499df/9dbed84465f622758be08555e19a128ea461212b)
 records 141 requests on the US API host, with writes confined to one authorized
 environment. Other environments and aliases were read only. The ledger is direct
@@ -51,7 +60,7 @@ ledger's mutation results came from direct HTTP probes.
 
 ## Mock boundaries
 
-The [CMA test-server conformance matrix](cma-test-server-conformance.md) summarizes
+The [CMA test-server conformance reference](cma-test-server-conformance.md) summarizes
 the implemented lifecycle and test coverage. Mocked tests exercise provider
 behavior against these fixture conventions:
 

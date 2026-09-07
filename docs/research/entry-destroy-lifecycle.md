@@ -1,5 +1,10 @@
 # Entry destroy lifecycle evidence
 
+Entry destroy unpublishes the whole Entry before deleting it. The observed CMA
+endpoints ignore version and ETag preconditions, so destroy cannot use those
+headers to protect against external changes. The provider's exact sequencing
+and benign-error rules are defined in the [Entry destroy contract](../design/terraform-value-semantics.md#entry-destroy-lifecycle).
+
 Evidence captured 2026-08-30 against Contentful's CMA reference, first-party
 JavaScript management client v12.15.0 commit
 [`cc096a3`](https://github.com/contentful/contentful-management.js/tree/cc096a337f0e1db6114e8da645d69bb6eb90f11c),

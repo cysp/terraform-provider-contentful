@@ -1,5 +1,13 @@
 # Entry null and omission behavior
 
+Terraform null omits a field from the request; `jsonencode(null)` sends JSON
+null. Direct CMA observations distinguish both from a localized object containing
+null: raw JSON null suppresses a creation default and is omitted from responses,
+while a localized null remains present. These distinctions inform the provider's
+[Entry field ownership contract](../design/terraform-value-semantics.md#entry-publication-ownership-and-partial-field-ownership).
+
+## Published evidence
+
 Contentful's [Entry CMA reference](https://www.contentful.com/developers/docs/references/content-management-api/entries/)
 states that empty Entry fields, and the entire `fields` member when empty, are
 omitted from responses. The official
@@ -81,10 +89,12 @@ The default was not substituted in either lifecycle. A raw field value of JSON
 null is therefore response-omitted, while a valid localized object containing
 JSON null remains ordinary response data.
 
-## Terraform boundary observation
+## Historical Terraform boundary observation
 
-The same proxy captured a `contentful_entry` Create using the exact provider
-commit above. Its effective HCL `fields` map contained:
+This observation describes the earlier provider commit identified above, not
+the current provider's reconciliation behavior. The same proxy captured a
+`contentful_entry` Create using that commit. Its effective HCL `fields` map
+contained:
 
 - `title = jsonencode(...)`;
 - `terraformNull = null`; and
@@ -98,8 +108,10 @@ empty-field omission differed from the effective Terraform plan; it
 checkpointed the response-derived draft at version `1` with no
 `publishedVersion`.
 
-Provider impact: Terraform null and encoded JSON null are distinct at the
-request boundary. Terraform null means omit the field; encoded JSON null is
+## Provider consequence
+
+Terraform null and encoded JSON null are distinct at the request boundary.
+Terraform null means omit the field; encoded JSON null is
 sent and can suppress a creation default. At the response boundary, however,
 CMA can omit a field that was sent as raw JSON null. Response reconciliation
 must account for that documented canonicalization and restore the exact planned

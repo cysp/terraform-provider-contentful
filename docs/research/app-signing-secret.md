@@ -1,9 +1,10 @@
 # App signing secret CMA contract
 
-This note records the Contentful Management API behavior that the
-`contentful_app_signing_secret` resource relies on. It focuses on observable
-request, response, and lifecycle semantics rather than internal Contentful
-implementation details.
+Contentful returns only a redacted suffix of an app signing secret. The provider
+therefore retains the configured value in Terraform state; it cannot recover an
+existing secret during import or reliably detect external rotation. This note
+records the published contract, direct observations, and resulting Terraform
+behavior for `contentful_app_signing_secret`.
 
 ## Authoritative sources
 
