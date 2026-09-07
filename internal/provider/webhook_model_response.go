@@ -137,3 +137,84 @@ func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.
 
 	return state, responseDiags, reconciler.diagnostics
 }
+
+func webhookFiltersEquivalent(planned, response TypedList[TypedObject[WebhookFilterValue]]) bool {
+	if planned.Equal(response) {
+		return true
+	}
+
+	if planned.IsNull() || planned.IsUnknown() || response.IsNull() || response.IsUnknown() {
+		return false
+	}
+
+	equivalent, _ := unorderedElementsEquivalent(planned.Elements(), response.Elements(), func(plannedElement, responseElement TypedObject[WebhookFilterValue]) (bool, diag.Diagnostics) {
+		return webhookFilterEquivalent(plannedElement, responseElement), nil
+	})
+
+	return equivalent
+}
+
+func webhookFilterEquivalent(planned, response TypedObject[WebhookFilterValue]) bool {
+	if planned.Equal(response) {
+		return true
+	}
+
+	plannedValue, plannedKnown := planned.GetValue()
+
+	responseValue, responseKnown := response.GetValue()
+	if !plannedKnown || !responseKnown {
+		return false
+	}
+
+	return webhookFilterNotEquivalent(plannedValue.Not, responseValue.Not) &&
+		plannedValue.Equals.Equal(responseValue.Equals) &&
+		webhookFilterInEquivalent(plannedValue.In, responseValue.In) &&
+		plannedValue.Regexp.Equal(responseValue.Regexp)
+}
+
+func webhookFilterNotEquivalent(planned, response TypedObject[WebhookFilterNotValue]) bool {
+	if planned.Equal(response) {
+		return true
+	}
+
+	plannedValue, plannedKnown := planned.GetValue()
+
+	responseValue, responseKnown := response.GetValue()
+	if !plannedKnown || !responseKnown {
+		return false
+	}
+
+	return plannedValue.Equals.Equal(responseValue.Equals) &&
+		webhookFilterInEquivalent(plannedValue.In, responseValue.In) &&
+		plannedValue.Regexp.Equal(responseValue.Regexp)
+}
+
+func webhookFilterInEquivalent(planned, response TypedObject[WebhookFilterInValue]) bool {
+	if planned.Equal(response) {
+		return true
+	}
+
+	plannedValue, plannedKnown := planned.GetValue()
+
+	responseValue, responseKnown := response.GetValue()
+	if !plannedKnown || !responseKnown {
+		return false
+	}
+
+	return plannedValue.Doc.Equal(responseValue.Doc) && unorderedStringListsEquivalent(plannedValue.Values, responseValue.Values)
+}
+
+func webhookTransformationEquivalent(ctx context.Context, planned, response TypedObject[WebhookTransformationValue]) (bool, diag.Diagnostics) {
+	if planned.Equal(response) {
+		return true, nil
+	}
+
+	plannedValue, plannedKnown := planned.GetValue()
+
+	responseValue, responseKnown := response.GetValue()
+	if !plannedKnown || !responseKnown || !plannedValue.Method.Equal(responseValue.Method) || !plannedValue.ContentType.Equal(responseValue.ContentType) || !plannedValue.IncludeContentLength.Equal(responseValue.IncludeContentLength) {
+		return false, nil
+	}
+
+	return normalizedJSONEquivalent(ctx, plannedValue.Body, responseValue.Body)
+}

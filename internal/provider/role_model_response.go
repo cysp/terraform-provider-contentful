@@ -94,3 +94,59 @@ func ReconcileRoleMutationResponse(ctx context.Context, role cm.Role, plan RoleM
 
 	return state, responseDiags, reconciler.diagnostics
 }
+
+func rolePermissionsEquivalent(planned, response TypedMap[TypedList[types.String]]) bool {
+	if planned.Equal(response) {
+		return true
+	}
+
+	if planned.IsNull() || planned.IsUnknown() || response.IsNull() || response.IsUnknown() {
+		return false
+	}
+
+	plannedElements := planned.Elements()
+
+	responseElements := response.Elements()
+	if len(plannedElements) != len(responseElements) {
+		return false
+	}
+
+	for name, plannedActions := range plannedElements {
+		responseActions, ok := responseElements[name]
+		if !ok || !unorderedStringListsEquivalent(plannedActions, responseActions) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func rolePoliciesEquivalent(ctx context.Context, planned, response TypedList[TypedObject[RolePolicyValue]]) (bool, diag.Diagnostics) {
+	if planned.Equal(response) {
+		return true, nil
+	}
+
+	if planned.IsNull() || planned.IsUnknown() || response.IsNull() || response.IsUnknown() {
+		return false, nil
+	}
+
+	return unorderedElementsEquivalent(planned.Elements(), response.Elements(), func(plannedElement, responseElement TypedObject[RolePolicyValue]) (bool, diag.Diagnostics) {
+		return rolePolicyEquivalent(ctx, plannedElement, responseElement)
+	})
+}
+
+func rolePolicyEquivalent(ctx context.Context, planned, response TypedObject[RolePolicyValue]) (bool, diag.Diagnostics) {
+	if planned.Equal(response) {
+		return true, nil
+	}
+
+	plannedValue, plannedKnown := planned.GetValue()
+
+	responseValue, responseKnown := response.GetValue()
+	if !plannedKnown || !responseKnown || !plannedValue.Effect.Equal(responseValue.Effect) ||
+		!unorderedStringListsEquivalent(plannedValue.Actions, responseValue.Actions) {
+		return false, nil
+	}
+
+	return normalizedJSONEquivalent(ctx, plannedValue.Constraint, responseValue.Constraint)
+}
