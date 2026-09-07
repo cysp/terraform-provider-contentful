@@ -724,6 +724,14 @@ explicit value to omission. The first-party contract and live CMA observations
 are recorded in the
 [Extension source values note](../research/extension-source-values.md).
 
+Extension state version zero is decoded with its own historical schema and
+models, including nested field types, parameter definitions, and timeouts. The
+decoder does not reuse current Extension or App Definition schema builders.
+Conversion preserves every value except the legacy unused empty source, which
+becomes null; an explicitly empty `srcdoc` remains empty. When the current state
+representation changes, update the conversion without changing the historical
+decoding contract.
+
 ### Space enablements
 
 All four Space Enablements attributes are independent Optional+Computed values.
