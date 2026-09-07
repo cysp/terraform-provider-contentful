@@ -11,7 +11,9 @@ description: |-
 
 ## Authentication
 
-Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment to authenticate with the Contentful Management API. The optional provider attributes below describe configuration overrides and precedence.
+Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment to a [Content Management API token](https://www.contentful.com/developers/docs/references/authentication/#the-content-management-api) with access to the spaces and organizations you intend to manage. Contentful Management API tokens use the permissions of their account owner.
+
+The provider reads the token from the environment when `access_token` is omitted or null. See the schema below for configuration precedence and API URL overrides. For values managed by resources, see [Secrets and Terraform state](guides/secrets-and-state).
 
 {{ if .HasExamples -}}
 ## Configuration
@@ -21,13 +23,22 @@ Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment to authenticate with
 {{ tffile . }}
 {{- end }}
 
-For general provider setup and version constraints, see Terraform's [provider requirements](https://developer.hashicorp.com/terraform/language/providers/requirements).
+Add the resources you want to manage, run `terraform init`, then review `terraform plan` before applying. Choose a provider version constraint for your configuration using Terraform's [provider requirements](https://developer.hashicorp.com/terraform/language/providers/requirements).
 {{- end }}
 
-## Guides
+## Choose a workflow
 
-- [Discover and import existing resources](guides/resource-discovery)
-- [Secrets and Terraform state](guides/secrets-and-state)
-- [Operation timeouts](guides/operation-timeouts)
+| Task | Documentation |
+| --- | --- |
+| Define a content model and manage content | [Content Types](resources/content_type) and [Entries](resources/entry) |
+| Copy an environment and wait before using it | [Environments](resources/environment) and [readiness data source](data-sources/environment_status_ready) |
+| Configure content preview | [Preview environments](resources/preview_environment) and [live preview variables](resources/live_preview_variables) |
+| Define and install apps | [App Definitions](resources/app_definition) and [App Installations](resources/app_installation) |
+| Manage access | [Roles](resources/role), [Teams](resources/team), and [Delivery API keys](resources/delivery_api_key) |
+| Discover existing objects and generate import configuration | [Resource discovery](guides/resource-discovery) |
+| Manage unreadable or redacted credentials | [Secrets and Terraform state](guides/secrets-and-state) |
+| Set operation budgets or readiness waits | [Operation timeouts](guides/operation-timeouts) |
+
+Each resource page includes configuration and import syntax. Import existing objects before managing them. Entry and Content Type resources publish or activate managed changes, so review their lifecycle guidance before adopting externally edited content.
 
 {{ .SchemaMarkdown | trimspace }}
