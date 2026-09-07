@@ -12,7 +12,7 @@ import (
 
 func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages Contentful Space Enablements.",
+		Description: "Manages Contentful Space Enablements. Destroying this resource removes it from Terraform state without disabling or resetting the remote enablements. Import the existing Space Enablements to resume management. This retention applies while the parent space exists; this resource does not manage the space lifecycle.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,

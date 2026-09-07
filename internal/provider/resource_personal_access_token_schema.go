@@ -17,7 +17,7 @@ import (
 
 func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Personal Access Token.",
+		Description: "Manages a Contentful Personal Access Token. Changing name, scopes, or expires_in requires a new token; Terraform revokes the old token during replacement. Changing only timeouts preserves the existing token. Destroy revokes the token.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
