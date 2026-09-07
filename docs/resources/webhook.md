@@ -35,7 +35,7 @@ resource "contentful_webhook" "this" {
 
   headers = {
     "X-Webhook-Secret" = {
-      value  = "abcdef"
+      value  = var.webhook_secret
       secret = true
     },
   }
@@ -54,15 +54,15 @@ resource "contentful_webhook" "this" {
 ### Required
 
 - `name` (String) Name of the webhook.
-- `space_id` (String) ID of the space containing the webhook.
-- `topics` (List of String) List of one or more event topics to which the webhook subscribes.
-- `url` (String) Preconfigured HTTP endpoint that is called when content has changed.
+- `space_id` (String) ID of the space containing the webhook. Changing this value replaces the resource.
+- `topics` (List of String) One or more Contentful event topics, such as `Entry.publish`, `Entry.unpublish`, or `Asset.save`.
+- `url` (String) HTTP endpoint that receives events matching the webhook topics and filters.
 
 ### Optional
 
 - `active` (Boolean) Whether the webhook is active. Defaults to `true`.
 - `filters` (Attributes List) Filtering constraints applied after `topics`. Contentful combines filters with logical AND; each filter configures exactly one of `equals`, `in`, `regexp`, or `not`. Null or omitted filters default to the `master` environment; `filters = []` sends no constraints. Supported payload paths and event restrictions are defined by [Contentful webhook filters](https://www.contentful.com/developers/docs/extensibility/webhooks/filters/). (see [below for nested schema](#nestedatt--filters))
-- `headers` (Attributes Map) HTTP headers sent by the webhook. When omitted on Create, Terraform adopts the headers returned by Contentful. When omitted on Update, Terraform preserves known prior headers. Set to `{}` to remove all headers. (see [below for nested schema](#nestedatt--headers))
+- `headers` (Attributes Map) HTTP headers sent by the webhook, keyed by header name. When omitted on Create, Terraform adopts the headers returned by Contentful. When omitted on Update, Terraform preserves known prior headers. Set to `{}` to remove all headers. (see [below for nested schema](#nestedatt--headers))
 - `http_basic_password` (String, Sensitive) HTTP Basic authentication password; configure it together with http_basic_username. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.
 - `http_basic_username` (String) HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
@@ -98,7 +98,7 @@ Required:
 Required:
 
 - `doc` (String) Webhook payload property path to evaluate, such as `sys.id` or `sys.environment.sys.id`.
-- `values` (List of String) One or more literal values to compare with the selected payload property.
+- `values` (List of String) Literal values to compare with the selected payload property.
 
 
 <a id="nestedatt--filters--not"></a>
@@ -125,7 +125,7 @@ Required:
 Required:
 
 - `doc` (String) Webhook payload property path to evaluate, such as `sys.id` or `sys.environment.sys.id`.
-- `values` (List of String) One or more literal values to compare with the selected payload property.
+- `values` (List of String) Literal values to compare with the selected payload property.
 
 
 <a id="nestedatt--filters--not--regexp"></a>
@@ -217,5 +217,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_webhook.this $CONTENTFUL_SPACE_ID/abcdef
+terraform import contentful_webhook.this "$CONTENTFUL_SPACE_ID/$CONTENTFUL_WEBHOOK_ID"
 ```

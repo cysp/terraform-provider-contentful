@@ -20,7 +20,7 @@ resource "contentful_webhook" "this" {
 
   headers = {
     "X-Webhook-Secret" = {
-      value  = "abcdef"
+      value  = var.webhook_secret
       secret = true
     },
   }

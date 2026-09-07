@@ -14,7 +14,7 @@ Manages a Contentful Environment Alias.
 
 ```terraform
 resource "contentful_environment_alias" "example" {
-  space_id              = "space-id"
+  space_id              = var.contentful_space_id
   environment_alias_id  = "staging"
   target_environment_id = "staging-yyyy-mm-dd"
 }
@@ -25,9 +25,9 @@ resource "contentful_environment_alias" "example" {
 
 ### Required
 
-- `environment_alias_id` (String) ID of the environment alias.
-- `space_id` (String) ID of the space containing the environment alias.
-- `target_environment_id` (String) ID of the environment which the environment alias references. Allows you to access and modify the data of this target environment through a different static identifier.
+- `environment_alias_id` (String) ID of the environment alias. Changing this value replaces the resource.
+- `space_id` (String) ID of the space containing the environment alias. Changing this value replaces the resource.
+- `target_environment_id` (String) ID of the environment reached through this alias. Changing the target redirects subsequent requests that use the alias.
 
 ### Optional
 

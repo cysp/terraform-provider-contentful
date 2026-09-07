@@ -53,7 +53,7 @@ func (v WebhookFilterInValue) SchemaAttributes(ctx context.Context) map[string]s
 			Required:    true,
 		},
 		"values": schema.ListAttribute{
-			Description: "One or more literal values to compare with the selected payload property.",
+			Description: "Literal values to compare with the selected payload property.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Required:    true,

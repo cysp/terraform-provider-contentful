@@ -29,8 +29,8 @@ resource "contentful_team_space_membership" "this" {
 
 - `admin` (Boolean) Whether the team has admin access in the space.
 - `roles` (List of String) List of role IDs assigned to the team in the space.
-- `space_id` (String) ID of the space.
-- `team_id` (String) ID of the team.
+- `space_id` (String) ID of the space. Changing this value replaces the resource.
+- `team_id` (String) ID of the team. Changing this value replaces the resource.
 
 ### Optional
 
@@ -87,5 +87,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_team_space_membership.this $CONTENTFUL_SPACE_ID/$CONTENTFUL_TEAM_SPACE_MEMBERSHIP_ID
+terraform import contentful_team_space_membership.this "$CONTENTFUL_SPACE_ID/$CONTENTFUL_TEAM_SPACE_MEMBERSHIP_ID"
 ```

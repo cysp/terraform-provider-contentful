@@ -32,11 +32,11 @@ resource "contentful_resource_type" "this" {
 
 ### Required
 
-- `app_definition_id` (String) ID of the app definition.
-- `default_field_mapping` (Attributes) Default field mapping configuration for the resource type. (see [below for nested schema](#nestedatt--default_field_mapping))
+- `app_definition_id` (String) ID of the app definition. Changing this value replaces the resource.
+- `default_field_mapping` (Attributes) Maps external resource data to the values displayed in the Contentful web app. Use JSON-pointer templates such as `{ /title }`. (see [below for nested schema](#nestedatt--default_field_mapping))
 - `name` (String) Name of the resource type.
-- `organization_id` (String) ID of the organization.
-- `resource_type_id` (String) ID of the resource type.
+- `organization_id` (String) ID of the organization. Changing this value replaces the resource.
+- `resource_type_id` (String) ID of the resource type. Changing this value replaces the resource.
 
 ### Optional
 
@@ -52,23 +52,23 @@ resource "contentful_resource_type" "this" {
 
 Required:
 
-- `title` (String) Field path for the title.
+- `title` (String) Template for the title.
 
 Optional:
 
 - `badge` (Attributes) Badge field mapping. (see [below for nested schema](#nestedatt--default_field_mapping--badge))
-- `description` (String) Field path for the description.
-- `external_url` (String) Field path for the external URL.
+- `description` (String) Template for the description.
+- `external_url` (String) Template for the external URL.
 - `image` (Attributes) Image field mapping. (see [below for nested schema](#nestedatt--default_field_mapping--image))
-- `subtitle` (String) Field path for the subtitle.
+- `subtitle` (String) Template for the subtitle.
 
 <a id="nestedatt--default_field_mapping--badge"></a>
 ### Nested Schema for `default_field_mapping.badge`
 
 Required:
 
-- `label` (String) Field path for the badge label.
-- `variant` (String) Field path for the badge variant.
+- `label` (String) Template for the badge label.
+- `variant` (String) Template for the badge variant.
 
 
 <a id="nestedatt--default_field_mapping--image"></a>
@@ -76,11 +76,11 @@ Required:
 
 Required:
 
-- `url` (String) Field path for the image URL.
+- `url` (String) Template for the image URL.
 
 Optional:
 
-- `alt_text` (String) Field path for the image alt text.
+- `alt_text` (String) Template for the image alt text.
 
 
 
@@ -132,5 +132,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_resource_type.this $CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID/$CONTENTFUL_RESOURCE_TYPE_ID
+terraform import contentful_resource_type.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID/$CONTENTFUL_RESOURCE_TYPE_ID"
 ```

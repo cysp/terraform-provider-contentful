@@ -11,7 +11,7 @@ import (
 
 func EnvironmentResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Environment. A successful Create records Contentful's response but does not wait for the environment to reach ready status.",
+		Description: "Manages a Contentful Environment. Creation returns before the environment is necessarily ready. Use `contentful_environment_status_ready` before creating resources that require a ready environment.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in space_id/environment_id form.",
@@ -21,14 +21,14 @@ func EnvironmentResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "ID of the space containing the environment.",
+				Description: "ID of the space containing the environment. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Description: "ID of the environment.",
+				Description: "ID of the environment. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

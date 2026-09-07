@@ -17,6 +17,7 @@ resource "contentful_space_enablements" "this" {
   space_id = var.contentful_space_id
 
   cross_space_links = true
+  space_templates   = true
 }
 ```
 
@@ -25,19 +26,19 @@ resource "contentful_space_enablements" "this" {
 
 ### Required
 
-- `space_id` (String) ID of the space for which enablements are configured.
+- `space_id` (String) ID of the space for which enablements are configured. Changing this value replaces the resource.
 
 ### Optional
 
-- `cross_space_links` (Boolean) Enable cross-space references to link content across multiple spaces. Contentful may reject unsupported combinations with other space enablements.
-- `space_templates` (Boolean) Enable the space templates feature. Contentful may reject unsupported combinations with other space enablements.
-- `studio_experiences` (Boolean) Enable Studio Experiences feature.
-- `suggest_concepts` (Boolean) Enable concept suggestions feature.
+- `cross_space_links` (Boolean) Whether cross-space references are enabled. Omission retains the value returned by Contentful. Contentful may reject unsupported combinations with other space enablements.
+- `space_templates` (Boolean) Whether space templates are enabled. Omission retains the value returned by Contentful. Contentful may reject unsupported combinations with other space enablements.
+- `studio_experiences` (Boolean) Whether Studio Experiences are enabled. Omission retains the value returned by Contentful.
+- `suggest_concepts` (Boolean) Whether concept suggestions are enabled. Omission retains the value returned by Contentful.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Terraform resource identifier, equal to `space_id`.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -82,5 +83,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_space_enablements.this $CONTENTFUL_SPACE_ID
+terraform import contentful_space_enablements.this "$CONTENTFUL_SPACE_ID"
 ```

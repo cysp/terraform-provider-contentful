@@ -1,5 +1,5 @@
 resource "contentful_environment" "staging" {
-  space_id              = "your-space-id"
+  space_id              = var.contentful_space_id
   environment_id        = "staging-yyyy-mm-dd"
   name                  = "Staging (YYYY-MM-DD)"
   source_environment_id = "master"

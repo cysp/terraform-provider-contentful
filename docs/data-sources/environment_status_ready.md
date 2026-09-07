@@ -4,20 +4,14 @@ page_title: "contentful_environment_status_ready Data Source - terraform-provide
 subcategory: ""
 description: |-
   Waits until a Contentful environment reaches ready status.
-  The data source polls while Contentful reports queued or inProgress. It returns an error immediately if Contentful reports failed. Unrecognized status values remain pollable so that a newly introduced status does not fail prematurely.
-  The readiness wait is controlled by this data source's timeouts.read value.
-  This may be referenced in depends_on chains when creating resources that require an environment to be fully ready.
+  Use this data source in a depends_on relationship before creating resources that need a ready environment. It polls queued, inProgress, and unrecognized statuses, and fails immediately if Contentful reports failed. Set timeouts.read to control how long it waits.
 ---
 
 # contentful_environment_status_ready (Data Source)
 
 Waits until a Contentful environment reaches ready status.
 
-The data source polls while Contentful reports queued or inProgress. It returns an error immediately if Contentful reports failed. Unrecognized status values remain pollable so that a newly introduced status does not fail prematurely.
-
-The readiness wait is controlled by this data source's timeouts.read value.
-
-This may be referenced in depends_on chains when creating resources that require an environment to be fully ready.
+Use this data source in a depends_on relationship before creating resources that need a ready environment. It polls queued, inProgress, and unrecognized statuses, and fails immediately if Contentful reports failed. Set timeouts.read to control how long it waits.
 
 ## Example Usage
 

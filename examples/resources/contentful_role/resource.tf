@@ -1,8 +1,7 @@
 resource "contentful_role" "editor" {
   space_id = var.contentful_space_id
 
-  name        = "Editor"
-  description = null
+  name = "Editor"
 
   permissions = {
     ContentDelivery    = ["all"]

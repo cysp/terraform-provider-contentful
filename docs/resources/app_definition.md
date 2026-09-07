@@ -16,7 +16,8 @@ Manages a Contentful App Definition.
 resource "contentful_app_definition" "this" {
   organization_id = var.contentful_organization_id
 
-  name = "My app"
+  name = "Editorial tools"
+  src  = "https://app.example.com"
 
   locations = [
     { location = "app-config" },
@@ -39,15 +40,15 @@ resource "contentful_app_definition" "this" {
 
 ### Required
 
-- `locations` (Attributes List) List of places in the web app where the app can be rendered. (see [below for nested schema](#nestedatt--locations))
+- `locations` (Attributes List) Locations where the app can be rendered in the Contentful web app. (see [below for nested schema](#nestedatt--locations))
 - `name` (String) A human-readable name of the app.
-- `organization_id` (String) ID of the organization that owns the app definition.
+- `organization_id` (String) ID of the organization that owns the app definition. Changing this value replaces the resource.
 
 ### Optional
 
-- `bundle_id` (String) Link to an AppBundle if hosted on Contentful.
+- `bundle_id` (String) ID of the App Bundle when the app is hosted on Contentful.
 - `parameters` (Attributes) Definitions of configuration parameters. (see [below for nested schema](#nestedatt--parameters))
-- `src` (String) Non-empty publicly available source URL of the app. Requires HTTPS with exception of localhost (for development).
+- `src` (String) Public URL of the app. Must be non-empty and use HTTPS, except that Contentful accepts HTTP on localhost for development.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -107,8 +108,8 @@ Required:
 
 Optional:
 
-- `installation` (Attributes List) Installation-level parameter definitions. (see [below for nested schema](#nestedatt--parameters--installation))
-- `instance` (Attributes List) Instance-level parameter definitions. (see [below for nested schema](#nestedatt--parameters--instance))
+- `installation` (Attributes List) Parameter definitions for each app installation. (see [below for nested schema](#nestedatt--parameters--installation))
+- `instance` (Attributes List) Parameter definitions for each use of the app, such as a field editor. (see [below for nested schema](#nestedatt--parameters--instance))
 
 <a id="nestedatt--parameters--installation"></a>
 ### Nested Schema for `parameters.installation`
@@ -123,8 +124,8 @@ Optional:
 
 - `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
-- `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--parameters--installation--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
+- `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--installation--labels))
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode("dark")]. An option may be a string or an object with string values.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--parameters--installation--labels"></a>
@@ -132,7 +133,7 @@ Optional:
 
 Optional:
 
-- `empty` (String) Label when no value is set.
+- `empty` (String) Label displayed when no Enum option is selected.
 - `false` (String) Label for false value.
 - `true` (String) Label for true value.
 
@@ -151,8 +152,8 @@ Optional:
 
 - `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
-- `labels` (Attributes) Custom labels for Boolean parameter values. (see [below for nested schema](#nestedatt--parameters--instance--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode({ dark = "Dark theme" })]; objects map a value to its display label.
+- `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--instance--labels))
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode("dark")]. An option may be a string or an object with string values.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--parameters--instance--labels"></a>
@@ -160,7 +161,7 @@ Optional:
 
 Optional:
 
-- `empty` (String) Label when no value is set.
+- `empty` (String) Label displayed when no Enum option is selected.
 - `false` (String) Label for false value.
 - `true` (String) Label for true value.
 
@@ -213,5 +214,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_app_definition.this $CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID
+terraform import contentful_app_definition.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID"
 ```

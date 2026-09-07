@@ -1,1 +1,1 @@
-terraform import contentful_tag.example $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_TAG_ID
+terraform import contentful_tag.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_TAG_ID"

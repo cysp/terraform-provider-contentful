@@ -1,1 +1,1 @@
-terraform import contentful_preview_environment.this $CONTENTFUL_SPACE_ID/$PREVIEW_ENVIRONMENT_ID
+terraform import contentful_preview_environment.this "$CONTENTFUL_SPACE_ID/$CONTENTFUL_PREVIEW_ENVIRONMENT_ID"

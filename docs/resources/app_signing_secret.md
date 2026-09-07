@@ -32,8 +32,8 @@ resource "random_password" "contentful_app_signing_secret" {
 
 ### Required
 
-- `app_definition_id` (String) ID of the app definition for which the signing secret is created.
-- `organization_id` (String) ID of the organization that owns the app.
+- `app_definition_id` (String) ID of the app definition for which the signing secret is created. Changing this value replaces the resource.
+- `organization_id` (String) ID of the organization that owns the app. Changing this value replaces the resource.
 - `value` (String, Sensitive) The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. The complete value is stored in Terraform state when the provider writes a secret to Contentful. Timeout-only updates preserve the remote secret and the stored value. Import cannot recover the existing secret and leaves `value` null. Without `ignore_changes = [value]`, applying the configured value replaces the remote secret; a configuration-driven import can do this during the import apply. With `ignore_changes = [value]`, the imported value remains null, including after timeout changes. See [Secrets and Terraform state](../guides/secrets-and-state) for storage, refresh, and import guidance.
 
 ### Optional
@@ -90,5 +90,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_app_signing_secret.this $CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID
+terraform import contentful_app_signing_secret.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID"
 ```

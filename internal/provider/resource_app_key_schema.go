@@ -28,14 +28,14 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"organization_id": schema.StringAttribute{
-				Description: "ID of the organization that owns the app.",
+				Description: "ID of the organization that owns the app. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"app_definition_id": schema.StringAttribute{
-				Description: "ID of the app definition for which the app key is created.",
+				Description: "ID of the app definition for which the app key is created. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -59,7 +59,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"created_at": schema.StringAttribute{
-				Description: "Timestamp when the app key was created.",
+				Description: "RFC 3339 timestamp when the app key was created.",
 				CustomType:  timetypes.RFC3339Type{},
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -67,7 +67,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"updated_at": schema.StringAttribute{
-				Description: "Timestamp when the app key was last updated.",
+				Description: "RFC 3339 timestamp when the app key was last updated.",
 				CustomType:  timetypes.RFC3339Type{},
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -75,7 +75,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"last_used_at": schema.StringAttribute{
-				Description: "Timestamp when the app key was last used.",
+				Description: "RFC 3339 timestamp when the app key was last used.",
 				CustomType:  timetypes.RFC3339Type{},
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -118,7 +118,7 @@ func AppKeyJWKSchemaAttributes(ctx context.Context) map[string]schema.Attribute 
 			},
 		},
 		"x5c": schema.ListAttribute{
-			Description: "JWK public key material. The single value must use valid standard base64 encoding without CR or LF. The provider validates the encoding and its fingerprint relationships without enforcing undocumented key formats or sizes.",
+			Description: "Single public-key value in standard base64 encoding, without carriage returns or line feeds. The decoded bytes must match the fingerprint in `kid` and `x5t`.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Required:    true,

@@ -12,25 +12,23 @@ Manages the complete Contentful live preview variables document in an environmen
 
 ## Whole-document ownership
 
-Live preview variables supply Contentful's [custom preview tokens](https://www.contentful.com/developers/docs/tutorials/preview/content-preview/). The feature must be enabled for the space. Preview platforms and content-type URLs are managed separately by `contentful_preview_environment`.
+Live preview variables supply Contentful's [custom preview tokens](https://www.contentful.com/developers/docs/tutorials/preview/content-preview/). Enable the feature for the space before using this resource. Manage preview platforms and content type URLs separately with [`contentful_preview_environment`](preview_environment).
 
 Use one resource for all variables in an environment. Updates replace the complete document, so later applies can overwrite changes made in Contentful's web app.
 
-Variables persist in Terraform state. Marking an input variable sensitive suppresses normal Terraform display; its value is still stored in state. Invalid JSON syntax diagnostics can include the supplied input.
+Variables persist in Terraform state even when marked sensitive. Invalid JSON syntax diagnostics can include the supplied input. See [Secrets and Terraform state](../guides/secrets-and-state) for storage and redaction guidance.
 
 ## Concurrency and recovery
 
-Import any existing document before applying, including an empty one. Terraform creates a document only when none exists. Updates use the last observed version. On a version conflict, refresh and review the resulting plan before retrying.
+Import any existing document before applying, including an empty one. Creation succeeds only when no document exists. Updates use the last observed version. On a version conflict, refresh and review the resulting plan before retrying.
 
 If the document was deleted after refresh, an update can recreate it. Versions reset on recreation, so version checks cannot detect every deletion and recreation. Destroying this resource deletes the document without checking its version and can remove another editor's latest changes.
 
-A failed or timed-out write may have changed the remote document. Refresh and inspect it before applying again; import it if creation succeeded but no resource was saved in state.
-
-If returned variables differ from the plan, Terraform can record them while reporting an error. Refresh and review the next plan before retrying.
+A failed or timed-out write may have changed the remote document. If a write returns variables that differ from the plan, Terraform can record those values while reporting an error. Inspect the document, then refresh and review the next plan before retrying. Import the document if creation succeeded but no resource was saved in state.
 
 ## Environment identity
 
-The supplied environment ID is passed unchanged to Contentful. If it is an alias, requests follow its routing at request time. Retargeting can make subsequent refresh, update, or destroy affect another environment's document and leave the previous document behind. Use a concrete environment ID when ownership must remain tied to that environment. The provider does not resolve or bind aliases.
+Use a concrete environment ID to keep ownership tied to one environment. The provider passes the supplied ID unchanged to Contentful. If you supply an alias, requests follow its current target. Retargeting the alias can make a later refresh, update, or destroy affect another environment's document and leave the previous document behind.
 
 ## Example Usage
 
@@ -57,8 +55,8 @@ resource "contentful_live_preview_variables" "this" {
 
 ### Required
 
-- `environment_id` (String) Environment ID passed unchanged to Contentful. If it is an alias, subsequent operations follow its routing; the provider does not resolve or bind its target.
-- `space_id` (String) ID of the space containing the variables document.
+- `environment_id` (String) Environment ID passed unchanged to Contentful. If it is an alias, subsequent operations follow its routing; the provider does not resolve or bind its target. Changing this value replaces the resource.
+- `space_id` (String) ID of the space containing the variables document. Changing this value replaces the resource.
 - `variables` (String) Complete variables object encoded with jsonencode(...). Values may be strings, null, or locale-keyed objects of strings/nulls. Locale keys must exist in the environment. Omitted variable or locale keys are removed on update. Empty strings, nulls, and empty objects remain distinct; an empty root object keeps a present document. Values are stored in Terraform state.
 
 ### Optional

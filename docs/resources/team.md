@@ -27,7 +27,7 @@ resource "contentful_team" "this" {
 ### Required
 
 - `name` (String) A human-readable name of the team.
-- `organization_id` (String) ID of the organization that owns the team.
+- `organization_id` (String) ID of the organization that owns the team. Changing this value replaces the resource.
 
 ### Optional
 
@@ -85,5 +85,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_team.this $CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_TEAM_ID
+terraform import contentful_team.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_TEAM_ID"
 ```

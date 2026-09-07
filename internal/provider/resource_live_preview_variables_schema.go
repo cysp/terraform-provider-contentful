@@ -21,12 +21,12 @@ func LivePreviewVariablesResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"space_id": schema.StringAttribute{
-				Description:   "ID of the space containing the variables document.",
+				Description:   "ID of the space containing the variables document. Changing this value replaces the resource.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"environment_id": schema.StringAttribute{
-				Description:   "Environment ID passed unchanged to Contentful. If it is an alias, subsequent operations follow its routing; the provider does not resolve or bind its target.",
+				Description:   "Environment ID passed unchanged to Contentful. If it is an alias, subsequent operations follow its routing; the provider does not resolve or bind its target. Changing this value replaces the resource.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

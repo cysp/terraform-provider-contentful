@@ -1,7 +1,8 @@
 resource "contentful_app_definition" "this" {
   organization_id = var.contentful_organization_id
 
-  name = "My app"
+  name = "Editorial tools"
+  src  = "https://app.example.com"
 
   locations = [
     { location = "app-config" },

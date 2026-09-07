@@ -12,7 +12,7 @@ Manages a Contentful Entry.
 
 ## Example Usage
 
-This reference snippet uses an existing space and environment, an activated `blogPost` Content Type with `title`, `body`, and `slug` fields, enabled `en-AU` and `en-US` locales, and existing `blog` and `example` tags.
+This example requires an existing space and environment, an activated `blogPost` Content Type with `title`, `body`, and `slug` fields, and the `en-US` locale enabled. Applying it creates and publishes the Entry.
 
 ```terraform
 resource "contentful_entry" "example" {
@@ -22,47 +22,46 @@ resource "contentful_entry" "example" {
 
   fields = {
     title = jsonencode({
-      "en-AU" = "My First Blog Post"
       "en-US" = "My First Blog Post"
     })
     body = jsonencode({
-      "en-AU" = "This is the content of my first blog post."
       "en-US" = "This is the content of my first blog post."
     })
     slug = jsonencode({
-      "en-AU" = "my-first-blog-post"
       "en-US" = "my-first-blog-post"
     })
-  }
-
-  metadata = {
-    tags = ["blog", "example"]
   }
 }
 ```
 
 ## Lifecycle behavior
 
-Creating an Entry, or changing its `fields` or `metadata` through Terraform, writes a draft and then publishes that draft. Changes that only affect Terraform state do not write or publish the Entry. `published_version` reflects Contentful `sys.publishedVersion`; it is observed state, not configurable publication intent.
+Creating an Entry, or changing its `fields` or `metadata` through Terraform, writes a draft and publishes it. Changes that only affect Terraform state do not write or publish the Entry. The computed `published_version` reports Contentful `sys.publishedVersion`; setting it cannot request publication or unpublication.
 
 See [Operation timeouts](../guides/operation-timeouts) for the default operation budgets and deadline precedence that apply to these lifecycle operations.
 
-Routine provider logs for Entry operations omit request and response payloads. Contentful error diagnostics can still contain Entry content, even when its Terraform expression is sensitive. Review diagnostics before sharing them. See [Secrets and Terraform state](../guides/secrets-and-state) for storage and redaction behavior.
+Routine provider logs omit Entry request and response payloads. Contentful error diagnostics can still contain Entry content, even when its Terraform expression is sensitive. Review diagnostics before sharing them. See [Secrets and Terraform state](../guides/secrets-and-state) for storage and redaction behavior.
 
 ### Drift and field ownership
 
-- An external unpublish is preserved as observed state: `published_version` becomes null, and Terraform does not republish solely to restore the previous publication. A later provider-managed `fields` or `metadata` change writes and publishes a new draft normally.
+- Unpublishing outside Terraform makes `published_version` null. Terraform does not republish solely to restore the previous publication. A later managed `fields` or `metadata` change writes and publishes a new draft.
 - Entry updates replace the complete `fields` payload. Values retained by `ignore_changes` remain in that payload and are published with any later managed change. An ignored-only external draft is left untouched.
 - Content Type defaults may be added when an Entry is created, but Contentful does not reapply them on updates. Use `ignore_changes` for defaulted fields that another system should continue to manage.
 - The resource uses whole-Entry publication and does not model independent locale publication. Locale-based publishing is currently unsupported.
 
+### Null and empty field values
+
+Terraform `null` omits a field from the request; `jsonencode(null)` sends JSON null. Contentful can omit JSON-null fields from its response. When that happens, the provider preserves the planned or previously stored null representation. A value returned by Contentful takes precedence during refresh, so external changes remain visible.
+
+Contentful can also omit fields whose locale values are all empty arrays. The provider preserves those known empty values when they are absent from the response. It does not preserve a removed nonempty field this way. A locale object such as `jsonencode({ "en-US" = null })` is a distinct value and receives no null fallback.
+
 ### Destroy
 
-Contentful does not enforce version or ETag preconditions when destroy unpublishes and deletes the current remote Entry. Changes made outside Terraform since the last refresh therefore do not prevent deletion.
+Destroy unpublishes the Entry, then deletes it. If unpublishing fails for a reason other than an already absent or unpublished Entry, deletion stops. Contentful does not enforce version or ETag preconditions on these requests, so changes made outside Terraform since the last refresh do not prevent deletion.
 
 ### Publication recovery
 
-If publication fails after the provider confirms its draft write, an unchanged later apply can publish that exact version without repeating the Entry write.
+If publication fails after a confirmed draft write, review the Entry and run `terraform plan` again. An unchanged later apply can publish the recorded draft version without repeating the write, provided no other editor has changed it.
 
 - Import, refresh, or matching configuration alone does not make an external draft eligible for automatic publication.
 - With normal refresh, recovery continues only while the version and publication state still match that draft. If it is already published, no further request is sent. Changed or malformed version/publication state stops recovery without modifying the Entry.
@@ -71,7 +70,7 @@ If publication fails after the provider confirms its draft write, an unchanged l
 
 ### Retry and create ambiguity
 
-Entry Create, specified-ID Create, Update, and Publish operations are not transparently replayed after 429, transport, or 5xx outcomes.
+The provider does not automatically retry Entry creation, updates, or publication after rate limiting (HTTP 429), connection errors, or server errors (HTTP 5xx). A failed response can leave the result uncertain; inspect Contentful before retrying.
 
 When `entry_id` is omitted, Contentful generates the Entry ID. If the Create response is ambiguous, Terraform may not know whether Contentful committed the Create or what ID it assigned. A later apply may therefore create another Entry.
 
@@ -82,15 +81,15 @@ Before applying again, inspect Contentful for the Entry that may have been creat
 
 ### Required
 
-- `content_type_id` (String) ID of the content type for this entry.
-- `environment_id` (String) ID of the environment containing the entry.
-- `fields` (Map of String) Entry field values keyed by Contentful field ID. Each value is JSON and may contain locale keys for localized fields.
-- `space_id` (String) ID of the space containing the entry.
+- `content_type_id` (String) ID of the content type for this entry. Changing this value replaces the resource.
+- `environment_id` (String) ID of the environment containing the entry. Changing this value replaces the resource.
+- `fields` (Map of String) Complete set of Entry field values, keyed by Contentful field ID. For field content, encode a JSON object keyed by locale, for example `jsonencode({ "en-US" = "Welcome" })`. Use the environment's default locale for non-localized fields. A Terraform-null map value omits that field from the request; `jsonencode(null)` sends JSON null. Updates replace the complete fields payload. See the lifecycle guidance for field ownership and Contentful's empty-field handling.
+- `space_id` (String) ID of the space containing the entry. Changing this value replaces the resource.
 
 ### Optional
 
-- `entry_id` (String) ID of the entry. When `entry_id` is configured, Terraform creates a new Entry with the specified ID; an existing Entry with the same ID causes an error and is not adopted.
-- `metadata` (Attributes) Entry metadata, including assigned tags and taxonomy concepts. (see [below for nested schema](#nestedatt--metadata))
+- `entry_id` (String) ID of the entry. Omit to let Contentful generate an ID. When configured, Terraform creates a new Entry with that ID; an existing Entry with the same ID must be imported before management. Changing this value replaces the resource.
+- `metadata` (Attributes) Tags and taxonomy concepts assigned to the entry. Defaults to empty lists for both tags and concepts. (see [below for nested schema](#nestedatt--metadata))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -155,5 +154,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_entry.example $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_ENTRY_ID
+terraform import contentful_entry.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_ENTRY_ID"
 ```

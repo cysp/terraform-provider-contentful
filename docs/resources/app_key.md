@@ -33,9 +33,9 @@ resource "contentful_app_key" "this" {
 
 ### Required
 
-- `app_definition_id` (String) ID of the app definition for which the app key is created.
+- `app_definition_id` (String) ID of the app definition for which the app key is created. Changing this value replaces the resource.
 - `jwk` (Attributes) Public JSON Web Key for the app key. Changes replace the App Key. Contentful permits three keys per app and requires each public-key fingerprint to be globally unique. Overlapping rotation with `create_before_destroy` requires different key material and a free key slot. See [Secrets and Terraform state](../guides/secrets-and-state) for private-key and state-handling guidance. (see [below for nested schema](#nestedatt--jwk))
-- `organization_id` (String) ID of the organization that owns the app.
+- `organization_id` (String) ID of the organization that owns the app. Changing this value replaces the resource.
 
 ### Optional
 
@@ -43,11 +43,11 @@ resource "contentful_app_key" "this" {
 
 ### Read-Only
 
-- `created_at` (String) Timestamp when the app key was created.
+- `created_at` (String) RFC 3339 timestamp when the app key was created.
 - `id` (String) Composite Terraform resource identifier in organization_id/app_definition_id/key_kid form.
 - `key_kid` (String) Contentful App Key sys.id. This equals jwk.kid and jwk.x5t.
-- `last_used_at` (String) Timestamp when the app key was last used.
-- `updated_at` (String) Timestamp when the app key was last updated.
+- `last_used_at` (String) RFC 3339 timestamp when the app key was last used.
+- `updated_at` (String) RFC 3339 timestamp when the app key was last updated.
 
 <a id="nestedatt--jwk"></a>
 ### Nested Schema for `jwk`
@@ -58,7 +58,7 @@ Required:
 - `kid` (String) JWK key identifier. This becomes the Contentful app key ID and must match the x5c fingerprint.
 - `kty` (String) JWK key type. Must be RSA.
 - `use` (String) JWK public key use. Must be sig.
-- `x5c` (List of String) JWK public key material. The single value must use valid standard base64 encoding without CR or LF. The provider validates the encoding and its fingerprint relationships without enforcing undocumented key formats or sizes.
+- `x5c` (List of String) Single public-key value in standard base64 encoding, without carriage returns or line feeds. The decoded bytes must match the fingerprint in `kid` and `x5t`.
 - `x5t` (String) JWK key thumbprint. This must be the unpadded base64url-encoded SHA-256 digest of the decoded bytes in x5c[0].
 
 
@@ -109,5 +109,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_app_key.this $CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID/$CONTENTFUL_APP_KEY_KID
+terraform import contentful_app_key.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID/$CONTENTFUL_APP_KEY_KID"
 ```

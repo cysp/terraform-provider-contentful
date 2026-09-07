@@ -65,9 +65,9 @@ resource "contentful_editor_interface" "author" {
     },
     {
       widget_namespace = "app"
-      widget_id        = var.cool_app_definition_id
+      widget_id        = var.app_definition_id
       settings = jsonencode({
-        foo = "bar"
+        theme = "light"
       })
     },
   ]
@@ -79,14 +79,14 @@ resource "contentful_editor_interface" "author" {
 
 ### Required
 
-- `content_type_id` (String) The ID of the content type this editor interface configures.
-- `environment_id` (String) The ID of the environment this editor interface belongs to.
-- `space_id` (String) The ID of the space this editor interface belongs to.
+- `content_type_id` (String) The ID of the content type this editor interface configures. Changing this value replaces the resource.
+- `environment_id` (String) The ID of the environment this editor interface belongs to. Changing this value replaces the resource.
+- `space_id` (String) The ID of the space this editor interface belongs to. Changing this value replaces the resource.
 
 ### Optional
 
 - `controls` (Attributes List) Field-level controls that specify which widget to use for editing each field. (see [below for nested schema](#nestedatt--controls))
-- `editor_layout` (Attributes List) Layout configuration for the editor interface, defining how fields and groups are organized. (see [below for nested schema](#nestedatt--editor_layout))
+- `editor_layout` (Attributes List) Ordered layout groups in the editor. Each top-level item is a group; each group may contain fields and one level of nested groups. (see [below for nested schema](#nestedatt--editor_layout))
 - `group_controls` (Attributes List) Group-level controls that specify widgets for field groups. (see [below for nested schema](#nestedatt--group_controls))
 - `sidebar` (Attributes List) Configuration for sidebar widgets in the editor. (see [below for nested schema](#nestedatt--sidebar))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
@@ -104,7 +104,7 @@ Required:
 
 Optional:
 
-- `settings` (String) Widget-specific settings in JSON format.
+- `settings` (String) Widget settings encoded as a JSON object with `jsonencode(...)`. Supported settings depend on the widget.
 - `widget_id` (String) ID of the widget to use for this field.
 - `widget_namespace` (String) Namespace of the widget (e.g., 'builtin', 'extension', 'app').
 
@@ -122,7 +122,7 @@ Required:
 Required:
 
 - `group_id` (String) ID of the layout group.
-- `items` (Attributes List) Items within this layout group. (see [below for nested schema](#nestedatt--editor_layout--group--items))
+- `items` (Attributes List) Ordered fields and nested groups in this layout group. Each item must configure exactly one of `field` or `group`. (see [below for nested schema](#nestedatt--editor_layout--group--items))
 - `name` (String) Name of the layout group.
 
 <a id="nestedatt--editor_layout--group--items"></a>
@@ -179,7 +179,7 @@ Required:
 
 Optional:
 
-- `settings` (String) Widget-specific settings in JSON format.
+- `settings` (String) Widget settings encoded as a JSON object with `jsonencode(...)`. Supported settings depend on the widget.
 - `widget_id` (String) ID of the widget to use for this group.
 - `widget_namespace` (String) Namespace of the widget.
 
@@ -195,7 +195,7 @@ Required:
 Optional:
 
 - `disabled` (Boolean) Whether this sidebar widget is disabled. Defaults to `false`.
-- `settings` (String) Widget-specific settings in JSON format.
+- `settings` (String) Widget settings encoded as a JSON object with `jsonencode(...)`. Supported settings depend on the widget.
 
 
 <a id="nestedatt--timeouts"></a>
@@ -245,5 +245,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_editor_interface.author $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/author
+terraform import contentful_editor_interface.author "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_CONTENT_TYPE_ID"
 ```

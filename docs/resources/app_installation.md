@@ -13,18 +13,18 @@ Manages a Contentful App Installation.
 ## Example Usage
 
 ```terraform
-resource "contentful_app_installation" "cool_app" {
+resource "contentful_app_installation" "custom" {
   space_id       = var.contentful_space_id
   environment_id = var.contentful_environment_id
 
-  app_definition_id = var.cool_app_definition_id
+  app_definition_id = var.app_definition_id
 }
 
-resource "contentful_app_installation" "cool_marketplace_app" {
+resource "contentful_app_installation" "marketplace" {
   space_id       = var.contentful_space_id
   environment_id = var.contentful_environment_id
 
-  app_definition_id = var.cool_marketplace_app_definition_id
+  app_definition_id = var.marketplace_app_definition_id
 
   marketplace = [
     "i-accept-end-user-license-agreement",
@@ -39,14 +39,14 @@ resource "contentful_app_installation" "cool_marketplace_app" {
 
 ### Required
 
-- `app_definition_id` (String) ID of the app definition being installed.
-- `environment_id` (String) ID of the environment where the app is installed.
-- `space_id` (String) ID of the space where the app is installed.
+- `app_definition_id` (String) ID of the app definition being installed. Changing this value replaces the resource.
+- `environment_id` (String) ID of the environment where the app is installed. Changing this value replaces the resource.
+- `space_id` (String) ID of the space where the app is installed. Changing this value replaces the resource.
 
 ### Optional
 
-- `marketplace` (Set of String) Marketplace information for the app.
-- `parameters` (String) App-specific configuration as a JSON-encoded object. Use jsonencode(...) to encode Terraform values.
+- `marketplace` (Set of String) Marketplace agreement acknowledgments sent to Contentful when installing the app. Use the acknowledgment strings required by the selected Marketplace app.
+- `parameters` (String) Values for the app installation parameters as a JSON-encoded object. Use `jsonencode(...)` to encode Terraform values.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -74,9 +74,9 @@ import {
   identity = {
     space_id          = var.contentful_space_id
     environment_id    = var.contentful_environment_id
-    app_definition_id = var.cool_app_definition_id
+    app_definition_id = var.app_definition_id
   }
-  to = contentful_app_installation.cool_app
+  to = contentful_app_installation.custom
 }
 ```
 
@@ -93,13 +93,13 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.cool_app_definition_id}"
-  to = contentful_app_installation.cool_app
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.app_definition_id}"
+  to = contentful_app_installation.custom
 }
 ```
 
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_app_installation.cool_app $CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/cool_app
+terraform import contentful_app_installation.custom "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_APP_DEFINITION_ID"
 ```

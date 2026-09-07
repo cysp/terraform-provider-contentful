@@ -12,7 +12,7 @@ Manages a Contentful content preview platform. This space-level resource is not 
 
 ## Content preview configuration
 
-This resource manages the preview platforms configured under **Settings → Content preview** in Contentful. It manages preview URLs for content types in an existing space. It does not configure the preview website, preview mode, or custom preview tokens.
+This resource manages preview platforms under **Settings → Content preview** in Contentful, including their content type preview URLs. The space must already exist. Configure and deploy the preview website separately. Manage custom preview tokens with [`contentful_live_preview_variables`](live_preview_variables).
 
 Use Contentful's [content preview setup guide](https://www.contentful.com/developers/docs/tutorials/preview/content-preview/) for URL placeholders and frontend requirements. Preview URLs are stored in Terraform state; keep credentials out of them.
 
@@ -20,7 +20,13 @@ Use Contentful's [content preview setup guide](https://www.contentful.com/develo
 
 Terraform manages active configurations as a map keyed by content type ID. Removing a key disables its configuration in Contentful. Setting the map to `{}` disables all configurations previously managed by this resource. Adding a key again enables that content type with the configured URL. Disabled remote configurations remain hidden during refresh and import.
 
-The provider uses Contentful's last observed version for updates. Observed configuration-only changes do not advance that version, so it cannot protect against concurrent edits to the same preview URL. A mutation response that differs from the plan is retained as recovery state and reported as a consistency error. Review the preview platform and refresh Terraform state before applying again. If Contentful returns an unsupported or ambiguous active configuration, refresh warns and omits that entry while retaining representable siblings; resolve the reported configuration in Contentful before applying again.
+### Concurrent edits and recovery
+
+Updates use Contentful's last observed version. Configuration-only changes have been observed not to advance that version, so version checks cannot protect against concurrent edits to the same preview URL.
+
+If a write returns values that differ from the plan, the provider records the returned values in state and reports a consistency error. Inspect the preview platform, then refresh and review the next plan before applying again.
+
+If Contentful returns an unsupported or ambiguous active configuration, refresh warns and omits that entry while retaining the configurations it can represent. Resolve the reported configuration in Contentful before applying again.
 
 ## Selected IDs and replacement
 
@@ -66,7 +72,7 @@ resource "contentful_preview_environment" "selected_id" {
 
 - `content_type_configurations` (Attributes Map) Active preview URL configurations keyed by content type ID. Removing a key disables its configuration; an empty map disables all managed configurations. Reads and imports omit disabled configurations. (see [below for nested schema](#nestedatt--content_type_configurations))
 - `name` (String) Name of the content preview platform.
-- `space_id` (String) ID of the space containing the content preview platform.
+- `space_id` (String) ID of the space containing the content preview platform. Changing this value replaces the resource.
 
 ### Optional
 
@@ -132,5 +138,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_preview_environment.this $CONTENTFUL_SPACE_ID/$PREVIEW_ENVIRONMENT_ID
+terraform import contentful_preview_environment.this "$CONTENTFUL_SPACE_ID/$CONTENTFUL_PREVIEW_ENVIRONMENT_ID"
 ```

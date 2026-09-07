@@ -54,14 +54,14 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"organization_id": schema.StringAttribute{
-				Description: "ID of the organization that owns the app.",
+				Description: "ID of the organization that owns the app. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"app_definition_id": schema.StringAttribute{
-				Description: "ID of the app definition for which the signing secret is created.",
+				Description: "ID of the app definition for which the signing secret is created. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

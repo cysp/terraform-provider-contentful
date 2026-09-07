@@ -3,24 +3,24 @@
 page_title: "contentful_environment Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Environment. A successful Create records Contentful's response but does not wait for the environment to reach ready status.
+  Manages a Contentful Environment. Creation returns before the environment is necessarily ready. Use contentful_environment_status_ready before creating resources that require a ready environment.
 ---
 
 # contentful_environment (Resource)
 
-Manages a Contentful Environment. A successful Create records Contentful's response but does not wait for the environment to reach ready status.
+Manages a Contentful Environment. Creation returns before the environment is necessarily ready. Use `contentful_environment_status_ready` before creating resources that require a ready environment.
 
 ## Environment readiness
 
-Contentful can accept an environment Create before the environment copy is ready for dependent operations. A successful apply of this resource therefore establishes that Contentful accepted the Create; it does not establish that the environment reached `ready` status.
+Creating an environment returns after Contentful accepts the request. Copying can still be in progress when this resource finishes applying.
 
-Use the [`contentful_environment_status_ready` data source](../data-sources/environment_status_ready) to wait before creating a resource in the environment or repointing an alias. Its `timeouts.read` value controls the readiness wait; the environment resource's `timeouts.create` value controls only the Create operation. See [Operation timeouts](../guides/operation-timeouts) for all defaults and deadline rules.
+Use the [`contentful_environment_status_ready` data source](../data-sources/environment_status_ready) to wait before creating dependent resources or repointing an alias. The example below makes the alias depend on the completed readiness check. The data source's `timeouts.read` controls the wait; the environment resource's `timeouts.create` controls creation only. See [Operation timeouts](../guides/operation-timeouts) for defaults and deadline rules.
 
 ## Example Usage
 
 ```terraform
 resource "contentful_environment" "staging" {
-  space_id              = "your-space-id"
+  space_id              = var.contentful_space_id
   environment_id        = "staging-yyyy-mm-dd"
   name                  = "Staging (YYYY-MM-DD)"
   source_environment_id = "master"
@@ -45,9 +45,9 @@ resource "contentful_environment_alias" "staging" {
 
 ### Required
 
-- `environment_id` (String) ID of the environment.
+- `environment_id` (String) ID of the environment. Changing this value replaces the resource.
 - `name` (String) Name of the environment.
-- `space_id` (String) ID of the space containing the environment.
+- `space_id` (String) ID of the space containing the environment. Changing this value replaces the resource.
 
 ### Optional
 

@@ -25,28 +25,28 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "ID of the space where the app is installed.",
+				Description: "ID of the space where the app is installed. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Description: "ID of the environment where the app is installed.",
+				Description: "ID of the environment where the app is installed. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"app_definition_id": schema.StringAttribute{
-				Description: "ID of the app definition being installed.",
+				Description: "ID of the app definition being installed. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"marketplace": schema.SetAttribute{
-				Description: "Marketplace information for the app.",
+				Description: "Marketplace agreement acknowledgments sent to Contentful when installing the app. Use the acknowledgment strings required by the selected Marketplace app.",
 				ElementType: types.StringType,
 				Optional:    true,
 				Validators: []validator.Set{
@@ -54,7 +54,7 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"parameters": schema.StringAttribute{
-				Description: "App-specific configuration as a JSON-encoded object. Use jsonencode(...) to encode Terraform values.",
+				Description: "Values for the app installation parameters as a JSON-encoded object. Use `jsonencode(...)` to encode Terraform values.",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 			},

@@ -48,8 +48,8 @@ resource "contentful_team_space_membership" "example" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
-- `teams` (Attributes List) The teams in the organization, ordered lexicographically by team_id. (see [below for nested schema](#nestedatt--teams))
+- `id` (String) Terraform identifier for this lookup, equal to `organization_id`.
+- `teams` (Attributes List) Teams in the organization, ordered lexicographically by `team_id`. An organization with no teams returns an empty list. (see [below for nested schema](#nestedatt--teams))
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

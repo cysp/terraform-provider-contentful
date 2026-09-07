@@ -38,7 +38,7 @@ data "contentful_app_definition" "this" {
 - `id` (String) Composite Terraform identifier in organization_id/app_definition_id form; not a Contentful system ID.
 - `locations` (Attributes List) Locations where the app can be rendered in the Contentful web app. (see [below for nested schema](#nestedatt--locations))
 - `name` (String) The name of the app.
-- `parameters` (Attributes) Configuration parameters for the app. (see [below for nested schema](#nestedatt--parameters))
+- `parameters` (Attributes) Parameter definitions for configuring the app. (see [below for nested schema](#nestedatt--parameters))
 - `src` (String) The URL where the app is hosted.
 
 <a id="nestedatt--timeouts"></a>
@@ -55,7 +55,7 @@ Optional:
 Read-Only:
 
 - `field_types` (Attributes List) Field types that this location supports. (see [below for nested schema](#nestedatt--locations--field_types))
-- `location` (String) The location where the app can be rendered.
+- `location` (String) Location identifier in the Contentful web app, such as `entry-field` or `entry-sidebar`.
 - `navigation_item` (Attributes) Navigation item configuration for this location. (see [below for nested schema](#nestedatt--locations--navigation_item))
 
 <a id="nestedatt--locations--field_types"></a>
@@ -92,8 +92,8 @@ Read-Only:
 
 Read-Only:
 
-- `installation` (Attributes List) Installation-level parameters for the app. (see [below for nested schema](#nestedatt--parameters--installation))
-- `instance` (Attributes List) Instance-level parameters for the app. (see [below for nested schema](#nestedatt--parameters--instance))
+- `installation` (Attributes List) Parameter definitions for each app installation. (see [below for nested schema](#nestedatt--parameters--installation))
+- `instance` (Attributes List) Parameter definitions for each use of the app, such as a field editor. (see [below for nested schema](#nestedatt--parameters--instance))
 
 <a id="nestedatt--parameters--installation"></a>
 ### Nested Schema for `parameters.installation`
@@ -102,10 +102,10 @@ Read-Only:
 
 - `default` (String) Default value for this parameter in JSON format.
 - `description` (String) Description of this parameter.
-- `id` (String)
-- `labels` (Attributes) Labels for boolean parameter values. (see [below for nested schema](#nestedatt--parameters--installation--labels))
+- `id` (String) Unique identifier for the parameter.
+- `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--installation--labels))
 - `name` (String) The name of this parameter.
-- `options` (List of String) Available options for this parameter.
+- `options` (List of String) Allowed options for an Enum parameter, each encoded as JSON. An option may be a string or an object with string values.
 - `required` (Boolean) Whether this parameter is required.
 - `type` (String) The type of this parameter.
 
@@ -114,7 +114,7 @@ Read-Only:
 
 Read-Only:
 
-- `empty` (String) Label for empty value.
+- `empty` (String) Label displayed when no Enum option is selected.
 - `false` (String) Label for false value.
 - `true` (String) Label for true value.
 
@@ -127,10 +127,10 @@ Read-Only:
 
 - `default` (String) Default value for this parameter in JSON format.
 - `description` (String) Description of this parameter.
-- `id` (String)
-- `labels` (Attributes) Labels for boolean parameter values. (see [below for nested schema](#nestedatt--parameters--instance--labels))
+- `id` (String) Unique identifier for the parameter.
+- `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--instance--labels))
 - `name` (String) The name of this parameter.
-- `options` (List of String) Available options for this parameter.
+- `options` (List of String) Allowed options for an Enum parameter, each encoded as JSON. An option may be a string or an object with string values.
 - `required` (Boolean) Whether this parameter is required.
 - `type` (String) The type of this parameter.
 
@@ -139,6 +139,6 @@ Read-Only:
 
 Read-Only:
 
-- `empty` (String) Label for empty value.
+- `empty` (String) Label displayed when no Enum option is selected.
 - `false` (String) Label for false value.
 - `true` (String) Label for true value.

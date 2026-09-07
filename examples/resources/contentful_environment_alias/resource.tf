@@ -1,5 +1,5 @@
 resource "contentful_environment_alias" "example" {
-  space_id              = "space-id"
+  space_id              = var.contentful_space_id
   environment_alias_id  = "staging"
   target_environment_id = "staging-yyyy-mm-dd"
 }

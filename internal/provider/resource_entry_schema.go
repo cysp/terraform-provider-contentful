@@ -35,21 +35,21 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "ID of the space containing the entry.",
+				Description: "ID of the space containing the entry. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Description: "ID of the environment containing the entry.",
+				Description: "ID of the environment containing the entry. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"entry_id": schema.StringAttribute{
-				Description: "ID of the entry. When `entry_id` is configured, Terraform creates a new Entry with the specified ID; an existing Entry with the same ID causes an error and is not adopted.",
+				Description: "ID of the entry. Omit to let Contentful generate an ID. When configured, Terraform creates a new Entry with that ID; an existing Entry with the same ID must be imported before management. Changing this value replaces the resource.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -58,7 +58,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"content_type_id": schema.StringAttribute{
-				Description: "ID of the content type for this entry.",
+				Description: "ID of the content type for this entry. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -72,7 +72,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"fields": schema.MapAttribute{
-				Description: "Entry field values keyed by Contentful field ID. Each value is JSON and may contain locale keys for localized fields.",
+				Description: "Complete set of Entry field values, keyed by Contentful field ID. For field content, encode a JSON object keyed by locale, for example `jsonencode({ \"en-US\" = \"Welcome\" })`. Use the environment's default locale for non-localized fields. A Terraform-null map value omits that field from the request; `jsonencode(null)` sends JSON null. Updates replace the complete fields payload. See the lifecycle guidance for field ownership and Contentful's empty-field handling.",
 				ElementType: jsontypes.NormalizedType{},
 				CustomType:  NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
 				Required:    true,
@@ -80,7 +80,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 			"metadata": schema.SingleNestedAttribute{
 				Attributes:  EntryMetadataValue{}.SchemaAttributes(ctx),
 				CustomType:  NewTypedObjectNull[EntryMetadataValue]().CustomType(ctx),
-				Description: "Entry metadata, including assigned tags and taxonomy concepts.",
+				Description: "Tags and taxonomy concepts assigned to the entry. Defaults to empty lists for both tags and concepts.",
 				Optional:    true,
 				Computed:    true,
 				Default:     objectdefault.StaticValue(defaultMetadataObjectValue),

@@ -44,9 +44,9 @@ resource "contentful_editor_interface" "author" {
     },
     {
       widget_namespace = "app"
-      widget_id        = var.cool_app_definition_id
+      widget_id        = var.app_definition_id
       settings = jsonencode({
-        foo = "bar"
+        theme = "light"
       })
     },
   ]
