@@ -739,6 +739,26 @@ without inferring a sibling or requiring equality, and surfaces any CMA
 validation response. The first-party contract and live CMA observations are
 recorded in the [Space Enablements request values note](../research/space-enablement-values.md).
 
+### Live preview variables
+
+The required normalized JSON `variables` attribute owns the complete document.
+Request conversion uses the effective Plan and shares structural validation with
+configuration validation: an object whose values are strings, null, or locale
+maps of strings/nulls. Empty root objects remain present documents. Omitted keys
+are deletions, and null, empty string, and empty locale maps are not equivalent.
+Unknown required values stop mutation.
+
+Response projection checks JSON validity but does not impose request-shape
+validation on readable remote data. Mutation reconciliation retains the supplied
+endpoint identity, diagnoses contradictory links or variables, and checkpoints
+representable response data and private `version` before reporting consistency
+errors. Exact planned JSON is preserved only after all reconciliation checks pass.
+Read projects response identity and values through the normal state-publication
+path, without mutation reconciliation, and checkpoints the returned version.
+The framework applies its normal check against an existing immutable resource
+identity. See the
+[endpoint evidence and limitations](../research/live-preview-variables.md).
+
 ## Diagnostics and local publication
 
 Warnings from a representable response projection accompany the published
