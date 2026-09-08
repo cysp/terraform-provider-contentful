@@ -23,9 +23,9 @@ This example requires an existing space and environment, an activated `blogPost`
 
 ## Lifecycle behavior
 
-Creating an Entry, or changing its `fields` or `metadata` through Terraform, writes a draft and publishes it. Changes that only affect Terraform state do not write or publish the Entry. The computed `published_version` reports Contentful `sys.publishedVersion`; setting it cannot request publication or unpublication.
+Creating an Entry, or changing its `fields` or `metadata` through Terraform, writes a draft and publishes it. Changes that only affect Terraform state do not write or publish the Entry. The read-only `published_version` reports Contentful `sys.publishedVersion`.
 
-See [Operation timeouts](../guides/operation-timeouts) for the default operation budgets and deadline precedence that apply to these lifecycle operations.
+See [Operation timeouts](../guides/operation-timeouts) for the default timeouts and deadline precedence that apply to these lifecycle operations.
 
 Routine provider logs omit Entry request and response payloads. Contentful error diagnostics can still contain Entry content, even when its Terraform expression is sensitive. Review diagnostics before sharing them. See [Secrets and Terraform state](../guides/secrets-and-state) for storage and redaction behavior.
 
@@ -48,12 +48,13 @@ Destroy unpublishes the Entry, then deletes it. If unpublishing fails for a reas
 
 ### Publication recovery
 
-If publication fails after a confirmed draft write, review the Entry and run `terraform plan` again. An unchanged later apply can publish the recorded draft version without repeating the write, provided no other editor has changed it.
+If publication fails after a confirmed draft write, review the Entry and run `terraform plan` again. A creation apply can finish with a warning when publication is unconfirmed. An unchanged later apply can publish the recorded draft version without repeating the write.
 
-- Import, refresh, or matching configuration alone does not make an external draft eligible for automatic publication.
-- With normal refresh, recovery continues only while the version and publication state still match that draft. If it is already published, no further request is sent. Changed or malformed version/publication state stops recovery without modifying the Entry.
-- With `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; the provider never fetches and publishes a newer external draft instead.
-- If the draft write itself was not confirmed, later matching remote content is not automatically published. An ambiguous response or interrupted operation can therefore leave a draft unpublished.
+With normal refresh, recovery continues only while Contentful's version and publication state match the recorded draft. If refresh finds the recorded draft version already published, recovery finishes without republishing it. If refresh finds external changes or version and publication details the provider cannot validate, recovery stops without sending a publication request.
+
+Import, refresh, or matching configuration alone does not make an external draft eligible for automatic publication. If the draft write itself was not confirmed, later matching remote content is not automatically published either. An ambiguous response or interrupted operation can therefore leave a draft unpublished.
+
+If you use `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; the provider never fetches and publishes a newer external draft instead.
 
 ### Retry and create ambiguity
 
