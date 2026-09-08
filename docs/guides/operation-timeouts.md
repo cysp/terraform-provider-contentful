@@ -6,22 +6,32 @@ description: |-
 
 # Operation timeouts
 
-Use `timeouts` to set how long a provider operation can run, including its Contentful requests and eligible HTTP retries. A timeout does not cancel work already accepted by Contentful. If an operation times out, inspect the remote object and the resource's recovery guidance before applying again.
+Set `timeouts` on a resource or data source to allow more time for a supported operation. Each value covers the complete operation, including Contentful requests and eligible HTTP retries.
+
+For example, add this attribute inside an existing `contentful_entry` resource block to allow five minutes for create and update:
+
+```terraform
+timeouts = {
+  create = "5m"
+  update = "5m"
+}
+```
+
+Check the resource or data source schema for its supported timeout attributes. See Terraform's [resource timeout syntax](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for more configuration examples.
+
+## Defaults and effective deadlines
 
 | Operation | Default | Scope |
 | --- | --- | --- |
 | Managed-resource create, read, update, or delete | 2 minutes | The complete supported operation |
 | Data-source read, except environment readiness | 2 minutes | The complete read, including pagination |
 | Environment readiness data-source read | 10 minutes | The complete readiness wait |
-| List resource | No configurable operation timeout | Terraform's deadline; otherwise the client gives each request and its retries a 2-minute budget |
 
-An earlier deadline supplied by Terraform always takes precedence. Increasing `timeouts` cannot extend that deadline or change Contentful's processing time.
+An earlier deadline supplied by Terraform always takes precedence, even if the configured timeout is longer.
 
-## Managed resource operations
+For managed resources, apply changes to `timeouts.read` or `timeouts.delete` before relying on them during a later refresh or destroy. These operations use the values already saved in Terraform state, with a 10-second minimum for the provider deadline. Shorter configured values remain unchanged in state. A configured `create` or `update` timeout is used as written.
 
-A configured `create` or `update` timeout is used as written. `read` and `delete` use the values already saved in Terraform state, with a 10-second minimum for the provider deadline. Shorter configured values remain unchanged in state. Apply timeout changes before relying on them during a later refresh or destroy.
-
-Refer to each resource's schema for supported operations and to Terraform's [resource timeout syntax](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts).
+List resources have no configurable operation timeout. They use Terraform's deadline when one is supplied. Without a deadline, the client gives each request and its retries a 2-minute timeout; this is not a limit on the complete list operation.
 
 ## Wait for environment readiness
 
@@ -41,3 +51,7 @@ data "contentful_environment_status_ready" "example" {
 The data source checks immediately, then polls on a 15-second interval until Contentful reports `ready`. A `failed` status ends the wait with an error. Increasing the environment resource's `timeouts.create` does not extend this separate wait.
 
 Use Terraform's [`depends_on` meta-argument](https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on) when a resource must wait for readiness but its attribute references do not express that dependency. The [environment example](../resources/environment#example-usage) shows creation, readiness, and alias configuration together.
+
+## Recover when a change times out
+
+If a create, update, or delete operation times out, inspect the remote result in Contentful, then follow the resource's recovery guidance before applying again. A provider timeout can leave the remote result uncertain: Contentful may already have accepted or completed the change.
