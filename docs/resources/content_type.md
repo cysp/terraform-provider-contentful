@@ -53,9 +53,9 @@ resource "contentful_content_type" "author" {
 
 ## Lifecycle behavior
 
-Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. The computed `published_version` reports Contentful `sys.publishedVersion`; setting it cannot request activation or deactivation.
+Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. The read-only `published_version` reports Contentful `sys.publishedVersion`.
 
-See [Operation timeouts](../guides/operation-timeouts) for the default operation budgets and deadline precedence that apply to these lifecycle operations.
+See [Operation timeouts](../guides/operation-timeouts) for the default timeouts and deadline precedence that apply to these lifecycle operations.
 
 ### Drift and ignored changes
 
@@ -63,16 +63,17 @@ Managed updates write the complete draft, including values retained by `ignore_c
 
 ### Destroy
 
-Destroy deactivates the Content Type before deleting it. If deactivation fails for a reason other than an already absent or unpublished Content Type, deletion stops. These requests do not send a version or ETag precondition, so the provider does not protect an externally changed Content Type with the exact-version safeguard used for activation.
+Destroy deactivates the Content Type before deleting it. If deactivation fails for a reason other than an already absent or unpublished Content Type, deletion stops. These requests do not send a version or ETag precondition, so changes made outside Terraform since the last refresh do not prevent deletion.
 
 ### Activation recovery
 
-If activation fails after a confirmed draft write, review the Content Type and run `terraform plan` again. An unchanged later apply can activate the recorded draft version without repeating the write, provided no other editor has changed it.
+If activation fails after a confirmed draft write, review the Content Type and run `terraform plan` again. A creation apply can finish with a warning when activation is unconfirmed. An unchanged later apply can activate the recorded draft version without repeating the write.
 
-- Import, refresh, or matching configuration alone does not make an external draft eligible for automatic activation.
-- With normal refresh, recovery continues only while the version and publication state still match that draft. If it is already activated, no further request is sent. Changed or malformed version/publication state stops recovery without modifying the Content Type.
-- With `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; the provider never fetches and activates a newer external draft instead.
-- If the draft write itself was not confirmed, later matching remote content is not automatically activated. An ambiguous response or interrupted operation can therefore leave a draft inactive.
+With normal refresh, recovery continues only while Contentful's version and publication state match the recorded draft. If refresh finds the recorded draft version already activated, recovery finishes without activating it again. If refresh finds external changes or version and publication details the provider cannot validate, recovery stops without sending an activation request.
+
+Import, refresh, or matching configuration alone does not make an external draft eligible for automatic activation. If the draft write itself was not confirmed, later matching remote content is not automatically activated either. An ambiguous response or interrupted operation can therefore leave a draft inactive.
+
+If you use `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; the provider never fetches and activates a newer external draft instead.
 
 ### Retry boundaries
 

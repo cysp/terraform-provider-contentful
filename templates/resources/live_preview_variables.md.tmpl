@@ -16,15 +16,9 @@ Live preview variables supply Contentful's [custom preview tokens](https://www.c
 
 Use one resource for all variables in an environment. Updates replace the complete document, so later applies can overwrite changes made in Contentful's web app.
 
+[Import](#import) any existing document before applying, including an empty one. Creation succeeds only when no document exists.
+
 Variables persist in Terraform state even when marked sensitive. Invalid JSON syntax diagnostics can include the supplied input. See [Secrets and Terraform state](../guides/secrets-and-state) for storage and redaction guidance.
-
-## Concurrency and recovery
-
-Import any existing document before applying, including an empty one. Creation succeeds only when no document exists. Updates use the last observed version. On a version conflict, refresh and review the resulting plan before retrying.
-
-If the document was deleted after refresh, an update can recreate it. Versions reset on recreation, so version checks cannot detect every deletion and recreation. Destroying this resource deletes the document without checking its version and can remove another editor's latest changes.
-
-A failed or timed-out write may have changed the remote document. If a write returns variables that differ from the plan, Terraform can record those values while reporting an error. Inspect the document, then refresh and review the next plan before retrying. Import the document if creation succeeded but no resource was saved in state.
 
 ## Environment identity
 
@@ -38,6 +32,14 @@ Use a concrete environment ID to keep ownership tied to one environment. The pro
 {{ tffile . }}
 {{- end }}
 {{- end }}
+
+## Concurrent edits and recovery
+
+Updates use the last observed version. On a version conflict, refresh and review the resulting plan before retrying.
+
+If the document was deleted after refresh, an update can recreate it. Versions reset on recreation, so version checks cannot detect every deletion and recreation. Destroying this resource deletes the document without checking its version and can remove another editor's latest changes.
+
+A failed or timed-out write may have changed the remote document. If a write returns variables that differ from the plan, Terraform can record those values while reporting an error. Inspect the document, then refresh and review the next plan before retrying. Import the document if creation succeeded but no resource was saved in state.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
