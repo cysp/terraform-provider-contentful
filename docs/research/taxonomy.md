@@ -1,10 +1,16 @@
-# Taxonomy version behavior
+# Taxonomy: concept and concept scheme versions
 
-Taxonomy PATCH and DELETE require the resource's current version. Direct probes
-observed different errors for omitted or nonpositive versions and for stale
-versions, so tests must retain that endpoint-specific distinction. The provider's
-[optimistic-locking contract](../design/terraform-value-semantics.md#taxonomy-optimistic-version-locking)
-defines how Terraform supplies and retains the version.
+Taxonomy PATCH and DELETE require the resource's current version. Direct probes observed
+different errors for omitted or nonpositive versions and for stale versions. Those error
+classifications are endpoint-specific; the general CMA update error description does not
+establish Taxonomy behavior.
+
+## Addressing and operations
+
+Concepts are organization-scoped at
+`/organizations/{organization_id}/taxonomy/concepts/{concept_id}`; concept schemes use
+`.../taxonomy/concept-schemes/{concept_scheme_id}`. This reference covers PATCH and
+DELETE locking, not every Taxonomy operation or payload.
 
 ## Published CMA contract
 
@@ -22,23 +28,26 @@ examples:
 - [Delete a concept scheme](https://www.contentful.com/developers/docs/references/content-management-api/taxonomy/delete-a-concept-scheme/)
   describes it as the version of the concept scheme to delete.
 
-The DELETE endpoint pages document HTTP 204 No Content as the successful
-response. The endpoint pages do not document specific responses for an omitted,
-zero, negative, malformed, or stale version header.
+The DELETE endpoint pages document HTTP 204 No Content as the successful response. The
+endpoint pages do not document specific responses for an omitted, zero, negative,
+malformed, or stale version header.
 
-Contentful's general [CMA overview](https://www.contentful.com/developers/docs/references/content-management-api/overview/#updating-and-version-locking)
-documents version locking for updates. Its general
-[error reference](https://www.contentful.com/developers/docs/references/errors/)
-associates HTTP 409 `VersionMismatch` with an omitted or outdated version when
-updating assets, entries, or content types. Those general statements do not
-establish the runtime contract of the taxonomy endpoints.
+Contentful's general [CMA
+overview](https://www.contentful.com/developers/docs/references/content-management-api/overview/#updating-and-version-locking)
+documents version locking for updates. Its general [error
+reference](https://www.contentful.com/developers/docs/references/errors/) associates
+HTTP 409 `VersionMismatch` with an omitted or outdated version when updating assets,
+entries, or content types. Those general statements do not establish the runtime
+contract of the taxonomy endpoints.
 
 ## Direct CMA observations
 
+Experiment date unrecorded; results retained by 2026-08-28.
+
 Raw CMA requests against disposable resources established the following observed
 behavior for both concepts and concept schemes. Each resource was created by a
-caller-defined ID and initially returned `sys.version: 1`. A PATCH with version
-`1` succeeded and advanced each resource to version `2`.
+caller-defined ID and initially returned `sys.version: 1`. A PATCH with version `1`
+succeeded and advanced each resource to version `2`.
 
 | Operation and version | Concept | Concept scheme | Observed effect |
 | --- | --- | --- | --- |
@@ -53,9 +62,9 @@ caller-defined ID and initially returned `sys.version: 1`. A PATCH with version
 | DELETE, stale version `1` against version `2` | HTTP 409 `VersionMismatch` | HTTP 409 `VersionMismatch` | Object remained at version `2` |
 | DELETE, exact version `2` | HTTP 204, empty body | HTTP 204, empty body | Follow-up GET returned HTTP 404 |
 
-DELETE header omission was repeated three times independently for each resource
-type; all six requests returned the same status and error. The exact observed
-DELETE error bodies were identical between concepts and concept schemes.
+DELETE header omission was repeated three times independently for each resource type;
+all six requests returned the same status and error. The exact observed DELETE error
+bodies were identical between concepts and concept schemes.
 
 Omitted header:
 
@@ -115,10 +124,11 @@ Stale version:
 }
 ```
 
-Every disposable resource was then deleted with its correct version. A final
-GET of each identifier returned HTTP 404.
+Every disposable resource was then deleted with its correct version. A final GET of each
+identifier returned HTTP 404.
 
-## Provider contract
+## Scope and limitations
 
-The provider policy informed by these observations is defined in
-[Terraform value semantics](../design/terraform-value-semantics.md#taxonomy-optimistic-version-locking).
+The probes cover omitted, zero, negative-one, exact, and stale integer versions, not
+malformed strings, arbitrary negative values, or concurrent clients. The initial version
+and increment are observations, not promises of version arithmetic.

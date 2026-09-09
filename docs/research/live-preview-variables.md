@@ -1,90 +1,146 @@
-# Live preview variables CMA contract
+# Live preview variables: custom preview token storage
 
-Live preview variables form one document per environment. The observed PUT
-replaces the whole document and requires its version; the observed DELETE ignores
-version preconditions. The
-provider's [Live Preview variables contract](../design/terraform-value-semantics.md#live-preview-variables)
-defines request validation and mutation reconciliation against these observed
-endpoint behaviors.
+Live preview variables form one document per environment. PUT replaces its complete
+`variables` object, including nested locale maps, and requires a version header. DELETE
+was observed to ignore version preconditions. Empty objects, empty strings, JSON null,
+and omitted members have distinct effects.
 
-## Evidence and scope
+## Scope and evidence
 
-The [sanitized probe ledger, revision 9dbed84465f622758be08555e19a128ea461212b](https://gist.github.com/cysp/1fa4a7a837bf3220837e571ddf1499df/9dbed84465f622758be08555e19a128ea461212b)
-records 141 requests on the US API host, with writes confined to one authorized
-environment. Other environments and aliases were read only. The ledger is direct
-observational evidence supplied by the maintainer, not a published API guarantee.
-Contentful's [content preview guide](https://www.contentful.com/developers/docs/tutorials/preview/content-preview/)
-describes the product feature as custom preview tokens. The variables endpoint
-is separate from space-level preview platforms and environment UI configuration.
+Contentful's [content preview
+guide](https://www.contentful.com/developers/docs/tutorials/preview/content-preview/)
+calls the product feature **custom preview tokens** and documents availability for
+Premium customers. That product contract concerns preview URL values; it does not
+document the `/live_preview/variables` HTTP endpoint. The guide's 100-platform limit
+applies to preview platforms, not to this variables document. Space-level [preview
+environments](content-preview-environments.md) are a separate resource.
 
-## Observed contract
+Evidence: a sanitized structural extract of a maintainer-supplied HTTP probe record,
+revision `9dbed84465f622758be08555e19a128ea461212b`. Experiment date unrecorded; results
+retained by 2026-09-08. The source trace and its URL are excluded because they expose
+tenant context. The extract follows the [research redaction
+conventions](README.md#evidence-and-redaction).
 
-`/spaces/{space}/environments/{environment}/live_preview/variables` is a
-singleton. GET and PUT return HTTP 200 with `sys` and `variables`; DELETE returns
-empty HTTP 204. PUT sends only `{"variables": {...}}` and replaces the entire
-object, including nested locale maps. Empty objects, empty strings, null leaves,
-and omitted keys remain distinct. Some array inputs were converted to objects at
-the variables and locale-map levels.
+The original requests exercised document storage in an isolated environment; other
+environment and alias requests were reads. Synthetic variable names and locale
+placeholders below preserve the tested relationships. They are not an example of a
+tenant's configuration.
 
-`sys` contains space and environment links and a document `version`, independent
-of the parent version. PUT requires `X-Contentful-Version`. An existing document
-requires its exact version, advances the version even for identical content,
-and rejects version 0 or stale versions with 409 `VersionMismatch`. An absent
-document accepts version 0 and tested positive versions and starts at version 1.
-DELETE ignores version headers and succeeds repeatedly. Recreation resets the
-version, so optimistic updates do not distinguish document lifetimes.
+## Addressing and operations
 
-Errors use both CMA `{sys,message,details}` and service
-`{statusCode,error,message}` envelopes. Optional request IDs and validation
-fields may be absent. Missing documents and parents returned CMA 404 `NotFound`;
-a generic service 404 does not establish absence. Validation error details can
-contain submitted values.
+The singleton path is
+`/spaces/{space_id}/environments/{environment_id}/live_preview/variables`.
 
-Alias reads echoed the supplied alias ID in `sys.environment`. Alias writes and
-retargeting were not independently probed. See
-Contentful's [alias concepts](https://www.contentful.com/developers/docs/concepts/environment-aliases/)
-for routing behavior.
+| Operation | Observed response |
+| --- | --- |
+| GET existing document | 200 with `sys` and `variables` |
+| PUT valid document | 200 with `sys` and `variables` |
+| DELETE | 204, empty body; repeated deletion also succeeded |
+| GET missing document or missing parent | 404 with CMA `NotFound` |
 
-## Entitlement observation
+`sys` contains space and environment links and a document `version`, independent of the
+parent's version. GET and PUT returned ordinary JSON despite a vendor-JSON Accept
+header. No ETag was observed, and `If-None-Match: *` still returned 200. Submitted
+pagination and filter queries had no observed effect; this does not establish universal
+query handling.
 
-A separate authorized read-only probe on 2026-09-08 (Australia/Sydney) returned
-HTTP 200 for the parent environment and vendor JSON with HTTP 403 for variables
-GET:
+## Request values and normalization
 
-```json
-{"statusCode":403,"error":"Forbidden","message":"previewLocalization is not enabled"}
+PUT sends a `variables` object. Stable round trips had this shape:
+
+```text
+Document = { variables: object<string, VariableValue> }
+VariableValue = string | null | object<ConfiguredLocaleCode, string | null>
 ```
 
-This probe made no mutations. Live Terraform CRUD remains unverified; the
-ledger's mutation results came from direct HTTP probes.
+`ConfiguredLocaleCode` means a locale configured in the addressed environment. This
+describes stable observed representations, not every accepted input. Arrays were
+accepted and normalized in some positions:
 
-## Mock boundaries
+| Input condition | Observed result |
+| --- | --- |
+| Root `{}`, raw variables map, root `[]`, or root `null` | 422; required variables object absent |
+| `variables` is null, string, number, or Boolean | 422; expected Object |
+| `variables: {}` | 200; readable empty document |
+| `variables: []` | 200; converted to `{}` |
+| `variables: ["first", "second"]` | 200; converted to `{"0":"first","1":"second"}` |
+| Variable string, empty string, or null | 200; preserved |
+| Variable number or Boolean | 422; expected Text |
+| Variable `{}` | 200; preserved |
+| Variable `[]` | 200; converted to `{}` |
+| Variable nonempty array | 422; numeric keys rejected as locale keys |
+| Configured locale leaf string, empty string, or null | 200; preserved |
+| Configured locale leaf number, Boolean, array, or object | 422; expected Text |
+| Unconfigured or differently cased locale key | 422; unknown property |
+| Additional root property or fabricated root `sys` | 200; ignored |
+| Malformed JSON | 400; service-style invalid-payload error |
 
-The [CMA test-server conformance reference](cma-test-server-conformance.md) summarizes
-the implemented lifecycle and test coverage. Mocked tests exercise provider
-behavior against these fixture conventions:
+PUT replaced all variables and nested locale maps: omitted keys disappeared. An empty
+document, an empty locale map, a null leaf, and an empty string remained distinct stored
+forms. Acceptance of an ignored root property does not establish support for configuring
+that property.
 
-- The locale inventory is fixed to `en-US`. Configurable environment locale
-  inventories are not modeled.
-- The 50,000-character Text limit counts Unicode code points. This reproduces
-  the observed ASCII boundary and accepted BMP/astral examples; combining-sequence
-  and grapheme semantics remain unverified. This counting rule is a mock
-  convention, not a provider-side restriction.
-- Missing-parent PUT/DELETE responses and cleanup after environment deletion
-  follow mock lifecycle conventions. The ledger directly observed only the
-  missing-parent GET and did not mutate environments.
+Empty variable names, spaces, punctuation, Unicode, and names resembling built-in tokens
+were accepted and preserved. A 256-character key and 1,001 variables succeeded. These
+are tested lower bounds, not maximum sizes or proof that such names work in URL
+placeholders. A `__proto__` key returned 400 with parser-style invalid-payload text
+despite syntactically valid JSON; separate `constructor` and `prototype` keys succeeded.
+These outcomes do not identify the service's implementation or establish a
+vulnerability.
 
-Alias routing, response update metadata, HEAD, trailing-slash GET, and service-style
-404 responses for POST/PATCH and the space-level route are not modeled. Generated
-handler errors use ordinary JSON, including conflicts; independent client fixtures
-cover vendor-JSON decoding. Whole non-object request bodies receive generated
-decoder errors, while the Terraform client always sends an object envelope.
-Authentication distinctions remain the shared fake's behavior.
+### Text length
 
-## Unverified behavior
+The service accepted 50,000 ASCII characters and rejected 50,001, including a localized
+value, with a reported Text maximum of 50,000. It also accepted 50,000 accented BMP
+characters and 25,001 astral characters. For those probes the bound was therefore
+neither 50,000 UTF-8 bytes nor 50,000 UTF-16 code units. The evidence does not
+distinguish all Unicode code-point, combining-sequence, and grapheme counting behavior.
 
-URL rendering, locale fallback, escaping, reserved-token collisions, EU-host
-parity, environment-copy inheritance, alias writes, total document-size limits,
-and maximum key lengths/counts remain unverified. The ledger does not establish
-whether a throttled or ambiguous write committed. Provider retry rules are defined
-in the [HTTP retry policy](../design/contentful-http-retry-policy.md).
+## Versioning and deletion
+
+PUT required `X-Contentful-Version`. The retained requests distinguish header
+validation from an existing document's version conflict:
+
+| Version input | Observed PUT result |
+| --- | --- |
+| Header omitted, malformed, or negative | 400 `BadRequest` |
+| Existing document, exact version | 200; version advanced, even for identical content |
+| Existing document, zero, stale, or future numeric version | 409 `VersionMismatch` |
+| Body `sys.version` or `If-Match` supplied without the required header | Did not substitute for `X-Contentful-Version` |
+
+Rejected validation writes did not change the document version.
+
+An absent document accepted version 0 and tested positive versions, then returned
+version 1. Recreation also returned version 1, so versions did not distinguish document
+lifetimes. A version header therefore did not enforce update-only intent at an absent
+address.
+
+DELETE ignored supplied version headers and succeeded repeatedly. Those observations are
+endpoint-specific; they do not establish the same behavior for PUT or other resources.
+The evidence does not establish whether a throttled or ambiguous mutation committed.
+
+## Errors and alias reads
+
+Both CMA `{sys, message, details}` and service `{statusCode, error, message}` error
+envelopes occurred. Request IDs and validation fields could be absent. Validation errors
+could contain multiple entries and echo submitted values, including oversized strings;
+such values must be removed from retained evidence.
+
+The missing-document and missing-parent GET probes returned CMA 404 `NotFound`. Other
+route/method errors used service-style 404 responses, so HTTP status alone does not
+distinguish a missing document from an unsupported route. Missing-parent PUT/DELETE and
+cleanup after deleting an environment were not probed.
+
+Alias reads echoed the supplied alias ID in `sys.environment`. Writes through aliases
+and behavior after retargeting were not independently probed. Contentful's [environment
+alias
+concepts](https://www.contentful.com/developers/docs/concepts/environment-aliases/)
+explain alias routing; they do not establish this endpoint's write semantics.
+
+## Unresolved behavior
+
+URL rendering, locale fallback, escaping, reserved-token collisions, regional parity,
+environment-copy inheritance, alias writes, total document-size limits, and maximum key
+lengths/counts remain unverified. Locale membership and casing were exercised, but
+changing the environment's locale inventory was not. Accepted storage values do not
+establish successful preview URL interpolation.
