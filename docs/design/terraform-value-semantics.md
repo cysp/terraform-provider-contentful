@@ -224,8 +224,10 @@ generated-ID creation, the returned preview environment ID remains the target;
 an unexpected known planned ID still constrains consistency and a contradiction
 is reported without replacing the generated target. Configuration omission
 selects the generated-ID endpoint; it does not discard known Plan constraints.
-The [preview environment contract](../research/content-preview-environments.md)
-records the active-configuration delta and the limits of version locking.
+The [preview environment design](content-preview-environments.md#concurrency-and-recovery)
+records the provider's state-to-plan configuration delta; the
+[API research](../research/content-preview-environments.md#concurrency-and-errors)
+records the observed limits of version locking.
 
 Apply-time authority follows the effective Plan at the individual attribute,
 including attributes nested inside known objects:
@@ -253,7 +255,8 @@ Create also retained the returned value in tainted recovery state. These are
 version-specific observations, so the upgrade triggers below still apply.
 Sanitized direct CMA observations for the affected Webhook and Editor Interface
 values are recorded in
-[CMA test-server conformance boundaries](../research/cma-test-server-conformance.md).
+[Webhook observations](../research/webhooks.md#direct-configuration-observations) and
+[Editor Interface observations](../research/editor-interfaces.md).
 
 The tables below use these common rules:
 
@@ -537,7 +540,7 @@ therefore require a state-only Update, but it does not write or publish an
 Entry; the provider stores the effective plan representation in Terraform state
 while retaining the prior response-owned `published_version`. The direct
 evidence is recorded in
-[Entry null and omission behavior](../research/entry-null-and-omission.md).
+[Entry null and omission behavior](../research/entry-fields.md).
 
 Entry Read is authoritative for `fields`, including additions and removals,
 except for configured request omissions and Contentful's observed empty-field
@@ -649,7 +652,7 @@ on these operations, an Entry changed outside Terraform can still be deleted.
 This policy is limited to Entry destroy; Entry update, Entry publish, and other
 endpoints are out of scope.
 
-See [Entry destroy lifecycle evidence](../research/entry-destroy-lifecycle.md).
+See [Entry unpublish and delete evidence](../research/entry-lifecycle.md#unpublish-and-delete-preconditions).
 
 ### Taxonomy optimistic version locking
 
@@ -695,7 +698,7 @@ The repository mock and direct CMA creation experiments returned an initial
 version of `1`; that observation is modeled for service fidelity but is not a
 permanent schema promise. The documented contract and raw observations are
 recorded in the
-[taxonomy version note](../research/taxonomy-version.md). Use Contentful's
+[taxonomy version note](../research/taxonomy.md). Use Contentful's
 established `version` and `sys.version` terminology.
 
 ### Delivery API key environments
@@ -718,7 +721,7 @@ result. Rejecting empty lists would avoid that symptom only by making current
 service behavior a permanent provider restriction. The provider instead keeps
 empty input valid and treats the canonicalization conflict as a known
 limitation. The supporting observations and their date are recorded in the
-[Delivery API key environments note](../research/delivery-api-key-environments.md).
+[Delivery API key environments note](../research/delivery-api-keys.md).
 
 ### Extension sources
 
@@ -729,7 +732,7 @@ in that case. An empty `src` is invalid, while an explicitly empty `srcdoc` is
 accepted and round-trips. The provider does not silently rewrite either
 explicit value to omission. The first-party contract and live CMA observations
 are recorded in the
-[Extension source values note](../research/extension-source-values.md).
+[Extension source values note](../research/ui-extensions.md).
 
 Extension state version zero is decoded with its own historical schema and
 models, including nested field types, parameter definitions, and timeouts. The
@@ -752,7 +755,7 @@ all four members as optional. The provider does not make that current server
 policy a Terraform configuration invariant: it sends the planned members
 without inferring a sibling or requiring equality, and surfaces any CMA
 validation response. The first-party contract and live CMA observations are
-recorded in the [Space Enablements request values note](../research/space-enablement-values.md).
+recorded in the [Space Enablements request values note](../research/space-enablements.md).
 
 ### Live preview variables
 

@@ -23,7 +23,7 @@ exercise; it does not independently establish CMA conformance.
 
 **Evidence:** The [CMA
 reference](https://www.contentful.com/developers/docs/references/content-management-api/space-enablements/)
-and [request-values probe](space-enablement-values.md) establish the paired-member rule
+and [request-values probe](../research/space-enablements.md) establish the paired-member rule
 and failed-request nonmutation.
 
 **Default fake behavior:** The fake requires both paired members with equal values
@@ -43,7 +43,7 @@ pinned first-party
 [model](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/entities/app-signing-secret.ts#L7-L24)
 and
 [endpoints](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/app-signing-secret.ts#L10-L39),
-and the sanitized probe in [App signing secret CMA contract](app-signing-secret.md).
+and the sanitized probe in [App signing secret CMA contract](../research/app-framework/request-signing.md#direct-cma-observation).
 
 **Default fake behavior:** PUT derives and retains only the final-four redacted suffix.
 PUT and GET return that suffix, and DELETE returns no content.
@@ -123,9 +123,9 @@ requires the current version for update and publish; the first-party client send
 operations](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/entry.ts#L133-L185)
 and performs whole-Entry unpublish and delete without preconditions. Sanitized probes
 established the [member-PUT request-selection
-boundary](entry-and-content-type-put-headers.md), [unpublish version
-behavior](entry-unpublish-version.md), and the [destroy
-lifecycle](entry-destroy-lifecycle.md).
+boundary](../research/entry-and-content-type-put-headers.md), [unpublish version
+behavior](../research/entry-lifecycle.md#publish-update-and-unpublish), and the [destroy
+lifecycle](../research/entry-lifecycle.md#unpublish-and-delete-preconditions).
 
 **Default fake behavior:** Member PUT creates an absent Entry at version 1 when Content
 Type is present, regardless of Version; without Content Type it returns 400 and leaves
@@ -153,7 +153,7 @@ coherent confirmation, raw requests, and unconditional whole-Entry destroy seque
 reference](https://www.contentful.com/developers/docs/references/content-management-api/taxonomy/),
 first-party concept [version
 headers](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/concept.ts#L38-L96),
-and the sanitized live matrix in [Taxonomy version behavior](taxonomy-version.md).
+and the sanitized live matrix in [Taxonomy version behavior](../research/taxonomy.md).
 
 **Default fake behavior:** Create returns version 1. Successful PATCH increments the
 version. PATCH and DELETE compare the supplied version. Taxonomy DELETE distinguishes
@@ -212,9 +212,8 @@ until an empty page.
 
 **Coverage:** Client and provider tests cover decoding and pagination without metadata;
 fake tests cover emitted metadata, the 100-item maximum, stable pages, and out-of-range
-skip echoing. A team-specific out-of-range request could not be observed on the
-available disposable organization, so the fake's existing 200 response with an empty
-page is retained without claiming direct conformance for that status and item behavior.
+skip echoing. A successful team-specific out-of-range response was not established by the
+retained evidence; the fake's 200 empty-page response is a fixture convention.
 
 ### Delivery API key locking
 
@@ -222,7 +221,7 @@ page is retained without claiming direct conformance for that status and item be
 reference](https://www.contentful.com/developers/docs/references/content-management-api/api-keys/update-a-delivery-api-key/),
 first-party [API-key
 adapter](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/api-key.ts#L26-L76),
-and the sanitized direct observation below.
+and the [sanitized direct observation](../research/delivery-api-keys.md#versioning-observations).
 
 **Default fake behavior:** Create returns `sys.version: 0`; update with version 0
 returns version 1; reusing version 0 returns 409 `Conflict` with a nonempty message.
@@ -238,13 +237,13 @@ resources.
 
 **Evidence:** The [CMA entries
 reference](https://www.contentful.com/developers/docs/references/content-management-api/entries/)
-documents that all empty fields are omitted from responses and that an entry with no set
-fields omits the top-level `fields` member. The first-party entry adapter decodes full
+documents that the Get an entry response omits all empty fields and omits the top-level
+`fields` member when no fields are set. The first-party entry adapter decodes full
 entry responses for [GET and
 list](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/entry.ts#L27-L83)
 and [update and
 publish](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/lib/adapters/REST/endpoints/entry.ts#L133-L185).
-The sanitized [Entry null and omission probe](entry-null-and-omission.md) observed
+The sanitized [Entry null and omission probe](../research/entry-fields.md) observed
 Create and Update accepting a raw JSON-null field and omitting it from mutation,
 publish, and GET responses, while localized objects containing null remained present.
 Applying the documented empty-array projection to every Entry response endpoint remains
@@ -317,7 +316,7 @@ endpoint-scoped 429 no-replay and marker outcomes.
 
 ### Preview environment configuration
 
-**Evidence:** The [preview environment contract](content-preview-environments.md)
+**Evidence:** The [preview environment contract](../research/content-preview-environments.md)
 records direct CMA and Web App observations; the HTTP endpoints are undocumented.
 
 **Default fake behavior:** The fake merges configurations by content type identity,
@@ -336,8 +335,8 @@ guarantee.
 
 ### Live preview variables
 
-**Evidence:** The [variables contract and pinned probe
-ledger](live-preview-variables.md) record direct CMA observations.
+**Evidence:** The [variables reference](../research/live-preview-variables.md) records sanitized
+direct CMA observations.
 
 **Default fake behavior:** The fake replaces the complete document, validates payloads
 against an en-US fixture and the observed Text boundary, canonicalizes arrays, checks
@@ -351,104 +350,21 @@ parent cleanup are documented mock conventions.
 preservation. Literal client fixtures check decoding. Mocked Terraform tests check
 lifecycle behavior and recovery from service validation errors.
 
-## Sanitized direct observations
+## External evidence index
 
-### Webhook topics
+Sanitized API observations live independently of test-server coverage:
 
-A disposable Webhook probe submitted omitted, empty, and one-element `topics`
-to an existing disposable test space. The retained probe record excludes the
-bearer token, space ID, generated Webhook ID, request IDs, and unrelated Webhook
-data. Each invalid request was followed by a read that confirmed no Create or
-Update occurred, and each successfully created probe was deleted.
+| Concern | API reference |
+| --- | --- |
+| Webhook topics, defaults, headers, and Basic password | [Webhooks](../research/webhooks.md#direct-configuration-observations) |
+| Editor Interface sidebar values | [Editor Interfaces](../research/editor-interfaces.md) |
+| Delivery API key versions | [Delivery API key versions](../research/delivery-api-keys.md#versioning-observations) |
+| Entry publication and deletion | [Entry lifecycle](../research/entry-lifecycle.md) |
+| Entry and team collections | [Collections and errors](../research/collections-and-errors.md) |
+| Asynchronous environment status | [Environment readiness](../research/environment-readiness.md) |
 
-| Request | Status | Structural observation |
-| --- | ---: | --- |
-| `POST /spaces/{space}/webhook_definitions` with omitted `topics` | 422 | `ValidationFailed`; error name `invalid_type`, path `topics`, expected array but received undefined; no matching Webhook was created |
-| `POST /spaces/{space}/webhook_definitions` with `topics: []` | 422 | `ValidationFailed`; error name `topics`, empty path, `Topics cannot be empty`; no matching Webhook was created |
-| `POST /spaces/{space}/webhook_definitions` with `topics: ["Entry.publish"]` | 200 | One-topic configuration was accepted and returned unchanged |
-| `PUT /spaces/{space}/webhook_definitions/{webhook}` with omitted `topics` | 422 | Same missing-topic validation shape as Create; the existing Webhook remained unchanged |
-| `PUT /spaces/{space}/webhook_definitions/{webhook}` with `topics: []` | 422 | Same empty-topic validation shape as Create; the existing Webhook remained unchanged |
-| `DELETE /spaces/{space}/webhook_definitions/{webhook}` | 204 | The disposable probes were removed |
-
-### Webhook defaults and headers
-
-Separate disposable Webhook probes recorded only response-member presence,
-selected Boolean values, and whether an ordinary test header value matched the
-request. They did not retain the bearer token, space ID, generated Webhook IDs,
-request IDs, or unrelated Webhook data.
-
-| Request | Status | Structural observation |
-| --- | ---: | --- |
-| Create with `active` and `headers` omitted | 200 | Response contained `active: true` and `headers: []` |
-| Update with `active` omitted | 200 | Response contained `active: true` |
-| Update after storing a header, with `headers` omitted | 200 | Response contained `headers: []`; the prior header was absent |
-| Create with a header whose `secret` member was omitted | 200 | Response omitted `secret` but retained the ordinary header value unchanged |
-| Create with a header whose `secret` member was `false` | 200 | Response contained Boolean `secret: false` and retained the ordinary value |
-
-### Editor Interface defaults
-
-A disposable Content Type was created and activated to make its Editor
-Interface available. Two separate Editor Interface updates compared an omitted
-sidebar `disabled` member with explicit `false`. The Content Type was
-deactivated and deleted afterward. The retained probe record contains no
-credentials or resource identifiers.
-
-| Request | Status | Structural observation |
-| --- | ---: | --- |
-| Editor Interface update with `sidebar[].disabled` omitted | 200 | Response omitted `disabled` |
-| Editor Interface update with `sidebar[].disabled: false` | 200 | Response contained Boolean `disabled: false` |
-
-### Delivery API key versions
-
-A disposable Delivery API key was created in an existing disposable test space,
-updated once, sent one stale update, and deleted. Only status codes, `sys.type`,
-`sys.version`, response-member presence, and the error classification were
-printed. The management token, space and environment IDs, API-key ID, delivery
-and preview tokens, and response bodies were neither printed nor retained.
-
-| Request | Status | Structural observation |
-| --- | ---: | --- |
-| `POST /spaces/{space}/api_keys` | 201 | `sys.type: ApiKey`, `sys.version: 0`; delivery and preview token members were present but not read or recorded |
-| `PUT /spaces/{space}/api_keys/{key}` with `X-Contentful-Version: 0` | 200 | `sys.type: ApiKey`, `sys.version: 1`; token members remained present but were not read or recorded |
-| Repeated PUT with stale `X-Contentful-Version: 0` | 409 | `sys.type: Error`, `sys.id: Conflict`, nonempty message, no details member |
-| `DELETE /spaces/{space}/api_keys/{key}` | 204 | Empty response; the disposable key was removed |
-
-### Entry publication versions
-
-A disposable Content Type and Entry were used to probe the successful
-Entry publication relationship. The bearer token and generated resource IDs
-were not printed. Only status codes and the selected version fields below were
-printed; complete response bodies were not retained.
-
-| Request | Relevant header | Status | Structural observation |
-| --- | --- | ---: | --- |
-| `PUT /spaces/{space}/environments/{environment}/content_types/{content-type}` | — | 201 | `sys.version: 1` |
-| `PUT /spaces/{space}/environments/{environment}/content_types/{content-type}/published` | `X-Contentful-Version: 1` | 200 | The disposable Content Type was activated |
-| `PUT /spaces/{space}/environments/{environment}/entries/{entry}` | `X-Contentful-Content-Type: {content-type}` | 201 | `sys.version: 1` |
-| `PUT /spaces/{space}/environments/{environment}/entries/{entry}/published` | `X-Contentful-Version: 1` | 200 | `sys.version: 2`, `sys.publishedVersion: 1` |
-
-A later disposable [whole-Entry unpublish probe](entry-unpublish-version.md)
-retained only structural observations. Unpublish returned HTTP 200 with an Entry
-whose `version` advanced by one beyond the pending draft and whose
-`publishedVersion` was absent; a subsequent GET returned the same tuple.
-
-### Collection offsets
-
-A read-only `GET /spaces/{space}/environments/{environment}/entries?skip=999999&limit=2`
-probe returned 200
-with `sys.type: Array`, echoed `skip: 999999` and `limit: 2`, and returned an
-empty item list. No entry data or identifiers were printed or retained. This
-establishes that the fake must echo an out-of-range skip rather than clamp it to
-the collection length.
-
-A read-only `GET /organizations/{organization}/teams?skip=999999&limit=1` probe
-used bearer authentication against a disposable organization. Contentful
-returned 403 with `sys.type: Error` and `sys.id: FeatureNotEnabled`, so the probe
-did not establish the team endpoint's out-of-range success behavior. The
-management token, organization ID, request ID, message, and response body were
-neither printed nor retained. The published User Management API contract still
-establishes that a successful collection response must report the requested
-skip.
+These references preserve source revisions, observation or record dates, and
+unverified behavior. Updating a fake does not refresh the external evidence.
 
 ## Intentionally unmodelled behavior
 
@@ -473,3 +389,19 @@ skip.
 - Eventual consistency beyond environment readiness is not simulated. A focused
   handler should model a concrete observed transition before it is added to the
   generic fake.
+
+### Live preview variables fixture details
+
+The locale inventory is fixed to `en-US`; configurable environment locale
+inventories are not modeled. The 50,000-character Text limit counts Unicode
+code points. That convention reproduces the observed ASCII boundary and accepted
+BMP/astral examples; combining-sequence and grapheme semantics remain unverified.
+Missing-parent PUT/DELETE and cleanup after environment deletion are mock lifecycle
+conventions, not observations from the variables probes.
+
+Alias routing, response update metadata, HEAD, trailing-slash GET, and service-style
+404 responses for POST/PATCH and the space-level route are not modeled. Generated
+handler errors use ordinary JSON, including conflicts; independent client fixtures
+cover vendor-JSON decoding. Whole non-object request bodies receive generated
+decoder errors; the Terraform client sends an object envelope. Authentication
+distinctions remain the shared fake's behavior.

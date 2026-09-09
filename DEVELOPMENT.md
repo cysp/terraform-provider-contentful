@@ -63,7 +63,7 @@ does not establish that remote CI passed.
 ## Documentation authoring
 
 Practitioner-facing Registry documentation is generated with
-`terraform-plugin-docs`. The [documentation practices and provider examples](docs/research/provider-documentation.md)
+`terraform-plugin-docs`. The [documentation practices and provider examples](docs/design/provider-documentation.md)
 record the external guidance behind this authoring workflow. Change the authoritative input for the kind of
 information being documented, then regenerate and review the rendered output:
 
