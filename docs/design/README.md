@@ -29,6 +29,7 @@ to be checked when the API or client changes.
 | Entry publication, field values, and deletion | [Publication lifecycle](../research/entry-publication-lifecycle-evidence.md), [null and omission](../research/entry-null-and-omission.md), [unpublish versions](../research/entry-unpublish-version.md), and [destroy lifecycle](../research/entry-destroy-lifecycle.md) |
 | Taxonomy locking | [Taxonomy versions](../research/taxonomy-version.md) |
 | Credentials | [App signing secret](../research/app-signing-secret.md) and [Delivery API key environments](../research/delivery-api-key-environments.md) |
+| App Event subscriptions, App Actions, deployment, and related resources | [App Framework resource model, APIs, data, and behavior](../research/app-event-resources.md) |
 | Extensions and Space Enablements | [Extension source values](../research/extension-source-values.md) and [Space Enablements values](../research/space-enablement-values.md) |
 | Content preview | [Preview environments](../research/content-preview-environments.md) and [Live Preview variables](../research/live-preview-variables.md) |
 | Webhooks, Editor Interfaces, collections, and shared mock behavior | [CMA test-server conformance boundaries](../research/cma-test-server-conformance.md) |
