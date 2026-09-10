@@ -41,7 +41,10 @@ redaction conventions](../README.md#evidence-and-redaction) apply throughout thi
 | Shared public-documentation review | 2026-09-09; App Framework study pages, with source-specific reviews below. Signing-secret wire research has separate provenance linked below. |
 | Aggregate Function usage documentation | 2026-09-10; the [usage reference](functions.md#usage-and-observability) records endpoint and overview differences. |
 | Resource Entities display-mapping guide | 2026-09-10; the [mapping reference](native-external-references.md#resourceprovider-resourcetype-and-resource) retains the pinned first-party example. |
+| App Parameters and installation size documentation | 2026-09-10; [configuration](configuration.md#appdefinition-and-appinstallation-data) records Secret access and the guide/overview size disagreement. |
 | Direct configuration observations | 2026-09-08 (UTC); disposable, uninstalled app configuration, with the experiment scope below. |
+| Supplied read-only observations | 2026-09-09 (UTC); existing installations, environment actions, Function discovery and logs, and ResourceType collections. The focused references retain the observed projections and pagination limits. |
+| Supplied installation-parameter observations | 2026-09-09 (UTC); one existing installation in a concrete environment, with only `Symbol` declarations. [Configuration](configuration.md#installation-parameter-replacement) records the PUT/read-back comparisons. |
 
 Shared first-party source comparisons use these revisions unless a reference supplies a
 different pin:
@@ -50,11 +53,15 @@ different pin:
 - [node-apps-toolkit](https://github.com/contentful/node-apps-toolkit/tree/64fa31b6b2223cd1c8b1798fa540e8aad5e2d319), commit `64fa31b6b2223cd1c8b1798fa540e8aad5e2d319`.
 - [create-contentful-app / app-scripts](https://github.com/contentful/create-contentful-app/tree/909e37a3e55a1e5851bdc35f49ac9c5c34b64d4e), commit `909e37a3e55a1e5851bdc35f49ac9c5c34b64d4e`.
 
-The configuration probes changed disposable, uninstalled configuration only. No content
-was changed, app installed, HTTP event delivered, action invoked, or Function executed.
-External-resource resolution was not exercised. These results establish configuration
-behavior for the tested requests, not end-to-end execution or availability for another
-tenant. Published [configuration limits](configuration.md#appdefinition-and-appinstallation-data)
+The direct configuration probes changed disposable, uninstalled configuration only.
+No content was changed, app installed, HTTP event delivered, action invoked, or
+Function executed. External-resource resolution was not exercised. The later read-only
+study inspected existing configuration and logs without generating executions. The
+separate parameter study updated an existing installation and compared its returned
+configuration after each request; it did not install or remove an app. None of these
+studies establishes end-to-end delivery or availability for another tenant.
+
+Published [configuration limits](configuration.md#appdefinition-and-appinstallation-data)
 and [Function availability](functions.md#runtime-and-availability) come from cited
 documentation. The
 [signing-secret wire evidence](request-signing.md#appsigningsecret-wire-contract-and-sources)
@@ -196,7 +203,7 @@ version locking do not override those specific shapes. [Subscription entity][eve
 | Cross-environment installations | Organization filter `sys.organization.sys.id[in]` plus optional `sys.space.sys.id[in]`; the SDK's `spaceId` query shorthand becomes the latter wire field. [Installation adapter][installation-sdk], [query conversion][query-utils]. |
 | Function discovery | Definition and installation collections support `accepts[all]` in their declared query contract. [Function adapter][function-sdk]. |
 | External Resource search/lookup | Cursor collection: `items`, `limit`, optional `pages.next`/`pages.prev`, without required `skip` or `total`; query details are in [Native external references](native-external-references.md). [Resource adapter][resource-sdk], [shared types][common-types]. |
-| FunctionLog | Declared request keys include `limit`, `pageNext`, and `pagePrev`, plus creation-time bounds. The adapter's generic offset-collection return annotation is not evidence that the log service uses offset pagination. Follow the dedicated log contract. [Log adapter][log-sdk], [log reference][logs]. |
+| FunctionLog | Declared request keys include `limit`, `pageNext`, and `pagePrev`, plus creation-time bounds. [Observed log collections](functions.md#function-invocation-context-and-logs) returned `sys`, `pages`, and summary `items`, without ordinary offset metadata. The adapter's generic offset-collection annotation differs from that wire projection. [Log adapter][log-sdk], [log reference][logs]. |
 
 The CMA also documents a general `cursor=true` mechanism. Its availability, filter
 support, and pagination defaults must be taken from the endpoint in use. SDK `select`
@@ -230,6 +237,10 @@ entity][event-entity], [details entity][details-entity], [action entity][action-
 Read responses have different reconstruction limits. Subscription target/topics are
 returned configuration. A signing secret read returns only a suffix; a key read does not
 recover private key material. Bundle metadata does not reconstruct the upload archive.
+Declared Secret installation parameters have [credential-dependent
+redaction](configuration.md#appdefinition-and-appinstallation-data). Environment action
+and installation Function discovery can return reduced projections, as their focused
+references describe.
 Call status and log records are generated runtime data. These differences remain
 relevant to backup, export, reconciliation, and drift analysis regardless of the client
 managing them.
@@ -239,7 +250,10 @@ managing them.
 Mutation and omission behavior remains resource-specific. The [subscription
 observations](events.md#observed-wire-behavior) and [App Action
 observations](actions.md) record different required fields, replacement rules, and
-validation results. They do not establish a common App Framework merge policy.
+validation results. The [installation parameter
+experiment](configuration.md#installation-parameter-replacement) distinguishes
+whole-field omission, required-field validation, and map replacement for its tested
+declarations. These results do not establish a common App Framework merge policy.
 
 A child GET 404 after parent deletion establishes inaccessibility through that address,
 not an internal cascade-storage policy. A 403 is an authorization or availability

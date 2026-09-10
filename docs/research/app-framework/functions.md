@@ -5,8 +5,8 @@ Function logs and aggregate usage describe runtime activity; their retention and
 pagination contracts differ.
 
 See the [shared study scope and sources](README.md#scope-and-evidence) and [API
-inventory](README.md#api-inventory). No Function execution or log-reading experiment
-resolved the source differences below.
+inventory](README.md#api-inventory). The read-only observations below inspected existing
+Function logs; the experiment did not generate those executions.
 
 ## Runtime and availability
 
@@ -44,6 +44,8 @@ credentials in GraphQL delivery contexts. The supplied identity is scoped to the
 containing app's triggering space/environment; it does not authorize cross-space
 mutation. [Function CMA access][functions].
 
+### Function logs
+
 FunctionLog list/detail requests send `x-contentful-enable-alpha-feature: function-logs`
 in the pinned SDK. List parameters include `limit`, `pageNext` or `pagePrev`, and
 `sys.createdAt[gt]`, `[gte]`, `[lt]`, or `[lte]`. The SDK's cursor and interval unions
@@ -56,10 +58,28 @@ The SDK record exposes `requestId`, event data, severity counters (`info`, `warn
 `sys` identifies the log and links its space/environment/app definition. The public CMA
 example instead separates `eventType` from `event: {headers, body}`, and represents
 message timestamps and severity counts as strings where the SDK declares numbers. The
-SDK's event type is GraphQL-shaped. These source disagreements have not been resolved by
-an execution/log-reading experiment. The public list example is only `{}`; it does not
-establish a complete collection envelope. [Log entity][log-entity], [log
-detail][log-detail], [log list][log-list].
+SDK's event type is GraphQL-shaped. Neither source establishes every log variant. The
+public list example is only `{}`; it does not establish a complete collection envelope.
+[Log entity][log-entity], [log detail][log-detail], [log list][log-list].
+
+Observations from the [supplied read-only study](README.md#source-metadata) distinguish
+list summaries from individual log details:
+
+| Read | Observed representation |
+| --- | --- |
+| List, including empty lists and requests with `limit=1` | `{sys, pages, items}`, without `total`, `skip`, or `limit`. Items contained `sys`, numeric `severity.info`/`warn`/`error`, string `requestId`, and string `eventType`; `event` and `messages` were absent. |
+| Individual detail | Added `event` and `messages`. Where messages existed, `timestamp` was a JSON number and `message`/`type` were strings; severity counts were numbers. |
+
+Sampled `appevent.handler` and `appaction.call` event objects contained `headers`,
+`body`, and `type`; the `resources.search` sample contained `type`, `resourceType`,
+`query`, and `limit`. These shapes resolve numeric representation and summary/detail
+presence only for the inspected records. They do not establish timestamp units, all
+event variants, or GraphQL log shapes.
+
+One returned next-page link was followed successfully. Reverse paging, filter behavior,
+and stability under concurrent log creation were not tested. All requests included
+`x-contentful-enable-alpha-feature: function-logs`, as the SDK and public endpoint
+specify; the observations do not independently establish behavior without that header.
 
 ## Usage and observability
 
@@ -83,8 +103,9 @@ not AppEventSubscription delivery health. [Enterprise Observability][observabili
 
 ## Unresolved behavior
 
-Actual FunctionLog collection envelope and string/number coercions; Free-plan history
-beyond 45 days where usage documentation disagrees. No tenant usage data is retained.
+FunctionLog shapes beyond the sampled event types, timestamp units, reverse pagination,
+filter behavior, and header necessity; Free-plan history beyond 45 days where usage
+documentation disagrees. No tenant usage data is retained.
 
 [log-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/function-log.ts
 [log-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/function-log.ts

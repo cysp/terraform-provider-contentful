@@ -120,6 +120,19 @@ Omission is a read limitation: it cannot reconstruct the submitted password or p
 that a stored password still equals a previous value. Explicit response null and an
 absent property must not be assumed equivalent without evidence.
 
+## Existing-configuration read observations
+
+Observed: 2026-09-09 (UTC), passive collection reads and two definition-detail
+comparisons. Secret headers had exactly `key` and `secret`, without `value`, matching
+the [documented secret-header redaction][webhook-headers]. Definitions with a Basic
+authentication username omitted the password. Both sampled detail responses exactly
+matched their list items.
+
+The sample contained no repeated header names, including case-insensitive duplicates.
+That absence does not establish case-sensitive header identity, duplicate acceptance,
+or preservation of stored secret bytes. These reads strengthen the evidence for
+response redaction without testing delivery or secret replacement.
+
 ## Observation limits
 
 These configuration probes do not establish every secret-header projection, filter
@@ -131,6 +144,7 @@ inferred from an App Event subscription or the local test server.
 [webhook-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/webhook.ts
 [webhook-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/webhook.ts
 [webhook-filters]: https://www.contentful.com/developers/docs/extensibility/webhooks/filters/
+[webhook-headers]: https://www.contentful.com/developers/docs/extensibility/webhooks/headers/
 [webhook-security]: https://www.contentful.com/developers/docs/references/content-management-api/webhook-security/
 [webhook-overview]: https://www.contentful.com/developers/docs/extensibility/webhooks/overview/
 [webhook-activity]: https://www.contentful.com/developers/docs/extensibility/webhooks/activity-log/

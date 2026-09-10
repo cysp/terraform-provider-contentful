@@ -6,7 +6,8 @@ which organizations may install the app.
 
 See the [shared study scope and sources](README.md#scope-and-evidence) and [API
 inventory](README.md#api-inventory). The configuration probes used uninstalled apps;
-installation and access-grant behavior below comes from the cited sources.
+the separately scoped installation reads and parameter experiments below supplement
+the published installation contract. Access-grant behavior comes from cited sources.
 
 ## AppDefinition and AppInstallation data
 
@@ -38,12 +39,23 @@ propagate to installations. The SDK's create/update type difference does not
 independently prove whether POST can select a bundle. [App definitions][definitions],
 [definition entity][definition-entity].
 
-Installation parameter size and shape have conflicting source descriptions: the CMA
-overview describes an object limited to **16 kB** after stringification; the pinned SDK
-comment says **32 KB**, and its free-form type also permits arrays and scalars. Neither
-the exact byte boundary nor non-object acceptance was tested. Cloning an environment is
+Installation parameter size has conflicting source descriptions: the CMA overview
+describes an object limited to **16 kB** after stringification; the App Parameters guide
+and pinned SDK comment say **32 kB**. The exact byte boundary and counting rules remain
+unverified. The guide describes undeclared parameters as a free-form object, while the
+SDK type also permits arrays and scalars; the observations below establish rejection of
+those shapes only for the tested app with declarations. Cloning an environment is
 documented to copy installations and parameters. [App installations][installations],
-[installation entity][installation-entity], [free-form type][parameter-types].
+[App Parameters][app-parameters], [installation entity][installation-entity],
+[free-form type][parameter-types].
+
+The App Parameters guide documents redaction of values whose keys match `Secret`
+installation declarations when read through a personal access token in CMA or the App
+SDK in the Contentful UI. App Identities, App Events, and Functions can receive the raw
+values. Such a management read therefore cannot reconstruct the original secret for a
+backup or subsequent write. The redaction marker and Secret omission/replacement
+behavior were not exercised by the parameter experiment below. [Secret installation
+parameters][secret-parameters].
 
 Cross-environment discovery has a special SDK response: `{sys: {type: "Array"}, items:
 AppInstallation[], includes: {Environment: Environment[]}}`. It does not declare the
@@ -57,6 +69,62 @@ Marketplace installation terms acceptance uses `X-Contentful-Marketplace` with
 `i-accept-end-user-license-agreement,i-accept-marketplace-terms-of-service,i-accept-privacy-policy`
 when the SDK's `acceptAllTerms` is true. Looking up a definition does not supply that
 installation header. [Installation adapter][installation-sdk].
+
+### Observed installation reads
+
+The [supplied read-only study](README.md#source-metadata) covered environment-scoped
+collection and individual installation GETs. Both returned `sys.id` equal to the app
+definition ID and omitted `sys.version`, unlike the SDK declaration in the table above.
+Individual responses also contained actor links. Some reads omitted `parameters` and
+others returned objects; neither the SDK's inherited version nor parameter presence is
+a required wire field established by these samples.
+
+The collection included `includes.AppDefinition` and `includes.ResolvedAppDefinition`.
+The resolved projection exposed `src` and `sys.expiresAt`; its expiry behavior and a
+separately manageable resource were not established. Included definitions lacked the
+full definition's version metadata, so the includes do not reconstruct the writable
+organization-owned definition. A request with `limit=1&skip=1` returned the corresponding
+offset envelope and one item; it did not establish every filter or pagination default.
+
+Installation metadata read through an environment alias retained that alias in
+`sys.environment`. That link did not identify the concrete target independently of the
+request route. The alias target agreed at three checkpoints, which were separate
+snapshots rather than a guarantee against intervening retargeting. See [environment
+alias routing](../environment-aliases.md).
+
+### Installation parameter replacement
+
+The [supplied installation-parameter study](README.md#source-metadata) used one existing
+installation addressed through a concrete environment. Its AppDefinition declared only
+`Symbol` installation parameters, including one required parameter and no `Secret`
+parameters. Every comparison began with the same nonempty parameter object and used a
+GET after the PUT; accepted changes were restored before the next comparison.
+
+| Submitted PUT body | Outcome | Following GET |
+| --- | --- | --- |
+| `{}` | 200 | `parameters` absent; the previous object was removed. |
+| `{"parameters":null}` | 422, expected object | Original object unchanged. |
+| `{"parameters":[]}` | 422, expected object | Original object unchanged. |
+| `parameters` set to a string, Boolean, or number | 422, expected object for each request | Original object unchanged. |
+| `{"parameters":{}}` | 422, required parameter missing | Original object unchanged. |
+| Object omitting one existing optional key, retaining the required key and other values | 200 | Omitted key absent; remaining values preserved. |
+
+Validation errors used an array at `details.errors`. Object-type errors had
+`name: "type"` and `path: ["parameters"]`; the missing-required error had
+`name: "required"` and a path to the declared parameter, illustrated synthetically as
+`["parameters", "requiredParameter"]`.
+
+Accepted PUT responses and subsequent GETs agreed on parameter presence and value. In
+this installation, whole-field omission cleared the object, and a supplied object
+replaced the map rather than merging its keys. Keeping the required key in the partial
+object separated replacement behavior from required-field validation.
+
+Absence and an empty object were observably different: omission succeeded even with a
+required declaration, while a present empty object failed that declaration's
+validation. This is not evidence that every app rejects an empty object or accepts
+omission under every parameter declaration. Undeclared parameters, other declaration
+types, Secret values, accepted-object coercions, size boundaries, and concurrency
+guarantees remain untested.
 
 ## AppDetails
 
@@ -104,9 +172,10 @@ announcement](https://www.contentful.com/developers/changelog/app-sharing-easy-a
 
 ## Unresolved behavior
 
-Clearing/defaults for each optional field, direct bundle selection at definition POST,
-effects of changed parameter declarations on existing installations, exact parameter
-byte limit and non-object acceptance, and a complete role/concurrency matrix.
+Clearing/defaults for other optional definition fields, direct bundle selection at
+definition POST, effects of changed parameter declarations on existing installations,
+exact parameter byte limit, parameter behavior beyond the tested declarations, Secret
+replacement, and a complete role/concurrency matrix.
 
 Grant revocation effects on existing installations, exact targeted-grant enum, and
 derivation of shared metadata.
@@ -118,6 +187,8 @@ derivation of shared metadata.
 [details-tests]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/test/integration/app-details-integration.test.ts
 [definitions]: https://www.contentful.com/developers/docs/references/content-management-api/app-definitions/
 [installations]: https://www.contentful.com/developers/docs/references/content-management-api/app-installations/
+[app-parameters]: https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/
+[secret-parameters]: https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters
 [details]: https://www.contentful.com/developers/docs/references/content-management-api/app-details/
 [definition-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/app-definition.ts
 [installation-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/app-installation.ts
