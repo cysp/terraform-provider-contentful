@@ -4,8 +4,9 @@ An AppAction defines a callable capability; AppActionCall records one execution.
 Configuration, submission, and successful execution are separate API outcomes.
 
 See the [shared study scope and sources](README.md#scope-and-evidence) and [API
-inventory](README.md#api-inventory). The observations below cover action configuration;
-invocation, execution, and result validation were not exercised.
+inventory](README.md#api-inventory). The observations below cover action configuration
+and environment discovery; invocation, execution, and result validation were not
+exercised.
 
 ## AppAction definitions
 
@@ -104,6 +105,23 @@ calling-app access, and 404 for an absent action or installation of the app prov
 it. Older overview wording restricts callers to app identities, while the current guide
 describes manual user triggering; no caller-permission matrix was exercised here. [Call
 reference][calls], [CMA App Actions][action-reference].
+
+## Environment action discovery
+
+The pinned SDK annotates `GET E/actions` with the same `AppActionProps` used by the
+organization-owned action routes. In the [supplied read-only study](README.md#source-metadata),
+responses contained reduced items: `sys.id`, `sys.type`, `sys.appDefinition`, `category`,
+`name`, and `parameters` or `parametersSchema`, with optional `description` and
+`resultSchema`.
+Sampled items omitted action `type`, executor `url`/`function`, organization links, and
+timestamps. Related AppDefinitions appeared in the collection's includes. [Environment
+adapter][action-sdk].
+
+This discovery projection does not identify the executor kind or reconstruct the
+writable action. Its missing executor fields do not demonstrate removal from the
+organization-owned action, which was not read in this experiment. A request with
+`limit=1&skip=1` returned the corresponding offset envelope and one item; other query
+operators and pagination defaults were not tested.
 
 ## AppActionCall request and outcome
 

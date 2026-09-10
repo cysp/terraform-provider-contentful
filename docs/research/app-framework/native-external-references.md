@@ -43,6 +43,19 @@ cursor response without listing query parameters. This is an SDK forwarding gap,
 proof that the service ignores cursors; exhaustive environment discovery through that
 helper remains unverified. [Adapter][type-sdk], [endpoint][environment-types].
 
+The [supplied read-only study](README.md#source-metadata) exercised direct HTTP forward paging
+at `GET E/resource_types?limit=1`. Responses contained `{sys, items, limit, pages}`,
+without `total` or `skip`, and provided relative `pages.next` links. Following those
+links reached terminal `pages: {}`; concatenated items exactly matched the baseline
+collection, including order. This establishes forward paging for that existing
+collection independently of the SDK forwarding gap. Reverse paging, cursor internals,
+and stability during concurrent changes remain unverified.
+
+ResourceType discovery is distinct from `GET E/resource_types/{resource_type_id}/resources`,
+which resolves external data through a Function and may contact a third-party service.
+That resolution route was not exercised by the read-only experiment. [Resource
+Entities][resource-entities].
+
 | Function invocation | Pinned toolkit event and response shape |
 | --- | --- |
 | `resources.search` | Event contains resourceType and limit, optional query/locale/referencingEntryId/pages.nextCursor. Returns external-object `items` and `pages: {nextCursor?}`. |
@@ -69,7 +82,7 @@ Entities][resource-entities], [native references availability][native-references
 
 ResourceProvider ID mutability, provider/type deletion effects on existing links,
 missing/duplicate URNs, partial errors, ordering, Function reference validation, and
-pagination behavior across the SDK forwarding gap.
+reverse/concurrent pagination behavior and exhaustive discovery through the SDK helper.
 
 [provider-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/resource-provider.ts
 [type-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/resource-type.ts

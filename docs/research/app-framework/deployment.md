@@ -8,7 +8,7 @@ inventory](README.md#api-inventory). Upload and bundle observations establish
 configuration behavior; activation and Function execution were not exercised.
 [App configuration](configuration.md) describes the definition and its installations.
 
-## AppUpload, AppBundle, and activation
+## AppUpload and AppBundle
 
 AppUpload accepts zip bytes with `Content-Type: application/octet-stream` on the upload
 host. Its `sys.expiresAt` is authoritative; the reference describes a temporary lifetime
@@ -44,19 +44,7 @@ configuration results do not establish activation or runtime behavior. Function
 deployment and execution contracts in this reference are sourced from public
 documentation and tooling; they were not validated end to end.
 
-A deployed Function read exposes `name`, `description`, `path`, `accepts`, and optional
-`allowNetworks`. Its `sys` has the Function ID and organization/app links, timestamps
-and actor links, with no version in the SDK. Installation Function discovery returns the
-same app-owned projection; it does not describe an independently configured environment
-Function. [Function entity][function-entity].
-
-The specialized Function list query declares `accepts[all]`, not skip/limit, although
-its response uses the generic collection type. The CMA list example omits skip/limit and
-shows `accepts`/`allowNetworks` as strings, including `appaction.event`; the SDK
-declares arrays and the toolkit uses `appaction.call`. These example/type differences do
-not establish a validated wire union or alternative invocation name. [Function
-adapter][function-sdk], [Function example][function-list], [invocation
-types][function-types].
+## Function manifests and activation
 
 Function manifests identify `id`, `name`, `description`, `path`, `accepts`, and optional
 outbound `allowNetworks`. Functions are managed through the bundle deployment workflow;
@@ -77,6 +65,35 @@ at this stage. Bundle creation success therefore does not prove Function deploym
 success. The CLI also excludes the selected bundle from cleanup; that policy is not
 evidence of a server rejection for selected-bundle DELETE. [Activation
 implementation][activation], [cleanup implementation][bundle-cleanup].
+
+## Function discovery
+
+The pinned SDK declares Function fields `name`, `description`, `path`, `accepts`, and
+optional `allowNetworks`. Its `sys` has the Function ID and organization/app links,
+timestamps and actor links, with no version. The installation discovery adapter uses
+that same entity type; this declaration does not establish identical field presence in
+every response scope. [Function entity][function-entity], [adapter][function-sdk].
+
+The specialized Function list query declares `accepts[all]`, not skip/limit, although
+its response uses the generic collection type. The CMA list example omits skip/limit and
+shows `accepts`/`allowNetworks` as strings, including `appaction.event`; the SDK
+declares arrays and the toolkit uses `appaction.call`. These example/type differences do
+not establish a validated wire union or alternative invocation name. [Function
+adapter][function-sdk], [Function example][function-list], [invocation
+types][function-types].
+
+The [supplied read-only study](README.md#source-metadata) found a separate installation
+discovery projection at `GET I/functions`: `{sys, items, total}`, without `skip` or
+`limit`. Nonempty items contained `sys`, `name`, `description`, and array-valued `accepts`,
+but omitted `path` and `allowNetworks`. Their metadata linked the app definition and
+organization and omitted `sys.version`. These app-owned references do not describe an
+independently configured environment Function. The discovery projection is insufficient
+to reconstruct a complete Function manifest.
+
+For each sampled nonempty collection, `accepts[all]=appaction.call` returned exactly its
+matching subset. This supports that single-value filter in installation discovery;
+multi-value filtering and server defaults remain untested. No definition-scoped
+Function read, deployment, or execution was performed by this experiment.
 
 ## Unresolved behavior
 

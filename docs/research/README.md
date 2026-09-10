@@ -24,11 +24,15 @@ API.
 | Entry lifecycle | [Publication, versions, and deletion](entry-lifecycle.md): version locking, published versions, unpublish, and delete preconditions |
 | Entry fields | [Null and omission](entry-fields.md): defaults, full-body replacement, raw null, and localized null |
 | Entry metadata | [Tag and concept ordering](entry-metadata.md): immediate versus later representations and duplicate links |
-| Taxonomy | [Concept and concept scheme versions](taxonomy.md): required headers, validation, conflicts, and deletion |
+| Taxonomy | [Concept representations, pagination, and versions](taxonomy.md): response fields, relationships, cursor traversal, required headers, conflicts, and deletion |
 | Delivery API keys | [Environment selection and versions](delivery-api-keys.md): omission, empty arrays, null, Preview API key relationships, and locking |
 | UI Extensions | [Source values](ui-extensions.md): `src`, `srcdoc`, empty sources, and switching |
-| Editor Interfaces | [Sidebar values](editor-interfaces.md): absent versus explicit `disabled: false` |
+| Editor Interfaces | [Response identity and sidebar values](editor-interfaces.md): list/detail metadata, collection envelope, and absent versus explicit `disabled: false` |
+| UI Config | [Singleton identity and returned configuration](ui-config.md): metadata discrepancies, views, Timeline, and read limits |
+| Locales | [Resource identity and raw responses](locales.md): ID versus code, `internal_code`, null fallback, and SDK projection |
+| Space access | [Role and TeamSpaceMembership representations](space-access.md): permission unions and static list/detail comparisons |
 | Environments | [Creation readiness](environment-readiness.md): asynchronous status and completion boundaries |
+| Environment aliases | [Routing and response identity](environment-aliases.md): alias/target comparisons and returned environment links |
 | Space Enablements | [Request values](space-enablements.md): routes, default-document creation, coupled features, and validation |
 | Content preview | [Preview environments](content-preview-environments.md): space-level URL configuration, merge/disable behavior, selected IDs, and concurrency |
 | Custom preview tokens | [Live preview variables](live-preview-variables.md): environment-level storage, locale values, normalization, and versioning |

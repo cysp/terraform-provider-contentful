@@ -1,7 +1,8 @@
-# Taxonomy: concept and concept scheme versions
+# Taxonomy: concept representations, pagination, and versions
 
-Taxonomy PATCH and DELETE require the resource's current version. Direct probes observed
-different errors for omitted or nonpositive versions and for stale versions. Those error
+Taxonomy concepts and concept schemes have organization-scoped representations and
+cursor collections. PATCH and DELETE require the resource's current version. Direct
+probes observed different errors for omitted or nonpositive versions and for stale versions. Those error
 classifications are endpoint-specific; the general CMA update error description does not
 establish Taxonomy behavior.
 
@@ -9,8 +10,34 @@ establish Taxonomy behavior.
 
 Concepts are organization-scoped at
 `/organizations/{organization_id}/taxonomy/concepts/{concept_id}`; concept schemes use
-`.../taxonomy/concept-schemes/{concept_scheme_id}`. This reference covers PATCH and
-DELETE locking, not every Taxonomy operation or payload.
+`.../taxonomy/concept-schemes/{concept_scheme_id}`. Their parent paths expose the
+collections. This reference covers sampled reads, pagination, and PATCH/DELETE locking,
+not every Taxonomy operation or payload.
+
+## Read representations and pagination
+
+The [CMA concept collection example][concepts] includes `conceptSchemes`, `changeNote`,
+and `sys.organization`. Those members are absent from the pinned [SDK concept
+type][concept-type]. The SDK also declares localized note fields and links to broader
+and related concepts. Its [concept scheme type][scheme-type] includes `topConcepts`,
+`concepts`, and `totalConcepts`. An SDK omission does not make a documented API property
+undocumented or establish whether that property is writable.
+
+Observed: 2026-09-09 (UTC), passive collection and detail reads. Concept responses
+included all three members missing from the pinned concept type; `changeNote` was
+explicitly null in all five sampled concepts. This preserves a raw null case distinct
+from the localized object shown in the published example.
+
+Both concept and scheme collections returned `sys`, `limit`, `items`, and `pages`,
+without ordinary offset metadata. Following the returned concept `pages.next` link
+produced a second page with disjoint IDs. The sampled scheme collection ended with an
+empty `pages` object. The first concept and scheme detail responses matched their list
+items. One scheme's `totalConcepts` equaled its `concepts` array length, and a separately
+read member concept linked back to that scheme.
+
+These comparisons establish forward traversal and one consistent relationship
+snapshot. They do not establish a complete graph, reverse paging, stable ordering under
+concurrent changes, or how relationship updates converge.
 
 ## Published CMA contract
 
@@ -132,3 +159,7 @@ identifier returned HTTP 404.
 The probes cover omitted, zero, negative-one, exact, and stale integer versions, not
 malformed strings, arbitrary negative values, or concurrent clients. The initial version
 and increment are observations, not promises of version arithmetic.
+
+[concepts]: https://www.contentful.com/developers/docs/references/content-management-api/taxonomy/get-concepts/
+[concept-type]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/concept.ts
+[scheme-type]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/concept-scheme.ts
