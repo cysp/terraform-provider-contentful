@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
@@ -38,7 +39,7 @@ resource "contentful_entry" "test" {
 `, managed)
 	}
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config: config("one"),
 			Check: func(*terraform.State) error {
@@ -154,7 +155,7 @@ resource "contentful_entry" "test" {
 `, managed)
 	}
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config: configIgnoringDefault("one"),
 			Check: func(*terraform.State) error {
@@ -245,7 +246,7 @@ resource "contentful_entry" "test" {
 	}
 	managed := `jsonencode({ "en-US" = "one" })`
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config: config(managed, true, false),
 			Check: func(*terraform.State) error {
@@ -338,7 +339,7 @@ func TestAccEntryResourceUpdateRejectsResponseOnlyField(t *testing.T) {
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("one")},
 		{
 			PreConfig: func() {
@@ -380,7 +381,7 @@ func TestAccEntryResourceUpdatePublishRejectsResponseOnlyField(t *testing.T) {
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("one")},
 		{
 			PreConfig: func() {
@@ -426,7 +427,7 @@ resource "contentful_entry" "test" {
 }
 `
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config},
 		{
 			PreConfig: recorder.reset,
@@ -434,16 +435,14 @@ resource "contentful_entry" "test" {
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
 			}},
-			Check: resource.ComposeTestCheckFunc(
-				resource.TestCheckResourceAttr("contentful_entry.test", "metadata.tags.#", "2"),
-				resource.TestCheckResourceAttr("contentful_entry.test", "metadata.tags.0", "first"),
-				resource.TestCheckResourceAttr("contentful_entry.test", "metadata.tags.1", "second"),
-				func(*terraform.State) error {
-					requireNoEntryMutations(t, recorder, "response reordering must not write or publish an Entry")
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("metadata").AtMapKey("tags"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("first"), knownvalue.StringExact("second")})),
+			},
+			Check: func(*terraform.State) error {
+				requireNoEntryMutations(t, recorder, "response reordering must not write or publish an Entry")
 
-					return nil
-				},
-			),
+				return nil
+			},
 		},
 	}})
 }
@@ -466,7 +465,7 @@ resource "contentful_entry" "test" {
 `, first, second)
 	}
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("first", "second")},
 		{
 			PreConfig: recorder.reset,
@@ -474,21 +473,20 @@ resource "contentful_entry" "test" {
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionUpdate),
 			}},
-			Check: resource.ComposeTestCheckFunc(
-				resource.TestCheckResourceAttr("contentful_entry.test", "metadata.tags.0", "second"),
-				resource.TestCheckResourceAttr("contentful_entry.test", "metadata.tags.1", "first"),
-				func(*terraform.State) error {
-					requireNoEntryMutations(t, recorder, "reordering metadata must not write or publish an Entry")
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("metadata").AtMapKey("tags"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("second"), knownvalue.StringExact("first")})),
+			},
+			Check: func(*terraform.State) error {
+				requireNoEntryMutations(t, recorder, "reordering metadata must not write or publish an Entry")
 
-					entry := getTestEntry(t, server)
-					metadata, ok := entry.Metadata.Get()
-					require.True(t, ok)
-					require.Equal(t, "first", metadata.Tags[0].Sys.ID)
-					require.Equal(t, "second", metadata.Tags[1].Sys.ID)
+				entry := getTestEntry(t, server)
+				metadata, ok := entry.Metadata.Get()
+				require.True(t, ok)
+				require.Equal(t, "first", metadata.Tags[0].Sys.ID)
+				require.Equal(t, "second", metadata.Tags[1].Sys.ID)
 
-					return nil
-				},
-			),
+				return nil
+			},
 		},
 	}})
 }
@@ -510,7 +508,7 @@ resource "contentful_entry" "test" {
 `, attributeName)
 	}
 
-	ContentfulProviderMockedResourceTest(t, fixture.recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, fixture.recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("concepts"), ExpectError: regexp.MustCompile(`Duplicate List Value`)},
 		{Config: config("tags"), ExpectError: regexp.MustCompile(`Duplicate List Value`)},
 	}})

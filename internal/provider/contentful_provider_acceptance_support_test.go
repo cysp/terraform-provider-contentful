@@ -5,14 +5,24 @@ import (
 	"net/http/httptest"
 	"os"
 	"sync"
-	"sync/atomic"
 	"testing"
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/require"
 )
+
+func makeTestAccProtoV6ProviderFactories(options ...Option) map[string]func() (tfprotov6.ProviderServer, error) {
+	return map[string]func() (tfprotov6.ProviderServer, error){
+		"contentful": func() (tfprotov6.ProviderServer, error) {
+			return providerserver.NewProtocol6WithError(New("test", options...))()
+		},
+	}
+}
+
+var testAccProtoV6ProviderFactories = makeTestAccProtoV6ProviderFactories()
 
 type resourceTestHandlerResult interface {
 	handlerError() error
@@ -28,47 +38,19 @@ func parallelWhenMocked(t *testing.T) {
 	}
 }
 
-func ContentfulProviderMockedResourceTest(t *testing.T, server http.Handler, testcase resource.TestCase) {
+func testAccMockedResource(t *testing.T, server http.Handler, testcase resource.TestCase) {
 	t.Helper()
 
-	contentfulProviderMockableResourceTest(t, server, true, testcase)
+	testAccResource(t, server, true, testcase)
 }
 
-func ContentfulProviderMockedResourceTestWithFactoryCounter(
-	t *testing.T,
-	handler http.Handler,
-	testcase resource.TestCase,
-	factoryCalls *atomic.Int64,
-) {
+func testAccMockableResource(t *testing.T, server http.Handler, testcase resource.TestCase) {
 	t.Helper()
 
-	if result, ok := handler.(resourceTestHandlerResult); ok {
-		t.Cleanup(func() {
-			require.NoError(t, result.handlerError())
-		})
-	}
-
-	testserver := httptest.NewServer(handler)
-	t.Cleanup(testserver.Close)
-
-	baseFactory := makeTestAccProtoV6ProviderFactories(ContentfulProviderOptionsWithHTTPTestServer(testserver)...)["contentful"]
-	testcase.ProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-		"contentful": func() (tfprotov6.ProviderServer, error) {
-			factoryCalls.Add(1)
-
-			return baseFactory()
-		},
-	}
-	resource.Test(t, testcase)
+	testAccResource(t, server, false, testcase)
 }
 
-func ContentfulProviderMockableResourceTest(t *testing.T, server http.Handler, testcase resource.TestCase) {
-	t.Helper()
-
-	contentfulProviderMockableResourceTest(t, server, false, testcase)
-}
-
-func contentfulProviderMockableResourceTest(t *testing.T, handler http.Handler, alwaysMock bool, testcase resource.TestCase) {
+func testAccResource(t *testing.T, handler http.Handler, alwaysMock bool, testcase resource.TestCase) {
 	t.Helper()
 
 	if result, ok := handler.(resourceTestHandlerResult); ok {
@@ -80,7 +62,7 @@ func contentfulProviderMockableResourceTest(t *testing.T, handler http.Handler, 
 	switch {
 	case alwaysMock || os.Getenv("TF_ACC_MOCKED") != "":
 		if testcase.ProtoV6ProviderFactories != nil {
-			t.Fatal("tc.ProtoV6ProviderFactories must be nil")
+			t.Fatal("testcase.ProtoV6ProviderFactories must be nil for mocked acceptance tests")
 		}
 
 		var testserver *httptest.Server
@@ -89,7 +71,7 @@ func contentfulProviderMockableResourceTest(t *testing.T, handler http.Handler, 
 			t.Cleanup(testserver.Close)
 		}
 
-		testcase.ProtoV6ProviderFactories = makeTestAccProtoV6ProviderFactories(ContentfulProviderOptionsWithHTTPTestServer(testserver)...)
+		testcase.ProtoV6ProviderFactories = makeTestAccProtoV6ProviderFactories(testProviderOptionsWithHTTPServer(testserver)...)
 		resource.Test(t, testcase)
 
 	default:
@@ -108,7 +90,7 @@ func contentfulProviderMockableResourceTest(t *testing.T, handler http.Handler, 
 	}
 }
 
-func ContentfulProviderOptionsWithHTTPTestServer(testserver *httptest.Server) []Option {
+func testProviderOptionsWithHTTPServer(testserver *httptest.Server) []Option {
 	if testserver == nil {
 		return nil
 	}

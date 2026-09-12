@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewTypedObjectFromAttributes(t *testing.T) {
@@ -33,7 +34,6 @@ func TestNewTypedObjectFromAttributes(t *testing.T) {
 		expected.AddAttributeError(path.Root("string"), "invalid data", "attribute missing: string")
 
 		object, objectDiags := NewTypedObjectFromAttributes[testTypedObjectNestedStruct](t.Context(), map[string]attr.Value{})
-		assert.NotNil(t, object)
 		assert.Equal(t, expected, objectDiags)
 		assert.Empty(t, object.Value().string)
 		assert.True(t, object.Value().String.IsNull())
@@ -49,7 +49,6 @@ func TestNewTypedObjectFromAttributes(t *testing.T) {
 			"unexported_string": types.StringValue("test"),
 			"string":            types.StringValue("test"),
 		})
-		assert.NotNil(t, object)
 		assert.Equal(t, expected, objectDiags)
 		assert.Empty(t, object.Value().string)
 		assert.Equal(t, "test", object.Value().String.ValueString())
@@ -61,20 +60,14 @@ func TestNewTypedObjectFromAttributes(t *testing.T) {
 		nestedObject, nestedObjectDiags := NewTypedObjectFromAttributes[testTypedObjectNestedStruct](t.Context(), map[string]attr.Value{
 			"string": types.StringValue("nested test"),
 		})
-		if nestedObjectDiags.HasError() {
-			t.Fatalf("Failed to create nested typed object: %v", nestedObjectDiags)
-		}
+		require.False(t, nestedObjectDiags.HasError(), nestedObjectDiags)
 
 		object, objectDiags := NewTypedObjectFromAttributes[testTypedObjectStruct](t.Context(), map[string]attr.Value{
 			"string":        types.StringValue("test"),
 			"nested_object": nestedObject,
 		})
 
-		if objectDiags.HasError() {
-			t.Fatalf("Failed to create typed object: %v", objectDiags)
-		}
-
-		assert.NotNil(t, object)
+		require.False(t, objectDiags.HasError(), objectDiags)
 
 		assert.Empty(t, object.Value().string)
 		assert.Equal(t, "test", object.Value().String.ValueString())

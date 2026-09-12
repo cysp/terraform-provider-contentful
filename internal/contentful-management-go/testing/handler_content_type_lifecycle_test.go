@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -21,7 +20,7 @@ func TestActivateContentTypeUsesContentfulPublicationVersioning(t *testing.T) {
 	assert.False(t, created.Sys.PublishedVersion.IsSet())
 	assert.False(t, created.Sys.PublishedAt.IsSet())
 
-	staleResponse, err := handler.ActivateContentType(context.Background(), contentTypeActivateParams(0))
+	staleResponse, err := handler.ActivateContentType(t.Context(), contentTypeActivateParams(0))
 	require.NoError(t, err)
 	requireContentfulConflictWithNonemptyMessage(t, staleResponse, cm.ErrorSysIDVersionMismatch)
 
@@ -39,11 +38,11 @@ func TestDeactivateAndDeleteContentTypeUsesContentfulLifecycle(t *testing.T) {
 	created := createContentType(t, handler, &request)
 	activated := activateContentType(t, handler, created.Sys.Version)
 
-	deletePublishedResponse, err := handler.DeleteContentType(context.Background(), contentTypeDeleteParams())
+	deletePublishedResponse, err := handler.DeleteContentType(t.Context(), contentTypeDeleteParams())
 	require.NoError(t, err)
 	requireContentfulError(t, deletePublishedResponse, http.StatusBadRequest, "BadRequest", "Cannot delete published")
 
-	deactivateResponse, err := handler.DeactivateContentType(context.Background(), contentTypeDeactivateParams())
+	deactivateResponse, err := handler.DeactivateContentType(t.Context(), contentTypeDeactivateParams())
 	require.NoError(t, err)
 
 	deactivated, deactivatedOK := deactivateResponse.(*cm.ContentType)
@@ -52,17 +51,17 @@ func TestDeactivateAndDeleteContentTypeUsesContentfulLifecycle(t *testing.T) {
 	assert.False(t, deactivated.Sys.PublishedVersion.IsSet())
 	assert.False(t, deactivated.Sys.PublishedAt.IsSet())
 
-	deactivateAgainResponse, err := handler.DeactivateContentType(context.Background(), contentTypeDeactivateParams())
+	deactivateAgainResponse, err := handler.DeactivateContentType(t.Context(), contentTypeDeactivateParams())
 	require.NoError(t, err)
 	requireContentfulError(t, deactivateAgainResponse, http.StatusBadRequest, "BadRequest", "Not published")
 
-	deleteResponse, err := handler.DeleteContentType(context.Background(), contentTypeDeleteParams())
+	deleteResponse, err := handler.DeleteContentType(t.Context(), contentTypeDeleteParams())
 	require.NoError(t, err)
 
 	_, deleted := deleteResponse.(*cm.NoContent)
 	require.True(t, deleted)
 
-	editorResponse, err := handler.GetEditorInterface(context.Background(), contentTypeEditorInterfaceParams())
+	editorResponse, err := handler.GetEditorInterface(t.Context(), contentTypeEditorInterfaceParams())
 	require.NoError(t, err)
 	requireContentfulError(t, editorResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "EditorInterface not found")
 }
@@ -76,7 +75,7 @@ func TestPutContentTypeRejectsRemovingPublishedNonOmittedField(t *testing.T) {
 	activated := activateContentType(t, handler, created.Sys.Version)
 
 	request.Fields = request.Fields[:1]
-	response, err := handler.PutContentType(context.Background(), &request, contentTypePutParams(activated.Sys.Version))
+	response, err := handler.PutContentType(t.Context(), &request, contentTypePutParams(activated.Sys.Version))
 	require.NoError(t, err)
 	requireContentfulError(
 		t,
@@ -105,7 +104,7 @@ func TestPutContentTypeRejectsRemovingFieldOmittedOnlyInDraft(t *testing.T) {
 	request.Fields[1].Omitted = cm.NewOptBool(true)
 	draft := putContentType(t, handler, &request, activated.Sys.Version)
 	request.Fields = request.Fields[:1]
-	response, err := handler.PutContentType(context.Background(), &request, contentTypePutParams(draft.Sys.Version))
+	response, err := handler.PutContentType(t.Context(), &request, contentTypePutParams(draft.Sys.Version))
 	require.NoError(t, err)
 	requireContentfulError(
 		t,
@@ -172,7 +171,7 @@ func TestPutContentTypeAllowsRemovingNonOmittedFieldAfterDeactivation(t *testing
 	created := createContentType(t, handler, &request)
 	activateContentType(t, handler, created.Sys.Version)
 
-	response, err := handler.DeactivateContentType(context.Background(), contentTypeDeactivateParams())
+	response, err := handler.DeactivateContentType(t.Context(), contentTypeDeactivateParams())
 	require.NoError(t, err)
 
 	deactivated, ok := response.(*cm.ContentType)
@@ -200,7 +199,7 @@ func contentTypeRequestWithRemovableField() cm.ContentTypeRequestData {
 func getContentType(t *testing.T, handler *cmt.Handler) *cm.ContentType {
 	t.Helper()
 
-	response, err := handler.GetContentType(context.Background(), cm.GetContentTypeParams{
+	response, err := handler.GetContentType(t.Context(), cm.GetContentTypeParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type",
 	})
 	require.NoError(t, err)
@@ -235,7 +234,7 @@ func contentTypeDeleteParams() cm.DeleteContentTypeParams {
 func activateContentType(t *testing.T, handler *cmt.Handler, version int) cm.ContentType {
 	t.Helper()
 
-	response, err := handler.ActivateContentType(context.Background(), contentTypeActivateParams(version))
+	response, err := handler.ActivateContentType(t.Context(), contentTypeActivateParams(version))
 	require.NoError(t, err)
 
 	return requireContentTypeStatusCode(t, response, http.StatusOK)

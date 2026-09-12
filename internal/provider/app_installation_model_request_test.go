@@ -146,7 +146,8 @@ func TestToAppInstallationData(t *testing.T) {
 
 			req, diags := test.model.ToAppInstallationData()
 
-			requestBody, _ := req.MarshalJSON()
+			requestBody, err := req.MarshalJSON()
+			require.NoError(t, err)
 
 			assert.Equal(t, test.expectedRequestBody, string(requestBody))
 

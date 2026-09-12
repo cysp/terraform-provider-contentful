@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -18,7 +17,7 @@ func TestPutEditorInterfaceRequiresActivatedContentType(t *testing.T) {
 	contentTypeRequest := newContentTypeRequest()
 	createContentType(t, handler, &contentTypeRequest)
 
-	response, err := handler.PutEditorInterface(context.Background(), &cm.EditorInterfaceData{}, cm.PutEditorInterfaceParams{
+	response, err := handler.PutEditorInterface(t.Context(), &cm.EditorInterfaceData{}, cm.PutEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
 	})
 	require.NoError(t, err)
@@ -44,7 +43,7 @@ func TestPutEditorInterfaceUsesContentfulVersioning(t *testing.T) {
 			FieldId: "title", WidgetNamespace: cm.NewOptString("builtin"), WidgetId: cm.NewOptString("singleLine"),
 		}}),
 	}
-	response, err := handler.PutEditorInterface(context.Background(), &editorInterfaceRequest, cm.PutEditorInterfaceParams{
+	response, err := handler.PutEditorInterface(t.Context(), &editorInterfaceRequest, cm.PutEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
 	})
 	require.NoError(t, err)
@@ -54,7 +53,7 @@ func TestPutEditorInterfaceUsesContentfulVersioning(t *testing.T) {
 	assert.Equal(t, http.StatusOK, statusCode.StatusCode)
 	assert.Equal(t, 2, statusCode.Response.Sys.Version)
 
-	staleResponse, err := handler.PutEditorInterface(context.Background(), &editorInterfaceRequest, cm.PutEditorInterfaceParams{
+	staleResponse, err := handler.PutEditorInterface(t.Context(), &editorInterfaceRequest, cm.PutEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
 	})
 	require.NoError(t, err)
@@ -68,7 +67,7 @@ func TestActivateContentTypeSynchronizesEditorInterface(t *testing.T) {
 	request := newContentTypeRequest()
 	created := createContentType(t, handler, &request)
 
-	editorResponse, err := handler.GetEditorInterface(context.Background(), contentTypeEditorInterfaceParams())
+	editorResponse, err := handler.GetEditorInterface(t.Context(), contentTypeEditorInterfaceParams())
 	require.NoError(t, err)
 	requireContentfulError(t, editorResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "EditorInterface not found")
 
@@ -97,7 +96,7 @@ func TestActivateContentTypePreservesClearedEditorInterfaceControls(t *testing.T
 	created := createContentType(t, handler, &request)
 	activated := activateContentType(t, handler, created.Sys.Version)
 
-	response, err := handler.PutEditorInterface(context.Background(), &cm.EditorInterfaceData{}, cm.PutEditorInterfaceParams{
+	response, err := handler.PutEditorInterface(t.Context(), &cm.EditorInterfaceData{}, cm.PutEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
 	})
 	require.NoError(t, err)
@@ -126,7 +125,7 @@ func TestActivateContentTypeAddsControlsOnlyForNewFields(t *testing.T) {
 	editorInterfaceRequest := cm.EditorInterfaceData{
 		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{}),
 	}
-	response, err := handler.PutEditorInterface(context.Background(), &editorInterfaceRequest, cm.PutEditorInterfaceParams{
+	response, err := handler.PutEditorInterface(t.Context(), &editorInterfaceRequest, cm.PutEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
 	})
 	require.NoError(t, err)
@@ -195,7 +194,7 @@ func contentTypeEditorInterfaceParams() cm.GetEditorInterfaceParams {
 func getEditorInterface(t *testing.T, handler *cmt.Handler) *cm.EditorInterface {
 	t.Helper()
 
-	response, err := handler.GetEditorInterface(context.Background(), contentTypeEditorInterfaceParams())
+	response, err := handler.GetEditorInterface(t.Context(), contentTypeEditorInterfaceParams())
 	require.NoError(t, err)
 
 	editorInterface, ok := response.(*cm.EditorInterface)

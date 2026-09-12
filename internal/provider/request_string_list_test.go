@@ -5,14 +5,13 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestRequireKnownStringListElements(t *testing.T) {
+func TestKnownStringListElements(t *testing.T) {
 	t.Parallel()
 
 	t.Run("known", func(t *testing.T) {
@@ -49,7 +48,7 @@ func TestRequireKnownStringListElements(t *testing.T) {
 
 		assert.Nil(t, actual)
 		require.True(t, diags.HasError())
-		assert.Equal(t, []string{"values[1]", "values[2]"}, requestDiagnosticPaths(t, diags))
+		assert.Equal(t, []string{"values[1]", "values[2]"}, attributeDiagnosticPaths(t, diags))
 	})
 }
 
@@ -111,22 +110,7 @@ func TestKnownOptionalStringSetElements(t *testing.T) {
 
 			assert.Nil(t, actual)
 			require.True(t, diags.HasError())
-			assert.Equal(t, test.expectedDiagnostics, requestDiagnosticPaths(t, diags))
+			assert.Equal(t, test.expectedDiagnostics, attributeDiagnosticPaths(t, diags))
 		})
 	}
-}
-
-func requestDiagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
-	t.Helper()
-
-	paths := make([]string, 0, len(diags.Errors()))
-
-	for _, diagnostic := range diags.Errors() {
-		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
-		require.True(t, ok)
-
-		paths = append(paths, withPath.Path().String())
-	}
-
-	return paths
 }

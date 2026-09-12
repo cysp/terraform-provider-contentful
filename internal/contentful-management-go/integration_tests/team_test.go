@@ -24,7 +24,7 @@ func TestCreateTeamAcceptsJSONContentTypes(t *testing.T) {
 				Description: cm.NewNilString(""),
 			})
 
-			testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, http.MethodPost, r.Method)
 				assert.Equal(t, "/organizations/organization-id/teams", r.URL.Path)
 
@@ -32,9 +32,9 @@ func TestCreateTeamAcceptsJSONContentTypes(t *testing.T) {
 				w.WriteHeader(http.StatusCreated)
 				assert.NoError(t, json.NewEncoder(w).Encode(team))
 			}))
-			defer testserver.Close()
+			t.Cleanup(testServer.Close)
 
-			client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+			client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 			response, err := client.CreateTeam(t.Context(), &cm.TeamData{
 				Name:        "Test Team",
@@ -55,19 +55,8 @@ func TestCreateTeamAcceptsJSONContentTypes(t *testing.T) {
 func TestGetTeamAcceptsJSONContentTypes(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]struct {
-		contentType string
-	}{
-		"application/json": {
-			contentType: "application/json",
-		},
-		"application/vnd.contentful.management.v1+json": {
-			contentType: "application/vnd.contentful.management.v1+json",
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
+	for _, contentType := range []string{"application/json", "application/vnd.contentful.management.v1+json"} {
+		t.Run(contentType, func(t *testing.T) {
 			t.Parallel()
 
 			team := cmt.NewTeamFromFields("organization-id", "team-id", cm.TeamData{
@@ -75,16 +64,16 @@ func TestGetTeamAcceptsJSONContentTypes(t *testing.T) {
 				Description: cm.NewNilString(""),
 			})
 
-			testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, http.MethodGet, r.Method)
 				assert.Equal(t, "/organizations/organization-id/teams/team-id", r.URL.Path)
 
-				w.Header().Set("Content-Type", test.contentType)
+				w.Header().Set("Content-Type", contentType)
 				assert.NoError(t, json.NewEncoder(w).Encode(team))
 			}))
-			defer testserver.Close()
+			t.Cleanup(testServer.Close)
 
-			client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+			client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 			response, err := client.GetTeam(t.Context(), cm.GetTeamParams{
 				OrganizationID: "organization-id",
@@ -102,7 +91,7 @@ func TestGetTeamAcceptsJSONContentTypes(t *testing.T) {
 func TestGetTeamsAcceptsListItemsWithoutVersion(t *testing.T) {
 	t.Parallel()
 
-	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method)
 		assert.Equal(t, "/organizations/organization-id/teams", r.URL.Path)
 		assert.Equal(t, "Bearer "+cmt.ValidAccessToken, r.Header.Get("Authorization"))
@@ -136,9 +125,9 @@ func TestGetTeamsAcceptsListItemsWithoutVersion(t *testing.T) {
 			},
 		}))
 	}))
-	defer testserver.Close()
+	t.Cleanup(testServer.Close)
 
-	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+	client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 	response, err := client.GetTeams(t.Context(), cm.GetTeamsParams{
 		OrganizationID: "organization-id",
@@ -157,16 +146,16 @@ func TestGetTeamsAcceptsListItemsWithoutVersion(t *testing.T) {
 func TestGetTeamsAcceptsCollectionWithoutPaginationMetadata(t *testing.T) {
 	t.Parallel()
 
-	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 			"sys":   map[string]any{"type": "Array"},
 			"items": []any{},
 		}))
 	}))
-	defer testserver.Close()
+	t.Cleanup(testServer.Close)
 
-	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+	client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 	response, err := client.GetTeams(t.Context(), cm.GetTeamsParams{
 		OrganizationID: "organization-id",
@@ -193,7 +182,7 @@ func TestPutTeamAcceptsJSONContentTypes(t *testing.T) {
 				Description: cm.NewNilString(""),
 			})
 
-			testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, http.MethodPut, r.Method)
 				assert.Equal(t, "/organizations/organization-id/teams/team-id", r.URL.Path)
 				assert.Equal(t, "7", r.Header.Get("X-Contentful-Version"))
@@ -201,9 +190,9 @@ func TestPutTeamAcceptsJSONContentTypes(t *testing.T) {
 				w.Header().Set("Content-Type", contentType)
 				assert.NoError(t, json.NewEncoder(w).Encode(team))
 			}))
-			defer testserver.Close()
+			t.Cleanup(testServer.Close)
 
-			client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+			client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 			response, err := client.PutTeam(t.Context(), &cm.TeamData{
 				Name:        "Test Team",

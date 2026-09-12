@@ -123,9 +123,10 @@ func executeRawContentTypeRequest(t *testing.T, server *httptest.Server, request
 	response, err := server.Client().Do(request)
 	require.NoError(t, err)
 
+	defer func() { require.NoError(t, response.Body.Close()) }()
+
 	responseBody, err := io.ReadAll(response.Body)
 	require.NoError(t, err)
-	require.NoError(t, response.Body.Close())
 
 	return response.StatusCode, responseBody
 }

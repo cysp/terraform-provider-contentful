@@ -21,8 +21,8 @@ func TestJSONMarshalEscaping(t *testing.T) {
 
 	actual, err := json.Marshal(input)
 
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
-	assert.NoError(t, err)
 }
 
 func TestJxNormalizeOpaqueBytes(t *testing.T) {
@@ -88,8 +88,8 @@ func TestJxNormalizeOpaqueBytes(t *testing.T) {
 
 			actual, err := util.JxNormalizeOpaqueBytes(testcase.input, util.JxEncodeOpaqueOptions{EscapeStrings: false})
 
+			require.NoError(t, err)
 			assert.Equal(t, testcase.expected, actual)
-			assert.NoError(t, err)
 		})
 
 		t.Run(name+" with escaped strings", func(t *testing.T) {
@@ -102,8 +102,8 @@ func TestJxNormalizeOpaqueBytes(t *testing.T) {
 				expected = testcase.expected
 			}
 
-			assert.Equal(t, expected, actual)
 			require.NoError(t, err)
+			assert.Equal(t, expected, actual)
 			assert.True(t, json.Valid(actual), "normalized output must be valid JSON")
 		})
 	}
@@ -147,8 +147,8 @@ func TestJxDecodeOpaque(t *testing.T) {
 	decoder := jx.DecodeBytes(input)
 	actual, err := util.JxDecodeOpaque(decoder)
 
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
-	assert.NoError(t, err)
 }
 
 func TestJxEncodeOpaqueOrdered(t *testing.T) {
@@ -218,8 +218,8 @@ func TestJxEncodeOpaqueOrdered(t *testing.T) {
 	encoder := jx.Encoder{}
 	err := util.JxEncodeOpaqueOrdered(&encoder, input, util.JxEncodeOpaqueOptions{EscapeStrings: false})
 
+	require.NoError(t, err)
 	assert.Equal(t, expected, string(encoder.Bytes()))
-	assert.NoError(t, err)
 }
 
 func TestJxEncodeOpaqueOrderedInvalid(t *testing.T) {

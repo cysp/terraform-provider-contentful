@@ -209,7 +209,7 @@ func newTerraformTestRuntime(t *testing.T) *terraformTestRuntime {
 	t.Helper()
 
 	if os.Getenv("TF_ACC") == "" {
-		t.Skip("TF_ACC must be set for Terraform CLI tests")
+		t.Skip("TF_ACC must be set for Terraform acceptance tests")
 	}
 
 	terraformPath := os.Getenv("TF_ACC_TERRAFORM_PATH")
@@ -217,7 +217,7 @@ func newTerraformTestRuntime(t *testing.T) *terraformTestRuntime {
 		var err error
 
 		terraformPath, err = exec.LookPath("terraform")
-		require.NoError(t, err, "Terraform CLI is required for acceptance tests")
+		require.NoError(t, err, "Terraform CLI must be on PATH or set with TF_ACC_TERRAFORM_PATH")
 	}
 
 	_, filename, _, ok := runtime.Caller(0)

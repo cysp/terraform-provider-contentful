@@ -57,7 +57,7 @@ func TestAccEntryListResourceQuery(t *testing.T) {
 		}),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},
@@ -163,7 +163,7 @@ func TestAccEntryListResourceNotFoundEnvironment(t *testing.T) {
 		"environment_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},

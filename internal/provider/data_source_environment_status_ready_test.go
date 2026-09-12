@@ -11,6 +11,9 @@ import (
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -80,17 +83,17 @@ func TestAccEnvironmentStatusReadyDataSourceRead(t *testing.T) {
 		"environment_id": config.StringVariable("master"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.contentful_environment_status_ready.test", "id", "0p38pssr0fi3/master"),
-					resource.TestCheckResourceAttr("data.contentful_environment_status_ready.test", "space_id", "0p38pssr0fi3"),
-					resource.TestCheckResourceAttr("data.contentful_environment_status_ready.test", "environment_id", "master"),
-					resource.TestCheckResourceAttr("data.contentful_environment_status_ready.test", "status", "ready"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("data.contentful_environment_status_ready.test", tfjsonpath.New("id"), knownvalue.StringExact("0p38pssr0fi3/master")),
+					statecheck.ExpectKnownValue("data.contentful_environment_status_ready.test", tfjsonpath.New("space_id"), knownvalue.StringExact("0p38pssr0fi3")),
+					statecheck.ExpectKnownValue("data.contentful_environment_status_ready.test", tfjsonpath.New("environment_id"), knownvalue.StringExact("master")),
+					statecheck.ExpectKnownValue("data.contentful_environment_status_ready.test", tfjsonpath.New("status"), knownvalue.StringExact("ready")),
+				},
 			},
 		},
 	})
@@ -110,17 +113,17 @@ func TestAccEnvironmentStatusReadyDataSourcePolling(t *testing.T) {
 		"environment_id": config.StringVariable("environment-id"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.contentful_environment_status_ready.test", "id", "space-id/environment-id"),
-					resource.TestCheckResourceAttr("data.contentful_environment_status_ready.test", "space_id", "space-id"),
-					resource.TestCheckResourceAttr("data.contentful_environment_status_ready.test", "environment_id", "environment-id"),
-					resource.TestCheckResourceAttr("data.contentful_environment_status_ready.test", "status", "ready"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("data.contentful_environment_status_ready.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/environment-id")),
+					statecheck.ExpectKnownValue("data.contentful_environment_status_ready.test", tfjsonpath.New("space_id"), knownvalue.StringExact("space-id")),
+					statecheck.ExpectKnownValue("data.contentful_environment_status_ready.test", tfjsonpath.New("environment_id"), knownvalue.StringExact("environment-id")),
+					statecheck.ExpectKnownValue("data.contentful_environment_status_ready.test", tfjsonpath.New("status"), knownvalue.StringExact("ready")),
+				},
 			},
 		},
 	})
@@ -143,7 +146,7 @@ func TestAccEnvironmentStatusReadyDataSourceFailedStopsImmediately(t *testing.T)
 		statusesToServe: []string{"failed"},
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -173,7 +176,7 @@ func TestAccEnvironmentStatusReadyDataSourceInProgressTimesOut(t *testing.T) {
 		statusesToServe: []string{"inProgress"},
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -205,7 +208,7 @@ func TestAccEnvironmentStatusReadyDataSourceNotFound(t *testing.T) {
 		"environment_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

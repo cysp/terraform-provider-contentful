@@ -1,4 +1,4 @@
-package provider_test
+package provider
 
 import (
 	"testing"
@@ -14,7 +14,7 @@ func attributeDiagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
 
 	for _, diagnostic := range diags.Errors() {
 		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
-		require.True(t, ok)
+		require.True(t, ok, "expected attribute diagnostic, got %T: %s", diagnostic, diagnostic.Summary())
 
 		paths = append(paths, withPath.Path().String())
 	}

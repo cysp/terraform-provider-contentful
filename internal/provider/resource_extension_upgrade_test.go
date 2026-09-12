@@ -120,7 +120,7 @@ terraform {
 ` + currentConfig
 
 	additionalCLIOptions := &testingresource.AdditionalCLIOptions{}
-	options := ContentfulProviderOptionsWithHTTPTestServer(testserver)
+	options := testProviderOptionsWithHTTPServer(testserver)
 	stateChecks := []statecheck.StateCheck{
 		statecheck.ExpectKnownValue("contentful_extension.test", tfjsonpath.New("extension").AtMapKey("src"), source.wantSrc),
 		statecheck.ExpectKnownValue("contentful_extension.test", tfjsonpath.New("extension").AtMapKey("srcdoc"), source.wantSrcdoc),

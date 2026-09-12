@@ -14,6 +14,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/stretchr/testify/require"
 )
 
 func deleteTaxonomyConceptRemote(server *cmt.Server, organizationID, conceptID string) error {
@@ -586,16 +587,12 @@ func deleteTaxonomyConceptOutOfBand(t *testing.T, server *cmt.Server, organizati
 	t.Helper()
 
 	err := deleteTaxonomyConceptRemote(server, organizationID, conceptID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func deleteTaxonomyConceptSchemeOutOfBand(t *testing.T, server *cmt.Server, organizationID, schemeID string) {
 	t.Helper()
 
 	err := deleteTaxonomyConceptSchemeRemote(server, organizationID, schemeID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }

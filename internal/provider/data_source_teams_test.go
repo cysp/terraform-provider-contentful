@@ -45,24 +45,21 @@ func TestAccTeamsDataSourceRead(t *testing.T) {
 		Description: cm.NewNilString("The first team."),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: config.Variables{
 					"organization_id": config.StringVariable(organizationID),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "id", organizationID),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "organization_id", organizationID),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.#", "2"),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.0.team_id", "team-a"),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.0.name", "First Team"),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.0.description", "The first team."),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.1.team_id", "team-b"),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.1.name", "Second Team"),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.1.description", "The second team."),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("id"), knownvalue.StringExact(organizationID)),
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("organization_id"), knownvalue.StringExact(organizationID)),
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("teams"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectExact(map[string]knownvalue.Check{"team_id": knownvalue.StringExact("team-a"), "name": knownvalue.StringExact("First Team"), "description": knownvalue.StringExact("The first team.")}),
+						knownvalue.ObjectExact(map[string]knownvalue.Check{"team_id": knownvalue.StringExact("team-b"), "name": knownvalue.StringExact("Second Team"), "description": knownvalue.StringExact("The second team.")}),
+					})),
+				},
 			},
 		},
 	})
@@ -76,17 +73,17 @@ func TestAccTeamsDataSourceEmpty(t *testing.T) {
 
 	organizationID := "2zuSjSO4A0e6GKBrhJRe2m"
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: config.Variables{
 					"organization_id": config.StringVariable(organizationID),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "id", organizationID),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.#", "0"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("id"), knownvalue.StringExact(organizationID)),
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("teams"), knownvalue.ListSizeExact(0)),
+				},
 			},
 		},
 	})
@@ -151,7 +148,7 @@ func TestAccTeamsDataSourcePagination(t *testing.T) {
 		}
 	})
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -161,19 +158,17 @@ func TestAccTeamsDataSourcePagination(t *testing.T) {
 				// The data source sorts by team_id; positions below verify that contract.
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("teams").AtSliceIndex(0).AtMapKey("description"), knownvalue.Null()),
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("teams"), knownvalue.ListSizeExact(101)),
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("teams").AtSliceIndex(0).AtMapKey("team_id"), knownvalue.StringExact("team-000")),
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("teams").AtSliceIndex(100).AtMapKey("team_id"), knownvalue.StringExact("team-100")),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.#", "101"),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.0.team_id", "team-000"),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.100.team_id", "team-100"),
-					func(*terraform.State) error {
-						if actual := requestCount.Load(); actual != 2 {
-							return fmt.Errorf("%w: expected 2, got %d", errUnexpectedTeamListRequestCount, actual)
-						}
+				Check: func(*terraform.State) error {
+					if actual := requestCount.Load(); actual != 2 {
+						return fmt.Errorf("%w: expected 2, got %d", errUnexpectedTeamListRequestCount, actual)
+					}
 
-						return nil
-					},
-				),
+					return nil
+				},
 			},
 		},
 	})
@@ -195,7 +190,7 @@ func TestAccTeamsDataSourceAPIError(t *testing.T) {
 		}
 	})
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -239,24 +234,24 @@ func TestAccTeamsDataSourcePaginationWithoutTotal(t *testing.T) {
 		}
 	})
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: config.Variables{
 					"organization_id": config.StringVariable("organization-id"),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.#", "1"),
-					resource.TestCheckResourceAttr("data.contentful_teams.test", "teams.0.team_id", "team-id"),
-					func(*terraform.State) error {
-						if actual := requestCount.Load(); actual != 2 {
-							return fmt.Errorf("%w: expected 2, got %d", errUnexpectedTeamListRequestCount, actual)
-						}
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("teams"), knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue("data.contentful_teams.test", tfjsonpath.New("teams").AtSliceIndex(0).AtMapKey("team_id"), knownvalue.StringExact("team-id")),
+				},
+				Check: func(*terraform.State) error {
+					if actual := requestCount.Load(); actual != 2 {
+						return fmt.Errorf("%w: expected 2, got %d", errUnexpectedTeamListRequestCount, actual)
+					}
 
-						return nil
-					},
-				),
+					return nil
+				},
 			},
 		},
 	})
@@ -282,7 +277,7 @@ func TestAccTeamsDataSourceAssignment(t *testing.T) {
 		Name: "Duplicate Unrelated Team",
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -291,10 +286,10 @@ func TestAccTeamsDataSourceAssignment(t *testing.T) {
 					"space_id":        config.StringVariable("space-id"),
 					"team_name":       config.StringVariable("SCIM Managed Team"),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_team_space_membership.test", "team_id", "team-id"),
-					resource.TestCheckResourceAttr("contentful_team_space_membership.test", "space_id", "space-id"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_team_space_membership.test", tfjsonpath.New("team_id"), knownvalue.StringExact("team-id")),
+					statecheck.ExpectKnownValue("contentful_team_space_membership.test", tfjsonpath.New("space_id"), knownvalue.StringExact("space-id")),
+				},
 			},
 		},
 	})

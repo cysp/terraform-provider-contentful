@@ -38,7 +38,7 @@ func TestAccResourceTypeResourceLifecycle(t *testing.T) {
 		Function: cm.NewFunctionLink("function-id"),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		CheckDestroy: func(_ *terraform.State) error {
 			response, err := server.Handler().GetResourceType(t.Context(), cm.GetResourceTypeParams{OrganizationID: "organization-id", AppDefinitionID: "app-definition-id", ResourceTypeID: "resource-provider:test"})
 			require.NoError(t, err)
@@ -96,14 +96,14 @@ func TestAccResourceTypeResourceImport(t *testing.T) {
 		Function: cm.NewFunctionLink("function-id"),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_resource_type.test", "id", "organization-id/app-definition-id/resource-provider:test"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_resource_type.test", tfjsonpath.New("id"), knownvalue.StringExact("organization-id/app-definition-id/resource-provider:test")),
+				},
 			},
 			{
 				ConfigDirectory:   config.TestNameDirectory(),

@@ -31,7 +31,7 @@ between provider-wide invariants and resource-specific contracts.
   payloads; `*_model_response.go` projects CMA responses into Terraform values.
   Shared `request_*.go` and `response_*.go` helpers implement value conversion.
 - `internal/provider/*_test.go` exercises those boundaries.
-  `contentful_provider_testing_test.go` wires the mocked/live acceptance-test
+  `contentful_provider_acceptance_support_test.go` wires the mocked/live acceptance-test
   harness; `internal/contentful-management-go/testing/` implements the in-process
   CMA server and fixtures.
 - `internal/contentful-management-go/` contains the generated Contentful
@@ -179,13 +179,13 @@ fi
 With `TF_ACC` unset, run the normal unit and local integration test suite:
 
 ```sh
-go test ./...
+go test -race -shuffle=on -count=1 -timeout=10m ./...
 ```
 
 Run a focused package or test while iterating:
 
 ```sh
-go test ./internal/provider -run TestContentTypeModelRoundTrip -count=1
+go test ./internal/provider -run '^TestModelType$' -count=1 -timeout=5m
 ```
 
 ### Mocked acceptance tests
@@ -194,7 +194,7 @@ Run a focused mocked lifecycle test, then broaden to the mocked acceptance suite
 when the change requires it:
 
 ```sh
-TF_ACC=1 TF_ACC_MOCKED=1 go test ./internal/provider -run '^TestAccRoleResourceCreateUpdateDelete$' -count=1
+TF_ACC=1 TF_ACC_MOCKED=1 go test ./internal/provider -run '^TestAccRoleResourceCreateUpdateDelete$' -count=1 -timeout=5m
 TF_ACC=1 TF_ACC_MOCKED=1 go test ./internal/provider -run '^TestAcc' -count=1 -timeout 15m
 ```
 
@@ -223,7 +223,9 @@ for example `go test ./internal/provider -run '^$' -fuzz '^FuzzExtensionModelRou
 
 Install Terraform on `PATH` or set `TF_ACC_TERRAFORM_PATH` to an existing binary
 for reproducible acceptance runs. The framework can otherwise download Terraform;
-the direct CLI presentation tests require an installed binary. Registry-upgrade
+the direct CLI presentation tests require an installed binary and do not use
+`TF_ACC_TERRAFORM_VERSION`. Set `TF_ACC_TERRAFORM_PATH` to select the same
+installed executable for every test in the suite. Registry-upgrade
 tests always use local Contentful servers but download the pinned released
 provider from the Terraform registry, even with `TF_ACC_MOCKED=1`.
 
@@ -238,7 +240,8 @@ merely to speed up tests. Query tests require Terraform 1.14 and skip on 1.13.
 ### CI coverage
 
 The [test workflow](.github/workflows/test.yml) defines the Terraform version
-matrix. CI runs the ordinary suite once, mocked acceptance tests on the two
+matrix. CI runs the full ordinary suite with cross-package coverage, race
+detection, and randomized test order, mocked acceptance tests on the two
 newest stable Terraform minors, and authorized live acceptance on the newest
 stable minor when the repository secret is available. The explicit minor ranges
 select the latest patch in each minor; update them together through review when
@@ -247,28 +250,19 @@ status check names before merging. This matrix defines CI coverage, not a minimu
 supported Terraform version. See the workflow for the separate ordinary, client,
 mocked, and live coverage flags.
 
+### Diagnosing failures
+
+For order-dependent failures, rerun with the `-shuffle=<seed>` printed by Go.
+Add `-v` for test and subtest progress. Use `TF_LOG=DEBUG` or
+`TF_ACC_PERSIST_WORKING_DIR=1` for focused acceptance debugging; logs and
+retained Terraform state may contain credentials. To verify that a changed
+assertion executes, temporarily give it an impossible expected value, observe
+the intended failure, then restore it.
+
 ### Test conventions
 
-Name comparable acceptance scenarios `TestAcc<Subject>Resource<Scenario>`,
-`TestAcc<Subject>DataSource<Scenario>`, or `TestAcc<Subject>ListResource<Scenario>`.
-Keep combined resource contracts named for their shared concern. Use `Test` for
-unit, protocol, and local HTTP tests, and `Fuzz` for fuzz targets; spell acronyms
-as `ID`, `API`, `HTTP`, `JSON`, and `JWK`, and use `RoundTrip` consistently.
-Rename `TestNameDirectory` fixtures and fuzz corpus directories with their test.
-
-Use independent cases in tables and sequential lifecycle transitions in explicit
-steps. Prefer a scenario directory and independent per-step `ConfigVariables`
-for simple value changes. Keep structural changes, unknown-producing expressions,
-literal lifecycle settings, and substantial nested HCL visible in separate
-fixtures or concise inline configuration. Do not encode phases or a fixture
-language merely to reduce directory count.
-
-Prefer typed state and plan checks when null, empty, unknown, collection semantics,
-or action timing matter. Retain API checks and phase-specific legacy hooks.
-CLI imports use `ImportStateCheck` for direct imported-state assertions;
-`Check` and `ConfigStateChecks` are not invoked by that import path. Use
-`ImportStateVerify` when a preceding apply supplies the comparison state.
-Explain verification exclusions and test those attributes separately.
+See [Testing](docs/testing.md) for naming, layout, fixtures, Go test practices,
+and Terraform state, plan, import, and lifecycle checks.
 
 ## Local provider build
 

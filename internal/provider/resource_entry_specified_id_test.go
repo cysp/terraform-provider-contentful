@@ -52,7 +52,7 @@ func TestAccEntryResourceSpecifiedIDCreateUsesCreateOnlyRequest(t *testing.T) {
 
 	fixture := newEntryAcceptanceFixture(t)
 
-	ContentfulProviderMockedResourceTest(t, fixture.recorder, resource.TestCase{
+	testAccMockedResource(t, fixture.recorder, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: managedEntryConfig("created"),
@@ -106,7 +106,7 @@ func TestAccEntryResourceSpecifiedIDCollisionDoesNotMutateOrAdopt(t *testing.T) 
 
 	adapter := &entryCollisionObservationAdapter{delegate: fixture.recorder, errorSink: fixture.errorSink}
 
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
+	testAccMockedResource(t, adapter, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config:      managedEntryConfig("must not replace sentinel"),

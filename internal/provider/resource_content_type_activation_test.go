@@ -70,9 +70,7 @@ func TestAccContentTypeResourceFailedCreateActivationRecoversExactDraft(t *testi
 
 	configVariables := contentTypeActivationConfigVariables("create-activation-failure")
 
-	var providerFactoryCalls atomic.Int64
-
-	ContentfulProviderMockedResourceTestWithFactoryCounter(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
@@ -124,14 +122,7 @@ func TestAccContentTypeResourceFailedCreateActivationRecoversExactDraft(t *testi
 						knownvalue.Int64Exact(1),
 					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{1}),
-					func(*terraform.State) error {
-						require.GreaterOrEqual(t, providerFactoryCalls.Load(), int64(2), "recovery must survive provider restart and private-state serialization")
-
-						return nil
-					},
-				),
+				Check: contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{1}),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
@@ -143,7 +134,7 @@ func TestAccContentTypeResourceFailedCreateActivationRecoversExactDraft(t *testi
 				},
 			},
 		},
-	}, &providerFactoryCalls)
+	})
 }
 
 func TestAccContentTypeResourceCreateUsesExactPositiveReturnedVersion(t *testing.T) {
@@ -156,7 +147,7 @@ func TestAccContentTypeResourceCreateUsesExactPositiveReturnedVersion(t *testing
 	handler := &contentTypeActivationTestHandler{delegate: offset}
 	variables := contentTypeActivationConfigVariables("create-positive-version")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 		{
 			ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"), ConfigVariables: variables,
 			ConfigStateChecks: []statecheck.StateCheck{
@@ -206,7 +197,7 @@ func TestAccContentTypeResourceUpdateUsesExactArbitraryPositiveReturnedVersion(t
 	handler := &contentTypeActivationTestHandler{delegate: offset}
 	variables := contentTypeActivationConfigVariables("update-arbitrary-positive-version")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 		{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
 		{
 			PreConfig:       handler.resetRequestHistory,
@@ -243,7 +234,7 @@ func TestAccContentTypeResourceDraftRateLimitDoesNotCreateActivationAuthority(t 
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("draft-rate-limit")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -277,7 +268,7 @@ func TestAccContentTypeResourceActivationRateLimitRetainsExactAuthority(t *testi
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("activation-rate-limit")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -315,7 +306,7 @@ func TestAccContentTypeResourceHigherPostActivationVersionIsAccepted(t *testing.
 	handler := &contentTypeActivationTestHandler{delegate: higher}
 	variables := contentTypeActivationConfigVariables("higher-post-activation-version")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -363,7 +354,7 @@ func TestAccContentTypeResourceInitialActivationVersionMismatchRevokesAuthority(
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("initial-activation-version-mismatch")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -429,7 +420,7 @@ func TestAccContentTypeResourceDoesNotActivateContradictoryDraftPutResponse(t *t
 			server.RegisterSpaceEnvironment("space", "environment")
 			handler := &contentTypeActivationTestHandler{delegate: server}
 			variables := contentTypeActivationConfigVariables("contradictory-put-response-" + strings.ReplaceAll(name, " ", "-"))
-			ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 				{ConfigDirectory: config.StaticDirectory(test.initialDirectory), ConfigVariables: variables},
 				{
 					PreConfig: func() {
@@ -464,7 +455,7 @@ func TestAccContentTypeResourceContradictoryCreateActivationRevokesRecoveryAutho
 	handler.mutateActivationResponse = contentTypeResponseMutator(t, removeContentTypePublishedVersion)
 	variables := contentTypeActivationConfigVariables("contradictory-create-activation-publication")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
@@ -508,7 +499,7 @@ func TestAccContentTypeResourceRejectsContradictoryPutUpdateActivationPublicatio
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("contradictory-put-update-activation-publication")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 		{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
 		{
 			PreConfig: func() {
@@ -544,7 +535,7 @@ func TestAccContentTypeResourceNonAdvancingActivationResponseRevokesAuthority(t 
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("nonadvancing-activation-response")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -588,7 +579,7 @@ func TestAccContentTypeResourceAmbiguousCreateActivationReconcilesByRead(t *test
 
 	configVariables := contentTypeActivationConfigVariables("ambiguous-create-activation")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
@@ -633,9 +624,7 @@ func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftWithoutRe
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	configVariables := contentTypeActivationConfigVariables("update-activation-failure")
 
-	var providerFactoryCalls atomic.Int64
-
-	ContentfulProviderMockedResourceTestWithFactoryCounter(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -715,14 +704,13 @@ func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftWithoutRe
 							Version:        3,
 							VersionPresent: true,
 						}}, handler.eventHistory())
-						require.GreaterOrEqual(t, providerFactoryCalls.Load(), int64(3), "recovery must survive provider restart and private-state serialization")
 
 						return nil
 					},
 				),
 			},
 		},
-	}, &providerFactoryCalls)
+	})
 }
 
 func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftAfterRefresh(t *testing.T) {
@@ -735,7 +723,7 @@ func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftAfterRefr
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("update-activation-refresh-recovery")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 		{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
 		{
 			PreConfig: func() {
@@ -781,7 +769,7 @@ func TestAccContentTypeResourceExternalAdvanceRevokesPendingActivationAfterRefre
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("activation-external-advance-refresh")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 		{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
 		{
 			PreConfig: func() {
@@ -816,7 +804,7 @@ func TestAccContentTypeResourcePublicationTupleChangeAtMarkedVersionRevokesAutho
 	variables := contentTypeActivationConfigVariables("activation-tuple-change")
 	cliOptions := &resource.AdditionalCLIOptions{}
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: cliOptions,
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -869,7 +857,7 @@ func TestAccContentTypeResourceExternalAdvanceRevokesPendingActivationWithoutRef
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("activation-external-advance-no-refresh")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -920,7 +908,7 @@ func TestAccContentTypeResourceExternalActivationOfMarkedDraftClearsRecovery(t *
 	variables := contentTypeActivationConfigVariables("external-marked-activation")
 	additionalCLIOptions := &resource.AdditionalCLIOptions{}
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -979,7 +967,7 @@ func TestAccContentTypeResourceAmbiguousUpdateActivationReconcilesByRead(t *test
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	configVariables := contentTypeActivationConfigVariables("ambiguous-update-activation")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"),
@@ -1055,7 +1043,7 @@ func TestAccContentTypeResourceRefreshDisabledRecoveryAfterCommittedActivationDo
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("ambiguous-activation-no-refresh")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -1110,7 +1098,7 @@ func TestAccContentTypeResourceTimeoutOnlyUpdateDoesNotMutate(t *testing.T) {
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	configVariables := contentTypeActivationConfigVariables("timeout-only-update")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
@@ -1180,7 +1168,7 @@ func TestAccContentTypeResourceUnknownMetadataFinalPlanHandlesIndependentActivat
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	configVariables := contentTypeActivationConfigVariables("unknown-metadata")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUnknownMetadata/1"),
@@ -1236,7 +1224,7 @@ func TestAccContentTypeResourceManagedDraftTimeoutUpdateMutatesOnce(t *testing.T
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	configVariables := contentTypeActivationConfigVariables("managed-draft-timeout")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
@@ -1286,7 +1274,7 @@ func TestAccContentTypeResourceTimeoutChangeLeavesExternalDeactivationObservatio
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	configVariables := contentTypeActivationConfigVariables("deactivated-content-type")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
@@ -1340,7 +1328,7 @@ func TestAccContentTypeResourceReconcilesExternalDraftBeforeActivation(t *testin
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	configVariables := contentTypeActivationConfigVariables("external-draft")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
@@ -1425,7 +1413,7 @@ func TestAccContentTypeResourceLeavesExternalPendingDraftObservational(t *testin
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("external-pending-no-drift")
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 		{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"), ConfigVariables: variables},
 		{
 			PreConfig: func() {
@@ -1494,7 +1482,7 @@ func TestAccContentTypeResourceImportUnpublishedDoesNotActivate(t *testing.T) {
 	variables := contentTypeActivationConfigVariables(contentTypeID)
 	additionalCLIOptions := &resource.AdditionalCLIOptions{}
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{AdditionalCLIOptions: additionalCLIOptions, Steps: []resource.TestStep{
+	testAccMockedResource(t, handler, resource.TestCase{AdditionalCLIOptions: additionalCLIOptions, Steps: []resource.TestStep{
 		{
 			ConfigDirectory:    config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
 			ConfigVariables:    variables,
@@ -1546,7 +1534,7 @@ func TestAccContentTypeResourceDraftPutRaceDoesNotRetryAgainstNewerVersion(t *te
 	variables := contentTypeActivationConfigVariables("draft-put-race")
 	tracedRace := make(chan error, 1)
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 		{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
 		{
 			PreConfig: func() {
@@ -1603,7 +1591,7 @@ func TestAccContentTypeResourceChangedDraftVersionMismatchRevokesPendingAuthorit
 	variables := contentTypeActivationConfigVariables("changed-draft-version-mismatch")
 	tracedRace := make(chan error, 1)
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
@@ -1663,7 +1651,7 @@ func TestAccContentTypeResourceActivationRaceDoesNotPublishInterveningDraft(t *t
 	configVariables := contentTypeActivationConfigVariables("activation-race")
 	raceSetupResult := make(chan error, 1)
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"),

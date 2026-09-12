@@ -128,6 +128,7 @@ func TestPreviewEnvironmentMutationConsistencyErrorCheckpointsResponseStateIdent
 			require.Len(t, applyResponse.Diagnostics, 1)
 			assert.Equal(t, "Contentful returned a different content preview platform name", applyResponse.Diagnostics[0].Summary)
 
+			require.NotNil(t, applyResponse.NewState)
 			state := previewEnvironmentModelFromDynamicValue(t, *applyResponse.NewState)
 			assert.Equal(t, types.StringValue("Returned"), state.Name)
 			assert.Equal(t, types.StringValue("space"), state.SpaceID)

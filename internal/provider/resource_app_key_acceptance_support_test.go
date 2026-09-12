@@ -1,15 +1,16 @@
 package provider_test
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -28,24 +29,30 @@ type testAccAppKeyJWKData struct {
 	x5t string
 }
 
-func testAccAppKeyJWK(t *testing.T) testAccAppKeyJWKData {
+func testAccAppKeyJWK(t *testing.T, index int) testAccAppKeyJWKData {
 	t.Helper()
 
-	key, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Share the mock API's public keys and literal fingerprints across suites.
+	data, err := os.ReadFile("../contentful-management-go/testing/testdata/app_key_public_keys.json")
+	require.NoError(t, err)
 
-	publicKeyDER, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
-	if err != nil {
-		t.Fatal(err)
-	}
+	var keys []cm.AppKeyJWK
+	require.NoError(t, json.Unmarshal(data, &keys))
+	require.GreaterOrEqual(t, index, 0)
+	require.Less(t, index, len(keys))
+	jwk := keys[index]
+	require.Len(t, jwk.X5c, 1)
 
-	return testAccAppKeyJWKFromDER(publicKeyDER)
+	return testAccAppKeyJWKData{
+		kid: jwk.Kid,
+		x5c: jwk.X5c[0],
+		x5t: jwk.X5t,
+	}
 }
 
 func testAccAppKeyJWKFromDER(publicKeyDER []byte) testAccAppKeyJWKData {
-	fingerprint := cm.AppKeyJWKFingerprint(publicKeyDER)
+	digest := sha256.Sum256(publicKeyDER)
+	fingerprint := base64.RawURLEncoding.EncodeToString(digest[:])
 
 	return testAccAppKeyJWKData{
 		kid: fingerprint,

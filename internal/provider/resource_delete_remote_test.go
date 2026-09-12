@@ -128,7 +128,7 @@ topics = ["Entry.publish"]`, remotePath: "/spaces/space/webhook_definitions/{web
 
 			keys := map[string]testAccAppKeyJWKData{}
 			if test.resourceType == "app_key" {
-				keys["target"], keys["sibling"] = testAccAppKeyJWK(t), testAccAppKeyJWK(t)
+				keys["target"], keys["sibling"] = testAccAppKeyJWK(t, 0), testAccAppKeyJWK(t, 1)
 			}
 
 			configFor := func(name string) string {
@@ -144,7 +144,7 @@ topics = ["Entry.publish"]`, remotePath: "/spaces/space/webhook_definitions/{web
 				siblingBefore           map[string]any
 			)
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 				{Config: configFor("target") + configFor("sibling"), Check: func(state *terraform.State) error {
 					targetPath = remoteDeletePath(t, state, test.resourceType, "target", test.remotePath)
 					siblingPath = remoteDeletePath(t, state, test.resourceType, "sibling", test.remotePath)

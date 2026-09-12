@@ -14,7 +14,7 @@ func TestNewOptPointerString(t *testing.T) {
 		input    *string
 		expected cm.OptString
 	}{
-		"test": {
+		"nonempty": {
 			input:    new("test"),
 			expected: cm.NewOptString("test"),
 		},
@@ -46,7 +46,7 @@ func TestOptStringValueStringPointer(t *testing.T) {
 		input    cm.OptString
 		expected *string
 	}{
-		"test": {
+		"nonempty": {
 			input:    cm.NewOptString("test"),
 			expected: new("test"),
 		},
@@ -54,7 +54,7 @@ func TestOptStringValueStringPointer(t *testing.T) {
 			input:    cm.NewOptString(""),
 			expected: new(""),
 		},
-		"nil": {
+		"unset": {
 			input:    cm.OptString{},
 			expected: nil,
 		},

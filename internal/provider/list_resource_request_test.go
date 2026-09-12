@@ -23,13 +23,13 @@ func TestContentTypeListResourceConfigRequestParamsRejectsUnresolvedValues(t *te
 
 	assert.Empty(t, params)
 	require.True(t, diags.HasError())
-	assert.Equal(t, []string{"space_id", "environment_id"}, requestDiagnosticPaths(t, diags))
+	assert.Equal(t, []string{"space_id", "environment_id"}, attributeDiagnosticPaths(t, diags))
 }
 
 func TestContentTypeListResourceListReturnsConfigurationDiagnosticsOnly(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	configSchema := ContentTypeListResourceConfigSchema(ctx)
 	config := tfsdk.Config{
 		Raw: tftypes.NewValue(tftypes.Object{
@@ -48,7 +48,7 @@ func TestContentTypeListResourceListReturnsConfigurationDiagnosticsOnly(t *testi
 	(&contentTypeListResource{}).List(ctx, list.ListRequest{Config: config}, &stream)
 
 	result := requireSingleDiagnosticOnlyListResult(t, stream)
-	assert.Equal(t, []string{"space_id"}, requestDiagnosticPaths(t, result.Diagnostics))
+	assert.Equal(t, []string{"space_id"}, attributeDiagnosticPaths(t, result.Diagnostics))
 }
 
 func TestEntryListResourceConfigRequestRejectsUnresolvedValues(t *testing.T) {
@@ -115,7 +115,7 @@ func TestEntryListResourceConfigRequestRejectsUnresolvedValues(t *testing.T) {
 
 			assert.Empty(t, request)
 			require.True(t, diags.HasError())
-			assert.Equal(t, test.expectedDiagnostics, requestDiagnosticPaths(t, diags))
+			assert.Equal(t, test.expectedDiagnostics, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }
@@ -192,14 +192,14 @@ func TestEntryListResourceConfigRequestPreservesExistingOptionalSemantics(t *tes
 func TestEntryListResourceListReturnsConfigurationDiagnosticsOnly(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	config := entryListResourceTerraformConfig(ctx, tftypes.NewValue(tftypes.String, tftypes.UnknownValue))
 
 	var stream list.ListResultsStream
 	(&entryListResource{}).List(ctx, list.ListRequest{Config: config}, &stream)
 
 	result := requireSingleDiagnosticOnlyListResult(t, stream)
-	assert.Equal(t, []string{"content_type"}, requestDiagnosticPaths(t, result.Diagnostics))
+	assert.Equal(t, []string{"content_type"}, attributeDiagnosticPaths(t, result.Diagnostics))
 }
 
 func validEntryListResourceConfig() entryListResourceConfig {

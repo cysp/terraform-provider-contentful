@@ -1,19 +1,16 @@
 package cmtesting_test
 
 import (
-	"context"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
+	"os"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/stretchr/testify/require"
 )
-
-const testAppKeyRSABits = 4096
 
 func requireAppDefinitionDoesNotExistDetails(t *testing.T, response any) {
 	t.Helper()
@@ -42,20 +39,26 @@ func appKeyCreateParams() cm.CreateAppKeyParams {
 	}
 }
 
-func appKeyRequest(t *testing.T) *cm.AppKeyRequestData {
+func appKeyRequest(t *testing.T, index int) *cm.AppKeyRequestData {
 	t.Helper()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, testAppKeyRSABits)
+	// These fixtures contain public 4096-bit RSA keys and fixed SHA-256
+	// fingerprints. No private keys are needed to exercise JWK handling.
+	data, err := os.ReadFile("testdata/app_key_public_keys.json")
 	require.NoError(t, err)
 
-	publicKeyDER, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
-	require.NoError(t, err)
+	var keys []cm.AppKeyJWK
+	require.NoError(t, json.Unmarshal(data, &keys))
+	require.GreaterOrEqual(t, index, 0)
+	require.Less(t, index, len(keys))
+	request := cm.NewAppKeyRequestData(keys[index])
 
-	return appKeyRequestFromDER(publicKeyDER)
+	return &request
 }
 
 func appKeyRequestFromDER(publicKeyDER []byte) *cm.AppKeyRequestData {
-	keyID := cm.AppKeyJWKFingerprint(publicKeyDER)
+	fingerprint := sha256.Sum256(publicKeyDER)
+	keyID := base64.RawURLEncoding.EncodeToString(fingerprint[:])
 
 	request := cm.NewAppKeyRequestData(cm.AppKeyJWK{
 		Alg: cm.AppKeyJWKAlgRS256,
@@ -72,7 +75,7 @@ func appKeyRequestFromDER(publicKeyDER []byte) *cm.AppKeyRequestData {
 func createAppKey(t *testing.T, handler *cmt.Handler, request *cm.AppKeyRequestData) cm.AppKey {
 	t.Helper()
 
-	response, err := handler.CreateAppKey(context.Background(), request, appKeyCreateParams())
+	response, err := handler.CreateAppKey(t.Context(), request, appKeyCreateParams())
 	require.NoError(t, err)
 
 	appKey, ok := response.(*cm.AppKey)

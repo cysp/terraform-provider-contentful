@@ -14,7 +14,7 @@ func TestNewNilPointerString(t *testing.T) {
 		input    *string
 		expected cm.NilString
 	}{
-		"test": {
+		"nonempty": {
 			input:    new("test"),
 			expected: cm.NewNilString("test"),
 		},
@@ -46,7 +46,7 @@ func TestNilStringValueStringPointer(t *testing.T) {
 		input    cm.NilString
 		expected *string
 	}{
-		"test": {
+		"nonempty": {
 			input:    cm.NewNilString("test"),
 			expected: new("test"),
 		},

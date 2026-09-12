@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -25,7 +24,7 @@ func TestGetContentTypesPaginates(t *testing.T) {
 		})
 	}
 
-	firstPageResponse, err := server.Handler().GetContentTypes(context.Background(), cm.GetContentTypesParams{
+	firstPageResponse, err := server.Handler().GetContentTypes(t.Context(), cm.GetContentTypesParams{
 		SpaceID:       "space",
 		EnvironmentID: "environment",
 		Skip:          cm.NewOptInt64(0),
@@ -42,7 +41,7 @@ func TestGetContentTypesPaginates(t *testing.T) {
 	assert.Equal(t, "content-type-0", firstPageCollection.Items[0].Sys.ID)
 	assert.Equal(t, "Content Type 0", firstPageCollection.Items[0].Name)
 
-	secondPageResponse, err := server.Handler().GetContentTypes(context.Background(), cm.GetContentTypesParams{
+	secondPageResponse, err := server.Handler().GetContentTypes(t.Context(), cm.GetContentTypesParams{
 		SpaceID:       "space",
 		EnvironmentID: "environment",
 		Skip:          cm.NewOptInt64(1),
@@ -59,7 +58,7 @@ func TestGetContentTypesPaginates(t *testing.T) {
 	assert.Equal(t, "content-type-1", secondPageCollection.Items[0].Sys.ID)
 	assert.Equal(t, "Content Type 1", secondPageCollection.Items[0].Name)
 
-	beyondEndResponse, err := server.Handler().GetContentTypes(context.Background(), cm.GetContentTypesParams{
+	beyondEndResponse, err := server.Handler().GetContentTypes(t.Context(), cm.GetContentTypesParams{
 		SpaceID:       "space",
 		EnvironmentID: "environment",
 		Skip:          cm.NewOptInt64(100),
@@ -114,7 +113,7 @@ func TestGetContentTypesRejectsInvalidPaginationParams(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			response, err := server.Handler().GetContentTypes(context.Background(), testCase.params)
+			response, err := server.Handler().GetContentTypes(t.Context(), testCase.params)
 			require.NoError(t, err)
 			requireContentfulError(t, response, http.StatusBadRequest, "InvalidQuery", testCase.message)
 		})

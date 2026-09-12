@@ -34,7 +34,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItem(t *testing
 	assert.Empty(t, diags)
 }
 
-func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItemInvalidSettings(t *testing.T) {
+func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItemPreservesOpaqueSettings(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -49,7 +49,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItemInvalidSett
 
 	controlsItem, diags := model.Value().ToEditorInterfaceDataControlsItem(path)
 
-	assert.NotNil(t, controlsItem)
+	assert.Equal(t, "invalid json", string(controlsItem.Settings))
 	assert.Empty(t, diags)
 }
 

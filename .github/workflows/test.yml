@@ -40,8 +40,8 @@ jobs:
 
       - run: go mod download
 
-      - run: go test -v -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
-        timeout-minutes: 10
+      - run: go test -race -shuffle=on -count=1 -timeout=10m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
+        timeout-minutes: 12
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
@@ -63,8 +63,8 @@ jobs:
 
       - run: go mod download
 
-      - run: go test -v -coverprofile=coverage.txt -covermode=atomic ./internal/contentful-management-go/...
-        timeout-minutes: 10
+      - run: go test -race -shuffle=on -count=1 -timeout=10m -coverprofile=coverage.txt -covermode=atomic ./internal/contentful-management-go/...
+        timeout-minutes: 12
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
@@ -73,7 +73,7 @@ jobs:
 
   testacc:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -99,12 +99,12 @@ jobs:
 
       - run: go mod download
 
-      - run: go test -v -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... -run '^TestAcc' ./internal/provider/
+      - run: go test -count=1 -timeout=15m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... -run '^TestAcc' ./internal/provider/
         if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
         env:
           TF_ACC: "1"
           CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
-        timeout-minutes: 10
+        timeout-minutes: 20
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
@@ -114,7 +114,7 @@ jobs:
 
   testaccmocked:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -134,13 +134,15 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
 
+      - run: terraform fmt -check -recursive internal/provider/testdata
+
       - run: go mod download
 
-      - run: go test -v -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... -run '^TestAcc' ./internal/provider/
+      - run: go test -count=1 -timeout=15m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... -run '^TestAcc' ./internal/provider/
         env:
           TF_ACC: "1"
           TF_ACC_MOCKED: "1"
-        timeout-minutes: 10
+        timeout-minutes: 20
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:

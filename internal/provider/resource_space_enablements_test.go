@@ -46,7 +46,7 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 		SpaceTemplates:  cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
 	})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:  config.TestNameDirectory(),
@@ -68,7 +68,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedCreate(t *testing.T) {
 	server.RegisterSpaceEnvironment("space", "master")
 
 	recorder := &spaceEnablementsPutRecorder{next: server}
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		Steps: []resource.TestStep{{
 			PreConfig: func() {
 				recorder.expectNextRequestFields(map[string]bool{"crossSpaceLinks": true})
@@ -87,7 +87,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 	server.RegisterSpaceEnvironment("space", "master")
 
 	recorder := &spaceEnablementsPutRecorder{next: server}
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
@@ -139,7 +139,7 @@ func TestAccSpaceEnablementsResourceRetransmitsImportedKnownValues(t *testing.T)
 	})
 
 	recorder := &spaceEnablementsPutRecorder{next: server}
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config:             spaceEnablementsTestConfig(""),
@@ -339,7 +339,7 @@ func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -373,7 +373,7 @@ func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
 	stepVariables2["cross_space_links"] = config.BoolVariable(true)
 	stepVariables2["space_templates"] = config.BoolVariable(true)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

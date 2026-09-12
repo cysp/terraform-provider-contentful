@@ -2,6 +2,9 @@ package provider_test
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"net/http"
 	"os"
 	"testing"
@@ -10,7 +13,11 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/require"
 )
 
 //nolint:paralleltest
@@ -23,13 +30,13 @@ func TestAccAppKeyResourceLiveLifecycle(t *testing.T) {
 		t.Skip("live App Key lifecycle is covered by the equal mock acceptance sibling")
 	}
 
-	jwk := testAccAppKeyJWK(t)
-	replacementJWK := testAccAppKeyJWK(t)
+	jwk := testAccAppKeyLiveJWK(t)
+	replacementJWK := testAccAppKeyLiveJWK(t)
 
 	cleanupLiveAppKeyFixture(t, jwk.kid, replacementJWK.kid)
 	client := newLiveAppKeyClient(t)
 
-	ContentfulProviderMockableResourceTest(t, nil, resource.TestCase{
+	testAccMockableResource(t, nil, resource.TestCase{
 		CheckDestroy: testAccAppKeyDestroyCheck(
 			func(ctx context.Context, params cm.GetAppKeyParams) (cm.GetAppKeyRes, error) {
 				return client.GetAppKey(ctx, params)
@@ -43,12 +50,12 @@ func TestAccAppKeyResourceLiveLifecycle(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "key_kid", jwk.kid),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.kid", jwk.kid),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.x5c.0", jwk.x5c),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.x5t", jwk.x5t),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("key_kid"), knownvalue.StringExact(jwk.kid)),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("kid"), knownvalue.StringExact(jwk.kid)),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("x5c").AtSliceIndex(0), knownvalue.StringExact(jwk.x5c)),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("x5t"), knownvalue.StringExact(jwk.x5t)),
+				},
 			},
 			{
 				ResourceName:    testAccAppKeyResourceAddress,
@@ -63,13 +70,25 @@ func TestAccAppKeyResourceLiveLifecycle(t *testing.T) {
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "key_kid", replacementJWK.kid),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.kid", replacementJWK.kid),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("key_kid"), knownvalue.StringExact(replacementJWK.kid)),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("kid"), knownvalue.StringExact(replacementJWK.kid)),
+				},
 			},
 		},
 	})
+}
+
+func testAccAppKeyLiveJWK(t *testing.T) testAccAppKeyJWKData {
+	t.Helper()
+
+	key, err := rsa.GenerateKey(rand.Reader, 4096)
+	require.NoError(t, err)
+
+	publicKeyDER, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+	require.NoError(t, err)
+
+	return testAccAppKeyJWKFromDER(publicKeyDER)
 }
 
 func cleanupLiveAppKeyFixture(t *testing.T, ownedKeyIDs ...string) {
