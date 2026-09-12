@@ -3,16 +3,17 @@
 page_title: "contentful_environment_alias Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Environment Alias.
+  Manages a Contentful Environment Alias, which routes requests from a stable alias ID to a selected environment. The target environment must already exist. Use contentful_environment_status_ready to wait for a newly copied environment before directing requests to it.
 ---
 
 # contentful_environment_alias (Resource)
 
-Manages a Contentful Environment Alias.
+Manages a Contentful Environment Alias, which routes requests from a stable alias ID to a selected environment. The target environment must already exist. Use `contentful_environment_status_ready` to wait for a newly copied environment before directing requests to it.
 
 ## Example Usage
 
 ```terraform
+# Wait for the existing target environment to be ready before routing requests to it.
 resource "contentful_environment_alias" "example" {
   space_id              = var.contentful_space_id
   environment_alias_id  = "staging"
@@ -57,7 +58,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 import {
   identity = {
     space_id             = var.contentful_space_id
-    environment_alias_id = var.environment_alias_id
+    environment_alias_id = "staging"
   }
   to = contentful_environment_alias.example
 }
@@ -75,7 +76,13 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_space_id}/${var.environment_alias_id}"
+  id = "${var.contentful_space_id}/staging"
   to = contentful_environment_alias.example
 }
+```
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import contentful_environment_alias.example "$CONTENTFUL_SPACE_ID/staging"
 ```

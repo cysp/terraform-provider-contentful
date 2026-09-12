@@ -311,7 +311,7 @@ type Invoker interface {
 	GetAppKey(ctx context.Context, params GetAppKeyParams, options ...RequestOption) (GetAppKeyRes, error)
 	// GetAppKeys invokes getAppKeys operation.
 	//
-	// Get all app keys.
+	// List app keys.
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
 	GetAppKeys(ctx context.Context, params GetAppKeysParams, options ...RequestOption) (GetAppKeysRes, error)
@@ -353,7 +353,7 @@ type Invoker interface {
 	GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams, options ...RequestOption) (GetEditorInterfaceRes, error)
 	// GetEntries invokes getEntries operation.
 	//
-	// Get all entries of a space.
+	// List entries in an environment.
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/entries
 	GetEntries(ctx context.Context, params GetEntriesParams, options ...RequestOption) (GetEntriesRes, error)
@@ -5848,7 +5848,7 @@ func (c *Client) sendGetAppKey(ctx context.Context, params GetAppKeyParams, requ
 
 // GetAppKeys invokes getAppKeys operation.
 //
-// Get all app keys.
+// List app keys.
 //
 // GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
 func (c *Client) GetAppKeys(ctx context.Context, params GetAppKeysParams, options ...RequestOption) (GetAppKeysRes, error) {
@@ -6870,7 +6870,7 @@ func (c *Client) sendGetEditorInterface(ctx context.Context, params GetEditorInt
 
 // GetEntries invokes getEntries operation.
 //
-// Get all entries of a space.
+// List entries in an environment.
 //
 // GET /spaces/{space_id}/environments/{environment_id}/entries
 func (c *Client) GetEntries(ctx context.Context, params GetEntriesParams, options ...RequestOption) (GetEntriesRes, error) {

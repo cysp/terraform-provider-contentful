@@ -48,7 +48,8 @@ overview][framework].
 
 ## Unresolved behavior
 
-Key revocation effects on issued tokens and rotation timing.
+The evidence does not establish how key revocation affects already issued tokens or how
+quickly a rotation takes effect.
 
 [token-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-access-token.ts
 [keys]: https://www.contentful.com/developers/docs/references/content-management-api/app-keys/

@@ -3,12 +3,12 @@
 page_title: "contentful_delivery_api_key Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Delivery API Key.
+  Manages a Contentful Delivery API Key for reading published content. Use its preview_api_key_id with the contentful_preview_api_key data source to retrieve the corresponding Preview API token. Destroying this resource deletes both keys.
 ---
 
 # contentful_delivery_api_key (Resource)
 
-Manages a Contentful Delivery API Key.
+Manages a Contentful Delivery API Key for reading published content. Use its `preview_api_key_id` with the `contentful_preview_api_key` data source to retrieve the corresponding Preview API token. Destroying this resource deletes both keys.
 
 ## Example Usage
 
@@ -36,7 +36,7 @@ resource "contentful_delivery_api_key" "this" {
 
 ### Read-Only
 
-- `access_token` (String, Sensitive) The delivery API access token.
+- `access_token` (String, Sensitive) Delivery API access token. This sensitive value is stored in Terraform state.
 - `api_key_id` (String) System ID of the API key.
 - `id` (String) Composite Terraform resource identifier in space_id/api_key_id form.
 - `preview_api_key_id` (String) ID of the corresponding preview API key.

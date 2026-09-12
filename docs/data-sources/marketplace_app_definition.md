@@ -3,12 +3,12 @@
 page_title: "contentful_marketplace_app_definition Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves a Contentful Marketplace App Definition.
+  Reads an existing Contentful Marketplace App Definition, including its hosting source, locations, and parameter definitions. Use the app definition ID with contentful_app_installation to install the app.
 ---
 
 # contentful_marketplace_app_definition (Data Source)
 
-Retrieves a Contentful Marketplace App Definition.
+Reads an existing Contentful Marketplace App Definition, including its hosting source, locations, and parameter definitions. Use the app definition ID with `contentful_app_installation` to install the app.
 
 ## Example Usage
 

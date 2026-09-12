@@ -6,10 +6,12 @@ contract on both creation and update.
 
 ## Addressing and operations
 
-Extensions are environment-scoped. POST creates at
-`/spaces/{space_id}/environments/{environment_id}/extensions`; GET, PUT, and DELETE
-address an individual `.../extensions/{extension_id}`. The selected source is inside the
-request's `extension` object.
+Extensions are environment-scoped. POST creates with a generated ID at
+`/spaces/{space_id}/environments/{environment_id}/extensions`. PUT creates with a
+specified ID or updates at `.../extensions/{extension_id}`; GET and DELETE use that
+same individual address. Updates require `X-Contentful-Version`. The selected source
+is inside the request's `extension` object. See the [create or update
+reference](https://www.contentful.com/developers/docs/references/content-management-api/ui-extensions/create-or-update-an-extension/).
 
 ## Published evidence
 

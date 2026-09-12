@@ -1,4 +1,4 @@
 import {
-  id = "${var.contentful_organization_id}/${var.concept_scheme_id}"
+  id = "${var.contentful_organization_id}/products"
   to = contentful_taxonomy_concept_scheme.products
 }

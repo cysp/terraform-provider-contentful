@@ -5,9 +5,11 @@ installations, event delivery, action execution, deployment, identity, and exter
 resources. These concerns share references but have different identities, data shapes,
 and lifecycles.
 
-This study describes the Contentful resource model and its public API contracts. It is a
-reference for understanding, operating, integrating, and maintaining those contracts
-throughout their use and evolution.
+Use this reference to find the API paths, request and response shapes, and lifecycle
+limits for each resource family. Published contracts, pinned first-party source, and
+observed behavior are identified separately. For the subset available through Terraform,
+see the [provider documentation](../../index.md); this API inventory is not a provider
+feature list.
 
 ## Reading map
 
@@ -53,9 +55,9 @@ different pin:
 - [node-apps-toolkit](https://github.com/contentful/node-apps-toolkit/tree/64fa31b6b2223cd1c8b1798fa540e8aad5e2d319), commit `64fa31b6b2223cd1c8b1798fa540e8aad5e2d319`.
 - [create-contentful-app / app-scripts](https://github.com/contentful/create-contentful-app/tree/909e37a3e55a1e5851bdc35f49ac9c5c34b64d4e), commit `909e37a3e55a1e5851bdc35f49ac9c5c34b64d4e`.
 
-The direct configuration probes changed disposable, uninstalled configuration only.
-No content was changed, app installed, HTTP event delivered, action invoked, or
-Function executed. External-resource resolution was not exercised. The later read-only
+The direct configuration probes changed disposable, uninstalled app configuration only.
+They did not change content, install an app, deliver an HTTP event, invoke an action, or
+execute a Function. External-resource resolution was not exercised. The later read-only
 study inspected existing configuration and logs without generating executions. The
 separate parameter study updated an existing installation and compared its returned
 configuration after each request; it did not install or remove an app. None of these

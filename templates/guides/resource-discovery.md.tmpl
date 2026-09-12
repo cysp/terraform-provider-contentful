@@ -8,7 +8,7 @@ description: |-
 
 Use list resources to discover existing [`contentful_entry`](../list-resources/entry) and [`contentful_content_type`](../list-resources/content_type) objects and generate configuration for import. This workflow requires Terraform 1.14 or later and a configured Contentful provider.
 
-If you already know an object's ID, use the Import section on its resource page. For a read-only lookup without managing an object's lifecycle, use one of the provider's data sources.
+If you already know an object's ID, use the Import section on its resource page. For a lookup without managing an object's lifecycle, use a data source where the provider offers one. Entries and Content Types are discoverable through list resources; they do not have individual data sources.
 
 ## 1. Define the query
 
@@ -39,5 +39,7 @@ See HashiCorp's [bulk import workflow](https://developer.hashicorp.com/terraform
 ## 3. Review and apply the import
 
 Review the generated configuration against each resource's schema and run `terraform plan`. Check for proposed updates as well as imports before applying. Remove or adjust arguments that do not describe the configuration you want Terraform to manage.
+
+For Entries, review the complete `fields` and `metadata` values. For Content Types, review the field definitions and metadata. The generated configuration may adopt values that other editors or systems currently manage.
 
 Import alone does not publish an external Entry draft or activate an external Content Type draft. Managed changes included in the same apply, or in a later apply, follow the [`contentful_entry`](../resources/entry) and [`contentful_content_type`](../resources/content_type) lifecycle contracts.

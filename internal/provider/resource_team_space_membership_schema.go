@@ -14,7 +14,7 @@ import (
 
 func TeamSpaceMembershipResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Team Space Membership.",
+		Description: "Manages a Contentful Team Space Membership, assigning an existing team admin access or roles in a space.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in space_id/team_space_membership_id form.",

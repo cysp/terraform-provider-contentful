@@ -39,8 +39,8 @@ propagate to installations. The SDK's create/update type difference does not
 independently prove whether POST can select a bundle. [App definitions][definitions],
 [definition entity][definition-entity].
 
-Installation parameter size has conflicting source descriptions: the CMA overview
-describes an object limited to **16 kB** after stringification; the App Parameters guide
+Installation parameter size has conflicting source descriptions: the CMA AppInstallation
+reference describes an object limited to **16 kB** after stringification; the App Parameters guide
 and pinned SDK comment say **32 kB**. The exact byte boundary and counting rules remain
 unverified. The guide describes undeclared parameters as a free-form object, while the
 SDK type also permits arrays and scalars; the observations below establish rejection of
@@ -172,13 +172,15 @@ announcement](https://www.contentful.com/developers/changelog/app-sharing-easy-a
 
 ## Unresolved behavior
 
-Clearing/defaults for other optional definition fields, direct bundle selection at
-definition POST, effects of changed parameter declarations on existing installations,
-exact parameter byte limit, parameter behavior beyond the tested declarations, Secret
-replacement, and a complete role/concurrency matrix.
+The evidence does not establish:
 
-Grant revocation effects on existing installations, exact targeted-grant enum, and
-derivation of shared metadata.
+- Clearing and defaults for other optional definition fields, or bundle selection during
+  definition creation.
+- The effects of changing parameter declarations on existing installations, the exact
+  parameter size limit, behavior beyond the tested declarations, or Secret replacement.
+- Complete permission and concurrency rules.
+- The effects of grant revocation on existing installations, the exact targeted-grant
+  enum, or how Contentful derives shared metadata.
 
 [definition-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-definition.ts
 [installation-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-installation.ts

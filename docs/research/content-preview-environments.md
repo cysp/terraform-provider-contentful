@@ -1,9 +1,9 @@
-# Content preview environment CMA contract
+# Preview environments: observed CMA behavior
 
-A preview environment manages content-type preview URLs at space level. Updates merge
-configurations by content-type identity: removal requires disabling a configuration, and
-omission leaves it unchanged. Disabled configurations remain readable and can be
-re-enabled.
+A preview environment manages Content Type preview URLs at space level. In the recorded
+requests, updates merged configurations by Content Type identity: disabling a
+configuration removed it from the active preview settings, while omission left it
+unchanged. Disabled configurations remained readable and could be re-enabled.
 
 ## Scope and evidence
 

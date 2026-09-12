@@ -3,16 +3,17 @@
 page_title: "contentful_app_definition Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Definition.
+  Manages a Contentful App Definition: the app's name, hosting source, locations in the web app, and parameter definitions. Use contentful_app_installation to install it in an environment.
 ---
 
 # contentful_app_definition (Resource)
 
-Manages a Contentful App Definition.
+Manages a Contentful App Definition: the app's name, hosting source, locations in the web app, and parameter definitions. Use `contentful_app_installation` to install it in an environment.
 
 ## Example Usage
 
 ```terraform
+# Deploy the app separately and replace src with its HTTPS URL.
 resource "contentful_app_definition" "this" {
   organization_id = var.contentful_organization_id
 

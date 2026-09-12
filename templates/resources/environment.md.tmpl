@@ -19,6 +19,8 @@ Use the [`contentful_environment_status_ready` data source](../data-sources/envi
 {{ if .HasExamples -}}
 ## Example Usage
 
+This example clones `master`, waits for the new environment, and points the `staging` alias at it. Use an unused environment ID for each new copy. Import an existing alias before managing it.
+
 {{- range .ExampleFiles }}
 
 {{ tffile . }}
@@ -30,7 +32,7 @@ Use the [`contentful_environment_status_ready` data source](../data-sources/envi
 
 ## Import
 
-Import is supported using the following syntax:
+Import an existing environment using its space and environment IDs. Set `environment_id` in the resource to the imported ID. Contentful does not return the original clone source, so import leaves `source_environment_id` unset. Remove it from the configuration when adopting an existing environment to avoid a planned replacement.
 {{- end }}
 {{- if .HasImportIdentityConfig }}
 

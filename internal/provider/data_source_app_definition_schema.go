@@ -11,7 +11,7 @@ import (
 
 func AppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Retrieves a Contentful App Definition.",
+		Description: "Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform identifier in organization_id/app_definition_id form; not a Contentful system ID.",

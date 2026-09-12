@@ -15,7 +15,7 @@ import (
 
 func WebhookResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Webhook.",
+		Description: "Manages a Contentful Webhook that sends HTTP requests when events match its topics and filters. Configure the receiving endpoint separately.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in space_id/webhook_id form.",

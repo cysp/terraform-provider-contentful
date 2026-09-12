@@ -15,7 +15,7 @@ import (
 
 func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Delivery API Key.",
+		Description: "Manages a Contentful Delivery API Key for reading published content. Use its `preview_api_key_id` with the `contentful_preview_api_key` data source to retrieve the corresponding Preview API token. Destroying this resource deletes both keys.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in space_id/api_key_id form.",
@@ -60,7 +60,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"access_token": schema.StringAttribute{
-				Description: "The delivery API access token.",
+				Description: "Delivery API access token. This sensitive value is stored in Terraform state.",
 				Computed:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{

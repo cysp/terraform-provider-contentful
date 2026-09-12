@@ -3,12 +3,12 @@
 page_title: "contentful_taxonomy_concept_scheme Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful taxonomy concept scheme.
+  Manages a Contentful taxonomy concept scheme in an organization. A scheme groups existing concepts and identifies its top concepts.
 ---
 
 # contentful_taxonomy_concept_scheme (Resource)
 
-Manages a Contentful taxonomy concept scheme.
+Manages a Contentful taxonomy concept scheme in an organization. A scheme groups existing concepts and identifies its top concepts.
 
 ## Example Usage
 
@@ -47,9 +47,9 @@ resource "contentful_taxonomy_concept_scheme" "products" {
 ### Optional
 
 - `concept_ids` (List of String) Ordered IDs of concepts in the scheme. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
-- `definition` (Map of String) Localized definitions.
+- `definition` (Map of String) Definitions keyed by locale code.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `top_concept_ids` (List of String) Ordered IDs of top concepts. Every top concept must also occur in concept_ids. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
+- `top_concept_ids` (List of String) Ordered IDs of top concepts. Every top concept must also occur in `concept_ids`. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
 - `uri` (String) Optional URI identifying the concept scheme. Empty strings are rejected by Contentful.
 
 ### Read-Only
@@ -77,7 +77,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 import {
   identity = {
     organization_id   = var.contentful_organization_id
-    concept_scheme_id = var.concept_scheme_id
+    concept_scheme_id = "products"
   }
   to = contentful_taxonomy_concept_scheme.products
 }
@@ -95,7 +95,13 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_organization_id}/${var.concept_scheme_id}"
+  id = "${var.contentful_organization_id}/products"
   to = contentful_taxonomy_concept_scheme.products
 }
+```
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import contentful_taxonomy_concept_scheme.products "$CONTENTFUL_ORGANIZATION_ID/products"
 ```

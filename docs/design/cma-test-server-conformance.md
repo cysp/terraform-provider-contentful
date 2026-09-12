@@ -1,9 +1,11 @@
 # CMA test-server conformance boundaries
 
 Use this reference when changing the in-process CMA server or a test that relies
-on its behavior. The server models the observable contracts that the provider
-depends on. It is not intended to implement Contentful internals. Default fake
-behavior should be backed by the cited CMA reference, a pinned first-party
+on its behavior. The [test server](../../internal/contentful-management-go/testing/)
+models the observable contracts that the provider depends on. It is not intended
+to implement Contentful internals. Here, "fake" means that in-process server and
+its stored fixtures. Default fake behavior should be backed by the cited CMA
+reference, a pinned first-party
 client, or a sanitized direct observation. Retain the evidence date and
 limitations when reusing an observation. Deliberate fault injection must be named
 as adversarial behavior rather than presented as CMA conformance.
@@ -15,9 +17,11 @@ not silently alter this evidence.
 
 ## Endpoint contracts
 
-Each endpoint separates external evidence, default fake behavior, the provider
-contract, and test coverage. A coverage statement describes what the tests
-exercise; it does not independently establish CMA conformance.
+The sections below separate external evidence, default fake behavior, the
+provider contract, and test coverage for endpoints with specific conformance
+requirements. They are not an inventory of every implemented endpoint. A
+coverage statement describes what the tests exercise; it does not independently
+establish CMA conformance or report a fresh live test result.
 
 ### Space Enablements
 
@@ -229,9 +233,9 @@ returns version 1; reusing version 0 returns 409 `Conflict` with a nonempty mess
 **Provider boundary:** An accepted update advances the version, so the same request
 version cannot authorize a second update.
 
-**Coverage:** Live-backed tests cover version progression and stale locking. The
-`Conflict` classification is endpoint-specific and is not generalized to unrelated
-resources.
+**Coverage:** Tests based on the retained live observations cover version progression
+and stale locking. The `Conflict` classification is endpoint-specific and is not
+generalized to unrelated resources.
 
 ### Entry response omissions
 

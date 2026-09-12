@@ -3,12 +3,12 @@
 page_title: "contentful_entry Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Entry.
+  Manages a Contentful Entry in an environment. Creating an Entry or changing its managed fields or metadata writes and publishes a draft. Import and refresh do not publish drafts written outside Terraform.
 ---
 
 # contentful_entry (Resource)
 
-Manages a Contentful Entry.
+Manages a Contentful Entry in an environment. Creating an Entry or changing its managed fields or metadata writes and publishes a draft. Import and refresh do not publish drafts written outside Terraform.
 
 ## Example Usage
 
@@ -103,8 +103,8 @@ Before applying again, inspect Contentful for the Entry that may have been creat
 
 Optional:
 
-- `concepts` (List of String) IDs of Contentful taxonomy concepts attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.
-- `tags` (List of String) IDs of Contentful tags attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.
+- `concepts` (List of String) IDs of Contentful taxonomy concepts attached to the Entry. Configured IDs must be unique. Reordering alone may update Terraform state but does not write or publish the Entry.
+- `tags` (List of String) IDs of Contentful tags attached to the Entry. Configured IDs must be unique. Reordering alone may update Terraform state but does not write or publish the Entry.
 
 
 <a id="nestedatt--timeouts"></a>

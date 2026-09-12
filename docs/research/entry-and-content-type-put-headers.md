@@ -1,12 +1,12 @@
 # Entry and Content Type PUT header semantics
 
-Entry Create and Update share a PUT path but require different headers. In the
-tested absent-target requests, omitting `X-Contentful-Content-Type` prevented
-creation despite a supplied version header. This supports omitting that header
-on Update when recreation after external deletion would be unintended. The
-read/delete/update race is an implication of the observed request selection,
-not a separate experiment retained here. A version header alone did not prevent
-creation of an absent Content Type.
+Creating an Entry with a specified ID and updating an Entry share a PUT path but
+require different headers. In the tested requests to absent Entries, omitting
+`X-Contentful-Content-Type` prevented creation despite a supplied version header.
+Omitting that header on update therefore avoids recreating an Entry that another
+client deleted. Deletion between a read and update was not tested separately;
+that consequence follows from the observed requests to absent Entries. A version
+header alone did not prevent creation of an absent Content Type.
 
 This note separates Contentful's documented contract, pinned JavaScript client behavior,
 and sanitized direct observations of the Content Management API (CMA).

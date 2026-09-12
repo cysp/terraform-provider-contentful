@@ -1,9 +1,10 @@
 # Live preview variables: custom preview token storage
 
-Live preview variables form one document per environment. PUT replaces its complete
-`variables` object, including nested locale maps, and requires a version header. DELETE
-was observed to ignore version preconditions. Empty objects, empty strings, JSON null,
-and omitted members have distinct effects.
+Live preview variables form one document per environment. In the recorded requests,
+PUT replaced the complete `variables` object, including nested locale maps, and required
+a version header. DELETE ignored version preconditions. Empty objects, empty strings,
+JSON null, and omitted members had distinct effects. The endpoint behavior is based on
+observations; Contentful's public guide describes the product feature only.
 
 ## Scope and evidence
 

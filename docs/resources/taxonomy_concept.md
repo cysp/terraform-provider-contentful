@@ -3,12 +3,12 @@
 page_title: "contentful_taxonomy_concept Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful taxonomy concept.
+  Manages a Contentful taxonomy concept in an organization, including its labels, notes, and relationships to other concepts. Assign concepts to Entries through their metadata.concepts attribute.
 ---
 
 # contentful_taxonomy_concept (Resource)
 
-Manages a Contentful taxonomy concept.
+Manages a Contentful taxonomy concept in an organization, including its labels, notes, and relationships to other concepts. Assign concepts to Entries through their `metadata.concepts` attribute.
 
 ## Example Usage
 
@@ -42,16 +42,16 @@ resource "contentful_taxonomy_concept" "furniture" {
 
 - `alt_labels` (Map of List of String) Alternative labels keyed by locale code, with a list of labels for each locale. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
 - `broader_concept_ids` (List of String) Ordered IDs of broader concepts. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
-- `change_note` (Map of String) Localized change notes.
-- `definition` (Map of String) Localized definitions.
-- `editorial_note` (Map of String) Localized editorial notes.
-- `example` (Map of String) Localized examples.
+- `change_note` (Map of String) Change notes keyed by locale code.
+- `definition` (Map of String) Definitions keyed by locale code.
+- `editorial_note` (Map of String) Editorial notes keyed by locale code.
+- `example` (Map of String) Examples keyed by locale code.
 - `hidden_labels` (Map of List of String) Hidden labels keyed by locale code, with a list of labels for each locale. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
-- `history_note` (Map of String) Localized history notes.
+- `history_note` (Map of String) History notes keyed by locale code.
 - `notations` (List of String) Ordered notation values. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
-- `note` (Map of String) Localized notes.
+- `note` (Map of String) Notes keyed by locale code.
 - `related_concept_ids` (List of String) Ordered IDs of related concepts. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
-- `scope_note` (Map of String) Localized scope notes.
+- `scope_note` (Map of String) Scope notes keyed by locale code.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `uri` (String) Optional URI identifying the concept. Empty strings are rejected by Contentful.
 
@@ -80,7 +80,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 import {
   identity = {
     organization_id = var.contentful_organization_id
-    concept_id      = var.concept_id
+    concept_id      = "furniture"
   }
   to = contentful_taxonomy_concept.furniture
 }
@@ -98,7 +98,13 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_organization_id}/${var.concept_id}"
+  id = "${var.contentful_organization_id}/furniture"
   to = contentful_taxonomy_concept.furniture
 }
+```
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import contentful_taxonomy_concept.furniture "$CONTENTFUL_ORGANIZATION_ID/furniture"
 ```

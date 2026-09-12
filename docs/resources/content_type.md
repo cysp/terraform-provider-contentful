@@ -12,6 +12,8 @@ Manages a Contentful Content Type. Creating it or changing its draft through Ter
 
 ## Example Usage
 
+This example creates and activates an `author` Content Type in an existing space and environment. Use its `content_type_id` when configuring an Entry or Editor Interface.
+
 ```terraform
 resource "contentful_content_type" "author" {
   space_id       = var.contentful_space_id
@@ -60,6 +62,15 @@ See [Operation timeouts](../guides/operation-timeouts) for the default timeouts 
 ### Drift and ignored changes
 
 Managed updates write the complete draft, including values retained by `ignore_changes`. An external draft whose changes are all ignored is left untouched. Deactivating outside Terraform is reflected in state; Terraform does not reactivate until a later managed change writes a draft eligible for activation.
+
+### Remove a field
+
+Remove a field from an activated Content Type in two applies:
+
+1. Set `omitted = true` on the field and apply. Terraform activates the draft with the field omitted from delivery responses.
+2. Remove the field from `fields` and apply again.
+
+The second apply permanently deletes the field. Check that your applications work with the field omitted before proceeding. See Contentful's [field deletion workflow](https://www.contentful.com/developers/docs/references/content-management-api/content-types/#deleting-fields).
 
 ### Destroy
 
@@ -117,7 +128,7 @@ Optional:
 
 - `allowed_resources` (Attributes List) Allowed resources for Resource Link fields. Each item must configure exactly one of `contentful_entry` or `external`. (see [below for nested schema](#nestedatt--fields--allowed_resources))
 - `default_value` (String) JSON-encoded object mapping locale codes to default field values, for example jsonencode({ "en-US" = "Untitled" }) for a Symbol field. Contentful applies defaults to omitted values when an Entry is created; changing a default does not rewrite existing Entries. For a non-localized field, use the environment's default locale. Omission configures no default.
-- `disabled` (Boolean) Whether editing the field is disabled in the Contentful web app. Defaults to `false`.
+- `disabled` (Boolean) Whether the field is hidden in the entry editor. Editors can still reveal and edit a hidden field; use role permissions to restrict editing. Defaults to `false`. See [Contentful field visibility](https://www.contentful.com/developers/changelog/hidden-entry-editor-fields/).
 - `items` (Attributes) For Array fields, defines the type of items in the array. (see [below for nested schema](#nestedatt--fields--items))
 - `link_type` (String) Type of resource linked by a `Link` field: `Entry` or `Asset`. For an `Array` of links, set `items.link_type` instead.
 - `omitted` (Boolean) Whether the field is omitted from Content Delivery and Preview API responses. Defaults to `false`. Before removing a field from an activated content type, set `omitted = true` and apply, then remove the field in a later apply.
@@ -226,7 +237,7 @@ import {
   identity = {
     space_id        = var.contentful_space_id
     environment_id  = var.contentful_environment_id
-    content_type_id = var.content_type_id
+    content_type_id = "author"
   }
   to = contentful_content_type.author
 }
@@ -245,7 +256,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/author"
   to = contentful_content_type.author
 }
 ```
@@ -253,5 +264,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_content_type.author "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_CONTENT_TYPE_ID"
+terraform import contentful_content_type.author "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/author"
 ```

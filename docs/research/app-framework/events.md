@@ -84,13 +84,13 @@ These results describe the exact configuration requests exercised.
 | `Entry.*` | 422 | Webhook wildcard syntax cannot be assumed for App Events. |
 | Extra `filters: []`, `transformation: {}`, `unexpected: true` | 200, all three omitted in response | Acceptance does not establish support; no execution test checked their effect. |
 | Nine Comment/Workflow/Task topics together | 200; identical topics on GET | Those exact arrays were accepted in the probe context. |
-| DELETE / repeated DELETE | 204 / 404 | Deletion is not status-idempotent. |
+| DELETE / repeated DELETE | 204 / 404 | The first request deleted the subscription; the repeated request returned not found. |
 | Delete definition with a subscription, then GET child | 204 / 404 | Child became inaccessible because the parent was absent; this does not inspect internal deletion storage. |
 
 HTTP App Events do not expose the WebhookDefinition filter/transformation DSL, custom
 method, multiple targets, basic-auth configuration, or a pause flag in the reviewed
-request contract. The tested unknown-field behavior is particularly important: ignoring
-a field is not implementation of that field.
+request contract. The service accepted the tested extra fields but omitted them from
+responses; their acceptance does not establish that they affect event delivery.
 
 ## Event topics
 

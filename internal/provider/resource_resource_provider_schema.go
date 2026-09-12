@@ -11,7 +11,7 @@ import (
 
 func ResourceProviderResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Resource Provider.",
+		Description: "Manages a Contentful App Resource Provider, connecting an app to the function that retrieves external resources. The App Definition and function must already exist.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in organization_id/app_definition_id form.",

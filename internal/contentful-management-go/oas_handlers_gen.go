@@ -5259,7 +5259,7 @@ func (s *Server) handleGetAppKeyRequest(args [3]string, argsEscaped bool, w http
 
 // handleGetAppKeysRequest handles getAppKeys operation.
 //
-// Get all app keys.
+// List app keys.
 //
 // GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
 func (s *Server) handleGetAppKeysRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
@@ -5336,7 +5336,7 @@ func (s *Server) handleGetAppKeysRequest(args [2]string, argsEscaped bool, w htt
 		mreq := middleware.Request{
 			Context:          ctx,
 			OperationName:    GetAppKeysOperation,
-			OperationSummary: "Get all app keys",
+			OperationSummary: "List app keys",
 			OperationID:      "getAppKeys",
 			Body:             nil,
 			RawBody:          rawBody,
@@ -6192,7 +6192,7 @@ func (s *Server) handleGetEditorInterfaceRequest(args [3]string, argsEscaped boo
 
 // handleGetEntriesRequest handles getEntries operation.
 //
-// Get all entries of a space.
+// List entries in an environment.
 //
 // GET /spaces/{space_id}/environments/{environment_id}/entries
 func (s *Server) handleGetEntriesRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
@@ -6269,7 +6269,7 @@ func (s *Server) handleGetEntriesRequest(args [2]string, argsEscaped bool, w htt
 		mreq := middleware.Request{
 			Context:          ctx,
 			OperationName:    GetEntriesOperation,
-			OperationSummary: "Get all entries of a space",
+			OperationSummary: "List entries in an environment",
 			OperationID:      "getEntries",
 			Body:             nil,
 			RawBody:          rawBody,

@@ -200,7 +200,7 @@ import {
   identity = {
     space_id       = var.contentful_space_id
     environment_id = var.contentful_environment_id
-    extension_id   = var.extension_id
+    extension_id   = "custom-field-extension"
   }
   to = contentful_extension.example
 }
@@ -219,7 +219,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.extension_id}"
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/custom-field-extension"
   to = contentful_extension.example
 }
 ```
@@ -227,5 +227,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_extension.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_EXTENSION_ID"
+terraform import contentful_extension.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/custom-field-extension"
 ```
