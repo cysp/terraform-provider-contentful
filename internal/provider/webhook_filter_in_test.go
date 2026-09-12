@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWebhookFilterInValueObjectRoundTrip(t *testing.T) {
@@ -18,13 +19,13 @@ func TestWebhookFilterInValueObjectRoundTrip(t *testing.T) {
 		"doc":    types.StringValue("doc"),
 		"values": NewTypedList([]types.String{types.StringValue("value")}),
 	})
-	assert.Empty(t, valueDiags)
+	require.Empty(t, valueDiags)
 
 	objectValue, objectValueDiags := value.ToObjectValue(ctx)
-	assert.Empty(t, objectValueDiags)
+	require.Empty(t, objectValueDiags)
 
 	valueFromObject, valueFromObjectDiags := value.CustomType(ctx).ValueFromObject(ctx, objectValue)
-	assert.Empty(t, valueFromObjectDiags)
+	require.Empty(t, valueFromObjectDiags)
 
 	assert.True(t, value.Equal(valueFromObject))
 }

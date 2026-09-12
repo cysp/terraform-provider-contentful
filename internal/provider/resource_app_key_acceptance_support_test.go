@@ -3,6 +3,7 @@ package provider_test
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -32,20 +34,17 @@ func testAccAppKeyJWK(t *testing.T) testAccAppKeyJWKData {
 	t.Helper()
 
 	key, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	publicKeyDER, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	return testAccAppKeyJWKFromDER(publicKeyDER)
 }
 
 func testAccAppKeyJWKFromDER(publicKeyDER []byte) testAccAppKeyJWKData {
-	fingerprint := cm.AppKeyJWKFingerprint(publicKeyDER)
+	digest := sha256.Sum256(publicKeyDER)
+	fingerprint := base64.RawURLEncoding.EncodeToString(digest[:])
 
 	return testAccAppKeyJWKData{
 		kid: fingerprint,

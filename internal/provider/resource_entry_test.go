@@ -50,7 +50,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 	errorSink := new(entryFixtureErrorSink)
 	recorder := newEntryMutationRecorder(server, errorSink)
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -122,7 +122,7 @@ func TestAccEntryResourceImportNotFound(t *testing.T) {
 		"entry_id":       config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -160,7 +160,7 @@ func TestAccEntryResourceImportWhitespaceDiff(t *testing.T) {
 		}),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -196,7 +196,7 @@ func TestAccEntryResourceImportPropertyOrderDiff(t *testing.T) {
 		}),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -234,7 +234,7 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 		}),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -281,7 +281,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		}))
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -329,7 +329,7 @@ func TestAccEntryResourceRejectsOmittedNonemptyMutationFields(t *testing.T) {
 	)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{{
+	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{{
 		Config: `
 resource "contentful_entry" "test" {
   space_id        = "0p38pssr0fi3"
@@ -361,7 +361,7 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 		}),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -473,7 +473,7 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 		"c": config.StringVariable(`{"en-AU":[]}`),
 	})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -541,7 +541,7 @@ func TestAccEntryResourceMetadataConcepts(t *testing.T) {
 
 	configVariables4 := maps.Clone(configVariables)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -591,7 +591,7 @@ func TestAccEntryResourceMetadataTags(t *testing.T) {
 
 	configVariables4 := maps.Clone(configVariables)
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

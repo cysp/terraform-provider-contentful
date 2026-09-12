@@ -9,6 +9,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -29,15 +30,33 @@ func TestAccAppDefinitionResourceLifecycle(t *testing.T) {
 		"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	identity := statecheck.CompareValue(compare.ValuesSame())
+
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_app_definition.test", plancheck.ResourceActionCreate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_app_definition.test", tfjsonpath.New("id")),
+				},
 			},
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_app_definition.test", plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_app_definition.test", tfjsonpath.New("id")),
+				},
 			},
 		},
 	})
@@ -103,7 +122,7 @@ resource "contentful_app_definition" "test" {
 				test.steps[1].PreConfig = func() { mutationCount.Store(0) }
 			}
 
-			ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: test.steps})
+			testAccMockedResource(t, handler, resource.TestCase{Steps: test.steps})
 
 			require.Zero(t, mutationCount.Load())
 		})
@@ -125,7 +144,7 @@ func TestAccAppDefinitionResourceImport(t *testing.T) {
 		Bundle: cm.NewOptAppBundleLink(cm.NewAppBundleLink("app-bundle-id")),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -165,7 +184,7 @@ func TestAccAppDefinitionResourceImportNotFound(t *testing.T) {
 		"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

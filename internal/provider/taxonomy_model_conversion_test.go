@@ -302,216 +302,174 @@ func TestTaxonomyLabelMapRequestStates(t *testing.T) {
 	t.Parallel()
 
 	listType := types.ListType{ElemType: types.StringType}
-	states := []struct {
-		name  string
-		value types.Map
+	states := map[string]struct {
+		value       types.Map
+		expected    cm.OptLocalizedStringList
+		expectError bool
 	}{
-		{name: "null", value: types.MapNull(listType)},
-		{name: "unknown", value: types.MapUnknown(listType)},
-		{name: "known empty", value: types.MapValueMust(listType, map[string]attr.Value{})},
-		{name: "known populated", value: types.MapValueMust(listType, map[string]attr.Value{
-			"en-US": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("Label")}),
-		})},
-	}
-
-	attributes := []struct {
-		name string
-		set  func(*TaxonomyConceptModel, types.Map)
-		get  func(cm.TaxonomyConceptRequest) cm.OptLocalizedStringList
-	}{
-		{
-			name: "alt_labels",
-			set:  func(model *TaxonomyConceptModel, value types.Map) { model.AltLabels = value },
-			get:  func(request cm.TaxonomyConceptRequest) cm.OptLocalizedStringList { return request.AltLabels },
+		"null":    {value: types.MapNull(listType)},
+		"unknown": {value: types.MapUnknown(listType), expectError: true},
+		"known empty": {
+			value:    types.MapValueMust(listType, map[string]attr.Value{}),
+			expected: cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {}}),
 		},
-		{
-			name: "hidden_labels",
-			set:  func(model *TaxonomyConceptModel, value types.Map) { model.HiddenLabels = value },
-			get:  func(request cm.TaxonomyConceptRequest) cm.OptLocalizedStringList { return request.HiddenLabels },
+		"known populated": {
+			value: types.MapValueMust(listType, map[string]attr.Value{
+				"en-US": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("Label")}),
+			}),
+			expected: cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {"Label"}}),
 		},
 	}
 
-	for _, attribute := range attributes {
-		t.Run(attribute.name, func(t *testing.T) {
-			t.Parallel()
-
-			for stateIndex, state := range states {
-				t.Run(state.name, func(t *testing.T) {
-					t.Parallel()
-
-					assertTaxonomyLabelMapRequestState(t, attribute.name, attribute.set, attribute.get, stateIndex, state.value)
-				})
-			}
-		})
-	}
-}
-
-func assertTaxonomyLabelMapRequestState(
-	t *testing.T,
-	attributeName string,
-	set func(*TaxonomyConceptModel, types.Map),
-	get func(cm.TaxonomyConceptRequest) cm.OptLocalizedStringList,
-	stateIndex int,
-	value types.Map,
-) {
-	t.Helper()
-
-	model := taxonomyConceptUpdatePlan()
-	set(&model, value)
-
-	prepared, diags := prepareTaxonomyConceptMutation(model, model)
-	if stateIndex == 1 {
-		require.True(t, diags.HasError())
-		assertTaxonomyDiagnosticPath(t, diags, path.Root(attributeName))
-
-		return
+	attributes := map[string]struct {
+		set func(*TaxonomyConceptModel, types.Map)
+		get func(cm.TaxonomyConceptRequest) cm.OptLocalizedStringList
+	}{
+		"alt_labels": {
+			set: func(model *TaxonomyConceptModel, value types.Map) { model.AltLabels = value },
+			get: func(request cm.TaxonomyConceptRequest) cm.OptLocalizedStringList { return request.AltLabels },
+		},
+		"hidden_labels": {
+			set: func(model *TaxonomyConceptModel, value types.Map) { model.HiddenLabels = value },
+			get: func(request cm.TaxonomyConceptRequest) cm.OptLocalizedStringList { return request.HiddenLabels },
+		},
 	}
 
-	require.False(t, diags.HasError())
+	for attributeName, attribute := range attributes {
+		for stateName, state := range states {
+			t.Run(attributeName+"/"+stateName, func(t *testing.T) {
+				t.Parallel()
 
-	request, requestDiags := prepared.planRequest(t.Context())
-	require.False(t, requestDiags.HasError(), requestDiags)
+				model := taxonomyConceptUpdatePlan()
+				attribute.set(&model, state.value)
 
-	labels := get(request)
-	if stateIndex == 0 {
-		assert.False(t, labels.IsSet())
+				prepared, diags := prepareTaxonomyConceptMutation(model, model)
+				if state.expectError {
+					require.True(t, diags.HasError())
+					assertTaxonomyDiagnosticPath(t, diags, path.Root(attributeName))
 
-		return
+					return
+				}
+
+				require.False(t, diags.HasError(), diags)
+				request, requestDiags := prepared.planRequest(t.Context())
+				require.False(t, requestDiags.HasError(), requestDiags)
+
+				assert.Equal(t, state.expected, attribute.get(request))
+			})
+		}
 	}
-
-	actual, ok := labels.Get()
-	require.True(t, ok)
-
-	if stateIndex == 2 {
-		assert.Equal(t, cm.LocalizedStringList{"en-US": {}}, actual)
-
-		return
-	}
-
-	assert.Equal(t, cm.LocalizedStringList{"en-US": {"Label"}}, actual)
 }
 
 func TestTaxonomyConceptListRequestStates(t *testing.T) {
 	t.Parallel()
 
 	for _, attributeName := range []string{"notations", "broader_concept_ids", "related_concept_ids"} {
-		t.Run(attributeName, func(t *testing.T) {
-			t.Parallel()
+		for stateName, state := range taxonomyStringListStates() {
+			t.Run(attributeName+"/"+stateName, func(t *testing.T) {
+				t.Parallel()
 
-			for stateIndex, value := range taxonomyStringListStates("value") {
-				t.Run([]string{"null", "unknown", "known empty", "known populated"}[stateIndex], func(t *testing.T) {
-					t.Parallel()
+				model := taxonomyConceptUpdatePlan()
 
-					model := taxonomyConceptUpdatePlan()
+				switch attributeName {
+				case "notations":
+					model.Notations = state.value
+				case "broader_concept_ids":
+					model.BroaderConceptIDs = state.value
+				case "related_concept_ids":
+					model.RelatedConceptIDs = state.value
+				}
 
-					switch attributeName {
-					case "notations":
-						model.Notations = value
-					case "broader_concept_ids":
-						model.BroaderConceptIDs = value
-					case "related_concept_ids":
-						model.RelatedConceptIDs = value
-					}
+				prepared, diags := prepareTaxonomyConceptMutation(model, model)
+				if state.expectError {
+					require.True(t, diags.HasError())
+					assertTaxonomyDiagnosticPath(t, diags, path.Root(attributeName))
 
-					prepared, diags := prepareTaxonomyConceptMutation(model, model)
-					if stateIndex == 1 {
-						require.True(t, diags.HasError())
-						assertTaxonomyDiagnosticPath(t, diags, path.Root(attributeName))
+					return
+				}
 
-						return
-					}
+				require.False(t, diags.HasError(), diags)
+				request, requestDiags := prepared.planRequest(t.Context())
+				require.False(t, requestDiags.HasError(), requestDiags)
 
-					require.False(t, diags.HasError())
-
-					request, requestDiags := prepared.planRequest(t.Context())
-					require.False(t, requestDiags.HasError(), requestDiags)
-
-					actual := request.Notations
-
-					switch attributeName {
-					case "broader_concept_ids":
-						actual = taxonomyConceptLinkIDsPreservingNil(request.Broader)
-					case "related_concept_ids":
-						actual = taxonomyConceptLinkIDsPreservingNil(request.Related)
-					}
-
-					switch stateIndex {
-					case 0:
-						assert.Nil(t, actual)
-					case 2:
-						assert.NotNil(t, actual)
-						assert.Empty(t, actual)
-					default:
-						assert.Equal(t, []string{"value"}, actual)
-					}
-				})
-			}
-		})
+				switch attributeName {
+				case "notations":
+					assert.Equal(t, state.expectedStrings, request.Notations)
+				case "broader_concept_ids":
+					assert.Equal(t, state.expectedLinks, request.Broader)
+				case "related_concept_ids":
+					assert.Equal(t, state.expectedLinks, request.Related)
+				}
+			})
+		}
 	}
-}
-
-func taxonomyConceptLinkIDsPreservingNil(links []cm.TaxonomyConceptLink) []string {
-	if links == nil {
-		return nil
-	}
-
-	return conceptLinkIDs(links)
 }
 
 func TestTaxonomyConceptSchemeListRequestStates(t *testing.T) {
 	t.Parallel()
 
 	for _, attributeName := range []string{"top_concept_ids", "concept_ids"} {
-		t.Run(attributeName, func(t *testing.T) {
-			t.Parallel()
+		for stateName, state := range taxonomyStringListStates() {
+			t.Run(attributeName+"/"+stateName, func(t *testing.T) {
+				t.Parallel()
 
-			for stateIndex, value := range taxonomyStringListStates("value") {
-				t.Run([]string{"null", "unknown", "known empty", "known populated"}[stateIndex], func(t *testing.T) {
-					t.Parallel()
+				model := taxonomyConceptSchemeUpdatePlan()
+				if attributeName == "top_concept_ids" {
+					model.TopConceptIDs = state.value
+				} else {
+					model.ConceptIDs = state.value
+				}
 
-					model := taxonomyConceptSchemeUpdatePlan()
-					if attributeName == "top_concept_ids" {
-						model.TopConceptIDs = value
-					} else {
-						model.ConceptIDs = value
-					}
+				prepared, diags := prepareTaxonomyConceptSchemeMutation(model, model)
+				if state.expectError {
+					require.True(t, diags.HasError())
+					assertTaxonomyDiagnosticPath(t, diags, path.Root(attributeName))
 
-					prepared, diags := prepareTaxonomyConceptSchemeMutation(model, model)
-					if stateIndex == 1 {
-						require.True(t, diags.HasError())
-						assertTaxonomyDiagnosticPath(t, diags, path.Root(attributeName))
+					return
+				}
 
-						return
-					}
+				require.False(t, diags.HasError(), diags)
+				request, requestDiags := prepared.planRequest(t.Context())
+				require.False(t, requestDiags.HasError(), requestDiags)
 
-					require.False(t, diags.HasError())
+				actual := request.TopConcepts
+				if attributeName == "concept_ids" {
+					actual = request.Concepts
+				}
 
-					request, requestDiags := prepared.planRequest(t.Context())
-					require.False(t, requestDiags.HasError(), requestDiags)
-
-					actual := conceptLinkIDs(request.TopConcepts)
-					if attributeName == "concept_ids" {
-						actual = conceptLinkIDs(request.Concepts)
-					}
-
-					if stateIndex < 3 {
-						assert.NotNil(t, actual)
-						assert.Empty(t, actual)
-					} else {
-						assert.Equal(t, []string{"value"}, actual)
-					}
-				})
-			}
-		})
+				assert.Equal(t, state.expectedLinks, actual)
+			})
+		}
 	}
 }
 
-func taxonomyStringListStates(populated string) []types.List {
-	return []types.List{
-		types.ListNull(types.StringType),
-		types.ListUnknown(types.StringType),
-		types.ListValueMust(types.StringType, []attr.Value{}),
-		types.ListValueMust(types.StringType, []attr.Value{types.StringValue(populated)}),
+type taxonomyStringListTestCase struct {
+	value           types.List
+	expectedStrings []string
+	expectedLinks   []cm.TaxonomyConceptLink
+	expectError     bool
+}
+
+func taxonomyStringListStates() map[string]taxonomyStringListTestCase {
+	return map[string]taxonomyStringListTestCase{
+		"null":    {value: types.ListNull(types.StringType)},
+		"unknown": {value: types.ListUnknown(types.StringType), expectError: true},
+		"known empty": {
+			value:           types.ListValueMust(types.StringType, []attr.Value{}),
+			expectedStrings: []string{},
+			expectedLinks:   []cm.TaxonomyConceptLink{},
+		},
+		"known populated": {
+			value:           types.ListValueMust(types.StringType, []attr.Value{types.StringValue("value")}),
+			expectedStrings: []string{"value"},
+			expectedLinks: []cm.TaxonomyConceptLink{{
+				Sys: cm.TaxonomyConceptLinkSys{
+					Type:     cm.TaxonomyConceptLinkSysTypeLink,
+					LinkType: cm.TaxonomyConceptLinkSysLinkTypeTaxonomyConcept,
+					ID:       "value",
+				},
+			}},
+		},
 	}
 }
 

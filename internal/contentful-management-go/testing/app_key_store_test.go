@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -46,7 +45,7 @@ func testAppKeyStoreRequest(x5c string) cm.AppKeyRequestData {
 func getStoredAppKey(t *testing.T, server *cmt.Server, organizationID, appDefinitionID string) *cm.AppKey {
 	t.Helper()
 
-	response, err := server.Handler().GetAppKey(context.Background(), cm.GetAppKeyParams{
+	response, err := server.Handler().GetAppKey(t.Context(), cm.GetAppKeyParams{
 		OrganizationID:  organizationID,
 		AppDefinitionID: appDefinitionID,
 		KeyKid:          "key",

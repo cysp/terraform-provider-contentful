@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"runtime"
 	"strings"
+	"sync"
 	"testing"
-	"time"
+	"testing/synctest"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
@@ -22,151 +22,105 @@ import (
 func TestEnvironmentStatusReadyDataSourceCancellationBetweenPolls(t *testing.T) {
 	t.Parallel()
 
-	firstResponseClosed := make(chan string, 1)
+	synctest.Test(t, func(t *testing.T) {
+		requestCount := 0
+		responseBody := environmentStatusReadyTestResponseBody(t, "queued")
+		client := environmentStatusReadyTestClient(t, roundTripFunc(func(request *http.Request) (*http.Response, error) {
+			requestCount++
 
-	requestCount := 0
+			return environmentStatusReadyTestResponse(request, io.NopCloser(strings.NewReader(responseBody))), nil
+		}))
 
-	responseBody := environmentStatusReadyTestResponseBody(t, "queued")
+		ctx, cancel := context.WithCancel(t.Context())
+		t.Cleanup(cancel)
 
-	client := environmentStatusReadyTestClient(t, roundTripFunc(func(request *http.Request) (*http.Response, error) {
-		requestCount++
+		implementation, request, response := environmentStatusReadyTestRead(t, client)
+		result := make(chan struct{})
 
-		return environmentStatusReadyTestResponse(
-			request,
-			&environmentStatusReadySignalingBody{
-				Reader: strings.NewReader(responseBody),
-				closed: firstResponseClosed,
-			},
-		), nil
-	}))
+		go func() {
+			implementation.Read(ctx, request, &response)
+			close(result)
+		}()
 
-	ctx, cancel := context.WithCancel(t.Context())
-	t.Cleanup(cancel)
+		// Let Read consume the queued response and block on its polling timer.
+		synctest.Wait()
+		require.Equal(t, 1, requestCount)
 
-	implementation, request, response := environmentStatusReadyTestRead(t, client)
-	result := make(chan struct{})
+		select {
+		case <-result:
+			t.Fatal("environment readiness read completed before cancellation")
+		default:
+		}
 
-	go func() {
-		implementation.Read(ctx, request, &response)
-		close(result)
-	}()
+		cancel()
+		synctest.Wait()
 
-	select {
-	case readGoroutineID := <-firstResponseClosed:
-		waitForEnvironmentStatusReadyPoll(t, readGoroutineID)
-	case <-time.After(time.Second):
-		t.Fatal("first environment response was not consumed")
-	}
+		select {
+		case <-result:
+		default:
+			t.Fatal("environment readiness wait did not stop after cancellation")
+		}
 
-	cancel()
+		require.Len(t, response.Diagnostics.Errors(), 1)
+		assert.Equal(t, "Cancelled waiting for environment to become ready", response.Diagnostics.Errors()[0].Summary())
+		assert.Equal(t, 1, requestCount)
 
-	select {
-	case <-result:
-	case <-time.After(time.Second):
-		t.Fatal("environment readiness wait did not stop after cancellation")
-	}
+		var state EnvironmentStatusReadyModel
 
-	require.Len(t, response.Diagnostics.Errors(), 1)
-	assert.Equal(t, "Cancelled waiting for environment to become ready", response.Diagnostics.Errors()[0].Summary())
-	assert.Equal(t, 1, requestCount)
-
-	var state EnvironmentStatusReadyModel
-
-	stateDiagnostics := response.State.Get(t.Context(), &state)
-	require.False(t, stateDiagnostics.HasError(), stateDiagnostics)
-	assert.Equal(t, types.StringValue("queued"), state.Status)
+		stateDiagnostics := response.State.Get(t.Context(), &state)
+		require.False(t, stateDiagnostics.HasError(), stateDiagnostics)
+		assert.Equal(t, types.StringValue("queued"), state.Status)
+	})
 }
 
 func TestEnvironmentStatusReadyDataSourceCancellationDuringHTTPIO(t *testing.T) {
 	t.Parallel()
 
-	requestStarted := make(chan struct{})
-	releaseResponse := make(chan struct{})
+	synctest.Test(t, func(t *testing.T) {
+		releaseResponse := make(chan struct{})
+		release := sync.OnceFunc(func() { close(releaseResponse) })
+		t.Cleanup(release)
 
-	requestCount := 0
+		requestCount := 0
+		responseBody := environmentStatusReadyTestResponseBody(t, environmentStatusReadyValue)
+		client := environmentStatusReadyTestClient(t, roundTripFunc(func(request *http.Request) (*http.Response, error) {
+			requestCount++
 
-	responseBody := environmentStatusReadyTestResponseBody(t, environmentStatusReadyValue)
+			<-releaseResponse
 
-	client := environmentStatusReadyTestClient(t, roundTripFunc(func(request *http.Request) (*http.Response, error) {
-		requestCount++
+			return environmentStatusReadyTestResponse(request, io.NopCloser(strings.NewReader(responseBody))), nil
+		}))
 
-		close(requestStarted)
-		<-releaseResponse
+		ctx, cancel := context.WithCancel(t.Context())
+		t.Cleanup(cancel)
 
-		return environmentStatusReadyTestResponse(
-			request,
-			io.NopCloser(strings.NewReader(responseBody)),
-		), nil
-	}))
+		implementation, request, response := environmentStatusReadyTestRead(t, client)
+		result := make(chan struct{})
 
-	ctx, cancel := context.WithCancel(t.Context())
-	t.Cleanup(cancel)
+		go func() {
+			implementation.Read(ctx, request, &response)
+			close(result)
+		}()
 
-	implementation, request, response := environmentStatusReadyTestRead(t, client)
-	result := make(chan struct{})
+		// Keep the HTTP response in flight while cancellation arrives.
+		synctest.Wait()
+		require.Equal(t, 1, requestCount)
 
-	go func() {
-		implementation.Read(ctx, request, &response)
-		close(result)
-	}()
+		cancel()
+		release()
+		synctest.Wait()
 
-	select {
-	case <-requestStarted:
-	case <-time.After(time.Second):
-		t.Fatal("environment request did not start")
-	}
-
-	cancel()
-	close(releaseResponse)
-
-	select {
-	case <-result:
-	case <-time.After(time.Second):
-		t.Fatal("environment readiness read did not stop after cancellation")
-	}
-
-	require.Len(t, response.Diagnostics.Errors(), 1)
-	assert.Equal(t, "Cancelled waiting for environment to become ready", response.Diagnostics.Errors()[0].Summary())
-	assert.Equal(t, 1, requestCount)
-	assert.True(t, response.State.Raw.IsNull())
-}
-
-type environmentStatusReadySignalingBody struct {
-	io.Reader
-
-	closed chan<- string
-}
-
-func waitForEnvironmentStatusReadyPoll(t *testing.T, readGoroutineID string) {
-	t.Helper()
-
-	deadline := time.Now().Add(time.Second)
-	stackBuffer := make([]byte, 1<<20)
-
-	for time.Now().Before(deadline) {
-		stackLength := runtime.Stack(stackBuffer, true)
-
-		for stack := range strings.SplitSeq(string(stackBuffer[:stackLength]), "\n\n") {
-			firstLine, _, _ := strings.Cut(stack, "\n")
-			if strings.HasPrefix(firstLine, "goroutine "+readGoroutineID+" [select]") &&
-				strings.Contains(stack, "(*environmentStatusReadyDataSource).Read") {
-				return
-			}
+		select {
+		case <-result:
+		default:
+			t.Fatal("environment readiness read did not stop after cancellation")
 		}
 
-		runtime.Gosched()
-	}
-
-	t.Fatal("environment readiness read did not enter the poll wait")
-}
-
-func (b *environmentStatusReadySignalingBody) Close() error {
-	stackBuffer := make([]byte, 64)
-
-	stackLength := runtime.Stack(stackBuffer, false)
-	b.closed <- strings.Fields(string(stackBuffer[:stackLength]))[1]
-
-	return nil
+		require.Len(t, response.Diagnostics.Errors(), 1)
+		assert.Equal(t, "Cancelled waiting for environment to become ready", response.Diagnostics.Errors()[0].Summary())
+		assert.Equal(t, 1, requestCount)
+		assert.True(t, response.State.Raw.IsNull())
+	})
 }
 
 func environmentStatusReadyTestClient(t *testing.T, transport http.RoundTripper) *cm.Client {

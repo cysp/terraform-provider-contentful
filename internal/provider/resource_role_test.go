@@ -42,7 +42,7 @@ func TestAccRoleResourceImport(t *testing.T) {
 		Name: "author",
 	})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -73,7 +73,7 @@ func TestAccRoleResourceImportNotFound(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -119,7 +119,7 @@ func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 	identity := statecheck.CompareValue(compare.ValuesSame())
 	configVariables := config.Variables{"space_id": config.StringVariable("0p38pssr0fi3")}
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		CheckDestroy: func(_ *terraform.State) error {
 			response, err := server.Handler().GetRole(t.Context(), cm.GetRoleParams{SpaceID: "0p38pssr0fi3", RoleID: roleID})
 			require.NoError(t, err)
@@ -274,7 +274,7 @@ func TestAccRoleResourceDeleted(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -331,7 +331,7 @@ func TestAccRoleResourceImportedVersionUsedForUpdate(t *testing.T) {
 	})
 	variables := config.Variables{"space_id": config.StringVariable("0p38pssr0fi3")}
 	// Use the version persisted by import, without a planning refresh replacing it.
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{

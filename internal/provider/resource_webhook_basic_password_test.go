@@ -42,12 +42,12 @@ func TestAccWebhookResourceBasicPasswordOmittedFromRawCMAResponse(t *testing.T) 
 	t.Parallel()
 
 	config := webhookBasicPasswordConfig("Basic webhook", `"basic-password-test-sentinel"`, "")
-	ContentfulProviderMockedResourceTest(t, rawWebhookPasswordOmissionHandler{}, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, rawWebhookPasswordOmissionHandler{}, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config: config,
-			Check: resource.TestCheckResourceAttr(
-				"contentful_webhook.test", "http_basic_password", "basic-password-test-sentinel",
-			),
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_webhook.test", tfjsonpath.New("http_basic_password"), knownvalue.StringExact("basic-password-test-sentinel")),
+			},
 		},
 		{
 			Config: config,
@@ -115,7 +115,7 @@ func TestAccWebhookResourceBasicPasswordLifecycle(t *testing.T) {
 		})
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: steps})
+	testAccMockedResource(t, server, resource.TestCase{Steps: steps})
 }
 
 func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
@@ -133,7 +133,7 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 	})
 
 	config := webhookBasicPasswordConfig("Imported webhook", `"configured-after-import"`, "")
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config:             config,
 			ResourceName:       "contentful_webhook.test",
@@ -175,7 +175,7 @@ func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testin
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{Config: webhookBasicPasswordConfig("Initial webhook", `"effective-plan-password"`, "")},
 		{
 			Config: webhookBasicPasswordConfig("Updated webhook", `"changed-config-password"`, "lifecycle { ignore_changes = [http_basic_password] }"),

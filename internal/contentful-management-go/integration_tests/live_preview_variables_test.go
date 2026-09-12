@@ -29,17 +29,17 @@ func TestLivePreviewVariablesWireContract(t *testing.T) {
 		serviceMessage string
 		decodeError    bool
 	}{
-		"get ordinary JSON":                   {method: http.MethodGet, status: 200, contentType: "application/json; charset=utf-8", response: livePreviewVariablesResponse},
-		"create version zero":                 {method: http.MethodPut, version: 0, status: 200, contentType: "application/json", response: livePreviewVariablesResponse},
-		"update exact version":                {method: http.MethodPut, version: 7, status: 200, contentType: "application/json", response: livePreviewVariablesResponse},
-		"delete empty response":               {method: http.MethodDelete, status: 204},
-		"CMA not found":                       {method: http.MethodGet, status: 404, contentType: "application/vnd.contentful.management.v1+json", response: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found."}`, errorID: "NotFound"},
-		"version conflict":                    {method: http.MethodPut, version: 7, status: 409, contentType: "application/vnd.contentful.management.v1+json", response: `{"sys":{"type":"Error","id":"VersionMismatch"},"message":"The given version value is not the current one"}`, errorID: "VersionMismatch"},
-		"validation without optional fields":  {method: http.MethodPut, status: 422, contentType: "application/json", response: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"required","details":"Required property"}]}}`, errorID: "ValidationFailed"},
-		"enterprise feature unavailable":      {method: http.MethodGet, status: 403, contentType: "application/vnd.contentful.management.v1+json", response: `{"statusCode":403,"error":"Forbidden","message":"previewLocalization is not enabled"}`, service: true, serviceMessage: "previewLocalization is not enabled"},
-		"service error preserves HTTP status": {method: http.MethodGet, status: 404, contentType: "application/vnd.contentful.management.v1+json", response: `{"statusCode":500,"error":"Not Found","message":"Not Found"}`, service: true, serviceMessage: "Not Found"},
-		"missing variables":                   {method: http.MethodGet, status: 200, contentType: "application/json", response: `{"sys":{"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"alias"}},"version":8}}`, decodeError: true},
-		"malformed response":                  {method: http.MethodGet, status: 200, contentType: "application/json", response: `{`, decodeError: true},
+		"get ordinary JSON":                   {method: http.MethodGet, status: http.StatusOK, contentType: "application/json; charset=utf-8", response: livePreviewVariablesResponse},
+		"create version zero":                 {method: http.MethodPut, version: 0, status: http.StatusOK, contentType: "application/json", response: livePreviewVariablesResponse},
+		"update exact version":                {method: http.MethodPut, version: 7, status: http.StatusOK, contentType: "application/json", response: livePreviewVariablesResponse},
+		"delete empty response":               {method: http.MethodDelete, status: http.StatusNoContent},
+		"CMA not found":                       {method: http.MethodGet, status: http.StatusNotFound, contentType: "application/vnd.contentful.management.v1+json", response: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found."}`, errorID: "NotFound"},
+		"version conflict":                    {method: http.MethodPut, version: 7, status: http.StatusConflict, contentType: "application/vnd.contentful.management.v1+json", response: `{"sys":{"type":"Error","id":"VersionMismatch"},"message":"The given version value is not the current one"}`, errorID: "VersionMismatch"},
+		"validation without optional fields":  {method: http.MethodPut, status: http.StatusUnprocessableEntity, contentType: "application/json", response: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"required","details":"Required property"}]}}`, errorID: "ValidationFailed"},
+		"enterprise feature unavailable":      {method: http.MethodGet, status: http.StatusForbidden, contentType: "application/vnd.contentful.management.v1+json", response: `{"statusCode":403,"error":"Forbidden","message":"previewLocalization is not enabled"}`, service: true, serviceMessage: "previewLocalization is not enabled"},
+		"service error preserves HTTP status": {method: http.MethodGet, status: http.StatusNotFound, contentType: "application/vnd.contentful.management.v1+json", response: `{"statusCode":500,"error":"Not Found","message":"Not Found"}`, service: true, serviceMessage: "Not Found"},
+		"missing variables":                   {method: http.MethodGet, status: http.StatusOK, contentType: "application/json", response: `{"sys":{"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"alias"}},"version":8}}`, decodeError: true},
+		"malformed response":                  {method: http.MethodGet, status: http.StatusOK, contentType: "application/json", response: `{`, decodeError: true},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -76,7 +76,8 @@ func TestLivePreviewVariablesWireContract(t *testing.T) {
 				}
 
 				w.WriteHeader(test.status)
-				_, _ = io.WriteString(w, test.response)
+				_, writeErr := io.WriteString(w, test.response)
+				assert.NoError(t, writeErr)
 			}))
 			t.Cleanup(server.Close)
 
@@ -138,11 +139,10 @@ func TestLivePreviewVariablesWireContract(t *testing.T) {
 func TestLivePreviewVariablesMockLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, testserver := testContentfulManagementHTTPTestServer(t, cmt.WithRateLimitPerSecond(100))
-	t.Cleanup(testserver.Close)
+	server, testServer := testContentfulManagementHTTPTestServer(t, cmt.WithRateLimitPerSecond(100))
 	server.RegisterSpaceEnvironment("space", "environment")
 
-	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+	client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 	getParams := cm.GetLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "environment"}
 	putParams := cm.PutLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "environment"}
 	deleteParams := cm.DeleteLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "environment"}
@@ -163,7 +163,7 @@ func TestLivePreviewVariablesMockLifecycle(t *testing.T) {
 
 	conflictDocument, ok := conflict.(*cm.LivePreviewVariablesErrorStatusCode)
 	require.True(t, ok)
-	require.Equal(t, 409, conflictDocument.StatusCode)
+	require.Equal(t, http.StatusConflict, conflictDocument.StatusCode)
 
 	putParams.XContentfulVersion = 1
 	updated, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(`{"localized":{},"null":null,"empty":""}`)}, putParams)

@@ -305,7 +305,7 @@ func TestAppDefinitionParameterOptionsFailClosedWithExactPath(t *testing.T) {
 
 	assert.Zero(t, actual)
 	require.True(t, diags.HasError())
-	assert.Equal(t, []string{"parameters.installation[0].options[1]"}, diagnosticPaths(t, diags))
+	assert.Equal(t, []string{"parameters.installation[0].options[1]"}, attributeDiagnosticPaths(t, diags))
 }
 
 func TestAppDefinitionParameterListsPreserveNullAndEmpty(t *testing.T) {

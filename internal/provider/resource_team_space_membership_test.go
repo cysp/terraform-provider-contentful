@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
@@ -24,11 +25,16 @@ func TestAccTeamSpaceMembershipResourceLifecycle(t *testing.T) {
 
 	identity := statecheck.CompareValue(compare.ValuesSame())
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: teamSpaceMembershipConfigVariables("space-id", "team-id", true),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_team_space_membership.test", plancheck.ResourceActionCreate),
+					},
+				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					identity.AddStateValue("contentful_team_space_membership.test", tfjsonpath.New("id")),
 					statecheck.ExpectKnownValue("contentful_team_space_membership.test", tfjsonpath.New("admin"), knownvalue.Bool(true)),
@@ -38,6 +44,11 @@ func TestAccTeamSpaceMembershipResourceLifecycle(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: teamSpaceMembershipConfigVariables("space-id", "team-id", false),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_team_space_membership.test", plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					identity.AddStateValue("contentful_team_space_membership.test", tfjsonpath.New("id")),
 					statecheck.ExpectKnownValue("contentful_team_space_membership.test", tfjsonpath.New("admin"), knownvalue.Bool(false)),
@@ -61,7 +72,7 @@ func TestAccTeamSpaceMembershipResourceImport(t *testing.T) {
 		Roles: []cm.RoleLink{},
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

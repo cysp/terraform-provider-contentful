@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -21,7 +20,7 @@ func TestGetTeamsReturnsDocumentedPagination(t *testing.T) {
 		server.SetTeam("organization", teamID, cm.TeamData{Name: teamID})
 	}
 
-	response, err := server.Handler().GetTeams(context.Background(), cm.GetTeamsParams{
+	response, err := server.Handler().GetTeams(t.Context(), cm.GetTeamsParams{
 		OrganizationID: "organization",
 		Skip:           cm.NewOptInt64(1),
 		Limit:          cm.NewOptInt64(1),
@@ -36,7 +35,7 @@ func TestGetTeamsReturnsDocumentedPagination(t *testing.T) {
 	require.Len(t, page.Items, 1)
 	assert.Equal(t, "bravo", page.Items[0].Sys.ID)
 
-	beyondEndResponse, err := server.Handler().GetTeams(context.Background(), cm.GetTeamsParams{
+	beyondEndResponse, err := server.Handler().GetTeams(t.Context(), cm.GetTeamsParams{
 		OrganizationID: "organization",
 		Skip:           cm.NewOptInt64(999999),
 		Limit:          cm.NewOptInt64(1),
@@ -55,7 +54,7 @@ func TestGetTeamsEnforcesUserManagementLimitMaximum(t *testing.T) {
 	t.Parallel()
 
 	handler := cmt.NewHandler()
-	maximumResponse, err := handler.GetTeams(context.Background(), cm.GetTeamsParams{
+	maximumResponse, err := handler.GetTeams(t.Context(), cm.GetTeamsParams{
 		OrganizationID: "organization",
 		Limit:          cm.NewOptInt64(100),
 	})
@@ -64,7 +63,7 @@ func TestGetTeamsEnforcesUserManagementLimitMaximum(t *testing.T) {
 	_, ok := maximumResponse.(*cm.TeamCollection)
 	require.True(t, ok)
 
-	response, err := handler.GetTeams(context.Background(), cm.GetTeamsParams{
+	response, err := handler.GetTeams(t.Context(), cm.GetTeamsParams{
 		OrganizationID: "organization",
 		Limit:          cm.NewOptInt64(101),
 	})

@@ -155,7 +155,7 @@ func TestAccContentTypeResourceSpecifiedIDCreateUsesCreateOnlyRequest(t *testing
 
 	server, recorder := newContentTypeSpecifiedIDFixture(t)
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config: managedContentTypeConfig("Created"),
 			Check: func(*terraform.State) error {
@@ -224,7 +224,7 @@ func TestAccContentTypeResourceSpecifiedIDCollisionDoesNotMutateActivateOrAdopt(
 
 	adapter := &contentTypeCollisionObservationAdapter{delegate: recorder, errorSink: recorder}
 
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, adapter, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config:      managedContentTypeConfig("Must not replace sentinel"),
 			ExpectError: regexp.MustCompile(`(?s)Failed to create content type.*VersionMismatch.*version precondition was not\s+satisfied`),

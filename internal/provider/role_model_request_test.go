@@ -54,7 +54,7 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 	assert.Equal(t, cm.NewStringRoleDataPermissionsItem("all"), req.Permissions["ContentDelivery"])
 	assert.Equal(t, cm.NewStringArrayRoleDataPermissionsItem([]string{"read"}), req.Permissions["ContentModel"])
 
-	assert.Len(t, req.Policies, 2)
+	require.Len(t, req.Policies, 2)
 	assert.Equal(t, cm.RoleDataPoliciesItem{
 		Effect:     "allow",
 		Actions:    cm.NewStringRoleDataPoliciesItemActions("all"),

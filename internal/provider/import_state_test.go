@@ -125,7 +125,7 @@ func TestImportStatePassthroughMultipartIDFromIdentityRejectsInvalidComponent(t 
 			}, resp)
 
 			assertImportDiagnostic(t, resp.Diagnostics, "Invalid import identity", "Import identity components must be known, non-null, and non-empty.")
-			assert.Equal(t, []string{"entry_id"}, importDiagnosticPaths(t, resp.Diagnostics))
+			assert.Equal(t, []string{"entry_id"}, attributeDiagnosticPaths(t, resp.Diagnostics))
 			assertImportStatePassthroughUntouched(t, resp)
 		})
 	}
@@ -174,7 +174,7 @@ func TestImportStatePassthroughMultipartIDFromIDRejectsEmptyComponent(t *testing
 	)
 
 	assertImportDiagnostic(t, resp.Diagnostics, "Invalid import ID", "Import ID components must not be empty.")
-	assert.Equal(t, []string{"entry_id"}, importDiagnosticPaths(t, resp.Diagnostics))
+	assert.Equal(t, []string{"entry_id"}, attributeDiagnosticPaths(t, resp.Diagnostics))
 	assertImportStatePassthroughUntouched(t, resp)
 }
 
@@ -215,7 +215,7 @@ func TestImportStatePassthroughMultipartIDFromIdentityRejectsDecodeError(t *test
 	}, resp)
 
 	assert.True(t, resp.Diagnostics.HasError())
-	assert.Equal(t, []string{"entry_id"}, importDiagnosticPaths(t, resp.Diagnostics))
+	assert.Equal(t, []string{"entry_id"}, attributeDiagnosticPaths(t, resp.Diagnostics))
 	assertImportStatePassthroughUntouched(t, resp)
 }
 
@@ -393,20 +393,6 @@ func assertImportStatePassthroughUntouched(t *testing.T, resp *resource.ImportSt
 	require.False(t, resp.Identity.GetAttribute(t.Context(), path.Root("entry_id"), &identityEntryID).HasError())
 	assert.True(t, identitySpaceID.IsNull())
 	assert.True(t, identityEntryID.IsNull())
-}
-
-func importDiagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
-	t.Helper()
-
-	paths := make([]string, 0, len(diags.Errors()))
-	for _, diagnostic := range diags.Errors() {
-		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
-		require.True(t, ok)
-
-		paths = append(paths, withPath.Path().String())
-	}
-
-	return paths
 }
 
 func assertImportDiagnostic(t *testing.T, diags diag.Diagnostics, summary, detail string) {

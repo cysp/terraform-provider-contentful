@@ -56,21 +56,7 @@ func TestRequireKnownStringListPreservesElementPathsAndFailsClosed(t *testing.T)
 	assert.Equal(t, []string{
 		`permissions["Entry"][1]`,
 		`permissions["Entry"][2]`,
-	}, diagnosticPaths(t, diags))
-}
-
-func diagnosticPaths(t *testing.T, diags diag.Diagnostics) []string {
-	t.Helper()
-
-	paths := make([]string, 0, len(diags.Errors()))
-	for _, diagnostic := range diags.Errors() {
-		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
-		require.True(t, ok)
-
-		paths = append(paths, withPath.Path().String())
-	}
-
-	return paths
+	}, attributeDiagnosticPaths(t, diags))
 }
 
 func TestRequireKnownStringListPreservesKnownEmpty(t *testing.T) {
@@ -97,7 +83,7 @@ func TestRequireKnownStringListMapPreservesNestedPathsAndFailsClosed(t *testing.
 
 	assert.Nil(t, actual)
 	require.True(t, diags.HasError())
-	assert.Equal(t, []string{`alt_labels["en-US"][1]`}, diagnosticPaths(t, diags))
+	assert.Equal(t, []string{`alt_labels["en-US"][1]`}, attributeDiagnosticPaths(t, diags))
 }
 
 func TestRequireKnownStringMapPreservesMapKeyPathsAndDeterministicOrder(t *testing.T) {
@@ -115,7 +101,7 @@ func TestRequireKnownStringMapPreservesMapKeyPathsAndDeterministicOrder(t *testi
 	assert.Equal(t, []string{
 		`pref_label["a-locale"]`,
 		`pref_label["z-locale"]`,
-	}, diagnosticPaths(t, diags))
+	}, attributeDiagnosticPaths(t, diags))
 }
 
 func TestRequireKnownStringMapPreservesKnownEmpty(t *testing.T) {

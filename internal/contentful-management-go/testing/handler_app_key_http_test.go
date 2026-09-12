@@ -18,7 +18,7 @@ import (
 func TestContentfulManagementServerCreatesSuppliedAppKey(t *testing.T) {
 	t.Parallel()
 
-	request := appKeyRequest(t)
+	request := appKeyRequest(t, 0)
 	status, responseBody := postAppKeyRequest(t, request)
 
 	assert.Equal(t, http.StatusCreated, status)
@@ -45,7 +45,7 @@ func TestContentfulManagementServerRejectsInvalidAppKeyMaterial(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			request := appKeyRequest(t)
+			request := appKeyRequest(t, 0)
 			mutate(request)
 
 			status, responseBody := postAppKeyRequest(t, request)

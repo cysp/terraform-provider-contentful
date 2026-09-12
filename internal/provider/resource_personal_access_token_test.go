@@ -8,7 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,11 +28,12 @@ func TestAccPersonalAccessTokenResourceLifecycle(t *testing.T) {
 
 	var token string
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
+				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigVariables:   configVariables,
+				ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectSensitiveValue("contentful_personal_access_token.test", tfjsonpath.New("token"))},
 				Check: func(state *terraform.State) error {
 					check := resource.TestCheckResourceAttrSet("contentful_personal_access_token.test", "token")
 
@@ -83,7 +86,7 @@ func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -106,7 +109,7 @@ func TestAccPersonalAccessTokenResourceImportNotFound(t *testing.T) {
 		"personal_access_token_id": config.StringVariable(personalAccessTokenID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

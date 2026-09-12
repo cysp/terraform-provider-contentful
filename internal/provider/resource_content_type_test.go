@@ -37,7 +37,7 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 		Fields: []cm.ContentTypeRequestDataFieldsItem{},
 	})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -118,7 +118,7 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 		"environment_id": config.StringVariable("test"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.StaticDirectory("testdata/TestAccContentTypeResourceImport"),
@@ -192,7 +192,7 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 		"environment_id": config.StringVariable("test"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -223,7 +223,7 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 		"environment_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -250,7 +250,7 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -283,7 +283,7 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -359,7 +359,7 @@ func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/1"),
@@ -531,7 +531,7 @@ func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -640,7 +640,7 @@ func TestAccContentTypeResourceTaxonomyDrift(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/1"),
@@ -753,7 +753,7 @@ func TestAccContentTypeResourceRemoveAnnotationsMetadata(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdateMetadata/annotations_only"),
@@ -802,7 +802,7 @@ func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -844,7 +844,7 @@ func TestAccContentTypeResourceDeleted(t *testing.T) {
 		"test_content_type_id": config.StringVariable(contentTypeID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),

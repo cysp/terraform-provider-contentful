@@ -39,7 +39,7 @@ func TestAccEnvironmentResourceLifecycle(t *testing.T) {
 	configVariables2 := maps.Clone(configVariables)
 	configVariables2["environment_name"] = config.StringVariable("Updated Test Environment")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		CheckDestroy: func(_ *terraform.State) error {
 			response, err := server.Handler().GetEnvironment(t.Context(), cm.GetEnvironmentParams{SpaceID: "space-id", EnvironmentID: environmentID})
 			require.NoError(t, err)
@@ -99,18 +99,18 @@ func TestAccEnvironmentResourceImport(t *testing.T) {
 		"environment_name":    config.StringVariable("Staging Environment"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_environment.test", "id", "space-id/staging"),
-					resource.TestCheckResourceAttr("contentful_environment.test", "space_id", "space-id"),
-					resource.TestCheckResourceAttr("contentful_environment.test", "environment_id", "staging"),
-					resource.TestCheckResourceAttr("contentful_environment.test", "name", "Staging Environment"),
-					resource.TestCheckResourceAttr("contentful_environment.test", "status", "ready"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/staging")),
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("space_id"), knownvalue.StringExact("space-id")),
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("environment_id"), knownvalue.StringExact("staging")),
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("name"), knownvalue.StringExact("Staging Environment")),
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("status"), knownvalue.StringExact("ready")),
+				},
 			},
 			{
 				ConfigDirectory:   config.TestNameDirectory(),

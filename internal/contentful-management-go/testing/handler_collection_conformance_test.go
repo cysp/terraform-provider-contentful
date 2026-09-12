@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -26,7 +25,7 @@ func TestGetEntriesReturnsStableFilteredPagination(t *testing.T) {
 		{id: "ignored", contentTypeID: "author"},
 		{id: "bravo", contentTypeID: "article"},
 	} {
-		response, err := handler.PutEntry(context.Background(), &cm.EntryRequest{}, cm.PutEntryParams{
+		response, err := handler.PutEntry(t.Context(), &cm.EntryRequest{}, cm.PutEntryParams{
 			SpaceID:                "space",
 			EnvironmentID:          "environment",
 			EntryID:                entry.id,
@@ -39,7 +38,7 @@ func TestGetEntriesReturnsStableFilteredPagination(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, statusCode.StatusCode)
 	}
 
-	firstResponse, err := handler.GetEntries(context.Background(), cm.GetEntriesParams{
+	firstResponse, err := handler.GetEntries(t.Context(), cm.GetEntriesParams{
 		SpaceID:       "space",
 		EnvironmentID: "environment",
 		ContentType:   cm.NewOptString("article"),
@@ -55,7 +54,7 @@ func TestGetEntriesReturnsStableFilteredPagination(t *testing.T) {
 	require.Len(t, first.Items, 2)
 	assert.Equal(t, []string{"alpha", "bravo"}, []string{first.Items[0].Sys.ID, first.Items[1].Sys.ID})
 
-	secondResponse, err := handler.GetEntries(context.Background(), cm.GetEntriesParams{
+	secondResponse, err := handler.GetEntries(t.Context(), cm.GetEntriesParams{
 		SpaceID:       "space",
 		EnvironmentID: "environment",
 		ContentType:   cm.NewOptString("article"),
@@ -72,7 +71,7 @@ func TestGetEntriesReturnsStableFilteredPagination(t *testing.T) {
 	require.Len(t, second.Items, 1)
 	assert.Equal(t, "charlie", second.Items[0].Sys.ID)
 
-	beyondEndResponse, err := handler.GetEntries(context.Background(), cm.GetEntriesParams{
+	beyondEndResponse, err := handler.GetEntries(t.Context(), cm.GetEntriesParams{
 		SpaceID:       "space",
 		EnvironmentID: "environment",
 		ContentType:   cm.NewOptString("article"),
@@ -111,7 +110,7 @@ func TestGetEntriesRejectsInvalidPaginationWithoutPanicking(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			response, err := handler.GetEntries(context.Background(), params)
+			response, err := handler.GetEntries(t.Context(), params)
 			require.NoError(t, err)
 
 			statusCode, ok := response.(*cm.ErrorStatusCode)

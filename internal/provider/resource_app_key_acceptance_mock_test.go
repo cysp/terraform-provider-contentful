@@ -15,8 +15,11 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,7 +38,7 @@ func TestAccAppKeyResourceMockLifecycle(t *testing.T) {
 	jwk := testAccAppKeyJWK(t)
 	replacementJWK := testAccAppKeyJWK(t)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		CheckDestroy: testAccAppKeyDestroyCheck(server.Handler().GetAppKey, jwk.kid, replacementJWK.kid),
 		Steps: []resource.TestStep{
 			{
@@ -43,16 +46,16 @@ func TestAccAppKeyResourceMockLifecycle(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "id", testAccAppKeyOrganizationID+"/"+testAccAppKeyAppDefinitionID+"/"+jwk.kid),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "key_kid", jwk.kid),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.alg", "RS256"),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.kty", "RSA"),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.use", "sig"),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.kid", jwk.kid),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.x5c.0", jwk.x5c),
-					resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.x5t", jwk.x5t),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact(testAccAppKeyOrganizationID+"/"+testAccAppKeyAppDefinitionID+"/"+jwk.kid)),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("key_kid"), knownvalue.StringExact(jwk.kid)),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("alg"), knownvalue.StringExact("RS256")),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("kty"), knownvalue.StringExact("RSA")),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("use"), knownvalue.StringExact("sig")),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("kid"), knownvalue.StringExact(jwk.kid)),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("x5c").AtSliceIndex(0), knownvalue.StringExact(jwk.x5c)),
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("x5t"), knownvalue.StringExact(jwk.x5t)),
+				},
 			},
 			{
 				Config: testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, replacementJWK, testAccAppKeyCreateBeforeDestroyHCL),
@@ -76,7 +79,7 @@ func TestAccAppKeyResourceMockParentReplacement(t *testing.T) {
 
 	jwk := testAccAppKeyJWK(t)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, ""),
@@ -110,7 +113,7 @@ func TestAccAppKeyResourceMockTimeoutUpdate(t *testing.T) {
 	counter := &appKeyMutationCounter{handler: server}
 	jwk := testAccAppKeyJWK(t)
 
-	ContentfulProviderMockedResourceTest(t, counter, resource.TestCase{
+	testAccMockedResource(t, counter, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAppKeyConfig(
@@ -168,7 +171,7 @@ func TestAccAppKeyResourceMockImport(t *testing.T) {
 	jwk := testAccAppKeyJWK(t)
 	resourceConfig := testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, "")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{Config: resourceConfig},
 			{
@@ -197,7 +200,7 @@ func TestAccAppKeyResourceMockExternalDeletion(t *testing.T) {
 	jwk := testAccAppKeyJWK(t)
 	resourceConfig := testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, "")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{Config: resourceConfig},
 			{
@@ -235,7 +238,7 @@ func TestAccAppKeyResourceMockCreateBeforeDestroyRejectsReusedKey(t *testing.T) 
 
 	jwk := testAccAppKeyJWK(t)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, testAccAppKeyCreateBeforeDestroyHCL),
@@ -276,7 +279,7 @@ func TestAccAppKeyResourceMockInvalidJWKMaterial(t *testing.T) {
 			setTestAccAppKeyAppDefinitions(server)
 			counter := &appKeyMutationCounter{handler: server}
 
-			ContentfulProviderMockedResourceTest(t, counter, resource.TestCase{
+			testAccMockedResource(t, counter, resource.TestCase{
 				Steps: []resource.TestStep{{
 					Config:      testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, test.jwk, ""),
 					ExpectError: regexp.MustCompile(test.message),
@@ -299,7 +302,7 @@ func TestAccAppKeyResourceMockAcceptsFingerprintableMaterial(t *testing.T) {
 
 	jwk := testAccAppKeyJWKFromDER(bytes.Repeat([]byte{0}, 600))
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{{
 			Config: testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, ""),
 			ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -336,18 +339,22 @@ func TestAccAppKeyResourceMockPreservesNonCanonicalBase64(t *testing.T) {
 
 	config := testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, "")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: config,
-				Check:  resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.x5c.0", jwk.x5c),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("x5c").AtSliceIndex(0), knownvalue.StringExact(jwk.x5c)),
+				},
 			},
 			{
 				Config: config,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: resource.TestCheckResourceAttr(testAccAppKeyResourceAddress, "jwk.x5c.0", jwk.x5c),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("jwk").AtMapKey("x5c").AtSliceIndex(0), knownvalue.StringExact(jwk.x5c)),
+				},
 			},
 		},
 	})
@@ -386,7 +393,7 @@ resource "contentful_app_key" "test" {
 }
 `, jwk.kid, jwk.x5c, jwk.x5t, testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{{
 			Config: resourceConfig,
 			ConfigPlanChecks: resource.ConfigPlanChecks{

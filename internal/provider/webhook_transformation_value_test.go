@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -89,21 +90,21 @@ func TestWebhookTransformationValueConversion(t *testing.T) {
 
 	ctx := t.Context()
 
-	values := []AttrValueWithToObjectValue{
-		NewTypedObject(WebhookTransformationValue{}),
-		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
+	values := map[string]basetypes.ObjectValuable{
+		"zero value": NewTypedObject(WebhookTransformationValue{}),
+		"unknown attributes": DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
 			"method":                 types.StringUnknown(),
 			"content_type":           types.StringUnknown(),
 			"include_content_length": types.BoolUnknown(),
 			"body":                   jsontypes.NewNormalizedUnknown(),
 		})),
-		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
+		"null attributes": DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
 			"method":                 types.StringNull(),
 			"content_type":           types.StringNull(),
 			"include_content_length": types.BoolNull(),
 			"body":                   jsontypes.NewNormalizedNull(),
 		})),
-		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
+		"known attributes": DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookTransformationValue](ctx, map[string]attr.Value{
 			"method":                 types.StringValue("method"),
 			"content_type":           types.StringValue("content_type"),
 			"include_content_length": types.BoolValue(true),
@@ -111,18 +112,18 @@ func TestWebhookTransformationValueConversion(t *testing.T) {
 		})),
 	}
 
-	for _, value := range values {
-		t.Run("ToObjectValue: "+value.String(), func(t *testing.T) {
+	for name, value := range values {
+		t.Run(name+"/ToObjectValue", func(t *testing.T) {
 			t.Parallel()
 
 			objectValue, objectValueDiags := value.ToObjectValue(ctx)
-			assert.Empty(t, objectValueDiags)
+			require.Empty(t, objectValueDiags)
 
 			assert.False(t, objectValue.IsUnknown())
 			assert.False(t, objectValue.IsNull())
 		})
 
-		t.Run("ToTerraformValue: "+value.String(), func(t *testing.T) {
+		t.Run(name+"/ToTerraformValue", func(t *testing.T) {
 			t.Parallel()
 
 			tfvalue, tfvalueErr := value.ToTerraformValue(ctx)
@@ -177,12 +178,12 @@ func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
 
 		object, diags := typ.ValueFromObject(ctx, value)
 
-		assert.False(t, diags.HasError())
+		require.False(t, diags.HasError(), diags)
 		assert.False(t, object.IsNull())
 		assert.False(t, object.IsUnknown())
 
 		transformation, transformationOk := object.(TypedObject[WebhookTransformationValue])
-		assert.True(t, transformationOk)
+		require.True(t, transformationOk)
 		assert.Equal(t, "method", transformation.Value().Method.ValueString())
 		assert.True(t, transformation.Value().IncludeContentLength.ValueBool())
 	})

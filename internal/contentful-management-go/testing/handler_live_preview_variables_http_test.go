@@ -19,14 +19,14 @@ func TestLivePreviewVariablesHTTPFailures(t *testing.T) {
 		status                             int
 		response                           string
 	}{
-		"missing version":       {method: "PUT", environment: "environment", body: `{"variables":{}}`, status: 400, response: `{"sys":{"type":"Error","id":"BadRequest"},"message":"The 'x-contentful-version' header is missing or invalid."}`},
-		"invalid version":       {method: "PUT", environment: "environment", version: "abc", body: `{"variables":{}}`, status: 400, response: `{"sys":{"type":"Error","id":"BadRequest"},"message":"The 'x-contentful-version' header is missing or invalid."}`},
-		"negative version":      {method: "PUT", environment: "environment", version: "-1", body: `{"variables":{}}`, status: 400, response: `{"sys":{"type":"Error","id":"BadRequest"},"message":"The 'x-contentful-version' header is missing or invalid."}`},
-		"missing variables":     {method: "PUT", environment: "environment", version: "0", body: `{}`, status: 422, response: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"type","type":"Object","details":"The type of \"value\" is incorrect, expected type: Object"}]}}`},
-		"malformed JSON":        {method: "PUT", environment: "environment", version: "0", body: `{`, status: 400, response: `{"statusCode":400,"error":"Bad Request","message":"Invalid request payload JSON format"}`},
-		"missing parent read":   {method: "GET", environment: "missing", status: 404, response: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found.","details":{"type":"Environment","id":"missing"}}`},
-		"missing parent update": {method: "PUT", environment: "missing", version: "0", body: `{"variables":{}}`, status: 404, response: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found.","details":{"type":"Environment","id":"missing"}}`},
-		"missing parent delete": {method: "DELETE", environment: "missing", status: 404, response: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found.","details":{"type":"Environment","id":"missing"}}`},
+		"missing version":       {method: http.MethodPut, environment: "environment", body: `{"variables":{}}`, status: http.StatusBadRequest, response: `{"sys":{"type":"Error","id":"BadRequest"},"message":"The 'x-contentful-version' header is missing or invalid."}`},
+		"invalid version":       {method: http.MethodPut, environment: "environment", version: "abc", body: `{"variables":{}}`, status: http.StatusBadRequest, response: `{"sys":{"type":"Error","id":"BadRequest"},"message":"The 'x-contentful-version' header is missing or invalid."}`},
+		"negative version":      {method: http.MethodPut, environment: "environment", version: "-1", body: `{"variables":{}}`, status: http.StatusBadRequest, response: `{"sys":{"type":"Error","id":"BadRequest"},"message":"The 'x-contentful-version' header is missing or invalid."}`},
+		"missing variables":     {method: http.MethodPut, environment: "environment", version: "0", body: `{}`, status: http.StatusUnprocessableEntity, response: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"type","type":"Object","details":"The type of \"value\" is incorrect, expected type: Object"}]}}`},
+		"malformed JSON":        {method: http.MethodPut, environment: "environment", version: "0", body: `{`, status: http.StatusBadRequest, response: `{"statusCode":400,"error":"Bad Request","message":"Invalid request payload JSON format"}`},
+		"missing parent read":   {method: http.MethodGet, environment: "missing", status: http.StatusNotFound, response: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found.","details":{"type":"Environment","id":"missing"}}`},
+		"missing parent update": {method: http.MethodPut, environment: "missing", version: "0", body: `{"variables":{}}`, status: http.StatusNotFound, response: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found.","details":{"type":"Environment","id":"missing"}}`},
+		"missing parent delete": {method: http.MethodDelete, environment: "missing", status: http.StatusNotFound, response: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found.","details":{"type":"Environment","id":"missing"}}`},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -67,26 +67,26 @@ func TestLivePreviewVariablesHTTPValidationAndReplacement(t *testing.T) {
 		stored    string
 		failure   string
 	}{
-		"null root":            {variables: `null`, status: 422},
-		"string root":          {variables: `"wrong"`, status: 422},
-		"number root":          {variables: `123`, status: 422},
-		"boolean root":         {variables: `true`, status: 422},
-		"global number":        {variables: `{"probe":123}`, status: 422, failure: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"type","type":"Text","value":123,"details":"The type of \"value\" is incorrect, expected type: Text","path":["probe"],"i18nContext":{"code":"CmaError.Field.Validation.IncorrectType","parameters":{"schemaType":{"type":"string","value":"Text"}}}}]}}`},
-		"global boolean":       {variables: `{"probe":true}`, status: 422},
-		"localized number":     {variables: `{"probe":{"en-US":123}}`, status: 422},
-		"localized boolean":    {variables: `{"probe":{"en-US":true}}`, status: 422},
-		"localized array":      {variables: `{"probe":{"en-US":["first"]}}`, status: 422},
-		"localized object":     {variables: `{"probe":{"en-US":{}}}`, status: 422},
-		"unknown locale":       {variables: `{"probe":{"zz-ZZ":"value"}}`, status: 422, failure: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"unknown","value":"value","details":"The property \"zz-ZZ\" is not allowed here.","path":["probe","zz-ZZ"],"i18nContext":{"code":"CmaError.Field.Validation.UnknownProperty","parameters":{"propertyName":{"type":"string","value":"zz-ZZ"}}}}]}}`},
-		"wrong case locale":    {variables: `{"probe":{"en-us":"value"}}`, status: 422},
-		"arbitrary locale":     {variables: `{"probe":{"arbitrary":null}}`, status: 422},
-		"global string array":  {variables: `{"probe":["first","second"]}`, status: 422},
-		"proto key":            {variables: `{"__proto__":"value"}`, status: 400, failure: `{"statusCode":400,"error":"Bad Request","message":"Invalid request payload JSON format"}`},
-		"root empty array":     {variables: `[]`, status: 200, stored: `{}`},
-		"root string array":    {variables: `["first","second"]`, status: 200, stored: `{"0":"first","1":"second"}`},
-		"variable empty array": {variables: `{"probe":[]}`, status: 200, stored: `{"probe":{}}`},
-		"mixed empty values":   {variables: `{"empty":"","global":null,"localized":{"en-US":null},"map":{}}`, status: 200, stored: `{"empty":"","global":null,"localized":{"en-US":null},"map":{}}`},
-		"unrestricted names":   {variables: `{"":"empty","a.b[c]/d-e_f":"punctuation","café":"unicode","constructor":"accepted","prototype":"accepted"}`, status: 200, stored: `{"":"empty","a.b[c]/d-e_f":"punctuation","café":"unicode","constructor":"accepted","prototype":"accepted"}`},
+		"null root":            {variables: `null`, status: http.StatusUnprocessableEntity},
+		"string root":          {variables: `"wrong"`, status: http.StatusUnprocessableEntity},
+		"number root":          {variables: `123`, status: http.StatusUnprocessableEntity},
+		"boolean root":         {variables: `true`, status: http.StatusUnprocessableEntity},
+		"global number":        {variables: `{"probe":123}`, status: http.StatusUnprocessableEntity, failure: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"type","type":"Text","value":123,"details":"The type of \"value\" is incorrect, expected type: Text","path":["probe"],"i18nContext":{"code":"CmaError.Field.Validation.IncorrectType","parameters":{"schemaType":{"type":"string","value":"Text"}}}}]}}`},
+		"global boolean":       {variables: `{"probe":true}`, status: http.StatusUnprocessableEntity},
+		"localized number":     {variables: `{"probe":{"en-US":123}}`, status: http.StatusUnprocessableEntity},
+		"localized boolean":    {variables: `{"probe":{"en-US":true}}`, status: http.StatusUnprocessableEntity},
+		"localized array":      {variables: `{"probe":{"en-US":["first"]}}`, status: http.StatusUnprocessableEntity},
+		"localized object":     {variables: `{"probe":{"en-US":{}}}`, status: http.StatusUnprocessableEntity},
+		"unknown locale":       {variables: `{"probe":{"zz-ZZ":"value"}}`, status: http.StatusUnprocessableEntity, failure: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"unknown","value":"value","details":"The property \"zz-ZZ\" is not allowed here.","path":["probe","zz-ZZ"],"i18nContext":{"code":"CmaError.Field.Validation.UnknownProperty","parameters":{"propertyName":{"type":"string","value":"zz-ZZ"}}}}]}}`},
+		"wrong case locale":    {variables: `{"probe":{"en-us":"value"}}`, status: http.StatusUnprocessableEntity},
+		"arbitrary locale":     {variables: `{"probe":{"arbitrary":null}}`, status: http.StatusUnprocessableEntity},
+		"global string array":  {variables: `{"probe":["first","second"]}`, status: http.StatusUnprocessableEntity},
+		"proto key":            {variables: `{"__proto__":"value"}`, status: http.StatusBadRequest, failure: `{"statusCode":400,"error":"Bad Request","message":"Invalid request payload JSON format"}`},
+		"root empty array":     {variables: `[]`, status: http.StatusOK, stored: `{}`},
+		"root string array":    {variables: `["first","second"]`, status: http.StatusOK, stored: `{"0":"first","1":"second"}`},
+		"variable empty array": {variables: `{"probe":[]}`, status: http.StatusOK, stored: `{"probe":{}}`},
+		"mixed empty values":   {variables: `{"empty":"","global":null,"localized":{"en-US":null},"map":{}}`, status: http.StatusOK, stored: `{"empty":"","global":null,"localized":{"en-US":null},"map":{}}`},
+		"unrestricted names":   {variables: `{"":"empty","a.b[c]/d-e_f":"punctuation","café":"unicode","constructor":"accepted","prototype":"accepted"}`, status: http.StatusOK, stored: `{"":"empty","a.b[c]/d-e_f":"punctuation","café":"unicode","constructor":"accepted","prototype":"accepted"}`},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -98,7 +98,7 @@ func TestLivePreviewVariablesHTTPValidationAndReplacement(t *testing.T) {
 			const initial = `{"keep":"original","localized":{"en-US":"existing"}}`
 
 			created := requestLivePreviewVariables(t, server, http.MethodPut, "0", `{"variables":`+initial+`}`)
-			require.Equal(t, 200, created.Code)
+			require.Equal(t, http.StatusOK, created.Code)
 			before := requestLivePreviewVariables(t, server, http.MethodGet, "", "")
 			response := requestLivePreviewVariables(t, server, http.MethodPut, "1", `{"variables":`+test.variables+`}`)
 			require.Equal(t, test.status, response.Code, response.Body.String())
@@ -108,7 +108,7 @@ func TestLivePreviewVariablesHTTPValidationAndReplacement(t *testing.T) {
 			}
 
 			after := requestLivePreviewVariables(t, server, http.MethodGet, "", "")
-			if test.status != 200 {
+			if test.status != http.StatusOK {
 				require.JSONEq(t, before.Body.String(), after.Body.String())
 
 				return
@@ -185,11 +185,11 @@ func TestLivePreviewVariablesHTTPTextLength(t *testing.T) {
 		localized bool
 		status    int
 	}{
-		"ASCII boundary":     {text: strings.Repeat("a", 50000), status: 200},
-		"ASCII too long":     {text: strings.Repeat("a", 50001), status: 422},
-		"localized too long": {text: strings.Repeat("a", 50001), localized: true, status: 422},
-		"BMP":                {text: strings.Repeat("é", 50000), status: 200},
-		"astral":             {text: strings.Repeat("😀", 25001), status: 200},
+		"ASCII boundary":     {text: strings.Repeat("a", 50000), status: http.StatusOK},
+		"ASCII too long":     {text: strings.Repeat("a", 50001), status: http.StatusUnprocessableEntity},
+		"localized too long": {text: strings.Repeat("a", 50001), localized: true, status: http.StatusUnprocessableEntity},
+		"BMP":                {text: strings.Repeat("é", 50000), status: http.StatusOK},
+		"astral":             {text: strings.Repeat("😀", 25001), status: http.StatusOK},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -198,7 +198,7 @@ func TestLivePreviewVariablesHTTPTextLength(t *testing.T) {
 			require.NoError(t, err)
 			server.RegisterSpaceEnvironment("space", "environment")
 			created := requestLivePreviewVariables(t, server, http.MethodPut, "0", `{"variables":{"keep":"original"}}`)
-			require.Equal(t, 200, created.Code)
+			require.Equal(t, http.StatusOK, created.Code)
 			before := requestLivePreviewVariables(t, server, http.MethodGet, "", "")
 			value, err := json.Marshal(test.text)
 			require.NoError(t, err)
@@ -215,7 +215,7 @@ func TestLivePreviewVariablesHTTPTextLength(t *testing.T) {
 			response := requestLivePreviewVariables(t, server, http.MethodPut, "1", `{"variables":{"probe":`+fragment+`}}`)
 			require.Equal(t, test.status, response.Code)
 
-			if test.status == 200 {
+			if test.status == http.StatusOK {
 				after := requestLivePreviewVariables(t, server, http.MethodGet, "", "")
 
 				var stored struct {
@@ -273,14 +273,14 @@ func TestLivePreviewVariablesHTTPConflictPreservesDocument(t *testing.T) {
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "environment")
 	first := requestLivePreviewVariables(t, server, http.MethodPut, "0", `{"variables":{"keep":"original"}}`)
-	require.Equal(t, 200, first.Code)
+	require.Equal(t, http.StatusOK, first.Code)
 	second := requestLivePreviewVariables(t, server, http.MethodPut, "1", `{"variables":{"keep":"updated"}}`)
-	require.Equal(t, 200, second.Code)
+	require.Equal(t, http.StatusOK, second.Code)
 
 	before := requestLivePreviewVariables(t, server, http.MethodGet, "", "")
 	for _, version := range []string{"0", "1", "999999"} {
 		conflict := requestLivePreviewVariables(t, server, http.MethodPut, version, `{"variables":{}}`)
-		require.Equal(t, 409, conflict.Code)
+		require.Equal(t, http.StatusConflict, conflict.Code)
 		require.JSONEq(t, `{"sys":{"type":"Error","id":"VersionMismatch"},"message":"The given version value is not the current one"}`, conflict.Body.String())
 		after := requestLivePreviewVariables(t, server, http.MethodGet, "", "")
 		require.JSONEq(t, before.Body.String(), after.Body.String())

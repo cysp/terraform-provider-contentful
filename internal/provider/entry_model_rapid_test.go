@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"testing"
 
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
@@ -14,7 +13,7 @@ import (
 func TestEntryModelRoundTrip(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	rapid.Check(t, func(t *rapid.T) {
 		spaceID := testdata.AlphanumericStringOfN(1, 10).Draw(t, "spaceID")

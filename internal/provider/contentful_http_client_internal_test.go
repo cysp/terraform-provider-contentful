@@ -189,7 +189,7 @@ func assertContentfulRetryPolicy(t *testing.T, name, method string, status int, 
 func TestContentfulRetryPolicyStopsForAlreadyCancelledContext(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 
 	ctx = context.WithValue(ctx, contentfulRequestMethodContextKey{}, http.MethodGet)
@@ -393,8 +393,8 @@ func TestContentfulHTTPClientRetriesMoreThanFourConsecutiveRateLimits(t *testing
 	removeContentfulRetryTestDelay(retryClient)
 	require.Equal(t, math.MaxInt, retryClient.RetryMax)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
+	t.Cleanup(cancel)
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(`{}`))
 	require.NoError(t, err)
@@ -419,8 +419,8 @@ func TestContentfulHTTPClientPreservesAlreadyExpiredDeadline(t *testing.T) {
 	})}
 	client, _ := contentfulRetryTestClient(t, baseClient)
 
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
-	defer cancel()
+	ctx, cancel := context.WithDeadline(t.Context(), time.Now().Add(-time.Second))
+	t.Cleanup(cancel)
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.test.contentful.com/resource", nil)
 	require.NoError(t, err)
@@ -451,8 +451,8 @@ func TestContentfulHTTPClientDeclinesRateLimitRetryBeyondDeadline(t *testing.T) 
 	})}
 	client, _ := contentfulRetryTestClient(t, baseClient)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+	t.Cleanup(cancel)
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, "https://api.test.contentful.com/resource", nil)
 	require.NoError(t, err)
@@ -489,8 +489,8 @@ func TestContentfulHTTPClientRetriesWhenRateLimitBackoffFitsDeadline(t *testing.
 	})}
 	client, _ := contentfulRetryTestClient(t, baseClient)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+	t.Cleanup(cancel)
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(`{}`))
 	require.NoError(t, err)
@@ -511,8 +511,8 @@ func TestContentfulRetryCoordinatorReusesDeadlineCheckedBackoff(t *testing.T) {
 	retryCoordinator := contentfulRetryCoordinator{client: retryClient}
 	retryState := &contentfulRequestRetryState{}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	t.Cleanup(cancel)
 
 	ctx = context.WithValue(ctx, contentfulRequestMethodContextKey{}, http.MethodPost)
 	ctx = context.WithValue(ctx, contentfulRequestRetryStateContextKey{}, retryState)
@@ -787,7 +787,7 @@ func TestContentfulHTTPClientStopsWhenContextIsCancelled(t *testing.T) {
 		return time.Minute
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	t.Cleanup(cancel)
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPut, "https://api.test.contentful.com/resource", strings.NewReader(`{}`))
@@ -841,8 +841,8 @@ func TestContentfulHTTPClientTransportBackoffExpiresAtDeadline(t *testing.T) {
 		return time.Minute
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(t.Context(), 500*time.Millisecond)
+	t.Cleanup(cancel)
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.test.contentful.com/resource", nil)
 	require.NoError(t, err)
@@ -883,7 +883,7 @@ func TestContentfulHTTPClientDoesNotAttemptAlreadyCancelledRequest(t *testing.T)
 	})}
 	client, _ := contentfulRetryTestClient(t, baseClient)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.test.contentful.com/resource", nil)
@@ -924,7 +924,7 @@ func TestContentfulHTTPClientAppliesDefaultDeadlineOnlyWhenMissing(t *testing.T)
 		client, _ := contentfulRetryTestClient(t, baseClient)
 
 		started := time.Now()
-		request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "https://api.test.contentful.com/resource", nil)
+		request, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.test.contentful.com/resource", nil)
 		require.NoError(t, err)
 
 		response, err := client.Do(request)
@@ -952,8 +952,8 @@ func TestContentfulHTTPClientAppliesDefaultDeadlineOnlyWhenMissing(t *testing.T)
 		})}
 		client, _ := contentfulRetryTestClient(t, baseClient)
 
-		ctx, cancel := context.WithDeadline(context.Background(), expectedDeadline)
-		defer cancel()
+		ctx, cancel := context.WithDeadline(t.Context(), expectedDeadline)
+		t.Cleanup(cancel)
 
 		request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.test.contentful.com/resource", nil)
 		require.NoError(t, err)

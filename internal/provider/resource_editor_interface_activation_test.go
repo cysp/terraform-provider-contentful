@@ -28,7 +28,7 @@ func TestAccEditorInterfaceResourceCreateAfterFirstActivationRecovery(t *testing
 			handler := &editorInterfaceRequestRecorder{next: activation}
 			contentType := editorInterfaceActivationContentTypeConfig("initial")
 
-			ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+			testAccMockedResource(t, handler, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: noRefresh}},
 				Steps: []resource.TestStep{
 					{Config: contentType, ExpectNonEmptyPlan: true},
@@ -58,7 +58,7 @@ func TestAccEditorInterfaceResourceCreateAfterImportedDraftActivation(t *testing
 	})
 	handler := &editorInterfaceRequestRecorder{next: server}
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config:       editorInterfaceActivationContentTypeConfig("initial"),
@@ -86,7 +86,7 @@ func TestAccEditorInterfaceResourceUpdateAfterActivationRecovery(t *testing.T) {
 			handler := &editorInterfaceRequestRecorder{next: activation}
 			updated := editorInterfaceActivationContentTypeConfig("updated")
 
-			ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+			testAccMockedResource(t, handler, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: noRefresh}},
 				Steps: []resource.TestStep{
 					{Config: editorInterfaceActivationContentTypeConfig("initial") + editorInterfaceActivationConfig("initial")},

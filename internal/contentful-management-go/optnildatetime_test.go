@@ -25,7 +25,7 @@ func TestOptNilDateTimeValueTimePointer(t *testing.T) {
 			input:    cm.NewOptNilDateTimeNull(),
 			expected: nil,
 		},
-		"nil": {
+		"unset": {
 			input:    cm.OptNilDateTime{},
 			expected: nil,
 		},

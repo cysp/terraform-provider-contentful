@@ -12,39 +12,32 @@ import (
 func TestGetAuthenticatedUserUnauthorized(t *testing.T) {
 	t.Parallel()
 
-	_, testserver := testContentfulManagementHTTPTestServer(t)
-	client := testContentfulManagementClient(t, testserver.URL, "CFPAT-00000")
+	_, testServer := testContentfulManagementHTTPTestServer(t)
+	client := testContentfulManagementClient(t, testServer.URL, "CFPAT-00000")
 
 	response, err := client.GetAuthenticatedUser(t.Context())
 	require.NoError(t, err)
 
-	switch response := response.(type) {
-	case cm.ErrorResponse:
-		require.NotNil(t, response)
-
-		responseError, responseErrorOk := response.GetError()
-		require.True(t, responseErrorOk)
-		assert.Equal(t, "AccessTokenInvalid", responseError.Sys.ID)
-	default:
-		t.Fatal("unexpected type")
-	}
+	errorResponse, ok := response.(cm.ErrorResponse)
+	require.True(t, ok, "expected an ErrorResponse, got %T", response)
+	responseError, ok := errorResponse.GetError()
+	require.True(t, ok)
+	assert.Equal(t, "AccessTokenInvalid", responseError.Sys.ID)
 }
 
 func TestGetAuthenticatedUserSuccess(t *testing.T) {
 	t.Parallel()
 
-	server, testserver := testContentfulManagementHTTPTestServer(t)
-	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+	server, testServer := testContentfulManagementHTTPTestServer(t)
+	client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 	server.SetMe(cm.NewUser("123"))
 
 	response, err := client.GetAuthenticatedUser(t.Context())
 	require.NoError(t, err)
 
-	switch response := response.(type) {
-	case *cm.User:
-		require.NotNil(t, response)
-	default:
-		t.Fatal("unexpected type")
-	}
+	user, ok := response.(*cm.User)
+	require.True(t, ok, "expected a User, got %T", response)
+	require.NotNil(t, user)
+	assert.Equal(t, "123", user.Sys.ID)
 }

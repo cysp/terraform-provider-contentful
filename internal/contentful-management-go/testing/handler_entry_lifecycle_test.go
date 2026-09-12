@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -20,7 +19,7 @@ func TestPublishEntryRequiresExactVersion(t *testing.T) {
 	handler := cmt.NewHandler()
 	handler.RegisterSpaceEnvironment("space", "environment", "ready")
 
-	createdResponse, err := handler.PutEntry(context.Background(), &cm.EntryRequest{}, cm.PutEntryParams{
+	createdResponse, err := handler.PutEntry(t.Context(), &cm.EntryRequest{}, cm.PutEntryParams{
 		SpaceID:                "space",
 		EnvironmentID:          "environment",
 		EntryID:                "entry",
@@ -33,7 +32,7 @@ func TestPublishEntryRequiresExactVersion(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, createdStatus.StatusCode)
 	assert.Equal(t, 1, createdStatus.Response.Sys.Version)
 
-	staleResponse, err := handler.PublishEntry(context.Background(), cm.PublishEntryParams{
+	staleResponse, err := handler.PublishEntry(t.Context(), cm.PublishEntryParams{
 		SpaceID:            "space",
 		EnvironmentID:      "environment",
 		EntryID:            "entry",
@@ -42,7 +41,7 @@ func TestPublishEntryRequiresExactVersion(t *testing.T) {
 	require.NoError(t, err)
 	requireContentfulConflictWithNonemptyMessage(t, staleResponse, cm.ErrorSysIDVersionMismatch)
 
-	publishedResponse, err := handler.PublishEntry(context.Background(), cm.PublishEntryParams{
+	publishedResponse, err := handler.PublishEntry(t.Context(), cm.PublishEntryParams{
 		SpaceID:            "space",
 		EnvironmentID:      "environment",
 		EntryID:            "entry",

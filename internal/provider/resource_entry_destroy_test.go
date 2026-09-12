@@ -217,7 +217,7 @@ func TestEntryResourceDestroyDoesNotConsumePrivateVersion(t *testing.T) {
 			t.Cleanup(testServer.Close)
 
 			providerServer, err := makeTestAccProtoV6ProviderFactories(
-				ContentfulProviderOptionsWithHTTPTestServer(testServer)...,
+				testProviderOptionsWithHTTPServer(testServer)...,
 			)["contentful"]()
 			require.NoError(t, err)
 
@@ -290,7 +290,7 @@ func testAccEntryRejectedUnpublishStopsBeforeDeleteAndCanRetry(t *testing.T, con
 
 	recorder.delegate = adapter
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: managedEntryConfig("one")},
 		{
 			PreConfig: func() {
@@ -328,7 +328,7 @@ func TestAccEntryResourceDestroyRemovesExternalDraftWithoutRefresh(t *testing.T)
 	adapter := &entryDestroyTestAdapter{delegate: server, errorSink: fixture.errorSink}
 	recorder.delegate = adapter
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -372,7 +372,7 @@ func TestAccEntryResourceDestroyAlreadyAbsentIsIdempotentWithoutRefresh(t *testi
 	adapter := &entryDestroyTestAdapter{delegate: server, errorSink: fixture.errorSink}
 	recorder.delegate = adapter
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -415,7 +415,7 @@ func TestAccEntryResourceDestroyAlreadyUnpublishedContinuesToDelete(t *testing.T
 	adapter := &entryDestroyTestAdapter{delegate: server, errorSink: fixture.errorSink}
 	recorder.delegate = adapter
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -476,7 +476,7 @@ func TestAccEntryResourceConcurrentDraftAfterUnpublishIsStillDeleted(t *testing.
 		return nil
 	}
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},

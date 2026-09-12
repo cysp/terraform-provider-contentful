@@ -39,7 +39,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsPaginatesUntilTotal(t *te
 	var requests []testListParams
 
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
-		context.Background(),
+		t.Context(),
 		list.ListRequest{},
 		"failed",
 		func(_ context.Context, skip int64, limit int64) (testListCollection, error) {
@@ -73,7 +73,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsPaginatesUntilEmptyWithou
 	var requests []testListParams
 
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
-		context.Background(),
+		t.Context(),
 		list.ListRequest{},
 		"failed",
 		func(_ context.Context, skip int64, limit int64) (testListCollection, error) {
@@ -107,7 +107,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsHonorsTerraformLimit(t *t
 	var requests []testListParams
 
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
-		context.Background(),
+		t.Context(),
 		list.ListRequest{Limit: 2},
 		"failed",
 		func(_ context.Context, skip int64, limit int64) (testListCollection, error) {
@@ -126,7 +126,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsReturnsFetchDiagnostics(t
 	t.Parallel()
 
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
-		context.Background(),
+		t.Context(),
 		list.ListRequest{},
 		"failed",
 		func(context.Context, int64, int64) (testListCollection, error) {
@@ -143,7 +143,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsReturnsUnexpectedResponse
 	t.Parallel()
 
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
-		context.Background(),
+		t.Context(),
 		list.ListRequest{},
 		"failed",
 		func(context.Context, int64, int64) (any, error) {
@@ -160,7 +160,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsReturnsContentfulErrorDia
 	t.Parallel()
 
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
-		context.Background(),
+		t.Context(),
 		list.ListRequest{},
 		"failed",
 		func(context.Context, int64, int64) (any, error) {

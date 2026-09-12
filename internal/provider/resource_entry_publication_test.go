@@ -32,7 +32,7 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftWithoutRefresh(t *testin
 		draftVersion         int
 	)
 
-	ContentfulProviderMockedResourceTestWithFactoryCounter(t, recorder, resource.TestCase{
+	testAccMockedResourceWithFactoryCounter(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -97,7 +97,7 @@ func TestAccEntryResourceUpdateDoesNotRecreateExternallyDeletedEntryWithoutRefre
 
 	var priorVersion int
 
-	ContentfulProviderMockedResourceTest(t, fixture.recorder, resource.TestCase{
+	testAccMockedResource(t, fixture.recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -173,7 +173,7 @@ func TestAccEntryResourceInitialPublishVersionMismatchRevokesAuthority(t *testin
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -216,7 +216,7 @@ func TestAccEntryResourceDraftRateLimitDoesNotCreatePublicationAuthority(t *test
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -257,7 +257,7 @@ func TestAccEntryResourcePublicationRateLimitRetainsExactAuthority(t *testing.T)
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -302,7 +302,7 @@ func TestAccEntryResourceChangedConfigAuthorsAndPublishesNewDraftWithoutRefresh(
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -346,7 +346,7 @@ func TestAccEntryResourceAmbiguousDraftWriteIsNotClaimedAfterRefresh(t *testing.
 	recorder.delegate = failure
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("one")},
 		{
 			PreConfig: func() {
@@ -433,7 +433,7 @@ resource "contentful_entry" "test" {
 				draftVersion int
 			)
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+			testAccMockedResource(t, recorder, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps: []resource.TestStep{
 					{
@@ -529,7 +529,7 @@ func TestAccEntryResourceUpdateUsesExactArbitraryPositiveReturnedVersion(t *test
 
 	var preUpdateVersion int
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("one")},
 		{
 			PreConfig: func() {
@@ -581,7 +581,7 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftAfterRefresh(t *testing.
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("one")},
 		{
 			PreConfig: func() {
@@ -619,7 +619,7 @@ func TestAccEntryResourceHigherPostPublishVersionIsAccepted(t *testing.T) {
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -629,10 +629,10 @@ func TestAccEntryResourceHigherPostPublishVersionIsAccepted(t *testing.T) {
 					fault.shot.arm()
 				},
 				Config: config("two"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "3"),
-					resource.TestCheckResourceAttr("contentful_entry.test", "fields.managed", `{"en-US":"two"}`),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("published_version"), knownvalue.Int64Exact(3)),
+					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields").AtMapKey("managed"), knownvalue.StringExact(`{"en-US":"two"}`)),
+				},
 			},
 			{
 				PreConfig: recorder.reset,
@@ -679,7 +679,7 @@ func TestAccEntryResourceTypedPublishContradictionDoesNotAuthorizeRetry(t *testi
 	recorder.delegate = tupleFault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -720,7 +720,7 @@ func TestAccEntryResourceRecoveryContradictionRevokesAuthority(t *testing.T) {
 	recorder := fixture.recorder
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -774,7 +774,7 @@ func TestAccEntryResourceChangedDraftVersionMismatchRevokesPendingAuthority(t *t
 	recorder := fixture.recorder
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -829,7 +829,7 @@ func TestAccEntryResourceMarkedReadRevokesEqualPublicationTupleAuthority(t *test
 	config := managedEntryConfig
 	cliOptions := &resource.AdditionalCLIOptions{}
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: cliOptions,
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -889,7 +889,7 @@ func TestAccEntryResourceNonAdvancingPublishResponseRevokesAuthority(t *testing.
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -926,7 +926,7 @@ func TestAccEntryResourceExternalAdvanceDoesNotAuthorizePublication(t *testing.T
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("one")},
 		{
 			PreConfig: func() {
@@ -970,7 +970,7 @@ func TestAccEntryResourcePublicationTupleChangeAtMarkedVersionRevokesAuthority(t
 	config := managedEntryConfig
 	cliOptions := &resource.AdditionalCLIOptions{}
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: cliOptions,
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -1029,7 +1029,7 @@ func TestAccEntryResourceExternalUnpublishDoesNotAuthorizePublication(t *testing
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("one")},
 		{
 			PreConfig: func() {
@@ -1078,7 +1078,7 @@ func TestAccEntryResourceInterveningDraftRevokesRecoveryWithoutRefresh(t *testin
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -1141,7 +1141,7 @@ func TestAccEntryResourceRefreshResolvesAmbiguousPublishSuccess(t *testing.T) {
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: config("one")},
 		{
 			PreConfig: func() {
@@ -1176,7 +1176,7 @@ func TestAccEntryResourceRefreshDisabledRecoveryAfterCommittedPublishDoesNotPubl
 	recorder.delegate = fault
 	config := managedEntryConfig
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -1232,7 +1232,7 @@ func TestAccEntryResourceExternalPublicationOfMarkedDraftClearsRecovery(t *testi
 	config := managedEntryConfig
 	additionalCLIOptions := &resource.AdditionalCLIOptions{}
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []resource.TestStep{
 			{Config: config("one")},
@@ -1261,14 +1261,14 @@ func TestAccEntryResourceExternalPublicationOfMarkedDraftClearsRecovery(t *testi
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
 				}},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "3"),
-					func(*terraform.State) error {
-						requireNoEntryMutations(t, recorder, "refresh must observe external publication without replay")
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("published_version"), knownvalue.Int64Exact(3)),
+				},
+				Check: func(*terraform.State) error {
+					requireNoEntryMutations(t, recorder, "refresh must observe external publication without replay")
 
-						return nil
-					},
-				),
+					return nil
+				},
 			},
 			{
 				PreConfig: func() {

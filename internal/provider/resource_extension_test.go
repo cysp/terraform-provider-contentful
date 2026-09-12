@@ -18,10 +18,13 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
@@ -50,11 +53,21 @@ func TestAccExtensionResourceLifecycle(t *testing.T) {
 		"test_extension_id": config.StringVariable(extensionID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	identity := statecheck.CompareValue(compare.ValuesSame())
+
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_extension.test", plancheck.ResourceActionCreate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_extension.test", tfjsonpath.New("id")), statecheck.ExpectKnownValue("contentful_extension.test", tfjsonpath.New("extension"), knownvalue.ObjectPartial(map[string]knownvalue.Check{"src": knownvalue.Null(), "srcdoc": knownvalue.StringExact("<!DOCTYPE html>")})),
+				},
 				Check: testAccExtensionSources(
 					server,
 					"0p38pssr0fi3",
@@ -67,6 +80,14 @@ func TestAccExtensionResourceLifecycle(t *testing.T) {
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_extension.test", plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_extension.test", tfjsonpath.New("id")), statecheck.ExpectKnownValue("contentful_extension.test", tfjsonpath.New("extension"), knownvalue.ObjectPartial(map[string]knownvalue.Check{"src": knownvalue.StringExact("http://localhost:3000/entry-field.js"), "srcdoc": knownvalue.Null()})),
+				},
 				Check: testAccExtensionSources(
 					server,
 					"0p38pssr0fi3",
@@ -77,10 +98,11 @@ func TestAccExtensionResourceLifecycle(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
-				ImportState:     true,
-				ResourceName:    "contentful_extension.test",
+				ConfigDirectory:   config.TestStepDirectory(),
+				ConfigVariables:   configVariables,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "contentful_extension.test",
 			},
 		},
 	})
@@ -109,7 +131,7 @@ resource "contentful_extension" "test" {
 `, extensionID)
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: config("initial-extension"),
@@ -135,15 +157,6 @@ func testAccExtensionSources(
 	expectedSrcdoc cm.OptString,
 ) resource.TestCheckFunc {
 	if os.Getenv("TF_ACC_MOCKED") == "" {
-		checks := []resource.TestCheckFunc{}
-		if src, ok := expectedSrc.Get(); ok {
-			checks = append(checks, resource.TestCheckResourceAttr("contentful_extension.test", "extension.src", src))
-		}
-
-		if srcdoc, ok := expectedSrcdoc.Get(); ok {
-			checks = append(checks, resource.TestCheckResourceAttr("contentful_extension.test", "extension.srcdoc", srcdoc))
-		}
-
 		retryClient := retryablehttp.NewClient()
 		retryClient.Logger = nil
 		retryClient.RetryMax = 5
@@ -159,7 +172,7 @@ func testAccExtensionSources(
 			}
 		}
 
-		checks = append(checks, testContentfulExtensionSources(
+		return testContentfulExtensionSources(
 			func(ctx context.Context, params cm.GetExtensionParams) (cm.GetExtensionRes, error) {
 				return client.GetExtension(ctx, params)
 			},
@@ -168,9 +181,7 @@ func testAccExtensionSources(
 			extensionID,
 			expectedSrc,
 			expectedSrcdoc,
-		))
-
-		return resource.ComposeTestCheckFunc(checks...)
+		)
 	}
 
 	return testContentfulExtensionSources(server.Handler().GetExtension, spaceID, environmentID, extensionID, expectedSrc, expectedSrcdoc)
@@ -220,7 +231,7 @@ func TestAccExtensionResourceExplicitEmptySrcdocReachesContentful(t *testing.T) 
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "environment")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -284,7 +295,7 @@ func TestAccExtensionResourceRejectsInvalidSourcesBeforeContentful(t *testing.T)
 				server.ServeHTTP(responseWriter, request)
 			})
 
-			ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+			testAccMockedResource(t, handler, resource.TestCase{
 				Steps: []resource.TestStep{
 					{
 						Config: fmt.Sprintf(`
@@ -369,7 +380,7 @@ resource "contentful_extension" "test" {
 `, extensionID, name)
 			}
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+			testAccMockedResource(t, recorder, resource.TestCase{
 				Steps: []resource.TestStep{
 					{
 						Config:             config("Imported"),
@@ -469,7 +480,7 @@ func TestAccExtensionResourceResolvedDependencyValueReachesContentful(t *testing
 
 	const resolvedSrcdoc = "<!doctype html><title>resolved during apply</title>"
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -497,35 +508,35 @@ resource "contentful_extension" "test" {
 						),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_extension.test", "extension.srcdoc", resolvedSrcdoc),
-					func(*terraform.State) error {
-						response, err := server.Handler().GetExtension(t.Context(), cm.GetExtensionParams{
-							SpaceID:       "space",
-							EnvironmentID: "environment",
-							ExtensionID:   "resolved-dependency",
-						})
-						if err != nil {
-							return fmt.Errorf("get extension from mock Contentful: %w", err)
-						}
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_extension.test", tfjsonpath.New("extension").AtMapKey("srcdoc"), knownvalue.StringExact(resolvedSrcdoc)),
+				},
+				Check: func(*terraform.State) error {
+					response, err := server.Handler().GetExtension(t.Context(), cm.GetExtensionParams{
+						SpaceID:       "space",
+						EnvironmentID: "environment",
+						ExtensionID:   "resolved-dependency",
+					})
+					if err != nil {
+						return fmt.Errorf("get extension from mock Contentful: %w", err)
+					}
 
-						extension, ok := response.(*cm.Extension)
-						if !ok {
-							return fmt.Errorf("%w: %T", errUnexpectedExtensionResponse, response)
-						}
+					extension, ok := response.(*cm.Extension)
+					if !ok {
+						return fmt.Errorf("%w: %T", errUnexpectedExtensionResponse, response)
+					}
 
-						actual, ok := extension.Extension.Srcdoc.Get()
-						if !ok {
-							return errResolvedSrcdocOmitted
-						}
+					actual, ok := extension.Extension.Srcdoc.Get()
+					if !ok {
+						return errResolvedSrcdocOmitted
+					}
 
-						if actual != resolvedSrcdoc {
-							return fmt.Errorf("%w: Contentful received srcdoc %q, want %q", errExtensionSourceMismatch, actual, resolvedSrcdoc)
-						}
+					if actual != resolvedSrcdoc {
+						return fmt.Errorf("%w: Contentful received srcdoc %q, want %q", errExtensionSourceMismatch, actual, resolvedSrcdoc)
+					}
 
-						return nil
-					},
-				),
+					return nil
+				},
 			},
 		},
 	})

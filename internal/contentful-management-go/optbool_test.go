@@ -54,7 +54,7 @@ func TestOptBoolValueBoolPointer(t *testing.T) {
 			input:    cm.NewOptBool(false),
 			expected: new(false),
 		},
-		"nil": {
+		"unset": {
 			input:    cm.OptBool{},
 			expected: nil,
 		},

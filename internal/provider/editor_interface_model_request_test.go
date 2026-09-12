@@ -56,7 +56,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 	assert.Empty(t, diags)
 
 	assert.True(t, req.EditorLayout.Set)
-	assert.Len(t, req.EditorLayout.Value, 1)
+	require.Len(t, req.EditorLayout.Value, 1)
 	assert.Equal(t, cm.EditorInterfaceEditorLayoutItem{
 		Type: cm.EditorInterfaceEditorLayoutGroupItemEditorInterfaceEditorLayoutItem,
 		EditorInterfaceEditorLayoutGroupItem: cm.EditorInterfaceEditorLayoutGroupItem{
@@ -72,7 +72,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 	}, req.EditorLayout.Value[0])
 
 	assert.True(t, req.Controls.Set)
-	assert.Len(t, req.Controls.Value, 1)
+	require.Len(t, req.Controls.Value, 1)
 	assert.Equal(t, cm.EditorInterfaceDataControlsItem{
 		FieldId:         "field_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
@@ -81,7 +81,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 	}, req.Controls.Value[0])
 
 	assert.True(t, req.GroupControls.Set)
-	assert.Len(t, req.GroupControls.Value, 1)
+	require.Len(t, req.GroupControls.Value, 1)
 	assert.Equal(t, cm.EditorInterfaceDataGroupControlsItem{
 		GroupId:         "group_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
@@ -90,7 +90,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 	}, req.GroupControls.Value[0])
 
 	assert.True(t, req.Sidebar.Set)
-	assert.Len(t, req.Sidebar.Value, 1)
+	require.Len(t, req.Sidebar.Value, 1)
 	assert.Equal(t, cm.EditorInterfaceDataSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
@@ -114,7 +114,7 @@ func TestEditorInterfaceRequestRejectsNullAndUnknownObjects(t *testing.T) {
 			request, diags := model.ToEditorInterfaceData(t.Context())
 			require.True(t, diags.HasError())
 			assert.False(t, request.Controls.Set)
-			assert.Equal(t, []string{"controls[0]"}, diagnosticPaths(t, diags))
+			assert.Equal(t, []string{"controls[0]"}, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }
@@ -274,7 +274,7 @@ func TestEditorInterfaceLayoutItemRequiresExactlyOneAlternative(t *testing.T) {
 			actual, diags := value.value.ToEditorInterfaceEditorLayoutItem(t.Context(), valuePath)
 
 			assert.Equal(t, value.expected, actual)
-			assert.ElementsMatch(t, value.expectedPaths, diagnosticPaths(t, diags))
+			assert.ElementsMatch(t, value.expectedPaths, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }
@@ -321,7 +321,7 @@ func TestEditorInterfaceTopLevelGroupRejectsInvalidValues(t *testing.T) {
 			actual, diags := test.value.ToEditorInterfaceEditorLayoutItem(t.Context(), valuePath)
 
 			assert.Zero(t, actual)
-			assert.Equal(t, []string{test.expectedPath}, diagnosticPaths(t, diags))
+			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }

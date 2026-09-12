@@ -2,7 +2,6 @@ package cmtesting_test
 
 import (
 	"bytes"
-	"context"
 	"encoding/base64"
 	"net/http"
 	"strings"
@@ -20,8 +19,11 @@ func TestAppKeyCollectionPagination(t *testing.T) {
 	handler := newAppKeyTestHandler(t)
 
 	keyIDs := make([]string, 0, 3)
-	for range 3 {
-		keyIDs = append(keyIDs, createAppKey(t, handler, appKeyRequest(t)).Sys.ID)
+
+	for index := range 3 {
+		request := appKeyRequest(t, index)
+		createAppKey(t, handler, request)
+		keyIDs = append(keyIDs, request.Jwk.Kid)
 	}
 
 	params := cm.GetAppKeysParams{
@@ -30,7 +32,7 @@ func TestAppKeyCollectionPagination(t *testing.T) {
 		Skip:            cm.NewOptInt64(1),
 		Limit:           cm.NewOptInt64(1),
 	}
-	response, err := handler.GetAppKeys(context.Background(), params)
+	response, err := handler.GetAppKeys(t.Context(), params)
 	require.NoError(t, err)
 
 	collection, ok := response.(*cm.AppKeyCollection)
@@ -41,7 +43,7 @@ func TestAppKeyCollectionPagination(t *testing.T) {
 	require.Len(t, collection.Items, 1)
 	assert.Equal(t, keyIDs[1], collection.Items[0].Sys.ID)
 
-	repeatedResponse, err := handler.GetAppKeys(context.Background(), params)
+	repeatedResponse, err := handler.GetAppKeys(t.Context(), params)
 	require.NoError(t, err)
 
 	repeatedCollection, ok := repeatedResponse.(*cm.AppKeyCollection)
@@ -79,7 +81,7 @@ func TestAppKeyCollectionRejectsInvalidPagination(t *testing.T) {
 			test.params.OrganizationID = "organization"
 			test.params.AppDefinitionID = "app-definition"
 
-			response, err := handler.GetAppKeys(context.Background(), test.params)
+			response, err := handler.GetAppKeys(t.Context(), test.params)
 			require.NoError(t, err)
 			requireContentfulError(t, response, http.StatusBadRequest, "BadRequest", test.message)
 		})
@@ -94,7 +96,7 @@ func TestAppKeyCreateAcceptsOpaqueFingerprintableMaterial(t *testing.T) {
 	request := appKeyRequestFromDER(publicKeyDER)
 
 	created := createAppKey(t, handler, request)
-	assert.Equal(t, cm.AppKeyJWKFingerprint(publicKeyDER), created.Sys.ID)
+	assert.Equal(t, "vVDhLFXdo-5EPBy21xx7z2NRxOyW97yNat7AFdEZLuo", created.Sys.ID)
 }
 
 func TestAppKeyCreateAcceptsNonCanonicalBase64PaddingBits(t *testing.T) {
@@ -117,10 +119,10 @@ func TestAppKeyCreateAcceptsNonCanonicalBase64PaddingBits(t *testing.T) {
 	request.Jwk = jwk
 
 	created := createAppKey(t, handler, request)
-	assert.Equal(t, cm.AppKeyJWKFingerprint(publicKeyDER), created.Sys.ID)
+	assert.Equal(t, "JXePFixCQxZ_jqqHbxsGGeZ6_BWN54BWAEcaVj7F6Lc", created.Sys.ID)
 	require.Equal(t, jwk.X5c[0], created.Jwk.X5c[0])
 
-	response, err := handler.GetAppKey(context.Background(), cm.GetAppKeyParams{
+	response, err := handler.GetAppKey(t.Context(), cm.GetAppKeyParams{
 		OrganizationID:  "organization",
 		AppDefinitionID: "app-definition",
 		KeyKid:          created.Sys.ID,
@@ -142,7 +144,7 @@ func TestAppKeyCreateRejectsBase64LineBreaks(t *testing.T) {
 	jwk.X5c[0] = jwk.X5c[0][:4] + "\n" + jwk.X5c[0][4:]
 	request.Jwk = jwk
 
-	response, err := handler.CreateAppKey(context.Background(), request, appKeyCreateParams())
+	response, err := handler.CreateAppKey(t.Context(), request, appKeyCreateParams())
 	require.NoError(t, err)
 	requireContentfulError(t, response, http.StatusUnprocessableEntity, "ValidationFailed", "Validation error")
 }
@@ -178,7 +180,7 @@ func TestAppKeyCreateEnforcesX5CEncodedLength(t *testing.T) {
 
 			handler := newAppKeyTestHandler(t)
 			request := appKeyRequestFromDER(bytes.Repeat([]byte{1}, test.derSize))
-			response, err := handler.CreateAppKey(context.Background(), request, appKeyCreateParams())
+			response, err := handler.CreateAppKey(t.Context(), request, appKeyCreateParams())
 			require.NoError(t, err)
 
 			if test.expectedStatus == http.StatusCreated {
@@ -197,17 +199,17 @@ func TestAppKeyDuplicateAndLimitSemantics(t *testing.T) {
 	t.Parallel()
 
 	handler := newAppKeyTestHandler(t)
-	duplicateRequest := appKeyRequest(t)
+	duplicateRequest := appKeyRequest(t, 0)
 	createAppKey(t, handler, duplicateRequest)
 
-	duplicateResponse, err := handler.CreateAppKey(context.Background(), duplicateRequest, appKeyCreateParams())
+	duplicateResponse, err := handler.CreateAppKey(t.Context(), duplicateRequest, appKeyCreateParams())
 	require.NoError(t, err)
 	requireContentfulError(t, duplicateResponse, http.StatusBadRequest, "BadRequest", "The key is already in use")
 
-	createAppKey(t, handler, appKeyRequest(t))
-	createAppKey(t, handler, appKeyRequest(t))
+	createAppKey(t, handler, appKeyRequest(t, 1))
+	createAppKey(t, handler, appKeyRequest(t, 2))
 
-	limitResponse, err := handler.CreateAppKey(context.Background(), appKeyRequest(t), appKeyCreateParams())
+	limitResponse, err := handler.CreateAppKey(t.Context(), appKeyRequest(t, 3), appKeyCreateParams())
 	require.NoError(t, err)
 	requireContentfulError(t, limitResponse, http.StatusForbidden, "AccessDenied", "Forbidden")
 }
@@ -222,13 +224,13 @@ func TestAppKeyFingerprintIsGloballyUniqueAndReusableAfterDeletion(t *testing.T)
 	server.SetAppDefinition("other-organization", "third-app", cm.AppDefinitionData{Name: "Third App"})
 
 	handler := server.Handler()
-	request := appKeyRequest(t)
+	request := appKeyRequest(t, 0)
 	firstParams := cm.CreateAppKeyParams{
 		OrganizationID:  "organization",
 		AppDefinitionID: "first-app",
 	}
 
-	firstResponse, err := handler.CreateAppKey(context.Background(), request, firstParams)
+	firstResponse, err := handler.CreateAppKey(t.Context(), request, firstParams)
 	require.NoError(t, err)
 
 	firstKey, ok := firstResponse.(*cm.AppKey)
@@ -244,12 +246,12 @@ func TestAppKeyFingerprintIsGloballyUniqueAndReusableAfterDeletion(t *testing.T)
 			AppDefinitionID: "third-app",
 		},
 	} {
-		response, err := handler.CreateAppKey(context.Background(), request, params)
+		response, err := handler.CreateAppKey(t.Context(), request, params)
 		require.NoError(t, err, name)
 		requireContentfulError(t, response, http.StatusBadRequest, "BadRequest", "The key is already in use")
 	}
 
-	deleteResponse, err := handler.DeleteAppKey(context.Background(), cm.DeleteAppKeyParams{
+	deleteResponse, err := handler.DeleteAppKey(t.Context(), cm.DeleteAppKeyParams{
 		OrganizationID:  firstParams.OrganizationID,
 		AppDefinitionID: firstParams.AppDefinitionID,
 		KeyKid:          firstKey.Sys.ID,
@@ -259,7 +261,7 @@ func TestAppKeyFingerprintIsGloballyUniqueAndReusableAfterDeletion(t *testing.T)
 	_, ok = deleteResponse.(*cm.NoContent)
 	require.True(t, ok)
 
-	reusedResponse, err := handler.CreateAppKey(context.Background(), request, cm.CreateAppKeyParams{
+	reusedResponse, err := handler.CreateAppKey(t.Context(), request, cm.CreateAppKeyParams{
 		OrganizationID:  "organization",
 		AppDefinitionID: "second-app",
 	})
@@ -273,9 +275,9 @@ func TestAppKeyDeleteIsNotIdempotentAtTheAPI(t *testing.T) {
 	t.Parallel()
 
 	handler := newAppKeyTestHandler(t)
-	created := createAppKey(t, handler, appKeyRequest(t))
+	created := createAppKey(t, handler, appKeyRequest(t, 0))
 
-	deleteResponse, err := handler.DeleteAppKey(context.Background(), cm.DeleteAppKeyParams{
+	deleteResponse, err := handler.DeleteAppKey(t.Context(), cm.DeleteAppKeyParams{
 		OrganizationID:  "organization",
 		AppDefinitionID: "app-definition",
 		KeyKid:          created.Sys.ID,
@@ -285,7 +287,7 @@ func TestAppKeyDeleteIsNotIdempotentAtTheAPI(t *testing.T) {
 	_, ok := deleteResponse.(*cm.NoContent)
 	require.True(t, ok)
 
-	getResponse, err := handler.GetAppKey(context.Background(), cm.GetAppKeyParams{
+	getResponse, err := handler.GetAppKey(t.Context(), cm.GetAppKeyParams{
 		OrganizationID:  "organization",
 		AppDefinitionID: "app-definition",
 		KeyKid:          created.Sys.ID,
@@ -293,7 +295,7 @@ func TestAppKeyDeleteIsNotIdempotentAtTheAPI(t *testing.T) {
 	require.NoError(t, err)
 	requireContentfulError(t, getResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")
 
-	listResponse, err := handler.GetAppKeys(context.Background(), cm.GetAppKeysParams{
+	listResponse, err := handler.GetAppKeys(t.Context(), cm.GetAppKeysParams{
 		OrganizationID:  "organization",
 		AppDefinitionID: "app-definition",
 	})
@@ -303,7 +305,7 @@ func TestAppKeyDeleteIsNotIdempotentAtTheAPI(t *testing.T) {
 	require.True(t, ok)
 	assert.Empty(t, collection.Items)
 
-	repeatedDeleteResponse, err := handler.DeleteAppKey(context.Background(), cm.DeleteAppKeyParams{
+	repeatedDeleteResponse, err := handler.DeleteAppKey(t.Context(), cm.DeleteAppKeyParams{
 		OrganizationID:  "organization",
 		AppDefinitionID: "app-definition",
 		KeyKid:          created.Sys.ID,
@@ -317,7 +319,7 @@ func TestAppKeyOperationsRejectCrossOrganizationParent(t *testing.T) {
 
 	handler := newAppKeyTestHandler(t)
 
-	listResponse, err := handler.GetAppKeys(context.Background(), cm.GetAppKeysParams{
+	listResponse, err := handler.GetAppKeys(t.Context(), cm.GetAppKeysParams{
 		OrganizationID:  "other-organization",
 		AppDefinitionID: "app-definition",
 	})
@@ -325,7 +327,7 @@ func TestAppKeyOperationsRejectCrossOrganizationParent(t *testing.T) {
 	requireContentfulError(t, listResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")
 	requireAppDefinitionDoesNotExistDetails(t, listResponse)
 
-	createResponse, err := handler.CreateAppKey(context.Background(), appKeyRequest(t), cm.CreateAppKeyParams{
+	createResponse, err := handler.CreateAppKey(t.Context(), appKeyRequest(t, 0), cm.CreateAppKeyParams{
 		OrganizationID:  "other-organization",
 		AppDefinitionID: "app-definition",
 	})
@@ -333,7 +335,7 @@ func TestAppKeyOperationsRejectCrossOrganizationParent(t *testing.T) {
 	requireContentfulError(t, createResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")
 	requireAppDefinitionDoesNotExistDetails(t, createResponse)
 
-	getResponse, err := handler.GetAppKey(context.Background(), cm.GetAppKeyParams{
+	getResponse, err := handler.GetAppKey(t.Context(), cm.GetAppKeyParams{
 		OrganizationID:  "other-organization",
 		AppDefinitionID: "app-definition",
 		KeyKid:          "missing-key",
@@ -342,7 +344,7 @@ func TestAppKeyOperationsRejectCrossOrganizationParent(t *testing.T) {
 	requireContentfulError(t, getResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")
 	requireAppDefinitionDoesNotExistDetails(t, getResponse)
 
-	deleteResponse, err := handler.DeleteAppKey(context.Background(), cm.DeleteAppKeyParams{
+	deleteResponse, err := handler.DeleteAppKey(t.Context(), cm.DeleteAppKeyParams{
 		OrganizationID:  "other-organization",
 		AppDefinitionID: "app-definition",
 		KeyKid:          "missing-key",

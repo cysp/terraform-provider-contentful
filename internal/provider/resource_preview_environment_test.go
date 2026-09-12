@@ -15,6 +15,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -139,10 +140,12 @@ func TestAccPreviewEnvironmentResourceLifecycle(t *testing.T) {
 		"name":     config.StringVariable(name),
 	}
 
+	identity := statecheck.CompareValue(compare.ValuesSame())
+
 	var cleanupIDs []string
 	registerLivePreviewEnvironmentCleanup(t, &cleanupIDs)
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -152,17 +155,17 @@ func TestAccPreviewEnvironmentResourceLifecycle(t *testing.T) {
 						plancheck.ExpectResourceAction("contentful_preview_environment.test", plancheck.ResourceActionCreate),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					capturePreviewEnvironmentID(&cleanupIDs),
-					resource.TestCheckResourceAttrSet("contentful_preview_environment.test", "preview_environment_id"),
-					resource.TestCheckResourceAttr("contentful_preview_environment.test", "description", ""),
-					resource.TestCheckResourceAttr("contentful_preview_environment.test", "content_type_configurations.%", "1"),
-					resource.TestCheckResourceAttr(
-						"contentful_preview_environment.test",
-						"content_type_configurations.page.url",
-						"https://preview.example.invalid/{env_id}/pages/{entry.sys.id}",
-					),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_preview_environment.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("preview_environment_id"), knownvalue.StringRegexp(regexp.MustCompile(`(?s)^.+$`))),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("description"), knownvalue.StringExact("")),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("content_type_configurations"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"page": knownvalue.ObjectExact(map[string]knownvalue.Check{
+							"url": knownvalue.StringExact("https://preview.example.invalid/{env_id}/pages/{entry.sys.id}"),
+						}),
+					})),
+				},
+				Check: capturePreviewEnvironmentID(&cleanupIDs),
 			},
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -172,18 +175,17 @@ func TestAccPreviewEnvironmentResourceLifecycle(t *testing.T) {
 						plancheck.ExpectResourceAction("contentful_preview_environment.test", plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					capturePreviewEnvironmentID(&cleanupIDs),
-					resource.TestCheckResourceAttr("contentful_preview_environment.test", "name", name+" updated"),
-					resource.TestCheckResourceAttr("contentful_preview_environment.test", "description", "updated description"),
-					resource.TestCheckResourceAttr("contentful_preview_environment.test", "content_type_configurations.%", "1"),
-					resource.TestCheckNoResourceAttr("contentful_preview_environment.test", "content_type_configurations.page"),
-					resource.TestCheckResourceAttr(
-						"contentful_preview_environment.test",
-						"content_type_configurations.author.url",
-						"https://preview.example.invalid/{env_id}/authors/{entry.sys.id}",
-					),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_preview_environment.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("name"), knownvalue.StringExact(name+" updated")),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("description"), knownvalue.StringExact("updated description")),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("content_type_configurations"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"author": knownvalue.ObjectExact(map[string]knownvalue.Check{
+							"url": knownvalue.StringExact("https://preview.example.invalid/{env_id}/authors/{entry.sys.id}"),
+						}),
+					})),
+				},
+				Check: capturePreviewEnvironmentID(&cleanupIDs),
 			},
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -202,15 +204,12 @@ func TestAccPreviewEnvironmentResourceLifecycle(t *testing.T) {
 						plancheck.ExpectResourceAction("contentful_preview_environment.test", plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					capturePreviewEnvironmentID(&cleanupIDs),
-					resource.TestCheckResourceAttr("contentful_preview_environment.test", "content_type_configurations.%", "2"),
-					resource.TestCheckResourceAttr(
-						"contentful_preview_environment.test",
-						"content_type_configurations.page.url",
-						"https://preview.example.invalid/{env_id}/pages/{entry.sys.id}?replacement=true",
-					),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_preview_environment.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("content_type_configurations"), knownvalue.MapSizeExact(2)),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("content_type_configurations").AtMapKey("page").AtMapKey("url"), knownvalue.StringExact("https://preview.example.invalid/{env_id}/pages/{entry.sys.id}?replacement=true")),
+				},
+				Check: capturePreviewEnvironmentID(&cleanupIDs),
 			},
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -220,11 +219,10 @@ func TestAccPreviewEnvironmentResourceLifecycle(t *testing.T) {
 						plancheck.ExpectResourceAction("contentful_preview_environment.test", plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.TestCheckResourceAttr(
-					"contentful_preview_environment.test",
-					"content_type_configurations.%",
-					"0",
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_preview_environment.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("content_type_configurations"), knownvalue.MapSizeExact(0)),
+				},
 			},
 			{
 				ConfigDirectory:   config.TestStepDirectory(),
@@ -249,7 +247,7 @@ func TestAccPreviewEnvironmentResourceSelectedID(t *testing.T) {
 	cleanupIDs := []string{previewEnvironmentID}
 	registerLivePreviewEnvironmentCleanup(t, &cleanupIDs)
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -259,10 +257,10 @@ func TestAccPreviewEnvironmentResourceSelectedID(t *testing.T) {
 					"preview_environment_id": config.StringVariable(previewEnvironmentID),
 					"include_page":           config.BoolVariable(true),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_preview_environment.test", "preview_environment_id", previewEnvironmentID),
-					resource.TestCheckResourceAttr("contentful_preview_environment.test", "content_type_configurations.%", "1"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("preview_environment_id"), knownvalue.StringExact(previewEnvironmentID)),
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("content_type_configurations"), knownvalue.MapSizeExact(1)),
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -277,11 +275,9 @@ func TestAccPreviewEnvironmentResourceSelectedID(t *testing.T) {
 						plancheck.ExpectResourceAction("contentful_preview_environment.test", plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.TestCheckResourceAttr(
-					"contentful_preview_environment.test",
-					"content_type_configurations.%",
-					"0",
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_preview_environment.test", tfjsonpath.New("content_type_configurations"), knownvalue.MapSizeExact(0)),
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -307,7 +303,7 @@ func TestAccPreviewEnvironmentResourceRejectsEmptyContentTypeID(t *testing.T) {
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config:      previewEnvironmentResourceConfig("Preview", "", ""),
@@ -325,7 +321,7 @@ func TestAccPreviewEnvironmentResourceMapOrderIsIgnored(t *testing.T) {
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	resourceName := "acctest_preview_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: previewEnvironmentResourceConfig(resourceName, "", "page", "author"),
@@ -358,7 +354,7 @@ func TestAccPreviewEnvironmentResourceOutOfBandDeletionRecreates(t *testing.T) {
 	var cleanupIDs []string
 	registerLivePreviewEnvironmentCleanup(t, &cleanupIDs)
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: testConfig,
@@ -402,7 +398,7 @@ func TestAccPreviewEnvironmentResourceStaleVersionConflict(t *testing.T) {
 	previewEnvironmentID := "acctest-preview-" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 	cleanupIDs := []string{previewEnvironmentID}
 	registerLivePreviewEnvironmentCleanup(t, &cleanupIDs)
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{Config: previewEnvironmentResourceConfig(previewEnvironmentID, previewEnvironmentID, "page")},
 			{
@@ -531,7 +527,7 @@ resource "contentful_preview_environment" "test" {
 `, createBeforeDestroy)
 
 			var ids []string
-			ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+			testAccMockedResource(t, server, resource.TestCase{
 				Steps: []resource.TestStep{
 					{Config: configuration, Check: capturePreviewEnvironmentID(&ids)},
 					{
@@ -584,7 +580,7 @@ func TestAccPreviewEnvironmentResourceVersionedConfigurationDelta(t *testing.T) 
 	renamedConfig := previewEnvironmentResourceConfig("Renamed", "preview", "page")
 	changedURLConfig := strings.ReplaceAll(renamedConfig, "https://preview.example.invalid/page/{entry.sys.id}", "https://preview.invalid/changed")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{Config: createdConfig},
 			{
